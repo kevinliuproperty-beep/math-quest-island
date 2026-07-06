@@ -143,6 +143,20 @@
   .ansBtn.dim  { opacity:.45; }
   @keyframes pop { 50%{transform:scale(1.08)} }
 
+  #typedWrap { display:none; gap:10px; padding-bottom:8px; }
+  #typedInput { flex:1; font-family:inherit; font-size:26px; font-weight:800; text-align:center;
+    color:#3a2260; background:#fff; border:3px solid #8f83ec; border-radius:16px; padding:12px; outline:none; min-width:0; }
+  #typedInput:disabled { opacity:.6; }
+  #typedGo { font-family:inherit; font-size:26px; font-weight:800; color:#3a2200;
+    background:linear-gradient(180deg,#ffe66d,#ffb037); border:none; border-radius:16px; padding:0 26px;
+    cursor:pointer; box-shadow:0 4px 0 #b36a00; }
+  #typedGo:active { transform:translateY(3px); box-shadow:0 1px 0 #b36a00; }
+
+  #fameTabs { display:flex; gap:8px; }
+  .fameTab { font-family:inherit; font-size:15px; font-weight:800; color:#d5cdff;
+    background:rgba(255,255,255,.08); border:2px solid transparent; border-radius:12px; padding:8px 18px; cursor:pointer; }
+  .fameTab.sel { border-color:#ffe66d; color:#fff; background:rgba(255,230,109,.18); }
+
   #feedback { min-height:32px; text-align:center; font-size:18px; font-weight:800; padding-bottom:4px; }
   #feedback .ok { color:#7dffb0; } #feedback .no { color:#ffc9c2; }
 
@@ -266,6 +280,7 @@
     </div>
     <div id="feedback"></div>
     <div id="answers"></div>
+    <div id="typedWrap"><input id="typedInput" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="6" placeholder="Type your answer"><button id="typedGo">⚔️</button></div>
   </div>
 
   <!-- ============ END ============ -->
@@ -294,6 +309,7 @@
   <div id="fameScreen" class="screen">
     <h2>🏆 Hall of Fame</h2>
     <div class="subtitle">Fastest island victories — beat the clock, claim your place!</div>
+    <div id="fameTabs"><button class="fameTab sel" id="tabGlobal">🌍 World</button><button class="fameTab" id="tabLocal">📱 This device</button></div>
     <div class="listBox"><div id="fameList"></div></div>
     <button class="btnGhost" id="fameBackBtn">← Back</button>
   </div>
@@ -569,6 +585,87 @@ function gMissSide(){
     'Area = length × breadth, so length = '+a+' ÷ '+B+' = '+L+' cm.');
 }
 
+/* ===== P2 NUMBER BEACH ===== */
+function gAddSubP2(max){
+  if(Math.random()<0.5){
+    const a=ri(2,max-2), b=ri(1,max-a);
+    return finishNum(a+' + '+b+' = ?','',a+b,[a+b+1,a+b-1,a+b+10,a+b-10],'',
+      a+' + '+b+' = '+(a+b)+'.');
+  }
+  const a=ri(3,max), b=ri(1,a-1);
+  return finishNum(a+' − '+b+' = ?','',a-b,[a-b+1,a-b-1,a-b+10,a+b],'',
+    a+' − '+b+' = '+(a-b)+'.');
+}
+function gAddSubP2e(){ return gAddSubP2(20); }
+function gAddSubP2m(){ return gAddSubP2(100); }
+function gAddSubP2h(){ return gAddSubP2(1000); }
+function gBonds(){
+  const target=pick([10,20,100]);
+  const a=ri(1,target-1);
+  return finishNum(a+' + ? = '+target,'',target-a,[target-a+1,Math.max(1,target-a-1),Math.min(target-1,target-a+10),a],'',
+    target+' − '+a+' = '+(target-a)+'. '+a+' and '+(target-a)+' make '+target+'!');
+}
+function gMulP2easy(){ return gMul([2,5,10]); }
+function gMulP2hard(){ return gMul([2,3,4,5,10]); }
+function gCompareNum(){
+  const ns=new Set(); while(ns.size<3) ns.add(ri(10,999));
+  const arr=[...ns];
+  const wantMax=Math.random()<0.5;
+  const best=wantMax?Math.max(...arr):Math.min(...arr);
+  return { q:'Which number is the <b>'+(wantMax?'greatest':'smallest')+'</b>?', extra:'',
+    choices:arr.map(String), correct:arr.indexOf(best),
+    explain:'Compare hundreds first, then tens, then ones. The '+(wantMax?'greatest':'smallest')+' is '+best+'.',
+    answerText:String(best) };
+}
+
+/* ===== HEURISTICS — PUZZLE CAVES (typed answers, no MCQ) ===== */
+function finishTyped(qHtml, answer, explain){
+  return { q:qHtml, extra:'', typed:true, answer, choices:[], correct:-1,
+           explain, answerText:''+answer };
+}
+function gPatternEasy(){
+  const s=ri(1,9), d=pick([2,3,5,10]);
+  const terms=[s,s+d,s+2*d,s+3*d];
+  return finishTyped('What comes next? &nbsp; <b>'+terms.join(', ')+', ?</b>',
+    s+4*d,'The pattern adds '+d+' each time: '+terms[3]+' + '+d+' = '+(s+4*d)+'.');
+}
+function gPatternHard(){
+  const s=ri(2,12), d=pick([4,6,7,9,11]);
+  const terms=[s,s+d,s+2*d,s+3*d];
+  return finishTyped('What comes next? &nbsp; <b>'+terms.join(', ')+', ?</b>',
+    s+4*d,'The pattern adds '+d+' each time: '+terms[3]+' + '+d+' = '+(s+4*d)+'.');
+}
+function gBackwards1(){
+  const x=ri(3,50), a=ri(2,30);
+  if(Math.random()<0.5){
+    return finishTyped('I think of a number. I <b>add '+a+'</b> and get <b>'+(x+a)+'</b>. What is my number?',
+      x,'Work backwards: '+(x+a)+' − '+a+' = '+x+'.');
+  }
+  return finishTyped('I think of a number. I <b>subtract '+a+'</b> and get <b>'+x+'</b>. What is my number?',
+    x+a,'Work backwards: '+x+' + '+a+' = '+(x+a)+'.');
+}
+function gBackwards2(){
+  const x=ri(2,15), m=pick([2,3]), a=ri(2,20);
+  return finishTyped('I think of a number. I <b>multiply by '+m+'</b>, then <b>add '+a+'</b>, and get <b>'+(x*m+a)+'</b>. What is my number?',
+    x,'Work backwards: '+(x*m+a)+' − '+a+' = '+(x*m)+', then '+(x*m)+' ÷ '+m+' = '+x+'.');
+}
+function gGiveTake(){
+  const start=ri(10,60), gave=ri(2,9), got=ri(2,9);
+  const now=start-gave+got;
+  return finishTyped('Mei had some stickers. She <b>gave away '+gave+'</b>, then <b>got '+got+' more</b>. Now she has <b>'+now+'</b>. How many did she have at first?',
+    start,'Work backwards: '+now+' − '+got+' = '+(now-got)+', then '+(now-got)+' + '+gave+' = '+start+'.');
+}
+function gHeadsLegs(){
+  const g=ri(1,5), c=ri(2,7);
+  const heads=g+c, legs=4*g+2*c;
+  return finishTyped('A farm has chickens and goats. There are <b>'+heads+' heads</b> and <b>'+legs+' legs</b>. How many <b>goats</b>?',
+    g,'Guess and check: if all '+heads+' were chickens there would be '+(2*heads)+' legs. The extra '+(legs-2*heads)+' legs ÷ 2 = '+g+' goats.');
+}
+function gMakeHundred(){
+  const a=ri(11,89);
+  return finishTyped(a+' + ? = 100',100-a,'100 − '+a+' = '+(100-a)+'.');
+}
+
 /* ===== TOPIC PACK REGISTRY =====
    To add a new topic later: write generators that return the same shape,
    add skills + pools here, and add a map node in MAP_NODES. */
@@ -615,6 +712,34 @@ const TOPICS={
       2:[[gPeri,'peri'],[gAreaRect,'area'],[gSquarePA,'area']],
       3:[[gMissSide,'missing'],[gAreaRect,'area'],[gPeri,'peri']]
     }
+  },
+  p2:{
+    label:'Number Beach', short:'P2 numbers', e:'🏖️',
+    skills:{
+      addsub: {label:'Addition & subtraction', tip:'Count on for small sums; column method for bigger ones. Build up: within 20, then 100, then 1000.'},
+      bonds:  {label:'Number bonds',           tip:'Drill pairs that make 10, 20 and 100 until instant: 3+7, 13+7, 40+60, 25+75.'},
+      mult:   {label:'Times tables (2, 3, 4, 5, 10)', tip:'P2 tables: 2, 5, 10 first, then 3 and 4. Skip-count out loud while clapping.'},
+      compare:{label:'Comparing numbers',      tip:'Compare hundreds first, then tens, then ones.'}
+    },
+    pools:{
+      1:[[gAddSubP2e,'addsub'],[gBonds,'bonds'],[gMulP2easy,'mult']],
+      2:[[gAddSubP2m,'addsub'],[gBonds,'bonds'],[gMulP2easy,'mult'],[gCompareNum,'compare']],
+      3:[[gAddSubP2h,'addsub'],[gMulP2hard,'mult'],[gCompareNum,'compare'],[gBonds,'bonds']]
+    }
+  },
+  heuristics:{
+    label:'Puzzle Caves', short:'Heuristics', e:'🧩',
+    skills:{
+      pattern:   {label:'Number patterns',  tip:'Find the jump between numbers first — write the differences above the gaps.'},
+      backwards: {label:'Working backwards',tip:'Start from the answer and undo each step in reverse: + undoes −, × undoes ÷.'},
+      guesscheck:{label:'Guess and check',  tip:'Make a sensible first guess, check it, adjust up or down. A small table keeps it tidy.'},
+      bonds:     {label:'Making 100',       tip:'Make the next ten first, then add the remaining tens.'}
+    },
+    pools:{
+      1:[[gPatternEasy,'pattern'],[gMakeHundred,'bonds'],[gBackwards1,'backwards']],
+      2:[[gBackwards1,'backwards'],[gGiveTake,'backwards'],[gPatternEasy,'pattern']],
+      3:[[gBackwards2,'backwards'],[gHeadsLegs,'guesscheck'],[gPatternHard,'pattern']]
+    }
   }
 };
 function makeQuestionFor(topic,level){
@@ -629,9 +754,11 @@ let TOPIC='fractions';
 function makeQuestion(level){ return makeQuestionFor(TOPIC,level); }
 
 const MAP_NODES=[
+  {id:'p2',        e:'🏖️', name:'Number Beach',         blurb:'Add, subtract, number bonds & first tables (P2)'},
   {id:'fractions', e:'🌳', name:'Fraction Forest',      blurb:'Halves, quarters and fraction magic (P3)'},
   {id:'tables',    e:'🌋', name:'Times-Table Volcano',  blurb:'Multiplication & division facts (P3)'},
   {id:'geometry',  e:'🏰', name:'Perimeter Palace',     blurb:'Area & perimeter of squares and rectangles (P3)'},
+  {id:'heuristics',e:'🧩', name:'Puzzle Caves',         blurb:'Patterns & puzzles — TYPE your answer, no choices!'},
   {id:'decimals',  e:'🌊', name:'Decimal Bay',          blurb:'Coming soon (P4)', locked:true},
   {id:'angles',    e:'🏛️', name:'Angle Ruins',          blurb:'Coming soon (P4)', locked:true},
   {id:'percent',   e:'⛰️', name:'Percentage Peak',      blurb:'Coming soon (P5)', locked:true}
@@ -810,16 +937,27 @@ function nextQuestion(){
   $('qextra').innerHTML=Q.extra||'';
   $('feedback').innerHTML='';
   const box=$('answers'); box.innerHTML='';
-  Q.choices.forEach((c,i)=>{
-    const b=document.createElement('button');
-    b.className='ansBtn'; b.innerHTML=c;
-    b.addEventListener('click',()=>answer(i,b));
-    box.appendChild(b);
-  });
+  if(Q.typed){
+    box.style.display='none';
+    $('typedWrap').style.display='flex';
+    const inp=$('typedInput');
+    inp.value=''; inp.disabled=false;
+    setTimeout(()=>{ try{inp.focus();}catch(e){} },60);
+  } else {
+    box.style.display='grid';
+    $('typedWrap').style.display='none';
+    Q.choices.forEach((c,i)=>{
+      const b=document.createElement('button');
+      b.className='ansBtn'; b.innerHTML=c;
+      b.addEventListener('click',()=>answer(i,b));
+      box.appendChild(b);
+    });
+  }
   S.busy=false;
   if(S.timed) startQTimer();
 }
 function lockButtons(){
+  if(Q && Q.typed){ $('typedInput').disabled=true; return; }
   document.querySelectorAll('.ansBtn').forEach((b,i)=>{
     b.disabled=true;
     if(i===Q.correct) b.classList.add('good'); else b.classList.add('dim');
@@ -839,7 +977,7 @@ function monsterCounterattack(){
   floatDmg('-'+dmg,'#ff8f8f','left');
   S.heroHp-=dmg; renderHp();
   if(S.heroHp<=0) setTimeout(()=>endGame(false),700);
-  else setTimeout(nextQuestion,2400);
+  else setTimeout(nextQuestion,1800);
 }
 function markWrong(feedbackHtml){
   S.streak=0; S.wrongRow++; S.rightRow=0;
@@ -854,17 +992,10 @@ function timeUp(){
   S.total++;
   recSkill(Q.skill,false);
   lockButtons();
-  markWrong('<span class="no">⏰ Time\'s up! '+Q.explain+'</span>');
-  setTimeout(monsterCounterattack,1500);
+  markWrong('<span class="no">⏰ Time\'s up! '+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
+  setTimeout(monsterCounterattack,1000);
 }
-function answer(i,btn){
-  if(S.busy) return; S.busy=true;
-  stopQTimer();
-  const c=ac(); if(c&&c.resume) c.resume();
-  S.total++;
-  const right = i===Q.correct;
-  recSkill(Q.skill,right);
-  lockButtons();
+function resolve(right){
   if(right){
     S.correct++; S.streak++; S.rightRow++; S.wrongRow=0;
     S.best=Math.max(S.best,S.streak);
@@ -883,28 +1014,51 @@ function answer(i,btn){
       sfx.hit();
       floatDmg('-'+dmg, crit?'#ffe66d':'#ff8f8f','right');
       S.mHp-=dmg; renderHp();
-      if(S.mHp<=0) setTimeout(monsterDown,600);
-      else setTimeout(nextQuestion,900);
-    },350);
+      if(S.mHp<=0) setTimeout(monsterDown,450);
+      else setTimeout(nextQuestion,550);
+    },250);
   } else {
-    btn.classList.remove('dim'); btn.classList.add('bad');
-    markWrong('<span class="no">'+Q.explain+'</span>');
-    setTimeout(monsterCounterattack,1500);
+    markWrong('<span class="no">'+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
+    setTimeout(monsterCounterattack,1000);
   }
+}
+function answer(i,btn){
+  if(S.busy) return; S.busy=true;
+  stopQTimer();
+  const c=ac(); if(c&&c.resume) c.resume();
+  S.total++;
+  const right = i===Q.correct;
+  recSkill(Q.skill,right);
+  lockButtons();
+  if(!right && btn){ btn.classList.remove('dim'); btn.classList.add('bad'); }
+  resolve(right);
+}
+function answerTyped(){
+  if(!S || S.busy || !Q || !Q.typed) return;
+  const v=$('typedInput').value.trim();
+  if(v==='') return;
+  S.busy=true;
+  stopQTimer();
+  const c=ac(); if(c&&c.resume) c.resume();
+  S.total++;
+  const right = parseInt(v,10)===Q.answer;
+  recSkill(Q.skill,right);
+  $('typedInput').disabled=true;
+  resolve(right);
 }
 function monsterDown(){
   sfx.monsterDown();
   $('monsterSprite').classList.add('dying');
-  banner('⭐ Crystal rescued! ⭐',1400);
+  banner('⭐ Crystal rescued! ⭐',1000);
   S.heroHp=Math.min(HERO_MAX,S.heroHp+12);
   setTimeout(()=>{
     S.mi++;
     if(S.mi>=MONSTERS.length){ endGame(true); return; }
     S.mHp=MONSTERS[S.mi].hp;
     renderDots(); renderMonster(); renderHp();
-    if(S.mi===MONSTERS.length-1) banner('👑 BOSS BATTLE! 👑',1500);
-    setTimeout(nextQuestion,600);
-  },1500);
+    if(S.mi===MONSTERS.length-1) banner('👑 BOSS BATTLE! 👑',1200);
+    setTimeout(nextQuestion,350);
+  },1000);
 }
 function confetti(){
   for(let i=0;i<40;i++){
@@ -937,6 +1091,12 @@ function endGame(win){
     DB.fame.sort((a,b)=>a.ms-b.ms);
     DB.fame=DB.fame.slice(0,10);
     fameRank=DB.fame.findIndex(f=>f.ms===ms && f.name===DB.name);
+    /* submit to world leaderboard (best-effort; silently skipped offline) */
+    try{
+      fetch('api/leaderboard',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:DB.name,avatar:DB.avatar,topic:TOPIC,ms,
+          acc:(S.total?Math.round(S.correct/S.total*100):0),timed:S.timed})}).catch(()=>{});
+    }catch(e){}
   }
   saveData();
 
@@ -965,17 +1125,33 @@ function endGame(win){
 }
 
 /* ---------------- Hall of Fame ---------------- */
+let fameTab='global';
+function fameRowHtml(f,i){
+  const medals=['🥇','🥈','🥉'];
+  return '<div class="fameRow"><span class="rk">'+(medals[i]||('#'+(i+1)))+'</span>'+
+    '<span class="fa">'+esc(f.avatar||'🦄')+'</span>'+
+    '<span class="fn">'+esc(f.name||'Hero')+'<small>'+(TOPICS[f.topic]?TOPICS[f.topic].e+' '+TOPICS[f.topic].short:esc(f.topic||''))+' · '+(f.acc||0)+'% · '+(f.timed?'⏱️ arcade':'🌙 relaxed')+' · '+fmtDate(f.t||Date.now())+'</small></span>'+
+    '<span class="ft">'+fmtMs(f.ms||0)+'</span></div>';
+}
 function renderFame(){
+  $('tabGlobal').classList.toggle('sel',fameTab==='global');
+  $('tabLocal').classList.toggle('sel',fameTab==='local');
   const fl=$('fameList');
-  if(!DB.fame.length){
-    fl.innerHTML='<div style="color:#a99fd8;text-align:center;padding:10px">No victories yet — beat Fractor to claim the first spot! 🐉</div>';
+  const emptyMsg='<div style="color:#a99fd8;text-align:center;padding:10px">No victories yet — beat Fractor to claim the first spot! 🐉</div>';
+  if(fameTab==='local'){
+    fl.innerHTML = DB.fame.length ? DB.fame.map(fameRowHtml).join('') : emptyMsg;
   } else {
-    const medals=['🥇','🥈','🥉'];
-    fl.innerHTML=DB.fame.map((f,i)=>
-      '<div class="fameRow"><span class="rk">'+(medals[i]||('#'+(i+1)))+'</span>'+
-      '<span class="fa">'+f.avatar+'</span>'+
-      '<span class="fn">'+esc(f.name)+'<small>'+(TOPICS[f.topic]?TOPICS[f.topic].e+' '+TOPICS[f.topic].short:f.topic)+' · '+f.acc+'% · '+(f.timed?'⏱️ arcade':'🌙 relaxed')+' · '+fmtDate(f.t)+'</small></span>'+
-      '<span class="ft">'+fmtMs(f.ms)+'</span></div>').join('');
+    fl.innerHTML='<div style="color:#a99fd8;text-align:center;padding:10px">Loading world rankings… 🌍</div>';
+    fetch('api/leaderboard').then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(d=>{
+      if(fameTab!=='global') return;
+      const rows=(d&&d.rows)||[];
+      fl.innerHTML = rows.length ? rows.map(fameRowHtml).join('')
+        : '<div style="color:#a99fd8;text-align:center;padding:10px">No world victories yet — be the first! 🐉</div>';
+    }).catch(()=>{
+      if(fameTab!=='global') return;
+      fl.innerHTML='<div style="color:#a99fd8;text-align:center;padding:10px">World leaderboard is warming up — showing this device instead.</div>'+
+        (DB.fame.length?DB.fame.map(fameRowHtml).join(''):'');
+    });
   }
   show('fameScreen');
 }
@@ -1061,6 +1237,10 @@ $('resetBtn').addEventListener('click',()=>{
   }
 });
 $('muteBtn').addEventListener('click',()=>{ muted=!muted; DB.muted=muted; saveData(); $('muteBtn').textContent=muted?'🔇':'🔊'; });
+$('typedGo').addEventListener('click',answerTyped);
+$('typedInput').addEventListener('keydown',e=>{ if(e.key==='Enter') answerTyped(); });
+$('tabGlobal').addEventListener('click',()=>{ fameTab='global'; renderFame(); });
+$('tabLocal').addEventListener('click',()=>{ fameTab='local'; renderFame(); });
 
 renderStart();
 </script>

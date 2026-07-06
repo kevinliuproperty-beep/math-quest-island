@@ -47,6 +47,12 @@
   .modeBtn small { display:block; font-weight:600; font-size:12px; color:#a99fd8; }
   .modeBtn.sel { border-color:#ffe66d; background:rgba(255,230,109,.18); color:#fff; }
 
+  #gradeRow { display:flex; gap:8px; }
+  .gradeBtn { flex:1; font-family:inherit; font-size:16px; font-weight:800; color:#d5cdff;
+              background:rgba(255,255,255,.08); border:3px solid transparent; border-radius:12px;
+              padding:9px 0; cursor:pointer; }
+  .gradeBtn.sel { border-color:#ffe66d; background:rgba(255,230,109,.18); color:#fff; }
+
   .btnBig {
     font-family:inherit; font-size:23px; font-weight:800; color:#3a2200;
     background:linear-gradient(180deg,#ffe66d,#ffb037); border:none; border-radius:20px;
@@ -129,6 +135,7 @@
              display:flex; align-items:center; justify-content:center; margin:0 auto;
              font-size:13px; color:#9ef0ff; font-weight:700; position:relative; }
   .rectLabelB { position:absolute; right:-4px; top:50%; transform:translate(100%,-50%); padding-left:6px; }
+  .rectLabelL { text-align:center; color:#9ef0ff; font-weight:700; font-size:13px; margin-top:4px; }
 
   #answers { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-bottom:8px; }
   .ansBtn {
@@ -230,20 +237,24 @@
       <h4>GAME MODE</h4>
       <div id="modeRow">
         <button class="modeBtn" id="modeRelax">🌙 Relaxed<small>take your time</small></button>
-        <button class="modeBtn" id="modeTimed">⏱️ Arcade<small>20s per question — too slow and the monster attacks!</small></button>
+        <button class="modeBtn" id="modeTimed">⏱️ Arcade<small>You have 20s per question. Too slow and the monster attacks!</small></button>
       </div>
+    </div>
+    <div class="panel">
+      <h4>CLASS LEVEL</h4>
+      <div id="gradeRow"></div>
     </div>
     <button class="btnBig" id="toMapBtn">CHOOSE YOUR QUEST 🗺️</button>
     <div style="display:flex;gap:10px">
       <button class="btnGhost" id="fameBtn">🏆 Hall of Fame</button>
-      <button class="btnGhost" id="parentBtn">📊 Grown-ups corner</button>
+      <button class="btnGhost" id="parentBtn">📊 Parents corner</button>
     </div>
   </div>
 
   <!-- ============ MAP ============ -->
   <div id="mapScreen" class="screen">
     <div class="title" style="font-size:clamp(26px,5.5vw,40px)">🗺️ Quest Island</div>
-    <div class="subtitle">Where will you adventure today?</div>
+    <div class="subtitle" id="mapSub">Where will you adventure today?</div>
     <div id="mapPath"></div>
     <button class="btnGhost" id="mapBackBtn">← Back</button>
   </div>
@@ -308,7 +319,7 @@
   <!-- ============ HALL OF FAME ============ -->
   <div id="fameScreen" class="screen">
     <h2>🏆 Hall of Fame</h2>
-    <div class="subtitle">Fastest island victories — beat the clock, claim your place!</div>
+    <div class="subtitle">Fastest island victories. Beat the clock, claim your place!</div>
     <div id="fameTabs"><button class="fameTab sel" id="tabGlobal">🌍 World</button><button class="fameTab" id="tabLocal">📱 This device</button></div>
     <div class="listBox"><div id="fameList"></div></div>
     <button class="btnGhost" id="fameBackBtn">← Back</button>
@@ -316,7 +327,7 @@
 
   <!-- ============ PARENT ============ -->
   <div id="parentScreen" class="screen">
-    <h2>📊 Grown-ups corner</h2>
+    <h2>📊 Parents corner</h2>
     <div class="subtitle" id="parentIntro"></div>
     <div class="listBox" id="focusBox">
       <h3>🎯 Suggested focus areas</h3>
@@ -327,7 +338,7 @@
       <div id="skillList"></div>
     </div>
     <div class="listBox">
-      <h3>📜 Story so far — session history</h3>
+      <h3>📜 Story so far: session history</h3>
       <div style="overflow-x:auto"><table class="hist" id="histTable"></table></div>
       <div id="trendLine" style="margin-top:8px;font-size:15px;text-align:center"></div>
     </div>
@@ -345,7 +356,7 @@
 
 <script>
 "use strict";
-/* ================= GEN-START (pure question generators — no DOM) ================= */
+/* ================= GEN-START (pure question generators, no DOM) ================= */
 function ri(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
 function pick(arr){ return arr[ri(0,arr.length-1)]; }
 function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=ri(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -404,16 +415,26 @@ function gPicIdentify(){
   return finishFrac('What fraction of the bar is <b>blue</b>?', bar, [n,d], cands,
     n+' out of '+d+' parts are blue, so it is '+fr(n,d)+'.');
 }
-function gCompareUnit(){
-  let a=ri(2,10), b=ri(2,10); while(b===a) b=ri(2,10);
-  const bigger = a<b ? [1,a] : [1,b];
-  const other  = a<b ? [1,b] : [1,a];
-  const order=shuffle([0,1]); const pairs=[bigger,other];
-  return { q:'Which fraction is <b>greater</b>?', extra:'',
-    choices: order.map(i=>fr(pairs[i][0],pairs[i][1])), correct: order.indexOf(0),
-    explain: 'Same numerator — the <b>smaller denominator</b> means bigger pieces, so '+fr(bigger[0],bigger[1])+' is greater.',
-    answerText: fr(bigger[0],bigger[1]) };
+function gCompare4(mode){
+  let pairs=[];
+  if(mode==='unit'){ const ds=shuffle([2,3,4,5,6,7,8,9,10,12]).slice(0,4); pairs=ds.map(d=>[1,d]); }
+  else if(mode==='sameD'){ const d=ri(6,12); const ns=shuffle([...Array(d-1).keys()].map(i=>i+1)).slice(0,4); pairs=ns.map(n=>[n,d]); }
+  else { const n=ri(1,3); const ds=shuffle([n+1,n+2,n+3,n+4,n+5,n+6,n+7].filter(x=>x<=12)).slice(0,4); pairs=ds.map(d=>[n,d]); }
+  const wantMax=Math.random()<0.5;
+  let bestI=0;
+  for(let i=1;i<4;i++){
+    const better = wantMax ? pairs[i][0]*pairs[bestI][1] > pairs[bestI][0]*pairs[i][1]
+                           : pairs[i][0]*pairs[bestI][1] < pairs[bestI][0]*pairs[i][1];
+    if(better) bestI=i;
+  }
+  const why = mode==='sameD' ? 'Same denominator: compare the numerators.'
+                             : 'Same numerator: the smaller denominator means bigger pieces.';
+  return { q:'Which fraction is the <b>'+(wantMax?'greatest':'smallest')+'</b>?', extra:'',
+    choices:pairs.map(p=>fr(p[0],p[1])), correct:bestI,
+    explain:why+' The '+(wantMax?'greatest':'smallest')+' is '+fr(pairs[bestI][0],pairs[bestI][1])+'.',
+    answerText: fr(pairs[bestI][0],pairs[bestI][1]) };
 }
+function gCompareUnit(){ return gCompare4('unit'); }
 function gAddSame(){
   const d=ri(3,8);
   const a=ri(1,d-2), b=ri(1,d-a-1);
@@ -448,25 +469,8 @@ function gPickEquiv(){
     cands.filter(c=>!eq(c[0],c[1],n,d)),
     fr(n,d)+' × '+k+' on top and bottom gives '+fr(k*n,k*d)+'.');
 }
-function gCompareSameD(){
-  const d=ri(4,12); let a=ri(1,d-1), b=ri(1,d-1); while(b===a) b=ri(1,d-1);
-  const big=Math.max(a,b), sml=Math.min(a,b);
-  const order=shuffle([0,1]); const pairs=[[big,d],[sml,d]];
-  return { q:'Which fraction is <b>greater</b>?', extra:'',
-    choices:order.map(i=>fr(pairs[i][0],pairs[i][1])), correct:order.indexOf(0),
-    explain:'Same denominator — compare numerators: '+big+' > '+sml+', so '+fr(big,d)+' is greater.',
-    answerText: fr(big,d) };
-}
-function gCompareSameN(){
-  const n=ri(1,4); let a=ri(n+1,12), b=ri(n+1,12); while(b===a) b=ri(n+1,12);
-  const big = a<b ? [n,a] : [n,b];
-  const oth = a<b ? [n,b] : [n,a];
-  const order=shuffle([0,1]); const pairs=[big,oth];
-  return { q:'Which fraction is <b>greater</b>?', extra:'',
-    choices:order.map(i=>fr(pairs[i][0],pairs[i][1])), correct:order.indexOf(0),
-    explain:'Same numerator — the <b>smaller denominator</b> means bigger pieces, so '+fr(big[0],big[1])+' is greater.',
-    answerText: fr(big[0],big[1]) };
-}
+function gCompareSameD(){ return gCompare4('sameD'); }
+function gCompareSameN(){ return gCompare4('sameN'); }
 function gSubSame(){
   const d=ri(4,12); const a=ri(2,d-1); const b=ri(1,a-1);
   const s=a-b;
@@ -486,25 +490,7 @@ function gMakeOne(){
   return finishFrac(fr(a,d)+' + ? = 1 &nbsp; What is the missing fraction?','',[s,d],cands,
     '1 whole = '+fr(d,d)+'. You need '+d+' − '+a+' = '+s+' more parts: '+fr(s,d)+'.');
 }
-function gGreatest3(){
-  const mode=pick(['sameD','sameN','unit']);
-  let pairs=[];
-  if(mode==='sameD'){ const d=ri(5,12); const ns=shuffle([...Array(d-1).keys()].map(i=>i+1)).slice(0,3); pairs=ns.map(n=>[n,d]); }
-  else if(mode==='sameN'){ const n=ri(1,3); const ds=shuffle([n+1,n+2,n+3,n+4,n+5,n+6].filter(x=>x<=12)).slice(0,3); pairs=ds.map(d=>[n,d]); }
-  else { const ds=shuffle([2,3,4,5,6,8,10,12]).slice(0,3); pairs=ds.map(d=>[1,d]); }
-  const wantMax = Math.random()<0.5;
-  let bestI=0;
-  for(let i=1;i<3;i++){
-    const better = wantMax ? pairs[i][0]*pairs[bestI][1] > pairs[bestI][0]*pairs[i][1]
-                           : pairs[i][0]*pairs[bestI][1] < pairs[bestI][0]*pairs[i][1];
-    if(better) bestI=i;
-  }
-  return { q:'Which fraction is the <b>'+(wantMax?'greatest':'smallest')+'</b>?', extra:'',
-    choices:pairs.map(p=>fr(p[0],p[1])), correct:bestI,
-    explain:(mode==='sameD'?'Same denominator — compare the numerators.':'Same numerator — smaller denominator means bigger pieces.')+
-      ' The '+(wantMax?'greatest':'smallest')+' is '+fr(pairs[bestI][0],pairs[bestI][1])+'.',
-    answerText: fr(pairs[bestI][0],pairs[bestI][1]) };
-}
+function gGreatest4(){ return gCompare4(pick(['sameD','sameN','unit'])); }
 function gSimplest(){
   const base=pick(SIMPLE.filter(p=>p[1]<=6));
   const [n,d]=base;
@@ -552,10 +538,11 @@ function gMissFactor(){
 function gMulMixed(){ return Math.random()<0.5 ? gMulHard() : gMul([3,4,6,7,8,9]); }
 
 /* ===== AREA & PERIMETER ===== */
-function rectHtml(L,B,showB){
-  const w=Math.min(240,L*20), h=Math.min(110,B*16);
-  return '<div style="padding-right:60px"><div class="rectBox" style="width:'+w+'px;height:'+Math.max(34,h)+'px">'+L+' cm'+
-         '<span class="rectLabelB">'+(showB===false?'?':B+' cm')+'</span></div></div>';
+function rectHtml(L,B){
+  const w=Math.min(240,L*20), h=Math.max(34,Math.min(110,B*16));
+  return '<div style="display:inline-block;padding:0 56px 0 8px">'+
+         '<div class="rectBox" style="width:'+w+'px;height:'+h+'px"><span class="rectLabelB">'+B+' cm</span></div>'+
+         '<div class="rectLabelL" style="width:'+w+'px">'+L+' cm</div></div>';
 }
 function gPeri(){
   const L=ri(3,12), B=ri(2,L); const p=2*(L+B);
@@ -608,7 +595,7 @@ function gBonds(){
 function gMulP2easy(){ return gMul([2,5,10]); }
 function gMulP2hard(){ return gMul([2,3,4,5,10]); }
 function gCompareNum(){
-  const ns=new Set(); while(ns.size<3) ns.add(ri(10,999));
+  const ns=new Set(); while(ns.size<4) ns.add(ri(10,999));
   const arr=[...ns];
   const wantMax=Math.random()<0.5;
   const best=wantMax?Math.max(...arr):Math.min(...arr);
@@ -618,7 +605,7 @@ function gCompareNum(){
     answerText:String(best) };
 }
 
-/* ===== HEURISTICS — PUZZLE CAVES (typed answers, no MCQ) ===== */
+/* ===== HEURISTICS, PUZZLE CAVES (typed answers, no MCQ) ===== */
 function finishTyped(qHtml, answer, explain){
   return { q:qHtml, extra:'', typed:true, answer, choices:[], correct:-1,
            explain, answerText:''+answer };
@@ -677,22 +664,22 @@ const TOPICS={
       compare:   {label:'Comparing fractions',             tip:'Two rules: same denominator → compare numerators; same numerator → smaller denominator wins. Draw two bars side by side when stuck.'},
       order:     {label:'Ordering fractions',              tip:'Use the same comparing rules across 3 fractions. Start with unit fractions (1/2, 1/3, 1/4...).'},
       equivalent:{label:'Equivalent fractions',            tip:'Multiply top AND bottom by the same number. Chant the families: 1/2 = 2/4 = 3/6 = 4/8.'},
-      addsub:    {label:'Adding & subtracting (same denominator)', tip:'Only numerators add or subtract — the denominator is the piece size and stays the same.'},
+      addsub:    {label:'Adding & subtracting (same denominator)', tip:'Only numerators add or subtract: the denominator is the piece size and stays the same.'},
       wholes:    {label:'Making one whole',                tip:'Remember 1 = 8/8 = 12/12. Ask: "how many more parts to fill the whole?"'},
       simplest:  {label:'Simplest form',                   tip:'Divide top and bottom by the same number until you can\'t. Drill the common ones: 4/6→2/3, 6/8→3/4, 8/12→2/3.'}
     },
     pools:{
       1:[[gPicIdentify,'identify'],[gCompareUnit,'compare'],[gAddSame,'addsub']],
       2:[[gEqMissing,'equivalent'],[gPickEquiv,'equivalent'],[gCompareSameD,'compare'],[gCompareSameN,'compare'],[gSubSame,'addsub'],[gAddSame,'addsub']],
-      3:[[gSubFromOne,'wholes'],[gMakeOne,'wholes'],[gGreatest3,'order'],[gSimplest,'simplest'],[gEqMissing,'equivalent'],[gPickEquiv,'equivalent']]
+      3:[[gSubFromOne,'wholes'],[gMakeOne,'wholes'],[gGreatest4,'order'],[gSimplest,'simplest'],[gEqMissing,'equivalent'],[gPickEquiv,'equivalent']]
     }
   },
   tables:{
-    label:'Times-Table Volcano', short:'Times tables', e:'🌋',
+    label:'Times Table Volcano', short:'Times tables', e:'🌋',
     skills:{
-      mult:   {label:'Multiplication facts',  tip:'Drill the 6, 7, 8, 9 tables in short bursts. Skip-counting songs help: 6, 12, 18, 24…'},
+      mult:   {label:'Multiplication facts',  tip:'Drill the 6, 7, 8, 9 tables in short bursts. Skip counting songs help: 6, 12, 18, 24…'},
       div:    {label:'Division facts',        tip:'Always flip to multiplication: "72 ÷ 8 = ? " becomes "8 × ? = 72".'},
-      missing:{label:'Missing number facts',  tip:'Cover-up game: write 7 × ▢ = 42 on paper and race to fill the box.'}
+      missing:{label:'Missing number facts',  tip:'Cover up game: write 7 × ▢ = 42 on paper and race to fill the box.'}
     },
     pools:{
       1:[[gMulEasy,'mult'],[gMulEasy,'mult'],[gDivFact,'div']],
@@ -718,7 +705,7 @@ const TOPICS={
     skills:{
       addsub: {label:'Addition & subtraction', tip:'Count on for small sums; column method for bigger ones. Build up: within 20, then 100, then 1000.'},
       bonds:  {label:'Number bonds',           tip:'Drill pairs that make 10, 20 and 100 until instant: 3+7, 13+7, 40+60, 25+75.'},
-      mult:   {label:'Times tables (2, 3, 4, 5, 10)', tip:'P2 tables: 2, 5, 10 first, then 3 and 4. Skip-count out loud while clapping.'},
+      mult:   {label:'Times tables (2, 3, 4, 5, 10)', tip:'P2 tables: 2, 5, 10 first, then 3 and 4. Skip count out loud while clapping.'},
       compare:{label:'Comparing numbers',      tip:'Compare hundreds first, then tens, then ones.'}
     },
     pools:{
@@ -730,7 +717,7 @@ const TOPICS={
   heuristics:{
     label:'Puzzle Caves', short:'Heuristics', e:'🧩',
     skills:{
-      pattern:   {label:'Number patterns',  tip:'Find the jump between numbers first — write the differences above the gaps.'},
+      pattern:   {label:'Number patterns',  tip:'Find the jump between numbers first: write the differences above the gaps.'},
       backwards: {label:'Working backwards',tip:'Start from the answer and undo each step in reverse: + undoes −, × undoes ÷.'},
       guesscheck:{label:'Guess and check',  tip:'Make a sensible first guess, check it, adjust up or down. A small table keeps it tidy.'},
       bonds:     {label:'Making 100',       tip:'Make the next ten first, then add the remaining tens.'}
@@ -748,20 +735,42 @@ function makeQuestionFor(topic,level){
   q.level=level; q.skill=skill;
   return q;
 }
+/* Pre-generate a full quiz set with no duplicate questions across the whole run. */
+function buildSetFor(topic, perLevel){
+  const set={1:[],2:[],3:[]};
+  const seen=new Set();
+  for(const lvl of [1,2,3]){
+    let guard=0;
+    while(set[lvl].length<perLevel && guard<500){
+      guard++;
+      const q=makeQuestionFor(topic,lvl);
+      const key=(q.q+'|'+(q.extra||'')).replace(/\s+/g,'');
+      if(seen.has(key)) continue;
+      seen.add(key);
+      set[lvl].push(q);
+    }
+  }
+  return set;
+}
 /* ================= GEN-END ================= */
 
 let TOPIC='fractions';
-function makeQuestion(level){ return makeQuestionFor(TOPIC,level); }
+let QSET=null;
+function makeQuestion(level){
+  if(QSET && QSET[level] && QSET[level].length) return QSET[level].shift();
+  return makeQuestionFor(TOPIC,level);
+}
 
 const MAP_NODES=[
-  {id:'p2',        e:'🏖️', name:'Number Beach',         blurb:'Add, subtract, number bonds & first tables (P2)'},
-  {id:'fractions', e:'🌳', name:'Fraction Forest',      blurb:'Halves, quarters and fraction magic (P3)'},
-  {id:'tables',    e:'🌋', name:'Times-Table Volcano',  blurb:'Multiplication & division facts (P3)'},
-  {id:'geometry',  e:'🏰', name:'Perimeter Palace',     blurb:'Area & perimeter of squares and rectangles (P3)'},
-  {id:'heuristics',e:'🧩', name:'Puzzle Caves',         blurb:'Patterns & puzzles — TYPE your answer, no choices!'},
-  {id:'decimals',  e:'🌊', name:'Decimal Bay',          blurb:'Coming soon (P4)', locked:true},
-  {id:'angles',    e:'🏛️', name:'Angle Ruins',          blurb:'Coming soon (P4)', locked:true},
-  {id:'percent',   e:'⛰️', name:'Percentage Peak',      blurb:'Coming soon (P5)', locked:true}
+  {id:'p2',        e:'🏖️', name:'Number Beach',        blurb:'Add, subtract, number bonds & first tables (P2)', grades:['P2']},
+  {id:'fractions', e:'🌳', name:'Fraction Forest',     blurb:'Halves, quarters and fraction magic (P3)', grades:['P3']},
+  {id:'tables',    e:'🌋', name:'Times Table Volcano', blurb:'Multiplication & division facts (P2, P3)', grades:['P2','P3']},
+  {id:'geometry',  e:'🏰', name:'Perimeter Palace',    blurb:'Area & perimeter of squares and rectangles (P3, P4)', grades:['P3','P4']},
+  {id:'heuristics',e:'🧩', name:'Puzzle Caves',        blurb:'Patterns & puzzles. TYPE your answer, no choices!', grades:['P2','P3','P4','P5','P6']},
+  {id:'decimals',  e:'🌊', name:'Decimal Bay',         blurb:'Coming soon (P4)', locked:true, grades:['P4']},
+  {id:'angles',    e:'🏛️', name:'Angle Ruins',         blurb:'Coming soon (P4, P5)', locked:true, grades:['P4','P5']},
+  {id:'percent',   e:'⛰️', name:'Percentage Peak',     blurb:'Coming soon (P5, P6)', locked:true, grades:['P5','P6']},
+  {id:'algebra',   e:'🌀', name:'Algebra Atoll',       blurb:'Coming soon (P6)', locked:true, grades:['P6']}
 ];
 
 /* ---------------- Storage ---------------- */
@@ -778,6 +787,8 @@ if(!AVATARS.some(a=>a[0]===DB.avatar)) DB.avatar='🦄';
 DB.sessions=DB.sessions||[];
 DB.fame=DB.fame||[];
 DB.timed=!!DB.timed;
+const GRADES=['P2','P3','P4','P5','P6'];
+if(!GRADES.includes(DB.grade)) DB.grade='P3';
 
 /* ---------------- Sound ---------------- */
 let AC=null, muted=!!DB.muted;
@@ -806,7 +817,7 @@ const sfx={
 const MONSTERS=[
   {e:'🟢',name:'Gloop the Slime',hp:50,dmg:10},
   {e:'🦇',name:'Flapper',hp:60,dmg:12},
-  {e:'👻',name:'Boo-Boo',hp:70,dmg:12},
+  {e:'👻',name:'BooBoo',hp:70,dmg:12},
   {e:'🕷️',name:'Skitters',hp:80,dmg:14},
   {e:'🧟',name:'Grumbles',hp:90,dmg:14},
   {e:'🐉',name:'FRACTOR the Dragon 👑',hp:140,dmg:16}
@@ -839,6 +850,13 @@ function renderStart(){
   });
   $('modeRelax').classList.toggle('sel',!DB.timed);
   $('modeTimed').classList.toggle('sel',DB.timed);
+  const gr=$('gradeRow'); gr.innerHTML='';
+  GRADES.forEach(gd=>{
+    const b=document.createElement('button');
+    b.className='gradeBtn'+(gd===DB.grade?' sel':''); b.textContent=gd;
+    b.addEventListener('click',()=>{ DB.grade=gd; saveData(); renderStart(); });
+    gr.appendChild(b);
+  });
   $('muteBtn').textContent=muted?'🔇':'🔊';
 }
 $('nameInput').addEventListener('input',e=>{ DB.name=e.target.value.trim()||'Hero'; saveData(); });
@@ -848,7 +866,8 @@ $('modeTimed').addEventListener('click',()=>{ DB.timed=true; saveData(); renderS
 /* ----- map ----- */
 function renderMap(){
   const mp=$('mapPath'); mp.innerHTML='';
-  MAP_NODES.forEach((n,i)=>{
+  $('mapSub').textContent='Quests for '+DB.grade+'. Where will you adventure today?';
+  MAP_NODES.filter(n=>n.grades.includes(DB.grade)).forEach((n,i)=>{
     if(i>0){ const d=document.createElement('div'); d.className='pathDots'; d.textContent='• • •'; mp.appendChild(d); }
     const b=document.createElement('button');
     b.className='mapNode '+(i%2?'even':'odd')+(n.locked?' locked':'');
@@ -863,6 +882,7 @@ function renderMap(){
 /* ----- battle ----- */
 function newGame(){
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
+  QSET=buildSetFor(TOPIC,30);
   S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
       rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
       wrongs:[], skills:{}, busy:false, t0:Date.now(), timed:DB.timed };
@@ -1105,8 +1125,8 @@ function endGame(win){
   $('endTitle').textContent=win?'VICTORY!':'So close, '+esc(DB.name)+'!';
   let msg = win
     ? esc(DB.name)+' the '+avClass()+' saved all 6 Star Crystals of '+TOPICS[TOPIC].label+'!'
-    : 'You rescued '+S.mi+' crystal'+(S.mi===1?'':'s')+' this time. Every battle makes your magic stronger — try again!';
-  if(win && fameRank===0) msg+=' 🥇 NEW RECORD — fastest run ever!';
+    : 'You rescued '+S.mi+' crystal'+(S.mi===1?'':'s')+' this time. Every battle makes your magic stronger. Try again!';
+  if(win && fameRank===0) msg+=' 🥇 NEW RECORD, fastest run ever!';
   else if(win && fameRank>0) msg+=' You made the Hall of Fame at #'+(fameRank+1)+'!';
   $('endMsg').textContent=msg;
   $('stCorrect').textContent=S.correct+' / '+S.total;
@@ -1137,7 +1157,7 @@ function renderFame(){
   $('tabGlobal').classList.toggle('sel',fameTab==='global');
   $('tabLocal').classList.toggle('sel',fameTab==='local');
   const fl=$('fameList');
-  const emptyMsg='<div style="color:#a99fd8;text-align:center;padding:10px">No victories yet — beat Fractor to claim the first spot! 🐉</div>';
+  const emptyMsg='<div style="color:#a99fd8;text-align:center;padding:10px">No victories yet. Beat Fractor to claim the first spot! 🐉</div>';
   if(fameTab==='local'){
     fl.innerHTML = DB.fame.length ? DB.fame.map(fameRowHtml).join('') : emptyMsg;
   } else {
@@ -1146,10 +1166,10 @@ function renderFame(){
       if(fameTab!=='global') return;
       const rows=(d&&d.rows)||[];
       fl.innerHTML = rows.length ? rows.map(fameRowHtml).join('')
-        : '<div style="color:#a99fd8;text-align:center;padding:10px">No world victories yet — be the first! 🐉</div>';
+        : '<div style="color:#a99fd8;text-align:center;padding:10px">No world victories yet. Be the first! 🐉</div>';
     }).catch(()=>{
       if(fameTab!=='global') return;
-      fl.innerHTML='<div style="color:#a99fd8;text-align:center;padding:10px">World leaderboard is warming up — showing this device instead.</div>'+
+      fl.innerHTML='<div style="color:#a99fd8;text-align:center;padding:10px">World leaderboard is warming up, showing this device instead.</div>'+
         (DB.fame.length?DB.fame.map(fameRowHtml).join(''):'');
     });
   }
@@ -1161,7 +1181,7 @@ function renderParent(){
   const ss=DB.sessions;
   $('parentIntro').textContent = ss.length
     ? esc(DB.name)+' has played '+ss.length+' session'+(ss.length===1?'':'s')+'. Data below covers all of them.'
-    : 'No sessions played yet — data will appear here after the first game.';
+    : 'No sessions played yet. Data will appear here after the first game.';
 
   /* aggregate per topic+skill */
   const agg={};
@@ -1188,8 +1208,8 @@ function renderParent(){
 
   const focus=rows.filter(r=>r.n>=4 && r.pct<75).slice(0,3);
   $('focusList').innerHTML = focus.length
-    ? focus.map(r=>'<div class="focus"><b>'+r.label+'</b> ('+r.tlabel+') — '+r.pct+'% over '+r.n+' questions.<br>'+r.tip+'</div>').join('')
-    : (rows.length? '<div style="color:#7dffb0;font-size:15px;text-align:center">No weak areas detected right now — accuracy is solid across skills. 🎉</div>'
+    ? focus.map(r=>'<div class="focus"><b>'+r.label+'</b> ('+r.tlabel+'): '+r.pct+'% over '+r.n+' questions.<br>'+r.tip+'</div>').join('')
+    : (rows.length? '<div style="color:#7dffb0;font-size:15px;text-align:center">No weak areas detected right now: accuracy is solid across skills. 🎉</div>'
                    : '<div style="color:#a99fd8;font-size:14px">Play a few sessions first.</div>');
 
   const recent=ss.slice(-10).reverse();
@@ -1203,7 +1223,7 @@ function renderParent(){
   let tl='';
   if(last3!==null && prev3!==null){
     const d=last3-prev3;
-    tl = 'Trend: '+(d>3?'<span class="trendUp">▲ improving</span>':d<-3?'<span class="trendDown">▼ dipping</span>':'<span class="trendFlat">— steady</span>')+
+    tl = 'Trend: '+(d>3?'<span class="trendUp">▲ improving</span>':d<-3?'<span class="trendDown">▼ dipping</span>':'<span class="trendFlat">● steady</span>')+
          ' (last 3 sessions '+Math.round(last3)+'% vs previous 3 sessions '+Math.round(prev3)+'%)';
   } else if(last3!==null){
     tl='Trend: play '+(ss.length<6?(6-ss.length):'more')+' more sessions for a reliable trend.';

@@ -260,6 +260,11 @@
   @keyframes blink { 50% { stroke: var(--red); stroke-width: 3.4; } }
   .viewbox.locked svg { opacity: .3; filter: saturate(.12); }
   .viewbox.locked .cap { color: var(--red); }
+  /* A live question always wins. The picture holding the ringed square is never dimmed, even
+     while it is still locked for painting, because she has to be able to SEE the ring. This
+     rule sits after .locked on purpose: same weight, later wins. */
+  .viewbox.asking svg { opacity: 1; filter: none; }
+  .viewbox.asking .cap { color: var(--red); font-weight: 800; }
   .turnsteps { margin: 8px 0 0 20px; font-size: 14.5px; font-weight: 600; }
   .turnsteps li { margin-bottom: 5px; }
   .turnsteps b { font-weight: 800; }
@@ -2842,7 +2847,7 @@ var INFER = (function () {
     fromFace: false, cheered: {}, readsRight: 0, readsAsked: 0,
     paint: new Array(24).fill(null), paintColour: 'white', paintMsg: null, paintSuspects: [],
     paintIntent: 'match', holdOk: false, holdMsg: null, holdNeed: [], paintPath: 'infer',
-    sideHold: false, sideMsg: null, whiteDown: false,
+    sideHold: false, sideMsg: null, whiteDown: false, whiteMsg: null,
     inferRes: null, inferQ: null, inferSpot: null, inferMsg: null, inferFilled: null, inferAsked: 0,
     diag: null,
     says: null, sayKind: '',
@@ -2950,6 +2955,11 @@ var INFER = (function () {
     return out + '</svg>';
   }
 
+  /* ===== VIEWS START =====
+     The two painting pictures, and the one rule that says which picture holds which square.
+     Fenced so the gate can pull these exact functions out of the shipped file and prove that
+     the square inside the red ring IS the square the question is about. Depends only on C, C3,
+     app.scheme, big(), HEX, RED and INK. */
   /* ---------------------------------------------------------------- iso pictures */
   function add(a, b) { return [a[0] + b[0], a[1] + b[1]]; }
   function mul(a, k) { return [a[0] * k, a[1] * k]; }
@@ -2999,11 +3009,18 @@ var INFER = (function () {
         + q.pts.map(function (p) { return p[0] + ',' + p[1]; }).join(' ')
         + '" fill="' + (col || '#efece6') + '" stroke="' + (marked ? RED : INK) + '" stroke-width="' + (marked ? 3.4 : 1.4) + '"/>';
     }
-    if (opts.ring) out += '<circle cx="50" cy="38" r="13.6" fill="none" stroke="' + RED + '" stroke-width="3"/>';
+    if (opts.ring) out += gripRing(50, 38, 13.6);
     out += ringOn(qs, opts.ringSid, function (q) { return C.WHERE[q.slot][q.fac]; }, 11);
     return out + '</svg>';
   }
-  /* point at the square, do not just describe it */
+  /* The grip marker: it says "this is your working corner" and it never means a question.
+     Marked apart from the question ring so the two can never be read as the same thing. */
+  function gripRing(cx, cy, r) {
+    return '<circle class="grip" cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + RED
+      + '" stroke-width="2" stroke-dasharray="5 4" opacity=".5" pointer-events="none"/>';
+  }
+  /* point at the square, do not just describe it. The circle carries the square's own number,
+     so the ring and the question can be checked against each other and never drift apart. */
   function ringOn(quads, sid, sidOf, r) {
     if (sid === undefined || sid === null) return '';
     var i, q, c;
@@ -3011,7 +3028,8 @@ var INFER = (function () {
       q = quads[i];
       if (sidOf(q) !== sid) continue;
       c = q.pts.reduce(function (a, p) { return [a[0] + p[0] / q.pts.length, a[1] + p[1] / q.pts.length]; }, [0, 0]);
-      return '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + r + '" fill="none" stroke="' + RED + '" stroke-width="3"/>';
+      return '<circle class="asked" data-ring-sid="' + sid + '" cx="' + c[0] + '" cy="' + c[1] + '" r="' + r
+        + '" fill="none" stroke="' + RED + '" stroke-width="3" pointer-events="none"/>';
     }
     return '';
   }
@@ -3067,7 +3085,7 @@ var INFER = (function () {
     }
     if (opts.ring) {
       var c = qs[8].pts.reduce(function (a, p) { return [a[0] + p[0] / 4, a[1] + p[1] / 4]; }, [0, 0]);
-      out += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="8.4" fill="none" stroke="' + RED + '" stroke-width="2.6"/>';
+      out += gripRing(c[0], c[1], 8.4);
     }
     out += ringOn(qs, opts.ringSid, function (q) { return q.sid; }, 7.5);
     return out + '</svg>';
@@ -3081,6 +3099,68 @@ var INFER = (function () {
   function isoAny(st, faces, w, opts) { return big() ? state3Iso(st, faces, w, opts) : stateIso(st, faces, w, opts); }
   function viewHome() { return big() ? [C3.U, C3.F, C3.R] : VIEW_HOME; }
   function viewOver() { return big() ? [C3.D, C3.L, C3.B] : VIEW_OVER; }
+
+  /* ---------------------------------------------------------------- which picture holds it
+     The first picture draws the ceiling, the side looking at you and your right. On the small
+     cube those are squares 0 to 11, on the big cube 0 to 26. Everything else is the second
+     picture. One rule, used by the ring, by the little question picture and by the paint lock,
+     so all three can never disagree about where a square lives. */
+  function firstViewCount() { return big() ? 27 : 12; }
+  function viewOfSid(sid) { return sid < firstViewCount() ? 1 : 2; }
+  function viewFaces(which) { return which === 1 ? viewHome() : viewOver(); }
+  /* the square being asked about right now, question or spot check, or null */
+  function liveSid() {
+    if (app.inferQ && app.inferQ.sid !== undefined && app.inferQ.sid !== null) return app.inferQ.sid;
+    if (app.inferSpot && app.inferSpot.sid !== undefined && app.inferSpot.sid !== null) return app.inferSpot.sid;
+    return null;
+  }
+  /* which square this picture must ring: the live one if it lives here, otherwise nothing */
+  function askSid(which) {
+    var sid = liveSid();
+    if (sid === null) return null;
+    return viewOfSid(sid) === which ? sid : null;
+  }
+  /* is this the picture with the ringed square on it */
+  function askOn(which) { return askSid(which) !== null; }
+
+  /* One of the two painting pictures. Two rules keep the ring honest. The grip marker steps
+     aside the moment a question is live, so the only red ring on the screen is the one round
+     the square being asked about. And a locked picture stops looking locked while it is the
+     one holding that ring, because a ring she cannot see is worse than no ring at all. */
+  function paintView(which) {
+    var asking = askOn(which), lock = (which === 2 && !app.holdOk), grip = (liveSid() === null);
+    var svg = which === 1
+      ? (big()
+        ? iso3Svg(viewHome(), 210, { click: true, ring: grip, ringSid: askSid(1), colourOf: paintColourOf, mark: paintMark })
+        : isoSvg(VIEW_HOME, 190, { click: true, ring: grip, ringSid: askSid(1), colourOf: paintColourOf, mark: paintMark }))
+      : (big()
+        ? iso3Svg(viewOver(), 210, { click: true, ringSid: askSid(2), colourOf: paintColourOf, mark: paintMark })
+        : isoSvg(VIEW_OVER, 190, { click: true, ringSid: askSid(2), colourOf: paintColourOf, mark: paintMark }));
+    var cap = asking
+      ? 'The red ring is on this picture. That is the square I am asking about.'
+      : (which === 1
+        ? 'Hold it in your home grip. Ceiling, the side looking at you, and your right.'
+        : (app.holdOk
+          ? 'Three brand new sides: the ceiling, the side looking at you, and your right.'
+          : 'Locked. Do the turn below and check your hold, then this picture opens.'));
+    return '<div class="viewbox paint' + (lock ? ' locked' : '') + (asking ? ' asking' : '') + '">'
+      + svg + '<div class="cap">' + cap + '</div></div>';
+  }
+  /* a small picture of the side that square is on, with the ring on it, so the question is
+     never words alone even when the square is round the back. Same view rule as the big
+     pictures, so the inset and the big picture always ring the same square. */
+  function askInset(sid) {
+    var faces = viewFaces(viewOfSid(sid));
+    var opts = { colourOf: paintColourOf, ringSid: sid, mark: function () { return false; } };
+    return big() ? iso3Svg(faces, 190, opts) : isoSvg(faces, 170, opts);
+  }
+  /* which of the two big pictures she should be looking at, in her words */
+  function askWhichPic(sid) {
+    return viewOfSid(sid) === 1
+      ? 'It is on the FIRST picture, the one at the top.'
+      : 'It is on the SECOND picture, the one underneath.';
+  }
+  /* ===== VIEWS END ===== */
 
   /* ---------------------------------------------------------------- the 3D cube */
   var cubieEls = [], stickerEls = [], ring = null, host = null;
@@ -3747,6 +3827,8 @@ var INFER = (function () {
     app.paintPath = o.paintPath || 'infer';
     app.paintIntent = o.paintIntent || 'match';
     app.sideHold = !!o.sideHold;
+    /* a painting that comes back with a solid white floor arms the rule again by itself */
+    autoPinPainted();
     return true;
   }
   /* white at the floor is knowledge, not a guess: once the flow has established it, the floor
@@ -3767,6 +3849,77 @@ var INFER = (function () {
     for (i = 0; i < f.length; i++) { if (!out[f[i]]) out[f[i]] = 'white'; }
     return out;
   }
+  /* ---------------------------------------------------------------- knowing a whole side
+     A side is settled when every one of its squares is the same colour and we are sure of it.
+     Two ways to be sure: she painted the whole side that colour, or the complete list of cubes
+     that match her painting all agree on it. A settled side is never asked about again, and a
+     settled white floor arms the standing rule on its own, with no question at all. */
+  function facePer() { return big() ? 9 : 4; }
+  function solidFaceColour(paint, f) {
+    var per = facePer(), base = f * per, c = paint[base], i;
+    if (!c) return null;
+    for (i = 1; i < per; i++) { if (paint[base + i] !== c) return null; }
+    return c;
+  }
+  /* the same side, read off every cube still in the running. Only trusted when the list is
+     the whole truth, because a list cut short can agree by accident. */
+  function agreedFaceColour(res, f) {
+    var per = facePer(), base = f * per, want = null, i, k, st, c0;
+    if (!res || res.capped || !res.list || !res.list.length) return null;
+    for (i = 0; i < res.list.length; i++) {
+      st = res.list[i].stickers; c0 = st[base];
+      if (!c0) return null;
+      for (k = 1; k < per; k++) { if (st[base + k] !== c0) return null; }
+      if (want === null) want = c0;
+      else if (want !== c0) return null;
+    }
+    return want;
+  }
+  function armWhiteDown(why) {
+    if (app.whiteDown) return false;
+    app.whiteDown = true;
+    app.whiteMsg = why || null;
+    savePaint();
+    return true;
+  }
+  /* pin every side we can already be sure of. Returns the squares it filled in. */
+  function pinSolid(res) {
+    var per = facePer(), filled = [], f, i, base, col;
+    for (f = 0; f < 6; f++) {
+      base = f * per;
+      col = solidFaceColour(app.paint, f) || agreedFaceColour(res, f);
+      if (!col) continue;
+      for (i = 0; i < per; i++) {
+        /* the assumed floor is already known to the engine, so leave it assumed and undoable */
+        if (app.paint[base + i] || assumedSid(base + i)) continue;
+        app.paint[base + i] = col; filled.push(base + i);
+      }
+      if (f === C.D && col === 'white') {
+        armWhiteDown('I could see it: every square on your floor side is white. So I pinned it.');
+      }
+    }
+    if (filled.length) savePaint();
+    return filled;
+  }
+  /* the cheap half of the same idea, run on every tap: no enumeration, just her own painting */
+  function autoPinPainted() {
+    if (solidFaceColour(app.paint, C.D) === 'white') {
+      armWhiteDown('I could see it: you painted every floor square white. So I pinned it.');
+    }
+  }
+  /* the always available switch: any way into the painter can say where white is */
+  function whiteFloorCard() {
+    if (app.whiteDown) {
+      return '<div class="say good" style="margin-bottom:12px"><span class="head">White is at the floor. I remember.</span>'
+        + (app.whiteMsg ? esc(app.whiteMsg) + ' ' : '')
+        + 'So I never ask you about the floor squares, and I only look at cubes that have white down there. '
+        + '<button class="btn" data-act="unset-white" style="margin-top:8px">That is not right</button></div>';
+    }
+    return '<div class="card" style="margin-bottom:12px"><h2>Where is white?</h2>'
+      + '<div class="lede">If you are holding your cube with the white side pointing at the floor, tell me now. '
+      + 'Then I never ask you about the floor squares, and I only look at cubes with white down there. Fewer questions for you.</div>'
+      + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="set-white">White is at the floor</button></div></div>';
+  }
   function paintReset(fill) {
     app.paint = new Array(big() ? 54 : 24).fill(null);
     if (fill === 'solved') app.paint = C.stateToStickers(C.solved()).map(function (c) { return c; });
@@ -3775,13 +3928,19 @@ var INFER = (function () {
     /* filling it in from a real cube needs no hold checking: those squares never came from
        a turn she made. Hand painting the second picture always does. */
     app.holdOk = (fill === 'solved' || fill === 'screen');
+    /* a painting handed to us whole tells us where white is by itself, so read it, never guess */
+    if (fill) { app.whiteDown = solidFaceColour(app.paint, C.D) === 'white'; app.whiteMsg = null; }
     app.holdMsg = null; app.holdNeed = [];
     app.paintPath = 'infer'; app.inferRes = null; app.inferQ = null; app.inferSpot = null;
     app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0;
   }
   function paintCheck() {
-    var res = C.validate(app.paint);
+    /* the standing rule counts as painted here too, or a cube with white known at the floor
+       would be told its floor squares are still empty */
+    var known = effPaint();
+    var res = C.validate(known);
     if (!res.ok) { app.paintMsg = res.msg; app.paintSuspects = res.suspects; app.diag = null; render(); return; }
+    app.paint = known.slice(); savePaint();
     app.paintMsg = null; app.paintSuspects = [];
     app.scheme = res.scheme;
     app.state = res.state;
@@ -3853,7 +4012,6 @@ var INFER = (function () {
     'Tip it away again. <b>The side that was at the floor is at the ceiling now.</b>',
     'Spin the cube flat to your right, once. <b>The side that was on your left is looking at you now.</b>'
   ];
-  function firstViewCount() { return big() ? 27 : 12; }
   /* the squares the words name by colour, and the one square she has to tap */
   function holdSpec() {
     if (big()) {
@@ -3947,23 +4105,19 @@ var INFER = (function () {
     else if (known.length > 1) find += ' You painted its other squares ' + known.join(' and ') + '.';
     return { find: find, ask: 'What colour is its square ' + LOOK_WORD[pc.face] + '?' };
   }
-  /* which square is being asked about, and which of the two pictures shows it */
-  function askSid(which) {
-    var sid = app.inferQ ? app.inferQ.sid : (app.inferSpot ? app.inferSpot.sid : null);
-    if (sid === null || sid === undefined) return null;
-    var inFirst = sid < firstViewCount();
-    return ((which === 1) === inFirst) ? sid : null;
-  }
-  /* a small picture of the side that square is on, with the ring on it, so the question is
-     never words alone even when the square is round the back */
-  function askInset(sid) {
-    var inFirst = sid < firstViewCount(), faces = inFirst ? viewHome() : viewOver();
-    var opts = { colourOf: paintColourOf, ringSid: sid, mark: function () { return false; } };
-    return big() ? iso3Svg(faces, 190, opts) : isoSvg(faces, 170, opts);
-  }
+  /* the pictures themselves, the ring rule and the little inset all live in the VIEWS block
+     above, so the gate can pull them out whole and prove the ring lands on the asked square */
   function inferRun() {
     var known = effPaint();
     var res = INFER.completions(C, known, { cap: 400, budget: 4000 });
+    /* Anything every remaining cube agrees on is not a guess, it is a fact. Pin whole settled
+       sides before asking anything, so she is never asked about a square we already know.
+       One pass only, and only ever on a complete list. */
+    var guard = 0;
+    while (guard++ < 6 && pinSolid(res).length) {
+      known = effPaint();
+      res = INFER.completions(C, known, { cap: 400, budget: 4000 });
+    }
     app.inferRes = res;
     app.inferQ = null; app.inferSpot = null;
     if (!res.capped && res.count === 0) {
@@ -4028,7 +4182,8 @@ var INFER = (function () {
         + '<div class="views" style="margin-top:10px"><div class="viewbox">' + askInset(app.inferSpot.sid)
         + '<div class="cap">The ringed square</div></div></div>'
         + '<div class="say" style="margin-top:9px"><span class="head">One quick look</span>'
-        + esc(w.find) + ' Is its square ' + esc(LOOK_WORD[INFER.pieceOf(C, app.inferSpot.sid).face]) + ' <b>' + esc(app.inferSpot.colour) + '</b>?</div>'
+        + esc(askWhichPic(app.inferSpot.sid)) + ' ' + esc(w.find) + ' Is its square '
+        + esc(LOOK_WORD[INFER.pieceOf(C, app.inferSpot.sid).face]) + ' <b>' + esc(app.inferSpot.colour) + '</b>?</div>'
         + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="spot-yes">Yes, that is right</button>'
         + '<button class="btn" data-act="spot-no">No, it is a different colour</button></div></div>';
       return h;
@@ -4041,7 +4196,7 @@ var INFER = (function () {
         + '<div class="views" style="margin-top:10px"><div class="viewbox">' + askInset(app.inferQ.sid)
         + '<div class="cap">The ringed square</div></div></div>'
         + '<div class="holdq" style="margin-top:8px">What colour is this square? Tap it.</div>'
-        + '<div class="lede" style="margin-top:2px">' + esc(q.find + ' ' + q.ask) + '</div>'
+        + '<div class="lede" style="margin-top:2px">' + esc(askWhichPic(app.inferQ.sid)) + ' ' + esc(q.find + ' ' + q.ask) + '</div>'
         + '<div class="swatches" style="margin-top:8px">'
         + cols.map(function (c) { return '<button class="swatch" data-infer="' + c + '" title="' + c + '" style="background:' + HEX[c] + '"></button>'; }).join('')
         + '</div>'
@@ -4097,19 +4252,10 @@ var INFER = (function () {
         return '<button class="swatch' + (app.paintColour === c ? ' on' : '') + '" data-col="' + c + '" style="background:' + HEX[c] + '" title="' + c + '"></button>';
       }).join('') + '</span></div>'
       + '<div class="views" style="margin-top:12px">'
-      + '<div class="viewbox paint">' + (big() ? iso3Svg(viewHome(), 210, { click: true, ring: true, ringSid: askSid(1), colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_HOME, 190, { click: true, ring: true, ringSid: askSid(1), colourOf: paintColourOf, mark: paintMark }))
-      + '<div class="cap">Hold it in your home grip. Ceiling, the side looking at you, and your right.</div></div>'
-      + '<div class="viewbox paint' + (app.holdOk ? '' : ' locked') + '">' + (big() ? iso3Svg(viewOver(), 210, { click: true, ringSid: askSid(2), colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_OVER, 190, { click: true, ringSid: askSid(2), colourOf: paintColourOf, mark: paintMark }))
-      + '<div class="cap">' + (app.holdOk
-        ? 'Three brand new sides: the ceiling, the side looking at you, and your right.'
-        : 'Locked. Do the turn below and check your hold, then this picture opens.') + '</div></div>'
+      + paintView(1) + paintView(2)
       + '</div>'
       + '</div>';
-    if (app.whiteDown) {
-      h += '<div class="say good" style="margin-bottom:12px"><span class="head">White is at the floor. I remember.</span>'
-        + 'So I never ask you about the floor squares, and I only look at cubes that have white down there. '
-        + '<button class="btn" data-act="unset-white" style="margin-top:8px">That is not right</button></div>';
-    }
+    h += whiteFloorCard();
     h += inferCard();
     if (app.paintPath === 'paint2') h += holdCard();
     h += '<div class="card">'
@@ -4571,12 +4717,23 @@ var INFER = (function () {
     if (act === 'side-ready') {
       app.sideHold = false; app.sideMsg = null; app.whiteDown = true; savePaint(); render(); return;
     }
-    if (act === 'unset-white') { app.whiteDown = false; savePaint(); app.inferQ = null; app.inferRes = null; render(); return; }
+    /* the standing rule, armed and disarmed from the painter itself, on any way in */
+    if (act === 'set-white') {
+      var wasAsking = !!app.inferQ;
+      app.whiteDown = true; app.whiteMsg = null; savePaint();
+      app.inferQ = null; app.inferSpot = null; app.inferRes = null;
+      if (wasAsking) inferRun(); else render();
+      return;
+    }
+    if (act === 'unset-white') {
+      app.whiteDown = false; app.whiteMsg = null; savePaint();
+      app.inferQ = null; app.inferSpot = null; app.inferRes = null; render(); return;
+    }
     if (act === 'undo') { if (app.undo.length) { app.state = app.undo.pop(); renderCube(); app.says = null; render(); } return; }
     if (act === 'reset') { app.state = C.solved(); app.undo = []; app.cheered = {}; app.diag = null; app.says = null; renderCube(); render(); return; }
     if (act === 'cubesays') { cubeSaysStart(); return; }
     if (act === 'fill-solved') { paintReset('solved'); savePaint(); render(); return; }
-    if (act === 'fill-clear') { paintReset(); app.whiteDown = false; forgetPaint(); render(); return; }
+    if (act === 'fill-clear') { paintReset(); app.whiteDown = false; forgetPaint(); app.whiteMsg = null; render(); return; }
     if (act === 'fill-screen') { paintReset('screen'); savePaint(); render(); return; }
     if (act === 'infer') { app.inferAsked = 0; app.inferMsg = null; inferRun(); return; }
     if (act === 'infer-none') {
@@ -4646,6 +4803,8 @@ var INFER = (function () {
     app.paint[sid] = app.paintColour;
     app.paintSuspects = [];
     app.inferQ = null; app.inferSpot = null; app.inferRes = null; app.inferFilled = null;
+    /* a whole side painted one colour is knowledge the moment the last square lands */
+    autoPinPainted();
     savePaint();
     render();
   });
@@ -4730,7 +4889,7 @@ var INFER = (function () {
     app.scheme = st ? st.scheme : C.PLAIN_SCHEME;
     app.undo = st ? st.undo : [];
     app.paint = new Array(n === 3 ? 54 : 24).fill(null);
-    app.whiteDown = false;
+    app.whiteDown = false; app.whiteMsg = null;
     app.cheered = st ? st.cheered : {};
     app.plan = null; app.idx = 0; app.askState = null; app.auto = false; app.nudge = null;
     app.diag = null; app.quiz = null; app.quizPick = null; app.drill = null; app.chantUndo = null; app.cubeSays = null;

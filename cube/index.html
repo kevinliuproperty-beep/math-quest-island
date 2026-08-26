@@ -29,6 +29,12 @@
     line-height: 1.45;
     padding: 12px;
   }
+  /* iPad: one tap means one tap, and never the zoom-in wobble */
+  button, .swatch, .sticker, .pad, .mess, nav.tabs button, .stage {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(168, 212, 255, .4);
+  }
+  button, .pad, .swatch { min-height: 46px; }
   .round { font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif; }
   h1, h2, h3 { font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif; font-weight: 800; }
 
@@ -74,21 +80,48 @@
     height: 348px; display: grid; place-items: center;
     perspective: 950px; perspective-origin: 50% 44%;
     background: var(--wash); border-radius: 11px; border: 1.5px solid var(--line);
-    touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; overflow: hidden;
+    /* pan-y, not none: a finger sliding up the page still scrolls the page, and only a
+       sideways drag peeks round the cube. touch-action none here would eat the scroll. */
+    touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; overflow: hidden;
   }
   .stage.peeking { cursor: grabbing; }
+  /* the orientation legend: which side is which, in the words the board uses, always on */
+  .stage { position: relative; }
+  .legend {
+    position: absolute; z-index: 3; pointer-events: none;
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+    font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--soft); background: rgba(255,255,255,.86); border: 1.5px solid var(--line);
+    border-radius: 8px; padding: 5px 8px; min-height: 24px; line-height: 1.15;
+  }
+  .legend.you { color: var(--paper); background: var(--ink); border-color: var(--ink); }
+  .legend.lg-ceiling { top: 8px; left: 50%; transform: translateX(-50%); }
+  .legend.lg-floor { bottom: 8px; left: 50%; transform: translateX(-50%); }
+  .legend.lg-you { left: 8px; bottom: 64px; }
+  .legend.lg-right { right: 8px; bottom: 64px; }
+  /* WebKit note: every element in this chain must keep its 3D context. Nothing here may
+     carry overflow, filter, opacity below 1, mask or clip-path, because any of those flatten
+     transform-style back to flat on iOS and the cube collapses into a paper square. The
+     perspective and the overflow clipping live on .stage, which is outside the chain. */
   .cube3d {
-    width: 200px; height: 200px; position: relative; transform-style: preserve-3d;
+    width: 200px; height: 200px; position: relative;
+    -webkit-transform-style: preserve-3d; transform-style: preserve-3d;
     transition: transform .45s cubic-bezier(.3,.7,.3,1);
   }
   .cube3d.nofade { transition: none; }
-  .layer { position: absolute; left: 0; top: 0; width: 200px; height: 200px; transform-style: preserve-3d; }
+  .layer {
+    position: absolute; left: 0; top: 0; width: 200px; height: 200px;
+    -webkit-transform-style: preserve-3d; transform-style: preserve-3d;
+  }
   .layer.spinning { transition: transform .4s ease-in-out; }
-  .cubie { position: absolute; left: 50px; top: 50px; width: 100px; height: 100px; transform-style: preserve-3d; }
+  .cubie {
+    position: absolute; left: 50px; top: 50px; width: 100px; height: 100px;
+    -webkit-transform-style: preserve-3d; transform-style: preserve-3d;
+  }
   .cubie .face {
     position: absolute; left: 0; top: 0; width: 100px; height: 100px;
     background: #26241f; border-radius: 11px;
-    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; backface-visibility: hidden;
   }
   .cubie .face.sticker-face { padding: 6px; background: #26241f; }
   .cubie .face.sticker-face i {
@@ -187,6 +220,13 @@
   .say.oops { border-color: var(--red); background: #fdf1f2; }
   .say.panic { border: 2px dashed var(--red); background: #fdf1f2; }
   .say .head { font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; font-weight: 800; font-size: 15px; display: block; margin-bottom: 2px; }
+  /* the tutorial layer: one always visible line saying why the step makes sense */
+  .why {
+    margin-top: 7px; padding: 7px 10px; border-left: 4px solid var(--hilite);
+    background: var(--pale); border-radius: 0 8px 8px 0;
+    font-size: 13.5px; font-weight: 600; color: var(--soft); line-height: 1.35;
+  }
+  .why b { color: var(--ink); font-weight: 800; }
   .say.good .head { color: var(--green); }
   .say.oops .head, .say.panic .head { color: var(--red); }
 
@@ -207,10 +247,15 @@
   /* ---------- painter ---------- */
   .views { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   .viewbox { text-align: center; }
-  .viewbox svg { display: block; }
+  .viewbox svg { display: block; margin: 0 auto; }
   .viewbox .cap { font-size: 12px; font-weight: 700; color: var(--soft); margin-top: 4px; max-width: 190px; line-height: 1.25; }
+  /* the painting pictures grow to the room they are given, so a single square on the big
+     cube is a finger sized target on an iPad instead of a pin head */
+  .viewbox.paint { flex: 1 1 300px; max-width: 400px; }
+  .viewbox.paint svg { width: 100%; max-width: 400px; height: auto; }
+  .viewbox.paint .cap { max-width: none; }
   .sticker { cursor: pointer; }
-  .sticker:hover { stroke: var(--red); stroke-width: 2.6; }
+  .sticker:hover, .sticker:active { stroke: var(--red); stroke-width: 2.6; }
   .suspect { animation: blink 1s steps(2, start) infinite; }
   @keyframes blink { 50% { stroke: var(--red); stroke-width: 3.4; } }
   .viewbox.locked svg { opacity: .3; filter: saturate(.12); }
@@ -221,7 +266,7 @@
   .holdq { font-size: 16px; font-weight: 800; margin-top: 10px; }
   .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
   .swatch {
-    width: 40px; height: 40px; border-radius: 9px; border: 2px solid var(--ink); cursor: pointer; padding: 0;
+    width: 46px; height: 46px; border-radius: 9px; border: 2px solid var(--ink); cursor: pointer; padding: 0;
   }
   .swatch.on { box-shadow: 0 0 0 3px var(--red); }
 
@@ -257,7 +302,7 @@
 </style>
 </head>
 <body>
-<noscript><div class="card" style="border-color:#c41e3a">This page needs JavaScript switched on. Ask Dad to open it in a normal browser window.</div></noscript>
+<noscript><div class="card" style="border-color:#c41e3a">This page needs JavaScript switched on. Ask a grown-up to open it in a normal browser window.</div></noscript>
 <div class="wrap">
 
   <header class="app-head">
@@ -286,10 +331,16 @@
   <div class="studio">
     <div class="stage-col">
       <div class="card stage-card">
-        <div class="stage" id="stage"><div class="cube3d" id="cube3d"></div></div>
+        <div class="stage" id="stage"><div class="cube3d" id="cube3d"></div>
+          <span class="legend lg-ceiling">Ceiling</span>
+          <span class="legend you lg-you">You</span>
+          <span class="legend lg-right">Your right</span>
+          <span class="legend lg-floor">Floor</span>
+        </div>
         <div class="stage-bar">
           <span class="grip-note" id="gripNote">Home grip. The red ring is your working corner.</span>
           <button class="btn" id="peekBtn">Peek at the far side</button>
+          <button class="btn" id="speakBtn" hidden>Voice on</button>
         </div>
       </div>
       <div class="tile-live idle" id="tileLive"></div>
@@ -687,12 +738,14 @@ var CUBE = (function () {
     righty: {
       id: 'righty', name: 'Righty chant', moves: RIGHTY, breath: -1,
       say: 'Whole chants only, never stop halfway.',
-      what: 'The one that does all the work in step 1 and step 2. It swaps your working corner with the block right underneath it.'
+      what: 'The one that does all the work in step 1 and step 2. It swaps your working corner with the block right underneath it.',
+      why: 'It only ever touches your working corner and the block underneath, so finished work is safe.'
     },
     swap: {
       id: 'swap', name: 'Swap chant', moves: SWAP, breath: 7,
       say: '14 moves, in 2 halves with a breath in the middle.',
-      what: 'The step 3 one. It swaps the 2 blocks on your right, so the bar has to sit over on your left.'
+      what: 'The step 3 one. It swaps the 2 blocks on your right, so the bar has to sit over on your left.',
+      why: 'It trades the two blocks on your right, which is why the bar hides on your left.'
     }
   };
   var CHANT_TWICE = 'Do it twice on a finished cube and the cube comes back finished. Every time. That is the drill.';
@@ -904,7 +957,7 @@ var CUBE = (function () {
         /* at the ceiling but not right: pop it down to the floor row with one chant */
         var k = spinsToCorner(here);
         spinBeats(pl, k, 1, 'This block is up at the ceiling, but not in its place. Spin the cube flat until it is at your working corner.');
-        pl.push({ phase: 1, kind: 'righty', chant: 'righty', ord: 1, of: 1, title: 'Righty chant',
+        pl.push({ phase: 1, kind: 'righty', chant: 'righty', ord: 1, of: 1, title: 'Righty chant', pop: true,
           say: 'One Righty chant. The block drops down to the floor row. Your done blocks stay safe.',
           moves: RIGHTY.slice(), blockHi: c });
         prog = whiteProgress(pl.s);
@@ -935,7 +988,7 @@ var CUBE = (function () {
       }
       if (probe.cp[0] !== c || probe.co[0] !== 0) return false;
       for (i = 1; i <= chants; i++) {
-        pl.push({ phase: 1, kind: 'righty', chant: 'righty', ord: i, of: chants, title: 'Righty chant',
+        pl.push({ phase: 1, kind: 'righty', chant: 'righty', ord: i, of: chants, title: 'Righty chant', place: true,
           say: i === chants
             ? 'Righty chant. It lands in its place with its white square at the ceiling.'
             : 'Righty chant. Your block dives down and pops back up. Keep going, whole chants only.',
@@ -1054,6 +1107,48 @@ var CUBE = (function () {
     return true;
   }
 
+  /* ---------------- why each beat makes sense, in her words ----------------
+     Straight from the training module's For-Dad notes and the facts the gate proves:
+     Righty leaves the other three ceiling blocks alone, the Swap chant trades the two blocks
+     on your right, and the matching side count is only ever 0, 1 or all 4. */
+  function whyOf(b) {
+    if (b.why) return b.why;
+    var p = b.phase, k = b.kind;
+    if (p === 1) {
+      if (k === 'whole' && b.ask === 'find-white') return 'Any white square will do to start, because that block is done the moment white points up.';
+      if (k === 'whole' && b.flip) return 'White goes to the floor now, so the messy step above can never touch it.';
+      if (k === 'whole') return 'Spinning the whole cube flat moves nothing on it, so your done blocks stay done.';
+      if (k === 'look') return 'Its other two colours must touch matching colours, and that is what says where it lives.';
+      if (k === 'righty' && b.pop) return 'Righty only swaps your working corner with the block underneath, so done blocks never move.';
+      if (k === 'righty') return 'Each chant dives your block down and pops it back a new way round.';
+      if (k === 'floor') return 'Nothing in the floor row is finished yet, so you can spin it freely.';
+      if (k === 'skip') return 'Your layer is already built, so there is nothing for this step to do.';
+    }
+    if (p === 2) {
+      if (k === 'warn') return 'The mess is Righty keeping your white blocks safe. Six chants always puts them back.';
+      if (k === 'ceiling') return 'Only the ceiling row moves, so the white floor underneath stays exactly as it was.';
+      if (k === 'righty') return 'Every two chants the white floor comes back, so only look after a whole pair.';
+      if (k === 'skip') return 'All four ceiling squares are yellow already, so a chant here would only break it.';
+      if (k === 'cheer') return 'The white floor rebuilt itself, because six Righty chants always land everything back home.';
+    }
+    if (p === 3) {
+      if (k === 'read') return 'Two sides can never match on their own, so the count is only 0, 1 or 4.';
+      if (k === 'guard') return 'All four match, so every block is home. A chant now would trade them away.';
+      if (k === 'bar') return 'The bar is the pair that already matches, so it has to stay out of the way.';
+      if (k === 'whole') return 'The chant swaps the two blocks on your right, so the bar hides on your left.';
+      if (k === 'swap' && b.nobar) return 'With no bar, one chant makes one. Do it twice and you are back where you started.';
+      if (k === 'swap') return 'The Swap chant trades the two blocks on your right and leaves the bar alone.';
+      if (k === 'ceiling') return 'Every block is home already, so one ceiling spin lines all the colours up.';
+      if (k === 'done') return 'Three steps and two chants walked every block back to the place its colours named.';
+    }
+    return '';
+  }
+  function stampWhy(beats) {
+    var i;
+    for (i = 0; i < beats.length; i++) beats[i].why = whyOf(beats[i]);
+    return beats;
+  }
+
   /* build the whole plan from where the cube is now */
   function buildPlan(state, hint) {
     var pl = new Planner(state), i, census = {};
@@ -1061,7 +1156,7 @@ var CUBE = (function () {
     if (facesAllOneColour(state)) {
       pl.push({ phase: 3, kind: 'done', title: 'Already solved', moves: [], cheer: 'Already solved!',
         say: 'This cube is already solved. Mess it up and I will walk you through it.' });
-      return { ok: true, beats: pl.beats, states: pl.states, end: pl.s, solved: true, census: { alreadySolved: 1 } };
+      return { ok: true, beats: stampWhy(pl.beats), states: pl.states, end: pl.s, solved: true, census: { alreadySolved: 1 } };
     }
     var lay = layerIntact(state);
     if (lay) {
@@ -1085,7 +1180,7 @@ var CUBE = (function () {
     var n0 = matchingSides(pl.s).length;
     census['sides' + n0] = 1;
     if (!planStep3(pl)) return { ok: false, why: 'step3' };
-    return { ok: true, beats: pl.beats, states: pl.states, end: pl.s, solved: facesAllOneColour(pl.s), census: census };
+    return { ok: true, beats: stampWhy(pl.beats), states: pl.states, end: pl.s, solved: facesAllOneColour(pl.s), census: census };
   }
 
   /* ---------------- scrambles and known messes ---------------- */
@@ -1525,32 +1620,38 @@ var CUBE3 = (function () {
     righty: {
       id: 'righty', name: 'Righty chant', moves: RIGHTY, breath: -1,
       say: 'Whole chants only, never stop halfway.',
-      what: 'The one you already know from the small cube. It swaps your working corner with the block right underneath it. Step 3 and step 8.'
+      what: 'The one you already know from the small cube. It swaps your working corner with the block right underneath it. Step 3 and step 8.',
+      why: 'It only ever touches your working corner and the block underneath, so finished work is safe.'
     },
     rightdrop: {
       id: 'rightdrop', name: 'Right-drop chant', moves: RIGHT_DROP, breath: 4,
       say: '8 moves, in 2 halves with a breath in the middle.',
-      what: 'Step 4. It drops the block that is looking at you into the gap on your right.'
+      what: 'Step 4. It drops the block that is looking at you into the gap on your right.',
+      why: 'It lifts the block out of the way, tucks it in, and puts the floor row back.'
     },
     leftdrop: {
       id: 'leftdrop', name: 'Left-drop chant', moves: LEFT_DROP, breath: 4,
       say: '8 moves, in 2 halves with a breath in the middle.',
-      what: 'Step 4. The mirror of Right-drop. It drops the block that is looking at you into the gap on your left.'
+      what: 'Step 4. The mirror of Right-drop. It drops the block that is looking at you into the gap on your left.',
+      why: 'The same trick the other way round, for the gap on your left.'
     },
     crossmaker: {
       id: 'crossmaker', name: 'Cross-maker chant', moves: CROSS_MAKER, breath: -1,
       say: '6 moves. Say it out loud and never stop halfway.',
-      what: 'Step 5. It turns a dot into an L, an L into a line, and a line into the yellow cross.'
+      what: 'Step 5. It turns a dot into an L, an L into a line, and a line into the yellow cross.',
+      why: 'Held the way the picture says, it always moves you one picture closer to the cross.'
     },
     edgespinner: {
       id: 'edgespinner', name: 'Edge-spinner chant', moves: EDGE_SPINNER, breath: -1,
       say: '7 moves. Watch out for the double turn at the end.',
-      what: 'Step 6. It shuffles three of the cross blocks round so their side squares find their middle squares.'
+      what: 'Step 6. It shuffles three of the cross blocks round so their side squares find their middle squares.',
+      why: 'It spins three of the four cross blocks round and leaves the fourth one standing.'
     },
     cornermover: {
       id: 'cornermover', name: 'Corner-mover chant', moves: CORNER_MOVER, breath: 4,
       say: '8 moves, in 2 halves with a breath in the middle.',
-      what: 'Step 7. It shuffles the other three corner blocks round and leaves your working corner alone.'
+      what: 'Step 7. It shuffles the other three corner blocks round and leaves your working corner alone.',
+      why: 'It shuffles the other three corners and leaves your working corner exactly where it is.'
     }
   };
   var CHANT_KEYS = ['righty', 'rightdrop', 'leftdrop', 'crossmaker', 'edgespinner', 'cornermover'];
@@ -1856,13 +1957,17 @@ var CUBE3 = (function () {
   /* ---- step 1: the daisy ---- */
   function dropFromFront(pl, w) {
     /* the block sits between the side looking at you and your right, white square looking at you */
-    ceilRow(pl, freeCeilSpins(pl.s, 0), 1, 'Spin only the ceiling row until an empty petal spot is over on your right.', { edgeHi: w });
+    ceilRow(pl, freeCeilSpins(pl.s, 0), 1, 'Spin only the ceiling row until an empty petal spot is over on your right.',
+      { edgeHi: w, why: 'The empty spot goes first, so the turn cannot knock off a petal you already made.' });
     pl.push({ phase: 1, kind: 'turn', title: 'Right half rolls toward the ceiling', moves: ['R'], edgeHi: w,
+      why: 'Rolling the right half up carries its white square from looking at you to looking up.',
       say: 'Roll the right half toward the ceiling. Your white block climbs up beside the yellow middle square. That is a petal.' });
   }
   function dropFromRight(pl, w) {
-    ceilRow(pl, freeCeilSpins(pl.s, 1), 1, 'Spin only the ceiling row until an empty petal spot is looking at you.', { edgeHi: w });
+    ceilRow(pl, freeCeilSpins(pl.s, 1), 1, 'Spin only the ceiling row until an empty petal spot is looking at you.',
+      { edgeHi: w, why: 'The empty spot goes first, so the turn cannot knock off a petal you already made.' });
     pl.push({ phase: 1, kind: 'turn', title: 'Facing side spins the other way round', moves: ["F'"], edgeHi: w,
+      why: 'This turn swings a white square that was looking sideways round to point at the ceiling.',
       say: 'Spin the facing side the other way round. Your white block climbs up beside the yellow middle square. That is a petal.' });
   }
   function placePetal(pl, w) {
@@ -1870,6 +1975,7 @@ var CUBE3 = (function () {
     if (p < 4) {
       spinFlat(pl, (1 - p + 4) % 4, 1, 'Spin the cube flat until that block is looking at you.', { edgeHi: w });
       pl.push({ phase: 1, kind: 'turn', title: 'Facing side spins like clock hands', moves: ['F'], edgeHi: w,
+        why: 'One turn tips it into the middle row, where the next turn can lift it properly.',
         say: 'Its white square is looking at you, not at the ceiling. Spin the facing side once and the block steps down into the middle row.' });
       dropFromFront(pl, w);
       return;
@@ -1882,15 +1988,20 @@ var CUBE3 = (function () {
     }
     wf = whiteFaceOfEdge(pl.s, p);
     if (wf === D) {
-      ceilRow(pl, freeCeilSpins(pl.s, 1), 1, 'Spin only the ceiling row until an empty petal spot is looking at you.', { edgeHi: w });
-      floorRow(pl, (slotOfEdge(pl.s, w) - 4 - 1 + 4) % 4, 1, 'Spin only the floor row until your white block waits right underneath that empty spot.', { edgeHi: w });
+      ceilRow(pl, freeCeilSpins(pl.s, 1), 1, 'Spin only the ceiling row until an empty petal spot is looking at you.',
+        { edgeHi: w, why: 'The empty spot goes first, so the turn cannot knock off a petal you already made.' });
+      floorRow(pl, (slotOfEdge(pl.s, w) - 4 - 1 + 4) % 4, 1, 'Spin only the floor row until your white block waits right underneath that empty spot.',
+        { edgeHi: w, why: 'No petals live in the floor row, so spinning it there costs you nothing.' });
       pl.push({ phase: 1, kind: 'turn', title: 'Facing side, twice', moves: ['F2'], edgeHi: w,
+        why: 'A half turn carries it straight up with its white square still pointing at the ceiling.',
         say: 'Turn the whole facing side twice. Your white block climbs all the way up and lands beside the yellow middle square. That is a petal.' });
       return;
     }
     spinFlat(pl, (5 - p + 4) % 4, 1, 'Spin the cube flat until that block is down at the floor, looking at you.', { edgeHi: w });
-    ceilRow(pl, freeCeilSpins(pl.s, 1), 1, 'Spin only the ceiling row so there is no petal on the side looking at you.', { edgeHi: w });
+    ceilRow(pl, freeCeilSpins(pl.s, 1), 1, 'Spin only the ceiling row so there is no petal on the side looking at you.',
+      { edgeHi: w, why: 'The empty spot goes first, so the turn cannot knock off a petal you already made.' });
     pl.push({ phase: 1, kind: 'turn', title: 'Facing side spins the other way round', moves: ["F'"], edgeHi: w,
+      why: 'Its white square looks at you, so it steps into the middle row first.',
       say: 'Its white square is looking at you, so it cannot go straight up. Spin the facing side the other way round and it steps into the middle row.' });
     dropFromFront(pl, w);
   }
@@ -1930,6 +2041,7 @@ var CUBE3 = (function () {
       p = slotOfEdge(pl.s, w);
       ceilRow(pl, (1 - p + 4) % 4, 2, 'Spin only the ceiling row until that petal sits directly above the ' + c + ' middle square.', { edgeHi: w });
       pl.push({ phase: 2, kind: 'turn', title: 'Facing side, twice', moves: ['F2'], edgeHi: w,
+        why: 'A half turn drops the petal straight down onto its own colour on the floor.',
         say: 'Turn that whole side twice, a half turn. The petal dives all the way down to the floor.' });
     }
     if (crossCount(pl.s) !== 4) return false;
@@ -2032,8 +2144,8 @@ var CUBE3 = (function () {
       census.kickOut = (census.kickOut || 0) + 1;
       pl.push({ phase: 4, kind: 'guard', title: 'A stuck block', moves: [], guardHit: true,
         say: 'Every block left in the ceiling row has a yellow square on it, and a gap in the middle row is still holding the wrong block. You have to kick that block out first.' });
-      spinFlat(pl, (8 - p + 4) % 4, 4, 'Spin the cube flat until the wrong gap is the one between the side looking at you and the side on your right.');
-      pl.chant('rightdrop', 4, 1, 1, 'Do the Right-drop chant once. Do not line anything up first: any block sitting in the ceiling row does this job, yellow or not. The stuck block pops up into the ceiling row where you can see it.');
+      spinFlat(pl, (8 - p + 4) % 4, 4, 'Spin the cube flat until the wrong gap is the one between the side looking at you and the side on your right.', { guardAim: true });
+      pl.chant('rightdrop', 4, 1, 1, 'Do the Right-drop chant once. Do not line anything up first: any block sitting in the ceiling row does this job, yellow or not. The stuck block pops up into the ceiling row where you can see it.', { kick: true });
     }
     if (midDone(pl.s) !== 4) return false;
     pl.push({ phase: 4, kind: 'cheer', title: 'Two layers', moves: [], cheer: 'Two layers done!',
@@ -2168,10 +2280,89 @@ var CUBE3 = (function () {
     var probe2 = pl.s;
     while (k < 4 && !facesAllOneColour(probe2)) { probe2 = applyMove(probe2, 'U'); k++; }
     if (!facesAllOneColour(probe2)) return false;
-    ceilRow(pl, k, 8, 'Spin only the ceiling row until every side of the cube is one colour.');
+    ceilRow(pl, k, 8, 'Spin only the ceiling row until every side of the cube is one colour.', { final: true });
     pl.push({ phase: 8, kind: 'done', title: 'Solved', moves: [], cheer: 'Solved!',
       say: 'Every side is one colour. You solved the big cube. Eight steps, six chants.' });
     return true;
+  }
+
+  /* ---------------- why each beat makes sense, in her words ----------------
+     Every line comes from the training module's For-Dad rationales and the census facts the
+     gate proves: home counts are only 0, 1 or 4, the cross count is only 0, 2 or 4, a whole
+     pair of Righty chants is the smallest safe look, and any ceiling block can kick. */
+  function whyOf(b) {
+    if (b.why) return b.why;
+    var p = b.phase, k = b.kind;
+    if (p === 1) {
+      if (k === 'whole') return 'Yellow at the ceiling means white is at the floor, which is where the cross belongs.';
+      if (k === 'look') return 'All four white blocks come up here first, so each one can dive straight down after.';
+      if (k === 'cheer') return 'Four white blocks parked round yellow, each one above the colour it has to meet.';
+      if (k === 'skip') return 'Your daisy is already made, so this step has nothing left to do.';
+    }
+    if (p === 2) {
+      if (k === 'look') return 'Its side square names the middle square it has to sit above before it dives.';
+      if (k === 'whole' && b.flip) return 'Turning over puts the cross at the ceiling, where the corner chant cannot disturb it.';
+      if (k === 'whole') return 'Spinning flat moves nothing on the cube, it only brings the work in front of you.';
+      if (k === 'row') return 'Only the ceiling row moves, so the petals stay petals and the floor is untouched.';
+      if (k === 'skip') return 'Your cross is already made, so this step has nothing left to do.';
+    }
+    if (p === 3) {
+      if (k === 'look') return 'Its other two colours name the two middle squares it has to sit between.';
+      if (k === 'whole' && b.flip) return 'White lives at the floor from now on, underneath everything the next steps build.';
+      if (k === 'whole') return 'Spinning the whole cube flat moves nothing on it, so nothing you built moves.';
+      if (k === 'chant' && b.place) return 'Each chant dives it down and pops it back a new way round, so 1, 3 or 5.';
+      if (k === 'chant') return 'One chant drops the wrong block out, and your cross and finished corners stay put.';
+      if (k === 'row') return 'The floor row is unbuilt, so parking your block under its place is free.';
+      if (k === 'skip') return 'Your whole white layer is already built, so we go straight on.';
+    }
+    if (p === 4) {
+      if (k === 'skip') return 'Both rows are already full, so there is nothing left to drop in.';
+      if (k === 'look') return 'No yellow square means the block lives in the middle row, not up at the ceiling.';
+      if (k === 'row') return 'Lining the side square over its own middle square is what makes the drop land right.';
+      if (k === 'guard') return 'A wrong block is stuck in a gap, so something has to push it out first.';
+      if (k === 'whole' && b.guardAim) return 'Aim at the gap, not at the block, because the one going down is the wrong colour.';
+      if (k === 'whole') return 'Spinning flat brings the work in front of you without moving a single block.';
+      if (k === 'read') return 'The ceiling square names the gap it belongs in, to your right or to your left.';
+      if (k === 'chant' && b.kick) return 'Any ceiling block can do the kicking. It just needs to land in the gap.';
+      if (k === 'chant') return 'The chant lifts the block over and tucks it into the gap, leaving the floor alone.';
+      if (k === 'cheer') return 'Two whole layers done, and every chant from here leaves them exactly as they are.';
+    }
+    if (p === 5) {
+      if (k === 'read') return 'There are only ever 0, 2 or 4 yellow flat spots, so those four pictures are everything.';
+      if (k === 'guard') return 'The cross is already there, so a chant now would only take it apart again.';
+      if (k === 'whole') return 'Held the way the picture says, the chant moves you on. Held any other way you wander.';
+      if (k === 'chant') return 'It turns a dot into an L, an L into a line, and a line into the cross.';
+    }
+    if (p === 6) {
+      if (k === 'row') return 'Every stop gives a different count, so park where the most side squares match.';
+      if (k === 'read') return 'It is always all 4 or exactly 2, because a single swap cannot happen on a cube.';
+      if (k === 'whole') return 'The two that match sit away from you and on your right, or the chant loses them.';
+      if (k === 'chant') return 'The chant spins three of the cross blocks round and leaves the fourth one standing.';
+      if (k === 'cheer') return 'The cross is matched the whole way round, so only the corner blocks are left.';
+    }
+    if (p === 7) {
+      if (k === 'read') return 'Only none, 1 or all 4 can be home, because a plain two block swap cannot happen.';
+      if (k === 'guard') return 'All four are already home, and a chant now would wreck them, so we skip it.';
+      if (k === 'whole') return 'The chant leaves your working corner alone, so the finished block parks there and stays.';
+      if (k === 'chant') return 'The chant shuffles the other three round, so one more block finds its place.';
+    }
+    if (p === 8) {
+      if (k === 'guard') return 'Every corner square is yellow already, so chanting now would only twist them away.';
+      if (k === 'warn') return 'The mess is Righty holding your layers safe. It all comes back on the last chant.';
+      if (k === 'whole') return 'Nothing is disturbed yet, so this one spin is free. After it, only the ceiling row.';
+      if (k === 'row' && b.final) return 'Everything is home, so one ceiling spin lines up all four sides at once.';
+      if (k === 'row') return 'Spinning the ceiling row keeps the mess where it is and brings the next block round.';
+      if (k === 'chant' && b.askAfter) return 'Yellow can only turn up after a whole pair, so look after two and never after one.';
+      if (k === 'chant') return 'After an odd chant a white block sits there, and white blocks carry no yellow square.';
+      if (k === 'done') return 'Eight steps and six chants walked every block back to the place its colours named.';
+    }
+    if (k === 'done') return 'Every block is back in the place its own colours named. That is the whole idea.';
+    return '';
+  }
+  function stampWhy(beats) {
+    var i;
+    for (i = 0; i < beats.length; i++) beats[i].why = whyOf(beats[i]);
+    return beats;
   }
 
   /* ---------------- build the whole plan from where the cube is now ---------------- */
@@ -2196,7 +2387,7 @@ var CUBE3 = (function () {
     if (facesAllOneColour(state)) {
       pl.push({ phase: 8, kind: 'done', title: 'Already solved', moves: [], cheer: 'Already solved!',
         say: 'This cube is already solved. Mess it up and I will walk you through it.' });
-      return { ok: true, beats: pl.beats, states: pl.states, end: pl.s, solved: true, census: { alreadySolved: 1 } };
+      return { ok: true, beats: stampWhy(pl.beats), states: pl.states, end: pl.s, solved: true, census: { alreadySolved: 1 } };
     }
     start = resumePoint(state);
     census['start' + start] = 1;
@@ -2229,7 +2420,7 @@ var CUBE3 = (function () {
     if (!planStep6(pl, census)) return { ok: false, why: 'step6' };
     if (!planStep7(pl, census)) return { ok: false, why: 'step7' };
     if (!planStep8(pl, census)) return { ok: false, why: 'step8' };
-    return { ok: true, beats: pl.beats, states: pl.states, end: pl.s, solved: facesAllOneColour(pl.s), census: census };
+    return { ok: true, beats: stampWhy(pl.beats), states: pl.states, end: pl.s, solved: facesAllOneColour(pl.s), census: census };
   }
 
   /* where is she starting from? */
@@ -2622,10 +2813,11 @@ var INFER = (function () {
     scheme: C.PLAIN_SCHEME,
     undo: [],
     level: 'watch',
-    plan: null, idx: 0, askState: null, busy: false, auto: false, usedShowMe: false,
+    plan: null, idx: 0, askState: null, busy: false, auto: false, usedShowMe: false, awaitDemo: false, speak: true,
     fromFace: false, cheered: {}, readsRight: 0, readsAsked: 0,
     paint: new Array(24).fill(null), paintColour: 'white', paintMsg: null, paintSuspects: [],
     paintIntent: 'match', holdOk: false, holdMsg: null, holdNeed: [], paintPath: 'infer',
+    sideHold: false, sideMsg: null,
     inferRes: null, inferQ: null, inferSpot: null, inferMsg: null, inferFilled: null, inferAsked: 0,
     diag: null,
     says: null, sayKind: '',
@@ -3077,6 +3269,44 @@ var INFER = (function () {
     if (C.WHOLE[k]) turnWhole(k, SPEED, after); else turn(k, SPEED, after);
   }
 
+  /* ---------------------------------------------------------------- saying it out loud
+     The browser's own voice, nothing fetched from anywhere. If the browser has no voice the
+     button never appears and everything else carries on exactly as before. On iOS the first
+     utterance has to come from a tap, and it does: every beat arrives through one. */
+  var CAN_SPEAK = (typeof window !== 'undefined') && !!window.speechSynthesis
+    && (typeof window.SpeechSynthesisUtterance === 'function');
+  function loadSpeak() {
+    try { return localStorage.getItem('cube-quest-speak') !== 'off'; } catch (e) { return true; }
+  }
+  function saveSpeak() {
+    try { localStorage.setItem('cube-quest-speak', app.speak ? 'on' : 'off'); } catch (e) { /* file:// is fine without it */ }
+  }
+  function speakStop() {
+    if (!CAN_SPEAK) return;
+    try { window.speechSynthesis.cancel(); } catch (e) { /* nothing to cancel */ }
+  }
+  function speakText(t) {
+    if (!CAN_SPEAK || !app.speak || !t) return;
+    try {
+      var u = new window.SpeechSynthesisUtterance(String(t));
+      u.rate = 0.85; u.pitch = 1.05; u.lang = 'en-GB';
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* a browser with no voice just stays quiet */ }
+  }
+  function plainWords(s) { return String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
+  /* what a beat sounds like: the chant and its count, the instruction, then the why line */
+  function beatSpeech(b) {
+    if (!b) return '';
+    var bits = [];
+    if (b.chant && C.CHANTS[b.chant]) {
+      bits.push(C.CHANTS[b.chant].name + (b.of > 1 ? ', number ' + b.ord + ' of ' + b.of : ''));
+    }
+    if (b.say) bits.push(plainWords(b.say));
+    if (b.why) bits.push('Why this works. ' + b.why);
+    return bits.join('. ');
+  }
+  function speakBeat(b) { speakStop(); speakText(beatSpeech(b)); }
+
   /* ---------------------------------------------------------------- talking */
   function say(text, kind, head) {
     app.says = text; app.sayKind = kind || ''; app.sayHead = head || '';
@@ -3118,7 +3348,7 @@ var INFER = (function () {
   function startSolve(hint) {
     var p = C.buildPlan(app.state, hint);
     if (!p.ok) { say('I got muddled working that one out. Press Start again and I will have another go.', 'oops'); app.plan = null; render(); return; }
-    app.plan = p; app.idx = 0; app.askState = null; app.auto = (app.level === 'watch');
+    app.plan = p; app.idx = 0; app.askState = null; app.auto = false; app.awaitDemo = false;
     app.diag = C.diagnose(app.state);
     app.fromFace = app.diag.kind === 'face';
     say(app.plan.beats[0].say, '');
@@ -3127,6 +3357,7 @@ var INFER = (function () {
   }
   function advance() {
     if (app.busy || !app.plan) return;
+    speakStop();
     var b = beat();
     if (!b) return;
     if (app.level === 'try' && b.ask && app.askState !== 'done') { app.askState = 'asking'; render(); return; }
@@ -3135,6 +3366,7 @@ var INFER = (function () {
   function playBeat(b) {
     app.busy = true;
     say(b.say, b.panic ? 'panic' : (b.cheer ? 'good' : ''), b.panic ? 'Read this before you start' : (b.cheer || ''));
+    speakBeat(b);
     clearGlow();
     if (b.blockHi !== undefined) glowBlock(b.blockHi);
     if (b.barFace !== undefined) { var f = b.barFace; C.FACELET[f].slice(0, 2).forEach(function (m) { glowSlotFac(m[0], m[1]); }); }
@@ -3146,6 +3378,9 @@ var INFER = (function () {
     var finish = function () {
       app.busy = false;
       if (app.level === 'try' && b.askAfter && app.askState !== 'doneAfter') { app.askState = 'askingAfter'; render(); return; }
+      /* the cube has just shown her the move. Hold there so she can watch it again or copy
+         it on her own cube, unless she asked me to run the whole thing without stopping. */
+      if (b.moves.length && !app.auto) { app.awaitDemo = true; render(); return; }
       beatDone(b);
     };
     if (!b.moves.length) { setTimeout(finish, b.read ? 1500 : 260); return; }
@@ -3153,7 +3388,7 @@ var INFER = (function () {
     playMoves(b.moves, dur, function (i) { app.chantAt = i; render(); }, function () { app.chantAt = -1; finish(); });
   }
   function beatDone(b) {
-    app.askState = null; app.chantAt = -1;
+    app.askState = null; app.chantAt = -1; app.awaitDemo = false;
     if (b.cheer) {
       cheer(b.cheer === 'Solved!'
         ? (big() ? 'Every side is one colour. Eight steps, six chants, done.' : 'Every side is one colour. Three steps, two chants, done.')
@@ -3183,17 +3418,42 @@ var INFER = (function () {
     if (app.auto && beat()) setTimeout(advance, 800);
     else if (!beat()) app.auto = false;
   }
+  /* Back always lands on a snapshot the plan kept, never on an undone guess. If the move has
+     just been shown, Back puts it back the way it was and leaves you on the same step. */
   function goBack() {
-    if (app.busy || !app.plan || app.idx === 0) return;
+    if (app.busy || !app.plan) return;
+    speakStop();
+    if (app.awaitDemo) {
+      app.awaitDemo = false;
+      app.state = C.clone(app.plan.states[app.idx]);
+      app.askState = null; clearGlow(); renderCube();
+      say(app.plan.beats[app.idx].say, '');
+      render(); speakBeat(app.plan.beats[app.idx]);
+      return;
+    }
+    if (app.idx === 0) return;
     app.idx--;
     app.state = C.clone(app.plan.states[app.idx]);
     app.askState = null; clearGlow(); renderCube();
     say(app.plan.beats[app.idx].say, '');
     render();
+    speakBeat(app.plan.beats[app.idx]);
+  }
+  /* Watch again: put the cube back exactly where it stood before the move and play it again.
+     The plan keeps the state before every beat, so the replay always starts from the truth. */
+  function watchAgain() {
+    if (app.busy || !app.plan) return;
+    speakStop();
+    var b = beat();
+    if (!b || !b.moves.length) return;
+    app.awaitDemo = false;
+    app.state = C.clone(app.plan.states[app.idx]);
+    clearGlow(); renderCube(); render();
+    setTimeout(function () { playBeat(b); }, 220);
   }
   function replan(hint, note) {
     app.plan = C.buildPlan(app.state, hint);
-    app.idx = 0; app.askState = 'done';
+    app.idx = 0; app.askState = 'done'; app.awaitDemo = false;
     if (note) say(note, 'good', 'Good spot!');
     render();
   }
@@ -3204,22 +3464,22 @@ var INFER = (function () {
     var kind = after ? b.askAfter : b.ask;
     if (big()) {
       if (kind === 'pick-petal') return { tap: 'block', q: b.askPhase === 2
-        ? 'Tap the petal you would send down to the floor next.'
-        : 'Tap a white 2 square block that is not a petal yet.' };
-      if (kind === 'pick-corner') return { q: 'Tap the white corner block you would do next.', tap: 'block' };
-      if (kind === 'drop-side') return { q: 'Look at that block\'s ceiling square. Is the middle square of that colour to your right or to your left?', opts: ['to my right', 'to my left'] };
-      if (kind === 'cross-shape') return { q: 'Look at the four flat spots up at the ceiling. What can you see?', opts: ['a dot', 'an L', 'a line', 'the cross'] };
-      if (kind === 'count-match') return { q: 'How many of the four have their side square the same colour as the middle square below it?', opts: ['2', 'all four'] };
-      if (kind === 'count-home') return { q: 'How many of the four corner blocks are home?', opts: ['none', '1', 'all four'] };
-      if (kind === 'yellow-yet') return { q: 'That is 2 chants. Look at the working corner. Is it ' + YEL() + ' yet?', opts: ['yes', 'not yet'] };
+        ? 'Tap the petal you would send down to the floor next. It is up at the side marked CEILING.'
+        : 'Tap a white 2 square block on the picture that is not a petal yet.' };
+      if (kind === 'pick-corner') return { q: 'Tap the white corner block you would do next, up at the side marked CEILING.', tap: 'block' };
+      if (kind === 'drop-side') return { q: 'That block is on the side marked YOU. Its ceiling square: is that colour\'s middle square to your right or to your left?', opts: ['to my right', 'to my left'] };
+      if (kind === 'cross-shape') return { q: 'Look at the four flat spots on the side marked CEILING. What can you see?', opts: ['a dot', 'an L', 'a line', 'the cross'] };
+      if (kind === 'count-match') return { q: 'On the side marked CEILING, how many of the four have their side square matching the middle square below it?', opts: ['2', 'all four'] };
+      if (kind === 'count-home') return { q: 'On the side marked CEILING, how many of the four corner blocks are home?', opts: ['none', '1', 'all four'] };
+      if (kind === 'yellow-yet') return { q: 'That is 2 chants. Look at the block inside the red ring. Is its ceiling square ' + YEL() + ' yet?', opts: ['yes', 'not yet'] };
       return null;
     }
-    if (kind === 'find-white') return { q: 'Tap a block on the cube that has a white square on it.', tap: 'block' };
+    if (kind === 'find-white') return { q: 'Tap a block on the cube picture that has a white square on it.', tap: 'block' };
     if (kind === 'pick-white') return { q: 'Tap the white block you would do next.', tap: 'block' };
-    if (kind === 'pick-not-yellow') return { q: 'Tap a ceiling block whose ceiling square is not ' + YEL() + ' yet.', tap: 'ceiling' };
-    if (kind === 'yellow-yet') return { q: 'That is 2 chants. Look at the working corner. Is it ' + YEL() + ' yet?', opts: ['yes', 'not yet'] };
-    if (kind === 'count-sides') return { q: 'Read the four sides. How many show 2 matching squares?', opts: ['none', 'one', 'all four'] };
-    if (kind === 'tap-bar') return { q: 'Tap the side the bar is on.', opts: ['the side looking at you', 'your right', 'the side facing away', 'your left'] };
+    if (kind === 'pick-not-yellow') return { q: 'Up at the side marked CEILING, tap a block whose ceiling square is not ' + YEL() + ' yet.', tap: 'ceiling' };
+    if (kind === 'yellow-yet') return { q: 'That is 2 chants. Look at the block inside the red ring. Is its ceiling square ' + YEL() + ' yet?', opts: ['yes', 'not yet'] };
+    if (kind === 'count-sides') return { q: 'On each side, count the 2 squares nearest the side marked CEILING. How many sides show 2 the same?', opts: ['none', 'one', 'all four'] };
+    if (kind === 'tap-bar') return { q: 'Which side is the bar on? The markers on the picture say which is which.', opts: ['the side marked YOU', 'your right', 'the side facing away', 'your left'] };
     return null;
   }
   function answerOpt(i) {
@@ -3382,7 +3642,13 @@ var INFER = (function () {
   /* ---------------------------------------------------------------- panels */
   function sayBox() {
     if (!app.says) return '';
-    return '<div class="say ' + app.sayKind + '">' + (app.sayHead ? '<span class="head">' + esc(app.sayHead) + '</span>' : '') + app.says + '</div>';
+    return '<div class="say ' + app.sayKind + '">' + (app.sayHead ? '<span class="head">' + esc(app.sayHead) + '</span>' : '') + app.says
+      + whyLine(beat()) + '</div>';
+  }
+  /* the tutorial line: always visible, never a thing she has to go looking for */
+  function whyLine(b) {
+    if (!b || !b.why) return '';
+    return '<div class="why"><b>Why this works.</b> ' + esc(b.why) + '</div>';
   }
   function badgeShelf() {
     return '<div class="card"><h2>Badges</h2><div class="badges">'
@@ -3588,6 +3854,7 @@ var INFER = (function () {
     if (app.inferSpot) {
       var w = askWords(app.inferSpot.sid);
       h += '<div class="lede">I worked out every side you cannot see, and there is only one cube it can be. The pictures are filled in.</div>'
+        + '<div class="why"><b>Why I can be sure.</b> Only one legal cube matches every square you painted, so I checked them all.</div>'
         + '<div class="say" style="margin-top:9px"><span class="head">One quick look</span>'
         + esc(w.find) + ' Is its square ' + esc(LOOK_WORD[INFER.pieceOf(C, app.inferSpot.sid).face]) + ' <b>' + esc(app.inferSpot.colour) + '</b>?</div>'
         + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="spot-yes">Yes, that is right</button>'
@@ -3596,7 +3863,9 @@ var INFER = (function () {
     }
     if (app.inferQ) {
       var q = askWords(app.inferQ.sid), cols = app.inferQ.colours || C.COLOURS;
-      h += '<div class="lede">Three sides are not quite enough on their own, so I need you to look at one square at a time. This is question ' + (app.inferAsked || 1) + '.</div>'
+      var many = app.inferRes && app.inferRes.capped ? 'Lots of' : ((app.inferRes ? app.inferRes.count : 2) + ' different');
+      h += '<div class="lede">Question ' + (app.inferAsked || 1) + '. The markers on the cube picture show which side is which.</div>'
+        + '<div class="why"><b>Why this one.</b> ' + esc(many) + ' cubes still match your painting, and this square tells them apart.</div>'
         + '<div class="holdq" style="margin-top:8px">' + esc(q.find) + '</div>'
         + '<div class="holdq" style="margin-top:2px">' + esc(q.ask) + ' Tap it.</div>'
         + '<div class="swatches" style="margin-top:8px">'
@@ -3615,7 +3884,36 @@ var INFER = (function () {
     return h + '</div>';
   }
 
+  /* ------------------------------------------------ I already made a side
+     The finished side goes to the FLOOR before anything is painted. Every picture and every
+     step from step 2 onward reads the cube that way round, so starting there means one
+     mapping, fewer questions, and no silent mismatch. */
+  function whiteDownPic() {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 88" width="76" height="76" aria-hidden="true">'
+      + '<rect x="22" y="6" width="44" height="28" rx="7" fill="#ffffff" stroke="' + INK + '" stroke-width="2.6"/>'
+      + '<line x1="44" y1="40" x2="44" y2="58" stroke="' + RED + '" stroke-width="6" stroke-linecap="round"/>'
+      + '<polygon points="44,72 35,57 53,57" fill="' + RED + '"/>'
+      + '<line x1="10" y1="82" x2="78" y2="82" stroke="' + INK + '" stroke-width="4" stroke-linecap="round"/></svg>';
+  }
+  function sideHoldCard() {
+    return '<div class="card" style="border-width:3px;border-color:' + RED + '">'
+      + '<h2>First, hold it with your side at the floor</h2>'
+      + '<div class="row" style="align-items:flex-start;gap:14px;margin-top:6px">'
+      + '<div>' + whiteDownPic() + '</div>'
+      + '<div style="flex:1 1 220px;min-width:200px">'
+      + '<ol class="turnsteps" style="margin-left:18px">'
+      + '<li>Find the side you finished and turn the whole cube so it points at the floor. <b>White is at the floor now.</b></li>'
+      + '<li>Keep it there. <b>The ceiling is the side you have not touched.</b></li>'
+      + '<li>Now paint what you can see: the ceiling, the side looking at you, and your right.</li>'
+      + '</ol></div></div>'
+      + '<div class="why"><b>Why this works.</b> Every picture and every step from here on has white at the floor.</div>'
+      + '<div class="row" style="margin-top:10px"><button class="btn primary big" data-act="side-ready">White is at the floor</button></div>'
+      + (app.sideMsg ? '<div class="say oops" style="margin-top:9px"><span class="head">Not yet</span>' + esc(app.sideMsg) + '</div>' : '')
+      + '</div>';
+  }
+
   function panelPaint() {
+    if (app.sideHold) return sideHoldCard();
     var lead = app.paintIntent === 'side'
       ? 'Paint your cube exactly as it sits in your hands right now. Do not fix anything first. I want to see the side you made.'
       : 'Pick a colour, then tap squares until the picture matches the cube in your hands.';
@@ -3625,9 +3923,9 @@ var INFER = (function () {
         return '<button class="swatch' + (app.paintColour === c ? ' on' : '') + '" data-col="' + c + '" style="background:' + HEX[c] + '" title="' + c + '"></button>';
       }).join('') + '</span></div>'
       + '<div class="views" style="margin-top:12px">'
-      + '<div class="viewbox">' + (big() ? iso3Svg(viewHome(), 210, { click: true, ring: true, colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_HOME, 190, { click: true, ring: true, colourOf: paintColourOf, mark: paintMark }))
+      + '<div class="viewbox paint">' + (big() ? iso3Svg(viewHome(), 210, { click: true, ring: true, colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_HOME, 190, { click: true, ring: true, colourOf: paintColourOf, mark: paintMark }))
       + '<div class="cap">Hold it in your home grip. Ceiling, the side looking at you, and your right.</div></div>'
-      + '<div class="viewbox' + (app.holdOk ? '' : ' locked') + '">' + (big() ? iso3Svg(viewOver(), 210, { click: true, colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_OVER, 190, { click: true, colourOf: paintColourOf, mark: paintMark }))
+      + '<div class="viewbox paint' + (app.holdOk ? '' : ' locked') + '">' + (big() ? iso3Svg(viewOver(), 210, { click: true, colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_OVER, 190, { click: true, colourOf: paintColourOf, mark: paintMark }))
       + '<div class="cap">' + (app.holdOk
         ? 'Three brand new sides: the ceiling, the side looking at you, and your right.'
         : 'Locked. Do the turn below and check your hold, then this picture opens.') + '</div></div>'
@@ -3685,6 +3983,7 @@ var INFER = (function () {
     var note = d ? ('move ' + (d.at + 1) + ' of ' + c.moves.length) : (c.moves.length + ' moves');
     var h = '<div class="card"><h2>' + esc(c.name) + '</h2>'
       + '<div class="lede">' + esc(c.what) + '</div>'
+      + (c.why ? '<div class="why"><b>Why this works.</b> ' + esc(c.why) + '</div>' : '')
       + '<div style="margin-top:8px">' + strip(name, c.moves, c.breath, d ? d.at : -1, note) + '</div>'
       + '<div class="row" style="margin-top:9px">'
       + '<button class="btn primary" data-chant="' + id + '" data-times="1"' + (app.busy ? ' disabled' : '') + '>Do it once</button>';
@@ -3932,10 +4231,18 @@ var INFER = (function () {
     }
     h += sidesRead();
     h += ceilingRead();
+    if (app.awaitDemo && b) {
+      h += '<div class="card" style="border-width:3px"><h2>That is the move</h2>'
+        + '<div class="lede">The cube just did it for you. Do the same on your own cube, then say when it is done.</div>'
+        + '<div class="row" style="margin-top:9px">'
+        + '<button class="btn big" data-act="demo-again">Watch again</button>'
+        + '<button class="btn primary big" data-act="demo-done">I did it</button>'
+        + '<button class="btn" data-act="prev">Back</button></div></div>';
+    }
     h += '<div class="card"><div class="row">'
       + '<button class="btn" data-act="prev"' + (app.idx === 0 ? ' disabled' : '') + '>Back</button>'
-      + '<button class="btn primary big" data-act="next"' + (!b ? ' disabled' : '') + '>' + (b ? 'Next' : 'Finished') + '</button>'
-      + '<button class="btn" data-act="' + (app.auto ? 'pause' : 'play') + '">' + (app.auto ? 'Pause' : 'Do it slowly for me') + '</button>'
+      + '<button class="btn primary big" data-act="next"' + (!b || app.awaitDemo ? ' disabled' : '') + '>' + (b ? 'Next' : 'Finished') + '</button>'
+      + '<button class="btn" data-act="' + (app.auto ? 'pause' : 'play') + '">' + (app.auto ? 'Pause' : 'Do it for me, slowly') + '</button>'
       + '<button class="btn" data-act="restart">Work it out again</button>'
       + '</div><div class="lede" style="margin-top:7px">Do the move on your real cube, then press Next. Step '
       + (b ? b.phase : 3) + ', move ' + Math.min(app.idx + 1, app.plan.beats.length) + ' of ' + app.plan.beats.length + '.</div></div>';
@@ -3986,8 +4293,10 @@ var INFER = (function () {
     var b = e.target.closest('button[data-mode]');
     if (!b || app.busy) return;
     app.mode = b.getAttribute('data-mode');
+    speakStop();
     app.says = null; app.auto = false;
     if (app.mode === 'paint') { if (app.paintIntent !== 'side') app.paintIntent = 'match'; idleTile('Paint your cube'); }
+    else { app.sideHold = false; app.sideMsg = null; }
     if (app.mode === 'solve' && !app.diag) app.diag = C.diagnose(app.state);
     render();
   });
@@ -4015,7 +4324,12 @@ var INFER = (function () {
     if (t.hasAttribute('data-preset')) { loadPreset(t.getAttribute('data-preset')); return; }
     if (t.hasAttribute('data-chant')) { playChant(t.getAttribute('data-chant'), parseInt(t.getAttribute('data-times'), 10)); return; }
     if (!act) return;
-    if (act === 'side') { app.paintIntent = 'side'; app.mode = 'paint'; paintReset(); app.says = null; render(); return; }
+    if (act === 'side') {
+      app.paintIntent = 'side'; app.mode = 'paint'; paintReset();
+      app.sideHold = true; app.sideMsg = null; app.says = null;
+      idleTile('White at the floor'); render(); return;
+    }
+    if (act === 'side-ready') { app.sideHold = false; app.sideMsg = null; render(); return; }
     if (act === 'undo') { if (app.undo.length) { app.state = app.undo.pop(); renderCube(); app.says = null; render(); } return; }
     if (act === 'reset') { app.state = C.solved(); app.undo = []; app.cheered = {}; app.diag = null; app.says = null; renderCube(); render(); return; }
     if (act === 'cubesays') { cubeSaysStart(); return; }
@@ -4035,6 +4349,8 @@ var INFER = (function () {
     if (act === 'showturn') { demoTurnOver(); return; }
     if (act === 'tosolve') { app.mode = 'solve'; app.plan = null; app.diag = C.diagnose(app.state); app.says = null; render(); return; }
     if (act === 'coach') { app.mode = 'solve'; app.usedShowMe = false; app.cheered = {}; startSolve(null); return; }
+    if (act === 'demo-again') { watchAgain(); return; }
+    if (act === 'demo-done') { var db = beat(); app.awaitDemo = false; if (db) beatDone(db); return; }
     if (act === 'next') { app.auto = false; advance(); return; }
     if (act === 'prev') { app.auto = false; goBack(); return; }
     if (act === 'play') { app.auto = true; advance(); return; }
@@ -4057,6 +4373,11 @@ var INFER = (function () {
     var s = e.target.closest('polygon.sticker');
     if (!s || app.mode !== 'paint') return;
     var sid = parseInt(s.getAttribute('data-sid'), 10);
+    if (app.sideHold) {
+      app.sideMsg = 'Hold your cube with the side you finished pointing at the floor first, then tap the button.';
+      render();
+      return;
+    }
     /* no silent path into the second picture: it only takes paint once the hold is checked */
     if (sid >= firstViewCount() && !app.holdOk) {
       app.paintPath = 'paint2';
@@ -4142,6 +4463,7 @@ var INFER = (function () {
   }
   function switchSize(n) {
     if (app.busy || app.size === n) return;
+    speakStop();
     stash[app.size] = { state: app.state, scheme: app.scheme, undo: app.undo, paint: app.paint, cheered: app.cheered };
     app.size = n; C = (n === 3) ? C3 : C2;
     var st = stash[n];
@@ -4156,6 +4478,7 @@ var INFER = (function () {
     app.holdOk = false; app.holdMsg = null; app.holdNeed = [];
     app.paintPath = 'infer'; app.inferRes = null; app.inferQ = null; app.inferSpot = null;
     app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0;
+    app.sideHold = false; app.sideMsg = null;
     buildCube(); buildPads(); applyCam(true);
     setTimeout(function () { applyCam(false); }, 60);
     headline();
@@ -4195,6 +4518,22 @@ var INFER = (function () {
   stage.addEventListener('pointerup', springBack);
   stage.addEventListener('pointercancel', springBack);
   stage.addEventListener('pointerleave', springBack);
+
+  var sb = $('speakBtn');
+  if (CAN_SPEAK) {
+    sb.hidden = false;
+    app.speak = loadSpeak();
+    sb.textContent = app.speak ? 'Voice on' : 'Voice off';
+    sb.addEventListener('click', function () {
+      app.speak = !app.speak;
+      saveSpeak();
+      sb.textContent = app.speak ? 'Voice on' : 'Voice off';
+      speakStop();
+      if (app.speak && app.mode === 'solve' && app.plan) speakBeat(beat());
+    });
+  } else {
+    app.speak = false;
+  }
 
   var pb = $('peekBtn');
   function holdPeek() { peek.on = true; peek.y = 150; peek.x = 12; applyCam(false); }

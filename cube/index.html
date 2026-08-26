@@ -2783,8 +2783,20 @@ var INFER = (function () {
      The one that splits the remaining candidates most evenly, so the worst case is smallest.
      Ties go to a square on a block she has already painted, because she can find that one
      without turning the cube over and guessing. */
-  function bestQuestion(CC, painted, list) {
-    var n = stickerCount(CC), best = null, sid, i, groups, keys, worst, spread, easy;
+  /* opts.nameable(sid) says whether the asker can point at that square by the COLOURS round it
+     rather than by where it sits. Position words do not survive the tip she has to make to see
+     a hidden square, so a question nobody can name is a question nobody can answer. A nameable
+     square wins whenever it is no more than one candidate worse than the sharpest one, which
+     buys a name for a fraction of a question. */
+  function bestQuestion(CC, painted, list, opts) {
+    var n = stickerCount(CC), best = null, named = null, sid, i, groups, keys, worst, spread, easy, can;
+    var nameable = (opts && opts.nameable) || null, slack = (opts && opts.slack !== undefined) ? opts.slack : 1;
+    function better(a, b) {
+      if (!b) return true;
+      if (a.worst !== b.worst) return a.worst < b.worst;
+      if (a.easy !== b.easy) return a.easy > b.easy;
+      return a.spread > b.spread;
+    }
     for (sid = 0; sid < n; sid++) {
       if (painted[sid]) continue;
       groups = {};
@@ -2798,12 +2810,12 @@ var INFER = (function () {
       for (i = 0; i < keys.length; i++) worst = Math.max(worst, groups[keys[i]]);
       spread = keys.length;
       easy = findable(CC, painted, sid) ? 1 : 0;
-      if (!best || worst < best.worst
-        || (worst === best.worst && easy > best.easy)
-        || (worst === best.worst && easy === best.easy && spread > best.spread)) {
-        best = { sid: sid, worst: worst, spread: spread, easy: easy, groups: groups, colours: keys };
-      }
+      can = nameable ? (nameable(sid) ? 1 : 0) : 0;
+      var here = { sid: sid, worst: worst, spread: spread, easy: easy, groups: groups, colours: keys, nameable: !!can };
+      if (better(here, best)) best = here;
+      if (can && better(here, named)) named = here;
     }
+    if (named && best && named.worst <= best.worst + slack) return named;
     if (best) return best;
     /* every candidate in the sample agrees everywhere, but the sample was cut short:
        ask about any square she has not painted, nearest one she can find easily */
@@ -2848,7 +2860,7 @@ var INFER = (function () {
     paint: new Array(24).fill(null), paintColour: 'white', paintMsg: null, paintSuspects: [],
     paintIntent: 'match', holdOk: false, holdMsg: null, holdNeed: [], paintPath: 'infer',
     sideHold: false, sideMsg: null, whiteDown: false, whiteMsg: null, confirmReset: false,
-    inferRes: null, inferQ: null, inferSpot: null, inferMsg: null, inferFilled: null, inferAsked: 0,
+    inferRes: null, inferQ: null, inferSpot: null, inferMsg: null, inferFilled: null, inferAsked: 0, inferSkip: null,
     diag: null,
     says: null, sayKind: '',
     quiz: null, quizPick: null, quizFor: null,
@@ -3159,7 +3171,7 @@ var INFER = (function () {
      ONE FRAME. Every word the engine says is about the cube the way her hands are holding it:
      ceiling up, white at the floor, the side looking at you looking at you. Nothing is ever
      turned over to answer a question. When the square is round the back she keeps her grip and
-     tips the cube just enough to peek, then holds it back the way it was.
+     makes ONE named turn to bring that side round to face her, then holds it back the way it was.
      The little picture is that side on its own, drawn flat, with each of its four edges named
      in the same frame. So there is never a second frame on the screen to collide with. */
 
@@ -3184,7 +3196,8 @@ var INFER = (function () {
     list.sort(function (a, b) { return PEEK_RANK[a] - PEEK_RANK[b]; });
     return list;
   }
-  /* where in that side the square sits, named by the sides it touches, in her frame */
+  /* where in that side the square sits. A HINT ONLY, never the thing she has to trust: position
+     words do not survive a tip, because tipping the other way swaps left and right. */
   function peekSpot(sid) {
     var pc = INFER.pieceOf(C, sid), o;
     if (pc.kind === 'n') return 'in the very middle';
@@ -3192,27 +3205,117 @@ var INFER = (function () {
     if (o.length === 1) return 'in the middle of the edge nearest ' + NEAR_HOME[o[0]];
     return 'in the corner nearest ' + NEAR_HOME[o[0]] + ' and ' + NEAR_HOME[o[1]];
   }
-  /* keep your grip, and tip only far enough to see */
-  function peekOpen(sid) {
-    var f = faceOfSid(sid);
-    return SEEN_HOME[f]
-      ? 'Keep your grip. Look at ' + SIDE_HOME[f] + '.'
-      : 'Keep your grip. Tip the cube just enough to peek at ' + SIDE_HOME[f] + '.';
+
+  /* ---- ONE NAMED TIP PER SIDE ----
+     A vague "tip it a bit and look" is not an instruction, it is a guess. Tipping the top toward
+     you and lifting the cube to look underneath show the SAME side mirrored, so any word about
+     left or right means two different squares. So each side gets exactly one named motion, out
+     of the five whole cube turns she already knows, and the little picture is drawn exactly as
+     that motion leaves the side. Order is U, R, F, D, L, B. */
+  var TIP = [
+    { moves: ['xp'], say: 'Tip the whole cube toward you until the side at the ceiling comes round to face you.' },
+    { moves: ['y'], say: 'Spin the cube flat to your left until the side on your right comes round to face you.' },
+    { moves: [], say: 'Look at the side that is already looking at you.' },
+    { moves: ['x'], say: 'Tip the whole cube away from you until the side at the floor comes round to face you.' },
+    { moves: ['yp'], say: 'Spin the cube flat to your right until the side on your left comes round to face you.' },
+    { moves: ['yp', 'yp'], say: 'Spin the cube flat to your right, twice, until the side facing away comes round to face you.' }
+  ];
+  function peekOpen(sid) { return 'Keep your grip. ' + TIP[faceOfSid(sid)].say; }
+  function peekBack(sid) { return TIP[faceOfSid(sid)].moves.length ? 'Then hold it back the way it was.' : ''; }
+
+  /* ---- NAMING BY COLOUR, NOT BY PLACE ----
+     A colour does not move when she tips the cube and it does not swap sides in a mirror. So a
+     square is named by the colours it touches: the other squares of its own block. Those are
+     known at asking time, either because she painted them or because every cube still in the
+     running agrees on them. Place words are only ever added afterwards, as a hint. */
+  function knownColourAt(sid) {
+    if (app.paint[sid]) return app.paint[sid];
+    if (assumedSid(sid)) return 'white';
+    var res = app.inferRes, i, c;
+    if (!res || res.capped || !res.list || !res.list.length) return null;
+    c = res.list[0].stickers[sid];
+    for (i = 1; i < res.list.length; i++) { if (res.list[i].stickers[sid] !== c) return null; }
+    return c;
   }
-  function peekAsk(sid) { return 'What colour is the square ' + peekSpot(sid) + '? Tap it.'; }
-  function peekBack(sid) { return SEEN_HOME[faceOfSid(sid)] ? '' : 'Then hold it back the way it was.'; }
+  /* the colours of the other squares of this block, the ones we are sure of */
+  function anchorsOf(sid) {
+    var pc = INFER.pieceOf(C, sid), sids = INFER.blockSids(C, pc), out = [], i, c;
+    for (i = 0; i < sids.length; i++) {
+      if (sids[i] === sid) continue;
+      c = knownColourAt(sids[i]);
+      if (c && out.indexOf(c) < 0) out.push(c);
+    }
+    return out;
+  }
+  /* On the big cube the middle squares never move, so a whole SIDE has a colour and stays that
+     colour however she turns it. That is the strongest anchor there is: "the corner that
+     touches the red side and the green side" is one square and can never be two. */
+  function sideAnchorsOf(sid) {
+    if (!big()) return [];
+    var pc = INFER.pieceOf(C, sid), o = otherFacesOf(pc), out = [], i, c;
+    if (pc.kind === 'n') return [];
+    for (i = 0; i < o.length; i++) {
+      c = knownColourAt(C.WHERE_N[o[i]]);
+      if (c && out.indexOf(c) < 0) out.push(c);
+    }
+    return out.length === o.length ? out : [];
+  }
+  function kindWord(pc) { return pc.kind === 'n' ? 'middle square' : (pc.kind === 'e' ? 'edge square' : 'corner square'); }
+  /* can this square be pointed at by the colours round it at all */
+  function canNameByColour(sid) { return anchorsOf(sid).length > 0 || sideAnchorsOf(sid).length > 0; }
+  /* is it the only square on that side touching those colours, so the name cannot mean two things */
+  function anchorUnique(sid, cols) {
+    var per = facePer(), f = faceOfSid(sid), i, a, n = 0;
+    if (!cols.length) return false;
+    for (i = 0; i < per; i++) {
+      a = anchorsOf(f * per + i);
+      if (cols.every(function (c) { return a.indexOf(c) >= 0; })) n++;
+    }
+    return n === 1;
+  }
+  function peekTarget(sid) {
+    var pc = INFER.pieceOf(C, sid), cols = anchorsOf(sid), aid = peekSpot(sid);
+    if (pc.kind === 'n') return 'the middle square of that side';
+    if (!cols.length) {
+      /* the big cube can always fall back on the sides themselves, because a middle square
+         never moves and so a side keeps its colour whichever way she turns the cube */
+      var sides = sideAnchorsOf(sid);
+      if (sides.length) {
+        return 'the ' + kindWord(pc) + ' that touches the '
+          + sides.map(function (c) { return c + ' side'; }).join(' and the ');
+      }
+      /* nothing known round it at all, which happens when a whole block is still hidden. Then
+         the PICTURE carries it, not the words: she is sent to the red ring. The place words
+         come along as a hint, and they are the words the picture labels its own edges with. */
+      return 'the ' + kindWord(pc) + ' with the red ring round it on the picture, ' + aid;
+    }
+    var named = 'the ' + kindWord(pc) + ' that touches the '
+      + cols.map(function (c) { return c + ' square'; }).join(' and the ');
+    return anchorUnique(sid, cols) ? named : named + ', ' + aid;
+  }
+  function peekAsk(sid) { return 'On that side, find ' + peekTarget(sid) + '. What colour is it? Tap it.'; }
   function peekQuestion(sid) {
     var back = peekBack(sid);
     return peekOpen(sid) + ' ' + peekAsk(sid) + (back ? ' ' + back : '');
   }
   function peekCap(sid) { return 'This is ' + SIDE_HOME[faceOfSid(sid)] + '.'; }
 
-  /* That side on its own, flat, every edge labelled with the side it touches. The labels are
-     what make the picture unambiguous: she never has to guess which way up it is drawn. */
+  /* That side on its own, flat, drawn exactly as the named tip leaves it. Each edge carries the
+     COLOUR of the square the ringed block touches over that edge, which is the same colour the
+     words name, so the picture and the words point at one square between them. The body word
+     underneath is small on purpose: it is the hint, not the answer. */
+  function edgeAnchorColour(sid, g) {
+    var pc = INFER.pieceOf(C, sid), sids = INFER.blockSids(C, pc), i;
+    for (i = 0; i < sids.length; i++) {
+      if (sids[i] !== sid && faceOfSid(sids[i]) === g) return knownColourAt(sids[i]);
+    }
+    if (big()) return knownColourAt(C.WHERE_N[g]);
+    return null;
+  }
   function faceInset(sid, w) {
     var per = facePer(), n = big() ? 3 : 2, f = faceOfSid(sid), rd = FLAT_RD[f];
     var right = rd[0], down = rd[1], up = C.OPP_FACE[down], left = C.OPP_FACE[right];
-    var cell = big() ? 30 : 42, pad = 30, side = n * cell, W = side + pad * 2;
+    var cell = big() ? 30 : 44, pad = 38, W = n * cell + pad * 2;
     var out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + W + '" width="' + w + '">';
     var i, r, c, here, col;
     for (i = 0; i < per; i++) {
@@ -3221,15 +3324,22 @@ var INFER = (function () {
         + '" width="' + cell + '" height="' + cell + '" rx="5" fill="' + (col || '#efece6')
         + '" stroke="' + INK + '" stroke-width="1.8"/>';
     }
-    function label(t, x, y, rot) {
-      return '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-family="system-ui,sans-serif"'
-        + ' font-size="11" font-weight="700" fill="#6b675f"'
-        + (rot ? ' transform="rotate(' + rot + ' ' + x + ' ' + y + ')"' : '') + '>' + esc(t) + '</text>';
+    /* the colour chip first, the body word second and smaller */
+    function edge(g, x, y, rot) {
+      var chip = edgeAnchorColour(sid, g), s = '';
+      var t = '<g' + (rot ? ' transform="rotate(' + rot + ' ' + x + ' ' + y + ')"' : '') + '>';
+      if (chip) {
+        s += '<rect class="chip" data-chip-face="' + g + '" data-chip="' + chip + '" x="' + (x - 10) + '" y="' + (y - 17)
+          + '" width="20" height="12" rx="3" fill="' + HEX[chip] + '" stroke="' + INK + '" stroke-width="1.6"/>';
+      }
+      s += '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-family="system-ui,sans-serif"'
+        + ' font-size="9.5" font-weight="600" fill="#8d887e">' + esc(EDGE_HOME[g]) + '</text>';
+      return t + s + '</g>';
     }
-    out += label(EDGE_HOME[up], W / 2, pad - 11, 0);
-    out += label(EDGE_HOME[down], W / 2, W - pad + 20, 0);
-    out += label(EDGE_HOME[left], pad - 12, W / 2, -90);
-    out += label(EDGE_HOME[right], W - pad + 14, W / 2, 90);
+    out += edge(up, W / 2, pad - 6, 0);
+    out += edge(down, W / 2, W - pad + 20, 0);
+    out += edge(left, pad - 14, W / 2, -90);
+    out += edge(right, W - pad + 20, W / 2, 90);
     r = Math.floor(cellOfSid(sid) / n); c = cellOfSid(sid) % n;
     out += '<circle class="asked" data-ring-sid="' + sid + '" cx="' + (pad + c * cell + cell / 2)
       + '" cy="' + (pad + r * cell + cell / 2) + '" r="' + (cell * 0.36)
@@ -4034,7 +4144,7 @@ var INFER = (function () {
     if (fill) { app.whiteDown = solidFaceColour(app.paint, C.D) === 'white'; app.whiteMsg = null; }
     app.holdMsg = null; app.holdNeed = [];
     app.paintPath = 'infer'; app.inferRes = null; app.inferQ = null; app.inferSpot = null;
-    app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0;
+    app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0; app.inferSkip = null;
   }
   /* What a clean painter looks like. ONE list, read by the reset and by the gate, so the two
      can never drift apart and quietly leave a state behind. */
@@ -4283,29 +4393,47 @@ var INFER = (function () {
       render(); return;
     }
     if (!res.capped && res.count === 1) {
-      var full = res.list[0].stickers, filled = [], i;
+      var full = res.list[0].stickers, before = app.paint.slice(), filled = [], declared = [], i;
+      /* What SHE told me, as against what I worked out. A square that is only white because she
+         said white is at the floor proves nothing: checking it reads her own words back to her.
+         Those squares are ruled out of the spot check before anything else happens. */
+      for (i = 0; i < full.length; i++) { if (!before[i] && known[i]) declared.push(i); }
       for (i = 0; i < full.length; i++) { if (!app.paint[i]) { app.paint[i] = full[i]; filled.push(i); } }
       app.inferFilled = filled;
       app.holdOk = true;
       savePaint();
-      app.inferSpot = { sid: pickSpot(filled), colour: null };
-      app.inferSpot.colour = app.paint[app.inferSpot.sid];
+      var spot = pickSpot(filled, declared, before);
+      app.inferSkip = null; app.inferSpot = null;
+      if (spot === null) {
+        app.inferSkip = 'Nothing left to check. Your painting'
+          + (app.whiteDown ? ' plus white at the floor' : '') + ' decides everything.';
+      } else {
+        app.inferSpot = { sid: spot, colour: app.paint[spot] };
+      }
       app.inferMsg = null;
       render(); return;
     }
-    app.inferQ = INFER.bestQuestion(C, known, res.list);
+    /* only ask about a square we can point at by the colours round it: place words do not
+       survive the tip she has to make to see it */
+    app.inferQ = INFER.bestQuestion(C, known, res.list, { nameable: canNameByColour });
     app.inferAsked = (app.inferAsked || 0) + 1;
     app.inferMsg = null;
     render();
   }
-  function pickSpot(filled) {
-    var best = filled[0], i, pc;
-    for (i = 0; i < filled.length; i++) {
-      pc = INFER.pieceOf(C, filled[i]);
-      if (pc.kind === 'c' && INFER.findable(C, app.paint, filled[i])) return filled[i];
+  /* The spot check has one job: catch a painting that is wrong. So it must point at a square
+     the ENGINE decided, never one she declared, and it prefers a square on a block she painted
+     part of with her own hands, because that is the one she can find and check in a second.
+     If every worked out square came from a declaration there is nothing worth asking, and the
+     honest thing is to say so and get on with it. */
+  function pickSpot(filled, declared, before) {
+    var pool = filled.filter(function (s) { return declared.indexOf(s) < 0; }), i, pc;
+    if (!pool.length) return null;
+    for (i = 0; i < pool.length; i++) {
+      pc = INFER.pieceOf(C, pool[i]);
+      if (pc.kind === 'c' && INFER.findable(C, before, pool[i])) return pool[i];
     }
-    for (i = 0; i < filled.length; i++) { if (INFER.findable(C, app.paint, filled[i])) return filled[i]; }
-    return best;
+    for (i = 0; i < pool.length; i++) { if (INFER.findable(C, before, pool[i])) return pool[i]; }
+    return pool[0];
   }
   function inferAnswer(colour) {
     if (!app.inferQ) return;
@@ -4314,7 +4442,7 @@ var INFER = (function () {
     inferRun();
   }
   function inferSpotYes() {
-    app.inferSpot = null; app.inferFilled = null;
+    app.inferSpot = null; app.inferFilled = null; app.inferSkip = null;
     paintCheck();
   }
   function inferSpotFix() {
@@ -4335,15 +4463,22 @@ var INFER = (function () {
     var h = '<div class="card" style="border-width:3px"><h2>Let me work out the rest</h2>';
     /* Every question is a PEEK, asked and drawn in her own grip. The cube is never turned over
        to answer one, so no word here can ever mean a different side than the picture shows. */
+    if (app.inferSkip) {
+      h += '<div class="lede">I worked out every side you cannot see, and there is only one cube it can be. The painting is filled in.</div>'
+        + '<div class="say good" style="margin-top:9px"><span class="head">Nothing to check</span>' + esc(app.inferSkip)
+        + ' Every square I filled in was already decided, so there is no question worth asking you.</div>'
+        + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="spot-yes">Great, use this cube</button></div></div>';
+      return h;
+    }
     if (app.inferSpot) {
       var sp = app.inferSpot.sid;
       h += '<div class="lede">I worked out every side you cannot see, and there is only one cube it can be. The painting is filled in.</div>'
         + '<div class="why"><b>Why I can be sure.</b> Only one legal cube matches every square you painted, so I checked them all.</div>'
-        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + faceInset(sp, 176)
+        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + faceInset(sp, 230)
         + '<div class="cap">' + esc(peekCap(sp)) + '</div></div></div>'
         + '<div class="say" style="margin-top:9px"><span class="head">One quick look</span>'
-        + esc(peekOpen(sp)) + ' Is the square ' + esc(peekSpot(sp)) + ' <b>' + esc(app.inferSpot.colour) + '</b>? '
-        + esc(peekBack(sp)) + '</div>'
+        + esc(peekOpen(sp)) + ' On that side, find ' + esc(peekTarget(sp)) + '. Is it <b>'
+        + esc(app.inferSpot.colour) + '</b>? ' + esc(peekBack(sp)) + '</div>'
         + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="spot-yes">Yes, that is right</button>'
         + '<button class="btn" data-act="spot-no">No, it is a different colour</button></div></div>';
       return h;
@@ -4355,7 +4490,7 @@ var INFER = (function () {
         + '<div class="why"><b>Why this one.</b> ' + esc(many) + ' cubes still match your painting, and this square tells them apart.</div>'
         + '<div class="holdq" style="margin-top:8px">What colour is this square? Tap it.</div>'
         + '<div class="lede" style="margin-top:2px">' + esc(peekQuestion(qs)) + '</div>'
-        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + faceInset(qs, 176)
+        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + faceInset(qs, 230)
         + '<div class="cap">' + esc(peekCap(qs)) + '</div></div></div>'
         + '<div class="swatches" style="margin-top:8px">'
         + cols.map(function (c) { return '<button class="swatch" data-infer="' + c + '" title="' + c + '" style="background:' + HEX[c] + '"></button>'; }).join('')
@@ -4895,13 +5030,13 @@ var INFER = (function () {
     if (act === 'set-white') {
       var wasAsking = !!app.inferQ;
       app.whiteDown = true; app.whiteMsg = null; savePaint();
-      app.inferQ = null; app.inferSpot = null; app.inferRes = null;
+      app.inferQ = null; app.inferSpot = null; app.inferRes = null; app.inferSkip = null;
       if (wasAsking) inferRun(); else render();
       return;
     }
     if (act === 'unset-white') {
       app.whiteDown = false; app.whiteMsg = null; savePaint();
-      app.inferQ = null; app.inferSpot = null; app.inferRes = null; render(); return;
+      app.inferQ = null; app.inferSpot = null; app.inferRes = null; app.inferSkip = null; render(); return;
     }
     if (act === 'undo') { if (app.undo.length) { app.state = app.undo.pop(); renderCube(); app.says = null; render(); } return; }
     if (act === 'reset') { app.state = C.solved(); app.undo = []; app.cheered = {}; app.diag = null; app.says = null; renderCube(); render(); return; }
@@ -4911,11 +5046,11 @@ var INFER = (function () {
     if (act === 'fill-screen') { paintReset('screen'); savePaint(); render(); return; }
     if (act === 'infer') { app.inferAsked = 0; app.inferMsg = null; inferRun(); return; }
     if (act === 'infer-none') {
-      app.inferQ = null; app.inferRes = null;
+      app.inferQ = null; app.inferRes = null; app.inferSkip = null;
       app.inferMsg = { ok: false, text: 'Then one of the squares in the first picture is not quite right. Have another look at it, or paint the rest yourself.' };
       render(); return;
     }
-    if (act === 'paint-rest') { app.paintPath = 'paint2'; app.inferQ = null; app.inferSpot = null; app.inferMsg = null; render(); return; }
+    if (act === 'paint-rest') { app.paintPath = 'paint2'; app.inferQ = null; app.inferSpot = null; app.inferSkip = null; app.inferMsg = null; render(); return; }
     if (act === 'spot-yes') { inferSpotYes(); return; }
     if (act === 'spot-no') { inferSpotFix(); return; }
     if (act === 'check') { paintCheck(); return; }
@@ -4976,7 +5111,7 @@ var INFER = (function () {
     }
     app.paint[sid] = app.paintColour;
     app.paintSuspects = [];
-    app.inferQ = null; app.inferSpot = null; app.inferRes = null; app.inferFilled = null;
+    app.inferQ = null; app.inferSpot = null; app.inferRes = null; app.inferFilled = null; app.inferSkip = null;
     /* a whole side painted one colour is knowledge the moment the last square lands */
     autoPinPainted();
     savePaint();
@@ -5070,7 +5205,7 @@ var INFER = (function () {
     app.paintMsg = null; app.paintSuspects = []; app.usedShowMe = false; app.fromFace = false;
     app.holdOk = false; app.holdMsg = null; app.holdNeed = [];
     app.paintPath = 'infer'; app.inferRes = null; app.inferQ = null; app.inferSpot = null;
-    app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0;
+    app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0; app.inferSkip = null;
     app.sideHold = false; app.sideMsg = null; app.confirmReset = false;
     restorePaint(n);
     buildCube(); buildPads(); applyCam(true);

@@ -2847,7 +2847,7 @@ var INFER = (function () {
     fromFace: false, cheered: {}, readsRight: 0, readsAsked: 0,
     paint: new Array(24).fill(null), paintColour: 'white', paintMsg: null, paintSuspects: [],
     paintIntent: 'match', holdOk: false, holdMsg: null, holdNeed: [], paintPath: 'infer',
-    sideHold: false, sideMsg: null, whiteDown: false, whiteMsg: null,
+    sideHold: false, sideMsg: null, whiteDown: false, whiteMsg: null, confirmReset: false,
     inferRes: null, inferQ: null, inferSpot: null, inferMsg: null, inferFilled: null, inferAsked: 0,
     diag: null,
     says: null, sayKind: '',
@@ -3920,6 +3920,12 @@ var INFER = (function () {
       + 'Then I never ask you about the floor squares, and I only look at cubes with white down there. Fewer questions for you.</div>'
       + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="set-white">White is at the floor</button></div></div>';
   }
+  /* ===== RESET START =====
+     One way out of anywhere. The painter has a lot of little states: painting, locked second
+     picture, turn and check your hold, a question, a spot check, a told off painting, and the
+     hold it at the floor first screen that draws nothing else at all. Every one of them has to
+     have the same exit, or she is stuck. Fenced so the gate can prove that, from every one of
+     those states, one tap lands on the same clean painter. */
   function paintReset(fill) {
     app.paint = new Array(big() ? 54 : 24).fill(null);
     if (fill === 'solved') app.paint = C.stateToStickers(C.solved()).map(function (c) { return c; });
@@ -3934,6 +3940,62 @@ var INFER = (function () {
     app.paintPath = 'infer'; app.inferRes = null; app.inferQ = null; app.inferSpot = null;
     app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0;
   }
+  /* What a clean painter looks like. ONE list, read by the reset and by the gate, so the two
+     can never drift apart and quietly leave a state behind. */
+  function painterClean() {
+    var n = big() ? 54 : 24, i;
+    for (i = 0; i < n; i++) { if (app.paint[i]) return false; }
+    return app.sideHold === false && !app.sideMsg
+      && app.holdOk === false && !app.holdMsg && app.holdNeed.length === 0
+      && app.paintPath === 'infer' && app.paintIntent === 'match'
+      && !app.inferQ && !app.inferSpot && !app.inferRes && !app.inferFilled && !app.inferMsg
+      && app.inferAsked === 0
+      && !app.paintMsg && app.paintSuspects.length === 0
+      && app.confirmReset === false
+      && app.whiteDown === true;
+  }
+  /* wipe the lot: squares, question, candidates, spot check, locks, hold check, the told off
+     message, the hold it at the floor screen, the voice, and the saved copy on the iPad so
+     none of it comes back after a refresh */
+  function resetPainter() {
+    speakStop();
+    paintReset();
+    app.sideHold = false; app.sideMsg = null;
+    app.paintIntent = 'match';
+    app.paintColour = 'white';
+    app.confirmReset = false;
+    app.whiteDown = false; app.whiteMsg = null;
+    app.paintSuspects = []; app.holdNeed = [];
+    /* the saved copy goes with it, the same one forgetPaint drops, so nothing resurrects */
+    storeDel(paintKey());
+  }
+  /* Start again. White at the floor comes back armed, because that is how the cube is held in
+     this house nearly every time, and the I remember banner still has its way out. */
+  function startAgain() {
+    resetPainter();
+    app.whiteDown = true;
+    app.whiteMsg = 'Fresh start. Nearly always you hold it with white at the floor, so I put that back.';
+    savePaint();
+    app.says = null; app.sayKind = ''; app.sayHead = '';
+    idleTile('Fresh start');
+    render();
+  }
+  /* the way out, drawn at the very top of the painter, in every single one of its states */
+  function startAgainCard() {
+    if (app.confirmReset) {
+      return '<div class="card" style="border-width:3px;border-color:' + RED + ';margin-bottom:12px">'
+        + '<h2 style="color:' + RED + '">Start again from the beginning?</h2>'
+        + '<div class="lede">This rubs out every square and every answer, and we begin with a clean cube. '
+        + 'Nothing you have painted is kept.</div>'
+        + '<div class="row" style="margin-top:10px">'
+        + '<button class="btn primary big" data-act="reset-yes">Yes, start again</button>'
+        + '<button class="btn big" data-act="reset-no">Keep going</button></div></div>';
+    }
+    return '<div class="row" style="margin-bottom:12px">'
+      + '<button class="btn big" data-act="start-again" style="border-color:' + RED + ';color:' + RED + '">Start again</button>'
+      + '<span class="lede" style="flex:1 1 160px">Stuck? This rubs everything out and starts the painting fresh.</span></div>';
+  }
+  /* ===== RESET END ===== */
   function paintCheck() {
     /* the standing rule counts as painted here too, or a cube with white known at the floor
        would be told its floor squares are still empty */
@@ -4241,12 +4303,15 @@ var INFER = (function () {
       + '</div>';
   }
 
+  /* Every way this panel can be drawn starts with the way out. h is built FIRST and every
+     return carries it, so no painter state can ever exist without a Start again button on it. */
   function panelPaint() {
-    if (app.sideHold) return sideHoldCard();
+    var h = startAgainCard();
+    if (app.sideHold) return h + sideHoldCard();
     var lead = app.paintIntent === 'side'
       ? 'Paint your cube exactly as it sits in your hands right now. Do not fix anything first. I want to see the side you made.'
       : 'Pick a colour, then tap squares until the picture matches the cube in your hands.';
-    var h = '<div class="card"><h2>Match my cube</h2><div class="lede">' + esc(lead) + '</div>'
+    h += '<div class="card"><h2>Match my cube</h2><div class="lede">' + esc(lead) + '</div>'
       + '<div class="row" style="margin-top:9px"><span class="tag">Colours</span><span class="swatches">'
       + C.COLOURS.map(function (c) {
         return '<button class="swatch' + (app.paintColour === c ? ' on' : '') + '" data-col="' + c + '" style="background:' + HEX[c] + '" title="' + c + '"></button>';
@@ -4679,6 +4744,7 @@ var INFER = (function () {
     app.mode = b.getAttribute('data-mode');
     speakStop();
     app.says = null; app.auto = false;
+    app.confirmReset = false;
     if (app.mode === 'paint') { if (app.paintIntent !== 'side') app.paintIntent = 'match'; idleTile('Paint your cube'); }
     else { app.sideHold = false; app.sideMsg = null; }
     if (app.mode === 'solve' && !app.diag) app.diag = C.diagnose(app.state);
@@ -4717,6 +4783,10 @@ var INFER = (function () {
     if (act === 'side-ready') {
       app.sideHold = false; app.sideMsg = null; app.whiteDown = true; savePaint(); render(); return;
     }
+    /* the way out of every painter state: ask once, then wipe the lot */
+    if (act === 'start-again') { app.confirmReset = true; render(); return; }
+    if (act === 'reset-no') { app.confirmReset = false; render(); return; }
+    if (act === 'reset-yes') { startAgain(); return; }
     /* the standing rule, armed and disarmed from the painter itself, on any way in */
     if (act === 'set-white') {
       var wasAsking = !!app.inferQ;
@@ -4897,7 +4967,7 @@ var INFER = (function () {
     app.holdOk = false; app.holdMsg = null; app.holdNeed = [];
     app.paintPath = 'infer'; app.inferRes = null; app.inferQ = null; app.inferSpot = null;
     app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0;
-    app.sideHold = false; app.sideMsg = null;
+    app.sideHold = false; app.sideMsg = null; app.confirmReset = false;
     restorePaint(n);
     buildCube(); buildPads(); applyCam(true);
     setTimeout(function () { applyCam(false); }, 60);

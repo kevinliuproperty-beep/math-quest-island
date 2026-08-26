@@ -3114,11 +3114,18 @@ var INFER = (function () {
     if (app.inferSpot && app.inferSpot.sid !== undefined && app.inferSpot.sid !== null) return app.inferSpot.sid;
     return null;
   }
-  /* which square this picture must ring: the live one if it lives here, otherwise nothing */
+  /* Which square this picture must ring.
+     FRAME LAW. The words the engine uses are always the cube AS SHE IS HOLDING IT: ceiling up,
+     white at the floor, the side looking at you looking at you. The second picture is drawn
+     AFTER she turns the cube over, so the same square sits somewhere else in it: a square at
+     the floor is drawn at that picture's ceiling. Ringing a question there put two frames on
+     one screen and made the words lie. So a question ring only ever lands on the home grip
+     picture. Anything she cannot see from her grip is asked as a peek instead. */
   function askSid(which) {
     var sid = liveSid();
     if (sid === null) return null;
-    return viewOfSid(sid) === which ? sid : null;
+    if (which !== 1) return null;
+    return viewOfSid(sid) === 1 ? sid : null;
   }
   /* is this the picture with the ringed square on it */
   function askOn(which) { return askSid(which) !== null; }
@@ -3141,26 +3148,129 @@ var INFER = (function () {
       : (which === 1
         ? 'Hold it in your home grip. Ceiling, the side looking at you, and your right.'
         : (app.holdOk
-          ? 'Three brand new sides: the ceiling, the side looking at you, and your right.'
+          ? 'You turned the cube over. In THIS picture the ceiling is the side that used to be at the floor. Paint what you see now.'
           : 'Locked. Do the turn below and check your hold, then this picture opens.'));
     return '<div class="viewbox paint' + (lock ? ' locked' : '') + (asking ? ' asking' : '') + '">'
       + svg + '<div class="cap">' + cap + '</div></div>';
   }
-  /* a small picture of the side that square is on, with the ring on it, so the question is
-     never words alone even when the square is round the back. Same view rule as the big
-     pictures, so the inset and the big picture always ring the same square. */
-  function askInset(sid) {
-    var faces = viewFaces(viewOfSid(sid));
-    var opts = { colourOf: paintColourOf, ringSid: sid, mark: function () { return false; } };
-    return big() ? iso3Svg(faces, 190, opts) : isoSvg(faces, 170, opts);
-  }
-  /* which of the two big pictures she should be looking at, in her words */
-  function askWhichPic(sid) {
-    return viewOfSid(sid) === 1
-      ? 'It is on the FIRST picture, the one at the top.'
-      : 'It is on the SECOND picture, the one underneath.';
-  }
   /* ===== VIEWS END ===== */
+
+  /* ===== PEEK START =====
+     ONE FRAME. Every word the engine says is about the cube the way her hands are holding it:
+     ceiling up, white at the floor, the side looking at you looking at you. Nothing is ever
+     turned over to answer a question. When the square is round the back she keeps her grip and
+     tips the cube just enough to peek, then holds it back the way it was.
+     The little picture is that side on its own, drawn flat, with each of its four edges named
+     in the same frame. So there is never a second frame on the screen to collide with. */
+
+  /* each side, drawn flat: which side sits to its right, and which side sits below it.
+     Straight off the sticker tables, so the drawing and the numbering can never disagree.
+     Order is U, R, F, D, L, B. The ceiling is drawn with the far side at the top and the floor
+     with the near side at the top, which is what you see when you tip to peek at them. */
+  var FLAT_RD = [[1, 2], [5, 3], [1, 3], [1, 5], [2, 3], [4, 3]];
+  var SIDE_HOME = ['the side at the ceiling', 'the side on your right', 'the side looking at you',
+                   'the side at the floor', 'the side on your left', 'the side facing away'];
+  var EDGE_HOME = ['ceiling', 'your right', 'you', 'floor', 'your left', 'far side'];
+  var NEAR_HOME = ['the ceiling', 'your right', 'you', 'the floor', 'your left', 'the far side'];
+  /* the three sides her home grip already shows her */
+  var SEEN_HOME = [true, true, true, false, false, false];
+  var PEEK_RANK = [0, 2, 1, 0, 2, 1];
+
+  function facePer() { return big() ? 9 : 4; }
+  function faceOfSid(sid) { return Math.floor(sid / facePer()); }
+  function cellOfSid(sid) { return sid % facePer(); }
+  function otherFacesOf(pc) {
+    var list = (pc.kind === 'e' ? C.EHOME : C.HOME)[pc.slot].filter(function (x) { return x !== pc.face; });
+    list.sort(function (a, b) { return PEEK_RANK[a] - PEEK_RANK[b]; });
+    return list;
+  }
+  /* where in that side the square sits, named by the sides it touches, in her frame */
+  function peekSpot(sid) {
+    var pc = INFER.pieceOf(C, sid), o;
+    if (pc.kind === 'n') return 'in the very middle';
+    o = otherFacesOf(pc);
+    if (o.length === 1) return 'in the middle of the edge nearest ' + NEAR_HOME[o[0]];
+    return 'in the corner nearest ' + NEAR_HOME[o[0]] + ' and ' + NEAR_HOME[o[1]];
+  }
+  /* keep your grip, and tip only far enough to see */
+  function peekOpen(sid) {
+    var f = faceOfSid(sid);
+    return SEEN_HOME[f]
+      ? 'Keep your grip. Look at ' + SIDE_HOME[f] + '.'
+      : 'Keep your grip. Tip the cube just enough to peek at ' + SIDE_HOME[f] + '.';
+  }
+  function peekAsk(sid) { return 'What colour is the square ' + peekSpot(sid) + '? Tap it.'; }
+  function peekBack(sid) { return SEEN_HOME[faceOfSid(sid)] ? '' : 'Then hold it back the way it was.'; }
+  function peekQuestion(sid) {
+    var back = peekBack(sid);
+    return peekOpen(sid) + ' ' + peekAsk(sid) + (back ? ' ' + back : '');
+  }
+  function peekCap(sid) { return 'This is ' + SIDE_HOME[faceOfSid(sid)] + '.'; }
+
+  /* That side on its own, flat, every edge labelled with the side it touches. The labels are
+     what make the picture unambiguous: she never has to guess which way up it is drawn. */
+  function faceInset(sid, w) {
+    var per = facePer(), n = big() ? 3 : 2, f = faceOfSid(sid), rd = FLAT_RD[f];
+    var right = rd[0], down = rd[1], up = C.OPP_FACE[down], left = C.OPP_FACE[right];
+    var cell = big() ? 30 : 42, pad = 30, side = n * cell, W = side + pad * 2;
+    var out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + W + '" width="' + w + '">';
+    var i, r, c, here, col;
+    for (i = 0; i < per; i++) {
+      r = Math.floor(i / n); c = i % n; here = f * per + i; col = paintColourOf(here);
+      out += '<rect data-sid="' + here + '" x="' + (pad + c * cell) + '" y="' + (pad + r * cell)
+        + '" width="' + cell + '" height="' + cell + '" rx="5" fill="' + (col || '#efece6')
+        + '" stroke="' + INK + '" stroke-width="1.8"/>';
+    }
+    function label(t, x, y, rot) {
+      return '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-family="system-ui,sans-serif"'
+        + ' font-size="11" font-weight="700" fill="#6b675f"'
+        + (rot ? ' transform="rotate(' + rot + ' ' + x + ' ' + y + ')"' : '') + '>' + esc(t) + '</text>';
+    }
+    out += label(EDGE_HOME[up], W / 2, pad - 11, 0);
+    out += label(EDGE_HOME[down], W / 2, W - pad + 20, 0);
+    out += label(EDGE_HOME[left], pad - 12, W / 2, -90);
+    out += label(EDGE_HOME[right], W - pad + 14, W / 2, 90);
+    r = Math.floor(cellOfSid(sid) / n); c = cellOfSid(sid) % n;
+    out += '<circle class="asked" data-ring-sid="' + sid + '" cx="' + (pad + c * cell + cell / 2)
+      + '" cy="' + (pad + r * cell + cell / 2) + '" r="' + (cell * 0.36)
+      + '" fill="none" stroke="' + RED + '" stroke-width="3.4" pointer-events="none"/>';
+    return out + '</svg>';
+  }
+
+  /* Is the turned over picture the one she is working in right now? If it is, every word on
+     the screen has to be said in THAT picture's frame instead, or we are back to two frames. */
+  function secondPicLive() { return app.paintPath === 'paint2' && app.holdOk; }
+  /* The always available switch: any way into the painter can say where white is.
+     FRAME LAW. This card names a side of the cube, so it has to name it in the frame of the
+     picture she is actually working in. In her home grip that side is the floor. Once she has
+     turned the cube over to paint the second picture, the very same side is at the ceiling of
+     what she is looking at, so that is what it says. Same flag, two honest ways of saying it. */
+  function whiteFloorCard() {
+    var turned = secondPicLive();
+    if (app.whiteDown) {
+      if (turned) {
+        return '<div class="say good" style="margin-bottom:12px">'
+          + '<span class="head">You turned the cube over, so in this picture white is at the CEILING.</span>'
+          + 'That is the side you already finished. I never ask you about those squares. '
+          + '<button class="btn" data-act="unset-white" style="margin-top:8px">That is not right</button></div>';
+      }
+      return '<div class="say good" style="margin-bottom:12px"><span class="head">White is at the floor. I remember.</span>'
+        + (app.whiteMsg ? esc(app.whiteMsg) + ' ' : '')
+        + 'So I never ask you about the floor squares, and I only look at cubes that have white down there. '
+        + '<button class="btn" data-act="unset-white" style="margin-top:8px">That is not right</button></div>';
+    }
+    if (turned) {
+      return '<div class="card" style="margin-bottom:12px"><h2>Where is white?</h2>'
+        + '<div class="lede">You turned the cube over for this picture, so a finished white side would be at the '
+        + 'CEILING here. If that is what you can see, tell me and I will stop asking about those squares.</div>'
+        + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="set-white">White is at the ceiling here</button></div></div>';
+    }
+    return '<div class="card" style="margin-bottom:12px"><h2>Where is white?</h2>'
+      + '<div class="lede">If you are holding your cube with the white side pointing at the floor, tell me now. '
+      + 'Then I never ask you about the floor squares, and I only look at cubes with white down there. Fewer questions for you.</div>'
+      + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="set-white">White is at the floor</button></div></div>';
+  }
+  /* ===== PEEK END ===== */
 
   /* ---------------------------------------------------------------- the 3D cube */
   var cubieEls = [], stickerEls = [], ring = null, host = null;
@@ -3854,7 +3964,6 @@ var INFER = (function () {
      Two ways to be sure: she painted the whole side that colour, or the complete list of cubes
      that match her painting all agree on it. A settled side is never asked about again, and a
      settled white floor arms the standing rule on its own, with no question at all. */
-  function facePer() { return big() ? 9 : 4; }
   function solidFaceColour(paint, f) {
     var per = facePer(), base = f * per, c = paint[base], i;
     if (!c) return null;
@@ -3906,19 +4015,6 @@ var INFER = (function () {
     if (solidFaceColour(app.paint, C.D) === 'white') {
       armWhiteDown('I could see it: you painted every floor square white. So I pinned it.');
     }
-  }
-  /* the always available switch: any way into the painter can say where white is */
-  function whiteFloorCard() {
-    if (app.whiteDown) {
-      return '<div class="say good" style="margin-bottom:12px"><span class="head">White is at the floor. I remember.</span>'
-        + (app.whiteMsg ? esc(app.whiteMsg) + ' ' : '')
-        + 'So I never ask you about the floor squares, and I only look at cubes that have white down there. '
-        + '<button class="btn" data-act="unset-white" style="margin-top:8px">That is not right</button></div>';
-    }
-    return '<div class="card" style="margin-bottom:12px"><h2>Where is white?</h2>'
-      + '<div class="lede">If you are holding your cube with the white side pointing at the floor, tell me now. '
-      + 'Then I never ask you about the floor squares, and I only look at cubes with white down there. Fewer questions for you.</div>'
-      + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="set-white">White is at the floor</button></div></div>';
   }
   /* ===== RESET START =====
      One way out of anywhere. The painter has a lot of little states: painting, locked second
@@ -4237,28 +4333,30 @@ var INFER = (function () {
   function inferCard() {
     var painted = app.paint.filter(Boolean).length, total = big() ? 54 : 24;
     var h = '<div class="card" style="border-width:3px"><h2>Let me work out the rest</h2>';
+    /* Every question is a PEEK, asked and drawn in her own grip. The cube is never turned over
+       to answer one, so no word here can ever mean a different side than the picture shows. */
     if (app.inferSpot) {
-      var w = askWords(app.inferSpot.sid);
-      h += '<div class="lede">I worked out every side you cannot see, and there is only one cube it can be. The pictures are filled in.</div>'
+      var sp = app.inferSpot.sid;
+      h += '<div class="lede">I worked out every side you cannot see, and there is only one cube it can be. The painting is filled in.</div>'
         + '<div class="why"><b>Why I can be sure.</b> Only one legal cube matches every square you painted, so I checked them all.</div>'
-        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + askInset(app.inferSpot.sid)
-        + '<div class="cap">The ringed square</div></div></div>'
+        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + faceInset(sp, 176)
+        + '<div class="cap">' + esc(peekCap(sp)) + '</div></div></div>'
         + '<div class="say" style="margin-top:9px"><span class="head">One quick look</span>'
-        + esc(askWhichPic(app.inferSpot.sid)) + ' ' + esc(w.find) + ' Is its square '
-        + esc(LOOK_WORD[INFER.pieceOf(C, app.inferSpot.sid).face]) + ' <b>' + esc(app.inferSpot.colour) + '</b>?</div>'
+        + esc(peekOpen(sp)) + ' Is the square ' + esc(peekSpot(sp)) + ' <b>' + esc(app.inferSpot.colour) + '</b>? '
+        + esc(peekBack(sp)) + '</div>'
         + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="spot-yes">Yes, that is right</button>'
         + '<button class="btn" data-act="spot-no">No, it is a different colour</button></div></div>';
       return h;
     }
     if (app.inferQ) {
-      var q = askWords(app.inferQ.sid), cols = app.inferQ.colours || C.COLOURS;
+      var qs = app.inferQ.sid, cols = app.inferQ.colours || C.COLOURS;
       var many = app.inferRes && app.inferRes.capped ? 'Lots of' : ((app.inferRes ? app.inferRes.count : 2) + ' different');
       h += '<div class="lede">Question ' + (app.inferAsked || 1) + '.</div>'
         + '<div class="why"><b>Why this one.</b> ' + esc(many) + ' cubes still match your painting, and this square tells them apart.</div>'
-        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + askInset(app.inferQ.sid)
-        + '<div class="cap">The ringed square</div></div></div>'
         + '<div class="holdq" style="margin-top:8px">What colour is this square? Tap it.</div>'
-        + '<div class="lede" style="margin-top:2px">' + esc(askWhichPic(app.inferQ.sid)) + ' ' + esc(q.find + ' ' + q.ask) + '</div>'
+        + '<div class="lede" style="margin-top:2px">' + esc(peekQuestion(qs)) + '</div>'
+        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + faceInset(qs, 176)
+        + '<div class="cap">' + esc(peekCap(qs)) + '</div></div></div>'
         + '<div class="swatches" style="margin-top:8px">'
         + cols.map(function (c) { return '<button class="swatch" data-infer="' + c + '" title="' + c + '" style="background:' + HEX[c] + '"></button>'; }).join('')
         + '</div>'
@@ -4267,7 +4365,7 @@ var INFER = (function () {
       if (app.inferMsg) h += '<div class="say ' + (app.inferMsg.ok ? 'good' : 'oops') + '" style="margin-top:9px">' + esc(app.inferMsg.text) + '</div>';
       return h + '</div>';
     }
-    h += '<div class="lede">Paint the three sides you can see, then let me work out the hidden ones. If I cannot be sure, I will ask you to look at one square at a time. You have painted '
+    h += '<div class="lede">Paint the three sides you can see, then let me work out the hidden ones. If I cannot be sure, I will ask you to peek at one square at a time, keeping your grip. You have painted '
       + painted + ' of ' + total + ' squares.</div>'
       + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="infer"' + (painted ? '' : ' disabled') + '>Work out the rest for me</button>'
       + '<button class="btn" data-act="paint-rest">I will paint the rest myself</button></div>';
@@ -4316,9 +4414,15 @@ var INFER = (function () {
       + C.COLOURS.map(function (c) {
         return '<button class="swatch' + (app.paintColour === c ? ' on' : '') + '" data-col="' + c + '" style="background:' + HEX[c] + '" title="' + c + '"></button>';
       }).join('') + '</span></div>'
+      /* THE DEFAULT PATH SHOWS ONE PICTURE. She paints the side she can see, and everything
+         hidden is asked as a peek in that same grip. The turned over picture only appears if
+         she chooses to paint the rest herself, because it is the only thing on this screen
+         that speaks in a different frame. */
       + '<div class="views" style="margin-top:12px">'
-      + paintView(1) + paintView(2)
+      + paintView(1) + (app.paintPath === 'paint2' ? paintView(2) : '')
       + '</div>'
+      + (app.paintPath === 'paint2' ? '' : '<div class="lede" style="margin-top:8px">'
+        + 'Just this one picture. Keep your grip the whole time. Anything I cannot see, I will ask you to peek at.</div>')
       + '</div>';
     h += whiteFloorCard();
     h += inferCard();

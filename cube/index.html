@@ -1143,9 +1143,21 @@ var CUBE = (function () {
     }
     return '';
   }
+  /* Stamp the why line, and group the beats. A repeated chant is one group, so per move
+     stepping is simply the default and a later fluent mode can play a whole group in one go
+     without any of this changing. */
   function stampWhy(beats) {
-    var i;
-    for (i = 0; i < beats.length; i++) beats[i].why = whyOf(beats[i]);
+    var i, g = 0, prev;
+    for (i = 0; i < beats.length; i++) {
+      beats[i].why = whyOf(beats[i]);
+      prev = i > 0 ? beats[i - 1] : null;
+      if (prev && beats[i].chant && prev.chant === beats[i].chant && beats[i].ord === prev.ord + 1) {
+        beats[i].group = prev.group;
+      } else {
+        beats[i].group = ++g;
+      }
+      beats[i].units = beats[i].kind === 'whole' ? 1 : beats[i].moves.length;
+    }
     return beats;
   }
 
@@ -2359,9 +2371,21 @@ var CUBE3 = (function () {
     if (k === 'done') return 'Every block is back in the place its own colours named. That is the whole idea.';
     return '';
   }
+  /* Stamp the why line, and group the beats. A repeated chant is one group, so per move
+     stepping is simply the default and a later fluent mode can play a whole group in one go
+     without any of this changing. */
   function stampWhy(beats) {
-    var i;
-    for (i = 0; i < beats.length; i++) beats[i].why = whyOf(beats[i]);
+    var i, g = 0, prev;
+    for (i = 0; i < beats.length; i++) {
+      beats[i].why = whyOf(beats[i]);
+      prev = i > 0 ? beats[i - 1] : null;
+      if (prev && beats[i].chant && prev.chant === beats[i].chant && beats[i].ord === prev.ord + 1) {
+        beats[i].group = prev.group;
+      } else {
+        beats[i].group = ++g;
+      }
+      beats[i].units = beats[i].kind === 'whole' ? 1 : beats[i].moves.length;
+    }
     return beats;
   }
 
@@ -2814,10 +2838,11 @@ var INFER = (function () {
     undo: [],
     level: 'watch',
     plan: null, idx: 0, askState: null, busy: false, auto: false, usedShowMe: false, awaitDemo: false, speak: true,
+    awaitMove: false, units: [], moveAt: 0,
     fromFace: false, cheered: {}, readsRight: 0, readsAsked: 0,
     paint: new Array(24).fill(null), paintColour: 'white', paintMsg: null, paintSuspects: [],
     paintIntent: 'match', holdOk: false, holdMsg: null, holdNeed: [], paintPath: 'infer',
-    sideHold: false, sideMsg: null,
+    sideHold: false, sideMsg: null, whiteDown: false,
     inferRes: null, inferQ: null, inferSpot: null, inferMsg: null, inferFilled: null, inferAsked: 0,
     diag: null,
     says: null, sayKind: '',
@@ -2845,8 +2870,17 @@ var INFER = (function () {
     { id: 'solo3', name: 'On your own', why: 'solved the big cube with your own hands' }
   ];
   function badgeList() { return big() ? BADGES3 : BADGES; }
-  function loadBadges() { try { return JSON.parse(localStorage.getItem('cube-quest-badges') || '{}'); } catch (e) { return {}; } }
-  function saveBadges() { try { localStorage.setItem('cube-quest-badges', JSON.stringify(app.badges)); } catch (e) { /* file:// is fine without it */ } }
+  /* ---------------------------------------------------------------- remembering things
+     Everything kept between visits lives under one prefix with no name in it. */
+  var STORE = 'cube-quest-';
+  function storeGet(k) { try { return localStorage.getItem(STORE + k); } catch (e) { return null; } }
+  function storeSet(k, v) { try { localStorage.setItem(STORE + k, v); } catch (e) { /* file:// is fine without it */ } }
+  function storeDel(k) { try { localStorage.removeItem(STORE + k); } catch (e) { /* nothing to forget */ } }
+  function loadBadges() {
+    var raw = storeGet('badges');
+    try { return JSON.parse(raw || '{}'); } catch (e) { return {}; }
+  }
+  function saveBadges() { storeSet('badges', JSON.stringify(app.badges)); }
   app.badges = loadBadges();
   function win(id) {
     if (app.badges[id]) return false;
@@ -2966,7 +3000,20 @@ var INFER = (function () {
         + '" fill="' + (col || '#efece6') + '" stroke="' + (marked ? RED : INK) + '" stroke-width="' + (marked ? 3.4 : 1.4) + '"/>';
     }
     if (opts.ring) out += '<circle cx="50" cy="38" r="13.6" fill="none" stroke="' + RED + '" stroke-width="3"/>';
+    out += ringOn(qs, opts.ringSid, function (q) { return C.WHERE[q.slot][q.fac]; }, 11);
     return out + '</svg>';
+  }
+  /* point at the square, do not just describe it */
+  function ringOn(quads, sid, sidOf, r) {
+    if (sid === undefined || sid === null) return '';
+    var i, q, c;
+    for (i = 0; i < quads.length; i++) {
+      q = quads[i];
+      if (sidOf(q) !== sid) continue;
+      c = q.pts.reduce(function (a, p) { return [a[0] + p[0] / q.pts.length, a[1] + p[1] / q.pts.length]; }, [0, 0]);
+      return '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + r + '" fill="none" stroke="' + RED + '" stroke-width="3"/>';
+    }
+    return '';
   }
   function stateIso(st, faces, w, opts) {
     opts = opts || {};
@@ -3022,6 +3069,7 @@ var INFER = (function () {
       var c = qs[8].pts.reduce(function (a, p) { return [a[0] + p[0] / 4, a[1] + p[1] / 4]; }, [0, 0]);
       out += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="8.4" fill="none" stroke="' + RED + '" stroke-width="2.6"/>';
     }
+    out += ringOn(qs, opts.ringSid, function (q) { return q.sid; }, 7.5);
     return out + '</svg>';
   }
   function state3Iso(st, faces, w, opts) {
@@ -3276,11 +3324,10 @@ var INFER = (function () {
   var CAN_SPEAK = (typeof window !== 'undefined') && !!window.speechSynthesis
     && (typeof window.SpeechSynthesisUtterance === 'function');
   function loadSpeak() {
-    try { return localStorage.getItem('cube-quest-speak') !== 'off'; } catch (e) { return true; }
+    var v = storeGet('speak');
+    return v !== 'off';
   }
-  function saveSpeak() {
-    try { localStorage.setItem('cube-quest-speak', app.speak ? 'on' : 'off'); } catch (e) { /* file:// is fine without it */ }
-  }
+  function saveSpeak() { storeSet('speak', app.speak ? 'on' : 'off'); }
   function speakStop() {
     if (!CAN_SPEAK) return;
     try { window.speechSynthesis.cancel(); } catch (e) { /* nothing to cancel */ }
@@ -3353,7 +3400,7 @@ var INFER = (function () {
     app.fromFace = app.diag.kind === 'face';
     say(app.plan.beats[0].say, '');
     render();
-    if (app.auto) setTimeout(advance, 700);
+    /* nothing moves on its own from here. Beat one is on the screen, waiting for her tap. */
   }
   function advance() {
     if (app.busy || !app.plan) return;
@@ -3374,21 +3421,53 @@ var INFER = (function () {
     if (b.edgeHi !== undefined) glowPiece3('e', b.edgeHi);
     if (b.cornerSlotHi !== undefined) glowSlot3('c', b.cornerSlotHi);
     render();
-    var dur = app.auto ? 520 : SPEED;
-    var finish = function () {
-      app.busy = false;
-      if (app.level === 'try' && b.askAfter && app.askState !== 'doneAfter') { app.askState = 'askingAfter'; render(); return; }
-      /* the cube has just shown her the move. Hold there so she can watch it again or copy
-         it on her own cube, unless she asked me to run the whole thing without stopping. */
-      if (b.moves.length && !app.auto) { app.awaitDemo = true; render(); return; }
-      beatDone(b);
+    app.units = beatUnits(b);
+    app.moveAt = 0;
+    if (!app.units.length) { setTimeout(function () { finishBeat(b); }, b.read ? 1500 : 260); return; }
+    playUnit(false);
+  }
+  /* One unit is one named move, or one whole cube turn. A chant is four or fourteen of them
+     and she gets to keep up with every single one: the cube does one, then waits for her.
+     Groundwork note: a whole chant is already one group on the beat, so a later fluent mode
+     can play the group in one go simply by not stopping between units. */
+  function beatUnits(b) {
+    if (!b || !b.moves.length) return [];
+    if (b.kind === 'whole') return [b.whole];
+    return b.moves.slice();
+  }
+  function playUnit(speakIt) {
+    var b = beat();
+    if (!b || !app.units || app.moveAt >= app.units.length) return;
+    var u = app.units[app.moveAt], dur = app.auto ? 520 : SPEED;
+    app.busy = true; app.awaitMove = false;
+    app.chantAt = app.moveAt;
+    if (speakIt) speakMove(u, b);
+    render();
+    var after = function () {
+      app.moveAt++;
+      if (app.moveAt >= app.units.length) { app.chantAt = -1; finishBeat(b); return; }
+      if (app.auto) { playUnit(true); return; }
+      app.busy = false; app.awaitMove = true; render();
     };
-    if (!b.moves.length) { setTimeout(finish, b.read ? 1500 : 260); return; }
-    if (b.kind === 'whole') { turnWhole(b.whole, dur + 80, finish); return; }
-    playMoves(b.moves, dur, function (i) { app.chantAt = i; render(); }, function () { app.chantAt = -1; finish(); });
+    if (C.WHOLE[u]) turnWhole(u, dur + 80, after); else turn(u, dur, after);
+  }
+  function speakMove(u, b) {
+    if (!app.speak) return;
+    var words = C.WHOLE[u] ? C.WHOLE[u].cap : (C.CAPTION[u] || u);
+    var pre = (b && b.chant && app.units.length > 1) ? ('Move ' + (app.moveAt + 1) + ' of ' + app.units.length + '. ') : '';
+    speakStop();
+    speakText(pre + words);
+  }
+  function finishBeat(b) {
+    app.busy = false; app.awaitMove = false;
+    if (app.level === 'try' && b.askAfter && app.askState !== 'doneAfter') { app.askState = 'askingAfter'; render(); return; }
+    /* the cube has just shown her the move. Hold there so she can watch it again or copy
+       it on her own cube, unless she asked me to run the whole thing without stopping. */
+    if (b.moves.length && !app.auto) { app.awaitDemo = true; render(); return; }
+    beatDone(b);
   }
   function beatDone(b) {
-    app.askState = null; app.chantAt = -1; app.awaitDemo = false;
+    app.askState = null; app.chantAt = -1; app.awaitDemo = false; app.awaitMove = false; app.moveAt = 0;
     if (b.cheer) {
       cheer(b.cheer === 'Solved!'
         ? (big() ? 'Every side is one colour. Eight steps, six chants, done.' : 'Every side is one colour. Three steps, two chants, done.')
@@ -3423,8 +3502,8 @@ var INFER = (function () {
   function goBack() {
     if (app.busy || !app.plan) return;
     speakStop();
-    if (app.awaitDemo) {
-      app.awaitDemo = false;
+    if (app.awaitDemo || app.awaitMove) {
+      app.awaitDemo = false; app.awaitMove = false; app.moveAt = 0; app.chantAt = -1;
       app.state = C.clone(app.plan.states[app.idx]);
       app.askState = null; clearGlow(); renderCube();
       say(app.plan.beats[app.idx].say, '');
@@ -3446,10 +3525,37 @@ var INFER = (function () {
     speakStop();
     var b = beat();
     if (!b || !b.moves.length) return;
-    app.awaitDemo = false;
+    app.awaitDemo = false; app.awaitMove = false; app.moveAt = 0; app.chantAt = -1;
     app.state = C.clone(app.plan.states[app.idx]);
     clearGlow(); renderCube(); render();
     setTimeout(function () { playBeat(b); }, 220);
+  }
+  /* A block is one whole piece of work: find this block, aim it, chant it home. Restarting the
+     block rewinds to the snapshot the plan kept at its first beat, so it is exact, never undone
+     by guesswork. Coarser than watching one move again, finer than working the cube out afresh. */
+  var BLOCK_OPENERS = ['look', 'read', 'warn', 'guard', 'skip', 'cheer', 'done'];
+  function blockStart(i) {
+    var beats = app.plan.beats, j = i;
+    while (j > 0) {
+      var b = beats[j], prev = beats[j - 1];
+      if (BLOCK_OPENERS.indexOf(b.kind) >= 0) break;
+      if (b.phase !== prev.phase) break;
+      if (prev.chant && !b.chant) break;
+      j--;
+    }
+    return j;
+  }
+  function restartBlock() {
+    if (app.busy || !app.plan) return;
+    speakStop();
+    var j = blockStart(app.idx), b = app.plan.beats[j];
+    app.idx = j;
+    app.state = C.clone(app.plan.states[j]);
+    app.awaitDemo = false; app.awaitMove = false; app.moveAt = 0; app.chantAt = -1; app.askState = null;
+    clearGlow(); renderCube();
+    say(b.say, '');
+    render();
+    speakBeat(b);
   }
   function replan(hint, note) {
     app.plan = C.buildPlan(app.state, hint);
@@ -3614,6 +3720,53 @@ var INFER = (function () {
   }
 
   /* ---------------------------------------------------------------- painting */
+  /* ---------------------------------------------------------------- keeping her painting
+     Once she paints a square it stays painted: through a refresh, a walk to another tab, a
+     closed lid. Only Rub it all out forgets it. */
+  function paintKey(n) { return 'paint-' + (n || app.size); }
+  function savePaint() {
+    storeSet(paintKey(), JSON.stringify({
+      v: 1, size: app.size, paint: app.paint, holdOk: app.holdOk, whiteDown: app.whiteDown,
+      paintPath: app.paintPath, paintIntent: app.paintIntent, sideHold: app.sideHold
+    }));
+  }
+  function forgetPaint() { storeDel(paintKey()); }
+  function loadPaint(n) {
+    var raw = storeGet(paintKey(n)), o;
+    if (!raw) return null;
+    try { o = JSON.parse(raw); } catch (e) { return null; }
+    if (!o || o.size !== n || !o.paint || o.paint.length !== (n === 3 ? 54 : 24)) return null;
+    return o;
+  }
+  function restorePaint(n) {
+    var o = loadPaint(n);
+    if (!o) return false;
+    app.paint = o.paint.slice();
+    app.holdOk = !!o.holdOk;
+    app.whiteDown = !!o.whiteDown;
+    app.paintPath = o.paintPath || 'infer';
+    app.paintIntent = o.paintIntent || 'match';
+    app.sideHold = !!o.sideHold;
+    return true;
+  }
+  /* white at the floor is knowledge, not a guess: once the flow has established it, the floor
+     squares are white and the engine never asks about them again */
+  function floorSids() {
+    var per = big() ? 9 : 4, base = C.D * per, out = [], i;
+    for (i = 0; i < per; i++) out.push(base + i);
+    return out;
+  }
+  function assumedSid(sid) {
+    if (!app.whiteDown || app.paint[sid]) return false;
+    return floorSids().indexOf(sid) >= 0;
+  }
+  /* what the engine is allowed to take as known: what she painted, plus what the flow proved */
+  function effPaint() {
+    if (!app.whiteDown) return app.paint;
+    var out = app.paint.slice(), f = floorSids(), i;
+    for (i = 0; i < f.length; i++) { if (!out[f[i]]) out[f[i]] = 'white'; }
+    return out;
+  }
   function paintReset(fill) {
     app.paint = new Array(big() ? 54 : 24).fill(null);
     if (fill === 'solved') app.paint = C.stateToStickers(C.solved()).map(function (c) { return c; });
@@ -3794,8 +3947,23 @@ var INFER = (function () {
     else if (known.length > 1) find += ' You painted its other squares ' + known.join(' and ') + '.';
     return { find: find, ask: 'What colour is its square ' + LOOK_WORD[pc.face] + '?' };
   }
+  /* which square is being asked about, and which of the two pictures shows it */
+  function askSid(which) {
+    var sid = app.inferQ ? app.inferQ.sid : (app.inferSpot ? app.inferSpot.sid : null);
+    if (sid === null || sid === undefined) return null;
+    var inFirst = sid < firstViewCount();
+    return ((which === 1) === inFirst) ? sid : null;
+  }
+  /* a small picture of the side that square is on, with the ring on it, so the question is
+     never words alone even when the square is round the back */
+  function askInset(sid) {
+    var inFirst = sid < firstViewCount(), faces = inFirst ? viewHome() : viewOver();
+    var opts = { colourOf: paintColourOf, ringSid: sid, mark: function () { return false; } };
+    return big() ? iso3Svg(faces, 190, opts) : isoSvg(faces, 170, opts);
+  }
   function inferRun() {
-    var res = INFER.completions(C, app.paint, { cap: 400, budget: 4000 });
+    var known = effPaint();
+    var res = INFER.completions(C, known, { cap: 400, budget: 4000 });
     app.inferRes = res;
     app.inferQ = null; app.inferSpot = null;
     if (!res.capped && res.count === 0) {
@@ -3807,12 +3975,13 @@ var INFER = (function () {
       for (i = 0; i < full.length; i++) { if (!app.paint[i]) { app.paint[i] = full[i]; filled.push(i); } }
       app.inferFilled = filled;
       app.holdOk = true;
+      savePaint();
       app.inferSpot = { sid: pickSpot(filled), colour: null };
       app.inferSpot.colour = app.paint[app.inferSpot.sid];
       app.inferMsg = null;
       render(); return;
     }
-    app.inferQ = INFER.bestQuestion(C, app.paint, res.list);
+    app.inferQ = INFER.bestQuestion(C, known, res.list);
     app.inferAsked = (app.inferAsked || 0) + 1;
     app.inferMsg = null;
     render();
@@ -3829,6 +3998,7 @@ var INFER = (function () {
   function inferAnswer(colour) {
     if (!app.inferQ) return;
     app.paint[app.inferQ.sid] = colour;
+    savePaint();
     inferRun();
   }
   function inferSpotYes() {
@@ -3855,6 +4025,8 @@ var INFER = (function () {
       var w = askWords(app.inferSpot.sid);
       h += '<div class="lede">I worked out every side you cannot see, and there is only one cube it can be. The pictures are filled in.</div>'
         + '<div class="why"><b>Why I can be sure.</b> Only one legal cube matches every square you painted, so I checked them all.</div>'
+        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + askInset(app.inferSpot.sid)
+        + '<div class="cap">The ringed square</div></div></div>'
         + '<div class="say" style="margin-top:9px"><span class="head">One quick look</span>'
         + esc(w.find) + ' Is its square ' + esc(LOOK_WORD[INFER.pieceOf(C, app.inferSpot.sid).face]) + ' <b>' + esc(app.inferSpot.colour) + '</b>?</div>'
         + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="spot-yes">Yes, that is right</button>'
@@ -3864,10 +4036,12 @@ var INFER = (function () {
     if (app.inferQ) {
       var q = askWords(app.inferQ.sid), cols = app.inferQ.colours || C.COLOURS;
       var many = app.inferRes && app.inferRes.capped ? 'Lots of' : ((app.inferRes ? app.inferRes.count : 2) + ' different');
-      h += '<div class="lede">Question ' + (app.inferAsked || 1) + '. The markers on the cube picture show which side is which.</div>'
+      h += '<div class="lede">Question ' + (app.inferAsked || 1) + '.</div>'
         + '<div class="why"><b>Why this one.</b> ' + esc(many) + ' cubes still match your painting, and this square tells them apart.</div>'
-        + '<div class="holdq" style="margin-top:8px">' + esc(q.find) + '</div>'
-        + '<div class="holdq" style="margin-top:2px">' + esc(q.ask) + ' Tap it.</div>'
+        + '<div class="views" style="margin-top:10px"><div class="viewbox">' + askInset(app.inferQ.sid)
+        + '<div class="cap">The ringed square</div></div></div>'
+        + '<div class="holdq" style="margin-top:8px">What colour is this square? Tap it.</div>'
+        + '<div class="lede" style="margin-top:2px">' + esc(q.find + ' ' + q.ask) + '</div>'
         + '<div class="swatches" style="margin-top:8px">'
         + cols.map(function (c) { return '<button class="swatch" data-infer="' + c + '" title="' + c + '" style="background:' + HEX[c] + '"></button>'; }).join('')
         + '</div>'
@@ -3923,14 +4097,19 @@ var INFER = (function () {
         return '<button class="swatch' + (app.paintColour === c ? ' on' : '') + '" data-col="' + c + '" style="background:' + HEX[c] + '" title="' + c + '"></button>';
       }).join('') + '</span></div>'
       + '<div class="views" style="margin-top:12px">'
-      + '<div class="viewbox paint">' + (big() ? iso3Svg(viewHome(), 210, { click: true, ring: true, colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_HOME, 190, { click: true, ring: true, colourOf: paintColourOf, mark: paintMark }))
+      + '<div class="viewbox paint">' + (big() ? iso3Svg(viewHome(), 210, { click: true, ring: true, ringSid: askSid(1), colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_HOME, 190, { click: true, ring: true, ringSid: askSid(1), colourOf: paintColourOf, mark: paintMark }))
       + '<div class="cap">Hold it in your home grip. Ceiling, the side looking at you, and your right.</div></div>'
-      + '<div class="viewbox paint' + (app.holdOk ? '' : ' locked') + '">' + (big() ? iso3Svg(viewOver(), 210, { click: true, colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_OVER, 190, { click: true, colourOf: paintColourOf, mark: paintMark }))
+      + '<div class="viewbox paint' + (app.holdOk ? '' : ' locked') + '">' + (big() ? iso3Svg(viewOver(), 210, { click: true, ringSid: askSid(2), colourOf: paintColourOf, mark: paintMark }) : isoSvg(VIEW_OVER, 190, { click: true, ringSid: askSid(2), colourOf: paintColourOf, mark: paintMark }))
       + '<div class="cap">' + (app.holdOk
         ? 'Three brand new sides: the ceiling, the side looking at you, and your right.'
         : 'Locked. Do the turn below and check your hold, then this picture opens.') + '</div></div>'
       + '</div>'
       + '</div>';
+    if (app.whiteDown) {
+      h += '<div class="say good" style="margin-bottom:12px"><span class="head">White is at the floor. I remember.</span>'
+        + 'So I never ask you about the floor squares, and I only look at cubes that have white down there. '
+        + '<button class="btn" data-act="unset-white" style="margin-top:8px">That is not right</button></div>';
+    }
     h += inferCard();
     if (app.paintPath === 'paint2') h += holdCard();
     h += '<div class="card">'
@@ -3942,7 +4121,10 @@ var INFER = (function () {
     if (app.paintMsg) h += '<div class="say oops"><span class="head">Hmm, have another look</span>' + esc(app.paintMsg) + '</div>';
     return h;
   }
-  function paintColourOf(sid) { return app.paint[sid] ? HEX[app.paint[sid]] : null; }
+  function paintColourOf(sid) {
+    if (app.paint[sid]) return HEX[app.paint[sid]];
+    return assumedSid(sid) ? '#f4f2ee' : null;
+  }
   function paintMark(sid) {
     return app.paintSuspects.indexOf(sid) >= 0 || (app.holdNeed && app.holdNeed.indexOf(sid) >= 0);
   }
@@ -3968,7 +4150,7 @@ var INFER = (function () {
   }
   function chantStrip() {
     var b = beat();
-    if (!b || !b.chant || !app.busy) return '';
+    if (!b || !b.chant || !(app.busy || app.awaitMove || app.awaitDemo)) return '';
     var c = C.CHANTS[b.chant];
     var name = c.name + (b.of > 1 ? ', ' + C.ordinal(b.ord) + ' of ' + b.of : '');
     var at = app.chantAt === undefined ? -1 : app.chantAt;
@@ -4179,6 +4361,49 @@ var INFER = (function () {
       + '<div class="row" style="margin-top:8px"><button class="btn primary" data-act="coach">Start step 1</button></div></div>';
   }
 
+  /* ------------------------------------------------ the front door
+     Two ways in, one screen. Practising the moves starts from a cube whose white layer is
+     already done, which is where the chants actually live. */
+  function whiteLayerDone(s) { return big() ? C3.firstLayerDone(s) : !!C2.layerIntact(s); }
+  function whiteToFloor(s) {
+    if (big()) {
+      var hold = C3.holdFor(s, function (u) { return C3.faceOfColour(u, 'white') === C3.D; });
+      return hold ? C3.applySeq(s, hold) : s;
+    }
+    var lay = C2.layerIntact(s);
+    return lay ? C2.applySeq(s, C2.holdMoves(lay)) : s;
+  }
+  function lastLayerShuffle(s) {
+    var alph = big()
+      ? [['U'], ["U'"], ['U2'], C3.CROSS_MAKER, C3.EDGE_SPINNER, C3.CORNER_MOVER]
+      : [['U'], ["U'"], ['U2'], C2.SWAP];
+    var k = 1 + Math.floor(Math.random() * 4), j, seq = [];
+    for (j = 0; j < k; j++) seq = seq.concat(alph[Math.floor(Math.random() * alph.length)]);
+    return C.applySeq(s, seq);
+  }
+  function practiceState() {
+    if (whiteLayerDone(app.state)) return whiteToFloor(C.clone(app.state));
+    var guard = 0, upto = big() ? 3 : 1;
+    while (guard++ < 40) {
+      var s = C.randomState(12 + Math.floor(Math.random() * 10)), pl = C.buildPlan(s), cur = s, i;
+      if (!pl.ok) continue;
+      for (i = 0; i < pl.beats.length; i++) { if (pl.beats[i].phase > upto) break; cur = C.applySeq(cur, pl.beats[i].moves); }
+      if (!whiteLayerDone(cur)) continue;
+      return whiteToFloor(lastLayerShuffle(cur));
+    }
+    return C.presetState(C.PRESETS.filter(function (p) { return p.id === 'layer'; })[0] || C.PRESETS[0]);
+  }
+  function frontDoor() {
+    var mine = whiteLayerDone(app.state);
+    return '<div class="card" style="border-width:3px"><h2>What shall we do?</h2>'
+      + '<div class="lede">Practising starts from a cube with the white layer already done, so every chant gets a turn.</div>'
+      + '<div class="row" style="margin-top:9px">'
+      + '<button class="btn primary big" data-act="practice">Practice the moves, white is done</button>'
+      + '<button class="btn big" data-act="fullscramble">Full scramble</button></div>'
+      + (mine ? '<div class="lede" style="margin-top:7px">Your cube already has its white layer done, so practice will use yours.</div>' : '')
+      + '</div>';
+  }
+
   function panelSolve() {
     var h = '';
     h += '<div class="card"><h2>Solve with me</h2><div class="lede">Pick how much you want me to do. Move down the list as you get stronger.</div>'
@@ -4207,6 +4432,7 @@ var INFER = (function () {
     }
 
     if (!app.plan) {
+      h += frontDoor();
       h += diagCard() || '<div class="card"><h2>Ready?</h2><div class="lede">Press start and I will work out your cube.</div>'
         + '<div class="row" style="margin-top:8px"><button class="btn primary" data-act="coach">Start</button></div></div>';
       h += sayBox();
@@ -4231,18 +4457,30 @@ var INFER = (function () {
     }
     h += sidesRead();
     h += ceilingRead();
+    if (app.awaitMove && b) {
+      var doneN = app.moveAt, totN = app.units.length;
+      h += '<div class="card" style="border-width:3px"><h2>Move ' + doneN + ' of ' + totN + '</h2>'
+        + '<div class="lede">' + (b.chant ? 'One move of the chant at a time. ' : '')
+        + 'Do that move on your own cube, then tap for the next one.</div>'
+        + '<div class="row" style="margin-top:9px">'
+        + '<button class="btn primary big" data-act="move-next">Next move</button>'
+        + '<button class="btn" data-act="demo-again">Start this ' + (b.chant ? 'chant' : 'move') + ' again</button>'
+        + '<button class="btn" data-act="block-again">Start this block again</button></div></div>';
+    }
     if (app.awaitDemo && b) {
       h += '<div class="card" style="border-width:3px"><h2>That is the move</h2>'
         + '<div class="lede">The cube just did it for you. Do the same on your own cube, then say when it is done.</div>'
         + '<div class="row" style="margin-top:9px">'
         + '<button class="btn big" data-act="demo-again">Watch again</button>'
         + '<button class="btn primary big" data-act="demo-done">I did it</button>'
+        + '<button class="btn" data-act="block-again">Start this block again</button>'
         + '<button class="btn" data-act="prev">Back</button></div></div>';
     }
     h += '<div class="card"><div class="row">'
       + '<button class="btn" data-act="prev"' + (app.idx === 0 ? ' disabled' : '') + '>Back</button>'
-      + '<button class="btn primary big" data-act="next"' + (!b || app.awaitDemo ? ' disabled' : '') + '>' + (b ? 'Next' : 'Finished') + '</button>'
+      + '<button class="btn primary big" data-act="next"' + (!b || app.awaitDemo || app.awaitMove ? ' disabled' : '') + '>' + (b ? 'Next' : 'Finished') + '</button>'
       + '<button class="btn" data-act="' + (app.auto ? 'pause' : 'play') + '">' + (app.auto ? 'Pause' : 'Do it for me, slowly') + '</button>'
+      + '<button class="btn" data-act="block-again">Start this block again</button>'
       + '<button class="btn" data-act="restart">Work it out again</button>'
       + '</div><div class="lede" style="margin-top:7px">Do the move on your real cube, then press Next. Step '
       + (b ? b.phase : 3) + ', move ' + Math.min(app.idx + 1, app.plan.beats.length) + ' of ' + app.plan.beats.length + '.</div></div>';
@@ -4325,17 +4563,21 @@ var INFER = (function () {
     if (t.hasAttribute('data-chant')) { playChant(t.getAttribute('data-chant'), parseInt(t.getAttribute('data-times'), 10)); return; }
     if (!act) return;
     if (act === 'side') {
-      app.paintIntent = 'side'; app.mode = 'paint'; paintReset();
+      app.paintIntent = 'side'; app.mode = 'paint';
       app.sideHold = true; app.sideMsg = null; app.says = null;
+      savePaint();
       idleTile('White at the floor'); render(); return;
     }
-    if (act === 'side-ready') { app.sideHold = false; app.sideMsg = null; render(); return; }
+    if (act === 'side-ready') {
+      app.sideHold = false; app.sideMsg = null; app.whiteDown = true; savePaint(); render(); return;
+    }
+    if (act === 'unset-white') { app.whiteDown = false; savePaint(); app.inferQ = null; app.inferRes = null; render(); return; }
     if (act === 'undo') { if (app.undo.length) { app.state = app.undo.pop(); renderCube(); app.says = null; render(); } return; }
     if (act === 'reset') { app.state = C.solved(); app.undo = []; app.cheered = {}; app.diag = null; app.says = null; renderCube(); render(); return; }
     if (act === 'cubesays') { cubeSaysStart(); return; }
-    if (act === 'fill-solved') { paintReset('solved'); render(); return; }
-    if (act === 'fill-clear') { paintReset(); render(); return; }
-    if (act === 'fill-screen') { paintReset('screen'); render(); return; }
+    if (act === 'fill-solved') { paintReset('solved'); savePaint(); render(); return; }
+    if (act === 'fill-clear') { paintReset(); app.whiteDown = false; forgetPaint(); render(); return; }
+    if (act === 'fill-screen') { paintReset('screen'); savePaint(); render(); return; }
     if (act === 'infer') { app.inferAsked = 0; app.inferMsg = null; inferRun(); return; }
     if (act === 'infer-none') {
       app.inferQ = null; app.inferRes = null;
@@ -4349,6 +4591,22 @@ var INFER = (function () {
     if (act === 'showturn') { demoTurnOver(); return; }
     if (act === 'tosolve') { app.mode = 'solve'; app.plan = null; app.diag = C.diagnose(app.state); app.says = null; render(); return; }
     if (act === 'coach') { app.mode = 'solve'; app.usedShowMe = false; app.cheered = {}; startSolve(null); return; }
+    if (act === 'practice') {
+      app.state = practiceState();
+      app.whiteDown = true; savePaint();
+      app.undo = []; app.cheered = {}; app.usedShowMe = false;
+      renderCube(); idleTile('White layer done, chants to practise');
+      app.mode = 'solve'; startSolve(null); return;
+    }
+    if (act === 'fullscramble') {
+      app.state = C.randomState(18 + Math.floor(Math.random() * 8));
+      app.whiteDown = false; savePaint();
+      app.undo = []; app.cheered = {}; app.usedShowMe = false;
+      renderCube(); idleTile('Full scramble');
+      app.mode = 'solve'; startSolve(null); return;
+    }
+    if (act === 'move-next') { if (!app.busy) playUnit(true); return; }
+    if (act === 'block-again') { restartBlock(); return; }
     if (act === 'demo-again') { watchAgain(); return; }
     if (act === 'demo-done') { var db = beat(); app.awaitDemo = false; if (db) beatDone(db); return; }
     if (act === 'next') { app.auto = false; advance(); return; }
@@ -4388,6 +4646,7 @@ var INFER = (function () {
     app.paint[sid] = app.paintColour;
     app.paintSuspects = [];
     app.inferQ = null; app.inferSpot = null; app.inferRes = null; app.inferFilled = null;
+    savePaint();
     render();
   });
 
@@ -4470,7 +4729,8 @@ var INFER = (function () {
     app.state = st ? st.state : C.solved();
     app.scheme = st ? st.scheme : C.PLAIN_SCHEME;
     app.undo = st ? st.undo : [];
-    app.paint = st ? st.paint : new Array(n === 3 ? 54 : 24).fill(null);
+    app.paint = new Array(n === 3 ? 54 : 24).fill(null);
+    app.whiteDown = false;
     app.cheered = st ? st.cheered : {};
     app.plan = null; app.idx = 0; app.askState = null; app.auto = false; app.nudge = null;
     app.diag = null; app.quiz = null; app.quizPick = null; app.drill = null; app.chantUndo = null; app.cubeSays = null;
@@ -4479,6 +4739,7 @@ var INFER = (function () {
     app.paintPath = 'infer'; app.inferRes = null; app.inferQ = null; app.inferSpot = null;
     app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0;
     app.sideHold = false; app.sideMsg = null;
+    restorePaint(n);
     buildCube(); buildPads(); applyCam(true);
     setTimeout(function () { applyCam(false); }, 60);
     headline();
@@ -4545,6 +4806,7 @@ var INFER = (function () {
   pb.addEventListener('blur', dropPeek);
 
   /* ---------------------------------------------------------------- go */
+  restorePaint(2);
   buildCube();
   buildPads();
   headline();

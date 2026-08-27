@@ -3018,14 +3018,58 @@ var GUIDE = (function () {
     { id: 'p1-hold', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'whole' && has(b, /yellow middle square points at the ceiling/); }, to: 'p1-look' },
     { id: 'p1-look', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'look'; },
       ask: { q: 'Have you found a white 2 square block that is not a petal yet?',
-        opts: [{ label: 'Yes, found one', to: 'p1-spin' }, { label: 'All four petals are up', to: 'p1-cheer' },
+        opts: [{ label: 'Yes, found one', to: 'p1-where' }, { label: 'All four petals are up', to: 'p1-cheer' },
                { label: 'My daisy is already made', to: 'p1-skip' }] } },
-    { id: 'p1-spin', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'whole' && !has(b, /yellow middle square points/); }, to: 'p1-prep' },
-    { id: 'p1-prep', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'row'; }, to: 'p1-step' },
-    { id: 'p1-step', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'turn' && !has(b, /That is a petal/); }, to: 'p1-turn' },
-    { id: 'p1-turn', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'turn' && has(b, /That is a petal/); },
+    /* ---- the daisy, branched ----
+       THE ROADS ARE NOT ONE ROAD. The method has four ways to carry a white block up to the
+       daisy, and which one it takes depends on where the block is sitting and which way its
+       white square looks. This used to be a single straight chain, so a child on the floor-row
+       road was read a middle-row instruction and had to work out for herself that it was not
+       about her block. She is nine: the app asks, and then says only the things that apply.
+       Every branch quotes the planner's own words for that case, exactly as before. */
+    { id: 'p1-where', phase: 1, askOnly: true, title: 'Which row is it in?',
+      say: 'Look at the white 2 square block you picked. Your cube has three rows: the ceiling row up beside the yellow middle square, the middle row round the waist, and the floor row at the bottom. Which row is your block sitting in?',
+      why: 'Each row has its own way up to the daisy, so we take the one your block is really on.',
+      ask: { q: 'Which row is that block in?',
+        opts: [{ label: 'Up in the ceiling row', to: 'p1-ceil-spin' },
+               { label: 'In the middle row', to: 'p1-mid-spin' },
+               { label: 'Down in the floor row', to: 'p1-floor-face' }] } },
+    /* ceiling row: the block is already up there, but lying on its side, so it steps down into
+       the middle row first and comes back up the proper way round */
+    { id: 'p1-ceil-spin', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'whole' && has(b, /that block is looking at you\./); }, to: 'p1-ceil-step' },
+    { id: 'p1-ceil-step', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'turn' && has(b, /not at the ceiling/); }, to: 'p1-front-row' },
+    /* middle row: it is already at the right height, so all that is left is which way it faces */
+    { id: 'p1-mid-spin', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'whole' && has(b, /sits between the side looking at you and your right/); }, to: 'p1-mid-face' },
+    { id: 'p1-mid-face', phase: 1, askOnly: true, title: 'Which way does it look?',
+      say: 'Your block is in the middle row now, tucked between the side looking at you and your right. Look at its white square. Is it looking at you, or out to your right?',
+      why: 'A white square looking at you rides up on the right half. One looking right swings up on the facing side. Same petal, different turn.',
+      ask: { q: 'Which way is its white square looking?',
+        opts: [{ label: 'At me', to: 'p1-front-row' }, { label: 'Out to my right', to: 'p1-right-row' }] } },
+    /* floor row: pointing straight down is one turn, pointing sideways is the long way round */
+    { id: 'p1-floor-face', phase: 1, askOnly: true, title: 'Which way does it point?',
+      say: 'Your block is down in the floor row. Look at its white square. Is it pointing straight down at the floor, or out at one of the sides?',
+      why: 'A white square already pointing down can go straight up in one turn. One pointing sideways has to step into the middle row first.',
+      ask: { q: 'Which way is its white square pointing?',
+        opts: [{ label: 'Straight down at the floor', to: 'p1-down-row' },
+               { label: 'Out at a side', to: 'p1-floor-spin' }] } },
+    { id: 'p1-down-row', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'row' && has(b, /ceiling row until an empty petal spot is looking at you/); }, to: 'p1-down-line' },
+    { id: 'p1-down-line', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'row' && has(b, /floor row until your white block waits/); }, to: 'p1-down-up' },
+    { id: 'p1-down-up', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'turn' && has(b, /Turn the whole facing side twice/); },
       ask: { q: 'Is that one up beside the yellow middle square now?',
-        opts: [{ label: 'Yes, it is a petal', to: 'p1-look' }, { label: 'Not yet', to: 'p1-turn' }] } },
+        opts: [{ label: 'Yes, it is a petal', to: 'p1-look' }, { label: 'Not yet', to: 'p1-where' }] } },
+    { id: 'p1-floor-spin', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'whole' && has(b, /down at the floor, looking at you/); }, to: 'p1-floor-clear' },
+    { id: 'p1-floor-clear', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'row' && has(b, /so there is no petal on the side looking at you/); }, to: 'p1-floor-step' },
+    { id: 'p1-floor-step', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'turn' && has(b, /so it cannot go straight up/); }, to: 'p1-front-row' },
+    /* the two finishers every road ends on: white square at you rides the right half up, white
+       square out to your right swings up on the facing side */
+    { id: 'p1-front-row', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'row' && has(b, /empty petal spot is over on your right/); }, to: 'p1-front-lift' },
+    { id: 'p1-front-lift', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'turn' && has(b, /Roll the right half toward the ceiling/); },
+      ask: { q: 'Is that one up beside the yellow middle square now?',
+        opts: [{ label: 'Yes, it is a petal', to: 'p1-look' }, { label: 'Not yet', to: 'p1-where' }] } },
+    { id: 'p1-right-row', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'row' && has(b, /ceiling row until an empty petal spot is looking at you/); }, to: 'p1-right-lift' },
+    { id: 'p1-right-lift', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'turn' && has(b, /the other way round\. Your white block climbs/); },
+      ask: { q: 'Is that one up beside the yellow middle square now?',
+        opts: [{ label: 'Yes, it is a petal', to: 'p1-look' }, { label: 'Not yet', to: 'p1-where' }] } },
     { id: 'p1-cheer', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'cheer'; }, to: 'p2-look' },
     { id: 'p1-skip', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'skip'; }, to: 'p2-look' },
     { id: 'p2-skip', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'skip'; }, to: 'p3-look' },

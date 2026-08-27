@@ -3265,6 +3265,7 @@ var GUIDE = (function () {
     puzzle: null, setup: null,
     guide: null, guideWhy: '', guideChant: null, guideAsk: false, guideSaved: null,
     playing: false, playMsg: null, playRate: 1, playWait: 0, saidWhy: {},
+    rejectKind: null, inferHint: null,
     badges: {}
   };
 
@@ -3583,8 +3584,16 @@ var GUIDE = (function () {
   var FLAT_RD = [[1, 2], [5, 3], [1, 3], [1, 5], [2, 3], [4, 3]];
   var SIDE_HOME = ['the side at the ceiling', 'the side on your right', 'the side looking at you',
                    'the side at the floor', 'the side on your left', 'the side facing away'];
-  var EDGE_HOME = ['ceiling', 'your right', 'you', 'floor', 'your left', 'far side'];
-  var NEAR_HOME = ['the ceiling', 'your right', 'you', 'the floor', 'your left', 'the far side'];
+  /* WHAT HER EYES SEE, AFTER THE TURN.
+     This was the bug Kevin hit. The little picture is drawn as the named turn leaves the side,
+     which is right, but its edges were labelled with the sides' HOME names: on the left side the
+     right hand edge was labelled "you", because that side had been looking at her before she
+     spun. By the time she is looking at the picture she has already spun, so "you" points at
+     nothing and she picks the wrong square, truthfully. Simulation says the drawn rows run
+     toward the FLOOR and the drawn columns toward HER RIGHT once the turn is done, so the four
+     edges simply are ceiling, floor, your left, your right. Those never lie. */
+  var EDGE_VIEW = { up: 'ceiling', down: 'floor', left: 'your left', right: 'your right' };
+  var NEAR_VIEW = { up: 'the ceiling', down: 'the floor', left: 'your left', right: 'your right' };
   /* the three sides her home grip already shows her */
   var SEEN_HOME = [true, true, true, false, false, false];
   var PEEK_RANK = [0, 2, 1, 0, 2, 1];
@@ -3597,14 +3606,20 @@ var GUIDE = (function () {
     list.sort(function (a, b) { return PEEK_RANK[a] - PEEK_RANK[b]; });
     return list;
   }
-  /* where in that side the square sits. A HINT ONLY, never the thing she has to trust: position
-     words do not survive a tip, because tipping the other way swaps left and right. */
+  /* Where in that side the square sits, read off the VERY CELL the ring is on, in the view the
+     named turn leaves her in. Because it is derived from the same row and column the ring uses,
+     the words and the ring cannot drift apart. */
+  function cellWhere(sid) {
+    var n = big() ? 3 : 2, c = cellOfSid(sid), r = Math.floor(c / n), col = c % n, out = [];
+    if (r === 0) out.push('up'); else if (r === n - 1) out.push('down');
+    if (col === 0) out.push('left'); else if (col === n - 1) out.push('right');
+    return out;
+  }
   function peekSpot(sid) {
-    var pc = INFER.pieceOf(C, sid), o;
-    if (pc.kind === 'n') return 'in the very middle';
-    o = otherFacesOf(pc);
-    if (o.length === 1) return 'in the middle of the edge nearest ' + NEAR_HOME[o[0]];
-    return 'in the corner nearest ' + NEAR_HOME[o[0]] + ' and ' + NEAR_HOME[o[1]];
+    var pc = INFER.pieceOf(C, sid), w = cellWhere(sid);
+    if (pc.kind === 'n' || !w.length) return 'in the very middle';
+    if (w.length === 1) return 'in the middle of the edge nearest ' + NEAR_VIEW[w[0]];
+    return 'in the corner nearest ' + NEAR_VIEW[w[0]] + ' and ' + NEAR_VIEW[w[1]];
   }
 
   /* ---- ONE NAMED TIP PER SIDE ----
@@ -3694,12 +3709,16 @@ var GUIDE = (function () {
       + cols.map(function (c) { return c + ' square'; }).join(' and the ');
     return anchorUnique(sid, cols) ? named : named + ', ' + aid;
   }
-  function peekAsk(sid) { return 'On that side, find ' + peekTarget(sid) + '. What colour is it? Tap it.'; }
+  function peekAsk(sid) {
+    return 'Now you are looking straight at that side. Find ' + peekTarget(sid) + '. What colour is it? Tap it.';
+  }
   function peekQuestion(sid) {
     var back = peekBack(sid);
     return peekOpen(sid) + ' ' + peekAsk(sid) + (back ? ' ' + back : '');
   }
-  function peekCap(sid) { return 'This is ' + SIDE_HOME[faceOfSid(sid)] + '.'; }
+  function peekCap(sid) {
+    return 'This is ' + SIDE_HOME[faceOfSid(sid)] + ', the way you see it after that turn.';
+  }
 
   /* That side on its own, flat, drawn exactly as the named tip leaves it. Each edge carries the
      COLOUR of the square the ringed block touches over that edge, which is the same colour the
@@ -3726,7 +3745,9 @@ var GUIDE = (function () {
         + '" stroke="' + INK + '" stroke-width="1.8"/>';
     }
     /* the colour chip first, the body word second and smaller */
-    function edge(g, x, y, rot) {
+    /* the colour chip still belongs to the neighbouring SIDE, because a colour does not move.
+       The word underneath is where that edge now IS, which is what she is looking at. */
+    function edge(g, where, x, y, rot) {
       var chip = edgeAnchorColour(sid, g), s = '';
       var t = '<g' + (rot ? ' transform="rotate(' + rot + ' ' + x + ' ' + y + ')"' : '') + '>';
       if (chip) {
@@ -3734,13 +3755,13 @@ var GUIDE = (function () {
           + '" width="20" height="12" rx="3" fill="' + HEX[chip] + '" stroke="' + INK + '" stroke-width="1.6"/>';
       }
       s += '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-family="system-ui,sans-serif"'
-        + ' font-size="9.5" font-weight="600" fill="#8d887e">' + esc(EDGE_HOME[g]) + '</text>';
+        + ' font-size="9.5" font-weight="600" fill="#8d887e">' + esc(EDGE_VIEW[where]) + '</text>';
       return t + s + '</g>';
     }
-    out += edge(up, W / 2, pad - 6, 0);
-    out += edge(down, W / 2, W - pad + 20, 0);
-    out += edge(left, pad - 14, W / 2, -90);
-    out += edge(right, W - pad + 20, W / 2, 90);
+    out += edge(up, 'up', W / 2, pad - 6, 0);
+    out += edge(down, 'down', W / 2, W - pad + 20, 0);
+    out += edge(left, 'left', pad - 14, W / 2, -90);
+    out += edge(right, 'right', W - pad + 20, W / 2, 90);
     r = Math.floor(cellOfSid(sid) / n); c = cellOfSid(sid) % n;
     out += '<circle class="asked" data-ring-sid="' + sid + '" cx="' + (pad + c * cell + cell / 2)
       + '" cy="' + (pad + r * cell + cell / 2) + '" r="' + (cell * 0.36)
@@ -4616,6 +4637,7 @@ var GUIDE = (function () {
     app.holdMsg = null; app.holdNeed = [];
     app.paintPath = 'infer'; app.inferRes = null; app.inferQ = null; app.inferSpot = null;
     app.inferMsg = null; app.inferFilled = null; app.inferAsked = 0; app.inferSkip = null;
+    app.inferHint = null; app.rejectKind = null;
   }
   /* What a clean painter looks like. ONE list, read by the reset and by the gate, so the two
      can never drift apart and quietly leave a state behind. */
@@ -4643,6 +4665,7 @@ var GUIDE = (function () {
     app.confirmReset = false;
     app.whiteDown = false; app.whiteMsg = null;
     app.paintSuspects = []; app.holdNeed = [];
+    app.rejectKind = null; app.inferHint = null;
     /* the saved copy goes with it, the same one forgetPaint drops, so nothing resurrects */
     storeDel(paintKey());
   }
@@ -4673,12 +4696,72 @@ var GUIDE = (function () {
       + '<span class="lede" style="flex:1 1 160px">Stuck? This rubs everything out and starts the painting fresh.</span></div>';
   }
   /* ===== RESET END ===== */
+  /* HOW MUCH IS LEFT TO GUESS. Cheap, capped, and only once there is enough paint to bother.
+     If the field is small the offer comes to her instead of waiting to be found. */
+  /* Measured, not assumed. On the small cube the field is still in the hundreds until the last
+     square of the view goes on, and then it collapses to about ten: so twelve squares IS the
+     earliest uniqueness allows, and white at the floor brings it forward to about nine. On the
+     big cube the field is still enormous even with all twenty seven painted, so there the honest
+     offer is not "only a few left" but "you have painted everything you can see, let me peek". */
+  var HANDOVER_AT = 12;
+  function viewDone() {
+    var i, k = firstViewCount(), known = effPaint();
+    for (i = 0; i < k; i++) { if (!known[i]) return false; }
+    return true;
+  }
+  /* Cheap only. Until she has a whole block painted (or all six middles on the big cube) the
+     engine has to try every way her colours could sit on a cube, which is 720 schemes, and doing
+     that on every tap makes the painter treacle. There is nothing to offer that early anyway. */
+  function hasAnchor(known) {
+    var i;
+    if (big()) {
+      for (i = 0; i < 6; i++) { if (!known[C.WHERE_N[i]]) return false; }
+      return true;
+    }
+    for (i = 0; i < 8; i++) {
+      var wsid = C.WHERE[i];
+      if (known[wsid[0]] && known[wsid[1]] && known[wsid[2]]) return true;
+    }
+    return false;
+  }
+  function checkHandover() {
+    app.inferHint = null;
+    var known = effPaint(), painted = app.paint.filter(Boolean).length, least = big() ? 12 : 6;
+    if (painted < least || !hasAnchor(known)) return;
+    var res = INFER.completions(C, known, { cap: HANDOVER_AT + 1, budget: 1500 });
+    if (!res.capped && res.count > 0 && res.count <= HANDOVER_AT) { app.inferHint = res.count; return; }
+    /* not down to a handful, but she has painted everything she can actually see */
+    if (viewDone()) app.inferHint = 'view';
+  }
+  function handoverCard() {
+    if (app.inferHint === null || app.inferQ || app.inferSpot || app.inferSkip) return '';
+    var few = app.inferHint !== 'view';
+    return '<div class="card" style="border-width:3px;border-color:#009e60;margin-bottom:12px">'
+      + '<h2 style="color:#009e60">' + (few ? 'I can nearly see it' : 'That is everything you can see') + '</h2>'
+      + '<div class="lede">' + (few
+        ? 'You have painted enough. There ' + (app.inferHint === 1 ? 'is only 1 cube' : 'are only ' + app.inferHint + ' cubes')
+          + ' left that it could be, so you do not have to paint the rest. '
+          + (app.inferHint === 1 ? 'I know exactly which one it is.' : 'Let me finish it for you.')
+        : 'You have painted every square you can see without turning your cube over. '
+          + 'Let me work out the hidden sides. If I get stuck I will ask you to peek at one square at a time.')
+      + '</div>'
+      + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="infer">Work out the rest for me</button></div></div>';
+  }
   function paintCheck() {
     /* the standing rule counts as painted here too, or a cube with white known at the floor
        would be told its floor squares are still empty */
     var known = effPaint();
     var res = C.validate(known);
-    if (!res.ok) { app.paintMsg = res.msg; app.paintSuspects = res.suspects; app.diag = null; render(); return; }
+    if (!res.ok) {
+      /* before blaming her squares, check whether it is MY assumption that is wrong */
+      if (app.whiteDown && conflictFree(paintedSids())) {
+        noteReject();
+        app.paintMsg = null; app.diag = null; render(); return;
+      }
+      app.rejectKind = 'squares';
+      app.paintMsg = res.msg; app.paintSuspects = res.suspects; app.diag = null; render(); return;
+    }
+    app.rejectKind = null;
     app.paint = known.slice(); savePaint();
     app.paintMsg = null; app.paintSuspects = [];
     app.scheme = res.scheme;
@@ -5034,6 +5117,55 @@ var GUIDE = (function () {
   }
   /* the pictures themselves, the ring rule and the little inset all live in the VIEWS block
      above, so the gate can pull them out whole and prove the ring lands on the asked square */
+  /* ---------------------------------------------------------------- why a painting was refused
+     "It cannot exist" is never allowed to be the whole answer. There are only two honest
+     reasons, and they are checked in this order.
+     ONE: the standing rule is wrong. She told me white is at the floor, and it is not, so I have
+     been forcing white into squares she never painted. An adversarial sweep of a thousand real
+     cubes found this is the ONLY thing that was ever falsely rejecting a genuine cube.
+     TWO: some of her squares really do contradict each other, in which case I owe her the
+     SMALLEST set of squares that still cannot all be right, and a ring round each of them. */
+  function conflictFree(list) {
+    var n = INFER.stickerCount(C), probe = new Array(n).fill(null), k;
+    for (k = 0; k < list.length; k++) probe[list[k]] = app.paint[list[k]];
+    var r = INFER.completions(C, probe, { cap: 1, budget: 900 });
+    /* only a complete search that found nothing counts as a contradiction */
+    return r.capped || r.count > 0;
+  }
+  function minimalConflict() {
+    var n = INFER.stickerCount(C), sids = [], i;
+    for (i = 0; i < n; i++) { if (app.paint[i]) sids.push(i); }
+    if (conflictFree(sids)) return [];
+    var keep = sids.slice();
+    /* drop one square at a time: whatever is still impossible without it was never the problem */
+    for (i = 0; i < sids.length; i++) {
+      var trial = keep.filter(function (x) { return x !== sids[i]; });
+      if (!conflictFree(trial)) keep = trial;
+    }
+    return keep;
+  }
+  function diagnoseReject() {
+    if (app.whiteDown && conflictFree(paintedSids())) return { kind: 'whitedown' };
+    return { kind: 'squares', set: minimalConflict() };
+  }
+  function paintedSids() {
+    var n = INFER.stickerCount(C), out = [], i;
+    for (i = 0; i < n; i++) { if (app.paint[i]) out.push(i); }
+    return out;
+  }
+  function noteReject() {
+    var d = diagnoseReject();
+    app.rejectKind = d.kind;
+    if (d.kind === 'whitedown') {
+      app.paintSuspects = floorSids();
+      app.inferMsg = { ok: false, text: 'You told me white is at the floor, but the squares you have painted say it is not. Is white really at the floor?' };
+    } else {
+      app.paintSuspects = d.set;
+      app.inferMsg = { ok: false, text: d.set.length
+        ? 'These ringed squares cannot all be right. One of them is not the colour it looks like. Have another look at just those.'
+        : 'Something in your painting does not add up yet. Have another look, or start again.' };
+    }
+  }
   function inferRun() {
     var known = effPaint();
     var res = INFER.completions(C, known, { cap: 400, budget: 4000 });
@@ -5048,9 +5180,10 @@ var GUIDE = (function () {
     app.inferRes = res;
     app.inferQ = null; app.inferSpot = null;
     if (!res.capped && res.count === 0) {
-      app.inferMsg = { ok: false, text: 'Those squares cannot all be right, so there is no cube that matches them. Have another look at the first picture, or paint the rest yourself.' };
+      noteReject();
       render(); return;
     }
+    app.rejectKind = null;
     if (!res.capped && res.count === 1) {
       var full = res.list[0].stickers, before = app.paint.slice(), filled = [], declared = [], i;
       /* What SHE told me, as against what I worked out. A square that is only white because she
@@ -5136,8 +5269,8 @@ var GUIDE = (function () {
         + '<div class="views" style="margin-top:10px"><div class="viewbox">' + faceInset(sp, 230)
         + '<div class="cap">' + esc(peekCap(sp)) + '</div></div></div>'
         + '<div class="say" style="margin-top:9px"><span class="head">One quick look</span>'
-        + esc(peekOpen(sp)) + ' On that side, find ' + esc(peekTarget(sp)) + '. Is it <b>'
-        + esc(app.inferSpot.colour) + '</b>? ' + esc(peekBack(sp)) + '</div>'
+        + esc(peekOpen(sp)) + ' Now you are looking straight at that side. Find ' + esc(peekTarget(sp))
+        + '. Is it <b>' + esc(app.inferSpot.colour) + '</b>? ' + esc(peekBack(sp)) + '</div>'
         + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="spot-yes">Yes, that is right</button>'
         + '<button class="btn" data-act="spot-no">No, it is a different colour</button></div></div>';
       return h;
@@ -5218,6 +5351,8 @@ var GUIDE = (function () {
       + (app.paintPath === 'paint2' ? '' : '<div class="lede" style="margin-top:8px">'
         + 'Just this one picture. Keep your grip the whole time. Anything I cannot see, I will ask you to peek at.</div>')
       + '</div>';
+    h += rejectCard();
+    h += handoverCard();
     h += whiteFloorCard();
     h += inferCard();
     if (app.paintPath === 'paint2') h += holdCard();
@@ -5229,6 +5364,30 @@ var GUIDE = (function () {
       + '</div>';
     if (app.paintMsg) h += '<div class="say oops"><span class="head">Hmm, have another look</span>' + esc(app.paintMsg) + '</div>';
     return h;
+  }
+  /* NO DEAD END. Every refusal names what to do next, and the squares it is talking about are
+     ringed on the pictures at the same time. */
+  function rejectCard() {
+    if (!app.rejectKind) return '';
+    if (app.rejectKind === 'whitedown') {
+      return '<div class="card" style="border-width:3px;border-color:' + RED + ';margin-bottom:12px">'
+        + '<h2 style="color:' + RED + '">Is white really at the floor?</h2>'
+        + '<div class="lede">You told me white is at the floor, so I have been filling those squares in white. '
+        + 'The squares you painted say it is somewhere else. The floor squares are ringed.</div>'
+        + '<div class="row" style="margin-top:10px">'
+        + '<button class="btn primary big" data-act="unset-white">White is NOT at the floor</button>'
+        + '<button class="btn" data-act="start-again">Start again</button></div></div>';
+    }
+    var n = app.paintSuspects.length;
+    return '<div class="card" style="border-width:3px;border-color:' + RED + ';margin-bottom:12px">'
+      + '<h2 style="color:' + RED + '">' + (n ? 'These ' + n + ' squares are arguing' : 'Something does not add up') + '</h2>'
+      + '<div class="lede">' + (n
+        ? 'The ' + n + ' ringed squares cannot all be right at once. One of them is not the colour it looks like. '
+          + 'Look at just those on your real cube.'
+        : 'I cannot work out which squares are fighting. Rubbing it out and starting again is the quickest fix.') + '</div>'
+      + '<div class="row" style="margin-top:10px">'
+      + (n ? '<button class="btn primary big" data-act="unpaint-ringed">Rub out the ringed squares</button>' : '')
+      + '<button class="btn" data-act="start-again">Start again</button></div></div>';
   }
   function paintColourOf(sid) {
     if (app.paint[sid]) return HEX[app.paint[sid]];
@@ -6029,8 +6188,15 @@ var GUIDE = (function () {
       if (wasAsking) inferRun(); else render();
       return;
     }
+    if (act === 'unpaint-ringed') {
+      app.paintSuspects.forEach(function (sid) { app.paint[sid] = null; });
+      app.paintSuspects = []; app.rejectKind = null; app.inferMsg = null;
+      app.inferQ = null; app.inferSpot = null; app.inferRes = null; app.inferSkip = null;
+      savePaint(); render(); return;
+    }
     if (act === 'unset-white') {
       app.whiteDown = false; app.whiteMsg = null; savePaint();
+      app.rejectKind = null; app.paintSuspects = []; app.inferMsg = null;
       app.inferQ = null; app.inferSpot = null; app.inferRes = null; app.inferSkip = null; render(); return;
     }
     if (act === 'undo') { if (app.undo.length) { app.state = app.undo.pop(); renderCube(); app.says = null; render(); } return; }
@@ -6138,6 +6304,10 @@ var GUIDE = (function () {
     app.inferQ = null; app.inferSpot = null; app.inferRes = null; app.inferFilled = null; app.inferSkip = null;
     /* a whole side painted one colour is knowledge the moment the last square lands */
     autoPinPainted();
+    app.rejectKind = null;
+    /* AND: can I finish it from here? The moment only a handful of cubes are left she should be
+       offered the way out, not left painting squares I could have worked out. */
+    checkHandover();
     savePaint();
     render();
   });

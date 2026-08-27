@@ -1135,10 +1135,10 @@ var CUBE = (function () {
     }
     if (p === 2) {
       if (k === 'warn') return 'The mess is Righty keeping your white blocks safe. Six chants always puts them back.';
-      if (k === 'ceiling') return 'Only the ceiling row moves, so the white floor underneath stays exactly as it was.';
-      if (k === 'righty') return 'Every two chants the white floor comes back, so only look after a whole pair.';
+      if (k === 'ceiling') return 'A ceiling row spin never moves a floor block, so it cannot undo a chant you have done.';
+      if (k === 'righty') return 'The floor stays broken until the last yellow lands. Check the working corner square, not the floor.';
       if (k === 'skip') return 'All four ceiling squares are yellow already, so a chant here would only break it.';
-      if (k === 'cheer') return 'The white floor rebuilt itself, because six Righty chants always land everything back home.';
+      if (k === 'cheer') return 'The white floor put itself back together, because six Righty chants always land everything back home.';
     }
     if (p === 3) {
       if (k === 'read') return 'Two sides can never match on their own, so the count is only 0, 1 or 4.';
@@ -2859,6 +2859,15 @@ var GUIDE = (function () {
     var seed = 1234567, r = function () { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
     /* the small cube spells a whole cube turn as two face turns, the big one has it as a move */
     function wholeTurn(st, key) { return CC.EHOME ? CC.applyMove(st, key) : CC.applySeq(st, CC.WHOLE[key].moves); }
+    /* cubes that arrive with the white layer ALREADY built but held the wrong way up. She says
+       "my white layer is already done" a lot, and the method's answer to that is a beat of its
+       own: turn it over first. Without one of these in the pile the script cannot quote it. */
+    var lay = [['U'], ["U'"], ['U2'], ['U', 'U']];
+    for (i = 0; i < lay.length; i++) {
+      var ls = wholeTurn(CC.applySeq(CC.solved(), lay[i]), i % 2 ? 'x2' : 'x');
+      pl = CC.buildPlan(ls);
+      if (pl.ok) out.push(pl);
+    }
     var pre = [null, 'x', 'xp', 'y', 'x2'];
     for (i = 0; i < 90; i++) {
       var st = CC.applySeq(CC.solved(), CC.randomScramble(14 + (i % 9), r));
@@ -2880,7 +2889,11 @@ var GUIDE = (function () {
     { id: 'p1-first', phase: 1, pick: function (b) { return b.phase === 1 && b.ask === 'find-white'; },
       ask: { q: 'Have you got one white square pointing at the ceiling?',
         opts: [{ label: 'Yes, that block is done', to: 'p1-look' },
-               { label: 'My white layer is already done', to: 'p1-skip' }] } },
+               { label: 'My white layer is already done', to: 'p1-skipflip' }] } },
+    /* she has just been told to hold a white square at the CEILING, so a layer she says is
+       already done is almost certainly up the wrong way. Turn it over before step 2, or step 2
+       is unwinnable and only Back gets her out. */
+    { id: 'p1-skipflip', phase: 1, pick: function (b) { return b.phase === 1 && b.flip && has(b, /Your white layer is already built/); }, to: 'p1-skip' },
     { id: 'p1-skip', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'skip'; }, to: 'p2-already' },
     { id: 'p1-look', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'look'; },
       ask: { q: 'Have you found a white square on a block you have not done yet?',
@@ -2900,7 +2913,7 @@ var GUIDE = (function () {
     { id: 'p1-righty', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'righty' && b.place; },
       ask: { q: 'Did it land in its place, with its white square at the ceiling?',
         opts: [{ label: 'Yes, it is home', to: 'p1-look' }, { label: 'Not yet', to: 'p1-righty' }] } },
-    { id: 'p1-flip', phase: 1, pick: function (b) { return b.phase === 1 && b.flip; }, to: 'p2-already' },
+    { id: 'p1-flip', phase: 1, pick: function (b) { return b.phase === 1 && b.flip && has(b, /All 4 white squares are at the ceiling/); }, to: 'p2-already' },
     /* about one cube in twenty arrives at step 2 already finished */
     { id: 'p2-already', phase: 2, askOnly: true, title: 'Look before you chant',
       say: 'Before you do anything, look at the 4 squares up at the ceiling. Are they all yellow already?',
@@ -2918,7 +2931,7 @@ var GUIDE = (function () {
         opts: [{ label: 'Yes', to: 'p2-count' }, { label: 'Not yet', to: 'p2-pair' }] } },
     { id: 'p2-count', phase: 2, askOnly: true, title: 'Count the ceiling',
       say: 'Look at all 4 ceiling squares. Are they all yellow now?',
-      why: 'Only the ceiling row moves, so the white floor underneath stays exactly as it was.',
+      why: 'The floor stays broken until the last yellow lands, so count the yellow squares, not the floor.',
       ask: { q: 'Are all 4 ceiling squares yellow?',
         opts: [{ label: 'Yes, all four', to: 'p2-cheer' }, { label: 'Not yet', to: 'p2-spin' }] } },
     { id: 'p2-cheer', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'cheer'; }, to: 'p3-read' },
@@ -2962,6 +2975,8 @@ var GUIDE = (function () {
     { id: 'p1-cheer', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'cheer'; }, to: 'p2-look' },
     { id: 'p1-skip', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'skip'; }, to: 'p2-look' },
     { id: 'p2-skip', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'skip'; }, to: 'p3-look' },
+    /* same trap as the small cube: a layer she says is done is usually held white up */
+    { id: 'p3-skipflip', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'whole' && has(b, /already built/); }, to: 'p3-skip' },
     { id: 'p3-skip', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'skip'; }, to: 'p4-look' },
     { id: 'p4-skip', phase: 4, pick: function (b) { return b.phase === 4 && b.kind === 'skip'; }, to: 'p5-read' },
     { id: 'p2-look', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'look'; },
@@ -2975,7 +2990,7 @@ var GUIDE = (function () {
     { id: 'p3-look', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'look'; },
       ask: { q: 'Have you found a white corner block that is not done yet?',
         opts: [{ label: 'Yes, found one', to: 'p3-where' }, { label: 'All four are in', to: 'p3-flip' },
-               { label: 'My white layer is already done', to: 'p3-skip' }] } },
+               { label: 'My white layer is already done', to: 'p3-skipflip' }] } },
     { id: 'p3-where', phase: 3, askOnly: true, title: 'Where is that block?',
       say: 'Look at where that corner block is sitting right now. Is it down in the floor row, or up at the ceiling in the wrong place?',
       why: 'A block already at the ceiling has to be popped down first, or there is nowhere for it to go.',
@@ -3882,14 +3897,17 @@ var GUIDE = (function () {
     });
   }
   /* one whole cube turn in her hands */
-  function turnWhole(key, dur, done) {
+  function turnWhole(key, dur, done, quiet) {
     var w = C.WHOLE[key];
     if (Math.abs(w.deg) === 180) {
+      /* a turn over is ONE action with one name. Showing its two halves put the wrong tile up
+         twice, so the halves stay quiet and the whole turn keeps its own tile. */
       var half = key === 'x2' ? 'x' : key;
-      turnWhole(half, dur, function () { turnWhole(half, dur, done); });
+      if (!quiet) showTile(key);
+      turnWhole(half, dur, function () { turnWhole(half, dur, done, true); }, true);
       return;
     }
-    showTile(key);
+    if (!quiet) showTile(key);
     spinLayer(big() ? allEls3() : slotEls([0, 1, 2, 3, 4, 5, 6, 7]), w.axis, w.deg, dur, function () {
       app.state = big() ? C.applyMove(app.state, key) : C.applySeq(app.state, w.moves);
       renderCube();

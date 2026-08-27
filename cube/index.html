@@ -4702,9 +4702,10 @@ var GUIDE = (function () {
     var o = playerOwner();
     if (app.awaitMove) return false;
     if (o === 'solve') {
-      if (app.askState === 'asking' || app.askState === 'askingAfter') return true;
-      if (app.awaitDemo) return true;
-      return false;
+      /* ONLY A QUESTION STOPS IT. "I did it" was never information, it was a tax: the app
+         cannot see her cube either way, so pressing forward IS her saying she has done it.
+         What it genuinely cannot guess is what her cube SHOWS, and that is where it stops. */
+      return app.askState === 'asking' || app.askState === 'askingAfter';
     }
     if (o === 'guide') {
       var n = guideNode();
@@ -4714,9 +4715,7 @@ var GUIDE = (function () {
     return false;
   }
   function playerWaitWords() {
-    var o = playerOwner();
-    if (o === 'solve' && app.awaitDemo) return 'Your turn: say when you have done it';
-    if (o === 'setup') return 'All set up';
+    if (playerOwner() === 'setup') return 'All set up';
     return 'Your turn: answer to continue';
   }
   /* a step's own demonstration may not have been kicked off yet. That is a gap to wait through,
@@ -4769,7 +4768,8 @@ var GUIDE = (function () {
     if (!o || app.busy) return;
     if (app.awaitMove) { playUnit(true); return; }
     if (playerBlocked()) return;
-    if (o === 'solve') { advance(); return; }
+    /* forward on a finished move means "done, next": no separate tap to say so */
+    if (o === 'solve') { if (app.awaitDemo) { beatDone(beat()); return; } advance(); return; }
     if (o === 'guide') { guideNext(); return; }
   }
   /* one step back, on the snapshots that are already proved to restore byte for byte */
@@ -4780,7 +4780,7 @@ var GUIDE = (function () {
     if (app.playing) playerPause(false);
     if (o === 'solve') { goBack(); return; }
     if (o === 'guide') { guideBack(); return; }
-    if (o === 'setup') { puzzleSetup(); return; }
+    if (o === 'setup') { setupBack(); return; }
     if (o === 'chant') { undoChant(); return; }
   }
   function playerPlay() {
@@ -4801,8 +4801,11 @@ var GUIDE = (function () {
     if (app.busy || playerPending()) { setTimeout(playerStep, 120); return; }
     if (playerBlocked()) { playerPause(true); return; }
     if (!playerCanFwd()) { playerPause(false); return; }
+    /* between the moves of one chant, a short beat. Crossing from one step to the next, a
+       proper breath, because that is where she has to catch her cube up with mine. */
+    var slow = !app.awaitMove;
     playerFwd();
-    setTimeout(playerStep, 200);
+    setTimeout(playerStep, slow ? 1200 : 240);
   }
   function transportBar() {
     var o = playerOwner();
@@ -5495,6 +5498,17 @@ var GUIDE = (function () {
     render();
     playUnit(false);
   }
+  /* back through a setup: replay it from solved, one turn short of where she was */
+  function setupBack() {
+    if (!app.setup || app.busy) return;
+    var upto = Math.max(0, app.moveAt - 1), i;
+    app.state = C.solved();
+    for (i = 0; i < upto; i++) app.state = C.applyMove(app.state, app.setup.moves[i]);
+    app.setup.done = false;
+    app.units = app.setup.moves.slice(); app.moveAt = upto; app.chantAt = -1;
+    app.awaitMove = upto > 0; app.playMsg = null;
+    clearGlow(); renderCube(); render();
+  }
   function setupDone() {
     app.busy = false; app.awaitMove = false; app.chantAt = -1;
     app.setup.done = true;
@@ -5516,10 +5530,8 @@ var GUIDE = (function () {
     if (app.setup) {
       h += transportBar();
       if (app.awaitMove) {
-        h += '<div class="card" style="border-width:3px;margin-top:10px"><h2>Move ' + app.moveAt + ' of ' + app.units.length + '</h2>'
-          + '<div class="lede">Do that turn on your own cube, then tap for the next one.</div>'
-          + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="setup-move">Next move</button>'
-          + '<button class="btn" data-act="setup-again">Start the setup again</button></div></div>';
+        h += '<div class="card" style="margin-top:10px"><div class="lede">Do that turn on your cube, then press the forward arrow.</div>'
+          + '<div class="row" style="margin-top:9px"><button class="btn" data-act="setup-again">Start the setup again</button></div></div>';
       } else if (app.setup.done) {
         h += '<div class="card" style="border-color:#009e60;border-width:3px;margin-top:10px"><h2 style="color:#009e60">Your cube matches</h2>'
           + '<div class="lede">Now I know exactly what your cube looks like, so I can tell you how far from solved it is.</div>'
@@ -5705,31 +5717,17 @@ var GUIDE = (function () {
       h += badgeShelf();
       return h;
     }
-    /* the same per move card the coached solve uses, so a chant is stepped, never blitzed */
-    if (app.awaitMove) {
-      h += '<div class="card" style="border-width:3px"><h2>Move ' + app.moveAt + ' of ' + app.units.length + '</h2>'
-        + '<div class="lede">' + (n.chant ? 'One move of the chant at a time. ' : '')
-        + 'Do that move on your own cube, then tap for the next one.</div>'
-        + '<div class="row" style="margin-top:9px">'
-        + '<button class="btn primary big" data-act="guide-move">Next move</button>'
-        + '<button class="btn" data-act="guide-again">Start this ' + (n.chant ? 'chant' : 'move') + ' again</button></div></div>';
-    }
     if (n.ask && app.guideAsk) {
       h += '<div class="card askbox" style="border-width:3px"><div class="askq">' + esc(n.ask.q) + '</div>'
         + '<div class="asks">' + n.ask.opts.map(function (o, i) {
           return '<button class="btn big" data-guideopt="' + i + '">' + esc(o.label) + '</button>';
         }).join('') + '</div>'
         + '<div class="lede">Look at YOUR cube, not mine, and tap what you can see.</div></div>';
-    } else if (!n.ask && app.guideAsk) {
-      h += '<div class="card" style="border-width:3px"><h2>' + (n.moves.length ? 'Do that on your cube' : 'Ready?') + '</h2>'
-        + '<div class="lede">' + (n.moves.length
-          ? 'Copy the move you just watched, then tap for the next step.'
-          : 'Tap when you are ready for the next step.') + '</div>'
-        + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="guide-next">Next step</button></div></div>';
     }
+    /* NO CONFIRM TAPS. The forward arrow on the player is her saying she has done it. These
+       are the extras: watch it again, start over, walk away. */
     h += '<div class="card"><div class="row">'
-      + '<button class="btn" data-act="guide-back"' + (app.busy || !app.guide.stack.length ? ' disabled' : '') + '>Back</button>'
-      + (n.moves.length ? '<button class="btn" data-act="guide-again"' + (app.busy ? ' disabled' : '') + '>Watch again</button>' : '')
+      + (n.moves.length ? '<button class="btn" data-act="guide-again"' + (app.busy ? ' disabled' : '') + '>Watch that again</button>' : '')
       + '<button class="btn" data-act="guide-step"' + (app.busy ? ' disabled' : '') + '>Start this step again</button>'
       + '<button class="btn" data-act="guide-stop">Stop guiding</button></div>'
       + '<div class="lede" style="margin-top:7px">Step ' + n.phase + ' of ' + (big() ? 8 : 3)
@@ -5797,32 +5795,14 @@ var GUIDE = (function () {
     }
     h += sidesRead();
     h += ceilingRead();
-    if (app.awaitMove && b) {
-      var doneN = app.moveAt, totN = app.units.length;
-      h += '<div class="card" style="border-width:3px"><h2>Move ' + doneN + ' of ' + totN + '</h2>'
-        + '<div class="lede">' + (b.chant ? 'One move of the chant at a time. ' : '')
-        + 'Do that move on your own cube, then tap for the next one.</div>'
-        + '<div class="row" style="margin-top:9px">'
-        + '<button class="btn primary big" data-act="move-next">Next move</button>'
-        + '<button class="btn" data-act="demo-again">Start this ' + (b.chant ? 'chant' : 'move') + ' again</button>'
-        + '<button class="btn" data-act="block-again">Start this block again</button></div></div>';
-    }
-    if (app.awaitDemo && b) {
-      h += '<div class="card" style="border-width:3px"><h2>That is the move</h2>'
-        + '<div class="lede">The cube just did it for you. Do the same on your own cube, then say when it is done.</div>'
-        + '<div class="row" style="margin-top:9px">'
-        + '<button class="btn big" data-act="demo-again">Watch again</button>'
-        + '<button class="btn primary big" data-act="demo-done">I did it</button>'
-        + '<button class="btn" data-act="block-again">Start this block again</button>'
-        + '<button class="btn" data-act="prev">Back</button></div></div>';
-    }
+    /* NO CONFIRM TAPS ANYWHERE. There is no "I did it" and no "Next move": the forward arrow
+       on the player is both. She is holding the cube, so she is the one who knows when the move
+       is done, and pressing forward is her saying so. */
     h += '<div class="card"><div class="row">'
-      + '<button class="btn" data-act="prev"' + (app.idx === 0 ? ' disabled' : '') + '>Back</button>'
-      + '<button class="btn primary big" data-act="next"' + (!b || app.awaitDemo || app.awaitMove ? ' disabled' : '') + '>' + (b ? 'Next' : 'Finished') + '</button>'
-      + '<button class="btn" data-act="' + (app.auto ? 'pause' : 'play') + '">' + (app.auto ? 'Pause' : 'Do it for me, slowly') + '</button>'
+      + (b && b.moves.length ? '<button class="btn" data-act="demo-again">Watch that again</button>' : '')
       + '<button class="btn" data-act="block-again">Start this block again</button>'
       + '<button class="btn" data-act="restart">Work it out again</button>'
-      + '</div><div class="lede" style="margin-top:7px">Do the move on your real cube, then press Next. Step '
+      + '</div><div class="lede" style="margin-top:7px">Do the move on your cube, then press the forward arrow. Step '
       + (b ? b.phase : 3) + ', move ' + Math.min(app.idx + 1, app.plan.beats.length) + ' of ' + app.plan.beats.length + '.</div></div>';
     if (!app.busy && app.askState === null) h += chantShelf();
     h += badgeShelf();
@@ -5962,7 +5942,6 @@ var GUIDE = (function () {
     if (act === 'showturn') { demoTurnOver(); return; }
     if (act === 'tosolve') { app.mode = 'solve'; app.plan = null; app.diag = C.diagnose(app.state); app.says = null; render(); return; }
     if (act === 'puz-setup') { puzzleSetup(); return; }
-    if (act === 'setup-move') { if (!app.busy) playUnit(true); return; }
     if (act === 'setup-again') { puzzleSetup(); return; }
     if (act === 'puz-screen' || act === 'puz-solve') {
       /* the state is KNOWN either way, so this is the identified path: she gets the countdown */
@@ -5984,11 +5963,9 @@ var GUIDE = (function () {
     if (act === 'coach') { app.mode = 'solve'; app.usedShowMe = false; app.cheered = {}; app.guide = null; startSolve(null); return; }
     if (act === 'guide') { guideStart(); return; }
     if (act === 'guide-stop') { guideStop(); return; }
-    if (act === 'guide-next') { guideNext(); return; }
     if (act === 'guide-again') { guideDemo(); return; }
     if (act === 'guide-step') { guideGo(app.guide ? app.guide.id : null, true); return; }
     if (act === 'guide-back') { guideBack(); return; }
-    if (act === 'guide-move') { if (!app.busy) playUnit(true); return; }
     if (act === 'practice') {
       app.guide = null;
       app.state = practiceState();
@@ -6009,10 +5986,8 @@ var GUIDE = (function () {
     if (act === 'player-pause') { playerPause(false); return; }
     if (act === 'player-fwd') { playerPause(false); playerFwd(); return; }
     if (act === 'player-back') { playerBack(); return; }
-    if (act === 'move-next') { if (!app.busy) playUnit(true); return; }
     if (act === 'block-again') { restartBlock(); return; }
     if (act === 'demo-again') { watchAgain(); return; }
-    if (act === 'demo-done') { var db = beat(); app.awaitDemo = false; if (db) beatDone(db); return; }
     if (act === 'next') { app.auto = false; advance(); return; }
     if (act === 'prev') { app.auto = false; goBack(); return; }
     if (act === 'play') { app.auto = true; advance(); return; }

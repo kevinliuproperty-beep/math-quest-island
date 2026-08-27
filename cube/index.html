@@ -3226,7 +3226,7 @@ var GUIDE = (function () {
     quiz: null, quizPick: null, quizFor: null,
     cubeSays: null, drill: null, chantUndo: null,
     puzzle: null, setup: null,
-    guide: null, guideWhy: '', guideChant: null, guideAsk: false,
+    guide: null, guideWhy: '', guideChant: null, guideAsk: false, guideSaved: null,
     badges: {}
   };
 
@@ -4089,8 +4089,13 @@ var GUIDE = (function () {
     var p = C.buildPlan(app.state, hint);
     if (!p.ok) { say('I got muddled working that one out. Press Start again and I will have another go.', 'oops'); app.plan = null; render(); return; }
     app.plan = p; app.idx = 0; app.askState = null; app.auto = false; app.awaitDemo = false;
+    app.units = []; app.moveAt = 0; app.chantAt = -1; app.awaitMove = false;
     app.diag = C.diagnose(app.state);
     app.fromFace = app.diag.kind === 'face';
+    /* THE FIRST FRAME IS HER CUBE. The plan was built from app.state, so the picture has to be
+       app.state too, drawn before a single move is played. Without this the screen keeps
+       whatever it was showing before and the walkthrough appears to start from the wrong cube. */
+    clearGlow(); renderCube();
     say(app.plan.beats[0].say, '');
     render();
     /* nothing moves on its own from here. Beat one is on the screen, waiting for her tap. */
@@ -5338,6 +5343,18 @@ var GUIDE = (function () {
     }
     return C.presetState(C.PRESETS.filter(function (p) { return p.id === 'layer'; })[0] || C.PRESETS[0]);
   }
+  /* WHEN THE APP KNOWS THE CUBE, THAT IS THE DOOR THAT LEADS.
+     She made a muddle, or set one up from a puzzle, or painted her own in. Handing her a demo
+     on an example cube first is how the screen came to look like it had thrown her cube away.
+     This walks the cube that is actually on the screen, in step with her, move for move. */
+  function knownDoor() {
+    if (C.facesAllOneColour(app.state)) return '';
+    return '<div class="card" style="border-width:3px;border-color:' + RED + '">'
+      + '<h2 style="color:' + RED + '">Solve THIS cube with me</h2>'
+      + '<div class="lede">The cube on the screen is the muddle you just made, and I know exactly what it looks like. '
+      + 'We go one move at a time, together, until it is done. Your cube stays where it is.</div>'
+      + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="coach">Solve this one with me</button></div></div>';
+  }
   function frontDoor() {
     var mine = whiteLayerDone(app.state);
     /* THE FIRST DOOR. The method reads the cube as it goes, so it needs nothing typed in and
@@ -5346,7 +5363,8 @@ var GUIDE = (function () {
     return '<div class="card" style="border-width:3px;border-color:' + RED + '">'
       + '<h2>Just guide me</h2>'
       + '<div class="lede">Cube in your hands, nothing to type in, nothing to paint. I call out every step, '
-      + 'you do it on yours, and you tell me what you see. It works on any mess.</div>'
+      + 'you do it on yours, and you tell me what you see. It works on any mess. '
+      + 'The screen turns into my example while we do it, and your muddle comes straight back when you stop.</div>'
       + '<div class="row" style="margin-top:9px">'
       + '<button class="btn primary big" data-act="guide">Just guide me</button></div></div>'
       + '<div class="card" style="border-width:3px"><h2>Or something else</h2>'
@@ -5375,11 +5393,18 @@ var GUIDE = (function () {
     var sc = guideScript();
     app.mode = 'solve'; app.plan = null; app.auto = false; app.nudge = null;
     app.cheered = {}; app.usedShowMe = false;
+    /* The guide draws on an EXAMPLE cube, so it takes the screen over. Whatever muddle was on
+       there is hers and it is not the guide's to throw away, so it is put aside here and handed
+       straight back when she stops. Without this a guide detour quietly destroys her cube and
+       everything afterwards plans from the example instead. */
+    app.guideSaved = C.clone(app.state);
     app.guide = { id: '', phase: 1, stack: [] };
     guideGo(sc.first);
   }
   function guideStop() {
     app.guide = null; app.guideWhy = ''; app.guideChant = null; app.guideAsk = false;
+    app.units = []; app.moveAt = 0; app.chantAt = -1; app.awaitMove = false;
+    if (app.guideSaved) { app.state = app.guideSaved; app.guideSaved = null; clearGlow(); renderCube(); }
     speakStop(); app.says = null; idleTile('Ready when you are'); render();
   }
   function guideGo(id, back) {
@@ -5537,6 +5562,7 @@ var GUIDE = (function () {
     }
 
     if (!app.plan) {
+      h += knownDoor();
       h += frontDoor();
       h += diagCard() || '<div class="card"><h2>Ready?</h2><div class="lede">Press start and I will work out your cube.</div>'
         + '<div class="row" style="margin-top:8px"><button class="btn primary" data-act="coach">Start</button></div></div>';

@@ -224,14 +224,38 @@
   .say.panic { border: 2px dashed var(--red); background: #fdf1f2; }
   .say .head { font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; font-weight: 800; font-size: 15px; display: block; margin-bottom: 2px; }
   /* the tutorial layer: one always visible line saying why the step makes sense */
+  /* The reason under an instruction. It carries no label: a heading repeated on every single
+     beat is noise, and the sentence says what it is. Quiet, plain, second. */
   .why {
-    margin-top: 7px; padding: 7px 10px; border-left: 4px solid var(--hilite);
-    background: var(--pale); border-radius: 0 8px 8px 0;
-    font-size: 13.5px; font-weight: 600; color: var(--soft); line-height: 1.35;
+    margin-top: 6px; font-size: 13.5px; font-weight: 600; color: var(--soft); line-height: 1.35;
   }
-  .why b { color: var(--ink); font-weight: 800; }
   .say.good .head { color: var(--green); }
   .say.oops .head, .say.panic .head { color: var(--red); }
+
+  /* ---------- the player bar ----------
+     One bar, wherever moves are being stepped: the coached solve, the puzzle setup, the guide,
+     the chant shelf. Media player glyphs because every child already knows them, and every
+     control is a finger sized target on a tablet. */
+  .player {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    background: var(--wash); border: 2px solid var(--ink); border-radius: 12px; padding: 8px 10px;
+  }
+  .player button {
+    font: inherit; cursor: pointer; background: var(--paper); color: var(--ink);
+    border: 2px solid var(--ink); border-radius: 10px;
+    min-width: 56px; min-height: 48px; display: flex; align-items: center; justify-content: center;
+  }
+  .player button[disabled] { opacity: .35; cursor: default; }
+  .player button.go { background: var(--ink); }
+  .player button.go svg { fill: var(--paper); }
+  .player svg { width: 22px; height: 22px; fill: var(--ink); display: block; }
+  .player .pos {
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; font-weight: 800; font-size: 14px;
+    flex: 1 1 130px; line-height: 1.2;
+  }
+  .player .pos small { display: block; font-size: 11.5px; font-weight: 700; color: var(--soft); }
+  .player.waiting { border-color: var(--red); }
+  .player.waiting .pos small { color: var(--red); }
 
   .askbox { display: grid; gap: 8px; }
   .askq { font-size: 16px; font-weight: 700; }
@@ -3227,6 +3251,7 @@ var GUIDE = (function () {
     cubeSays: null, drill: null, chantUndo: null,
     puzzle: null, setup: null,
     guide: null, guideWhy: '', guideChant: null, guideAsk: false, guideSaved: null,
+    playing: false, playMsg: null, saidWhy: {},
     badges: {}
   };
 
@@ -4006,7 +4031,18 @@ var GUIDE = (function () {
     } catch (e) { /* a browser with no voice just stays quiet */ }
   }
   function plainWords(s) { return String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
-  /* what a beat sounds like: the chant and its count, the instruction, then the why line */
+  /* ===== SPEECH START =====
+     WHAT SHE HEARS. The instruction every single time, because it is what to do next. The
+     reason ONCE per kind of beat in a sitting: the Righty explanation is the same sentence on
+     the first corner and on the fourth, and hearing it five times is what made the voice
+     tiring. It stays on the screen either way. */
+  function beatWhyKey(b) { return 'b' + b.phase + '/' + b.kind + (b.chant ? '/' + b.chant : ''); }
+  function reasonOnce(key, text) {
+    if (!text || !key) return '';
+    if (app.saidWhy[key]) return '';
+    app.saidWhy[key] = 1;
+    return text;
+  }
   function beatSpeech(b) {
     if (!b) return '';
     var bits = [];
@@ -4014,10 +4050,18 @@ var GUIDE = (function () {
       bits.push(C.CHANTS[b.chant].name + (b.of > 1 ? ', number ' + b.ord + ' of ' + b.of : ''));
     }
     if (b.say) bits.push(plainWords(b.say));
-    if (b.why) bits.push('Why this works. ' + b.why);
+    var r = reasonOnce(beatWhyKey(b), b.why);
+    if (r) bits.push(r);
     return bits.join('. ');
   }
   function speakBeat(b) { speakStop(); speakText(beatSpeech(b)); }
+  function guideSpeech(n) {
+    if (!n) return '';
+    var bits = [plainWords(n.say)], r = reasonOnce('g/' + n.id, n.why);
+    if (r) bits.push(r);
+    return bits.join('. ');
+  }
+  /* ===== SPEECH END ===== */
 
   /* ---------------------------------------------------------------- talking */
   function say(text, kind, head) {
@@ -4090,6 +4134,8 @@ var GUIDE = (function () {
     if (!p.ok) { say('I got muddled working that one out. Press Start again and I will have another go.', 'oops'); app.plan = null; render(); return; }
     app.plan = p; app.idx = 0; app.askState = null; app.auto = false; app.awaitDemo = false;
     app.units = []; app.moveAt = 0; app.chantAt = -1; app.awaitMove = false;
+    app.drill = null; app.playing = false; app.playMsg = null;
+    app.saidWhy = {};
     app.diag = C.diagnose(app.state);
     app.fromFace = app.diag.kind === 'face';
     /* THE FIRST FRAME IS HER CUBE. The plan was built from app.state, so the picture has to be
@@ -4136,9 +4182,11 @@ var GUIDE = (function () {
   function playUnit(speakIt) {
     /* one stepper, two callers. The guide hands it a script step instead of a plan beat, so a
        14 move chant is stepped exactly the same way here as it is in the coached solve. */
-    var b = app.setup ? app.setup : (app.guide ? guideNode() : beat());
+    var b = app.setup ? app.setup : (app.drill ? app.drill : (app.guide ? guideNode() : beat()));
     if (!b || !app.units || app.moveAt >= app.units.length) return;
     var u = app.units[app.moveAt], dur = app.auto ? 520 : SPEED;
+    /* a move is playing, so any "your turn" left over from the last thing is stale */
+    app.playMsg = null;
     app.busy = true; app.awaitMove = false;
     app.chantAt = app.moveAt;
     if (speakIt) speakMove(u, b);
@@ -4148,11 +4196,14 @@ var GUIDE = (function () {
       if (app.moveAt >= app.units.length) {
         app.chantAt = -1;
         if (app.setup) { setupDone(); return; }
+        if (app.drill) { chantUnitsDone(); return; }
         if (app.guide) { guideUnitsDone(); return; }
         finishBeat(b); return;
       }
       if (app.auto) { playUnit(true); return; }
       app.busy = false; app.awaitMove = true; render();
+      /* the player keeps the beat going by itself, one move at a time, until something needs her */
+      if (app.playing) setTimeout(playerStep, 120);
     };
     if (C.WHOLE[u]) turnWhole(u, dur + 80, after); else turn(u, dur, after);
   }
@@ -4624,6 +4675,152 @@ var GUIDE = (function () {
     render();
   }
 
+  /* ===== PLAYER START =====
+     ONE PLAYER BAR, MANY OWNERS. Moves get stepped in four places: the coached solve, the puzzle
+     setup, the guide, and the chant shelf. They all drive the same playUnit, so they all get the
+     same bar: play, step back, step forward, and where you are. There is no second copy of this
+     anywhere, on purpose.
+     THE LAW OF PLAY: play only ever carries her through MOVES. The moment the app needs an answer
+     from her, an ask, a read, a spot check, a confirm, play stops itself and says so. It is a
+     soundtrack for the turns, never an autopilot for the thinking. */
+  var GLYPH = {
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="7,4 20,12 7,20"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4.5" height="16" rx="1.2"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.2"/></svg>',
+    back: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="18,4 8,12 18,20"/><rect x="4" y="4" width="3" height="16" rx="1.2"/></svg>',
+    fwd: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="6,4 16,12 6,20"/><rect x="17" y="4" width="3" height="16" rx="1.2"/></svg>'
+  };
+  /* who is stepping moves right now. Same order the stepper itself resolves them in. */
+  function playerOwner() {
+    if (app.setup) return 'setup';
+    if (app.drill) return 'chant';
+    if (app.guide) return 'guide';
+    if (app.plan) return 'solve';
+    return null;
+  }
+  /* the one thing the player is not allowed to walk past: a question only she can answer */
+  function playerBlocked() {
+    var o = playerOwner();
+    if (app.awaitMove) return false;
+    if (o === 'solve') {
+      if (app.askState === 'asking' || app.askState === 'askingAfter') return true;
+      if (app.awaitDemo) return true;
+      return false;
+    }
+    if (o === 'guide') {
+      var n = guideNode();
+      return !!(n && (n.ask || n.end) && app.guideAsk);
+    }
+    if (o === 'setup') return !!app.setup.done;
+    return false;
+  }
+  function playerWaitWords() {
+    var o = playerOwner();
+    if (o === 'solve' && app.awaitDemo) return 'Your turn: say when you have done it';
+    if (o === 'setup') return 'All set up';
+    return 'Your turn: answer to continue';
+  }
+  /* a step's own demonstration may not have been kicked off yet. That is a gap to wait through,
+     not a reason to stop: stopping there would look like the player had died. */
+  function playerPending() {
+    if (playerOwner() !== 'guide') return false;
+    var n = guideNode();
+    return !!(n && n.moves.length && !app.units.length && !app.guideAsk);
+  }
+  function playerCanFwd() {
+    var o = playerOwner();
+    if (!o || app.busy) return false;
+    if (app.awaitMove) return app.moveAt < app.units.length;
+    if (playerBlocked()) return false;
+    if (o === 'solve') return !!beat();
+    if (o === 'guide') { var n = guideNode(); return !!(n && n.to); }
+    return false;
+  }
+  function playerCanBack() {
+    var o = playerOwner();
+    if (!o || app.busy) return false;
+    if (o === 'solve') return app.idx > 0 || app.awaitDemo || app.awaitMove;
+    if (o === 'guide') return app.guide.stack.length > 0;
+    if (o === 'setup') return app.moveAt > 0;
+    if (o === 'chant') return !!app.chantUndo;
+    return false;
+  }
+  /* where she is, in her words */
+  function playerPos() {
+    var o = playerOwner();
+    if (app.awaitMove && app.units.length) {
+      return { big: 'Move ' + app.moveAt + ' of ' + app.units.length, small: 'one turn at a time' };
+    }
+    if (o === 'solve' && app.plan) {
+      var left = planMoves(app.plan, app.idx);
+      return { big: 'Step ' + Math.min(app.idx + 1, app.plan.beats.length) + ' of ' + app.plan.beats.length,
+               small: left + ' moves to go' };
+    }
+    if (o === 'guide') {
+      var n = guideNode();
+      return { big: 'Step ' + (n ? n.phase : 1) + ' of ' + (big() ? 8 : 3), small: 'you tell me what you see' };
+    }
+    if (o === 'setup') return { big: 'Setting up', small: app.units.length + ' turns' };
+    if (o === 'chant') return { big: C.CHANTS[app.drill.id].name, small: app.units.length + ' moves' };
+    return { big: '', small: '' };
+  }
+  /* one step on, in whatever is stepping */
+  function playerFwd() {
+    var o = playerOwner();
+    if (!o || app.busy) return;
+    if (app.awaitMove) { playUnit(true); return; }
+    if (playerBlocked()) return;
+    if (o === 'solve') { advance(); return; }
+    if (o === 'guide') { guideNext(); return; }
+  }
+  /* one step back, on the snapshots that are already proved to restore byte for byte */
+  function playerBack() {
+    var o = playerOwner();
+    if (!o || app.busy) return;
+    /* mid play, Back pauses first: she asked to take the wheel */
+    if (app.playing) playerPause(false);
+    if (o === 'solve') { goBack(); return; }
+    if (o === 'guide') { guideBack(); return; }
+    if (o === 'setup') { puzzleSetup(); return; }
+    if (o === 'chant') { undoChant(); return; }
+  }
+  function playerPlay() {
+    if (!playerOwner() || app.playing) return;
+    if (playerBlocked()) { app.playMsg = playerWaitWords(); render(); return; }
+    app.playing = true; app.playMsg = null;
+    render();
+    playerStep();
+  }
+  function playerPause(waiting) {
+    app.playing = false;
+    app.playMsg = waiting ? playerWaitWords() : null;
+    render();
+  }
+  /* the beat of the player: one move, breathe, one move, and stop the moment she is needed */
+  function playerStep() {
+    if (!app.playing) return;
+    if (app.busy || playerPending()) { setTimeout(playerStep, 120); return; }
+    if (playerBlocked()) { playerPause(true); return; }
+    if (!playerCanFwd()) { playerPause(false); return; }
+    playerFwd();
+    setTimeout(playerStep, 200);
+  }
+  function transportBar() {
+    var o = playerOwner();
+    if (!o) return '';
+    var pos = playerPos(), waiting = playerBlocked();
+    return '<div class="player' + (waiting ? ' waiting' : '') + '" style="margin-bottom:12px">'
+      + '<button type="button" data-act="player-back" title="Step back" aria-label="Step back"'
+      + (playerCanBack() ? '' : ' disabled') + '>' + GLYPH.back + '</button>'
+      + '<button type="button" class="go" data-act="' + (app.playing ? 'player-pause' : 'player-play') + '"'
+      + ' title="' + (app.playing ? 'Pause' : 'Play') + '" aria-label="' + (app.playing ? 'Pause' : 'Play') + '"'
+      + ((app.playing || playerCanFwd()) ? '' : ' disabled') + '>' + (app.playing ? GLYPH.pause : GLYPH.play) + '</button>'
+      + '<button type="button" data-act="player-fwd" title="Step forward" aria-label="Step forward"'
+      + (playerCanFwd() ? '' : ' disabled') + '>' + GLYPH.fwd + '</button>'
+      + '<span class="pos">' + esc(pos.big) + '<small>' + esc(waiting ? playerWaitWords() : (app.playMsg || pos.small)) + '</small></span>'
+      + '</div>';
+  }
+  /* ===== PLAYER END ===== */
+
   /* ---------------------------------------------------------------- panels */
   function sayBox() {
     if (!app.says) return '';
@@ -4631,10 +4828,10 @@ var GUIDE = (function () {
       + whyLine(app.guide ? { why: app.guideWhy } : beat()) + '</div>';
   }
   /* the tutorial line: always visible, never a thing she has to go looking for */
-  function whyLine(b) {
-    if (!b || !b.why) return '';
-    return '<div class="why"><b>Why this works.</b> ' + esc(b.why) + '</div>';
-  }
+  /* The reason, always on the screen, never with a heading in front of it. One function, so
+     there is nowhere for a preamble to creep back in. */
+  function reasonLine(text) { return text ? '<div class="why">' + esc(text) + '</div>' : ''; }
+  function whyLine(b) { return (b && b.why) ? reasonLine(b.why) : ''; }
   function badgeShelf() {
     return '<div class="card"><h2>Badges</h2><div class="badges">'
       + badgeList().map(function (b) { return '<span class="badge' + (app.badges[b.id] ? ' won' : '') + '">' + esc(b.name) + '</span>'; }).join('')
@@ -4878,7 +5075,7 @@ var GUIDE = (function () {
     if (app.inferSpot) {
       var sp = app.inferSpot.sid;
       h += '<div class="lede">I worked out every side you cannot see, and there is only one cube it can be. The painting is filled in.</div>'
-        + '<div class="why"><b>Why I can be sure.</b> Only one legal cube matches every square you painted, so I checked them all.</div>'
+        + reasonLine('Only one legal cube matches every square you painted, so I checked them all.')
         + '<div class="views" style="margin-top:10px"><div class="viewbox">' + faceInset(sp, 230)
         + '<div class="cap">' + esc(peekCap(sp)) + '</div></div></div>'
         + '<div class="say" style="margin-top:9px"><span class="head">One quick look</span>'
@@ -4892,7 +5089,7 @@ var GUIDE = (function () {
       var qs = app.inferQ.sid, cols = app.inferQ.colours || C.COLOURS;
       var many = app.inferRes && app.inferRes.capped ? 'Lots of' : ((app.inferRes ? app.inferRes.count : 2) + ' different');
       h += '<div class="lede">Question ' + (app.inferAsked || 1) + '.</div>'
-        + '<div class="why"><b>Why this one.</b> ' + esc(many) + ' cubes still match your painting, and this square tells them apart.</div>'
+        + reasonLine(many + ' cubes still match your painting, and this square tells them apart.')
         + '<div class="holdq" style="margin-top:8px">What colour is this square? Tap it.</div>'
         + '<div class="lede" style="margin-top:2px">' + esc(peekQuestion(qs)) + '</div>'
         + '<div class="views" style="margin-top:10px"><div class="viewbox">' + faceInset(qs, 230)
@@ -4935,7 +5132,7 @@ var GUIDE = (function () {
       + '<li>Keep it there. <b>The ceiling is the side you have not touched.</b></li>'
       + '<li>Now paint what you can see: the ceiling, the side looking at you, and your right.</li>'
       + '</ol></div></div>'
-      + '<div class="why"><b>Why this works.</b> Every picture and every step from here on has white at the floor.</div>'
+      + reasonLine('Every picture and every step from here on has white at the floor.')
       + '<div class="row" style="margin-top:10px"><button class="btn primary big" data-act="side-ready">White is at the floor</button></div>'
       + (app.sideMsg ? '<div class="say oops" style="margin-top:9px"><span class="head">Not yet</span>' + esc(app.sideMsg) + '</div>' : '')
       + '</div>';
@@ -5016,12 +5213,14 @@ var GUIDE = (function () {
   /* ---------------------------------------------------------------- the chant shelf */
   function chantCard(id) {
     var c = C.CHANTS[id], d = (app.drill && app.drill.id === id) ? app.drill : null;
-    var name = c.name + (d && d.times > 1 ? ', time ' + d.round + ' of ' + d.times : '');
-    var note = d ? ('move ' + (d.at + 1) + ' of ' + c.moves.length) : (c.moves.length + ' moves');
+    var at = d ? (app.chantAt === undefined ? -1 : app.chantAt) : -1;
+    var round = d ? (1 + Math.floor(Math.max(0, at) / c.moves.length)) : 1;
+    var name = c.name + (d && d.times > 1 ? ', time ' + round + ' of ' + d.times : '');
+    var note = d ? ('move ' + (at + 1) + ' of ' + app.units.length) : (c.moves.length + ' moves');
     var h = '<div class="card"><h2>' + esc(c.name) + '</h2>'
       + '<div class="lede">' + esc(c.what) + '</div>'
-      + (c.why ? '<div class="why"><b>Why this works.</b> ' + esc(c.why) + '</div>' : '')
-      + '<div style="margin-top:8px">' + strip(name, c.moves, c.breath, d ? d.at : -1, note) + '</div>'
+      + reasonLine(c.why)
+      + '<div style="margin-top:8px">' + strip(name, c.moves, c.breath, d ? (at % c.moves.length) : -1, note) + '</div>'
       + '<div class="row" style="margin-top:9px">'
       + '<button class="btn primary" data-chant="' + id + '" data-times="1"' + (app.busy ? ' disabled' : '') + '>Do it once</button>';
     if (id === 'swap' || big()) {
@@ -5032,31 +5231,30 @@ var GUIDE = (function () {
     return h + '</div>';
   }
   function chantShelf() {
-    var head = '<div class="card"><h2>Chant shelf</h2><div class="lede">Tap a chant and the cube does it slowly, one move at a time, from wherever it is right now. Say it out loud with the tiles. Undo puts everything back.</div></div>';
+    var head = (app.drill ? transportBar() : '') + '<div class="card"><h2>Chant shelf</h2><div class="lede">Tap a chant and the cube does it slowly, one move at a time, from wherever it is right now. Say it out loud with the tiles. Undo puts everything back.</div></div>';
     if (big()) return head + C3.CHANT_KEYS.map(chantCard).join('');
     return head + chantCard('righty') + chantCard('swap');
   }
+  /* THE CHANT SHELF USES THE ONE STEPPER TOO. It used to run its own loop and blitz the whole
+     chant past her; now it is just another owner of playUnit, so it gets Move n of m, the
+     player bar and the same discipline as everything else. */
   function playChant(id, times) {
     if (app.busy) return;
-    var c = C.CHANTS[id], before = C.clone(app.state), mode = app.mode, round = 1;
+    var c = C.CHANTS[id];
     app.chantUndo = C.clone(app.state);
-    app.busy = true;
-    app.drill = { id: id, at: 0, round: 1, times: times };
+    app.drill = { id: id, chant: id, times: times, before: C.clone(app.state), mode: app.mode,
+                  moves: C.chantSeq(id, times) };
+    app.units = app.drill.moves.slice(); app.moveAt = 0; app.chantAt = -1; app.awaitMove = false;
     say('<b>' + esc(c.name) + '.</b> ' + esc(c.say), '', 'Say it out loud');
     render();
-    (function doRound() {
-      var i = 0;
-      (function step() {
-        if (i >= c.moves.length) {
-          if (round < times) { round++; app.drill.round = round; app.drill.at = 0; render(); doRound(); return; }
-          app.busy = false; app.drill = null;
-          finishChant(id, times, before, mode);
-          return;
-        }
-        app.drill.at = i; render();
-        turn(c.moves[i++], 520, step);
-      })();
-    })();
+    playUnit(false);
+  }
+  function chantUnitsDone() {
+    var d = app.drill;
+    app.busy = false; app.awaitMove = false; app.chantAt = -1;
+    app.drill = null; app.units = []; app.moveAt = 0;
+    playerPause(false);
+    finishChant(d.id, d.times, d.before, d.mode);
   }
   function finishChant(id, times, before, mode) {
     if (!big() && C.chantMasterEarned(before, app.state, id, times, mode)) {
@@ -5073,6 +5271,9 @@ var GUIDE = (function () {
   function undoChant() {
     if (app.busy || !app.chantUndo) return;
     app.state = app.chantUndo; app.chantUndo = null;
+    /* the chant is over, so it stops owning the player bar */
+    app.drill = null; app.units = []; app.moveAt = 0; app.chantAt = -1;
+    app.awaitMove = false; app.playing = false; app.playMsg = null;
     renderCube();
     say('Back to exactly where you were before the chant.', '');
     if (app.mode === 'solve' && app.plan) { app.plan = C.buildPlan(app.state); app.idx = 0; app.askState = null; }
@@ -5313,6 +5514,7 @@ var GUIDE = (function () {
       + isoAny(app.puzzle.state, viewHome(), 150, {})
       + '<div class="cap">' + esc(puzzleName(app.puzzle.kind)) + '</div></div></div>';
     if (app.setup) {
+      h += transportBar();
       if (app.awaitMove) {
         h += '<div class="card" style="border-width:3px;margin-top:10px"><h2>Move ' + app.moveAt + ' of ' + app.units.length + '</h2>'
           + '<div class="lede">Do that turn on your own cube, then tap for the next one.</div>'
@@ -5398,6 +5600,9 @@ var GUIDE = (function () {
        straight back when she stops. Without this a guide detour quietly destroys her cube and
        everything afterwards plans from the example instead. */
     app.guideSaved = C.clone(app.state);
+    app.drill = null; app.units = []; app.moveAt = 0; app.chantAt = -1;
+    app.awaitMove = false; app.playing = false; app.playMsg = null;
+    app.saidWhy = {};
     app.guide = { id: '', phase: 1, stack: [] };
     guideGo(sc.first);
   }
@@ -5426,7 +5631,7 @@ var GUIDE = (function () {
     idleTile(n.title || 'Just guide me');
     render();
     speakStop();
-    speakText(plainWords(n.say) + (n.why ? '. Why this works. ' + n.why : ''));
+    speakText(guideSpeech(n));
     if (n.moves.length) setTimeout(guideDemo, 260);
   }
   /* the example cube does the move ONE AT A TIME, waiting for her between each, using the very
@@ -5460,6 +5665,7 @@ var GUIDE = (function () {
   function guideAnswer(k) {
     var n = guideNode();
     if (!n || !n.ask || app.busy) return;
+    app.playing = false; app.playMsg = null;
     var o = n.ask.opts[k];
     if (o) guideGo(o.to);
   }
@@ -5481,6 +5687,7 @@ var GUIDE = (function () {
       + '<div class="lede">Yours will look different, and that is fine. Do what I do on yours, and tell me what YOU can see. '
       + 'The block inside the red ring is your working corner.</div>'
       + '<div class="row" style="margin-top:9px"><button class="btn" data-act="guide-stop">Stop guiding</button></div></div>';
+    h += transportBar();
     h += railHtml();
     h += sayBox();
     if (n.chant && C.CHANTS[n.chant]) {
@@ -5574,6 +5781,7 @@ var GUIDE = (function () {
 
     var b = beat();
     h += countdownCard();
+    h += transportBar();
     h += railHtml();
     h += sayBox();
     h += chantStrip();
@@ -5670,7 +5878,7 @@ var GUIDE = (function () {
     app.mode = b.getAttribute('data-mode');
     speakStop();
     app.says = null; app.auto = false;
-    app.confirmReset = false;
+    app.confirmReset = false; app.playing = false; app.playMsg = null;
     if (app.mode !== 'mess') { app.setup = null; }
     if (app.mode === 'paint') { if (app.paintIntent !== 'side') app.paintIntent = 'match'; idleTile('Paint your cube'); }
     else { app.sideHold = false; app.sideMsg = null; }
@@ -5797,6 +6005,10 @@ var GUIDE = (function () {
       renderCube(); idleTile('Full scramble');
       app.mode = 'solve'; startSolve(null); return;
     }
+    if (act === 'player-play') { playerPlay(); return; }
+    if (act === 'player-pause') { playerPause(false); return; }
+    if (act === 'player-fwd') { playerPause(false); playerFwd(); return; }
+    if (act === 'player-back') { playerBack(); return; }
     if (act === 'move-next') { if (!app.busy) playUnit(true); return; }
     if (act === 'block-again') { restartBlock(); return; }
     if (act === 'demo-again') { watchAgain(); return; }
@@ -5927,7 +6139,7 @@ var GUIDE = (function () {
     app.whiteDown = false; app.whiteMsg = null;
     app.cheered = st ? st.cheered : {};
     app.plan = null; app.idx = 0; app.askState = null; app.auto = false; app.nudge = null;
-    app.puzzle = null; app.setup = null;
+    app.puzzle = null; app.setup = null; app.playing = false; app.playMsg = null;
     app.guide = null; app.guideWhy = ''; app.guideChant = null; app.guideAsk = false;
     app.diag = null; app.quiz = null; app.quizPick = null; app.drill = null; app.chantUndo = null; app.cubeSays = null;
     app.paintMsg = null; app.paintSuspects = []; app.usedShowMe = false; app.fromFace = false;
@@ -5987,7 +6199,7 @@ var GUIDE = (function () {
       sb.textContent = app.speak ? 'Voice on' : 'Voice off';
       speakStop();
       if (!app.speak) return;
-      if (app.guide) { var gn = guideNode(); if (gn) speakText(plainWords(gn.say) + (gn.why ? '. Why this works. ' + gn.why : '')); return; }
+      if (app.guide) { var gn = guideNode(); if (gn) speakText(guideSpeech(gn)); return; }
       if (app.mode === 'solve' && app.plan) speakBeat(beat());
     });
   } else {

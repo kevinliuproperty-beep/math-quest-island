@@ -212,6 +212,23 @@
   .beat.done { background: #e7efe6; color: var(--soft); }
   .beat.now { background: var(--red); color: var(--paper); border-color: var(--red); transform: scale(1.12); }
   .breath { align-self: center; font-size: 10px; font-weight: 700; color: var(--soft); letter-spacing: .06em; text-transform: uppercase; padding: 0 3px; }
+  /* a chant she has mastered plays as one smooth go, so its tiles are one block, not a countdown */
+  .chantstrip.smooth .beat { background: #eef7f1; border-color: var(--green); }
+
+  /* ---------- she knows this one ----------
+     A grown up's quiet tick, never the app's guess. Nothing in here watches her, times her or
+     scores her: a chant counts as mastered because a parent said so, and one more tap un-says it.
+     It sits small and out of the way, because it is not a thing she has to decide. */
+  .knowline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 7px; }
+  .know {
+    font: inherit; cursor: pointer; font-size: 12px; font-weight: 700;
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+    background: var(--paper); color: var(--soft); border: 1.5px solid var(--line);
+    border-radius: 999px; padding: 4px 11px; min-height: 30px;
+  }
+  .know:hover { background: var(--wash); }
+  .know.on { background: #eef7f1; border-color: var(--green); color: var(--green); }
+  .knowline small { font-size: 11.5px; font-weight: 700; color: var(--soft); }
 
   /* ---------- speech / coach ---------- */
   .say {
@@ -3266,6 +3283,8 @@ var GUIDE = (function () {
     guide: null, guideWhy: '', guideChant: null, guideAsk: false, guideSaved: null,
     playing: false, playMsg: null, playRate: 1, playWait: 0, saidWhy: {},
     rejectKind: null, inferHint: null,
+    /* the chants a grown up has ticked off, and a forward tap parked until a smooth go finishes */
+    known: {}, fwdQueued: false,
     badges: {}
   };
 
@@ -3299,7 +3318,31 @@ var GUIDE = (function () {
     try { return JSON.parse(raw || '{}'); } catch (e) { return {}; }
   }
   function saveBadges() { storeSet('badges', JSON.stringify(app.badges)); }
+  /* ---------------------------------------------------------------- chants she has mastered
+     ONE FLAG PER CHANT, SET BY A GROWN UP. Off for every chant until somebody ticks it. There
+     is no detection, no timing and no scoring anywhere near this: the app cannot see her hands,
+     so it does not get a vote on what she knows. Kept under the same one prefix as everything
+     else, with no name in the key. A chant id means the same chant on both cubes, so the Righty
+     tick carries from the small cube to the big one, which is exactly what she learned. */
+  var KNOWN_KEY = 'known-chants';
+  function loadKnown() {
+    var o = null;
+    try { o = JSON.parse(storeGet(KNOWN_KEY) || '{}'); } catch (e) { o = null; }
+    /* anything in there that is not a plain box of ticks means nothing is ticked, never a crash */
+    if (!o || typeof o !== 'object' || Object.prototype.toString.call(o) === '[object Array]') return {};
+    var out = {}, k;
+    for (k in o) { if (o[k]) out[k] = 1; }
+    return out;
+  }
+  function saveKnown() { storeSet(KNOWN_KEY, JSON.stringify(app.known)); }
+  function knowsChant(id) { return !!(id && app.known[id]); }
+  function setKnown(id, on) {
+    if (!id) return;
+    if (on) app.known[id] = 1; else delete app.known[id];
+    saveKnown();
+  }
   app.badges = loadBadges();
+  app.known = loadKnown();
   app.playRate = loadRate();
   function win(id) {
     if (app.badges[id]) return false;
@@ -3585,7 +3628,7 @@ var GUIDE = (function () {
   var SIDE_HOME = ['the side at the ceiling', 'the side on your right', 'the side looking at you',
                    'the side at the floor', 'the side on your left', 'the side facing away'];
   /* WHAT HER EYES SEE, AFTER THE TURN.
-     This was the bug Kevin hit. The little picture is drawn as the named turn leaves the side,
+     This was the bug the field test hit. The little picture is drawn as the named turn leaves the side,
      which is right, but its edges were labelled with the sides' HOME names: on the left side the
      right hand edge was labelled "you", because that side had been looking at her before she
      spun. By the time she is looking at the picture she has already spun, so "you" points at
@@ -4066,6 +4109,15 @@ var GUIDE = (function () {
     } catch (e) { /* a browser with no voice just stays quiet */ }
   }
   function plainWords(s) { return String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
+  /* A mastered chant gets its move count said ONCE, on the announcement that already names it,
+     and then not another number until the chant is over. Works for a plan beat and for a guide
+     step alike, because both carry a chant name and a list of moves. */
+  function smoothTail(b) {
+    if (!b || !b.chant || !b.moves || !b.moves.length || !knowsChant(b.chant)) return '';
+    var n = chantGoes(b);
+    return n.goes > 1 ? ('. ' + n.goes + ' smooth goes, ' + n.per + ' moves each')
+      : ('. ' + b.moves.length + ' moves, one smooth go');
+  }
   /* ===== SPEECH START =====
      WHAT SHE HEARS. The instruction every single time, because it is what to do next. The
      reason ONCE per kind of beat in a sitting: the Righty explanation is the same sentence on
@@ -4089,7 +4141,7 @@ var GUIDE = (function () {
     if (r) bits.push(r);
     return bits.join('. ');
   }
-  function speakBeat(b) { speakStop(); speakText(beatSpeech(b)); }
+  function speakBeat(b) { speakStop(); speakText(beatSpeech(b) + smoothTail(b)); }
   function guideSpeech(n) {
     if (!n) return '';
     var bits = [plainWords(n.say)], r = reasonOnce('g/' + n.id, n.why);
@@ -4207,12 +4259,59 @@ var GUIDE = (function () {
   }
   /* One unit is one named move, or one whole cube turn. A chant is four or fourteen of them
      and she gets to keep up with every single one: the cube does one, then waits for her.
-     Groundwork note: a whole chant is already one group on the beat, so a later fluent mode
-     can play the group in one go simply by not stopping between units. */
+     THE MASTERY RULE. Once a grown up has ticked a chant off, that chant is ONE unit instead:
+     one card, one smooth go on the example cube, one forward tap past the lot. The beat is the
+     same beat and the moves are the same moves, so every snapshot, every count and every reason
+     underneath carries on working untouched. Everything not ticked is stepped exactly as before.
+     This is the fluent mode the grouping groundwork was laid for. */
+  function isRun(u) { return !!(u && u.run); }
+  function unitsAreRuns() { return isRun(app.units && app.units[0]); }
+  /* a step whose moves are whole goes of one chant, cut into one unit per go. A shelf drill can
+     be two goes of the same chant, and two goes she knows are two smooth goes, never one fused
+     blur: the count she chants out loud is still the count she sees. */
+  /* how many whole goes of its chant a step is holding, and how long one go is. ONE answer, used
+     by the cutter, by the card and by the voice, so the three can never disagree about it. */
+  function chantGoes(b) {
+    var c = (b && b.chant) ? C.CHANTS[b.chant] : null, per = c ? c.moves.length : 0;
+    if (!per || !b.moves.length || b.moves.length % per !== 0) return { per: b && b.moves ? b.moves.length : 0, goes: 1 };
+    return { per: per, goes: b.moves.length / per };
+  }
+  function chantRuns(b) {
+    var n = chantGoes(b), out = [], i;
+    if (n.goes <= 1) return [{ run: b.moves.slice(), chant: b.chant, at: 1, times: 1 }];
+    for (i = 0; i < n.goes; i++) {
+      out.push({ run: b.moves.slice(i * n.per, (i + 1) * n.per), chant: b.chant, at: i + 1, times: n.goes });
+    }
+    return out;
+  }
   function beatUnits(b) {
     if (!b || !b.moves.length) return [];
     if (b.kind === 'whole') return [b.whole];
+    if (b.chant && knowsChant(b.chant)) return chantRuns(b);
     return b.moves.slice();
+  }
+  /* ONE SMOOTH GO. The moves of a mastered chant run back to back on the example cube, at the
+     tempo the rate button is set to, and nothing stops in the middle: whole chants only was
+     always the rule, and this is that rule with the brakes off. */
+  function runDur(dur) { return Math.max(150, Math.round(dur / (app.playRate || 1))); }
+  function runChant(u, dur, done) {
+    var list = u.run, i = 0, gap = runDur(dur);
+    (function step() {
+      /* a smooth go is proof of life, so the player's stuck-run watchdog is fed by every turn */
+      app.playWait = 0;
+      if (i >= list.length) { done(); return; }
+      var m = list[i]; i++;
+      if (C.WHOLE[m]) turnWhole(m, gap + 80, step); else turn(m, gap, step);
+    })();
+  }
+  /* Forward tapped while a chant is flying past is REMEMBERED, not obeyed halfway. Cutting a
+     chant in half is the one thing this app has never done, so the tap waits for the end of the
+     go and then does what it always does: moves her on. */
+  function flushFwd() {
+    if (!app.fwdQueued) return;
+    app.fwdQueued = false;
+    if (app.busy || app.playing) return;
+    setTimeout(playerFwd, 0);
   }
   function playUnit(speakIt) {
     /* one stepper, two callers. The guide hands it a script step instead of a plan beat, so a
@@ -4241,10 +4340,21 @@ var GUIDE = (function () {
          from here raced the first one: two of them called forward around each other until one
          got swallowed while the other was busy, and playback stopped dead with nothing pending. */
     };
+    if (isRun(u)) { runChant(u, dur, function () { after(); flushFwd(); }); return; }
     if (C.WHOLE[u]) turnWhole(u, dur + 80, after); else turn(u, dur, after);
+  }
+  /* what a smooth go is called out loud: the chant, and which go it is when there is more than
+     one. The move count rides with it once, and that is the whole of the counting. */
+  function runWords(u, b) {
+    var c = C.CHANTS[u.chant], nth = 0, of = 1;
+    if (b && b.of > 1) { nth = b.ord; of = b.of; }
+    if (u.times > 1) { nth = u.at; of = u.times; }
+    return (c ? c.name : 'Chant') + (of > 1 ? ', ' + C.ordinal(nth) + ' time' : '');
   }
   function speakMove(u, b) {
     if (!app.speak) return;
+    /* a chant she knows is named and counted ONCE, never counted out move by move */
+    if (isRun(u)) { speakStop(); speakText(runWords(u, b) + '. ' + u.run.length + ' moves.'); return; }
     var words = C.WHOLE[u] ? C.WHOLE[u].cap : (C.CAPTION[u] || u);
     var pre = (b && b.chant && app.units.length > 1) ? ('Move ' + (app.moveAt + 1) + ' of ' + app.units.length + '. ') : '';
     speakStop();
@@ -4839,7 +4949,11 @@ var GUIDE = (function () {
   }
   function playerCanFwd() {
     var o = playerOwner();
-    if (!o || app.busy) return false;
+    if (!o) return false;
+    /* MID SMOOTH GO THE ARROW STAYS LIVE. A greyed out arrow cannot park a tap, and parking the
+       tap is the whole point: she asks to move on, the chant still finishes, nothing is cut in
+       half. Every other kind of move keeps the arrow greyed while it is flying, as before. */
+    if (app.busy) return unitsAreRuns();
     if (app.awaitMove) return app.moveAt < app.units.length;
     if (playerBlocked()) return false;
     if (o === 'solve') return !!beat();
@@ -4858,6 +4972,10 @@ var GUIDE = (function () {
   /* where she is, in her words */
   function playerPos() {
     var o = playerOwner();
+    /* a chant she knows is a go, not a move: counting moves is the very thing mastery retires */
+    if (app.awaitMove && app.units.length && unitsAreRuns()) {
+      return { big: 'Go ' + app.moveAt + ' of ' + app.units.length, small: 'one smooth go each' };
+    }
     if (app.awaitMove && app.units.length) {
       return { big: 'Move ' + app.moveAt + ' of ' + app.units.length, small: 'one turn at a time' };
     }
@@ -4871,12 +4989,14 @@ var GUIDE = (function () {
       return { big: 'Step ' + (n ? n.phase : 1) + ' of ' + (big() ? 8 : 3), small: 'you tell me what you see' };
     }
     if (o === 'setup') return { big: 'Setting up', small: app.units.length + ' turns' };
-    if (o === 'chant') return { big: C.CHANTS[app.drill.id].name, small: app.units.length + ' moves' };
+    if (o === 'chant') return { big: C.CHANTS[app.drill.id].name, small: app.drill.moves.length + ' moves' };
     return { big: '', small: '' };
   }
   /* one step on, in whatever is stepping */
   function playerFwd() {
     var o = playerOwner();
+    /* mid smooth go the tap is parked, not thrown away, and never lands halfway through a chant */
+    if (o && app.busy && unitsAreRuns()) { app.fwdQueued = true; return; }
     if (!o || app.busy) return;
     if (app.awaitMove) { playUnit(true); return; }
     if (playerBlocked()) return;
@@ -5420,13 +5540,30 @@ var GUIDE = (function () {
     return app.guide ? app.guide.phase : (b ? b.phase : (big() ? 8 : 3));
   }
   /* one rhythm strip, used by the solve stepper and by the chant shelf */
-  function strip(name, moves, breath, at, note) {
+  function strip(name, moves, breath, at, note, extra, smooth) {
     var tiles = moves.map(function (m, i) {
       var cls = 'beat' + (at === i ? ' now' : (at > i ? ' done' : ''));
       return (i === breath ? '<span class="breath">breath</span>' : '') + '<span class="' + cls + '">' + esc(m) + '</span>';
     }).join('');
-    return '<div class="chantstrip"><span class="chant-name">' + esc(name) + '</span> '
-      + '<span class="count">' + esc(note) + '</span><div class="beats">' + tiles + '</div></div>';
+    return '<div class="chantstrip' + (smooth ? ' smooth' : '') + '"><span class="chant-name">' + esc(name) + '</span> '
+      + '<span class="count">' + esc(note) + '</span><div class="beats">' + tiles + '</div>' + (extra || '') + '</div>';
+  }
+  /* THE ONE SMOOTH GO CARD. A chant she knows never says move 3 of 4 again. It says its name,
+     and how many moves are about to go past in one go, and then it goes. */
+  function smoothNote(n, goes) {
+    if (goes > 1) return goes + ' smooth goes - ' + n + ' moves each.';
+    return 'One smooth go - ' + n + ' move' + (n === 1 ? '' : 's') + '.';
+  }
+  var KNOW_SHELF = 'She knows this one';
+  var KNOW_MID = 'Knows this chant? Do it in one go';
+  /* the grown up's tick, small and quiet, wherever a chant is on the screen. It is a setting,
+     not a reward, so it never cheers and it always un-ticks with the same tap. */
+  function knowToggle(id, words) {
+    var on = knowsChant(id);
+    return '<div class="knowline"><button type="button" class="know' + (on ? ' on' : '') + '" data-know="' + esc(id) + '"'
+      + ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(words) + '</button>'
+      + '<small>' + (on ? 'One smooth go. Tap again for one move at a time.' : 'A grown up taps this when she knows it by heart.')
+      + '</small></div>';
   }
   function chantStripInner() {
     var b = beat();
@@ -5435,21 +5572,31 @@ var GUIDE = (function () {
     var name = c.name + (b.of > 1 ? ', ' + C.ordinal(b.ord) + ' of ' + b.of : '');
     var at = app.chantAt === undefined ? -1 : app.chantAt;
     var note = at >= 0 ? ('move ' + (at + 1) + ' of ' + b.moves.length + ', say it out loud') : 'say it out loud';
-    return strip(name, b.moves, c.breath, at, note);
+    var tick = knowToggle(b.chant, KNOW_MID);
+    /* mastered: one card, no counting, and the tiles sit there as one block she chants through */
+    if (knowsChant(b.chant)) {
+      var g = chantGoes(b);
+      return strip(name + '.', b.moves, c.breath, -1, smoothNote(g.per, g.goes), tick, true);
+    }
+    return strip(name, b.moves, c.breath, at, note, tick);
   }
   function chantStrip() { return '<div id="liveStrip">' + chantStripInner() + '</div>'; }
 
   /* ---------------------------------------------------------------- the chant shelf */
   function chantCard(id) {
     var c = C.CHANTS[id], d = (app.drill && app.drill.id === id) ? app.drill : null;
+    var smooth = knowsChant(id);
     var at = d ? (app.chantAt === undefined ? -1 : app.chantAt) : -1;
-    var round = d ? (1 + Math.floor(Math.max(0, at) / c.moves.length)) : 1;
+    /* stepping per move, chantAt counts moves; in one smooth go it counts whole goes */
+    var round = d ? (smooth ? Math.max(1, at + 1) : 1 + Math.floor(Math.max(0, at) / c.moves.length)) : 1;
     var name = c.name + (d && d.times > 1 ? ', time ' + round + ' of ' + d.times : '');
-    var note = d ? ('move ' + (at + 1) + ' of ' + app.units.length) : (c.moves.length + ' moves');
+    var note = smooth ? smoothNote(c.moves.length) : (d ? ('move ' + (at + 1) + ' of ' + d.moves.length) : (c.moves.length + ' moves'));
+    var lit = (d && !smooth) ? (at % c.moves.length) : -1;
     var h = '<div class="card"><h2>' + esc(c.name) + '</h2>'
       + '<div class="lede">' + esc(c.what) + '</div>'
       + reasonLine(c.why)
-      + '<div style="margin-top:8px">' + strip(name, c.moves, c.breath, d ? (at % c.moves.length) : -1, note) + '</div>'
+      + '<div style="margin-top:8px">'
+      + strip(smooth ? name + '.' : name, c.moves, c.breath, lit, note, knowToggle(id, KNOW_SHELF), smooth) + '</div>'
       + '<div class="row" style="margin-top:9px">'
       + '<button class="btn primary" data-chant="' + id + '" data-times="1"' + (app.busy ? ' disabled' : '') + '>Do it once</button>';
     if (id === 'swap' || big()) {
@@ -5473,7 +5620,9 @@ var GUIDE = (function () {
     app.chantUndo = C.clone(app.state);
     app.drill = { id: id, chant: id, times: times, before: C.clone(app.state), mode: app.mode,
                   moves: C.chantSeq(id, times) };
-    app.units = app.drill.moves.slice(); app.moveAt = 0; app.chantAt = -1; app.awaitMove = false;
+    /* the shelf gets the mastery rule too: unticked is one move at a time, ticked is one go
+       per time round, so Do it twice is still two goes she can count out loud */
+    app.units = beatUnits(app.drill); app.moveAt = 0; app.chantAt = -1; app.awaitMove = false;
     say('<b>' + esc(c.name) + '.</b> ' + esc(c.say), '', 'Say it out loud');
     render();
     playUnit(false);
@@ -5869,7 +6018,7 @@ var GUIDE = (function () {
     idleTile(n.title || 'Just guide me');
     render();
     speakStop();
-    speakText(guideSpeech(n));
+    speakText(guideSpeech(n) + smoothTail(n));
     if (n.moves.length) setTimeout(guideDemo, 260);
   }
   /* the example cube does the move ONE AT A TIME, waiting for her between each, using the very
@@ -5879,6 +6028,8 @@ var GUIDE = (function () {
     if (!n || !n.moves.length || app.busy) return;
     if (n.world) { app.state = C.clone(n.world); clearGlow(); renderCube(); }
     app.units = n.moves.slice(); app.moveAt = 0; app.chantAt = -1;
+    /* MASTERY, in the guide as everywhere else: a chant she knows collapses to one smooth go */
+    if (n.chant && knowsChant(n.chant)) app.units = beatUnits(n);
     app.awaitMove = false; app.guideAsk = false;
     playUnit(false);
   }
@@ -5931,9 +6082,11 @@ var GUIDE = (function () {
     if (n.chant && C.CHANTS[n.chant]) {
       var c = C.CHANTS[n.chant];
       var at = app.chantAt === undefined ? -1 : app.chantAt;
-      h += strip(c.name, n.moves, c.breath, at, at >= 0
+      var tick = knowToggle(n.chant, KNOW_MID), g = chantGoes(n);
+      if (knowsChant(n.chant)) h += strip(c.name + '.', n.moves, c.breath, -1, smoothNote(g.per, g.goes), tick, true);
+      else h += strip(c.name, n.moves, c.breath, at, at >= 0
         ? ('move ' + (at + 1) + ' of ' + n.moves.length + ', say it out loud')
-        : 'say it out loud');
+        : 'say it out loud', tick);
     }
     if (n.end) {
       h += '<div class="card" style="border-color:#009e60;border-width:3px"><h2 style="color:#009e60">You did it</h2>'
@@ -6163,6 +6316,14 @@ var GUIDE = (function () {
       app.quiz = null; app.quizPick = null; app.says = null;
       app.state = C.solved(); clearGlow(); renderCube();
       idleTile('A brand new muddle'); render(); return;
+    }
+    /* the grown up's tick. It changes nothing that is already flying: whole chants only means
+       the chant she is in the middle of finishes the way it started, and the new setting picks
+       up at the next one. */
+    if (t.hasAttribute('data-know')) {
+      var kid = t.getAttribute('data-know');
+      setKnown(kid, !knowsChant(kid));
+      renderStep(); return;
     }
     if (t.hasAttribute('data-preset')) { loadPreset(t.getAttribute('data-preset')); return; }
     if (t.hasAttribute('data-chant')) { playChant(t.getAttribute('data-chant'), parseInt(t.getAttribute('data-times'), 10)); return; }

@@ -251,8 +251,21 @@
   .player svg { width: 22px; height: 22px; fill: var(--ink); display: block; }
   .player .pos {
     font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; font-weight: 800; font-size: 14px;
-    flex: 1 1 130px; line-height: 1.2;
+    flex: 1 1 130px; line-height: 1.2; min-height: 36px;
   }
+  .player .rate { min-width: 56px; font-weight: 800; font-size: 15px; }
+  /* NOTHING RESIZES WHILE SHE IS FOLLOWING ALONG. A card that grows or shrinks between beats
+     shoves the whole page under her thumb, which is what made it jump. These floors are the
+     cheapest way to keep every box the same size whatever text lands in it. */
+  .chantstrip { min-height: 84px; }
+  /* Measured, not guessed: the tallest instruction in either method is the do not panic warning
+     at 117px on an iPad, so the frame is floored above it. Anything shorter simply sits in a box
+     that is already the right size, and the page underneath never moves. */
+  #liveSay { min-height: 120px; }
+  #liveStrip { min-height: 84px; }
+  #liveRail { min-height: 44px; }
+  /* the countdown is a number that changes width as it counts down, so it gets its own lane */
+  #liveCount { display: inline-block; min-width: 96px; }
   .player .pos small { display: block; font-size: 11.5px; font-weight: 700; color: var(--soft); }
   .player.waiting { border-color: var(--red); }
   .player.waiting .pos small { color: var(--red); }
@@ -3251,7 +3264,7 @@ var GUIDE = (function () {
     cubeSays: null, drill: null, chantUndo: null,
     puzzle: null, setup: null,
     guide: null, guideWhy: '', guideChant: null, guideAsk: false, guideSaved: null,
-    playing: false, playMsg: null, saidWhy: {},
+    playing: false, playMsg: null, playRate: 1, playWait: 0, saidWhy: {},
     badges: {}
   };
 
@@ -3286,6 +3299,7 @@ var GUIDE = (function () {
   }
   function saveBadges() { storeSet('badges', JSON.stringify(app.badges)); }
   app.badges = loadBadges();
+  app.playRate = loadRate();
   function win(id) {
     if (app.badges[id]) return false;
     app.badges[id] = 1; saveBadges();
@@ -4127,7 +4141,7 @@ var GUIDE = (function () {
     return '<div class="say good"><span class="head">Your cube is identified.</span>'
       + 'You are <b>' + total + ' moves</b> from solved'
       + (bits.length ? ': ' + esc(bits.join(' and ')) : '') + '. '
-      + '<b>' + left + ' to go.</b></div>';
+      + '<b id="liveCount">' + left + ' to go.</b></div>';
   }
   function startSolve(hint) {
     var p = C.buildPlan(app.state, hint);
@@ -4164,7 +4178,7 @@ var GUIDE = (function () {
     if (b.cornerHi !== undefined) glowPiece3('c', b.cornerHi);
     if (b.edgeHi !== undefined) glowPiece3('e', b.edgeHi);
     if (b.cornerSlotHi !== undefined) glowSlot3('c', b.cornerSlotHi);
-    render();
+    renderStep();
     app.units = beatUnits(b);
     app.moveAt = 0;
     if (!app.units.length) { setTimeout(function () { finishBeat(b); }, b.read ? 1500 : 260); return; }
@@ -4190,7 +4204,7 @@ var GUIDE = (function () {
     app.busy = true; app.awaitMove = false;
     app.chantAt = app.moveAt;
     if (speakIt) speakMove(u, b);
-    render();
+    renderStep();
     var after = function () {
       app.moveAt++;
       if (app.moveAt >= app.units.length) {
@@ -4201,9 +4215,10 @@ var GUIDE = (function () {
         finishBeat(b); return;
       }
       if (app.auto) { playUnit(true); return; }
-      app.busy = false; app.awaitMove = true; render();
-      /* the player keeps the beat going by itself, one move at a time, until something needs her */
-      if (app.playing) setTimeout(playerStep, 120);
+      app.busy = false; app.awaitMove = true; renderStep();
+      /* the player drives itself from its OWN loop and nowhere else. Kicking a second chain off
+         from here raced the first one: two of them called forward around each other until one
+         got swallowed while the other was busy, and playback stopped dead with nothing pending. */
     };
     if (C.WHOLE[u]) turnWhole(u, dur + 80, after); else turn(u, dur, after);
   }
@@ -4219,7 +4234,7 @@ var GUIDE = (function () {
     if (app.level === 'try' && b.askAfter && app.askState !== 'doneAfter') { app.askState = 'askingAfter'; render(); return; }
     /* the cube has just shown her the move. Hold there so she can watch it again or copy
        it on her own cube, unless she asked me to run the whole thing without stopping. */
-    if (b.moves.length && !app.auto) { app.awaitDemo = true; render(); return; }
+    if (b.moves.length && !app.auto) { app.awaitDemo = true; renderStep(); return; }
     beatDone(b);
   }
   function beatDone(b) {
@@ -4249,7 +4264,7 @@ var GUIDE = (function () {
     }
     app.idx++;
     clearGlow();
-    render();
+    renderStep();
     if (app.auto && beat()) setTimeout(advance, 800);
     else if (!beat()) app.auto = false;
   }
@@ -4683,6 +4698,20 @@ var GUIDE = (function () {
      THE LAW OF PLAY: play only ever carries her through MOVES. The moment the app needs an answer
      from her, an ask, a read, a spot check, a confirm, play stops itself and says so. It is a
      soundtrack for the turns, never an autopilot for the thinking. */
+  /* FOLLOW ALONG TEMPO. She is turning a real cube with her hands, so the gap between moves has
+     to be long enough to actually do one. Two rates, no slider: normal, and a bit quicker once
+     she knows the chant by heart. */
+  var PLAY_GAP = { step: 1600, move: 850 };
+  function playGap(kind) { return Math.round(PLAY_GAP[kind] / (app.playRate || 1)); }
+  function loadRate() {
+    var v = parseInt(storeGet('playrate'), 10);
+    return (v === 2) ? 2 : 1;
+  }
+  function setRate(r) {
+    app.playRate = (r === 2) ? 2 : 1;
+    storeSet('playrate', String(app.playRate));
+    render();
+  }
   var GLYPH = {
     play: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="7,4 20,12 7,20"/></svg>',
     pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4.5" height="16" rx="1.2"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.2"/></svg>',
@@ -4786,8 +4815,10 @@ var GUIDE = (function () {
   function playerPlay() {
     if (!playerOwner() || app.playing) return;
     if (playerBlocked()) { app.playMsg = playerWaitWords(); render(); return; }
-    app.playing = true; app.playMsg = null;
-    render();
+    app.playing = true; app.playMsg = null; app.playWait = 0;
+    /* the bar is already on the screen, so flipping play to pause is a text swap like any other:
+       a full rebuild here was the one panel teardown left during a run */
+    renderStep();
     playerStep();
   }
   function playerPause(waiting) {
@@ -4795,40 +4826,63 @@ var GUIDE = (function () {
     app.playMsg = waiting ? playerWaitWords() : null;
     render();
   }
-  /* the beat of the player: one move, breathe, one move, and stop the moment she is needed */
+  /* The beat of the player: one move, breathe, one move, and stop the moment she is needed.
+     ONE LOOP, and it either moves the cube on, waits, or pauses out loud. It may never simply
+     stop with the play button still lit, because that looks exactly like the app has died. */
+  function playerWhere() {
+    return app.idx + '/' + app.moveAt + '/' + (app.guide ? app.guide.id : '') + '/' + (app.setup ? app.setup.done : '');
+  }
   function playerStep() {
     if (!app.playing) return;
-    if (app.busy || playerPending()) { setTimeout(playerStep, 120); return; }
+    if (app.busy || playerPending()) {
+      /* something is mid flight. Wait for it, but not for ever: if nothing has moved for a good
+         few seconds the run is stuck, and stopping honestly beats spinning in silence. */
+      if (++app.playWait > 90) { playerPause(false); return; }
+      setTimeout(playerStep, 120);
+      return;
+    }
+    app.playWait = 0;
     if (playerBlocked()) { playerPause(true); return; }
     if (!playerCanFwd()) { playerPause(false); return; }
     /* between the moves of one chant, a short beat. Crossing from one step to the next, a
        proper breath, because that is where she has to catch her cube up with mine. */
-    var slow = !app.awaitMove;
+    var slow = !app.awaitMove, was = playerWhere();
     playerFwd();
-    setTimeout(playerStep, slow ? 1200 : 240);
+    /* a forward that changed nothing means the run has nowhere left to go */
+    if (playerWhere() === was && !app.busy) { playerPause(false); return; }
+    setTimeout(playerStep, playGap(slow ? 'step' : 'move'));
   }
   function transportBar() {
     var o = playerOwner();
     if (!o) return '';
     var pos = playerPos(), waiting = playerBlocked();
-    return '<div class="player' + (waiting ? ' waiting' : '') + '" style="margin-bottom:12px">'
-      + '<button type="button" data-act="player-back" title="Step back" aria-label="Step back"'
+    return '<div class="player' + (waiting ? ' waiting' : '') + '" id="livePlayer" style="margin-bottom:12px">'
+      + '<button type="button" id="pbBack" data-act="player-back" title="Step back" aria-label="Step back"'
       + (playerCanBack() ? '' : ' disabled') + '>' + GLYPH.back + '</button>'
-      + '<button type="button" class="go" data-act="' + (app.playing ? 'player-pause' : 'player-play') + '"'
+      + '<button type="button" class="go" id="pbGo" data-act="' + (app.playing ? 'player-pause' : 'player-play') + '"'
       + ' title="' + (app.playing ? 'Pause' : 'Play') + '" aria-label="' + (app.playing ? 'Pause' : 'Play') + '"'
       + ((app.playing || playerCanFwd()) ? '' : ' disabled') + '>' + (app.playing ? GLYPH.pause : GLYPH.play) + '</button>'
-      + '<button type="button" data-act="player-fwd" title="Step forward" aria-label="Step forward"'
+      + '<button type="button" id="pbFwd" data-act="player-fwd" title="Step forward" aria-label="Step forward"'
       + (playerCanFwd() ? '' : ' disabled') + '>' + GLYPH.fwd + '</button>'
-      + '<span class="pos">' + esc(pos.big) + '<small>' + esc(waiting ? playerWaitWords() : (app.playMsg || pos.small)) + '</small></span>'
+      + '<button type="button" class="rate" data-act="player-rate" title="How fast" aria-label="How fast">'
+      + (app.playRate === 2 ? '2x' : '1x') + '</button>'
+      + '<span class="pos"><span id="livePosBig">' + esc(pos.big) + '</span>'
+      + '<small id="livePosSmall">' + esc(waiting ? playerWaitWords() : (app.playMsg || pos.small)) + '</small></span>'
       + '</div>';
   }
   /* ===== PLAYER END ===== */
 
   /* ---------------------------------------------------------------- panels */
+  /* The instruction lives in a frame that never changes shape. During playback only the words
+     inside it are swapped, so the card cannot grow or shrink under her thumb. */
+  function liveWhyText() { return app.guide ? (app.guideWhy || '') : ((beat() && beat().why) || ''); }
   function sayBox() {
     if (!app.says) return '';
-    return '<div class="say ' + app.sayKind + '">' + (app.sayHead ? '<span class="head">' + esc(app.sayHead) + '</span>' : '') + app.says
-      + whyLine(app.guide ? { why: app.guideWhy } : beat()) + '</div>';
+    var wt = liveWhyText();
+    return '<div class="say ' + app.sayKind + '" id="liveSay">'
+      + '<span class="head" id="liveSayHead"' + (app.sayHead ? '' : ' hidden') + '>' + esc(app.sayHead || '') + '</span>'
+      + '<span id="liveSayBody">' + app.says + '</span>'
+      + '<div class="why" id="liveWhy"' + (wt ? '' : ' hidden') + '>' + esc(wt) + '</div></div>';
   }
   /* the tutorial line: always visible, never a thing she has to go looking for */
   /* The reason, always on the screen, never with a heading in front of it. One function, so
@@ -5189,10 +5243,22 @@ var GUIDE = (function () {
     var names = big()
       ? ['Daisy', 'White cross', 'White corners', 'Middle row', cap1(YEL()) + ' cross', 'Match the cross', 'Corners home', 'Last twists']
       : ['White layer', cap1(YEL()) + ' ceiling', 'Sort the ceiling'];
-    return '<div class="rail">' + names.map(function (n, i) {
+    return '<div class="rail" id="liveRail">' + railInner(names, ph) + '</div>';
+  }
+  function railInner(names, ph) {
+    return names.map(function (n, i) {
       var cls = (i + 1) === ph ? 'on' : ((i + 1) < ph ? 'past' : '');
       return '<div class="' + cls + '"><b>Step ' + (i + 1) + '</b>' + esc(n) + '</div>';
-    }).join('') + '</div>';
+    }).join('');
+  }
+  function railNames() {
+    return big()
+      ? ['Daisy', 'White cross', 'White corners', 'Middle row', cap1(YEL()) + ' cross', 'Match the cross', 'Corners home', 'Last twists']
+      : ['White layer', cap1(YEL()) + ' ceiling', 'Sort the ceiling'];
+  }
+  function railPhase() {
+    var b = beat();
+    return app.guide ? app.guide.phase : (b ? b.phase : (big() ? 8 : 3));
   }
   /* one rhythm strip, used by the solve stepper and by the chant shelf */
   function strip(name, moves, breath, at, note) {
@@ -5203,7 +5269,7 @@ var GUIDE = (function () {
     return '<div class="chantstrip"><span class="chant-name">' + esc(name) + '</span> '
       + '<span class="count">' + esc(note) + '</span><div class="beats">' + tiles + '</div></div>';
   }
-  function chantStrip() {
+  function chantStripInner() {
     var b = beat();
     if (!b || !b.chant || !(app.busy || app.awaitMove || app.awaitDemo)) return '';
     var c = C.CHANTS[b.chant];
@@ -5212,6 +5278,7 @@ var GUIDE = (function () {
     var note = at >= 0 ? ('move ' + (at + 1) + ' of ' + b.moves.length + ', say it out loud') : 'say it out loud';
     return strip(name, b.moves, c.breath, at, note);
   }
+  function chantStrip() { return '<div id="liveStrip">' + chantStripInner() + '</div>'; }
 
   /* ---------------------------------------------------------------- the chant shelf */
   function chantCard(id) {
@@ -5830,7 +5897,50 @@ var GUIDE = (function () {
     return h;
   }
 
-  /* ---------------------------------------------------------------- render */
+  /* ---------------------------------------------------------------- render
+     TWO WAYS TO DRAW. render() rebuilds the whole panel and is what every tap uses. While the
+     PLAYER is running it is never called: rebuilding forty cards between every move is what made
+     the numbers stutter and the page jump under her hand. renderLive() swaps only the words
+     inside a frame that is already the right shape, so nothing moves but the text. */
+  function renderLive() {
+    var e, wt = liveWhyText(), pos = playerPos(), waiting = playerBlocked();
+    e = $('liveSay');
+    if (e) e.className = 'say ' + app.sayKind;
+    e = $('liveSayHead');
+    if (e) { e.textContent = app.sayHead || ''; e.hidden = !app.sayHead; }
+    e = $('liveSayBody');
+    if (e) e.innerHTML = app.says || '';
+    e = $('liveWhy');
+    if (e) { e.textContent = wt; e.hidden = !wt; }
+    e = $('liveRail');
+    if (e) e.innerHTML = railInner(railNames(), railPhase());
+    e = $('liveStrip');
+    if (e) e.innerHTML = chantStripInner();
+    e = $('liveCount');
+    if (e && app.plan) e.textContent = planMoves(app.plan, app.idx) + ' to go.';
+    e = $('livePosBig');
+    if (e) e.textContent = pos.big;
+    e = $('livePosSmall');
+    if (e) e.textContent = waiting ? playerWaitWords() : (app.playMsg || pos.small);
+    e = $('livePlayer');
+    if (e) e.className = 'player' + (waiting ? ' waiting' : '');
+    e = $('pbBack');
+    if (e) e.disabled = !playerCanBack();
+    e = $('pbFwd');
+    if (e) e.disabled = !playerCanFwd();
+    e = $('pbGo');
+    if (e) {
+      e.disabled = !(app.playing || playerCanFwd());
+      e.setAttribute('data-act', app.playing ? 'player-pause' : 'player-play');
+      e.setAttribute('aria-label', app.playing ? 'Pause' : 'Play');
+      e.innerHTML = app.playing ? GLYPH.pause : GLYPH.play;
+    }
+  }
+  /* what the stepper calls: live while playing, a full rebuild otherwise */
+  function renderStep() {
+    if (app.playing && $('livePlayer')) { renderLive(); return; }
+    render();
+  }
   function render() {
     var p = $('panel'), h = '';
     if (app.mode === 'play') h = panelPlay();
@@ -5982,6 +6092,7 @@ var GUIDE = (function () {
       renderCube(); idleTile('Full scramble');
       app.mode = 'solve'; startSolve(null); return;
     }
+    if (act === 'player-rate') { setRate(app.playRate === 1 ? 2 : 1); return; }
     if (act === 'player-play') { playerPlay(); return; }
     if (act === 'player-pause') { playerPause(false); return; }
     if (act === 'player-fwd') { playerPause(false); playerFwd(); return; }

@@ -3225,6 +3225,7 @@ var GUIDE = (function () {
     says: null, sayKind: '',
     quiz: null, quizPick: null, quizFor: null,
     cubeSays: null, drill: null, chantUndo: null,
+    puzzle: null, setup: null,
     guide: null, guideWhy: '', guideChant: null, guideAsk: false,
     badges: {}
   };
@@ -4130,7 +4131,7 @@ var GUIDE = (function () {
   function playUnit(speakIt) {
     /* one stepper, two callers. The guide hands it a script step instead of a plan beat, so a
        14 move chant is stepped exactly the same way here as it is in the coached solve. */
-    var b = app.guide ? guideNode() : beat();
+    var b = app.setup ? app.setup : (app.guide ? guideNode() : beat());
     if (!b || !app.units || app.moveAt >= app.units.length) return;
     var u = app.units[app.moveAt], dur = app.auto ? 520 : SPEED;
     app.busy = true; app.awaitMove = false;
@@ -4141,6 +4142,7 @@ var GUIDE = (function () {
       app.moveAt++;
       if (app.moveAt >= app.units.length) {
         app.chantAt = -1;
+        if (app.setup) { setupDone(); return; }
         if (app.guide) { guideUnitsDone(); return; }
         finishBeat(b); return;
       }
@@ -5229,6 +5231,101 @@ var GUIDE = (function () {
     for (j = 0; j < k; j++) seq = seq.concat(alph[Math.floor(Math.random() * alph.length)]);
     return C.applySeq(s, seq);
   }
+  /* ------------------------------------------------ Surprise me
+     LEGITIMACY BY CONSTRUCTION. A puzzle is never assembled square by square, because a cube
+     built that way can be one no real cube could ever be. Every puzzle here starts from a
+     SOLVED cube and has real turns done to it, so it is a cube that can be solved by definition,
+     and the very list of turns that made it is the list that sets her own cube up to match. */
+  var PUZZLE_DIALS = [3, 5, 10, 25];
+  /* a muddle that one ceiling spin finishes is not a puzzle, it is a tease */
+  function puzzleWorthIt(x) {
+    var probe = x, z;
+    for (z = 0; z < 4; z++) { if (C.facesAllOneColour(probe)) return false; probe = C.applyMove(probe, 'U'); }
+    return true;
+  }
+  function puzzleMake(kind) {
+    var seq = [], guard = 0, st;
+    if (kind === 'layer') {
+      /* the mastery ruling: only the last layer moves, so a finished white layer stays finished */
+      var alph = big()
+        ? [['U'], ["U'"], ['U2'], C3.CROSS_MAKER, C3.EDGE_SPINNER, C3.CORNER_MOVER]
+        : [['U'], ["U'"], ['U2'], C2.SWAP];
+      while (guard++ < 60) {
+        seq = [];
+        /* at least one real chant in there, or the puzzle is just a ceiling spin away from
+           solved and there is nothing to practise */
+        var k = 2 + Math.floor(Math.random() * 3), j, chants = 0, pickIx;
+        for (j = 0; j < k; j++) {
+          pickIx = (j === 0) ? 3 + Math.floor(Math.random() * (alph.length - 3))
+                             : Math.floor(Math.random() * alph.length);
+          if (pickIx >= 3) chants++;
+          seq = seq.concat(alph[pickIx]);
+        }
+        st = C.applySeq(C.solved(), seq);
+        if (chants > 0 && puzzleWorthIt(st)) return { seq: seq, state: st, kind: 'layer' };
+      }
+      return { seq: seq, state: C.applySeq(C.solved(), seq), kind: 'layer' };
+    }
+    while (guard++ < 40) {
+      seq = C.randomScramble(kind);
+      st = C.applySeq(C.solved(), seq);
+      if (!C.facesAllOneColour(st)) return { seq: seq, state: st, kind: kind };
+    }
+    return { seq: seq, state: C.applySeq(C.solved(), seq), kind: kind };
+  }
+  function puzzleName(kind) {
+    return kind === 'layer' ? 'Moves practice, white stays done' : (kind + ' turns');
+  }
+  /* Setting her own cube up to match. It is the SAME per move stepper the coached solve and the
+     guide use: Move n of m, whole cube tiles, said out loud. Nothing new is built for it. */
+  function puzzleSetup() {
+    if (!app.puzzle || app.busy) return;
+    app.state = C.solved(); clearGlow(); renderCube();
+    app.setup = { moves: app.puzzle.seq.slice(), chant: null, done: false };
+    app.units = app.setup.moves.slice(); app.moveAt = 0; app.chantAt = -1; app.awaitMove = false;
+    say('Start with your cube solved. Do these turns on it, one at a time, and it will end up looking exactly like the puzzle.', '', 'Set up your cube');
+    speakStop();
+    speakText('Start with your cube solved. Do these turns on it, one at a time.');
+    render();
+    playUnit(false);
+  }
+  function setupDone() {
+    app.busy = false; app.awaitMove = false; app.chantAt = -1;
+    app.setup.done = true;
+    cheer('Your cube should look just like the puzzle now. Hold it in your home grip.');
+    render();
+  }
+  function puzzleCard() {
+    var h = '<div class="card" style="border-width:3px;border-color:' + RED + '"><h2>Surprise me</h2>'
+      + '<div class="lede">I make you a brand new muddle by turning a solved cube. It is always one that can be solved, '
+      + 'because I made it out of real turns.</div>'
+      + '<div class="row" style="margin-top:9px"><span class="tag">How muddled</span>'
+      + PUZZLE_DIALS.map(function (n) { return '<button class="btn" data-puz="' + n + '">' + n + ' turns</button>'; }).join('')
+      + '</div>'
+      + '<div class="row" style="margin-top:8px"><button class="btn" data-puz="layer">Moves practice, white stays done</button></div>';
+    if (!app.puzzle) return h + '</div>';
+    h += '<div class="views" style="margin-top:12px"><div class="viewbox">'
+      + isoAny(app.puzzle.state, viewHome(), 150, {})
+      + '<div class="cap">' + esc(puzzleName(app.puzzle.kind)) + '</div></div></div>';
+    if (app.setup) {
+      if (app.awaitMove) {
+        h += '<div class="card" style="border-width:3px;margin-top:10px"><h2>Move ' + app.moveAt + ' of ' + app.units.length + '</h2>'
+          + '<div class="lede">Do that turn on your own cube, then tap for the next one.</div>'
+          + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="setup-move">Next move</button>'
+          + '<button class="btn" data-act="setup-again">Start the setup again</button></div></div>';
+      } else if (app.setup.done) {
+        h += '<div class="card" style="border-color:#009e60;border-width:3px;margin-top:10px"><h2 style="color:#009e60">Your cube matches</h2>'
+          + '<div class="lede">Now I know exactly what your cube looks like, so I can tell you how far from solved it is.</div>'
+          + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="puz-solve">Solve it with me</button>'
+          + '<button class="btn" data-act="puz-mine">I will have a go myself</button></div></div>';
+      }
+      return h + '</div>';
+    }
+    h += '<div class="row" style="margin-top:10px">'
+      + '<button class="btn primary big" data-act="puz-setup">Set up my real cube</button>'
+      + '<button class="btn big" data-act="puz-screen">Just solve it on screen</button></div>';
+    return h + '</div>';
+  }
   function practiceState() {
     if (whiteLayerDone(app.state)) return whiteToFloor(C.clone(app.state));
     var guard = 0, upto = big() ? 3 : 1;
@@ -5499,7 +5596,8 @@ var GUIDE = (function () {
   }
 
   function panelMess() {
-    var h = '<div class="card"><h2>Known messes</h2><div class="lede">Every one is a real cube, made by turning a solved one. So every one can be solved. Tap a card, answer the reading question, then solve it.</div></div>';
+    var h = puzzleCard();
+    h += '<div class="card"><h2>Known messes</h2><div class="lede">Every one is a real cube, made by turning a solved one. So every one can be solved. Tap a card, answer the reading question, then solve it.</div></div>';
     h += '<div class="shelf">' + C.PRESETS.map(function (p) {
       var st = C.presetState(p);
       return '<button class="mess" data-preset="' + p.id + '">' + isoAny(st, viewHome(), 88, {}) + '<b>' + esc(p.name) + '</b><small>' + esc(p.hint) + '</small></button>';
@@ -5547,6 +5645,7 @@ var GUIDE = (function () {
     speakStop();
     app.says = null; app.auto = false;
     app.confirmReset = false;
+    if (app.mode !== 'mess') { app.setup = null; }
     if (app.mode === 'paint') { if (app.paintIntent !== 'side') app.paintIntent = 'match'; idleTile('Paint your cube'); }
     else { app.sideHold = false; app.sideMsg = null; }
     if (app.mode === 'solve' && !app.diag) app.diag = C.diagnose(app.state);
@@ -5574,6 +5673,14 @@ var GUIDE = (function () {
     if (t.hasAttribute('data-guideopt')) { guideAnswer(parseInt(t.getAttribute('data-guideopt'), 10)); return; }
     if (t.hasAttribute('data-opt')) { answerOpt(parseInt(t.getAttribute('data-opt'), 10)); return; }
     if (t.hasAttribute('data-quiz')) { app.quizPick = parseInt(t.getAttribute('data-quiz'), 10); render(); return; }
+    if (t.hasAttribute('data-puz')) {
+      var kind = t.getAttribute('data-puz');
+      app.puzzle = puzzleMake(kind === 'layer' ? 'layer' : parseInt(kind, 10));
+      app.setup = null; app.units = []; app.moveAt = 0; app.awaitMove = false;
+      app.quiz = null; app.quizPick = null; app.says = null;
+      app.state = C.solved(); clearGlow(); renderCube();
+      idleTile('A brand new muddle'); render(); return;
+    }
     if (t.hasAttribute('data-preset')) { loadPreset(t.getAttribute('data-preset')); return; }
     if (t.hasAttribute('data-chant')) { playChant(t.getAttribute('data-chant'), parseInt(t.getAttribute('data-times'), 10)); return; }
     if (!act) return;
@@ -5620,6 +5727,26 @@ var GUIDE = (function () {
     if (act === 'check') { paintCheck(); return; }
     if (act === 'showturn') { demoTurnOver(); return; }
     if (act === 'tosolve') { app.mode = 'solve'; app.plan = null; app.diag = C.diagnose(app.state); app.says = null; render(); return; }
+    if (act === 'puz-setup') { puzzleSetup(); return; }
+    if (act === 'setup-move') { if (!app.busy) playUnit(true); return; }
+    if (act === 'setup-again') { puzzleSetup(); return; }
+    if (act === 'puz-screen' || act === 'puz-solve') {
+      /* the state is KNOWN either way, so this is the identified path: she gets the countdown */
+      app.state = C.clone(app.puzzle.state);
+      app.setup = null; app.units = []; app.moveAt = 0; app.awaitMove = false;
+      app.undo = []; app.cheered = {}; app.usedShowMe = false; app.guide = null;
+      clearGlow(); renderCube();
+      app.mode = 'solve'; app.diag = C.diagnose(app.state);
+      startSolve(null); return;
+    }
+    if (act === 'puz-mine') {
+      app.state = C.clone(app.puzzle.state);
+      app.setup = null; app.units = []; app.moveAt = 0; app.awaitMove = false;
+      app.undo = []; app.cheered = {}; app.guide = null;
+      clearGlow(); renderCube();
+      app.mode = 'solve'; app.level = 'solo'; app.plan = null; app.diag = C.diagnose(app.state);
+      app.says = null; render(); return;
+    }
     if (act === 'coach') { app.mode = 'solve'; app.usedShowMe = false; app.cheered = {}; app.guide = null; startSolve(null); return; }
     if (act === 'guide') { guideStart(); return; }
     if (act === 'guide-stop') { guideStop(); return; }
@@ -5774,6 +5901,7 @@ var GUIDE = (function () {
     app.whiteDown = false; app.whiteMsg = null;
     app.cheered = st ? st.cheered : {};
     app.plan = null; app.idx = 0; app.askState = null; app.auto = false; app.nudge = null;
+    app.puzzle = null; app.setup = null;
     app.guide = null; app.guideWhy = ''; app.guideChant = null; app.guideAsk = false;
     app.diag = null; app.quiz = null; app.quizPick = null; app.drill = null; app.chantUndo = null; app.cubeSays = null;
     app.paintMsg = null; app.paintSuspects = []; app.usedShowMe = false; app.fromFace = false;

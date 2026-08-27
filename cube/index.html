@@ -2840,13 +2840,13 @@ var INFER = (function () {
 /* ===== INFER END ===== */
 /* ===== GUIDE START =====
    Just guide me. The method is STATE BLIND: it reads the cube as it goes, so the straightest
-   path to a solve needs no painting and no cube typed in at all. This is that path, written as
-   a script she walks with her own cube in her hands. The cube on the screen is only ever an
+   path to a solve needs nothing typed in and nothing painted. This is that path, written as a
+   script she walks with her own cube in her hands. The cube on the screen is only ever an
    example of the move, never a claim about hers.
-   Every word of method text in here is LIFTED from the gated planners, never retyped: each step
-   names a beat by what it is, and the builder goes and finds that beat in a real plan, taking
-   its words, its why line, its moves and the cube as it stood before it. So the script cannot
-   drift from the method the rest of the app proves. */
+   Every word of method text is LIFTED from the gated planners: a step names a beat by what it
+   is, and the builder finds that beat in a real plan and takes its words, its why line, its
+   moves and the cube as it stood before it. A step may only ever SHORTEN what it quotes, never
+   add to it, so the script cannot drift from the method the rest of the gate proves. */
 var GUIDE = (function () {
   'use strict';
 
@@ -2856,40 +2856,17 @@ var GUIDE = (function () {
       pl = CC.buildPlan(CC.presetState(CC.PRESETS[i]));
       if (pl.ok) out.push(pl);
     }
-    /* a few fixed messes as well, so the rarer beats (a stuck block, no bar at all) are covered */
-    var extra = CC.EHOME
-      ? ['R U2 D B D F2 L R2 B U D2 F L2 U R F2 B D L2 U2 F',
-         'F2 U R2 D B L F R U2 B2 D L2 F U R B2 D2 L U2 R2 F',
-         'U R2 F B R B2 R U2 L B2 R U D R2 F R L B2 R2 U2 F2 R2']
-      : ["R U' F2 R' U R2 F' U2 R' F R'", "F R U2 R' F2 U R'", "R2 U' F2 R U R2 F R"];
-    for (i = 0; i < extra.length; i++) {
-      pl = CC.buildPlan(CC.applySeq(CC.solved(), CC.seqFromString(extra[i])));
-      if (pl.ok) out.push(pl);
-    }
-    /* and a fixed spread of messes, so the rare beats that only some cubes need are in here
-       too: the hold at the start, a stuck block, two matching sides sitting opposite. Fixed
-       seed, so the script is the same every time she opens it. */
     var seed = 1234567, r = function () { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
     /* the small cube spells a whole cube turn as two face turns, the big one has it as a move */
     function wholeTurn(st, key) { return CC.EHOME ? CC.applyMove(st, key) : CC.applySeq(st, CC.WHOLE[key].moves); }
     var pre = [null, 'x', 'xp', 'y', 'x2'];
-    for (i = 0; i < 60; i++) {
+    for (i = 0; i < 90; i++) {
       var st = CC.applySeq(CC.solved(), CC.randomScramble(14 + (i % 9), r));
       if (pre[i % pre.length]) st = wholeTurn(st, pre[i % pre.length]);
       pl = CC.buildPlan(st);
       if (pl.ok) out.push(pl);
     }
     return out;
-  }
-  /* the first beat in the gated modules that matches, with the cube as it stood before it */
-  function findBeat(plans, test) {
-    var i, k;
-    for (i = 0; i < plans.length; i++) {
-      for (k = 0; k < plans[i].beats.length; k++) {
-        if (test(plans[i].beats[k])) return { b: plans[i].beats[k], st: plans[i].states[k] };
-      }
-    }
-    return null;
   }
   function has(b, re) { return re.test(String(b.say || '')); }
 
@@ -2898,34 +2875,61 @@ var GUIDE = (function () {
     { id: 'start', phase: 1, title: 'Just guide me',
       say: 'You do not have to tell me anything about your cube. I will call out every step and you do it on yours. The cube on this screen is only my example, so it will look different from yours. Do what I do, not what you see.',
       why: 'The three steps read the cube as you go, so they work on any mess without me knowing it.',
-      world: 'solved', to: 'p1-look' },
+      world: 'solved', to: 'p1-first' },
+    /* the very first block: nothing is done yet, so there is nothing to match it against */
+    { id: 'p1-first', phase: 1, pick: function (b) { return b.phase === 1 && b.ask === 'find-white'; },
+      ask: { q: 'Have you got one white square pointing at the ceiling?',
+        opts: [{ label: 'Yes, that block is done', to: 'p1-look' },
+               { label: 'My white layer is already done', to: 'p1-skip' }] } },
+    { id: 'p1-skip', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'skip'; }, to: 'p2-already' },
     { id: 'p1-look', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'look'; },
       ask: { q: 'Have you found a white square on a block you have not done yet?',
-        opts: [{ label: 'Yes, found one', to: 'p1-aim' }, { label: 'All four are done', to: 'p1-flip' }] } },
+        opts: [{ label: 'Yes, found one', to: 'p1-where' }, { label: 'All four are done', to: 'p1-flip' }] } },
+    /* the branch the rehearsal found missing: a white block can be stuck up at the ceiling */
+    { id: 'p1-where', phase: 1, askOnly: true, title: 'Where is that block?',
+      say: 'Look at where that block is sitting right now. Is it down in the floor row, or up at the ceiling in the wrong place?',
+      why: 'A block already at the ceiling has to be popped down first, or there is nowhere for it to go.',
+      ask: { q: 'Where is that block?',
+        opts: [{ label: 'Down in the floor row', to: 'p1-aim' }, { label: 'Up at the ceiling', to: 'p1-pop' }] } },
+    { id: 'p1-pop', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'whole' && has(b, /up at the ceiling, but not in its place/); },
+      to: 'p1-popchant' },
+    { id: 'p1-popchant', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'righty' && b.pop; }, to: 'p1-look' },
     { id: 'p1-aim', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'whole' && has(b, /belongs in is your working corner/); },
       to: 'p1-lift' },
     { id: 'p1-lift', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'floor'; }, to: 'p1-righty' },
     { id: 'p1-righty', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'righty' && b.place; },
       ask: { q: 'Did it land in its place, with its white square at the ceiling?',
         opts: [{ label: 'Yes, it is home', to: 'p1-look' }, { label: 'Not yet', to: 'p1-righty' }] } },
-    { id: 'p1-flip', phase: 1, pick: function (b) { return b.phase === 1 && b.flip; }, to: 'p2-warn' },
+    { id: 'p1-flip', phase: 1, pick: function (b) { return b.phase === 1 && b.flip; }, to: 'p2-already' },
+    /* about one cube in twenty arrives at step 2 already finished */
+    { id: 'p2-already', phase: 2, askOnly: true, title: 'Look before you chant',
+      say: 'Before you do anything, look at the 4 squares up at the ceiling. Are they all yellow already?',
+      why: 'All four ceiling squares are yellow already, so a chant here would only break it.',
+      ask: { q: 'Are all 4 ceiling squares yellow already?',
+        opts: [{ label: 'Yes, all four', to: 'p2-skip' }, { label: 'No, not yet', to: 'p2-warn' }] } },
+    { id: 'p2-skip', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'skip'; }, to: 'p3-read' },
     { id: 'p2-warn', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'warn'; }, to: 'p2-spin' },
     { id: 'p2-spin', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'ceiling' && b.moves.length; }, to: 'p2-pair' },
     { id: 'p2-pair', phase: 2, twice: true,
       pick: function (b) { return b.phase === 2 && b.kind === 'righty' && b.askAfter === 'yellow-yet'; },
+      /* the planner reports what just happened; guiding has to ASK for it instead */
+      sayIs: 'Do the Righty chant 2 times. Then look at the working corner square.',
       ask: { q: 'Look at the working corner square. Is it yellow yet?',
-        opts: [{ label: 'yes', to: 'p2-count' }, { label: 'not yet', to: 'p2-pair' }] } },
+        opts: [{ label: 'Yes', to: 'p2-count' }, { label: 'Not yet', to: 'p2-pair' }] } },
     { id: 'p2-count', phase: 2, askOnly: true, title: 'Count the ceiling',
       say: 'Look at all 4 ceiling squares. Are they all yellow now?',
-      why: 'Only the ceiling row moved, so the white floor underneath stayed exactly as it was.',
+      why: 'Only the ceiling row moves, so the white floor underneath stays exactly as it was.',
       ask: { q: 'Are all 4 ceiling squares yellow?',
-        opts: [{ label: 'yes', to: 'p2-cheer' }, { label: 'not yet', to: 'p2-spin' }] } },
+        opts: [{ label: 'Yes, all four', to: 'p2-cheer' }, { label: 'Not yet', to: 'p2-spin' }] } },
     { id: 'p2-cheer', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'cheer'; }, to: 'p3-read' },
     { id: 'p3-read', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'read'; },
       ask: { q: 'How many sides show 2 the same?',
-        opts: [{ label: 'none', to: 'p3-nobar' }, { label: 'one', to: 'p3-bar' }, { label: 'all four', to: 'p3-guard' }] } },
+        opts: [{ label: 'None', to: 'p3-nobar' }, { label: 'One', to: 'p3-bar' }, { label: 'All four', to: 'p3-guard' }] } },
     { id: 'p3-nobar', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'swap' && b.nobar; }, to: 'p3-read' },
-    { id: 'p3-bar', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'bar'; }, to: 'p3-move' },
+    /* the planner can say WHICH side the bar is on because it knows the cube. Guiding does not,
+       so that claim is cut. The next beat tells her where to put it anyway. */
+    { id: 'p3-bar', phase: 3, cut: / It is on .*$/,
+      pick: function (b) { return b.phase === 3 && b.kind === 'bar'; }, to: 'p3-move' },
     { id: 'p3-move', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'whole' && b.barMove; }, to: 'p3-swap' },
     { id: 'p3-swap', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'swap' && !b.nobar; }, to: 'p3-read' },
     { id: 'p3-guard', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'guard'; }, to: 'p3-last' },
@@ -2935,9 +2939,7 @@ var GUIDE = (function () {
       why: 'Three steps and two chants walked every block back to the place its colours named.',
       ask: { q: 'Is every side one colour?',
         opts: [{ label: 'Solved!', to: 'done' }, { label: 'Not yet', to: 'p3-read' }] } },
-    { id: 'done', phase: 3, end: true, title: 'Solved', cheer: 'Solved!',
-      say: 'Every side is one colour. You solved it. Three steps, two chants.',
-      why: 'Three steps and two chants walked every block back to the place its colours named.' }
+    { id: 'done', phase: 3, end: true, pick: function (b) { return b.phase === 3 && b.kind === 'done'; } }
   ];
 
   /* ---------------- the big cube: eight steps, six chants ---------------- */
@@ -2949,20 +2951,38 @@ var GUIDE = (function () {
     { id: 'p1-hold', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'whole' && has(b, /yellow middle square points at the ceiling/); }, to: 'p1-look' },
     { id: 'p1-look', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'look'; },
       ask: { q: 'Have you found a white 2 square block that is not a petal yet?',
-        opts: [{ label: 'Yes, found one', to: 'p1-turn' }, { label: 'All four petals are up', to: 'p1-cheer' }] } },
+        opts: [{ label: 'Yes, found one', to: 'p1-spin' }, { label: 'All four petals are up', to: 'p1-cheer' },
+               { label: 'My daisy is already made', to: 'p1-skip' }] } },
+    { id: 'p1-spin', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'whole' && !has(b, /yellow middle square points/); }, to: 'p1-prep' },
+    { id: 'p1-prep', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'row'; }, to: 'p1-step' },
+    { id: 'p1-step', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'turn' && !has(b, /That is a petal/); }, to: 'p1-turn' },
     { id: 'p1-turn', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'turn' && has(b, /That is a petal/); },
       ask: { q: 'Is that one up beside the yellow middle square now?',
         opts: [{ label: 'Yes, it is a petal', to: 'p1-look' }, { label: 'Not yet', to: 'p1-turn' }] } },
     { id: 'p1-cheer', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'cheer'; }, to: 'p2-look' },
+    { id: 'p1-skip', phase: 1, pick: function (b) { return b.phase === 1 && b.kind === 'skip'; }, to: 'p2-look' },
+    { id: 'p2-skip', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'skip'; }, to: 'p3-look' },
+    { id: 'p3-skip', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'skip'; }, to: 'p4-look' },
+    { id: 'p4-skip', phase: 4, pick: function (b) { return b.phase === 4 && b.kind === 'skip'; }, to: 'p5-read' },
     { id: 'p2-look', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'look'; },
       ask: { q: 'Have you picked a petal that is still up at the ceiling?',
-        opts: [{ label: 'Yes, picked one', to: 'p2-line' }, { label: 'All four are down', to: 'p2-flip' }] } },
+        opts: [{ label: 'Yes, picked one', to: 'p2-spin' }, { label: 'All four are down', to: 'p2-flip' },
+               { label: 'My white cross is already made', to: 'p2-skip' }] } },
+    { id: 'p2-spin', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'whole' && !b.flip; }, to: 'p2-line' },
     { id: 'p2-line', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'row'; }, to: 'p2-drop' },
     { id: 'p2-drop', phase: 2, pick: function (b) { return b.phase === 2 && b.kind === 'turn'; }, to: 'p2-look' },
     { id: 'p2-flip', phase: 2, pick: function (b) { return b.phase === 2 && b.flip; }, to: 'p3-look' },
     { id: 'p3-look', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'look'; },
       ask: { q: 'Have you found a white corner block that is not done yet?',
-        opts: [{ label: 'Yes, found one', to: 'p3-aim' }, { label: 'All four are in', to: 'p3-flip' }] } },
+        opts: [{ label: 'Yes, found one', to: 'p3-where' }, { label: 'All four are in', to: 'p3-flip' },
+               { label: 'My white layer is already done', to: 'p3-skip' }] } },
+    { id: 'p3-where', phase: 3, askOnly: true, title: 'Where is that block?',
+      say: 'Look at where that corner block is sitting right now. Is it down in the floor row, or up at the ceiling in the wrong place?',
+      why: 'A block already at the ceiling has to be popped down first, or there is nowhere for it to go.',
+      ask: { q: 'Where is that block?',
+        opts: [{ label: 'Down in the floor row', to: 'p3-aim' }, { label: 'Up at the ceiling', to: 'p3-pop' }] } },
+    { id: 'p3-pop', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'whole' && has(b, /up at the ceiling but not in its place/); }, to: 'p3-popchant' },
+    { id: 'p3-popchant', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'chant' && !b.place && has(b, /drops down to the floor row/); }, to: 'p3-look' },
     { id: 'p3-aim', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'whole' && has(b, /belongs in is your working corner/); }, to: 'p3-lift' },
     { id: 'p3-lift', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'row'; }, to: 'p3-righty' },
     { id: 'p3-righty', phase: 3, pick: function (b) { return b.phase === 3 && b.kind === 'chant' && b.place; },
@@ -2973,12 +2993,13 @@ var GUIDE = (function () {
       ask: { q: 'What can you see in the ceiling row?',
         opts: [{ label: 'A block with no yellow', to: 'p4-line' },
                { label: 'Only yellow ones left', to: 'p4-stuck' },
-               { label: 'The middle row is full', to: 'p4-cheer' }] } },
+               { label: 'The middle row is full', to: 'p4-cheer' },
+               { label: 'It was already full', to: 'p4-skip' }] } },
     { id: 'p4-line', phase: 4, pick: function (b) { return b.phase === 4 && b.kind === 'row'; }, to: 'p4-face' },
     { id: 'p4-face', phase: 4, pick: function (b) { return b.phase === 4 && b.kind === 'whole' && !b.guardAim; }, to: 'p4-side' },
     { id: 'p4-side', phase: 4, pick: function (b) { return b.phase === 4 && b.kind === 'read'; },
       ask: { q: 'Is that middle square to your right or to your left?',
-        opts: [{ label: 'to my right', to: 'p4-right' }, { label: 'to my left', to: 'p4-left' }] } },
+        opts: [{ label: 'To my right', to: 'p4-right' }, { label: 'To my left', to: 'p4-left' }] } },
     { id: 'p4-right', phase: 4, pick: function (b) { return b.phase === 4 && b.chant === 'rightdrop' && !b.kick; }, to: 'p4-look' },
     { id: 'p4-left', phase: 4, pick: function (b) { return b.phase === 4 && b.chant === 'leftdrop'; }, to: 'p4-look' },
     { id: 'p4-stuck', phase: 4, pick: function (b) { return b.phase === 4 && b.kind === 'guard'; }, to: 'p4-aim' },
@@ -2987,8 +3008,8 @@ var GUIDE = (function () {
     { id: 'p4-cheer', phase: 4, pick: function (b) { return b.phase === 4 && b.kind === 'cheer'; }, to: 'p5-read' },
     { id: 'p5-read', phase: 5, pick: function (b) { return b.phase === 5 && b.kind === 'read'; },
       ask: { q: 'Which one is yours?',
-        opts: [{ label: 'a dot', to: 'p5-dot' }, { label: 'an L', to: 'p5-L' },
-               { label: 'a line', to: 'p5-line' }, { label: 'the cross', to: 'p5-guard' }] } },
+        opts: [{ label: 'A dot', to: 'p5-dot' }, { label: 'An L', to: 'p5-L' },
+               { label: 'A line', to: 'p5-line' }, { label: 'The cross', to: 'p5-guard' }] } },
     { id: 'p5-dot', phase: 5, pick: function (b) { return b.phase === 5 && b.chant === 'crossmaker' && has(b, /A dot\./); }, to: 'p5-read' },
     { id: 'p5-L', phase: 5, pick: function (b) { return b.phase === 5 && b.kind === 'whole' && has(b, /An L\./); }, to: 'p5-chant' },
     { id: 'p5-line', phase: 5, pick: function (b) { return b.phase === 5 && b.kind === 'whole' && has(b, /A line\./); }, to: 'p5-chant' },
@@ -2997,30 +3018,37 @@ var GUIDE = (function () {
     { id: 'p6-park', phase: 6, pick: function (b) { return b.phase === 6 && b.kind === 'row'; }, to: 'p6-read' },
     { id: 'p6-read', phase: 6, pick: function (b) { return b.phase === 6 && b.kind === 'read'; },
       ask: { q: 'How many of the four match?',
-        opts: [{ label: '2, next to each other', to: 'p6-adj' }, { label: '2, opposite', to: 'p6-opp' },
-               { label: 'all four', to: 'p6-cheer' }] } },
+        opts: [{ label: 'Two, next to each other', to: 'p6-adj' }, { label: 'Two, opposite', to: 'p6-opp' },
+               { label: 'All four', to: 'p6-cheer' }] } },
     { id: 'p6-adj', phase: 6, pick: function (b) { return b.phase === 6 && b.kind === 'whole'; }, to: 'p6-chant' },
     { id: 'p6-opp', phase: 6, pick: function (b) { return b.phase === 6 && b.chant === 'edgespinner' && has(b, /opposite each other/); }, to: 'p6-read' },
     { id: 'p6-chant', phase: 6, pick: function (b) { return b.phase === 6 && b.chant === 'edgespinner' && has(b, /Now the Edge-spinner/); }, to: 'p6-read' },
     { id: 'p6-cheer', phase: 6, pick: function (b) { return b.phase === 6 && b.kind === 'cheer'; }, to: 'p7-read' },
     { id: 'p7-read', phase: 7, pick: function (b) { return b.phase === 7 && b.kind === 'read'; },
       ask: { q: 'How many corner blocks are home?',
-        opts: [{ label: 'none', to: 'p7-none' }, { label: '1', to: 'p7-one' }, { label: 'all four', to: 'p7-guard' }] } },
+        opts: [{ label: 'None', to: 'p7-none' }, { label: 'One', to: 'p7-one' }, { label: 'All four', to: 'p7-guard' }] } },
     { id: 'p7-none', phase: 7, pick: function (b) { return b.phase === 7 && b.chant === 'cornermover' && has(b, /None of them is home/); }, to: 'p7-read' },
     { id: 'p7-one', phase: 7, pick: function (b) { return b.phase === 7 && b.kind === 'whole'; }, to: 'p7-chant' },
     { id: 'p7-chant', phase: 7, pick: function (b) { return b.phase === 7 && b.chant === 'cornermover' && has(b, /Now the Corner-mover/); }, to: 'p7-read' },
-    { id: 'p7-guard', phase: 7, pick: function (b) { return b.phase === 7 && b.kind === 'guard'; }, to: 'p8-warn' },
+    { id: 'p7-guard', phase: 7, pick: function (b) { return b.phase === 7 && b.kind === 'guard'; }, to: 'p8-already' },
+    { id: 'p8-already', phase: 8, askOnly: true, title: 'Look before you chant',
+      say: 'Before you do anything, look at the four corner squares up at the ceiling. Are they all yellow already?',
+      why: 'Every corner square is yellow already, so chanting now would only twist them away.',
+      ask: { q: 'Are all four corner squares yellow already?',
+        opts: [{ label: 'Yes, all four', to: 'p8-skip' }, { label: 'No, not yet', to: 'p8-warn' }] } },
+    { id: 'p8-skip', phase: 8, pick: function (b) { return b.phase === 8 && b.kind === 'guard'; }, to: 'p8-last' },
     { id: 'p8-warn', phase: 8, pick: function (b) { return b.phase === 8 && b.kind === 'warn'; }, to: 'p8-spin' },
     { id: 'p8-spin', phase: 8, pick: function (b) { return b.phase === 8 && b.kind === 'whole'; }, to: 'p8-pair' },
     { id: 'p8-pair', phase: 8, twice: true,
       pick: function (b) { return b.phase === 8 && b.chant === 'righty' && b.askAfter === 'yellow-yet'; },
-      ask: { q: 'Look at the block inside the red ring. Is its ceiling square yellow yet?',
-        opts: [{ label: 'yes', to: 'p8-count' }, { label: 'not yet', to: 'p8-pair' }] } },
+      sayIs: 'Do the Righty chant 2 times. Then look at the block inside the red ring.',
+      ask: { q: 'Is its ceiling square yellow yet?',
+        opts: [{ label: 'Yes', to: 'p8-count' }, { label: 'Not yet', to: 'p8-pair' }] } },
     { id: 'p8-count', phase: 8, askOnly: true, title: 'Count the corners',
       say: 'Look at the four corner squares up at the ceiling. Are they all yellow now?',
       why: 'Yellow can only turn up after a whole pair, so look after two and never after one.',
       ask: { q: 'Are all four corner squares yellow?',
-        opts: [{ label: 'yes', to: 'p8-last' }, { label: 'not yet', to: 'p8-next' }] } },
+        opts: [{ label: 'Yes, all four', to: 'p8-last' }, { label: 'Not yet', to: 'p8-next' }] } },
     { id: 'p8-next', phase: 8, pick: function (b) { return b.phase === 8 && b.kind === 'row' && !b.final; }, to: 'p8-pair' },
     { id: 'p8-last', phase: 8, pick: function (b) { return b.phase === 8 && b.kind === 'row' && b.final; }, to: 'p8-end' },
     { id: 'p8-end', phase: 8, askOnly: true, title: 'Look at your cube',
@@ -3028,27 +3056,47 @@ var GUIDE = (function () {
       why: 'Eight steps and six chants walked every block back to the place its colours named.',
       ask: { q: 'Is every side one colour?',
         opts: [{ label: 'Solved!', to: 'done' }, { label: 'Not yet', to: 'p5-read' }] } },
-    { id: 'done', phase: 8, end: true, title: 'Solved', cheer: 'Solved!',
-      say: 'Every side is one colour. You solved the big cube. Eight steps, six chants.',
-      why: 'Eight steps and six chants walked every block back to the place its colours named.' }
+    { id: 'done', phase: 8, end: true, pick: function (b) { return b.phase === 8 && b.kind === 'done'; } }
   ];
 
   function specOf(CC) { return CC.EHOME ? SPEC3 : SPEC2; }
 
   function build(CC) {
     var plans = plansOf(CC), specs = specOf(CC), nodes = {}, order = [], missing = [], i, s, n, f;
+    /* keep a phase on ONE example solve wherever it can, so the example cube does not jump to
+       an unrelated mess between one beat and the next */
+    var chosen = {};
+    function findBeat(phase, test) {
+      var lists = [], j, k;
+      if (chosen[phase] !== undefined) lists.push(plans[chosen[phase]]);
+      for (j = 0; j < plans.length; j++) { if (j !== chosen[phase]) lists.push(plans[j]); }
+      for (j = 0; j < lists.length; j++) {
+        for (k = 0; k < lists[j].beats.length; k++) {
+          if (test(lists[j].beats[k])) {
+            if (chosen[phase] === undefined) chosen[phase] = plans.indexOf(lists[j]);
+            return { b: lists[j].beats[k], st: lists[j].states[k] };
+          }
+        }
+      }
+      return null;
+    }
     for (i = 0; i < specs.length; i++) {
       s = specs[i];
-      n = { id: s.id, phase: s.phase, title: s.title || '', say: s.say || '', why: s.why || '',
-            moves: [], chant: null, world: null, cheer: s.cheer || null, panic: false,
+      n = { id: s.id, phase: s.phase, title: s.title || '', say: s.say || '', why: s.why || '', src: '',
+            moves: [], chant: null, kind: s.pick ? '' : 'ui', world: null, cheer: s.cheer || null, panic: false,
             ask: s.ask || null, to: s.to || null, end: !!s.end,
-            method: !!s.pick, askOnly: !!s.askOnly };
+            method: !!s.pick, askOnly: !!s.askOnly, rephrase: !!s.sayIs };
       if (s.pick) {
-        f = findBeat(plans, s.pick);
+        f = findBeat(s.phase, s.pick);
         if (!f) { missing.push(s.id); nodes[n.id] = n; order.push(n.id); continue; }
-        n.say = f.b.say; n.why = f.b.why || ''; n.title = f.b.title || '';
-        n.moves = f.b.moves.slice();
-        if (s.twice) n.moves = n.moves.concat(f.b.moves);
+        n.src = f.b.say; n.say = s.cut ? f.b.say.replace(s.cut, '') : f.b.say;
+        if (s.sayIs) n.say = s.sayIs;
+        n.why = f.b.why || ''; n.title = f.b.title || ''; n.kind = f.b.kind;
+        /* A WHOLE CUBE TURN IS NOT A FACE TURN. The small cube planner spells one as two face
+           turns so the algebra works, but showing that plays the wrong picture and calls out
+           the wrong name. In the guide the example does the real rotation, with its own tile. */
+        n.moves = (f.b.kind === 'whole' && f.b.whole) ? [f.b.whole] : f.b.moves.slice();
+        if (s.twice) n.moves = n.moves.concat(n.moves);
         n.chant = f.b.chant || null;
         n.cheer = f.b.cheer || s.cheer || null;
         n.panic = !!f.b.panic;
@@ -3084,7 +3132,6 @@ var GUIDE = (function () {
         else queue.push(ex[k]);
       }
     }
-    /* and from every node she can reach, the end is still reachable */
     var stuck = [], ids = Object.keys(seen);
     for (i = 0; i < ids.length; i++) {
       var q2 = [ids[i]], s2 = {}, ok = false;
@@ -3100,10 +3147,38 @@ var GUIDE = (function () {
     var unreached = sc.order.filter(function (x) { return !seen[x]; });
     return { reached: ids, bad: bad, dead: dead, stuck: stuck, unreached: unreached };
   }
+  /* every beat the planner can ever produce has to have a step in the script, or the guide
+     simply cannot say what the method wants said. This is what the rehearsal caught. */
+  function coverage(CC, plans) {
+    var specs = specOf(CC), miss = {}, seen = {}, i, k, j, b, hit;
+    for (i = 0; i < plans.length; i++) {
+      for (k = 0; k < plans[i].beats.length; k++) {
+        b = plans[i].beats[k];
+        /* "Keep spinning flat" and chant number 2 of 3 are the SAME action carrying on, not a
+           new thing the script has to be able to say. Only the leader of a run counts. */
+        var prev = k > 0 ? plans[i].beats[k - 1] : null;
+        if (b.chant && b.of > 1 && b.ord < b.of) continue;
+        if (b.chant && b.ord > 1) continue;
+        if (prev && prev.phase === b.phase && prev.kind === b.kind && !b.flip && !b.place && !b.kick) continue;
+        if (!b.moves.length && b.kind !== 'read' && b.kind !== 'look' && b.kind !== 'warn'
+          && b.kind !== 'guard' && b.kind !== 'skip' && b.kind !== 'cheer' && b.kind !== 'done') continue;
+        var sig = b.phase + '/' + b.kind + (b.flip ? '/flip' : '') + (b.pop ? '/pop' : '')
+          + (b.place ? '/place' : '') + (b.kick ? '/kick' : '') + (b.nobar ? '/nobar' : '')
+          + (b.guardAim ? '/aim' : '') + (b.barMove ? '/bar' : '') + (b.final ? '/final' : '')
+          + (b.chant ? '/' + b.chant : '');
+        seen[sig] = 1;
+        hit = false;
+        for (j = 0; j < specs.length; j++) { if (specs[j].pick && specs[j].pick(b)) { hit = true; break; } }
+        if (!hit) miss[sig] = (miss[sig] || 0) + 1;
+      }
+    }
+    return { seen: Object.keys(seen), missing: Object.keys(miss), counts: miss };
+  }
 
-  return { build: build, walk: walk, exits: exits, specOf: specOf, plansOf: plansOf, findBeat: findBeat };
+  return { build: build, walk: walk, exits: exits, specOf: specOf, plansOf: plansOf, coverage: coverage };
 })();
 /* ===== GUIDE END ===== */
+
 /* ===== STUDIO UI ===== */
 (function () {
   'use strict';
@@ -3135,7 +3210,7 @@ var GUIDE = (function () {
     says: null, sayKind: '',
     quiz: null, quizPick: null, quizFor: null,
     cubeSays: null, drill: null, chantUndo: null,
-    guide: null, guideWhy: '', guideChant: null, guideAsk: false, guideAt: -1,
+    guide: null, guideWhy: '', guideChant: null, guideAsk: false,
     badges: {}
   };
 
@@ -3963,6 +4038,34 @@ var GUIDE = (function () {
 
   /* ---------------------------------------------------------------- solve engine */
   function beat() { return app.plan && app.plan.beats[app.idx]; }
+  /* When the cube IS identified, she can be told exactly how far she is from finished, and
+     watch that number come down. Chants are counted as chants, because that is how she counts
+     them out loud. Nothing here guesses: the plan is the whole road. */
+  function planMoves(p, from) {
+    var n = 0, i;
+    for (i = from || 0; i < p.beats.length; i++) n += p.beats[i].moves.length;
+    return n;
+  }
+  function planShape(p) {
+    var chants = 0, turns = 0, seen = {}, i, b;
+    for (i = 0; i < p.beats.length; i++) {
+      b = p.beats[i];
+      if (b.chant) { if (!seen[b.group]) { seen[b.group] = 1; chants += (b.of || 1); } }
+      else turns += b.moves.length;
+    }
+    return { chants: chants, turns: turns };
+  }
+  function countdownCard() {
+    if (!app.plan) return '';
+    var total = planMoves(app.plan, 0), left = planMoves(app.plan, app.idx), sh = planShape(app.plan);
+    var bits = [];
+    if (sh.chants) bits.push(sh.chants + ' chant' + (sh.chants === 1 ? '' : 's'));
+    if (sh.turns) bits.push(sh.turns + ' turn' + (sh.turns === 1 ? '' : 's'));
+    return '<div class="say good"><span class="head">Your cube is identified.</span>'
+      + 'You are <b>' + total + ' moves</b> from solved'
+      + (bits.length ? ': ' + esc(bits.join(' and ')) : '') + '. '
+      + '<b>' + left + ' to go.</b></div>';
+  }
   function startSolve(hint) {
     var p = C.buildPlan(app.state, hint);
     if (!p.ok) { say('I got muddled working that one out. Press Start again and I will have another go.', 'oops'); app.plan = null; render(); return; }
@@ -4007,7 +4110,9 @@ var GUIDE = (function () {
     return b.moves.slice();
   }
   function playUnit(speakIt) {
-    var b = beat();
+    /* one stepper, two callers. The guide hands it a script step instead of a plan beat, so a
+       14 move chant is stepped exactly the same way here as it is in the coached solve. */
+    var b = app.guide ? guideNode() : beat();
     if (!b || !app.units || app.moveAt >= app.units.length) return;
     var u = app.units[app.moveAt], dur = app.auto ? 520 : SPEED;
     app.busy = true; app.awaitMove = false;
@@ -4016,7 +4121,11 @@ var GUIDE = (function () {
     render();
     var after = function () {
       app.moveAt++;
-      if (app.moveAt >= app.units.length) { app.chantAt = -1; finishBeat(b); return; }
+      if (app.moveAt >= app.units.length) {
+        app.chantAt = -1;
+        if (app.guide) { guideUnitsDone(); return; }
+        finishBeat(b); return;
+      }
       if (app.auto) { playUnit(true); return; }
       app.busy = false; app.awaitMove = true; render();
     };
@@ -5151,26 +5260,28 @@ var GUIDE = (function () {
     var sc = guideScript();
     app.mode = 'solve'; app.plan = null; app.auto = false; app.nudge = null;
     app.cheered = {}; app.usedShowMe = false;
-    app.guide = { id: sc.first, phase: 1, from: sc.first };
+    app.guide = { id: '', phase: 1, stack: [] };
     guideGo(sc.first);
   }
   function guideStop() {
-    app.guide = null; app.guideWhy = ''; app.guideChant = null; app.guideAsk = false; app.guideAt = -1;
+    app.guide = null; app.guideWhy = ''; app.guideChant = null; app.guideAsk = false;
     speakStop(); app.says = null; idleTile('Ready when you are'); render();
   }
-  function guideGo(id) {
+  function guideGo(id, back) {
     var sc = guideScript(), n = sc.nodes[id];
     if (!n || app.busy) return;
+    if (!back && app.guide.id && app.guide.id !== id) app.guide.stack.push(app.guide.id);
     app.guide.id = id; app.guide.phase = n.phase;
-    app.guideWhy = n.why || ''; app.guideChant = n.chant || null; app.guideAt = -1;
+    app.guideWhy = n.why || ''; app.guideChant = n.chant || null;
+    app.units = []; app.moveAt = 0; app.chantAt = -1; app.awaitMove = false;
     app.guideAsk = !n.moves.length;
     if (n.world) { app.state = C.clone(n.world); clearGlow(); renderCube(); }
     if (n.end) {
       cheer(n.say);
-      win(big() ? 'watch3' : 'watch');
+      guideBadge(n);
     } else {
       say(n.say, n.panic ? 'panic' : '', n.panic ? 'Read this before you start' : (n.cheer || ''));
-      if (n.cheer) say(n.say, 'good', n.cheer);
+      if (n.cheer) { say(n.say, 'good', n.cheer); guideBadge(n); }
     }
     idleTile(n.title || 'Just guide me');
     render();
@@ -5178,49 +5289,65 @@ var GUIDE = (function () {
     speakText(plainWords(n.say) + (n.why ? '. Why this works. ' + n.why : ''));
     if (n.moves.length) setTimeout(guideDemo, 260);
   }
-  /* the example cube does the move, one at a time, so she can copy it on hers */
+  /* the example cube does the move ONE AT A TIME, waiting for her between each, using the very
+     same stepper the coached solve uses. A chant is never blitzed past her. */
   function guideDemo() {
     var n = guideNode();
     if (!n || !n.moves.length || app.busy) return;
-    app.busy = true;
-    if (n.world) { app.state = C.clone(n.world); renderCube(); }
-    var i = 0;
-    (function step() {
-      if (i >= n.moves.length) {
-        app.busy = false; app.guideAt = -1; app.guideAsk = true; render(); return;
-      }
-      var m = n.moves[i++];
-      app.guideAt = i - 1; render();
-      if (C.WHOLE[m]) turnWhole(m, 460, step); else turn(m, 420, step);
-    })();
+    if (n.world) { app.state = C.clone(n.world); clearGlow(); renderCube(); }
+    app.units = n.moves.slice(); app.moveAt = 0; app.chantAt = -1;
+    app.awaitMove = false; app.guideAsk = false;
+    playUnit(false);
+  }
+  function guideUnitsDone() {
+    app.busy = false; app.awaitMove = false; app.chantAt = -1;
+    app.guideAsk = true; render();
+  }
+  /* the badges a guided solve really earns, the same ones the coached solve gives */
+  function guideBadge(n) {
+    if (!n.cheer) return;
+    if (big()) {
+      if (n.cheer === 'White cross done!') win('cross3');
+      if (n.cheer === 'White layer done!') win('layer3');
+      if (n.cheer === 'Two layers done!') win('two3');
+      if (n.cheer === 'Solved!') { win('watch3'); win('solo3'); }
+    } else {
+      if (n.cheer === 'White layer done!') win('layer');
+      if (n.cheer === 'Yellow ceiling done!') win('yellow');
+      if (n.cheer === 'Solved!') { win('watch'); win('solo'); }
+    }
   }
   function guideAnswer(k) {
     var n = guideNode();
     if (!n || !n.ask || app.busy) return;
     var o = n.ask.opts[k];
-    if (!o) return;
-    app.guide.from = app.guide.id;
-    guideGo(o.to);
+    if (o) guideGo(o.to);
   }
   function guideNext() {
     var n = guideNode();
     if (!n || app.busy || !n.to) return;
-    app.guide.from = app.guide.id;
     guideGo(n.to);
+  }
+  /* a mis-tapped answer must never strand her: Back walks the steps she actually took */
+  function guideBack() {
+    if (!app.guide || app.busy || !app.guide.stack.length) return;
+    guideGo(app.guide.stack.pop(), true);
   }
   function panelGuide() {
     var n = guideNode(), sc = guideScript(), h = '';
     if (!n) return '';
     h += '<div class="card" style="border-width:3px;border-color:' + RED + '">'
       + '<h2 style="color:' + RED + '">This is my example cube</h2>'
-      + '<div class="lede">Yours will look different, and that is fine. Do what I do on yours, and tell me what YOU can see.</div>'
+      + '<div class="lede">Yours will look different, and that is fine. Do what I do on yours, and tell me what YOU can see. '
+      + 'The block inside the red ring is your working corner.</div>'
       + '<div class="row" style="margin-top:9px"><button class="btn" data-act="guide-stop">Stop guiding</button></div></div>';
     h += railHtml();
     h += sayBox();
     if (n.chant && C.CHANTS[n.chant]) {
       var c = C.CHANTS[n.chant];
-      h += strip(c.name, n.moves, c.breath, app.guideAt, app.guideAt >= 0
-        ? ('move ' + (app.guideAt + 1) + ' of ' + n.moves.length + ', say it out loud')
+      var at = app.chantAt === undefined ? -1 : app.chantAt;
+      h += strip(c.name, n.moves, c.breath, at, at >= 0
+        ? ('move ' + (at + 1) + ' of ' + n.moves.length + ', say it out loud')
         : 'say it out loud');
     }
     if (n.end) {
@@ -5231,6 +5358,15 @@ var GUIDE = (function () {
       h += badgeShelf();
       return h;
     }
+    /* the same per move card the coached solve uses, so a chant is stepped, never blitzed */
+    if (app.awaitMove) {
+      h += '<div class="card" style="border-width:3px"><h2>Move ' + app.moveAt + ' of ' + app.units.length + '</h2>'
+        + '<div class="lede">' + (n.chant ? 'One move of the chant at a time. ' : '')
+        + 'Do that move on your own cube, then tap for the next one.</div>'
+        + '<div class="row" style="margin-top:9px">'
+        + '<button class="btn primary big" data-act="guide-move">Next move</button>'
+        + '<button class="btn" data-act="guide-again">Start this ' + (n.chant ? 'chant' : 'move') + ' again</button></div></div>';
+    }
     if (n.ask && app.guideAsk) {
       h += '<div class="card askbox" style="border-width:3px"><div class="askq">' + esc(n.ask.q) + '</div>'
         + '<div class="asks">' + n.ask.opts.map(function (o, i) {
@@ -5238,11 +5374,14 @@ var GUIDE = (function () {
         }).join('') + '</div>'
         + '<div class="lede">Look at YOUR cube, not mine, and tap what you can see.</div></div>';
     } else if (!n.ask && app.guideAsk) {
-      h += '<div class="card" style="border-width:3px"><h2>Do that on your cube</h2>'
-        + '<div class="lede">Copy the move you just watched, then tap for the next step.</div>'
+      h += '<div class="card" style="border-width:3px"><h2>' + (n.moves.length ? 'Do that on your cube' : 'Ready?') + '</h2>'
+        + '<div class="lede">' + (n.moves.length
+          ? 'Copy the move you just watched, then tap for the next step.'
+          : 'Tap when you are ready for the next step.') + '</div>'
         + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="guide-next">Next step</button></div></div>';
     }
     h += '<div class="card"><div class="row">'
+      + '<button class="btn" data-act="guide-back"' + (app.busy || !app.guide.stack.length ? ' disabled' : '') + '>Back</button>'
       + (n.moves.length ? '<button class="btn" data-act="guide-again"' + (app.busy ? ' disabled' : '') + '>Watch again</button>' : '')
       + '<button class="btn" data-act="guide-step"' + (app.busy ? ' disabled' : '') + '>Start this step again</button>'
       + '<button class="btn" data-act="guide-stop">Stop guiding</button></div>'
@@ -5293,6 +5432,7 @@ var GUIDE = (function () {
     }
 
     var b = beat();
+    h += countdownCard();
     h += railHtml();
     h += sayBox();
     h += chantStrip();
@@ -5375,7 +5515,7 @@ var GUIDE = (function () {
     if (tag) tag.hidden = !app.guide;
     var note = $('gripNote');
     note.textContent = app.guide
-      ? 'My example cube. Yours will look different. Do what I do on yours.'
+      ? 'My example cube. Yours will look different. The red ring is your working corner.'
       : app.mode === 'paint'
       ? 'Paint on the two pictures in the panel. This cube shows what I have understood.'
       : 'Home grip. The red ring is your working corner.';
@@ -5467,7 +5607,9 @@ var GUIDE = (function () {
     if (act === 'guide-stop') { guideStop(); return; }
     if (act === 'guide-next') { guideNext(); return; }
     if (act === 'guide-again') { guideDemo(); return; }
-    if (act === 'guide-step') { guideGo(app.guide ? app.guide.id : null); return; }
+    if (act === 'guide-step') { guideGo(app.guide ? app.guide.id : null, true); return; }
+    if (act === 'guide-back') { guideBack(); return; }
+    if (act === 'guide-move') { if (!app.busy) playUnit(true); return; }
     if (act === 'practice') {
       app.guide = null;
       app.state = practiceState();
@@ -5614,7 +5756,7 @@ var GUIDE = (function () {
     app.whiteDown = false; app.whiteMsg = null;
     app.cheered = st ? st.cheered : {};
     app.plan = null; app.idx = 0; app.askState = null; app.auto = false; app.nudge = null;
-    app.guide = null; app.guideWhy = ''; app.guideChant = null; app.guideAsk = false; app.guideAt = -1;
+    app.guide = null; app.guideWhy = ''; app.guideChant = null; app.guideAsk = false;
     app.diag = null; app.quiz = null; app.quizPick = null; app.drill = null; app.chantUndo = null; app.cubeSays = null;
     app.paintMsg = null; app.paintSuspects = []; app.usedShowMe = false; app.fromFace = false;
     app.holdOk = false; app.holdMsg = null; app.holdNeed = [];
@@ -5672,7 +5814,9 @@ var GUIDE = (function () {
       saveSpeak();
       sb.textContent = app.speak ? 'Voice on' : 'Voice off';
       speakStop();
-      if (app.speak && app.mode === 'solve' && app.plan) speakBeat(beat());
+      if (!app.speak) return;
+      if (app.guide) { var gn = guideNode(); if (gn) speakText(plainWords(gn.say) + (gn.why ? '. Why this works. ' + gn.why : '')); return; }
+      if (app.mode === 'solve' && app.plan) speakBeat(beat());
     });
   } else {
     app.speak = false;

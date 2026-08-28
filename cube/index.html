@@ -380,52 +380,106 @@
   .sideread small { font-size: 10.5px; font-weight: 700; color: var(--soft); line-height: 1.15; display: block; }
 
   /* ===== COMPACT START =====
-     ONE SCREEN. The A/B alternative, and the field report is why it exists: on a
-     landscape iPad she was scrolling up and down between reading the instruction and pressing
-     forward, which means putting the cube down, which means losing her place. In Compact the
-     whole solve loop is on screen at once: the cube on the left, and on the right, in the order
-     she uses them, the transport, the step rail, the instruction, the answer buttons and the
-     chant strip. Everything that is not the loop, the pads, the chant shelf, the badges and the
-     level buttons, keeps its place underneath and she scrolls to it only when she wants it.
-     THE SAME DOM. Not one panel is built differently for this mode: flex order alone puts the
-     loop first, so every beat, every word and every gate below is the same in both layouts.
+     ONE SCREEN, THREE LANES. The A/B alternative, and the field report is why it
+     exists: on a landscape iPad she was scrolling to reach the things she uses on every beat, and
+     with a cube in your hands scrolling means putting the cube down. Round one put the loop in two
+     columns; the field test drove it and said the right hand column was still massive, with wasted space
+     beside it, and that the way out should be at the very top. It is three lanes now:
+       the CUBE lane   - the cube, its legend, and the move tile that says what is happening;
+       the READING lane - the instruction, and the buttons she answers it with;
+       the TRACKING lane - the transport, the step rail, how far she has to go, the chant strip.
+     Everything that is not the loop - the pads, the chant shelf, the badges, the level buttons -
+     sits under the cube where the width is already spent, and she scrolls to it only if she wants
+     it. The way out of wherever she is lives in the header, above all of it.
+     THE SAME PANEL. It is built once, by the same functions, in the same order, saying the same
+     words. Four already built cards are then dealt into the tracking lane and dealt straight back
+     when she returns to Classic, which is why nothing below this line knows a layout exists.
      NOTHING IN HERE APPLIES UNLESS body.compact IS SET. Classic is not touched by one rule. */
-  body.compact { padding: 8px; }
-  body.compact .wrap { gap: 8px; }
-  /* the top of the page shrinks to a line, and the height it gives back goes to the cube */
-  body.compact header.app-head { padding: 7px 12px; }
-  body.compact header.app-head h1 { font-size: 17px; margin-top: 0; }
+  body.compact { padding: 7px; }
+  body.compact .wrap { gap: 7px; }
+  /* the top of the page shrinks to a line, and the height it gives back goes to the loop */
+  body.compact header.app-head { padding: 5px 10px; gap: 10px; }
+  body.compact header.app-head h1 { font-size: 16px; margin-top: 0; }
   body.compact header.app-head .eyebrow, body.compact header.app-head .sub { display: none; }
-  body.compact .studio { gap: 8px; }
-  body.compact .stage-col, body.compact .panel-col { gap: 8px; }
-  body.compact .card { padding: 9px 11px; }
-  body.compact .card > h2 { font-size: 16px; }
+  body.compact .studio { gap: 7px; }
+  body.compact .stage-col, body.compact .panel-col, body.compact .lane-col { gap: 7px; }
+  body.compact .card { padding: 7px 9px; }
+  body.compact .card > h2 { font-size: 15px; margin-bottom: 3px; }
+  body.compact .card .lede { font-size: 13px; }
+  body.compact .stage-bar { margin-top: 5px; gap: 7px; }
+  body.compact .row { gap: 6px; }
+  body.compact .btn { padding: 6px 10px; }
   body.compact .foot { display: none; }
+  /* THE WAY OUT, AT THE VERY TOP. The field report: "Start again should go all the way to the top." It sits
+     in the header now, above everything, in every place that has one: the painter's Start again,
+     the solve's Start this block and Work it out again, the guide's Stop guiding, free play's
+     Start from solved. It is never scrolled to, because there is nothing above it to scroll past.
+     Both of these are empty and hidden outright in Classic, so Classic never sees a box or a gap. */
+  body.compact .escapes { display: flex; gap: 6px; align-items: center; }
+  body.compact .escapes[hidden], body.compact .lane-col[hidden] { display: none; }
+  body.compact .esc {
+    font: inherit; cursor: pointer; font-size: 13px; font-weight: 800;
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+    background: var(--paper); color: var(--red); border: 2px solid var(--red);
+    border-radius: 999px; padding: 5px 13px; min-height: 44px;
+  }
+  body.compact .esc:hover { background: #fdf1f2; }
 
   /* landscape and wide, which is how she holds it */
   @media (min-width: 901px) {
-    body.compact .studio { grid-template-columns: minmax(300px, 34vw) 1fr; }
-    /* THE ORDER SHE USES THEM IN, done with flex order over the panel exactly as it is built */
+    /* THREE LANES. The reading lane gets the flexible width, because words need width. The other
+       two are sized to the widest thing in them: the cube, and a fourteen tile chant strip. */
+    body.compact .studio { grid-template-columns: minmax(224px, 22vw) minmax(0, 1fr) minmax(356px, 33vw); }
+    body.compact .lane-col { display: grid; gap: 7px; align-content: start; }
+    /* the reading lane, in the order she reads it: what to do, then what to answer */
     body.compact .panel-col { display: flex; flex-direction: column; }
     body.compact .panel-col > * { order: 9; flex: 0 0 auto; }
-    body.compact .panel-col > #livePlayer { order: 1; margin-bottom: 0 !important; }
-    body.compact .panel-col > #liveRail { order: 2; }
-    body.compact .panel-col > #liveSay { order: 3; }
-    body.compact .panel-col > .askbox { order: 4; }
-    body.compact .panel-col > #liveStrip { order: 5; }
-    /* the cube takes the height that is left over, and never more than it had before */
-    body.compact .stage { height: clamp(210px, 38vh, 348px); }
-    body.compact .rail div { padding: 4px 6px; font-size: 11px; }
-    /* NOTHING RESIZES IN THIS MODE EITHER, and the way to be sure of that is to keep the floors
-       that were already measured rather than shave them. A first cut here trimmed the instruction
-       frame to 104 and the move tile to 68, and a real walk found both overflowing: 116 and 83.
-       The height this mode saves comes from the top of the page, the paddings and the two columns,
-       which is 347px at 1024 wide, so there was never anything to buy by squeezing a frame.
-       ONE floor genuinely differs, because one frame is genuinely narrower: the cube column is
-       348px here against 430 in Classic, so the move caption takes an extra line. Measured the
-       same way, over all 15 move tiles at 1024 wide: the tallest is the facing side one at 99px,
-       so the frame is floored above it. */
-    body.compact .tile-live { min-height: 104px; }
+    body.compact .panel-col > #liveRail { order: 1; }
+    body.compact .panel-col > #liveSay { order: 2; }
+    body.compact .panel-col > .askbox { order: 3; }
+    /* the transport carries its own bottom margin, which in a gapped lane is just dead space */
+    body.compact .lane-col > #livePlayer { margin-bottom: 0 !important; }
+    /* NO WASTED SPACE. Every one of these was measured for slack at 1024, 1180 and 1366 before it
+       was cut, and nothing here goes below a 44px finger. */
+    /* the cube lane came out the SHORTEST of the three once the tile moved across, and there was
+       headroom under the fold, so the cube took it back: measured to balance the lanes, and a
+       bigger cube is the right way to spend spare height on a nine year old's screen. */
+    body.compact .stage { height: clamp(210px, 38vh, 320px); }
+    body.compact .stage-bar { margin-top: 5px; gap: 5px; }
+    body.compact .grip-note { font-size: 11px; line-height: 1.25; flex: 1 1 100%; }
+    /* the two cube buttons SHARE one row rather than wrapping or not depending on whether the
+       voice button is there: a lane whose height depends on that is a lane that moves */
+    body.compact .stage-bar .btn { padding: 5px 9px; font-size: 12.5px; flex: 1 1 0; min-width: 0; }
+    /* the pads are below the fold in this mode and the cube lane is narrow, so five across turned
+       every caption into a five line stack. Three across gives the words their line back. */
+    body.compact .padrow { grid-template-columns: repeat(3, 1fr); }
+    body.compact .padgroup { padding: 7px 8px; }
+    body.compact .rail { flex-wrap: wrap; gap: 4px; }
+    body.compact .rail div { padding: 3px 5px; font-size: 10.5px; }
+    body.compact .player { padding: 6px 7px; gap: 6px; }
+    body.compact .chantstrip { padding: 7px 9px; }
+    body.compact .beats { gap: 3px; margin-top: 4px; }
+    body.compact .beat { min-width: 26px; padding: 2px 4px; font-size: 12px; }
+    body.compact .knowline { margin-top: 5px; }
+    body.compact .askbox { gap: 6px; }
+    body.compact .asks { gap: 6px; }
+    body.compact .tile-live svg { width: 54px; height: 54px; }
+    body.compact .tile-live .letter { font-size: 24px; }
+    /* THE FLOORS, RE-MEASURED IN THIS MODE AT ITS NEW LANE WIDTHS AND NOWHERE ELSE. Classic keeps
+       every floor it had. Each number below is the tallest that frame was seen to reach over a
+       walk of the whole loop at all three landscape sizes, floored just above it. */
+    body.compact #liveSay { min-height: 164px; }
+    body.compact #liveRail { min-height: 66px; }
+    body.compact #liveStrip { min-height: 126px; }
+    body.compact .chantstrip { min-height: 126px; }
+    body.compact .tile-live { min-height: 100px; }
+  }
+  /* portrait in Compact: one column, tighter, with the tracking lane up under the cube where her
+     thumb already is rather than at the bottom of everything */
+  @media (max-width: 900px) {
+    body.compact .stage-col { order: 0; }
+    body.compact .lane-col { order: 1; display: grid; gap: 7px; }
+    body.compact .panel-col { order: 2; }
   }
   /* ===== COMPACT END ===== */
   .sideread.match small { color: var(--green); }
@@ -441,6 +495,7 @@
       <h1 id="headline">Three steps, two chants</h1>
       <div class="sub" id="subline">The best day is the day you do not need me.</div>
     </div>
+    <span class="escapes" id="escapes" hidden></span>
     <span class="layoutswitch" id="layoutswitch">
       <span class="tag">Layout</span>
       <button type="button" data-layout="classic" aria-pressed="true">Big and roomy</button>
@@ -483,6 +538,7 @@
       <div class="pads" id="pads"></div>
     </div>
     <div class="panel-col" id="panel"></div>
+    <div class="lane-col" id="lane" hidden></div>
   </div>
 
   <div class="foot" id="foot">Cube Quest Studio. Same three steps, same two chants as your board.</div>
@@ -6400,6 +6456,59 @@ var GUIDE = (function () {
     if (app.playing && $('livePlayer')) { renderLive(); return; }
     render();
   }
+  /* ===== LANES START =====
+     THREE LANES, ONE PANEL. The field test drove Compact and said the right hand column was still massive.
+     It was: one tall lane doing the reading AND the tracking, with dead space beside it. So the
+     panel is now dealt into two lanes after it is built: the reading lane keeps the instruction
+     and the answer buttons, and the tracking lane takes the transport, the step rail, the
+     countdown and the chant strip. The cube is the third.
+     THE PANEL IS STILL BUILT ONCE, BY THE SAME FUNCTIONS, IN THE SAME ORDER. Nothing here knows
+     what a beat is. It moves four already built cards into a second box and moves them back the
+     moment she goes back to Classic, which is why Classic cannot tell any of this is here. */
+  /* THE EMPTY STRIP GOES LAST. The chant strip holds a floor so it cannot change height under her
+     hand when a chant starts, which means that when no chant is running it is a floor's worth of
+     nothing. In the middle of the lane that reads as a hole; at the bottom of the lane it is just
+     where the lane ends. Same floor, same no-jerk law, no hole. */
+  var LANE_PARTS = ['#livePlayer', '#liveCount', '#liveStrip'];
+  /* the way out of wherever she is, small and always at the very top of the screen */
+  function escapeParts() {
+    if (app.mode === 'paint') return [['start-again', 'Start again']];
+    if (app.guide) return [['guide-stop', 'Stop guiding']];
+    if (app.mode === 'solve' && app.plan) return [['block-again', 'Start this block'], ['restart', 'Work it out again']];
+    if (app.mode === 'play') return [['reset', 'Start from solved']];
+    return [];
+  }
+  function dealLanes() {
+    var lane = $('lane'), slot = $('escapes'), panel = $('panel'), i, el;
+    if (!lane || !slot) return;
+    /* THE MOVE TILE IS FURNITURE, NOT A CARD. The panel rebuilds its own cards every render, so
+       emptying the lane simply throws away copies. The tile is written in the markup once and
+       only ever has its innards swapped, so it is carried across by hand and carried back by
+       hand: emptying the lane on top of it would destroy it for the rest of the sitting. */
+    var stageCol = document.querySelector('.stage-col'), tile = $('tileLive');
+    if (tile && tile.parentNode === lane) stageCol.insertBefore(tile, $('pads'));
+    /* both boxes go back to nothing first, so Classic can never inherit a lane full of cards */
+    lane.innerHTML = ''; slot.innerHTML = '';
+    lane.hidden = true; slot.hidden = true;
+    if (app.layout !== 'compact') return;
+    /* the way out first, because it is the one thing she must never have to hunt for */
+    var ways = escapeParts();
+    if (ways.length) {
+      slot.innerHTML = ways.map(function (o) {
+        return '<button type="button" class="esc" data-act="' + o[0] + '">' + esc(o[1]) + '</button>';
+      }).join('');
+      slot.hidden = false;
+    }
+    /* then the tracking lane: the controls, the move that is happening, the chant, how far to go */
+    if (tile) { lane.appendChild(tile); lane.hidden = false; }
+    for (i = 0; i < LANE_PARTS.length; i++) {
+      el = panel.querySelector(LANE_PARTS[i]);
+      if (!el) continue;
+      while (el && el.parentNode !== panel) el = el.parentNode;
+      if (el) { lane.appendChild(el); lane.hidden = false; }
+    }
+  }
+  /* ===== LANES END ===== */
   function render() {
     var p = $('panel'), h = '';
     if (app.mode === 'play') h = panelPlay();
@@ -6407,6 +6516,7 @@ var GUIDE = (function () {
     else if (app.mode === 'solve') h = panelSolve();
     else h = panelMess();
     p.innerHTML = h;
+    dealLanes();
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-mode') === app.mode ? 'true' : 'false');
     });
@@ -6448,7 +6558,11 @@ var GUIDE = (function () {
     if (b) setLayout(b.getAttribute('data-layout'));
   });
 
-  $('panel').addEventListener('click', function (e) {
+  /* ONE SET OF HANDS FOR THE WHOLE PANEL. In Compact the panel is dealt into three lanes and the
+     way out sits up in the header, so the cards she taps are no longer all inside one box. The
+     handler is the same function either way, listening on each place a card can end up: there is
+     no second copy of any of this, and Classic only ever fires the one on the panel. */
+  function panelClick(e) {
     var t = e.target.closest('button, .swatch, polygon.sticker');
     if (!t) return;
     if (t.hasAttribute('data-size')) { switchSize(parseInt(t.getAttribute('data-size'), 10)); return; }
@@ -6596,7 +6710,11 @@ var GUIDE = (function () {
     }
     if (act === 'nudge') { nudge(); return; }
     if (act === 'undochant') { undoChant(); return; }
-  });
+  }
+  $('panel').addEventListener('click', panelClick);
+  /* the two places a card or a way out can live in Compact. Empty and silent in Classic. */
+  $('lane').addEventListener('click', panelClick);
+  $('escapes').addEventListener('click', panelClick);
 
   /* painting taps */
   $('panel').addEventListener('click', function (e) {

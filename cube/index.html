@@ -154,6 +154,20 @@
     border-radius: 11px; padding: 9px 15px;
   }
   .sizeswitch button[aria-pressed="true"] { background: var(--hilite); border-style: solid; }
+  /* ---------- layout switch ----------
+     The A/B control. It sits up in the header, out of the way of the tabs row, because the tabs
+     row is already full at 1024 and a fourth thing in it would wrap the whole nav onto a second
+     line and push the cube down. Quiet, small, and a grown up's control, like the chant ticks. */
+  .layoutswitch { display: flex; gap: 6px; align-items: center; }
+  .layoutswitch .tag { align-self: center; }
+  .layoutswitch button {
+    font: inherit; font-weight: 700; cursor: pointer;
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; font-size: 13px;
+    background: var(--paper); color: var(--soft); border: 1.5px solid var(--line);
+    border-radius: 999px; padding: 6px 13px; min-height: 46px;
+  }
+  .layoutswitch button:hover { background: var(--wash); }
+  .layoutswitch button[aria-pressed="true"] { background: var(--hilite); border-color: var(--ink); color: var(--ink); }
   .stage-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
   .grip-note { font-size: 12.5px; color: var(--soft); font-weight: 600; flex: 1 1 160px; }
 
@@ -274,12 +288,16 @@
   /* NOTHING RESIZES WHILE SHE IS FOLLOWING ALONG. A card that grows or shrinks between beats
      shoves the whole page under her thumb, which is what made it jump. These floors are the
      cheapest way to keep every box the same size whatever text lands in it. */
-  .chantstrip { min-height: 84px; }
+  /* RE-MEASURED 2026-08-28. This floor was 84, measured when the strip held a name, a count and
+     one row of move tiles. The grown up's "she knows this one" tick then moved INSIDE the strip
+     and the real content grew to 113, so the frame was changing height under her hand every time
+     a chant started. Measured again with the tick in it: 113, floored above it. */
+  .chantstrip { min-height: 116px; }
   /* Measured, not guessed: the tallest instruction in either method is the do not panic warning
      at 117px on an iPad, so the frame is floored above it. Anything shorter simply sits in a box
      that is already the right size, and the page underneath never moves. */
   #liveSay { min-height: 120px; }
-  #liveStrip { min-height: 84px; }
+  #liveStrip { min-height: 116px; }
   #liveRail { min-height: 44px; }
   /* the countdown is a number that changes width as it counts down, so it gets its own lane */
   #liveCount { display: inline-block; min-width: 96px; }
@@ -360,6 +378,56 @@
   .sideread .pair { display: flex; gap: 3px; justify-content: center; margin-bottom: 4px; }
   .sideread .pair i { width: 17px; height: 17px; border-radius: 4px; border: 1.5px solid var(--ink); display: block; }
   .sideread small { font-size: 10.5px; font-weight: 700; color: var(--soft); line-height: 1.15; display: block; }
+
+  /* ===== COMPACT START =====
+     ONE SCREEN. The A/B alternative, and the field report is why it exists: on a
+     landscape iPad she was scrolling up and down between reading the instruction and pressing
+     forward, which means putting the cube down, which means losing her place. In Compact the
+     whole solve loop is on screen at once: the cube on the left, and on the right, in the order
+     she uses them, the transport, the step rail, the instruction, the answer buttons and the
+     chant strip. Everything that is not the loop, the pads, the chant shelf, the badges and the
+     level buttons, keeps its place underneath and she scrolls to it only when she wants it.
+     THE SAME DOM. Not one panel is built differently for this mode: flex order alone puts the
+     loop first, so every beat, every word and every gate below is the same in both layouts.
+     NOTHING IN HERE APPLIES UNLESS body.compact IS SET. Classic is not touched by one rule. */
+  body.compact { padding: 8px; }
+  body.compact .wrap { gap: 8px; }
+  /* the top of the page shrinks to a line, and the height it gives back goes to the cube */
+  body.compact header.app-head { padding: 7px 12px; }
+  body.compact header.app-head h1 { font-size: 17px; margin-top: 0; }
+  body.compact header.app-head .eyebrow, body.compact header.app-head .sub { display: none; }
+  body.compact .studio { gap: 8px; }
+  body.compact .stage-col, body.compact .panel-col { gap: 8px; }
+  body.compact .card { padding: 9px 11px; }
+  body.compact .card > h2 { font-size: 16px; }
+  body.compact .foot { display: none; }
+
+  /* landscape and wide, which is how she holds it */
+  @media (min-width: 901px) {
+    body.compact .studio { grid-template-columns: minmax(300px, 34vw) 1fr; }
+    /* THE ORDER SHE USES THEM IN, done with flex order over the panel exactly as it is built */
+    body.compact .panel-col { display: flex; flex-direction: column; }
+    body.compact .panel-col > * { order: 9; flex: 0 0 auto; }
+    body.compact .panel-col > #livePlayer { order: 1; margin-bottom: 0 !important; }
+    body.compact .panel-col > #liveRail { order: 2; }
+    body.compact .panel-col > #liveSay { order: 3; }
+    body.compact .panel-col > .askbox { order: 4; }
+    body.compact .panel-col > #liveStrip { order: 5; }
+    /* the cube takes the height that is left over, and never more than it had before */
+    body.compact .stage { height: clamp(210px, 38vh, 348px); }
+    body.compact .rail div { padding: 4px 6px; font-size: 11px; }
+    /* NOTHING RESIZES IN THIS MODE EITHER, and the way to be sure of that is to keep the floors
+       that were already measured rather than shave them. A first cut here trimmed the instruction
+       frame to 104 and the move tile to 68, and a real walk found both overflowing: 116 and 83.
+       The height this mode saves comes from the top of the page, the paddings and the two columns,
+       which is 347px at 1024 wide, so there was never anything to buy by squeezing a frame.
+       ONE floor genuinely differs, because one frame is genuinely narrower: the cube column is
+       348px here against 430 in Classic, so the move caption takes an extra line. Measured the
+       same way, over all 15 move tiles at 1024 wide: the tallest is the facing side one at 99px,
+       so the frame is floored above it. */
+    body.compact .tile-live { min-height: 104px; }
+  }
+  /* ===== COMPACT END ===== */
   .sideread.match small { color: var(--green); }
 </style>
 </head>
@@ -373,6 +441,11 @@
       <h1 id="headline">Three steps, two chants</h1>
       <div class="sub" id="subline">The best day is the day you do not need me.</div>
     </div>
+    <span class="layoutswitch" id="layoutswitch">
+      <span class="tag">Layout</span>
+      <button type="button" data-layout="classic" aria-pressed="true">Big and roomy</button>
+      <button type="button" data-layout="compact" aria-pressed="false">One screen</button>
+    </span>
     <div class="cube-row" aria-hidden="true">
       <span style="background:#fff"></span><span style="background:var(--yellow)"></span><span style="background:var(--green)"></span><span style="background:var(--blue)"></span><span style="background:var(--red)"></span><span style="background:var(--orange)"></span>
     </div>
@@ -3329,6 +3402,8 @@ var GUIDE = (function () {
     rejectKind: null, inferHint: null,
     /* the chants a grown up has ticked off, and a forward tap parked until a smooth go finishes */
     known: {}, fwdQueued: false,
+    /* which of the two layouts she is on: classic, or the landscape one screen one */
+    layout: 'classic',
     badges: {}
   };
 
@@ -3385,8 +3460,36 @@ var GUIDE = (function () {
     if (on) app.known[id] = 1; else delete app.known[id];
     saveKnown();
   }
+  /* ---------------------------------------------------------------- which layout she is on
+     TWO LAYOUTS, ONE APP. Classic is what she has always had and is the default: anything other
+     than the word compact in the box means Classic, so a browser that has never heard of this
+     opens exactly the page it opened yesterday. Compact is the landscape one screen alternative.
+     This is a LAYOUT choice and nothing else: the same beats, the same words, the same chants. */
+  function loadLayout() { return storeGet('layout') === 'compact' ? 'compact' : 'classic'; }
+  function applyLayout() {
+    document.body.classList.toggle('compact', app.layout === 'compact');
+    paintLayoutSwitch();
+  }
+  function paintLayoutSwitch() {
+    var sw = $('layoutswitch');
+    if (!sw) return;
+    Array.prototype.forEach.call(sw.querySelectorAll('button[data-layout]'), function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-layout') === app.layout ? 'true' : 'false');
+    });
+  }
+  function setLayout(v) {
+    var want = v === 'compact' ? 'compact' : 'classic';
+    if (want === app.layout) return;
+    app.layout = want;
+    storeSet('layout', want);
+    applyLayout();
+    /* the panel is the same panel either way, but a redraw settles the live frames at their new
+       floors straight away instead of at her next tap */
+    render();
+  }
   app.badges = loadBadges();
   app.known = loadKnown();
+  app.layout = loadLayout();
   app.playRate = loadRate();
   function win(id) {
     if (app.badges[id]) return false;
@@ -6307,6 +6410,7 @@ var GUIDE = (function () {
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-mode') === app.mode ? 'true' : 'false');
     });
+    paintLayoutSwitch();
     var tag = $('exampleTag');
     if (tag) tag.hidden = !app.guide;
     var note = $('gripNote');
@@ -6335,6 +6439,13 @@ var GUIDE = (function () {
   $('sizeswitch').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-size]');
     if (b) switchSize(parseInt(b.getAttribute('data-size'), 10));
+  });
+
+  /* the A/B switch. It changes where things sit and nothing else, so it is safe mid solve: no
+     beat is lost, no chant is cut, and her place on the plan is exactly where she left it. */
+  $('layoutswitch').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-layout]');
+    if (b) setLayout(b.getAttribute('data-layout'));
   });
 
   $('panel').addEventListener('click', function (e) {
@@ -6677,6 +6788,9 @@ var GUIDE = (function () {
   pb.addEventListener('blur', dropPeek);
 
   /* ---------------------------------------------------------------- go */
+  /* the layout she chose last time goes on before anything is drawn, so the page never opens in
+     one layout and jumps into the other under her hand */
+  applyLayout();
   restorePaint(2);
   buildCube();
   buildPads();

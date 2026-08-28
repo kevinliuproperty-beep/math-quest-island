@@ -382,8 +382,6 @@
   .badge.won { color: var(--ink); }
   .badge.won::before { background: var(--green); border-color: var(--green); }
 
-  .levels { display: flex; gap: 6px; flex-wrap: wrap; }
-  .levels button { flex: 1 1 0; min-width: 92px; }
   .hidden { display: none !important; }
   .foot { font-size: 12px; color: var(--soft); text-align: center; padding: 4px 0 10px; }
   .sides { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
@@ -451,9 +449,6 @@
        ribbon by whatever happens to be beside it. The cube lane is a picture, not words. */
     body.compact .studio { grid-template-columns: minmax(224px, 22vw) minmax(280px, 1fr); }
     body.compact .studio.lanes3 { grid-template-columns: minmax(224px, 22vw) minmax(280px, 1fr) minmax(340px, 33vw); }
-    /* the level buttons carry a heading and a sentence each: side by side in a lane this wide
-       they stack into three crushed towers, so they take a row each. They are below the loop. */
-    body.compact .levels button { flex: 1 1 100%; }
     body.compact .lane-col { display: grid; gap: 7px; align-content: start; }
     /* the reading lane, in the order she reads it: what to do, then what to answer */
     body.compact .panel-col { display: flex; flex-direction: column; }
@@ -3472,7 +3467,9 @@ var GUIDE = (function () {
     state: C.solved(),
     scheme: C.PLAIN_SCHEME,
     undo: [],
-    level: 'watch',
+    /* how much of the work I do, and which way in she used last. Both are remembered between
+       visits, because a setting she has already chosen is not a question worth asking again. */
+    level: 'watch', entry: 'cube', moreWays: false,
     plan: null, idx: 0, askState: null, busy: false, auto: false, usedShowMe: false, awaitDemo: false, speak: true,
     awaitMove: false, units: [], moveAt: 0,
     fromFace: false, cheered: {}, readsRight: 0, readsAsked: 0,
@@ -3578,6 +3575,8 @@ var GUIDE = (function () {
   app.badges = loadBadges();
   app.known = loadKnown();
   app.layout = loadLayout();
+  app.level = loadLevel();
+  app.entry = loadEntry();
   app.playRate = loadRate();
   function win(id) {
     if (app.badges[id]) return false;
@@ -4650,7 +4649,9 @@ var GUIDE = (function () {
         if (b.cheer === 'Solved!') {
           if (app.level === 'watch') win('watch3');
           if (app.level === 'try') { win('watch3'); if (!app.usedShowMe) win('try3'); }
-          if (app.level === 'watch' && !app.badges.try3) app.level = 'try';
+          /* one whole solve watched is one whole solve watched: she moves up, and it is
+             remembered, so the next visit opens at the level she reached */
+          if (app.level === 'watch' && !app.badges.try3) { app.level = 'try'; saveLevel(); }
         }
       } else {
         if (b.cheer === 'White layer done!') { win('layer'); if (app.fromFace) win('real'); }
@@ -4658,7 +4659,7 @@ var GUIDE = (function () {
         if (b.cheer === 'Solved!') {
           if (app.level === 'watch') win('watch');
           if (app.level === 'try') { win('watch'); if (!app.usedShowMe) win('try'); }
-          if (app.level === 'watch' && !app.badges.try) app.level = 'try';
+          if (app.level === 'watch' && !app.badges.try) { app.level = 'try'; saveLevel(); }
         }
       }
     }
@@ -6187,38 +6188,70 @@ var GUIDE = (function () {
     }
     return C.presetState(C.PRESETS.filter(function (p) { return p.id === 'layer'; })[0] || C.PRESETS[0]);
   }
-  /* WHEN THE APP KNOWS THE CUBE, THAT IS THE DOOR THAT LEADS.
-     She made a muddle, or set one up from a puzzle, or painted her own in. Handing her a demo
-     on an example cube first is how the screen came to look like it had thrown her cube away.
-     This walks the cube that is actually on the screen, in step with her, move for move. */
-  function knownDoor() {
-    if (C.facesAllOneColour(app.state)) return '';
-    return '<div class="card" style="border-width:3px;border-color:' + RED + '">'
-      + '<h2 style="color:' + RED + '">Solve THIS cube with me</h2>'
-      + '<div class="lede">The cube on the screen is the muddle you just made, and I know exactly what it looks like. '
-      + 'We go one move at a time, together, until it is done. Your cube stays where it is.</div>'
-      + '<div class="row" style="margin-top:9px"><button class="btn primary big" data-act="coach">Solve this one with me</button></div></div>';
+  /* ===== SOLVE ENTRY START =====
+     NO DOOR. Tapping the tab used to open a hallway: a row of levels, a card offering to solve
+     the cube it could already see, a card offering to guide her, and a card of other things.
+     Four questions, none of them the cube's, before a single move was made.
+     The field test ruled it out: tapping the tab IS her saying solve it,
+     so the tab starts the solve and the first thing on the screen is step 1 and what to do.
+     What she chose last time is remembered instead of asked again, and the choices themselves
+     live on under the loop, where they can be reached without standing in front of anything. */
+  function canSolveThis() { return !C.facesAllOneColour(app.state); }
+  function loadLevel() { var v = storeGet('level'); return (v === 'try' || v === 'solo') ? v : 'watch'; }
+  function saveLevel() { storeSet('level', app.level); }
+  function loadEntry() { return storeGet('entry') === 'guide' ? 'guide' : 'cube'; }
+  function saveEntry(kind) { app.entry = kind; storeSet('entry', kind); }
+  /* HER PLACE, OR A STALE PLAN. A plan is her place only while the cube on the screen is still
+     the one the plan is expecting next. Reset it, scramble it or turn it by hand and those
+     instructions belong to a cube that is gone, so the tab re-reads the cube instead of handing
+     her a walkthrough of somebody else's muddle. The states list holds the cube BEFORE each
+     beat, so the one to match is the beat she has not done yet. */
+  function planMatchesCube() {
+    if (!app.plan || !app.plan.states) return false;
+    var want = app.plan.states[app.idx];
+    return !!want && C.keyOf(want) === C.keyOf(app.state);
   }
-  function frontDoor() {
-    var mine = whiteLayerDone(app.state);
-    /* THE FIRST DOOR. The method reads the cube as it goes, so it needs nothing typed in and
-       nothing painted. That makes it the shortest way from a messy cube to a solved one, and
-       the way she learns the moves, so it goes first. */
-    return '<div class="card" style="border-width:3px;border-color:' + RED + '">'
-      + '<h2>Just guide me</h2>'
-      + '<div class="lede">Cube in your hands, nothing to type in, nothing to paint. I call out every step, '
-      + 'you do it on yours, and you tell me what you see. It works on any mess. '
-      + 'The screen turns into my example while we do it, and your muddle comes straight back when you stop.</div>'
-      + '<div class="row" style="margin-top:9px">'
-      + '<button class="btn primary big" data-act="guide">Just guide me</button></div></div>'
-      + '<div class="card" style="border-width:3px"><h2>Or something else</h2>'
-      + '<div class="lede">Practising starts from a cube with the white layer already done, so every chant gets a turn.</div>'
-      + '<div class="row" style="margin-top:9px">'
-      + '<button class="btn big" data-act="practice">Practice the moves, white is done</button>'
-      + '<button class="btn big" data-act="fullscramble">Full scramble</button></div>'
-      + (mine ? '<div class="lede" style="margin-top:7px">Your cube already has its white layer done, so practice will use yours.</div>' : '')
-      + '</div>';
+  /* the one way into the solve. Every branch ends in a drawn screen, and none of them asks. */
+  function enterSolve() {
+    if (app.busy) { render(); return; }
+    /* she is already inside one: taking her back to the beginning would throw her place away */
+    if (app.guide) { render(); return; }
+    if (planMatchesCube() && canSolveThis()) { render(); return; }
+    app.plan = null; app.idx = 0; app.askState = null;
+    app.usedShowMe = false; app.cheered = {}; app.nudge = null; app.says = null;
+    app.diag = C.diagnose(app.state);
+    /* On my own is her hands on her own cube. There is no plan to call out, so this IS its
+       first screen: no step rail to draw, nothing to wait for. */
+    if (app.level === 'solo') { render(); return; }
+    if (app.entry === 'cube' && canSolveThis()) { startSolve(null); return; }
+    guideStart();
   }
+  /* HOW MUCH I DO. A setting, not a door. It sits under the loop, it is one row, and changing it
+     re-reads the cube she is holding right now and carries straight on at the new level. */
+  var LEVELS = [['watch', 'Watch'], ['try', 'Try'], ['solo', 'On my own']];
+  function levelRow() {
+    return '<div class="row" style="margin-top:9px"><span class="tag">How much I do</span>'
+      + LEVELS.map(function (l) {
+        var on = app.level === l[0];
+        return '<button class="btn' + (on ? ' on' : '') + '" data-lvl="' + l[0] + '" aria-pressed="'
+          + (on ? 'true' : 'false') + '">' + esc(l[1]) + '</button>';
+      }).join('') + '</div>';
+  }
+  /* MORE WAYS IN, FOLDED AWAY. The ways in she does not take every time are one tap under the
+     loop instead of three cards in front of it. Guiding her on her own cube and solving the one
+     on the screen are the same choice from either side, so only the other one is ever offered. */
+  function moreWays() {
+    var h = '<div class="row" style="margin-top:7px"><button class="btn' + (app.moreWays ? ' on' : '')
+      + '" data-act="more-ways" aria-pressed="' + (app.moreWays ? 'true' : 'false') + '">More ways</button>';
+    if (!app.moreWays) return h + '</div>';
+    return h
+      + (app.guide
+        ? '<button class="btn" data-act="coach">Solve the cube on the screen</button>'
+        : '<button class="btn" data-act="guide">Guide me on my own cube</button>')
+      + '<button class="btn" data-act="practice">Practice, white is done</button>'
+      + '<button class="btn" data-act="fullscramble">Full scramble</button></div>';
+  }
+  /* ===== SOLVE ENTRY END ===== */
 
   /* ------------------------------------------------ Just guide me
      A script, not a plan. The method is state blind, so nothing here knows or claims to know
@@ -6370,34 +6403,30 @@ var GUIDE = (function () {
       + '<button class="btn" data-act="guide-step"' + (app.busy ? ' disabled' : '') + '>Start this step again</button>'
       + '</div>'
       + '<div class="lede" style="margin-top:7px">Step ' + n.phase + ' of ' + (big() ? 8 : 3)
-      + '. Nothing here knows what your cube looks like, so only you can say when it is done.</div></div>';
+      + '. Nothing here knows what your cube looks like, so only you can say when it is done.</div>'
+      + moreWays() + '</div>';
     if (!app.busy) h += chantShelf();
     h += badgeShelf();
     return h;
   }
 
+  /* the one thing about her cube the words cannot know on their own */
+  function schemeNote() {
+    if (app.scheme.standard) return '';
+    return '<div class="say"><span class="head">One thing about your cube</span>On your cube the colour opposite white is <b>' + esc(YEL())
+      + '</b>. So everywhere I say ' + esc(YEL()) + ', I mean the colour opposite white. Same method, different colour.</div>';
+  }
   function panelSolve() {
     var h = '';
     /* when the guide is driving, it owns the panel: no plan, no levels, no cube state talk */
     if (app.guide) return panelGuide();
-    h += '<div class="card"><h2>Solve with me</h2><div class="lede">Pick how much you want me to do. Move down the list as you get stronger.</div>'
-      + '<div class="levels" style="margin-top:8px">'
-      + [['watch', 'Watch', 'I do it all. You copy me on your cube.'],
-         ['try', 'Try', 'I ask, you answer, then we do the move.'],
-         ['solo', 'On my own', 'You drive. I only cheer and nudge.']]
-        .map(function (l) {
-          return '<button class="btn' + (app.level === l[0] ? ' on' : '') + '" data-lvl="' + l[0] + '"><b>' + l[1] + '</b><br><small style="font-weight:600">' + esc(l[2]) + '</small></button>';
-        }).join('') + '</div></div>';
-
-    if (!app.scheme.standard) {
-      h += '<div class="say"><span class="head">One thing about your cube</span>On your cube the colour opposite white is <b>' + esc(YEL())
-        + '</b>. So everywhere I say ' + esc(YEL()) + ', I mean the colour opposite white. Same method, different colour.</div>';
-    }
 
     if (app.level === 'solo') {
       h += '<div class="card"><h2>Your hands, your cube</h2><div class="lede">Use the move buttons. I am watching and I will shout when you finish a step. I will not interrupt.</div>'
         + '<div class="row" style="margin-top:8px"><button class="btn" data-act="nudge">I am stuck, nudge me</button>'
-        + '<button class="btn" data-act="undo">Undo</button></div></div>';
+        + '<button class="btn" data-act="undo">Undo</button></div>'
+        + levelRow() + moreWays() + '</div>';
+      h += schemeNote();
       h += sayBox();
       if (app.nudge) h += '<div class="say"><span class="head">Next thing to do</span>' + app.nudge + '</div>';
       if (!app.busy) h += chantShelf();
@@ -6405,11 +6434,12 @@ var GUIDE = (function () {
       return h;
     }
 
+    /* THE ONLY SCREEN HERE THAT IS NOT A SOLVE. The cube on the screen is finished, so there is
+       nothing to walk her through: it says so, and the ways back in are right underneath. */
     if (!app.plan) {
-      h += knownDoor();
-      h += frontDoor();
-      h += diagCard() || '<div class="card"><h2>Ready?</h2><div class="lede">Press start and I will work out your cube.</div>'
-        + '<div class="row" style="margin-top:8px"><button class="btn primary" data-act="coach">Start</button></div></div>';
+      h += diagCard();
+      h += '<div class="card">' + levelRow() + moreWays() + '</div>';
+      h += schemeNote();
       h += sayBox();
       if (!app.busy) h += chantShelf();
       h += badgeShelf();
@@ -6434,15 +6464,20 @@ var GUIDE = (function () {
     }
     h += sidesRead();
     h += ceilingRead();
+    h += schemeNote();
     /* NO CONFIRM TAPS ANYWHERE. There is no "I did it" and no "Next move": the forward arrow
        on the player is both. She is holding the cube, so she is the one who knows when the move
-       is done, and pressing forward is her saying so. */
+       is done, and pressing forward is her saying so.
+       EVERYTHING THAT IS NOT THE LOOP LIVES IN THIS ONE CARD, UNDER IT: the two ways of going
+       over a move again, how much of the work I do, and the other ways in. None of them is ever
+       between her and the next move. */
     h += '<div class="card"><div class="row">'
       + (b && b.moves.length ? '<button class="btn" data-act="demo-again">Watch that again</button>' : '')
       + '<button class="btn" data-act="block-again">Start this block again</button>'
       + '<button class="btn" data-act="restart">Work it out again</button>'
       + '</div><div class="lede" style="margin-top:7px">Do the move on your cube, then press the forward arrow. Step '
-      + (b ? b.phase : 3) + ', move ' + Math.min(app.idx + 1, app.plan.beats.length) + ' of ' + app.plan.beats.length + '.</div></div>';
+      + (b ? b.phase : 3) + ', move ' + Math.min(app.idx + 1, app.plan.beats.length) + ' of ' + app.plan.beats.length + '.</div>'
+      + levelRow() + moreWays() + '</div>';
     if (!app.busy && app.askState === null) h += chantShelf();
     h += badgeShelf();
     return h;
@@ -6631,7 +6666,9 @@ var GUIDE = (function () {
     if (app.mode !== 'mess') { app.setup = null; }
     if (app.mode === 'paint') { if (app.paintIntent !== 'side') app.paintIntent = 'match'; idleTile('Paint your cube'); }
     else { app.sideHold = false; app.sideMsg = null; }
-    if (app.mode === 'solve' && !app.diag) app.diag = C.diagnose(app.state);
+    /* TAPPING SOLVE WITH ME IS HER SAYING SOLVE IT. It does not open a screen of choices: it
+       starts the solve, and enterSolve draws whichever one that is. */
+    if (app.mode === 'solve') { enterSolve(); return; }
     render();
   });
 
@@ -6660,8 +6697,13 @@ var GUIDE = (function () {
     if (t.getAttribute('data-col')) { app.paintColour = t.getAttribute('data-col'); render(); return; }
     if (t.getAttribute('data-scr')) { scramble(parseInt(t.getAttribute('data-scr'), 10)); return; }
     if (t.getAttribute('data-lvl')) {
-      app.level = t.getAttribute('data-lvl'); app.auto = false; app.plan = null; app.nudge = null;
-      app.diag = C.diagnose(app.state); app.cheered = {}; app.says = null; render(); return;
+      app.level = t.getAttribute('data-lvl'); saveLevel();
+      app.auto = false; app.plan = null; app.nudge = null;
+      app.diag = C.diagnose(app.state); app.cheered = {}; app.says = null;
+      /* MID SOLVE, NOT A DOOR BACK. Changing the level used to drop the plan and land her on the
+         menu again. It re-reads the cube she is holding right now and carries straight on. */
+      if (app.level !== 'solo' && canSolveThis()) { startSolve(null); return; }
+      render(); return;
     }
     if (t.hasAttribute('data-guideopt')) { guideAnswer(parseInt(t.getAttribute('data-guideopt'), 10)); return; }
     if (t.hasAttribute('data-opt')) { answerOpt(parseInt(t.getAttribute('data-opt'), 10)); return; }
@@ -6734,7 +6776,8 @@ var GUIDE = (function () {
     if (act === 'spot-no') { inferSpotFix(); return; }
     if (act === 'check') { paintCheck(); return; }
     if (act === 'showturn') { demoTurnOver(); return; }
-    if (act === 'tosolve') { app.mode = 'solve'; app.plan = null; app.diag = C.diagnose(app.state); app.says = null; render(); return; }
+    /* Now solve it with me, from the reading question: the same one way in every other tap uses */
+    if (act === 'tosolve') { app.mode = 'solve'; app.plan = null; app.guide = null; saveEntry('cube'); enterSolve(); return; }
     if (act === 'puz-setup') { puzzleSetup(); return; }
     if (act === 'setup-again') { puzzleSetup(); return; }
     if (act === 'puz-screen' || act === 'puz-solve') {
@@ -6743,7 +6786,7 @@ var GUIDE = (function () {
       app.setup = null; app.units = []; app.moveAt = 0; app.awaitMove = false;
       app.undo = []; app.cheered = {}; app.usedShowMe = false; app.guide = null;
       clearGlow(); renderCube();
-      app.mode = 'solve'; app.diag = C.diagnose(app.state);
+      app.mode = 'solve'; app.diag = C.diagnose(app.state); saveEntry('cube');
       startSolve(null); return;
     }
     if (act === 'puz-mine') {
@@ -6751,25 +6794,41 @@ var GUIDE = (function () {
       app.setup = null; app.units = []; app.moveAt = 0; app.awaitMove = false;
       app.undo = []; app.cheered = {}; app.guide = null;
       clearGlow(); renderCube();
-      app.mode = 'solve'; app.level = 'solo'; app.plan = null; app.diag = C.diagnose(app.state);
+      app.mode = 'solve'; app.level = 'solo'; saveLevel(); saveEntry('cube');
+      app.plan = null; app.diag = C.diagnose(app.state);
       app.says = null; render(); return;
     }
-    if (act === 'coach') { app.mode = 'solve'; app.usedShowMe = false; app.cheered = {}; app.guide = null; startSolve(null); return; }
-    if (act === 'guide') { guideStart(); return; }
+    if (act === 'more-ways') { app.moreWays = !app.moreWays; render(); return; }
+    if (act === 'coach') {
+      /* coming back out of the guide, her own cube comes back first: the one on the screen is
+         the example, and planning from that would solve a cube she is not holding */
+      if (app.guide) guideStop();
+      app.mode = 'solve'; app.usedShowMe = false; app.cheered = {}; app.guide = null;
+      saveEntry('cube');
+      if (!canSolveThis()) { say('That cube is finished already. Mess it up and I will walk you through it.', 'good'); render(); return; }
+      startSolve(null); return;
+    }
+    if (act === 'guide') { saveEntry('guide'); guideStart(); return; }
     if (act === 'guide-stop') { guideStop(); return; }
     if (act === 'guide-again') { guideDemo(); return; }
     if (act === 'guide-step') { guideGo(app.guide ? app.guide.id : null, true); return; }
     if (act === 'guide-back') { guideBack(); return; }
     if (act === 'practice') {
-      app.guide = null;
-      app.state = practiceState();
+      if (app.guide) guideStop();
+      app.guide = null; saveEntry('cube');
+      /* HER OWN CUBE IF SHE HAS ALREADY BUILT THE WHITE LAYER. Practice is for the chants that
+         live above that layer, and handing her a made up cube would throw away the one thing she
+         did herself. A made up one only when hers has no layer yet, or is already finished. */
+      var mine = whiteLayerDone(app.state) ? whiteToFloor(app.state) : null;
+      app.state = (mine && !C.facesAllOneColour(mine)) ? mine : practiceState();
       app.whiteDown = true; savePaint();
       app.undo = []; app.cheered = {}; app.usedShowMe = false;
       renderCube(); idleTile('White layer done, chants to practise');
       app.mode = 'solve'; startSolve(null); return;
     }
     if (act === 'fullscramble') {
-      app.guide = null;
+      if (app.guide) guideStop();
+      app.guide = null; saveEntry('cube');
       app.state = C.randomState(18 + Math.floor(Math.random() * 8));
       app.whiteDown = false; savePaint();
       app.undo = []; app.cheered = {}; app.usedShowMe = false;
@@ -6787,7 +6846,13 @@ var GUIDE = (function () {
     if (act === 'prev') { app.auto = false; goBack(); return; }
     if (act === 'play') { app.auto = true; advance(); return; }
     if (act === 'pause') { app.auto = false; render(); return; }
-    if (act === 'restart') { app.plan = null; app.diag = C.diagnose(app.state); app.says = null; render(); return; }
+    /* Work it out again re-reads the cube and starts the walk over. It does not hand her back
+       to a menu: there is no menu to hand her back to. */
+    if (act === 'restart') {
+      app.plan = null; app.diag = C.diagnose(app.state); app.says = null;
+      if (canSolveThis()) { startSolve(null); return; }
+      render(); return;
+    }
     if (act === 'showme') {
       app.usedShowMe = true; app.askState = (app.askState === 'askingAfter') ? 'doneAfter' : 'done';
       say('No problem. Watch this one and try the next.', '');

@@ -6330,7 +6330,10 @@ var GUIDE = (function () {
       + '<h2 style="color:' + RED + '">This is my example cube</h2>'
       + '<div class="lede">Yours will look different, and that is fine. Do what I do on yours, and tell me what YOU can see. '
       + 'The block inside the red ring is your working corner.</div>'
-      + '<div class="row" style="margin-top:9px"><button class="btn" data-act="guide-stop">Stop guiding</button></div></div>';
+      /* THE WAY OUT OF THE GUIDE IS DRAWN ONCE. It lives up here, where she can always see it,
+         except on the finishing screen, which has its own better placed one below. */
+      + (n.end ? '' : '<div class="row" style="margin-top:9px"><button class="btn" data-act="guide-stop">Stop guiding</button></div>')
+      + '</div>';
     h += transportBar();
     h += railHtml();
     h += sayBox();
@@ -6359,11 +6362,13 @@ var GUIDE = (function () {
         + '<div class="lede">Look at YOUR cube, not mine, and tap what you can see.</div></div>';
     }
     /* NO CONFIRM TAPS. The forward arrow on the player is her saying she has done it. These
-       are the extras: watch it again, start over, walk away. */
+       are the extras: watch it again, start over. Walking away is NOT one of them: Stop guiding
+       is already on the example card this screen opens with, and printing it here as well put
+       the same button on the screen twice in both layouts. */
     h += '<div class="card"><div class="row">'
       + (n.moves.length ? '<button class="btn" data-act="guide-again"' + (app.busy ? ' disabled' : '') + '>Watch that again</button>' : '')
       + '<button class="btn" data-act="guide-step"' + (app.busy ? ' disabled' : '') + '>Start this step again</button>'
-      + '<button class="btn" data-act="guide-stop">Stop guiding</button></div>'
+      + '</div>'
       + '<div class="lede" style="margin-top:7px">Step ' + n.phase + ' of ' + (big() ? 8 : 3)
       + '. Nothing here knows what your cube looks like, so only you can say when it is done.</div></div>';
     if (!app.busy) h += chantShelf();
@@ -6530,6 +6535,23 @@ var GUIDE = (function () {
     if (app.mode === 'play') return [['reset', 'Start from solved']];
     return [];
   }
+  /* ONE CONTROL, ONE SCREEN. The panel is built layout blind on purpose, so it cannot know that
+     its own way out has just been printed as a pill in the header: the field test caught Start
+     from solved sitting on the screen twice in Compact, once up top and once down in the mess it
+     up list. The dealer is what put the pill there, so the dealer is what takes the twin out. Any
+     panel button carrying an action a pill already offers goes, and if it was the only button in
+     its row the row goes with it, so no hint line is left pointing at a button that is not there.
+     Classic returns before any of this, so Classic keeps its own copies and loses nothing. */
+  function dropTwins(ways, panel) {
+    ways.forEach(function (o) {
+      var sel = 'button[data-act="' + o[0] + '"]', other = 'button:not([data-act="' + o[0] + '"])', twin, row;
+      while ((twin = panel.querySelector(sel))) {
+        row = twin.closest('.row');
+        if (row && panel.contains(row) && !row.querySelector(other)) row.parentNode.removeChild(row);
+        else twin.parentNode.removeChild(twin);
+      }
+    });
+  }
   function dealLanes() {
     var lane = $('lane'), slot = $('escapes'), panel = $('panel'), i, el;
     if (!lane || !slot) return;
@@ -6554,6 +6576,7 @@ var GUIDE = (function () {
         return '<button type="button" class="esc" data-act="' + o[0] + '">' + esc(o[1]) + '</button>';
       }).join('');
       slot.hidden = false;
+      dropTwins(ways, panel);
     }
     /* THE THIRD LANE ONLY OPENS WHEN THERE IS A LOOP TO TRACK. Free play, the known messes and
        the painter have no transport, no rail and no chant strip: dealing them into three lanes
@@ -6908,9 +6931,11 @@ var GUIDE = (function () {
     setTimeout(function () { applyCam(false); }, 60);
     headline();
     idleTile('Ready when you are');
-    say(big()
-      ? 'The big cube, 26 blocks. Press a move button and watch what happens. Nothing you press can break it.'
-      : 'The small cube, 8 blocks. Press a move button and watch what happens. Nothing you press can break it.', '');
+    /* THE TALKING LINE NEVER SAYS WHAT THE PANEL IS ALREADY SAYING. Swapping the cube used to
+       add "press a move button and watch what happens", which is the Free play card's own lede
+       in slightly different words, so the same sentence sat on the screen twice. It says the one
+       thing the panel cannot know: which cube she is now holding. */
+    say(big() ? 'The big cube, 26 blocks.' : 'The small cube, 8 blocks.', '');
     if (app.mode === 'solve') app.diag = C.diagnose(app.state);
     render();
   }
@@ -6982,7 +7007,10 @@ var GUIDE = (function () {
   applyCam(true);
   setTimeout(function () { applyCam(false); }, 60);
   idleTile('Ready when you are');
-  say('Press a move button and watch what happens. Nothing you press can break it.', '');
+  /* NOTHING IS SAID AT THE START. The page opens on Free play, whose card already says press a
+     move button and that nothing she presses can break it, so an opening line saying the same
+     thing in different words was that sentence twice on one screen. The talking box stays empty
+     until something actually happens, which is also what makes it worth reading. */
   render();
   window.STUDIO = app;
 })();

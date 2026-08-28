@@ -415,6 +415,9 @@
   body.compact header.app-head { padding: 5px 10px; gap: 10px; }
   body.compact header.app-head h1 { font-size: 16px; margin-top: 0; }
   body.compact header.app-head .eyebrow, body.compact header.app-head .sub { display: none; }
+  /* the colour dots are decoration, and once the way out and the two switches moved into this row
+     they were what tipped it onto a second line. Decoration is what a row sheds first. */
+  body.compact header.app-head .cube-row { display: none; }
   body.compact .studio { gap: 7px; }
   body.compact .stage-col, body.compact .panel-col, body.compact .lane-col { gap: 7px; }
   body.compact .card { padding: 7px 9px; }
@@ -443,7 +446,14 @@
   @media (min-width: 901px) {
     /* THREE LANES. The reading lane gets the flexible width, because words need width. The other
        two are sized to the widest thing in them: the cube, and a fourteen tile chant strip. */
-    body.compact .studio { grid-template-columns: minmax(224px, 22vw) minmax(0, 1fr) minmax(356px, 33vw); }
+    /* TWO LANES BY DEFAULT, THREE ONLY WHEN THERE IS A LOOP. Every lane that holds words has a
+       readable floor under it, so none of them can ever be squeezed into a one-word-per-line
+       ribbon by whatever happens to be beside it. The cube lane is a picture, not words. */
+    body.compact .studio { grid-template-columns: minmax(224px, 22vw) minmax(280px, 1fr); }
+    body.compact .studio.lanes3 { grid-template-columns: minmax(224px, 22vw) minmax(280px, 1fr) minmax(340px, 33vw); }
+    /* the level buttons carry a heading and a sentence each: side by side in a lane this wide
+       they stack into three crushed towers, so they take a row each. They are below the loop. */
+    body.compact .levels button { flex: 1 1 100%; }
     body.compact .lane-col { display: grid; gap: 7px; align-content: start; }
     /* the reading lane, in the order she reads it: what to do, then what to answer */
     body.compact .panel-col { display: flex; flex-direction: column; }
@@ -6532,7 +6542,11 @@ var GUIDE = (function () {
     /* both boxes go back to nothing first, so Classic can never inherit a lane full of cards */
     lane.innerHTML = ''; slot.innerHTML = '';
     lane.hidden = true; slot.hidden = true;
-    if (app.layout !== 'compact') return;
+    if (app.layout !== 'compact') {
+      var st0 = document.querySelector('.studio');
+      if (st0) st0.classList.remove('lanes3');
+      return;
+    }
     /* the way out first, because it is the one thing she must never have to hunt for */
     var ways = escapeParts();
     if (ways.length) {
@@ -6541,14 +6555,24 @@ var GUIDE = (function () {
       }).join('');
       slot.hidden = false;
     }
-    /* then the tracking lane: the controls, the move that is happening, the chant, how far to go */
-    if (tile) { lane.appendChild(tile); lane.hidden = false; }
+    /* THE THIRD LANE ONLY OPENS WHEN THERE IS A LOOP TO TRACK. Free play, the known messes and
+       the painter have no transport, no rail and no chant strip: dealing them into three lanes
+       gave a whole column to one move tile and squeezed their own content into what was left.
+       They get the cube on the left and their panel at the full width beside it. */
+    var found = [];
     for (i = 0; i < LANE_PARTS.length; i++) {
       el = panel.querySelector(LANE_PARTS[i]);
       if (!el) continue;
       while (el && el.parentNode !== panel) el = el.parentNode;
-      if (el) { lane.appendChild(el); lane.hidden = false; }
+      if (el) found.push(el);
     }
+    var studio = document.querySelector('.studio');
+    if (!found.length) { if (studio) studio.classList.remove('lanes3'); return; }
+    if (studio) studio.classList.add('lanes3');
+    lane.hidden = false;
+    /* the move that is happening, then the controls, the chant, and how far to go */
+    if (tile) lane.appendChild(tile);
+    found.forEach(function (x) { lane.appendChild(x); });
   }
   /* ===== LANES END ===== */
   function render() {

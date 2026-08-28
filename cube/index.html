@@ -144,9 +144,10 @@
   .cube3d.n3 .cubie .face.sticker-face i { border-radius: 6px; box-shadow: inset 0 -3px 0 rgba(0,0,0,.10); }
   .cube3d.n3 .ring { left: 75px; top: 75px; width: 50px; height: 50px; border-width: 4px; }
 
-  /* ---------- cube size switch ---------- */
-  .sizeswitch { display: flex; gap: 6px; margin-left: auto; align-items: center; }
-  .sizeswitch .tag { align-self: center; }
+  /* ---------- cube size switch ----------
+     It lives under the cube now, where the thing it changes is. Two labels, and they are the
+     names she already uses out loud: 2x2 and 3x3. Nothing about big or small to read past. */
+  .sizeswitch { display: flex; gap: 6px; align-items: center; }
   .sizeswitch button {
     font: inherit; font-weight: 800; cursor: pointer;
     font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; font-size: 15px;
@@ -154,6 +155,19 @@
     border-radius: 11px; padding: 9px 15px;
   }
   .sizeswitch button[aria-pressed="true"] { background: var(--hilite); border-style: solid; }
+  /* ---------- the top bar ----------
+     The things she reaches for before anything else, up where nothing is above them: the way in
+     for a side she has already made, and the voice. The picture one carries no caption on purpose,
+     because it is a picture of the thing it does: four white squares, going down to the floor. */
+  .topbar { display: flex; gap: 6px; align-items: center; }
+  .iconbtn {
+    font: inherit; cursor: pointer; background: var(--paper); border: 2px solid var(--ink);
+    border-radius: 12px; padding: 4px 10px; min-height: 46px; min-width: 46px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .iconbtn:hover { background: var(--wash); }
+  .iconbtn svg { display: block; }
+
   /* ---------- layout switch ----------
      The A/B control. It sits up in the header, out of the way of the tabs row, because the tabs
      row is already full at 1024 and a fourth thing in it would wrap the whole nav onto a second
@@ -380,11 +394,11 @@
   .sideread small { font-size: 10.5px; font-weight: 700; color: var(--soft); line-height: 1.15; display: block; }
 
   /* ===== COMPACT START =====
-     ONE SCREEN, THREE LANES. The A/B alternative, and the field report is why it
-     exists: on a landscape iPad she was scrolling to reach the things she uses on every beat, and
-     with a cube in your hands scrolling means putting the cube down. Round one put the loop in two
-     columns; the field test drove it and said the right hand column was still massive, with wasted space
-     beside it, and that the way out should be at the very top. It is three lanes now:
+     ONE SCREEN, THREE LANES. The A/B alternative, and the field report is why it exists: on a
+     landscape iPad she was scrolling to reach the things she uses on every beat, and with a cube
+     in your hands scrolling means putting the cube down. Round one put the loop in two columns;
+     the field test drove it and ruled that the right hand column was still massive, with wasted
+     space beside it, and that the way out should be at the very top. It is three lanes now:
        the CUBE lane   - the cube, its legend, and the move tile that says what is happening;
        the READING lane - the instruction, and the buttons she answers it with;
        the TRACKING lane - the transport, the step rail, how far she has to go, the chant strip.
@@ -410,8 +424,8 @@
   body.compact .row { gap: 6px; }
   body.compact .btn { padding: 6px 10px; }
   body.compact .foot { display: none; }
-  /* THE WAY OUT, AT THE VERY TOP. The field report: "Start again should go all the way to the top." It sits
-     in the header now, above everything, in every place that has one: the painter's Start again,
+  /* THE WAY OUT, AT THE VERY TOP. The field test's ruling: start again should go all the way to
+     the top. It sits in the header now, above everything, in every place that has one: Start again,
      the solve's Start this block and Work it out again, the guide's Stop guiding, free play's
      Start from solved. It is never scrolled to, because there is nothing above it to scroll past.
      Both of these are empty and hidden outright in Classic, so Classic never sees a box or a gap. */
@@ -450,6 +464,10 @@
     /* the two cube buttons SHARE one row rather than wrapping or not depending on whether the
        voice button is there: a lane whose height depends on that is a lane that moves */
     body.compact .stage-bar .btn { padding: 5px 9px; font-size: 12.5px; flex: 1 1 0; min-width: 0; }
+    /* the cube switch joined this bar, so the row is: the note on its own line, then the switch
+       and the peek button sharing the next one. Sized so that is what happens at 224px. */
+    body.compact .sizeswitch { gap: 5px; }
+    body.compact .sizeswitch button { padding: 7px 11px; font-size: 14px; }
     /* the pads are below the fold in this mode and the cube lane is narrow, so five across turned
        every caption into a five line stack. Three across gives the words their line back. */
     body.compact .padrow { grid-template-columns: repeat(3, 1fr); }
@@ -496,6 +514,12 @@
       <div class="sub" id="subline">The best day is the day you do not need me.</div>
     </div>
     <span class="escapes" id="escapes" hidden></span>
+    <span class="topbar" id="topbar">
+      <button class="iconbtn" id="sideBtn" type="button" data-act="side"
+        aria-label="I already made a white side. Show me my cube."
+        title="Made a whole white side on your own? Tap this and show me your cube exactly as it is."><svg viewBox="0 0 48 56" width="26" height="30" aria-hidden="true"><rect x="4" y="3" width="18" height="18" rx="4" fill="#ffffff" stroke="#1c1b1a" stroke-width="2.6"/><rect x="26" y="3" width="18" height="18" rx="4" fill="#ffffff" stroke="#1c1b1a" stroke-width="2.6"/><rect x="4" y="25" width="18" height="18" rx="4" fill="#ffffff" stroke="#1c1b1a" stroke-width="2.6"/><rect x="26" y="25" width="18" height="18" rx="4" fill="#ffffff" stroke="#1c1b1a" stroke-width="2.6"/><path d="M24 45 L24 53 M19 48.5 L24 53.5 L29 48.5" fill="none" stroke="#c41e3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="btn" id="speakBtn" hidden>Voice on</button>
+    </span>
     <span class="layoutswitch" id="layoutswitch">
       <span class="tag">Layout</span>
       <button type="button" data-layout="classic" aria-pressed="true">Big and roomy</button>
@@ -511,11 +535,6 @@
     <button data-mode="paint" aria-pressed="false">Match my cube</button>
     <button data-mode="solve" aria-pressed="false">Solve with me</button>
     <button data-mode="mess" aria-pressed="false">Known messes</button>
-    <span class="sizeswitch" id="sizeswitch">
-      <span class="tag">Which cube</span>
-      <button type="button" data-size="2" aria-pressed="true">Small cube</button>
-      <button type="button" data-size="3" aria-pressed="false">Big cube</button>
-    </span>
   </nav>
 
   <div class="studio">
@@ -530,8 +549,11 @@
         </div>
         <div class="stage-bar">
           <span class="grip-note" id="gripNote">Home grip. The red ring is your working corner.</span>
+          <span class="sizeswitch" id="sizeswitch">
+            <button type="button" data-size="2" aria-pressed="true">2x2</button>
+            <button type="button" data-size="3" aria-pressed="false">3x3</button>
+          </span>
           <button class="btn" id="peekBtn">Peek at the far side</button>
-          <button class="btn" id="speakBtn" hidden>Voice on</button>
         </div>
       </div>
       <div class="tile-live idle" id="tileLive"></div>
@@ -546,7 +568,7 @@
 
 <script>
 /* ===== CORE START =====
-   Cube Quest Studio core. Pure logic only, no DOM.
+   The small cube core. Pure logic only, no DOM.
    Model: 8 corner blocks (permutation + twist), 24 stickers derived.
    Reference colours: U=yellow  R=green  F=red  D=white  L=blue  B=orange
    (a real standard cube held white at the floor, red looking at you).
@@ -1484,7 +1506,7 @@ var CUBE = (function () {
 })();
 /* ===== CORE END ===== */
 /* ===== CORE3 START =====
-   Cube Quest Studio, the big cube. Pure logic only, no DOM.
+   The big cube core. Pure logic only, no DOM.
    Model: 8 corner blocks (permutation + twist), 12 edge blocks (permutation + flip),
    6 middle squares (permutation only, they never come apart). 54 stickers derived.
    Reference colours: U=yellow  R=green  F=red  D=white  L=blue  B=orange
@@ -3831,7 +3853,7 @@ var GUIDE = (function () {
   var SIDE_HOME = ['the side at the ceiling', 'the side on your right', 'the side looking at you',
                    'the side at the floor', 'the side on your left', 'the side facing away'];
   /* WHAT HER EYES SEE, AFTER THE TURN.
-     This was the bug the field test hit. The little picture is drawn as the named turn leaves the side,
+     This was the bug the field test hit. The little picture is drawn as the named turn leaves it,
      which is right, but its edges were labelled with the sides' HOME names: on the left side the
      right hand edge was labelled "you", because that side had been looking at her before she
      spun. By the time she is looking at the picture she has already spun, so "you" points at
@@ -4303,13 +4325,36 @@ var GUIDE = (function () {
     if (!CAN_SPEAK) return;
     try { window.speechSynthesis.cancel(); } catch (e) { /* nothing to cancel */ }
   }
-  function speakText(t) {
-    if (!CAN_SPEAK || !app.speak || !t) return;
+  function speakText(t, onDone) {
+    if (!CAN_SPEAK || !app.speak || !t) { if (onDone) onDone(); return; }
     try {
       var u = new window.SpeechSynthesisUtterance(String(t));
       u.rate = 0.85; u.pitch = 1.05; u.lang = 'en-GB';
+      if (onDone) {
+        var fired = false, land = function () { if (fired) return; fired = true; onDone(); };
+        u.onend = land; u.onerror = land;
+        /* some browsers never fire onend at all, so a beat can never be left hanging on a voice */
+        setTimeout(land, Math.min(6000, 900 + String(t).length * 80));
+      }
       window.speechSynthesis.speak(u);
-    } catch (e) { /* a browser with no voice just stays quiet */ }
+    } catch (e) { if (onDone) onDone(); }
+  }
+  /* ===== THE SEAM =====
+     A smooth go is over in about a second and a half. The sentence that names it was still being
+     read when the next thing cancelled it, so she heard half a chant name. Two halves to the fix:
+     the sentence is short now (below), and the go is not FINISHED until both the cube has stopped
+     and the sentence has landed. Whichever is later wins. Nothing advances, and nothing calls
+     speakStop, until then. */
+  var speechPending = 0, spokenWaiters = [];
+  function speakTracked(t) {
+    speechPending++;
+    speakText(t, function () { speechPending--; if (!speechPending) drainSpoken(); });
+  }
+  function whenSpoken(fn) { if (!speechPending) { fn(); return; } spokenWaiters.push(fn); }
+  function drainSpoken() {
+    var list = spokenWaiters;
+    spokenWaiters = [];
+    list.forEach(function (f) { f(); });
   }
   function plainWords(s) { return String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
   /* A mastered chant gets its move count said ONCE, on the announcement that already names it,
@@ -4344,7 +4389,18 @@ var GUIDE = (function () {
     if (r) bits.push(r);
     return bits.join('. ');
   }
-  function speakBeat(b) { speakStop(); speakText(beatSpeech(b) + smoothTail(b)); }
+  /* A SMOOTH GO IS SAID SHORT. The full teaching sentence belongs to per move mode, which a
+     mastered chant has by definition outgrown. Name, which time it is, how many moves. */
+  function smoothWords(b) {
+    var c = C.CHANTS[b.chant], n = chantGoes(b);
+    return (c ? c.name : 'Chant') + (b.of > 1 ? ', ' + C.ordinal(b.ord) + ' time' : '') + '. '
+      + (n.goes > 1 ? (n.goes + ' smooth goes, ' + n.per + ' moves each.') : ('One smooth go - ' + b.moves.length + ' moves.'));
+  }
+  function speakBeat(b) {
+    speakStop();
+    if (smoothTail(b)) { speakTracked(smoothWords(b)); return; }
+    speakText(beatSpeech(b));
+  }
   function guideSpeech(n) {
     if (!n) return '';
     var bits = [plainWords(n.say)], r = reasonOnce('g/' + n.id, n.why);
@@ -4543,7 +4599,7 @@ var GUIDE = (function () {
          from here raced the first one: two of them called forward around each other until one
          got swallowed while the other was busy, and playback stopped dead with nothing pending. */
     };
-    if (isRun(u)) { runChant(u, dur, function () { after(); flushFwd(); }); return; }
+    if (isRun(u)) { runChant(u, dur, function () { whenSpoken(function () { after(); flushFwd(); }); }); return; }
     if (C.WHOLE[u]) turnWhole(u, dur + 80, after); else turn(u, dur, after);
   }
   /* what a smooth go is called out loud: the chant, and which go it is when there is more than
@@ -5300,25 +5356,11 @@ var GUIDE = (function () {
       + badgeList().map(function (b) { return '<span class="badge' + (app.badges[b.id] ? ' won' : '') + '">' + esc(b.name) + '</span>'; }).join('')
       + '</div><div class="lede" style="margin-top:6px">Every badge is a thing you did without me.</div></div>';
   }
-  function sizeCard() {
-    return '<div class="card"><h2>Which cube are we on?</h2><div class="lede">'
-      + (big()
-        ? 'The big cube: 26 blocks, eight steps, six chants. The middle squares never move, so they tell you where everything belongs.'
-        : 'The small cube: 8 corner blocks, three steps, two chants. Start here, then move up when the 2x2 Solver badge is yours.')
-      + '</div><div class="row" style="margin-top:8px">'
-      + '<button class="btn' + (app.size === 2 ? ' primary' : '') + '" data-size="2">Small cube, 2x2</button>'
-      + '<button class="btn' + (app.size === 3 ? ' primary' : '') + '" data-size="3">Big cube, 3x3</button></div></div>';
-  }
-  function entryCard() {
-    return '<div class="card" style="border-width:3px">'
-      + '<h2>I already made a side!</h2>'
-      + '<div class="lede">Made a whole white side on your own? Brilliant. Show me your cube exactly as it is, do not fix anything first, and I will tell you how close you are.</div>'
-      + '<div class="row" style="margin-top:8px"><button class="btn primary big" data-act="side">Show me my cube</button></div></div>';
-  }
-
+  /* ONE CUBE SWITCH, ONE WAY IN. Both of these used to be cards in Free play as well as controls
+     in the chrome, which is two of everything to find and two of everything to keep in step. The
+     card copies are gone: the switch is under the cube and the way in is the picture up top. */
   function panelPlay() {
-    var h = sizeCard() + entryCard();
-    h += '<div class="card"><h2>Free play</h2><div class="lede">Press any move button and watch it happen. Nothing you press can break it.</div>'
+    var h = '<div class="card"><h2>Free play</h2><div class="lede">Press any move button and watch it happen. Nothing you press can break it.</div>'
       + '<div class="row" style="margin-top:9px"><span class="tag">Mess it up</span>'
       + [3, 5, 10, 25].map(function (n) { return '<button class="btn" data-scr="' + n + '">' + n + ' turns</button>'; }).join('')
       + '</div><div class="row" style="margin-top:8px">'
@@ -6221,7 +6263,7 @@ var GUIDE = (function () {
     idleTile(n.title || 'Just guide me');
     render();
     speakStop();
-    speakText(guideSpeech(n) + smoothTail(n));
+    if (smoothTail(n)) speakTracked(smoothWords(n)); else speakText(guideSpeech(n));
     if (n.moves.length) setTimeout(guideDemo, 260);
   }
   /* the example cube does the move ONE AT A TIME, waiting for her between each, using the very
@@ -6457,8 +6499,8 @@ var GUIDE = (function () {
     render();
   }
   /* ===== LANES START =====
-     THREE LANES, ONE PANEL. The field test drove Compact and said the right hand column was still massive.
-     It was: one tall lane doing the reading AND the tracking, with dead space beside it. So the
+     THREE LANES, ONE PANEL. The field test drove Compact and ruled the right hand column still
+     massive. It was: one tall lane doing the reading AND the tracking, with dead space beside it. So the
      panel is now dealt into two lanes after it is built: the reading lane keeps the instruction
      and the answer buttons, and the tracking lane takes the transport, the step rail, the
      countdown and the chant strip. The cube is the third.
@@ -6565,7 +6607,6 @@ var GUIDE = (function () {
   function panelClick(e) {
     var t = e.target.closest('button, .swatch, polygon.sticker');
     if (!t) return;
-    if (t.hasAttribute('data-size')) { switchSize(parseInt(t.getAttribute('data-size'), 10)); return; }
     if (t.hasAttribute('data-hold')) { answerHold(t.getAttribute('data-hold')); return; }
     if (t.hasAttribute('data-infer')) { inferAnswer(t.getAttribute('data-infer')); return; }
     var act = t.getAttribute('data-act');
@@ -6715,6 +6756,7 @@ var GUIDE = (function () {
   /* the two places a card or a way out can live in Compact. Empty and silent in Classic. */
   $('lane').addEventListener('click', panelClick);
   $('escapes').addEventListener('click', panelClick);
+  $('topbar').addEventListener('click', panelClick);
 
   /* painting taps */
   $('panel').addEventListener('click', function (e) {

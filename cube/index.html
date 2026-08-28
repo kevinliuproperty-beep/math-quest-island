@@ -227,11 +227,17 @@
   .tile-live .who { font-size: 12px; color: var(--soft); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
   .tile-live.idle .letter { color: var(--soft); font-size: 20px; }
 
-  /* ---------- chant rhythm strip ---------- */
-  .chantstrip { background: var(--wash); border: 2px solid var(--ink); border-radius: 12px; padding: 9px 11px; }
+  /* ---------- chant rhythm strip ----------
+     TWO ROWS, NOT THREE. The field ruling was that the chant cards are far too long. The strip
+     was stacking a label row, a row of move tiles and the grown up's tick, one under the other,
+     on every chant on the shelf. The label and the tick are both one short thing, so they share
+     the first row and the tiles get the second. Nothing was removed to do it. */
+  .chantstrip { background: var(--wash); border: 2px solid var(--ink); border-radius: 12px; padding: 9px 11px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
   .chantstrip .chant-name { font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; font-weight: 800; font-size: 15px; }
   .chantstrip .count { font-size: 13px; font-weight: 700; color: var(--red); }
+  .chantstrip .knowline { margin-top: 0; margin-left: auto; }
   .beats { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .chantstrip .beats { flex: 1 1 100%; margin-top: 0; }
   .beat {
     border: 1.5px solid var(--ink); border-radius: 7px; background: var(--paper);
     min-width: 30px; padding: 3px 5px; text-align: center;
@@ -256,7 +262,6 @@
   }
   .know:hover { background: var(--wash); }
   .know.on { background: #eef7f1; border-color: var(--green); color: var(--green); }
-  .knowline small { font-size: 11.5px; font-weight: 700; color: var(--soft); }
 
   /* ---------- speech / coach ---------- */
   .say {
@@ -302,11 +307,12 @@
   /* NOTHING RESIZES WHILE SHE IS FOLLOWING ALONG. A card that grows or shrinks between beats
      shoves the whole page under her thumb, which is what made it jump. These floors are the
      cheapest way to keep every box the same size whatever text lands in it. */
-  /* RE-MEASURED 2026-08-28. This floor was 84, measured when the strip held a name, a count and
-     one row of move tiles. The grown up's "she knows this one" tick then moved INSIDE the strip
-     and the real content grew to 113, so the frame was changing height under her hand every time
-     a chant started. Measured again with the tick in it: 113, floored above it. */
-  .chantstrip { min-height: 116px; }
+  /* RE-MEASURED 2026-08-28, twice. It was 84, then 116 when the tick moved inside the strip and
+     the real content grew to 113. The strip is two rows now, not three: the label and the tick
+     share the first row, the tiles have the second, and the small print beside the tick is a
+     title on it instead of copy. Measured again over every chant, ticked and unticked, idle and
+     mid drill, at both cube sizes: 83 every single time. Floored just above it. */
+  .chantstrip { min-height: 88px; }
   /* Measured, not guessed: the tallest instruction in either method is the do not panic warning
      at 117px on an iPad, so the frame is floored above it. Anything shorter simply sits in a box
      that is already the right size, and the page underneath never moves. */
@@ -494,7 +500,9 @@
     body.compact #liveSay { min-height: 164px; }
     body.compact #liveRail { min-height: 66px; }
     body.compact #liveStrip { min-height: 126px; }
-    body.compact .chantstrip { min-height: 126px; }
+    /* Measured again 2026-08-28 with the two row strip, over every chant and every state in this
+       mode: 111 at the worst, which is the longest smooth wording wrapping in this lane. */
+    body.compact .chantstrip { min-height: 116px; }
     body.compact .tile-live { min-height: 100px; }
   }
   /* portrait in Compact: one column, tighter, with the tracking lane up under the cube where her
@@ -540,6 +548,7 @@
     <button data-mode="paint" aria-pressed="false">Match my cube</button>
     <button data-mode="solve" aria-pressed="false">Solve with me</button>
     <button data-mode="mess" aria-pressed="false">Known messes</button>
+    <button data-mode="explain" aria-pressed="false">Explainer</button>
   </nav>
 
   <div class="studio">
@@ -957,7 +966,7 @@ var CUBE = (function () {
     righty: {
       id: 'righty', name: 'Righty chant', moves: RIGHTY, breath: -1,
       say: 'Whole chants only, never stop halfway.',
-      what: 'The one that does all the work in step 1 and step 2. It swaps your working corner with the block right underneath it.',
+      what: 'Steps 1 and 2. It swaps your working corner with the block underneath.',
       why: 'It only ever touches your working corner and the block underneath, so finished work is safe.'
     },
     swap: {
@@ -1851,7 +1860,7 @@ var CUBE3 = (function () {
     righty: {
       id: 'righty', name: 'Righty chant', moves: RIGHTY, breath: -1,
       say: 'Whole chants only, never stop halfway.',
-      what: 'The one you already know from the small cube. It swaps your working corner with the block right underneath it. Step 3 and step 8.',
+      what: 'Steps 3 and 8. It swaps your working corner with the block underneath.',
       why: 'It only ever touches your working corner and the block underneath, so finished work is safe.'
     },
     rightdrop: {
@@ -4292,17 +4301,29 @@ var GUIDE = (function () {
   /* ---------------------------------------------------------------- pads */
   var PAD_HAND = ['R', "R'", 'U', "U'", 'L', "L'", 'D', "D'", 'F', "F'"];
   var PAD_WHOLE = ['y', 'yp', 'x2', 'xp', 'x'];
+  var PAD_GROUPS = [['Your right hand does the turning', PAD_HAND], ['The whole cube, in both hands', PAD_WHOLE]];
+  /* THE BUTTONS UNDER THE CUBE ARE CONTROLS, NOT A DICTIONARY. Every one of them used to carry
+     its whole caption, so fifteen sentences sat under the cube on every screen she ever opened,
+     saying the same thing whether she needed it or not. The picture and the letter are what she
+     presses; the caption is a thing she looks up, so it lives in the Explainer, and it is read
+     out in full on the move tile at the moment the move actually happens. The words are still on
+     the button for a finger that rests and for a screen reader, just not printed at her. */
   function buildPads() {
     var wrap = $('pads');
     wrap.innerHTML = '';
-    [['Your right hand does the turning', PAD_HAND], ['The whole cube, in both hands', PAD_WHOLE]].forEach(function (grp) {
+    PAD_GROUPS.forEach(function (grp) {
       var g = el('div', 'padgroup'), row = el('div', 'padrow');
-      g.appendChild(el('div', 'tag', grp[0]));
+      /* the family name is a thing that is taught, not a thing that is pressed, so it is the
+         heading over this same family in the Explainer and it is not printed twice. The two
+         boxes keep them apart on the screen, which is all the grouping a thumb needs. */
+      g.setAttribute('aria-label', grp[0]);
       grp[1].forEach(function (k) {
         var b = el('button', 'pad');
         b.type = 'button';
         b.setAttribute('data-move', k);
-        b.innerHTML = movePic(k) + '<b>' + esc(tileLetter(k)) + '</b><small>' + esc(tileCaption(k)) + '</small>';
+        b.title = tileCaption(k);
+        b.setAttribute('aria-label', tileLetter(k) + '. ' + tileCaption(k));
+        b.innerHTML = movePic(k) + '<b>' + esc(tileLetter(k)) + '</b>';
         b.onclick = function () { padPress(k); };
         row.appendChild(b);
       });
@@ -5801,8 +5822,15 @@ var GUIDE = (function () {
       var cls = 'beat' + (at === i ? ' now' : (at > i ? ' done' : ''));
       return (i === breath ? '<span class="breath">breath</span>' : '') + '<span class="' + cls + '">' + esc(m) + '</span>';
     }).join('');
-    return '<div class="chantstrip' + (smooth ? ' smooth' : '') + '"><span class="chant-name">' + esc(name) + '</span> '
-      + '<span class="count">' + esc(note) + '</span><div class="beats">' + tiles + '</div>' + (extra || '') + '</div>';
+    /* the name is drawn only when there is something to say that the card around it has not said
+       already: on the shelf the heading is right above the strip, so the strip repeating it was
+       the same words twice on one card */
+    /* the label and the tick ride the first row together, the tiles take the second: the tick is
+       written before the tiles for that reason, and it is why the strip is two rows and not three */
+    return '<div class="chantstrip' + (smooth ? ' smooth' : '') + '">'
+      + (name ? '<span class="chant-name">' + esc(name) + '</span> ' : '')
+      + '<span class="count">' + esc(note) + '</span>' + (extra || '')
+      + '<div class="beats">' + tiles + '</div></div>';
   }
   /* THE ONE SMOOTH GO CARD. A chant she knows never says move 3 of 4 again. It says its name,
      and how many moves are about to go past in one go, and then it goes. */
@@ -5814,12 +5842,14 @@ var GUIDE = (function () {
   var KNOW_MID = 'Knows this chant? Do it in one go';
   /* the grown up's tick, small and quiet, wherever a chant is on the screen. It is a setting,
      not a reward, so it never cheers and it always un-ticks with the same tap. */
+  /* the hint that used to sit beside it in small print is on the button now: it is written for
+     the grown up, not for her, and it said the same thing on every chant card on the screen */
   function knowToggle(id, words) {
     var on = knowsChant(id);
+    var hint = on ? 'One smooth go. Tap again for one move at a time.' : 'A grown up taps this when she knows it by heart.';
     return '<div class="knowline"><button type="button" class="know' + (on ? ' on' : '') + '" data-know="' + esc(id) + '"'
-      + ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(words) + '</button>'
-      + '<small>' + (on ? 'One smooth go. Tap again for one move at a time.' : 'A grown up taps this when she knows it by heart.')
-      + '</small></div>';
+      + ' aria-pressed="' + (on ? 'true' : 'false') + '" title="' + esc(hint) + '"'
+      + ' aria-label="' + esc(words + '. ' + hint) + '">' + esc(words) + '</button></div>';
   }
   function chantStripInner() {
     var b = beat();
@@ -5845,28 +5875,61 @@ var GUIDE = (function () {
     var at = d ? (app.chantAt === undefined ? -1 : app.chantAt) : -1;
     /* stepping per move, chantAt counts moves; in one smooth go it counts whole goes */
     var round = d ? (smooth ? Math.max(1, at + 1) : 1 + Math.floor(Math.max(0, at) / c.moves.length)) : 1;
-    var name = c.name + (d && d.times > 1 ? ', time ' + round + ' of ' + d.times : '');
+    /* ONE FACT PER CARD. The heading names the chant, so the strip only says which time round
+       she is on, and only while a drill is running. The reason it is safe was a second paragraph
+       saying the bar fact the first one had just said, and it is reference, so it moved to the
+       Explainer with the rest of the looking up. */
+    var name = (d && d.times > 1) ? 'Time ' + round + ' of ' + d.times : '';
     var note = smooth ? smoothNote(c.moves.length) : (d ? ('move ' + (at + 1) + ' of ' + d.moves.length) : (c.moves.length + ' moves'));
     var lit = (d && !smooth) ? (at % c.moves.length) : -1;
     var h = '<div class="card"><h2>' + esc(c.name) + '</h2>'
       + '<div class="lede">' + esc(c.what) + '</div>'
-      + reasonLine(c.why)
       + '<div style="margin-top:8px">'
-      + strip(smooth ? name + '.' : name, c.moves, c.breath, lit, note, knowToggle(id, KNOW_SHELF), smooth) + '</div>'
+      + strip(name, c.moves, c.breath, lit, note, knowToggle(id, KNOW_SHELF), smooth) + '</div>'
       + '<div class="row" style="margin-top:9px">'
       + '<button class="btn primary" data-chant="' + id + '" data-times="1"' + (app.busy ? ' disabled' : '') + '>Do it once</button>';
     if (id === 'swap' || big()) {
       h += '<button class="btn" data-chant="' + id + '" data-times="2"' + (app.busy ? ' disabled' : '') + '>Do it twice</button>';
     }
     h += '<button class="btn" data-act="undochant"' + (app.busy || !app.chantUndo ? ' disabled' : '') + '>Undo chant</button></div>';
-    if (id === 'swap') h += '<div class="lede" style="margin-top:7px"><b>' + esc(C.CHANT_TWICE) + '</b></div>';
     return h + '</div>';
   }
   function chantShelf() {
-    var head = (app.drill ? transportBar() : '') + '<div class="card"><h2>Chant shelf</h2><div class="lede">Tap a chant and the cube does it slowly, one move at a time, from wherever it is right now. Say it out loud with the tiles. Undo puts everything back.</div></div>';
+    var head = (app.drill ? transportBar() : '') + '<div class="card"><h2>Chant shelf</h2><div class="lede">Tap a chant and the cube does it slowly, one move at a time, and Undo puts it all back.</div></div>';
     if (big()) return head + C3.CHANT_KEYS.map(chantCard).join('');
     return head + chantCard('righty') + chantCard('swap');
   }
+
+  /* ===== EXPLAINER START =====
+     THE PLACE THINGS ARE LOOKED UP, AND THE ONLY ONE. Everything in here is reference: it does
+     not change with her cube, it is the same on every visit, and none of it is needed to make a
+     move. That is exactly what was wrong with it living under the cube and inside the chant
+     cards, where it was printed at her whether she wanted it or not. It is drawn with the same
+     pad markup the buttons use, so it looks like the thing it explains, but nothing here is a
+     control: no button, no handler, nothing to press by mistake. */
+  function dictGroup(title, keys) {
+    return '<div class="card"><h2>' + esc(title) + '</h2><div class="padgroup" style="margin-top:8px">'
+      + '<div class="padrow">' + keys.map(function (k) {
+        return '<div class="pad">' + movePic(k) + '<b>' + esc(tileLetter(k)) + '</b>'
+          + '<small>' + esc(tileCaption(k)) + '</small></div>';
+      }).join('') + '</div></div></div>';
+  }
+  function panelExplain() {
+    var keys = big() ? C3.CHANT_KEYS : ['righty', 'swap'];
+    var h = '<div class="card"><h2>Explainer</h2>'
+      + '<div class="lede">Every button and every chant, in words. Look here when a letter does not ring a bell. Nothing in here moves your cube.</div></div>';
+    h += PAD_GROUPS.map(function (g) { return dictGroup(g[0], g[1]); }).join('');
+    /* the chants, by the promise each one makes: what it leaves alone is the thing she has to
+       trust, and it is the same promise every time, so this is where it belongs */
+    h += '<div class="card"><h2>The chants, and what each one keeps safe</h2>'
+      + keys.map(function (id) {
+        var c = C.CHANTS[id];
+        return '<div class="lede" style="margin-top:6px"><b>' + esc(c.name) + '.</b> ' + esc(c.why) + '</div>';
+      }).join('')
+      + '<div class="lede" style="margin-top:7px"><b>' + esc(C.CHANT_TWICE) + '</b></div></div>';
+    return h;
+  }
+  /* ===== EXPLAINER END ===== */
   /* THE CHANT SHELF USES THE ONE STEPPER TOO. It used to run its own loop and blitz the whole
      chant past her; now it is just another owner of playUnit, so it gets Move n of m, the
      player bar and the same discipline as everything else. */
@@ -6638,6 +6701,7 @@ var GUIDE = (function () {
     if (app.mode === 'play') h = panelPlay();
     else if (app.mode === 'paint') h = panelPaint();
     else if (app.mode === 'solve') h = panelSolve();
+    else if (app.mode === 'explain') h = panelExplain();
     else h = panelMess();
     p.innerHTML = h;
     dealLanes();

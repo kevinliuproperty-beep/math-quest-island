@@ -210,6 +210,15 @@
      part of the button, not a thing beside it, so a tap anywhere in it is a tap on the button.
      THE LOOP IS NOT IN HERE. The transport, the answer buttons and the how much I do row are all
      drawn at full weight, and no rule below can reach them. */
+  /* ---------- the quiet card ----------
+     THE SAME RULING, ONE LEVEL UP. The buttons she reaches past got lighter; so do the boxes
+     they sit in. This is the furniture of the solve and guide screens: the note about the example
+     cube, the going over it again box, the fold at the bottom. They are read once and then lived
+     beside, so they take a thinner line, less air and a smaller heading, and the things that ARE
+     the loop keep the full weight and stay the loudest thing on the screen. */
+  .card.sleek { border-width: 1.5px; border-color: var(--line); padding: 8px 11px; }
+  .card.sleek > h2 { font-size: 14.5px; margin-bottom: 2px; }
+  .card.sleek .lede { font-size: 13px; }
   .row.slim { gap: 6px; }
   .row.slim .btn {
     font-size: 13px; padding: 3px 12px; border-width: 1.5px; border-radius: 999px;
@@ -332,6 +341,19 @@
     flex: 1 1 130px; line-height: 1.2; min-height: 36px;
   }
   .player .rate { min-width: 56px; font-weight: 800; font-size: 15px; }
+  /* THE TRANSPORT, SLIMMED, WITH THE PLAY BUTTON LEFT ALONE. It moved under the cube where the
+     lane is narrow, and four buttons at full weight took the whole width. The two steppers and
+     the speed lose a line of chrome and a few pixels of box, and get the same invisible pad the
+     quiet rows use, so a finger still lands on 44. Play is the one she reaches for without
+     looking, so it keeps every pixel and its solid fill: it should be the biggest thing here. */
+  .player button:not(.go) {
+    min-width: 46px; min-height: 40px; border-width: 1.5px; border-radius: 999px; position: relative;
+  }
+  .player button:not(.go)::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 50%;
+    transform: translateY(-50%); height: 44px;
+  }
+  .player .rate { min-width: 46px; font-size: 14px; }
   /* NOTHING RESIZES WHILE SHE IS FOLLOWING ALONG. A card that grows or shrinks between beats
      shoves the whole page under her thumb, which is what made it jump. These floors are the
      cheapest way to keep every box the same size whatever text lands in it. */
@@ -450,6 +472,10 @@
   /* the colour dots are decoration, and once the way out and the two switches moved into this row
      they were what tipped it onto a second line. Decoration is what a row sheds first. */
   body.compact header.app-head .cube-row { display: none; }
+  /* the cube switch joined this row and tipped it onto a second line, which costs the loop the
+     height Compact exists to save. The word LAYOUT is the next thing that is decoration: the two
+     buttons say what they are, and one of them is always lit. */
+  body.compact .layoutswitch .tag { display: none; }
   body.compact .studio { gap: 7px; }
   body.compact .stage-col, body.compact .panel-col, body.compact .lane-col { gap: 7px; }
   body.compact .card { padding: 7px 9px; }
@@ -508,8 +534,8 @@
     /* the two cube buttons SHARE one row rather than wrapping or not depending on whether the
        voice button is there: a lane whose height depends on that is a lane that moves */
     body.compact .stage-bar .btn { padding: 5px 9px; font-size: 12.5px; flex: 1 1 0; min-width: 0; }
-    /* the cube switch joined this bar, so the row is: the note on its own line, then the switch
-       and the peek button sharing the next one. Sized so that is what happens at 224px. */
+    /* the cube switch went up to the top bar next to the voice, so this bar is the note and the
+       peek button, and the switch is sized for a header row instead of a 224px lane */
     body.compact .sizeswitch { gap: 5px; }
     body.compact .sizeswitch button { padding: 7px 11px; font-size: 14px; }
     /* the cube lane is narrow, so five across squeezed every box down to a sliver of a target.
@@ -541,17 +567,17 @@
     /* THE FOLD THE SOLVE SCREEN PUTS ITS SPARE FURNITURE IN. Closed it is one wide button, so the
        lane it sits at the bottom of costs 60px for everything the loop does not need. Open, it is
        a plain stack of the very same cards, at the very same width they had before. */
-    body.compact .spare { padding: 7px 9px; border-style: dashed; }
-    body.compact .spare-top { width: 100%; font-size: 13.5px; }
+    body.compact .spare { padding: 6px 8px; border-style: dashed; }
+    body.compact .spare-top { width: 100%; font-size: 13px; min-height: 44px; border-width: 1.5px; }
     body.compact .spare-body { display: grid; gap: 7px; margin-top: 7px; }
     /* a display rule beats the browser's own hidden rule, so the closed fold has to say so */
     body.compact .spare-body[hidden] { display: none; }
-    /* the rail reads down the narrow cube lane in more rows than it did in the wide one, so it
-       takes the smaller type that every other tracking strip in this mode already uses */
-    body.compact .stage-col .rail div { font-size: 9.5px; padding: 2px 4px; }
-    /* the rail moved under the cube, where the lane is a third of the width, so it wraps to more
-       rows and carries a taller floor there. Measured over a walked loop at all three sizes. */
-    body.compact .stage-col #liveRail { min-height: 96px; }
+    /* the transport reads down the narrow cube lane in two rows, and it carries a floor there so
+       the lane cannot change height when the words under the buttons do */
+    body.compact .stage-col .player { min-height: 112px; }
+    /* the rail moved back into the tracking lane, which is narrower than the reading lane it was
+       measured in, so it carries a taller floor there. Measured over a walked loop, both sizes. */
+    body.compact .lane-col #liveRail { min-height: 96px; }
   }
   /* portrait in Compact: one column, tighter, with the tracking lane up under the cube where her
      thumb already is rather than at the bottom of everything */
@@ -580,6 +606,10 @@
         aria-label="I already made a white side. Show me my cube."
         title="Made a whole white side on your own? Tap this and show me your cube exactly as it is."><svg viewBox="0 0 48 56" width="26" height="30" aria-hidden="true"><rect x="4" y="3" width="18" height="18" rx="4" fill="#ffffff" stroke="#1c1b1a" stroke-width="2.6"/><rect x="26" y="3" width="18" height="18" rx="4" fill="#ffffff" stroke="#1c1b1a" stroke-width="2.6"/><rect x="4" y="25" width="18" height="18" rx="4" fill="#ffffff" stroke="#1c1b1a" stroke-width="2.6"/><rect x="26" y="25" width="18" height="18" rx="4" fill="#ffffff" stroke="#1c1b1a" stroke-width="2.6"/><path d="M24 45 L24 53 M19 48.5 L24 53.5 L29 48.5" fill="none" stroke="#c41e3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="btn" id="speakBtn" hidden>Voice on</button>
+      <span class="sizeswitch" id="sizeswitch">
+        <button type="button" data-size="2" aria-pressed="true">2x2</button>
+        <button type="button" data-size="3" aria-pressed="false">3x3</button>
+      </span>
     </span>
     <span class="layoutswitch" id="layoutswitch">
       <span class="tag">Layout</span>
@@ -611,10 +641,6 @@
         </div>
         <div class="stage-bar">
           <span class="grip-note" id="gripNote">Home grip. The red ring is your working corner.</span>
-          <span class="sizeswitch" id="sizeswitch">
-            <button type="button" data-size="2" aria-pressed="true">2x2</button>
-            <button type="button" data-size="3" aria-pressed="false">3x3</button>
-          </span>
           <button class="btn" id="peekBtn">Peek at the far side</button>
         </div>
       </div>
@@ -4339,6 +4365,27 @@ var GUIDE = (function () {
       + '<div class="letter">' + esc(tileLetter(kind)) + '</div>'
       + '<div class="cap">' + esc(tileCaption(kind)) + '</div></div>';
   }
+  /* THE TILE SAYS WHERE SHE IS, AND IT MUST NEVER SAY THE LAST PLACE SHE WAS.
+     In Compact the tile is the headline of its column, and the field report caught a guide
+     session headed "Paint your cube". The painter was the only screen that set it on the way in,
+     and every other screen inherited whatever was left over; worse, EVERY way out of enterSolve
+     is an early return, so a solve that was already running never reached anything that could
+     have corrected it. One map, one call, on every mode change, before the mode is dispatched. */
+  var MODE_TILE = {
+    play: 'Ready when you are',
+    paint: 'Paint your cube',
+    solve: 'Solve with me',
+    mess: 'Known messes',
+    explain: 'Explainer'
+  };
+  function modeTile() {
+    if (app.mode === 'solve' && app.guide) {
+      var n = guideNode();
+      idleTile((n && n.title) || 'Just guide me');
+      return;
+    }
+    idleTile(MODE_TILE[app.mode] || 'Ready when you are');
+  }
   function idleTile(msg) {
     var t = $('tileLive');
     t.className = 'tile-live idle';
@@ -6473,13 +6520,13 @@ var GUIDE = (function () {
   function panelGuide() {
     var n = guideNode(), sc = guideScript(), h = '';
     if (!n) return '';
-    h += '<div class="card" style="border-width:3px;border-color:' + RED + '">'
+    h += '<div class="card sleek" style="border-color:' + RED + '">'
       + '<h2 style="color:' + RED + '">This is my example cube</h2>'
       + '<div class="lede">Yours will look different, and that is fine. Do what I do on yours, and tell me what YOU can see. '
       + 'The block inside the red ring is your working corner.</div>'
       /* THE WAY OUT OF THE GUIDE IS DRAWN ONCE. It lives up here, where she can always see it,
          except on the finishing screen, which has its own better placed one below. */
-      + (n.end ? '' : '<div class="row" style="margin-top:9px"><button class="btn" data-act="guide-stop">Stop guiding</button></div>')
+      + (n.end ? '' : '<div class="row slim" style="margin-top:9px"><button class="btn" data-act="guide-stop">Stop guiding</button></div>')
       + '</div>';
     h += transportBar();
     h += railHtml();
@@ -6512,7 +6559,7 @@ var GUIDE = (function () {
        are the extras: watch it again, start over. Walking away is NOT one of them: Stop guiding
        is already on the example card this screen opens with, and printing it here as well put
        the same button on the screen twice in both layouts. */
-    h += '<div class="card"><div class="row">'
+    h += '<div class="card sleek"><div class="row slim">'
       + (n.moves.length ? '<button class="btn" data-act="guide-again"' + (app.busy ? ' disabled' : '') + '>Watch that again</button>' : '')
       + '<button class="btn" data-act="guide-step"' + (app.busy ? ' disabled' : '') + '>Start this step again</button>'
       + '</div>'
@@ -6585,7 +6632,7 @@ var GUIDE = (function () {
        EVERYTHING THAT IS NOT THE LOOP LIVES IN THIS ONE CARD, UNDER IT: the two ways of going
        over a move again, how much of the work I do, and the other ways in. None of them is ever
        between her and the next move. */
-    h += '<div class="card"><div class="row slim">'
+    h += '<div class="card sleek"><div class="row slim">'
       + (b && b.moves.length ? '<button class="btn" data-act="demo-again">Watch that again</button>' : '')
       + '<button class="btn" data-act="block-again">Start this block again</button>'
       + '<button class="btn" data-act="restart">Work it out again</button>'
@@ -6675,7 +6722,17 @@ var GUIDE = (function () {
      hand when a chant starts, which means that when no chant is running it is a floor's worth of
      nothing. In the middle of the lane that reads as a hole; at the bottom of the lane it is just
      where the lane ends. Same floor, same no-jerk law, no hole. */
-  var LANE_PARTS = ['#livePlayer', '#liveCount', '#liveStrip'];
+  /* THE DOING CONTROLS LIVE WITH THE THING BEING DONE. The field ruling: the transport and its
+     step readout belong under the cube, not off in the tracking column, because the cube is what
+     she is looking at while she presses them. What is left in the tracking lane is the reading of
+     how far she has to go, which is a different job. */
+  var LANE_PARTS = ['#liveRail', '#liveCount', '#liveStrip'];
+  /* WHAT THE CUBE LANE TAKES, AND ONLY THAT. Round three put the step rail here because the pad
+     trim had emptied the lane and it needed something. The transport is that something now, and
+     it is the better tenant: it is a control, and controls belong with the thing they drive. The
+     rail is a reading of how far there is to go, which is the tracking lane's whole job, so it
+     goes back over there under the tile, and the three lanes come level again. */
+  var STAGE_PARTS = ['#livePlayer'];
   /* the way out of wherever she is, small and always at the very top of the screen */
   function escapeParts() {
     if (app.mode === 'paint') return [['start-again', 'Start again']];
@@ -6727,7 +6784,7 @@ var GUIDE = (function () {
     });
     if (!picks.length) return;
     var open = !!app.spare;
-    var box = el('div', 'card spare');
+    var box = el('div', 'card sleek spare');
     box.innerHTML = '<button type="button" class="btn spare-top" data-act="spare" aria-expanded="'
       + (open ? 'true' : 'false') + '">' + (open ? 'Hide the extra bits' : 'Show the extra bits') + '</button>';
     var body = el('div', 'spare-body');
@@ -6745,10 +6802,12 @@ var GUIDE = (function () {
        hand: emptying the lane on top of it would destroy it for the rest of the sitting. */
     var stageCol = document.querySelector('.stage-col'), tile = $('tileLive');
     if (tile && tile.parentNode === lane) stageCol.insertBefore(tile, $('pads'));
-    /* the step rail is a copy the panel just rebuilt, so last render's one is thrown away here
-       rather than carried back: leaving it would print the journey twice */
-    var stale = stageCol.querySelector('#liveRail');
-    if (stale) stale.parentNode.removeChild(stale);
+    /* the transport and the step rail are copies the panel just rebuilt, so last render's ones
+       are thrown away here rather than carried back: leaving them would print each thing twice */
+    STAGE_PARTS.forEach(function (sel) {
+      var stale = stageCol.querySelector(sel);
+      if (stale) stale.parentNode.removeChild(stale);
+    });
     /* both boxes go back to nothing first, so Classic can never inherit a lane full of cards */
     lane.innerHTML = ''; slot.innerHTML = '';
     lane.hidden = true; slot.hidden = true;
@@ -6766,10 +6825,20 @@ var GUIDE = (function () {
       slot.hidden = false;
       dropTwins(ways, panel);
     }
-    /* THE THIRD LANE ONLY OPENS WHEN THERE IS A LOOP TO TRACK. Free play, the known messes and
-       the painter have no transport, no rail and no chant strip: dealing them into three lanes
-       gave a whole column to one move tile and squeezed their own content into what was left.
-       They get the cube on the left and their panel at the full width beside it. */
+    /* THE CUBE LANE IS DEALT FIRST, AND IT IS DEALT ON EVERY SCREEN THAT HAS THESE PARTS. The
+       guide has a transport and a rail but no countdown and no chant strip, so it is a two lane
+       screen; doing this before the third lane is decided is what lets it be one and still get
+       its controls under its cube. Each part goes in above the pads, in list order. */
+    var anchor = (tile && tile.parentNode === stageCol) ? tile : $('pads');
+    STAGE_PARTS.forEach(function (sel) {
+      var part = panel.querySelector(sel);
+      if (part) stageCol.insertBefore(part, anchor);
+    });
+    foldSpare(panel);
+    /* THE THIRD LANE ONLY OPENS WHEN THERE IS SOMETHING TO TRACK. Free play, the known messes,
+       the painter and the guide have no countdown and no chant strip: dealing them into three
+       lanes gave a whole column to one move tile and squeezed their own content into what was
+       left. They get the cube on the left and their panel at the full width beside it. */
     var found = [];
     for (i = 0; i < LANE_PARTS.length; i++) {
       el2 = panel.querySelector(LANE_PARTS[i]);
@@ -6784,13 +6853,6 @@ var GUIDE = (function () {
     /* the move that is happening, then the controls, the chant, and how far to go */
     if (tile) lane.appendChild(tile);
     found.forEach(function (x) { lane.appendChild(x); });
-    /* WHERE AM I, NEXT TO WHAT SHE IS LOOKING AT. The rail is a picture of the journey and the
-       cube is the thing on the journey, so the rail reads better under the cube than buried in
-       the column of words. It also takes the reading lane's biggest non reading block out of it,
-       and gives the cube lane, which the pad trim just emptied, something to hold. */
-    var rail = panel.querySelector('#liveRail');
-    if (rail) stageCol.insertBefore(rail, $('pads'));
-    foldSpare(panel);
   }
   /* ===== LANES END ===== */
   function render() {
@@ -6825,8 +6887,9 @@ var GUIDE = (function () {
     app.says = null; app.auto = false;
     app.confirmReset = false; app.playing = false; app.playMsg = null;
     if (app.mode !== 'mess') { app.setup = null; }
-    if (app.mode === 'paint') { if (app.paintIntent !== 'side') app.paintIntent = 'match'; idleTile('Paint your cube'); }
+    if (app.mode === 'paint') { if (app.paintIntent !== 'side') app.paintIntent = 'match'; }
     else { app.sideHold = false; app.sideMsg = null; }
+    modeTile();
     /* TAPPING SOLVE WITH ME IS HER SAYING SOLVE IT. It does not open a screen of choices: it
        starts the solve, and enterSolve draws whichever one that is. */
     if (app.mode === 'solve') { enterSolve(); return; }
@@ -7033,6 +7096,11 @@ var GUIDE = (function () {
   $('lane').addEventListener('click', panelClick);
   $('escapes').addEventListener('click', panelClick);
   $('topbar').addEventListener('click', panelClick);
+  /* AND THE CUBE COLUMN, NOW THAT THE TRANSPORT LIVES IN IT. Moving a control out of the panel
+     moves it out of earshot of the panel's handler, and a play button that does nothing is worse
+     than a play button in the wrong place. The pads carry their own handlers and the stickers are
+     picked up by the painter's listener, so nothing in here is claimed twice. */
+  document.querySelector('.stage-col').addEventListener('click', panelClick);
 
   /* painting taps */
   $('panel').addEventListener('click', function (e) {

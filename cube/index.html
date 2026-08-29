@@ -477,7 +477,10 @@
     /* the cube lane came out the SHORTEST of the three once the tile moved across, and there was
        headroom under the fold, so the cube took it back: measured to balance the lanes, and a
        bigger cube is the right way to spend spare height on a nine year old's screen. */
-    body.compact .stage { height: clamp(210px, 38vh, 320px); }
+    /* RE-MEASURED WHEN THE RAIL MOVED IN. The cube lane was the shortest of the three, so the
+       cube took the spare height; now it shares the lane with the step rail and it hands some
+       back. Still the biggest single thing on the screen, and still the thing she looks at. */
+    body.compact .stage { height: clamp(200px, 33vh, 300px); }
     body.compact .stage-bar { margin-top: 5px; gap: 5px; }
     body.compact .grip-note { font-size: 11px; line-height: 1.25; flex: 1 1 100%; }
     /* the two cube buttons SHARE one row rather than wrapping or not depending on whether the
@@ -513,6 +516,20 @@
        mode: 111 at the worst, which is the longest smooth wording wrapping in this lane. */
     body.compact .chantstrip { min-height: 116px; }
     body.compact .tile-live { min-height: 100px; }
+    /* THE FOLD THE SOLVE SCREEN PUTS ITS SPARE FURNITURE IN. Closed it is one wide button, so the
+       lane it sits at the bottom of costs 60px for everything the loop does not need. Open, it is
+       a plain stack of the very same cards, at the very same width they had before. */
+    body.compact .spare { padding: 7px 9px; border-style: dashed; }
+    body.compact .spare-top { width: 100%; font-size: 13.5px; }
+    body.compact .spare-body { display: grid; gap: 7px; margin-top: 7px; }
+    /* a display rule beats the browser's own hidden rule, so the closed fold has to say so */
+    body.compact .spare-body[hidden] { display: none; }
+    /* the rail reads down the narrow cube lane in more rows than it did in the wide one, so it
+       takes the smaller type that every other tracking strip in this mode already uses */
+    body.compact .stage-col .rail div { font-size: 9.5px; padding: 2px 4px; }
+    /* the rail moved under the cube, where the lane is a third of the width, so it wraps to more
+       rows and carries a taller floor there. Measured over a walked loop at all three sizes. */
+    body.compact .stage-col #liveRail { min-height: 96px; }
   }
   /* portrait in Compact: one column, tighter, with the tracking lane up under the cube where her
      thumb already is rather than at the bottom of everything */
@@ -6663,8 +6680,43 @@ var GUIDE = (function () {
       }
     });
   }
+  /* ---- WHAT THE LOOP DOES NOT NEED IN FRONT OF IT ----
+     The field ruling on the solve screen: the middle column had become the dumping ground. It
+     was measured, and it was: on a big cube with no question up, the reading lane ran 2,330px
+     against 769 and 446 beside it, and 1,634 of that was the chant shelf sitting under the
+     instruction. The chants, the badges and the two settings rows are all things she goes and
+     gets; none of them is ever the next thing to do. So they go into one closed fold at the
+     bottom of the lane, one tap from open, and the instruction and the answer buttons have the
+     lane to themselves. Solve screens only: in Free play the chant shelf IS the screen. */
+  function foldSpare(panel) {
+    if (app.mode !== 'solve') return;
+    var picks = [], i, c, h2, r;
+    for (i = 0; i < panel.children.length; i++) {
+      c = panel.children[i];
+      h2 = c.querySelector('h2');
+      if (c.querySelector('button[data-chant]')) picks.push(c);
+      else if (h2 && (h2.textContent === 'Chant shelf' || h2.textContent === 'Badges')) picks.push(c);
+    }
+    /* the other ways in go with them. How much I do does NOT: it is the one setting she reaches
+       for in the middle of a solve, and it is one short row, so it stays where the loop is. */
+    ['button[data-act="more-ways"]'].forEach(function (sel) {
+      var b = panel.querySelector(sel);
+      r = b && b.closest('.row');
+      if (r && panel.contains(r) && picks.indexOf(r) < 0) picks.push(r);
+    });
+    if (!picks.length) return;
+    var open = !!app.spare;
+    var box = el('div', 'card spare');
+    box.innerHTML = '<button type="button" class="btn spare-top" data-act="spare" aria-expanded="'
+      + (open ? 'true' : 'false') + '">' + (open ? 'Hide the extra bits' : 'Show the extra bits') + '</button>';
+    var body = el('div', 'spare-body');
+    body.hidden = !open;
+    picks.forEach(function (p) { body.appendChild(p); });
+    box.appendChild(body);
+    panel.appendChild(box);
+  }
   function dealLanes() {
-    var lane = $('lane'), slot = $('escapes'), panel = $('panel'), i, el;
+    var lane = $('lane'), slot = $('escapes'), panel = $('panel'), i, el2;
     if (!lane || !slot) return;
     /* THE MOVE TILE IS FURNITURE, NOT A CARD. The panel rebuilds its own cards every render, so
        emptying the lane simply throws away copies. The tile is written in the markup once and
@@ -6672,6 +6724,10 @@ var GUIDE = (function () {
        hand: emptying the lane on top of it would destroy it for the rest of the sitting. */
     var stageCol = document.querySelector('.stage-col'), tile = $('tileLive');
     if (tile && tile.parentNode === lane) stageCol.insertBefore(tile, $('pads'));
+    /* the step rail is a copy the panel just rebuilt, so last render's one is thrown away here
+       rather than carried back: leaving it would print the journey twice */
+    var stale = stageCol.querySelector('#liveRail');
+    if (stale) stale.parentNode.removeChild(stale);
     /* both boxes go back to nothing first, so Classic can never inherit a lane full of cards */
     lane.innerHTML = ''; slot.innerHTML = '';
     lane.hidden = true; slot.hidden = true;
@@ -6695,10 +6751,10 @@ var GUIDE = (function () {
        They get the cube on the left and their panel at the full width beside it. */
     var found = [];
     for (i = 0; i < LANE_PARTS.length; i++) {
-      el = panel.querySelector(LANE_PARTS[i]);
-      if (!el) continue;
-      while (el && el.parentNode !== panel) el = el.parentNode;
-      if (el) found.push(el);
+      el2 = panel.querySelector(LANE_PARTS[i]);
+      if (!el2) continue;
+      while (el2 && el2.parentNode !== panel) el2 = el2.parentNode;
+      if (el2) found.push(el2);
     }
     var studio = document.querySelector('.studio');
     if (!found.length) { if (studio) studio.classList.remove('lanes3'); return; }
@@ -6707,6 +6763,13 @@ var GUIDE = (function () {
     /* the move that is happening, then the controls, the chant, and how far to go */
     if (tile) lane.appendChild(tile);
     found.forEach(function (x) { lane.appendChild(x); });
+    /* WHERE AM I, NEXT TO WHAT SHE IS LOOKING AT. The rail is a picture of the journey and the
+       cube is the thing on the journey, so the rail reads better under the cube than buried in
+       the column of words. It also takes the reading lane's biggest non reading block out of it,
+       and gives the cube lane, which the pad trim just emptied, something to hold. */
+    var rail = panel.querySelector('#liveRail');
+    if (rail) stageCol.insertBefore(rail, $('pads'));
+    foldSpare(panel);
   }
   /* ===== LANES END ===== */
   function render() {
@@ -6876,6 +6939,9 @@ var GUIDE = (function () {
       app.says = null; render(); return;
     }
     if (act === 'more-ways') { app.moreWays = !app.moreWays; render(); return; }
+    /* the one screen fold: it only exists in Compact, and it remembers whether she opened it, so
+       pressing the forward arrow cannot shut it under her hand */
+    if (act === 'spare') { app.spare = !app.spare; render(); return; }
     if (act === 'coach') {
       /* coming back out of the guide, her own cube comes back first: the one on the screen is
          the example, and planning from that would solve a cube she is not holding */

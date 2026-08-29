@@ -214,6 +214,14 @@
   .pad svg { width: 100%; height: auto; max-width: 46px; display: block; }
   .pad b { font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; font-size: 13px; font-weight: 800; line-height: 1; }
   .pad small { font-size: 9.3px; font-weight: 600; color: var(--soft); line-height: 1.15; text-align: center; }
+  /* THE PLAY SURFACE PADS ARE LETTER ONLY, IN BOTH LAYOUTS. The little arrow pictures are how a
+     move is looked up, and looking up is a place now: the Explainer. Under the cube she is not
+     reading, she is pressing, so the button is the letter and nothing else and the whole block
+     is much shorter for it. Only these rules are scoped to #pads, so the Explainer dictionary
+     above keeps its pictures and its captions exactly as they were. Nothing here touches the
+     46px floor every button already sits on, so a finger has the same target it always had. */
+  #pads .pad { justify-content: center; padding: 6px 4px; }
+  #pads .padrow.letters .pad b { font-size: 17px; }
 
   /* ---------- live move tile ---------- */
   .tile-live {
@@ -479,8 +487,9 @@
        and the peek button sharing the next one. Sized so that is what happens at 224px. */
     body.compact .sizeswitch { gap: 5px; }
     body.compact .sizeswitch button { padding: 7px 11px; font-size: 14px; }
-    /* the pads are below the fold in this mode and the cube lane is narrow, so five across turned
-       every caption into a five line stack. Three across gives the words their line back. */
+    /* the cube lane is narrow, so five across squeezed every box down to a sliver of a target.
+       Three across keeps a whole finger on every button here and in the dictionary, where the
+       captions still need a line each to read. */
     body.compact .padrow { grid-template-columns: repeat(3, 1fr); }
     body.compact .padgroup { padding: 7px 8px; }
     body.compact .rail { flex-wrap: wrap; gap: 4px; }
@@ -4303,16 +4312,19 @@ var GUIDE = (function () {
   var PAD_WHOLE = ['y', 'yp', 'x2', 'xp', 'x'];
   var PAD_GROUPS = [['Your right hand does the turning', PAD_HAND], ['The whole cube, in both hands', PAD_WHOLE]];
   /* THE BUTTONS UNDER THE CUBE ARE CONTROLS, NOT A DICTIONARY. Every one of them used to carry
-     its whole caption, so fifteen sentences sat under the cube on every screen she ever opened,
-     saying the same thing whether she needed it or not. The picture and the letter are what she
-     presses; the caption is a thing she looks up, so it lives in the Explainer, and it is read
-     out in full on the move tile at the moment the move actually happens. The words are still on
-     the button for a finger that rests and for a screen reader, just not printed at her. */
+     its whole caption, and then its little arrow picture, so a dictionary sat under the cube on
+     every screen she ever opened whether she needed it or not. The field ruling: the pictures
+     that show which way a side goes are a thing you look up, so they live in the Explainer, and
+     the one on the move tile, which is the move actually happening in front of her. What she
+     presses is the letter, small and quick to hit. The words are still on the button for a
+     finger that rests and for a screen reader, just not printed at her. */
   function buildPads() {
     var wrap = $('pads');
     wrap.innerHTML = '';
     PAD_GROUPS.forEach(function (grp) {
-      var g = el('div', 'padgroup'), row = el('div', 'padrow');
+      /* the hand turns are single letters; the whole cube ones say a short word instead, and a
+         word needs a smaller type size to sit on one line in the same little box */
+      var g = el('div', 'padgroup'), row = el('div', 'padrow ' + (C.WHOLE[grp[1][0]] ? 'words' : 'letters'));
       /* the family name is a thing that is taught, not a thing that is pressed, so it is the
          heading over this same family in the Explainer and it is not printed twice. The two
          boxes keep them apart on the screen, which is all the grouping a thumb needs. */
@@ -4323,7 +4335,7 @@ var GUIDE = (function () {
         b.setAttribute('data-move', k);
         b.title = tileCaption(k);
         b.setAttribute('aria-label', tileLetter(k) + '. ' + tileCaption(k));
-        b.innerHTML = movePic(k) + '<b>' + esc(tileLetter(k)) + '</b>';
+        b.innerHTML = '<b>' + esc(tileLetter(k)) + '</b>';
         b.onclick = function () { padPress(k); };
         row.appendChild(b);
       });
@@ -5904,9 +5916,10 @@ var GUIDE = (function () {
      THE PLACE THINGS ARE LOOKED UP, AND THE ONLY ONE. Everything in here is reference: it does
      not change with her cube, it is the same on every visit, and none of it is needed to make a
      move. That is exactly what was wrong with it living under the cube and inside the chant
-     cards, where it was printed at her whether she wanted it or not. It is drawn with the same
-     pad markup the buttons use, so it looks like the thing it explains, but nothing here is a
-     control: no button, no handler, nothing to press by mistake. */
+     cards, where it was printed at her whether she wanted it or not. It is drawn in the same
+     little boxes the buttons use, and it is the ONE place the arrow pictures are kept, so it
+     looks like the thing it explains. Nothing here is a control: no button, no handler, nothing
+     to press by mistake. */
   function dictGroup(title, keys) {
     return '<div class="card"><h2>' + esc(title) + '</h2><div class="padgroup" style="margin-top:8px">'
       + '<div class="padrow">' + keys.map(function (k) {

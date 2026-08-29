@@ -199,6 +199,26 @@
   .btn[disabled] { opacity: .38; cursor: default; }
   .btn.on { background: var(--hilite); }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  /* ---------- the quiet rows ----------
+     THE SECOND KIND OF BUTTON. The field ruling on the free play screen: the mess it up row was
+     too generous, and it was, because every button on the page was drawn at the same weight as
+     the ones the loop is made of. These are the OTHER kind: the ones she reaches past on her way
+     to the cube. They get smaller type, a thinner line and a pill shape, so the eye reads them
+     as quiet and the row shrinks to one line that wraps kindly.
+     SLEEK TO THE EYE, LEGAL TO THE FINGER. The box is drawn 34px tall and the invisible pad
+     underneath it reaches the full 44, so nothing here is harder to hit than it was. That pad is
+     part of the button, not a thing beside it, so a tap anywhere in it is a tap on the button.
+     THE LOOP IS NOT IN HERE. The transport, the answer buttons and the how much I do row are all
+     drawn at full weight, and no rule below can reach them. */
+  .row.slim { gap: 6px; }
+  .row.slim .btn {
+    font-size: 13px; padding: 3px 12px; border-width: 1.5px; border-radius: 999px;
+    min-height: 34px; position: relative;
+  }
+  .row.slim .btn::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 50%;
+    transform: translateY(-50%); height: 44px;
+  }
 
   /* ---------- move pads ---------- */
   .pads { display: grid; gap: 10px; }
@@ -438,6 +458,8 @@
   body.compact .stage-bar { margin-top: 5px; gap: 7px; }
   body.compact .row { gap: 6px; }
   body.compact .btn { padding: 6px 10px; }
+  /* the quiet rows keep their own padding here, which the line above would otherwise take back */
+  body.compact .row.slim .btn { padding: 3px 11px; }
   body.compact .foot { display: none; }
   /* THE WAY OUT, AT THE VERY TOP. The field test's ruling: start again should go all the way to
      the top. It sits in the header now, above everything, in every place that has one: Start again,
@@ -5422,9 +5444,8 @@ var GUIDE = (function () {
      card copies are gone: the switch is under the cube and the way in is the picture up top. */
   function panelPlay() {
     var h = '<div class="card"><h2>Free play</h2><div class="lede">Press any move button and watch it happen. Nothing you press can break it.</div>'
-      + '<div class="row" style="margin-top:9px"><span class="tag">Mess it up</span>'
+      + '<div class="row slim" style="margin-top:9px"><span class="tag">Mess it up</span>'
       + [3, 5, 10, 25].map(function (n) { return '<button class="btn" data-scr="' + n + '">' + n + ' turns</button>'; }).join('')
-      + '</div><div class="row" style="margin-top:8px">'
       + '<button class="btn" data-act="undo">Undo</button>'
       + '<button class="btn" data-act="reset">Start from solved</button>'
       + '<button class="btn" data-act="cubesays">Play Cube Says</button></div></div>';
@@ -6334,7 +6355,7 @@ var GUIDE = (function () {
      loop instead of three cards in front of it. Guiding her on her own cube and solving the one
      on the screen are the same choice from either side, so only the other one is ever offered. */
   function moreWays() {
-    var h = '<div class="row" style="margin-top:7px"><button class="btn' + (app.moreWays ? ' on' : '')
+    var h = '<div class="row slim" style="margin-top:7px"><button class="btn' + (app.moreWays ? ' on' : '')
       + '" data-act="more-ways" aria-pressed="' + (app.moreWays ? 'true' : 'false') + '">More ways</button>';
     if (!app.moreWays) return h + '</div>';
     return h
@@ -6516,7 +6537,7 @@ var GUIDE = (function () {
 
     if (app.level === 'solo') {
       h += '<div class="card"><h2>Your hands, your cube</h2><div class="lede">Use the move buttons. I am watching and I will shout when you finish a step. I will not interrupt.</div>'
-        + '<div class="row" style="margin-top:8px"><button class="btn" data-act="nudge">I am stuck, nudge me</button>'
+        + '<div class="row slim" style="margin-top:8px"><button class="btn" data-act="nudge">I am stuck, nudge me</button>'
         + '<button class="btn" data-act="undo">Undo</button></div>'
         + levelRow() + moreWays() + '</div>';
       h += schemeNote();
@@ -6552,7 +6573,7 @@ var GUIDE = (function () {
         h += '<div class="card askbox"><div class="askq">' + esc(q.q) + '</div>';
         if (q.opts) h += '<div class="asks">' + q.opts.map(function (o, i) { return '<button class="btn" data-opt="' + i + '">' + esc(o) + '</button>'; }).join('') + '</div>';
         else h += '<div class="lede">Tap it on the cube picture, up there on the left.</div>';
-        h += '<div class="row"><button class="btn" data-act="showme">Show me</button></div></div>';
+        h += '<div class="row slim"><button class="btn" data-act="showme">Show me</button></div></div>';
       }
     }
     h += sidesRead();
@@ -6564,7 +6585,7 @@ var GUIDE = (function () {
        EVERYTHING THAT IS NOT THE LOOP LIVES IN THIS ONE CARD, UNDER IT: the two ways of going
        over a move again, how much of the work I do, and the other ways in. None of them is ever
        between her and the next move. */
-    h += '<div class="card"><div class="row">'
+    h += '<div class="card"><div class="row slim">'
       + (b && b.moves.length ? '<button class="btn" data-act="demo-again">Watch that again</button>' : '')
       + '<button class="btn" data-act="block-again">Start this block again</button>'
       + '<button class="btn" data-act="restart">Work it out again</button>'

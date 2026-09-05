@@ -178,9 +178,13 @@
     /* the key is a name whose MIDDLE letter is not the vertex */
     const correct = pick(['∠' + v + p + r, '∠' + v + r + p, '∠' + p + r + v, '∠' + r + p + v]);
     const cands = ['∠' + p + v + r, '∠' + r + v + p];
+    /* Wave-3 wound 4 (W3 Angles+Shapes Refutation §3): the shorthand option asserted
+       a marking the stem never made, so a strict child was right to call it wrong.
+       The stem now MAKES that marking, which is also the ∠a notation the syllabus names. */
     const out = finishText('Two straight arms meet at point ' + v + '. One arm runs from ' + v + ' to ' + p +
-      ' and the other arm runs from ' + v + ' to ' + r +
-      '. Three of the names below are correct names for that angle. Which one is WRONG?',
+      ' and the other arm runs from ' + v + ' to ' + r + '. The angle at ' + v + ' is marked ∠' +
+      v.toLowerCase() + ' on the diagram.' +
+      ' Three of the names below are correct names for that angle. Which one is WRONG?',
       correct, cands.concat(['the angle marked ∠' + v.toLowerCase() + ' at the point ' + v]),
       'The vertex is ' + v + ', so a correct name must have ' + v +
       ' in the middle: ∠' + p + v + r + ' and ∠' + r + v + p + ' both do, and ∠' + v.toLowerCase() +
@@ -210,24 +214,30 @@
       '. Then compare: ' + big + DEG + ' − ' + c + DEG + ' = ' + e + DEG + '.');
   }
 
-  /* Two steps: subtract to find the missing part, THEN name it. Numeric key, so
-     the naming half rides in the stem and the explain. */
+  /* Wave-3 wound 3 (W3 Angles+Shapes Refutation, section 4): this used to compute
+     big - a, the SAME single subtraction as pool-2 gHowMuchLarger, with the promised
+     second step living only in the explain. It now asks a question that first
+     subtraction cannot answer: find the missing part, THEN compare it against the
+     given part. Key = (big - a) - a, arithmetic no pool-2 generator produces. */
   function gMissingPart() {
     const t = pick(TRIPLES);
     const p = t[0], v = t[1], r = t[2];
     const s = pick(['W', 'H', 'G']);
-    const big = ri(80, 170), a = ri(20, big - 25);
-    const e = big - a;
-    if (e < 15) return gMissingPart();
-    const cs = clean(e, [big + a, big, a, 180 - big, e + 15]);
+    const big = ri(80, 170);
+    const hi = Math.floor((big - 12) / 2);
+    if (hi < 20) return gMissingPart();
+    const a = ri(20, hi);
+    const part = big - a, e = part - a;
+    if (e < 12 || part < 20) return gMissingPart();
+    const cs = clean(e, [part, big, a, e + 15, Math.abs(e - 20)]);
     if (cs.length < 3) return gMissingPart();
-    return finishNum('The arm ' + v + s + ' is drawn inside ∠' + p + v + r + ', splitting it into ∠' +
-      p + v + s + ' and ∠' + s + v + r + ' with no gap between them. ∠' + p + v + r +
-      ' is measured as ' + big + DEG + ' and ∠' + p + v + s + ' is measured as ' + a +
-      DEG + '. What is the size of ∠' + s + v + r + '?', '', e, cs, DEG,
-      'The two parts make up the whole angle, so the second part is what is left: ' + big + DEG +
-      ' − ' + a + DEG + ' = ' + e + DEG + '. Its name has the vertex ' + v + ' in the middle: ∠' +
-      s + v + r + '.');
+    return finishNum('The arm ' + v + s + ' is drawn inside \u2220' + p + v + r + ', splitting it into \u2220' +
+      p + v + s + ' and \u2220' + s + v + r + ' with no gap between them. \u2220' + p + v + r +
+      ' is measured as ' + big + DEG + ' and \u2220' + p + v + s + ' is measured as ' + a +
+      DEG + '. How many degrees larger is \u2220' + s + v + r + ' than \u2220' + p + v + s + '?', '', e, cs, DEG,
+      'First find the missing part: the two parts make up the whole angle, so \u2220' + s + v + r +
+      ' = ' + big + DEG + ' \u2212 ' + a + DEG + ' = ' + part + DEG + '. Then compare it with \u2220' +
+      p + v + s + ': ' + part + DEG + ' \u2212 ' + a + DEG + ' = ' + e + DEG + '.');
   }
 
   MQI.registerTopic({

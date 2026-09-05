@@ -854,7 +854,44 @@ function autoplayHook(){
     const gd=p.get('grade'); if(gd && GRADES.includes(gd)){ DB.grade=gd; saveData(); }
     if(p.get('mode')==='patchwerk'){ DB.gameMode='patchwerk'; saveData(); }
     renderStart();
-    if(shot==='map'){ setTimeout(renderMap,150); }
+    if(shot==='map'){ setTimeout(()=>{
+      renderMap();
+      /* scroll=<px> scrolls the map's own scroll container, which is capped at
+         #app{max-height:1000px}. Without it a headless --screenshot can only ever
+         capture the first eight island cards, so the nodes a wave ADDS (they append
+         at the bottom) are invisible to the integration gate. Inert in production. */
+      const sc=parseInt(p.get('scroll'),10);
+      if(sc>0){ setTimeout(()=>{ const el=document.getElementById('mapScreen'); if(el) el.scrollTop=sc; },200); }
+    },150); }
+    /* shot=feed&topic=ID&n=<k> draws k CONSECUTIVE items from ONE session feed
+       (the same FEED object a child plays) and lists them with their skill, so the
+       integration gate can prove the round-robin interleave on the glass rather than
+       only in tools/feed-sim.mjs. Read-only: it never answers or scores. Inert in
+       production, like every other shot mode. */
+    if(shot==='feed'){
+      const t=p.get('topic'); const n=Math.min(parseInt(p.get('n'),10)||5,10);
+      if(t && TOPICS[t]){ TOPIC=t; setTimeout(()=>{
+        newGame();
+        const rows=[];
+        for(let k=0;k<n;k++){
+          nextQuestion();
+          rows.push('<div class="qbox" style="margin:8px 0;text-align:left">'+
+            '<div style="opacity:.75;font-size:13px">Q'+(k+1)+' &nbsp;|&nbsp; skill: <b>'+
+            (Q&&Q.skill?Q.skill:'?')+'</b> &nbsp;|&nbsp; pool '+((S&&S.level)||1)+'</div>'+
+            '<div>'+(Q?Q.q:'')+'</div></div>');
+        }
+        /* write AFTER the normal per-question render has settled, otherwise
+           nextQuestion's own paint overwrites the list. */
+        setTimeout(()=>{
+          const host=document.getElementById('qtext');
+          if(host) host.innerHTML='<div style="font-size:15px">'+rows.join('')+'</div>';
+          for(const id of ['qextra','answers','feedback','typedWrap','timerWrap']){
+            const el=document.getElementById(id); if(el) el.innerHTML='';
+          }
+        },450);
+      },150); }
+      return;
+    }
     if(shot==='q'){
       const t=p.get('topic');
       /* find=<substring> redraws until a question whose rendered stem contains that

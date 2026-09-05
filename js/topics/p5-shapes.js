@@ -93,15 +93,44 @@
       ' − ' + a + DEG + ' − ' + b + DEG + ' = ' + e + DEG + '.');
   }
 
-  /* 2.1 equilateral. */
+  /* 2.1 equilateral. Wave-3 wound 6 (W3 Angles+Shapes Refutation, section 4): this
+     returned the constant 60 on 500/500 draws with a fixed distractor list, so after
+     one exposure it was answerable without reading the stem. It now picks between
+     three asks, one of which ('part') has a key that moves with the given number. */
   function gEquilateral() {
+    const A = '\u2220', D = '\u2212';
     const t = pick(TRIS);
     const which = ri(0, 2);
+    const mode = pick(['one', 'sum', 'part']);
+    if (mode === 'sum') {
+      const other = (which + 1) % 3;
+      const cs = clean(120, [60, 180, 90, 100, 150]);
+      if (cs.length < 3) return gEquilateral();
+      return finishNum('Triangle ' + t.join('') + ' is an equilateral triangle. What is ' + A + t[which] +
+        ' + ' + A + t[other] + '?', '', 120, cs, DEG,
+        'Every angle of an equilateral triangle is 180' + DEG + ' \u00f7 3 = 60' + DEG + ', so two of them are 60' +
+        DEG + ' + 60' + DEG + ' = 120' + DEG + '.');
+    }
+    if (mode === 'part') {
+      const S = pick(['W', 'H', 'G']);
+      if (t.includes(S)) return gEquilateral();
+      const a = ri(12, 45), e = 60 - a;
+      if (e < 12 || Math.abs(e - a) <= 3) return gEquilateral();
+      const other = (which + 1) % 3;
+      const cs = clean(e, [60, a, 60 + a, 180 - a, e + 15]);
+      if (cs.length < 3) return gEquilateral();
+      return finishNum('Triangle ' + t.join('') + ' is an equilateral triangle. The arm ' + t[which] + S +
+        ' is drawn inside ' + A + t[which] + ', splitting it into ' + A + t[other] + t[which] + S +
+        ' and the rest, with no gap. ' + A + t[other] + t[which] + S + ' is measured as ' + a + DEG +
+        '. What is the size of the other part of ' + A + t[which] + '?', '', e, cs, DEG,
+        'Every angle of an equilateral triangle is 180' + DEG + ' \u00f7 3 = 60' + DEG + '. The two parts make up ' +
+        A + t[which] + ', so the other part is 60' + DEG + ' ' + D + ' ' + a + DEG + ' = ' + e + DEG + '.');
+    }
     const cs = clean(60, [90, 45, 120, 30, 100, 80]);
-    return finishNum('Triangle ' + t.join('') + ' is an equilateral triangle. What is the size of ∠' +
+    return finishNum('Triangle ' + t.join('') + ' is an equilateral triangle. What is the size of ' + A +
       t[which] + '?', '', 60, cs, DEG,
       'All three sides of an equilateral triangle are equal, so all three angles are equal too. They add up to 180' +
-      DEG + ', so each one is 180' + DEG + ' ÷ 3 = 60' + DEG + '.');
+      DEG + ', so each one is 180' + DEG + ' \u00f7 3 = 60' + DEG + '.');
   }
 
   /* 3.1 parallelogram, opposite angles. */
@@ -257,25 +286,84 @@
       A + C + D + ' = 180' + DEG + ' − ' + base + DEG + ' = ' + e + DEG + '.');
   }
 
-  /* 3.1 + straight line. Step 1: opposite angles of the parallelogram. Step 2:
-     the straight line along the extended side. */
+  /* 3.1 + straight line. Wave-3 wound 2 (W3 Angles+Shapes Refutation, section 4):
+     this computed 180 − a from one given, the SAME single subtraction as pool-2
+     gParallelogramAdj, because on a parallelogram a straight line through a corner
+     always collapses back to a or 180 − a. The comparison ask breaks the collapse:
+     the child must find BOTH angles at C and then subtract them, key 180 − 2a. */
   function gParallelogramOnLine() {
-    const q = pick(QUADS), A = q[0], B = q[1], C = q[2], D = q[3];
+    const A = '\u2220', D = '\u2212';
+    const q = pick(QUADS), A_ = q[0], B = q[1], C = q[2], D_ = q[3];
     const E = pick(['T', 'U', 'V']);
     if (q.includes(E)) return gParallelogramOnLine();
-    const a = pick([ri(35, 85), ri(95, 140)]);
-    const e = 180 - a;
-    /* distractor 1 = stopped at ∠BCD; distractor 2 = the 360 slip */
-    const cs = clean(e, [a, 360 - a, 90, a + 25]);
+    const a = ri(35, 80);
+    const other = 180 - a, e = other - a;
+    if (e < 15) return gParallelogramOnLine();
+    /* distractor 1 = stopped at the straight-line angle; 2 = stopped at the parallelogram angle */
+    const cs = clean(e, [other, a, 180 - 2 * a + 20, 360 - 2 * a, 90 - a]);
     if (cs.length < 3) return gParallelogramOnLine();
     return finishNum(q.join('') + ' is a parallelogram, with the four corners in the order ' + q.join(', ') +
-      ' round the shape. ∠' + A + ' = ' + a + DEG + '. The side ' + D + C + ' is extended to the point ' +
-      E + ', so ' + D + ', ' + C + ' and ' + E + ' lie on one straight line. What is the size of ∠' +
-      B + C + E + '?', '', e, cs, DEG,
-      'First the parallelogram: ∠' + B + C + D + ' is opposite ∠' + A + ', and opposite angles are equal, so ∠' +
-      B + C + D + ' = ' + a + DEG + '. Then the straight line: ∠' + B + C + D + ' and ∠' + B + C + E +
-      ' sit side by side on the line ' + D + C + E + ', so ∠' + B + C + E + ' = 180' + DEG + ' − ' +
-      a + DEG + ' = ' + e + DEG + '.');
+      ' round the shape. ' + A + A_ + ' = ' + a + DEG + '. The side ' + D_ + C + ' is extended to the point ' +
+      E + ', so ' + D_ + ', ' + C + ' and ' + E + ' lie on one straight line. How many degrees larger is ' +
+      A + B + C + E + ' than ' + A + B + C + D_ + '?', '', e, cs, DEG,
+      'First the parallelogram: ' + A + B + C + D_ + ' is opposite ' + A + A_ + ', and opposite angles are equal, so ' +
+      A + B + C + D_ + ' = ' + a + DEG + '. Then the straight line: ' + A + B + C + E + ' = 180' + DEG + ' ' + D + ' ' +
+      a + DEG + ' = ' + other + DEG + '. Now compare the two: ' + other + DEG + ' ' + D + ' ' + a + DEG + ' = ' + e + DEG + '.');
+  }
+
+  /* Wave-3 wound 6 (W3 Angles+Shapes Refutation, section 4): p5shapes.quad measured
+     5 stem shapes over only 2 arithmetic rules, four generators all reducing to
+     180 − a from one given. This one is a discrimination item with no 180 − a step
+     at all: which of four corner-angle sets can belong to a rhombus. */
+  function gWhichRhombus() {
+    const say = set => set.join(DEG + ', ') + DEG;
+    const a = ri(35, 80);
+    const good = [a, 180 - a, a, 180 - a];
+    const bads = [];
+    const push = set => {
+      const k = say(set);
+      if (k !== say(good) && !bads.some(b => say(b) === k)) bads.push(set);
+    };
+    /* 1: opposite angles swapped so next-door pairs no longer make 180 */
+    push([a, a, 180 - a, 180 - a]);
+    /* 2: opposite equal but the pair sums to something other than 180 */
+    const b = ri(35, 80);
+    if (b + (180 - a) !== 180) push([b, 180 - a, b, 180 - a]);
+    /* 3: all four equal but not right angles */
+    const c = pick([ri(40, 85), ri(95, 130)]);
+    push([c, c, c, c]);
+    /* 4: four angles that do not even total 360 */
+    push([a, 180 - a, a, 180 - a + ri(10, 30)]);
+    if (bads.length < 3) return gWhichRhombus();
+    const out = finishText('The four corner angles of a shape are listed in order round the shape. Which set COULD be the four angles of a rhombus?',
+      say(good), shuffle(bads).slice(0, 3).map(say),
+      'A rhombus is a parallelogram with four equal sides, so the angles at opposite corners are equal AND two corners next to each other add up to 180' +
+      DEG + '. ' + say(good) + ' does both: ' + a + DEG + ' faces ' + a + DEG + ', ' + (180 - a) + DEG + ' faces ' +
+      (180 - a) + DEG + ', and ' + a + DEG + ' + ' + (180 - a) + DEG + ' = 180' + DEG + '.');
+    return out || gWhichRhombus();
+  }
+
+  /* Wave-3 wound 6, second half: a trapezium item whose key is NOT 180 − a. Two
+     angles are given, one at each end of a different slant side, and the ask is the
+     DIFFERENCE between the two unknown corners, so the child works both co-interior
+     pairs and then subtracts. Key = |a − b|. */
+  function gTrapeziumDiff() {
+    const A = '\u2220', D = '\u2212';
+    const q = pick(QUADS), A_ = q[0], B = q[1], C = q[2], D_ = q[3];
+    const a = ri(40, 85), b = ri(95, 140);
+    const angD = 180 - a, angC = 180 - b;
+    const e = Math.abs(angD - angC);
+    if (e < 15 || angC < 20 || angD < 20) return gTrapeziumDiff();
+    const cs = clean(e, [angD, angC, a + b, 180 - e, e + 20]);
+    if (cs.length < 3) return gTrapeziumDiff();
+    return finishNum(q.join('') + ' is a trapezium in which the side ' + A_ + B + ' is parallel to the side ' +
+      D_ + C + '. The side ' + A_ + D_ + ' and the side ' + B + C + ' each join the two parallel sides. ' +
+      A + A_ + ' = ' + a + DEG + ' and ' + A + B + ' = ' + b + DEG +
+      '. How many degrees larger is ' + A + D_ + ' than ' + A + C + '?', '', e, cs, DEG,
+      A + A_ + ' and ' + A + D_ + ' are at the ends of ' + A_ + D_ + ', which crosses the parallel pair, so ' +
+      A + D_ + ' = 180' + DEG + ' ' + D + ' ' + a + DEG + ' = ' + angD + DEG + '. The same for ' + B + C + ': ' +
+      A + C + ' = 180' + DEG + ' ' + D + ' ' + b + DEG + ' = ' + angC + DEG + '. The difference is ' + angD + DEG +
+      ' ' + D + ' ' + angC + DEG + ' = ' + e + DEG + '.');
   }
 
   /* The "which one CANNOT be" item. Three sets are genuine triangles (three
@@ -315,7 +403,7 @@
 
   MQI.registerTopic({
     id: 'p5shapes', level: 'P5', strand: 'Measurement and Geometry',
-    moeSubTopic: "Triangle: properties of isosceles triangle, equilateral triangle, right-angled triangle; angle sum of a triangle; finding unknown angles without additional construction of lines. Parallelogram, Rhombus and Trapezium: properties of parallelogram, rhombus, trapezium; finding unknown angles without additional construction of lines",
+    moeSubTopic: "Angles: angles on a straight line. Triangle: properties of isosceles triangle, equilateral triangle, right-angled triangle; angle sum of a triangle; finding unknown angles without additional construction of lines. Parallelogram, Rhombus and Trapezium: properties of parallelogram, rhombus, trapezium; finding unknown angles without additional construction of lines",
     label: 'Triangle Temple', short: 'Shapes', e: '🔺',
     skills: {
       tri: { label: 'Angles in a triangle', tip: 'The three angles of any triangle add up to 180°, never 360°. Equilateral: all three are 60°. Isosceles: the two angles facing the equal sides are equal. Right-angled: the other two add up to 90°.' },
@@ -327,7 +415,8 @@
       2: [[gIsoscelesBase, 'tri'], [gIsoscelesApex, 'tri'], [gRightTriangle, 'tri'],
           [gParallelogramAdj, 'quad'], [gTrapezium, 'quad'], [gRhombus, 'quad']],
       3: [[gExteriorAngle, 'unknown'], [gIsoscelesOnLine, 'unknown'],
-          [gParallelogramOnLine, 'unknown'], [gImpossibleTriangle, 'tri']]
+          [gParallelogramOnLine, 'unknown'], [gImpossibleTriangle, 'tri'],
+          [gWhichRhombus, 'quad'], [gTrapeziumDiff, 'quad']]
     }
   });
 })();

@@ -74,8 +74,21 @@
   }
 
   /* Twelfths: 3 distinct parts, each at least 2/12, so every printed fraction is a
-     P4 fraction and every sector still clears 60 degrees. */
-  const TWELFTHS = [[2, 3, 7], [2, 4, 6], [3, 4, 5]];
+     P4 fraction and every sector still clears 60 degrees.
+     Wave-3 pie wound 1 (W3 Pie+Cosmetics Refutation): [2,4,6] is 1/6 + 1/3 + 1/2, every
+     part a UNIT fraction, so "1/2 of the whole is 30" collapsed the pool-3 fraction
+     items to one mental step in 378-380 of 500 draws. That set is gone, and every
+     remaining set carries exactly one non-unit part (5/12 or 7/12) which askIndex()
+     picks most of the time. */
+  const TWELFTHS = [[2, 3, 7], [3, 4, 5]];
+
+  /* Index of the non-unit twelfth (5/12 or 7/12) in a shuffled weight list, chosen
+     3 draws in 4 so the fraction items are genuinely two-step. */
+  function askIndex(w) {
+    const hard = w.findIndex(x => x === 5 || x === 7);
+    if (hard < 0 || Math.random() < 0.25) return ri(0, w.length - 1);
+    return hard;
+  }
 
   const CX = 112, CY = 112, R = 92, LR = 57;
   const px = a => CX + R * Math.cos(a), py = a => CY + R * Math.sin(a);
@@ -295,12 +308,95 @@
       'There are ' + (p.total + small) + ' ' + p.thing + ' altogether on the chart.'
     ];
     const wrong = F[ri(0, F.length - 1)];
-    const trues = shuffle([...new Set(T.filter(s => s !== wrong))]);
-    if (trues.length < 3) return gPieDiff();
+    /* Wave-3 pie wound 2 (W3 Pie+Cosmetics Refutation): filtering on exact string left
+       the false claim's own TRUE twin in the options in 113 of 500 draws ("... together
+       show 14 pupils." beside "... show 22 pupils."), so a child could narrow four
+       options to two without reading the chart. Filter on the DIGIT-MASKED form. */
+    const mask = str => String(str).replace(/\d+/g, '#');
+    const wrongMask = mask(wrong);
+    const trues = shuffle([...new Set(T.filter(s => mask(s) !== wrongMask))]);
+    if (trues.length < 3) return gPieWrongStatement();
     return finishText('One of these statements about the pie chart is WRONG. Which one is it?',
       p.html, wrong, trues,
       'Check each statement against the numbers printed on the chart (' +
       cats.map((c, i) => c + ' ' + vals[i]).join(', ') + '). Only one does not match: "' +
+      wrong + '"');
+  }
+
+  /* Wave-3 pie wound 3 (W3 Pie+Cosmetics Refutation): gPieWrongStatement had exactly
+     one masked stem shape, so the statement skill leaned on a single sentence a child
+     recognises instantly. This is its mirror: THREE false claims and one true one, so
+     the child must still check all four but the reading task is inverted. */
+  function gPieTrueStatement() {
+    const p = countPie(pick([3, 4]), true);
+    const cats = p.cats, vals = p.vals;
+    const big = Math.max.apply(null, vals), small = Math.min.apply(null, vals);
+    const bigC = cats[vals.indexOf(big)], smallC = cats[vals.indexOf(small)];
+    const ord = shuffle(cats.map((_, i) => i));
+    const a = ord[0], b = ord[1];
+    if (vals[a] === vals[b]) return gPieTrueStatement();
+    const hi = vals[a] > vals[b] ? a : b, lo = vals[a] > vals[b] ? b : a;
+    const T = [
+      bigC + ' shows the most ' + p.thing + '.',
+      smallC + ' shows the fewest ' + p.thing + '.',
+      cats[hi] + ' shows more ' + p.thing + ' than ' + cats[lo] + '.',
+      cats[a] + ' and ' + cats[b] + ' together show ' + (vals[a] + vals[b]) + ' ' + p.thing + '.',
+      'There are ' + p.total + ' ' + p.thing + ' altogether on the chart.'
+    ];
+    const F = [
+      smallC + ' shows the most ' + p.thing + '.',
+      bigC + ' shows the fewest ' + p.thing + '.',
+      cats[lo] + ' shows more ' + p.thing + ' than ' + cats[hi] + '.',
+      cats[a] + ' and ' + cats[b] + ' together show ' + (vals[a] + vals[b] + big) + ' ' + p.thing + '.',
+      'There are ' + (p.total + small) + ' ' + p.thing + ' altogether on the chart.'
+    ];
+    const right = T[ri(0, T.length - 1)];
+    const mask = str => String(str).replace(/\d+/g, '#');
+    const rightMask = mask(right);
+    const falses = shuffle([...new Set(F.filter(s => mask(s) !== rightMask))]);
+    if (falses.length < 3) return gPieTrueStatement();
+    return finishText('Three of these statements about the pie chart are WRONG. Which one is TRUE?',
+      p.html, right, falses,
+      'Check each statement against the numbers printed on the chart (' +
+      cats.map((c, i) => c + ' ' + vals[i]).join(', ') + '). Only one matches: "' +
+      right + '"');
+  }
+
+  /* Wave-3 pie wound 3, third shape: every statement is a "how many more" claim about
+     one PAIR of sectors, so the child does a subtraction on each option instead of a
+     max/min scan. Exactly one claim is false and it is always the key. */
+  function gPieCompareStatement() {
+    const p = countPie(4, true);
+    const cats = p.cats, vals = p.vals;
+    const ord = shuffle(cats.map((_, i) => i));
+    const pairs = [[ord[0], ord[1]], [ord[1], ord[2]], [ord[2], ord[3]], [ord[3], ord[0]]];
+    const say = (i, j, n) => cats[i] + ' shows ' + n + ' more ' + p.thing + ' than ' + cats[j] + '.';
+    const opts = [];
+    for (const [i, j] of pairs) {
+      const hi = vals[i] >= vals[j] ? i : j, lo = vals[i] >= vals[j] ? j : i;
+      const d = vals[hi] - vals[lo];
+      if (d < 1) return gPieCompareStatement();
+      opts.push({ i: hi, j: lo, d });
+    }
+    const k = ri(0, 3);
+    const seen = new Set();
+    let wrong = null;
+    const trues = [];
+    for (let x = 0; x < 4; x++) {
+      const o = opts[x];
+      const off = pick([1, 2, 3]) * (Math.random() < 0.5 ? 1 : -1);
+      const n = x === k ? o.d + off : o.d;
+      if (n < 1) return gPieCompareStatement();
+      const line = say(o.i, o.j, n);
+      if (seen.has(line)) return gPieCompareStatement();
+      seen.add(line);
+      if (x === k) wrong = line; else trues.push(line);
+    }
+    if (!wrong || trues.length !== 3) return gPieCompareStatement();
+    return finishText('Each statement below compares two sectors of the pie chart. Which one is WRONG?',
+      p.html, wrong, trues,
+      'Work out each difference from the numbers printed on the chart (' +
+      cats.map((c, i) => c + ' ' + vals[i]).join(', ') + '). Every statement checks out except "' +
       wrong + '"');
   }
 
@@ -330,7 +426,7 @@
   function gPieFracOfSet() {                               /* shape 2: fraction of a set */
     const p = fracPie();
     const m = ri(2, 8), total = 12 * m;
-    const i = ri(0, 2);
+    const i = askIndex(p.w);
     const ans = p.w[i] * m;
     return finishNum('The pie chart shows how all ' + total + ' ' + p.thing +
       ' are shared out. How many ' + p.thing + ' are shown for ' + p.cats[i] + '?',
@@ -343,7 +439,7 @@
   function gPieFindWhole() {                               /* shape 3: find the whole */
     const p = fracPie();
     const m = ri(2, 8), total = 12 * m;
-    const i = ri(0, 2);
+    const i = askIndex(p.w);
     const part = p.w[i] * m;
     return finishNum('On the pie chart, the ' + p.cats[i] + ' sector stands for ' + part + ' ' +
       p.thing + '. How many ' + p.thing + ' are there altogether?',
@@ -367,6 +463,7 @@
       1: [[gPieRead, 'read'], [gPieMost, 'compare'], [gPieWhichCat, 'read']],
       2: [[gPieTotal, 'read'], [gPieLeast, 'compare'], [gPieCountAbove, 'compare'], [gPieCombine, 'interpret']],
       3: [[gPieDiff, 'interpret'], [gPieTwoThenCompare, 'interpret'], [gPieWrongStatement, 'interpret'],
+          [gPieTrueStatement, 'interpret'], [gPieCompareStatement, 'interpret'],
           [gPieMissing, 'whole'], [gPieFracOfSet, 'whole'], [gPieFindWhole, 'whole']]
     }
   });

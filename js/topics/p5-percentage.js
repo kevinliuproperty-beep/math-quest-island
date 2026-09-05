@@ -18,6 +18,15 @@
   const CLASSY = ['pupils in the class','members of the choir','runners at the CCA trial','children at the void deck'];
   const GOODS = ['a bicycle','a school bag','a badminton racket','a pair of running shoes','a rice cooker'];
 
+  /* No authored distractor may collapse onto the correct answer: finishNum drops it
+     silently and pads with correct+1 giveaways, so the item ships with no
+     misconception. Filter, and the caller redraws if fewer than 3 survive. */
+  function clean(correct, list){
+    const out = [];
+    for (const c of list) if (c > 0 && Number.isInteger(c) && Math.abs(c - correct) > 3 && !out.includes(c)) out.push(c);
+    return out;
+  }
+
   function gPartAsPercent(){
     /* whole x pct must land on a whole number of children: pair them explicitly. */
     const CASES = [[20,[5,10,15,20,25,30,40,50,60,75]],[25,[20,40,60,80]],[50,[10,20,30,40,50,60,70]],
@@ -33,8 +42,9 @@
     const whole = pick([40, 60, 80, 120, 200, 300, 400]);
     const pct = pick([10, 20, 25, 50, 75]);
     const ans = whole * pct / 100;
-    return finishNum(pct + '% of ' + whole + ' = ?', '', ans,
-      [whole - ans, Math.round(whole * pct / 10), pct, whole - pct, ans * 2], '',
+    const cs = clean(ans, [whole - ans, Math.round(whole * pct / 10), pct, whole - pct, ans * 2, whole]);
+    if (cs.length < 3) return gPercentOfWhole();
+    return finishNum(pct + '% of ' + whole + ' = ?', '', ans, cs, '',
       pct + '% means ' + pct + ' out of every 100. ' + pct + '/100 x ' + whole + ' = ' + ans + '.');
   }
   function gPercentOfMoney(){
@@ -52,9 +62,10 @@
     const off = price * pct / 100;
     const ans = price - off;
     const item = pick(GOODS);
+    const cs = clean(ans, [off, price, price + off, price - pct, off + pct]);
+    if (cs.length < 3) return gDiscount();
     return finishNum('At a Great Singapore Sale, ' + item + ' costing $' + price + ' has a ' + pct +
-      '% discount. What is the price after the discount?', '', ans,
-      [off, price, price + off, price - pct, off + pct], 'dollars',
+      '% discount. What is the price after the discount?', '', ans, cs, 'dollars',
       'The discount is ' + pct + '% of $' + price + ' = $' + off + '. Take it off: $' + price + ' - $' + off + ' = $' + ans + '.');
   }
   function gGst(){

@@ -17,17 +17,28 @@
 
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Nurul'];
 
+  /* No authored distractor may collapse onto the correct answer: finishNum drops it
+     silently and pads with correct+1 giveaways. Filter, and redraw if fewer than 3
+     real misconceptions survive (6 x s² equals s³ at s = 6, for instance). */
+  function clean(correct, list){
+    const out = [];
+    for (const c of list) if (c > 0 && Number.isInteger(c) && Math.abs(c - correct) > 3 && !out.includes(c)) out.push(c);
+    return out;
+  }
+
   function gCubeVolume(){
     const s = ri(2, 12), v = s * s * s;
-    return finishNum('A cube has edges of ' + s + ' cm. What is its volume?', '', v,
-      [s * s, 6 * s * s, 3 * s, 12 * s, v + s], 'cm³',
+    const cs = clean(v, [s * s, 6 * s * s, 3 * s, 12 * s, s + s + s + s]);
+    if (cs.length < 3) return gCubeVolume();
+    return finishNum('A cube has edges of ' + s + ' cm. What is its volume?', '', v, cs, 'cm³',
       'Volume of a cube = edge x edge x edge = ' + s + ' x ' + s + ' x ' + s + ' = ' + v + ' cm³.');
   }
   function gCuboidVolume(){
     const l = ri(3, 15), w = ri(2, 12), h = ri(2, 10), v = l * w * h;
+    const cs = clean(v, [l * w, l + w + h, 2 * (l * w + w * h + l * h), l * w + h, w * h]);
+    if (cs.length < 3) return gCuboidVolume();
     return finishNum('A cuboid measures ' + l + ' cm by ' + w + ' cm by ' + h +
-      ' cm. What is its volume?', '', v,
-      [l * w, l + w + h, 2 * (l * w + w * h + l * h), v + l, l * w + h], 'cm³',
+      ' cm. What is its volume?', '', v, cs, 'cm³',
       'Volume of a cuboid = length x breadth x height = ' + l + ' x ' + w + ' x ' + h + ' = ' + v + ' cm³.');
   }
   function gUnitCubes(){

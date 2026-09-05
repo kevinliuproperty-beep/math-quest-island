@@ -15,11 +15,23 @@
 
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Nurul'];
 
+  /* No authored distractor may collapse onto the correct answer: finishNum drops it
+     silently and pads with correct+1 giveaways. Filter, and redraw if fewer than 3
+     real misconceptions survive. */
+  function clean(correct, list){
+    const out = [];
+    for (const c of list) if (c > 0 && Number.isInteger(c) && Math.abs(c - correct) > 3 && !out.includes(c)) out.push(c);
+    return out;
+  }
+
   function gAreaBasic(){
     const b = 2 * ri(2, 12), h = ri(3, 15), a = b * h / 2;
+    /* misconceptions: forgot to halve; added instead of multiplied; halved twice;
+       worked out the perimeter of the enclosing rectangle instead. */
+    const cs = clean(a, [b * h, b + h, b * h / 4, 2 * (b + h), b * h + h]);
+    if (cs.length < 3) return gAreaBasic();
     return finishNum('A triangle has a base of ' + b + ' cm and a height of ' + h +
-      ' cm. What is its area?', '', a,
-      [b * h, b + h, a + b, b * h + 1, a * 2 + 1], 'cm²',
+      ' cm. What is its area?', '', a, cs, 'cm²',
       'Area of a triangle = 1/2 x base x height = 1/2 x ' + b + ' x ' + h + ' = ' + a + ' cm².');
   }
   function gAreaBigger(){
@@ -43,9 +55,10 @@
   function gHalfRectangle(){
     const L = 2 * ri(4, 15), W = ri(4, 15), a = L * W / 2;
     const who = pick(NAMES);
+    const cs = clean(a, [L * W, 2 * (L + W), L + W, a + W, L * W + W]);
+    if (cs.length < 3) return gHalfRectangle();
     return finishNum(who + ' cuts a rectangular piece of kite paper ' + L + ' cm long and ' + W +
-      ' cm wide in half along a diagonal. What is the area of one triangle?', '', a,
-      [L * W, 2 * (L + W), L + W, a + W, L * W + W], 'cm²',
+      ' cm wide in half along a diagonal. What is the area of one triangle?', '', a, cs, 'cm²',
       'The rectangle has an area of ' + L + ' x ' + W + ' = ' + (L * W) +
       ' cm². The diagonal cuts it into two equal triangles, so one triangle is ' + a + ' cm².');
   }

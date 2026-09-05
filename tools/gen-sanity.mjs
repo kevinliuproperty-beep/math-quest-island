@@ -512,7 +512,7 @@ function oracle(q) {
       const e = cells.reduce((s, v) => s + Number(v), 0);
       return near(e, ansNum) ? null : `table total: expected ${e}, got ${ansNum}`;
     }
-    if ((m = text.match(/Altogether there were (\d+) .+ were there on (.+)\?$/))) {
+    if ((m = text.match(/Altogether there were (\d+) .+ were there for (.+)\?$/))) {
       const i = cats.indexOf(m[2]);
       if (i < 0) return 'table: missing-cell category "' + m[2] + '" is not a column';
       if (cells[i] !== '?') return 'table: the asked column is not the hidden one';

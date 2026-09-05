@@ -18,7 +18,8 @@
   const G = MQI.gen;
   const ri = G.ri, pick = G.pick, finishNum = G.finishNum, finishTyped = G.finishTyped;
 
-  const CM2 = ' cm²';
+  /* finishNum prepends its own space to the unit, so these carry none. */
+  const CM2 = 'cm²', CM = 'cm';
 
   /* ---- rectangles and squares: find the missing dimension (1.1, 1.2) ---- */
 
@@ -39,7 +40,9 @@
   /* pool 1: rectangle, area and one side given, find the other side */
   function gRectSideFromArea() {
     const c = pick(RECT_CTX);
-    const w = ri(3, 12), l = ri(4, 15);
+    const l = ri(4, 15);
+    let w = ri(3, 12);
+    while (w === l) w = ri(3, 12);   /* a rectangle called a rectangle: never a square */
     const area = w * l;
     return finishTyped(
       'Mei Ling has ' + c[0] + '. The ' + c[1] + ' has an area of ' + area +
@@ -64,7 +67,9 @@
   /* pool 2: rectangle, perimeter and one side given, find the other side */
   function gRectSideFromPerimeter() {
     const c = pick(RECT_CTX);
-    const w = ri(3, 14), l = ri(4, 18);
+    const l = ri(4, 18);
+    let w = ri(3, 14);
+    while (w === l) w = ri(3, 14);
     const per = 2 * (w + l);
     return finishTyped(
       'Siti has ' + c[0] + '. The perimeter of the ' + c[1] + ' is ' + per +
@@ -173,7 +178,7 @@
     const g = makeL();
     return finishNum(
       'What is the perimeter of this figure?', g.html, g.per,
-      [g.area, g.W + g.H, g.per - g.a, g.per + g.a, g.per - 2 * g.b], ' cm',
+      [g.area, g.W + g.H, g.per - g.a, g.per + g.a, g.per - 2 * g.b], CM,
       'Perimeter means all the way round, so add the six labelled sides: ' +
       (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W + ' + ' + g.H +
       ' = ' + g.per + ' cm. Missing out the two short sides at the corner is the usual slip.');

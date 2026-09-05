@@ -88,7 +88,7 @@
     const known = t.vals.filter((_, j) => j !== i);
     const knownSum = known.reduce((a, b) => a + b, 0);
     return finishNum('The table is not complete. Altogether there were ' + t.total + ' ' +
-      t.thing + ' over the 5 ' + t.group + '. How many ' + t.thing + ' were there on ' +
+      t.thing + ' over the 5 ' + t.group + '. How many ' + t.thing + ' were there for ' +
       t.cats[i] + '?',
       t.html, missing,
       [knownSum, t.total, missing + 1, known[0], known[1]], '',

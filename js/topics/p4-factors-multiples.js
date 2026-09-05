@@ -72,7 +72,11 @@
     let a, b;
     do { a = ri(2, 9); b = ri(2, 9); } while (a === b || lcm2(a, b) > 72);
     const ans = lcm2(a, b);
-    const cands = [a * b, ans * 2, a + b, ans + a, ans + b].filter(x => x !== ans && x > 0);
+    /* when one number divides the other, a*b, ans*2, ans+a and ans+b collapse onto
+       each other, so carry spares: finishNum must never fall through to its
+       correct+1 giveaway padding (P3 pilot rubric lesson 4) */
+    const cands = [a * b, ans * 2, a + b, ans + a, ans + b, ans * 3, ans + a * b, a * b * 2, ans + a + b]
+      .filter(x => x !== ans && x > 0);
     return finishNum('What is the smallest number that is a multiple of both ' + a + ' and ' + b + '?', '', ans,
       cands, '',
       'List the multiples of ' + a + ' and of ' + b + ' and find the first one that appears on both lists: ' +

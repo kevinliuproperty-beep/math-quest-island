@@ -37,7 +37,10 @@
     const d = distinct5(), n = Number(d.join(''));
     const i = ri(0, 3), p = PLACES[i], val = d[i] * p.v;
     return finishNum('In ' + sp(n) + ', the digit ' + d[i] + ' stands for how much?', '', val,
-      [d[i], d[i] * 10, d[i] * 100, d[i] * 1000, d[i] * 10000, val * 10], '',
+      /* the five place values of the same digit; exactly one collapses onto the
+         answer and finishNum drops it, leaving four real misconception choices.
+         Nothing here can exceed 90 000, so no choice leaves the topic's range. */
+      [d[i], d[i] * 10, d[i] * 100, d[i] * 1000, d[i] * 10000], '',
       'The ' + d[i] + ' sits in the ' + p.name + ' place, so it stands for ' + d[i] + ' x ' + p.v + ' = ' + sp(val) + '.');
   }
   function gWhichDigit() {
@@ -54,6 +57,9 @@
     return function () {
       let n = ri(lo, hi);
       if (tie) n = Math.floor(n / unit) * unit + unit / 2;   /* land exactly on the halfway mark */
+      /* never ask a child to round a number that is already on the unit: the answer
+         is the number itself and the "sits between" explain reads as nonsense */
+      else if (n % unit === 0) n += ri(1, unit - 1);
       const r = roundTo(n, unit);
       const down = Math.floor(n / unit) * unit, up = down + unit;
       return finishNum('Round ' + sp(n) + ' to the nearest ' + unit + '.', '', r,
@@ -68,10 +74,12 @@
   /* the harness reports one row per function NAME, so a factory-made generator
      must be named or four of them collapse into a single "(anonymous)" row */
   function named(fn, name) { Object.defineProperty(fn, 'name', { value: name }); return fn; }
-  const gRound10     = named(rounder(10,   1000,  9999,  false), 'gRound10');
-  const gRound100    = named(rounder(100,  10000, 99999, false), 'gRound100');
-  const gRound1000   = named(rounder(1000, 10000, 99999, false), 'gRound1000');
-  const gRound100Tie = named(rounder(100,  10000, 99899, true),  'gRound100Tie');
+  /* upper bounds are set so that the LARGEST distractor (r + 2 units) still sits
+     inside 100 000: the topic's ceiling is enforced by the generator, not hoped for. */
+  const gRound10     = named(rounder(10,   1000,  9949,  false), 'gRound10');
+  const gRound100    = named(rounder(100,  10000, 99449, false), 'gRound100');
+  const gRound1000   = named(rounder(1000, 10000, 96999, false), 'gRound1000');
+  const gRound100Tie = named(rounder(100,  10000, 99349, true),  'gRound100Tie');
 
   /* ---- number patterns ---- */
   function gPatternUp() {

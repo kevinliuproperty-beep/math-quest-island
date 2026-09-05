@@ -753,6 +753,136 @@ function oracle(q) {
     return 'L figure: rendered a figure but no oracle matched the stem';
   }
 
+  /* --- W3 lane: PIE CHARTS (p4pie). RENDERED SURFACE ONLY. Every sector prints its
+     value twice - inside the slice (`pie-lab`) and in the legend beside the category
+     name (`pie-cat` + `pie-val`). The oracle reads the LEGEND, cross-checks it against
+     the slice labels, and re-derives every answer from those printed strings. Nothing
+     is taken from the generator's data array or from answerText. --- */
+  if (/class="piechart"/.test(String(q.extra))) {
+    const raw = String(q.extra);
+    const keys = [...raw.matchAll(/<span class="pie-cat"[^>]*>([^<]+)<\/span><b class="pie-val"[^>]*>([^<]+)<\/b>/g)];
+    const slice = [...raw.matchAll(/<text class="pie-lab"[^>]*>([^<]+)<\/text>/g)].map(t => t[1]);
+    if (keys.length < 3) return 'pie: fewer than 3 labelled sectors';
+    if (slice.length !== keys.length) return `pie: ${slice.length} slice labels but ${keys.length} legend keys`;
+    for (let i = 0; i < slice.length; i++) {
+      if (slice[i] !== keys[i][2]) return `pie: slice prints "${slice[i]}" but the key prints "${keys[i][2]}"`;
+    }
+    const names = keys.map(k => k[1]), labs = keys.map(k => k[2]);
+    if (new Set(names).size !== names.length) return 'pie: a category appears twice in the key';
+    const sectors = [...raw.matchAll(/class="pie-sec"/g)].length;
+    if (sectors !== keys.length) return `pie: ${sectors} drawn sectors but ${keys.length} keys`;
+    const fracOf = s => { const mm = /^(\d+)\/(\d+)$/.exec(s); return mm ? Number(mm[1]) / Number(mm[2]) : null; };
+    const isCount = labs.every(s => /^\d+$/.test(s));
+    const isFrac = labs.every(s => fracOf(s) !== null);
+    const hidden = labs.filter(s => s === '?').length;
+    const val = c => { const i = names.indexOf(c); return i < 0 ? null : Number(labs[i]); };
+
+    if (isFrac) {
+      const sum = labs.reduce((s, f) => s + fracOf(f), 0);
+      if (Math.abs(sum - 1) > 1e-9) return `pie fractions: printed sectors sum to ${sum}, not 1 whole`;
+      const fv = c => { const i = names.indexOf(c); return i < 0 ? null : fracOf(labs[i]); };
+      if ((m = text.match(/shows how all (\d+) .+ are shared out\. How many .+ are shown for (.+)\?$/))) {
+        const f = fv(m[2]);
+        if (f === null) return 'pie fraction-of-set: category "' + m[2] + '" is not in the key';
+        const e = f * Number(m[1]);
+        if (!Number.isInteger(e)) return `pie fraction-of-set: ${m[2]} is not a whole number of items`;
+        return near(e, ansNum) ? null : `pie fraction of set: expected ${e}, got ${ansNum}`;
+      }
+      if ((m = text.match(/^On the pie chart, the (.+) sector stands for (\d+) .+\. How many .+ are there altogether\?$/))) {
+        const i = names.indexOf(m[1]);
+        if (i < 0) return 'pie find-the-whole: category "' + m[1] + '" is not in the key';
+        /* exact rational: part / (n/d) = part * d / n. Doing this in floating point
+           turned 35 / (7/12) into 59.999999999999993 and failed a correct key. */
+        const fm = /^(\d+)\/(\d+)$/.exec(labs[i]);
+        const e = Number(m[2]) * Number(fm[2]) / Number(fm[1]);
+        if (!Number.isInteger(e)) return `pie find-the-whole: ${m[2]} over its fraction is not whole`;
+        return near(e, ansNum) ? null : `pie find the whole: expected ${e}, got ${ansNum}`;
+      }
+      return 'pie: rendered a fraction pie but no oracle matched the stem';
+    }
+
+    if (hidden === 1 && labs.filter(s => /^\d+$/.test(s)).length === labs.length - 1) {
+      if ((m = text.match(/^Altogether there are (\d+) .+ How many .+ are shown for (.+)\?$/))) {
+        const i = names.indexOf(m[2]);
+        if (i < 0) return 'pie missing: category "' + m[2] + '" is not in the key';
+        if (labs[i] !== '?') return 'pie missing: the asked sector is not the hidden one';
+        const known = labs.filter(s => s !== '?').map(Number);
+        const e = Number(m[1]) - known.reduce((s, v) => s + v, 0);
+        return near(e, ansNum) ? null : `pie missing sector: expected ${e}, got ${ansNum}`;
+      }
+      return 'pie: rendered a pie with a hidden sector but no oracle matched the stem';
+    }
+
+    if (!isCount) return 'pie: sector labels are neither all counts nor all fractions: ' + labs.join(' | ');
+    const nums = labs.map(Number);
+    const total = nums.reduce((a, b) => a + b, 0);
+    const big = Math.max.apply(null, nums), small = Math.min.apply(null, nums);
+
+    if (/^One of these statements about the pie chart is WRONG\. Which one is it\?$/.test(text)) {
+      const truth = s => {
+        let t;
+        if ((t = s.match(/^(.+) shows the most .+\.$/))) { const v = val(t[1]); return v === null ? null : v === big; }
+        if ((t = s.match(/^(.+) shows the fewest .+\.$/))) { const v = val(t[1]); return v === null ? null : v === small; }
+        if ((t = s.match(/^(.+) shows more .+ than (.+)\.$/))) {
+          const a = val(t[1]), b = val(t[2]); return (a === null || b === null) ? null : a > b;
+        }
+        if ((t = s.match(/^(.+) and (.+) together show (\d+) .+\.$/))) {
+          const a = val(t[1]), b = val(t[2]); return (a === null || b === null) ? null : a + b === Number(t[3]);
+        }
+        if ((t = s.match(/^There are (\d+) .+ altogether on the chart\.$/))) return total === Number(t[1]);
+        return null;
+      };
+      const verdicts = q.choices.map(c => truth(strip(c)));
+      if (verdicts.some(v => v === null)) return 'pie wrong-statement: an option is not a checkable claim';
+      const falses = verdicts.filter(v => v === false).length;
+      if (falses !== 1) return `pie wrong-statement: ${falses} false options, expected exactly 1`;
+      return verdicts[q.correct] === false ? null
+        : 'pie wrong-statement: the keyed option is true, not false';
+    }
+    if ((m = text.match(/^On the pie chart, one sector shows (\d+) .+\. Which one is it\?$/))) {
+      const hits = names.filter((_, i) => nums[i] === Number(m[1]));
+      if (hits.length !== 1) return `pie which-sector: ${hits.length} sectors print ${m[1]}`;
+      return strip(q.answerText) === hits[0] ? null
+        : `pie which sector: expected ${hits[0]}, got ${strip(q.answerText)}`;
+    }
+    if (/^How many .+ are shown on the whole pie chart altogether\?$/.test(text)) {
+      return near(total, ansNum) ? null : `pie total: expected ${total}, got ${ansNum}`;
+    }
+    if (/one sector is bigger than all the others/.test(text)) {
+      if (nums.filter(v => v === big).length !== 1) return 'pie biggest: the largest sector is tied';
+      return near(big, ansNum) ? null : `pie biggest: expected ${big}, got ${ansNum}`;
+    }
+    if (/one sector is smaller than all the others/.test(text)) {
+      if (nums.filter(v => v === small).length !== 1) return 'pie smallest: the smallest sector is tied';
+      return near(small, ansNum) ? null : `pie smallest: expected ${small}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^How many sectors of the pie chart show more than (\d+) .+\?$/))) {
+      const e = nums.filter(v => v > Number(m[1])).length;
+      return near(e, ansNum) ? null : `pie count-above: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^On the pie chart, (.+) and (.+) are put together\. How many more .+ is that than (.+) alone\?$/))) {
+      const a = val(m[1]), b = val(m[2]), c = val(m[3]);
+      if (a === null || b === null || c === null) return 'pie two-step: a named sector is not in the key';
+      return near(a + b - c, ansNum) ? null : `pie two-step: expected ${a + b - c}, got ${ansNum}`;
+    }
+    if ((m = text.match(/are shown for (.+) than for (.+)\?$/))) {
+      const a = val(m[1]), b = val(m[2]);
+      if (a === null || b === null) return 'pie diff: a compared sector is not in the key';
+      return near(a - b, ansNum) ? null : `pie diff: expected ${a - b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/are shown for (.+) and (.+) altogether\?$/))) {
+      const a = val(m[1]), b = val(m[2]);
+      if (a === null || b === null) return 'pie combine: a summed sector is not in the key';
+      return near(a + b, ansNum) ? null : `pie combine: expected ${a + b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^On the pie chart, how many .+ are shown for (.+)\?$/))) {
+      const e = val(m[1]);
+      if (e === null) return 'pie read: category "' + m[1] + '" is not in the key';
+      return near(e, ansNum) ? null : `pie read: expected ${e}, got ${ansNum}`;
+    }
+    return 'pie: rendered a pie chart but no oracle matched the stem';
+  }
+
   /* --- P4 area+graphs lane: tables. Every cell is printed text; the oracle reads the
      header row and the value row and pairs them by column order. --- */
   if (/class="dtable"/.test(String(q.extra))) {

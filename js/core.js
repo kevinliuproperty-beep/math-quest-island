@@ -50,7 +50,11 @@ function finishNum(qHtml, extraHtml, correct, cands, unit, explain){
     else if(correct-t>0 && !nums.includes(correct-t)) nums.push(correct-t);
     t++; if(t>60) break;
   }
-  const u=unit?(' '+unit):'';
+  /* W3 cosmetic (Dress Rehearsal Wave 2, item 3): a degree sign and a percent sign
+     are written TIGHT against the number ("40°", "75%"), the way every stem in the
+     app writes them; a word unit keeps its space ("12 cm"). The old ' '+unit made
+     the angle options read "40 °" beside a stem reading "50°". */
+  const u=unit?((unit==='°'||unit==='%')?unit:(' '+unit)):'';
   const order=shuffle(nums.map((_,i)=>i));
   return { q:qHtml, extra:extraHtml||'', choices:order.map(i=>nums[i]+u), correct:order.indexOf(0),
            explain, answerText: correct+u };

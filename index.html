@@ -261,6 +261,19 @@
   @keyframes pwFreezeAnim { 0%,100%{filter:none} 50%{filter:drop-shadow(0 0 10px #6ee7f9) brightness(1.3)} }
   @keyframes pwEnrageAnim { 0%,100%{filter:none} 50%{filter:drop-shadow(0 0 14px #ff5e62) brightness(1.35)} }
 
+  /* W3 cosmetic (Dress Rehearsal Wave 2, item 2): #banner is inset:0 and centres its
+     text over the whole play area, so the one-shot "ENRAGE!" line was drawn straight
+     across the hero + Patchwerk avatar row and half-covered both sprites. In this mode
+     the banner is pinned to the BOTTOM of the play area and boxed, so the avatars stay
+     visible for the whole fight. Patchwerk block only; every other mode is untouched. */
+  body[data-mode-theme^="mode-patchwerk"] #banner,
+  body[data-mode-theme="enrage"] #banner { align-items:flex-end; padding-bottom:0; }
+  body[data-mode-theme^="mode-patchwerk"] #banner .inner,
+  body[data-mode-theme="enrage"] #banner .inner {
+    font-size:clamp(17px,3.2vw,25px); background:rgba(15,23,42,.9);
+    border:2px solid #ff5e62; border-radius:12px; padding:7px 14px; text-shadow:none;
+    transform:translateY(52%); }
+
   /* The dummy's health is the HUD bar (it refills). The arena HP bars carry a fail
      state Patchwerk does not have, so they are hidden for the duration. */
   body[data-mode-theme^="mode-patchwerk"] #heroHp,

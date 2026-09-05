@@ -173,6 +173,141 @@ function oracle(q) {
 
   /* --- typed (Puzzle Caves) --- */
   if (q.typed) {
+    /* ===== WAVE 2 lane: P5 fractions + P5 decimals, typed ======================
+       These sit at the TOP of the typed block on purpose. Every stem below opens
+       with a word prefix ("Multiply:", "Divide:", "Express", "... Express that in")
+       that no other topic emits, and each pattern is anchored, so nothing above is
+       shadowed. They are ABOVE the looser branches because the two-fraction branch
+       further down matches ANY stem ending "= ?" that renders exactly two
+       fractions and then assumes the operator is + or -: it would read
+       "2/3 x 3/5 = ?" as an addition. Specific above loose, per the P3 pilot rule.
+       These oracles also enforce the P5 SCOPE CLAMPS, so a later edit that widens a
+       generator past the syllabus fails the harness rather than shipping:
+         - a decimal may only be multiplied/divided by a MULTIPLE OF TEN (P5 1.1);
+         - a conversion may only use one of the four MOE unit pairs (P5 1.2);
+         - every typed decimal item must declare q.dp, or the 0.005 fallback
+           tolerance would wave a wrongly-rounded answer through;
+         - every typed fraction item must carry q.fracAnswer, or a child typing
+           3/4 for 0.75 is graded wrong;
+         - nothing here divides BY a fraction: that is P6 (PDF p.43). */
+    const r3 = x => Math.round(x * 1000) / 1000;
+    const dpOf = x => { const s = String(x), i = s.indexOf('.'); return i < 0 ? 0 : s.length - i - 1; };
+    /* Cross-multiplied, so an unreduced key still verifies. */
+    const fracKeyOk = (n, d) => Array.isArray(q.fracAnswer) &&
+      Number(q.fracAnswer[0]) * d === n * Number(q.fracAnswer[1]);
+    const saysIt = s => String(q.explain).indexOf(String(s)) >= 0;
+    const PER = { 'm|km': 1000, 'cm|m': 100, 'g|kg': 1000, 'ml|l': 1000 };
+
+    /* P5 FRACTIONS 1.1 - dividing a whole number by a whole number, quotient as a fraction */
+    if ((m = text.match(/share (\d+) [^.]*equally among the (\d+) of them\. What fraction of one does each get\?/))) {
+      const n = Number(m[1]), d = Number(m[2]);
+      if (n >= d) return `p5 share-as-fraction: ${n}/${d} is not a proper fraction, so "fraction of one" is a false stem`;
+      if (!fracKeyOk(n, d)) return `p5 share-as-fraction: expected key ${n}/${d}, got ${JSON.stringify(q.fracAnswer)}`;
+      const g0 = gcd(n, d) || 1;
+      if (!saysIt((n / g0) + '/' + (d / g0))) return `p5 share-as-fraction: explanation never states ${n / g0}/${d / g0}`;
+      return near(r3(n / d), r3(q.answer)) ? null : `p5 share-as-fraction: expected ${n / d}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^Divide (\d+) by (\d+)\. Give the quotient as a fraction/))) {
+      const n = Number(m[1]), d = Number(m[2]);
+      if (n % d === 0) return `p5 divide-as-fraction: ${n}/${d} is a whole number, so the stem asks for a fraction that is not one`;
+      if (!fracKeyOk(n, d)) return `p5 divide-as-fraction: expected key ${n}/${d}, got ${JSON.stringify(q.fracAnswer)}`;
+      const g0 = gcd(n, d) || 1;
+      if (!saysIt((n / g0) + '/' + (d / g0))) return `p5 divide-as-fraction: explanation never states ${n / g0}/${d / g0}`;
+      return near(r3(n / d), r3(q.answer)) ? null : `p5 divide-as-fraction: expected ${n / d}, got ${q.answer}`;
+    }
+
+    /* P5 FRACTIONS 1.2 - expressing fractions as decimals */
+    if (/^Express .+ as a decimal\./.test(text)) {
+      const f = parseFrac(q.q);
+      if (!f) return 'p5 frac->dec: no fraction rendered in the stem';
+      if (q.dp !== 3) return 'p5 frac->dec: q.dp not declared, so "0.4" would pass for 0.375 on the 0.005 fallback';
+      const e = r3(f[0] / f[1]);
+      if (dpOf(e) > 3) return `p5 frac->dec: ${f[0]}/${f[1]} does not terminate within 3 dp`;
+      if (!saysIt(String(e))) return `p5 frac->dec: explanation never states ${e}`;
+      return near(e, r3(q.answer)) ? null : `p5 frac->dec: expected ${e}, got ${q.answer}`;
+    }
+
+    /* P5 FRACTIONS 2.2/2.3/2.4 - multiplication, typed as a fraction */
+    if (/^Multiply the two improper fractions: /.test(text) ||
+        (/^Multiply: /.test(text) && / \(type a fraction/.test(text))) {
+      const fs = allFracs(q.q);
+      if (!/ x /.test(text)) return 'p5 frac mul: stem is not a multiplication';
+      if (/ \/ /.test(text)) return 'p5 frac mul: division by a fraction is P6, not P5';
+      let n, d;
+      if (fs.length === 2) {
+        if (/^Multiply the two improper fractions/.test(text) &&
+            !(fs[0][0] > fs[0][1] && fs[1][0] > fs[1][1]))
+          return 'p5 frac mul: stem says improper but an operand is proper';
+        n = fs[0][0] * fs[1][0]; d = fs[0][1] * fs[1][1];
+      } else if (fs.length === 1) {
+        const w = text.match(/ x (\d+) = \? \(type a fraction/);
+        if (!w) return 'p5 frac mul: one fraction rendered but no whole-number operand found';
+        n = fs[0][0] * Number(w[1]); d = fs[0][1];
+      } else {
+        return `p5 frac mul: ${fs.length} fractions rendered, expected 1 or 2`;
+      }
+      if (!fracKeyOk(n, d)) return `p5 frac mul: expected key ${n}/${d}, got ${JSON.stringify(q.fracAnswer)}`;
+      const g0 = gcd(n, d) || 1;
+      if (!saysIt((n / g0) + '/' + (d / g0))) return `p5 frac mul: explanation never states ${n / g0}/${d / g0}`;
+      return near(r3(n / d), r3(q.answer)) ? null : `p5 frac mul: expected ${n / d}, got ${q.answer}`;
+    }
+
+    /* P5 DECIMALS 1.1 - x and / by 10, 100, 1000 and their multiples */
+    if ((m = text.match(/^Multiply: ([\d.]+) x (\d+) = \?$/))) {
+      const a = Number(m[1]), k = Number(m[2]);
+      if (k % 10 !== 0) return `p5 dec mul: multiplier ${k} is not a multiple of ten; P5 1.1 is 10/100/1000 and their multiples only`;
+      if (dpOf(a) > 3) return `p5 dec mul: ${a} runs past 3 decimal places`;
+      if (q.dp !== 3) return 'p5 dec mul: q.dp not declared, trailing-zero/rounding guard missing';
+      const e = r3(a * k);
+      if (!saysIt(String(e))) return `p5 dec mul: explanation never states ${e}`;
+      return near(e, r3(q.answer)) ? null : `p5 dec mul: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^Divide: ([\d.]+) \/ (\d+) = \?$/))) {
+      const a = Number(m[1]), k = Number(m[2]);
+      if (k % 10 !== 0) return `p5 dec div: divisor ${k} is not a multiple of ten; P5 1.1 is 10/100/1000 and their multiples only`;
+      if (dpOf(a) > 3) return `p5 dec div: ${a} runs past 3 decimal places`;
+      if (q.dp !== 3) return 'p5 dec div: q.dp not declared, trailing-zero/rounding guard missing';
+      const e = r3(a / k);
+      if (dpOf(e) > 3) return `p5 dec div: ${a} / ${k} = ${e} runs past 3 decimal places`;
+      if (!saysIt(String(e))) return `p5 dec div: explanation never states ${e}`;
+      return near(e, r3(q.answer)) ? null : `p5 dec div: expected ${e}, got ${q.answer}`;
+    }
+
+    /* P5 DECIMALS 1.2 - measurement conversion, both directions */
+    if ((m = text.match(/ ([\d.]+) (km|kg|ml|cm|m|g|l)(?: long| heavy)?\. Express that in (km|kg|ml|cm|m|g|l)\./))) {
+      const val = Number(m[1]), from = m[2], to = m[3];
+      const down = PER[from + '|' + to], up = PER[to + '|' + from];
+      if (down === undefined && up === undefined)
+        return `p5 convert: ${from} -> ${to} is not one of the four MOE P5 pairs (km/m, m/cm, kg/g, l/ml)`;
+      if (q.dp !== 3) return 'p5 convert: q.dp not declared';
+      if (q.unit && q.unit !== to) return `p5 convert: q.unit "${q.unit}" contradicts the unit the stem asks for, "${to}"`;
+      const e = down !== undefined ? r3(val / down) : r3(val * up);
+      if (dpOf(e) > 3) return `p5 convert: ${val} ${from} = ${e} ${to} runs past 3 decimal places`;
+      /* Going to the smaller unit must land on a whole number of that unit:
+         8.005 m is 800.5 cm, and rounding it to 801 ships a false answer key. */
+      if (up !== undefined && !Number.isInteger(e))
+        return `p5 convert: ${val} ${from} = ${e} ${to}, not a whole number of ${to}`;
+      if (!saysIt(String(e))) return `p5 convert: explanation never states ${e}`;
+      return near(e, r3(q.answer)) ? null : `p5 convert ${from} -> ${to}: expected ${e}, got ${q.answer}`;
+    }
+    if (/How far is that altogether, in |How long is the ribbon now, in |What is the total mass, in |How much is in the pot, in /.test(text)) {
+      const asked = text.match(/, in (km|kg|ml|cm|m|g|l)\?/);
+      if (!asked) return 'p5 convert word: the stem never names the unit it wants';
+      const parts = [...text.matchAll(/([\d.]+) (km|kg|ml|cm|m|g|l)\b/g)].map(x => [Number(x[1]), x[2]]);
+      if (parts.length !== 2) return `p5 convert word: found ${parts.length} quantities, expected 2`;
+      const big = parts[0], small = parts[1];
+      if (big[1] !== asked[1]) return `p5 convert word: first quantity is in ${big[1]} but the answer is asked in ${asked[1]}`;
+      const per = PER[small[1] + '|' + big[1]];
+      if (per === undefined) return `p5 convert word: ${small[1]} -> ${big[1]} is not one of the four MOE P5 pairs`;
+      if (q.dp !== 3) return 'p5 convert word: q.dp not declared';
+      if (q.unit && q.unit !== asked[1]) return `p5 convert word: q.unit "${q.unit}" contradicts the asked unit "${asked[1]}"`;
+      const e = r3(big[0] + small[0] / per);
+      if (dpOf(e) > 3) return `p5 convert word: ${e} runs past 3 decimal places`;
+      if (!saysIt(String(e))) return `p5 convert word: explanation never states ${e}`;
+      return near(e, r3(q.answer)) ? null : `p5 convert word: expected ${e}, got ${q.answer}`;
+    }
+    /* ===== end WAVE 2 typed block ============================================ */
+
     if ((m = text.match(/What comes next\? *([\d,\s]+), \?/))) {
       const t = m[1].split(',').map(s => Number(s.trim())).filter(Number.isFinite);
       const d = t[1] - t[0];
@@ -724,6 +859,71 @@ function oracle(q) {
       return near(a + b, ansNum) ? null : `bar total: expected ${a + b}, got ${ansNum}`;
     }
     return 'bar graph: rendered a graph but no oracle matched the stem';
+  }
+
+  /* --- WAVE 2 lane: P5 fraction of a quantity, multiple choice (MOE p.41, FRACTIONS 2.2:
+     multiplying a proper fraction and a whole number, dressed as a word problem).
+     Guarded on a rendered fraction, so the P5 percentage stems that also open
+     "There are N ..." (they render no fraction, and are typed) cannot reach it. --- */
+  if (/^There are (\d+) /.test(text) && /How many .+ are .+\?$/.test(text) && parseFrac(q.q)) {
+    const total = Number(text.match(/^There are (\d+) /)[1]);
+    const f = parseFrac(q.q);
+    if (allFracs(q.q).length !== 1) return 'p5 fraction-of: more than one fraction rendered in the stem';
+    if (f[0] >= f[1]) return `p5 fraction-of: ${f[0]}/${f[1]} is not a proper fraction of a set`;
+    if (total * f[0] % f[1] !== 0) return `p5 fraction-of: ${f[0]}/${f[1]} of ${total} is not a whole number of objects`;
+    const e = total * f[0] / f[1];
+    const chosen = parseFloat(strip(q.answerText));
+    for (let i = 0; i < q.choices.length; i++) {
+      if (i !== q.correct && near(parseFloat(strip(q.choices[i])), e))
+        return 'p5 fraction-of: a distractor equals the answer';
+    }
+    if (String(q.explain).indexOf('= ' + e + '.') < 0) return `p5 fraction-of: explanation never states ${e}`;
+    return near(e, chosen) ? null : `p5 fraction-of: expected ${e}, got ${chosen}`;
+  }
+
+  /* --- WAVE 2 lane: P5 mixed numbers, multiple choice (MOE p.41, FRACTIONS 2.1 and 2.5).
+     THIS BLOCK MUST STAY ABOVE the two-fraction branch immediately below it. That
+     branch fires on any stem ending "= ?" that renders exactly two fractions, and
+     it assumes the operator is + or -; a mixed-number stem renders two fractions,
+     so the loose branch would compare 3/4 + 1/2 against a mixed answer key and
+     report a false failure on the adds and a false PASS on nothing at all. It
+     also cannot read the whole-number parts, which is the whole point of 2.1.
+     Mixed numbers are rendered as "2 <frac>3/4</frac>": strip() eats the tags and
+     would turn that into "2 34", so this reads the RAW markup. --- */
+  if (/^(Add|Subtract) the mixed numbers: /.test(text) || /^Multiply: \d+ \d+ x \d+ = \?$/.test(text)) {
+    const allMixed = html => [...String(html).matchAll(
+      /(\d+)\s*<span class="frac"><span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]
+      .map(x => [Number(x[1]), Number(x[2]), Number(x[3])]);
+    const mval = t => t[0] + t[1] / t[2];
+    const mixQ = allMixed(q.q), mixA = allMixed(q.answerText);
+    if (q.typed) return 'p5 mixed: a mixed-number answer may not be typed - MQI.parseTypedAnswer rejects "1 1/2"';
+    if (mixA.length !== 1) return 'p5 mixed: the answer is not a single rendered mixed number';
+    if (mixA[0][1] >= mixA[0][2]) return `p5 mixed: answer fraction part ${mixA[0][1]}/${mixA[0][2]} is not proper`;
+    let e;
+    if (/^Add the mixed numbers/.test(text)) {
+      if (mixQ.length !== 2) return `p5 mixed add: ${mixQ.length} mixed numbers in the stem, expected 2`;
+      e = mval(mixQ[0]) + mval(mixQ[1]);
+    } else if (/^Subtract the mixed numbers/.test(text)) {
+      if (mixQ.length !== 2) return `p5 mixed sub: ${mixQ.length} mixed numbers in the stem, expected 2`;
+      e = mval(mixQ[0]) - mval(mixQ[1]);
+      if (e <= 0) return 'p5 mixed sub: the stem has a negative or zero answer';
+    } else {
+      if (mixQ.length !== 1) return `p5 mixed mul: ${mixQ.length} mixed numbers in the stem, expected 1`;
+      const w = text.match(/ x (\d+) = \?$/);
+      if (!w) return 'p5 mixed mul: no whole-number operand found';
+      e = mval(mixQ[0]) * Number(w[1]);
+    }
+    /* No authored distractor may be worth what the answer is worth. */
+    for (let i = 0; i < q.choices.length; i++) {
+      if (i === q.correct) continue;
+      const c = allMixed(q.choices[i]);
+      if (c.length === 1 && near(mval(c[0]), mval(mixA[0])))
+        return `p5 mixed: distractor ${strip(q.choices[i])} equals the answer in value`;
+    }
+    /* The explanation is checked against the re-derived answer, not the generator's. */
+    const want = mixA[0][0] + ' and ' + mixA[0][1] + '/' + mixA[0][2];
+    if (String(q.explain).indexOf(want) < 0) return `p5 mixed: explanation never states the answer "${want}"`;
+    return near(e, mval(mixA[0])) ? null : `p5 mixed: expected ${e}, got ${mval(mixA[0])}`;
   }
 
   /* --- fraction arithmetic (rendered via fr(), so read the markup) --- */

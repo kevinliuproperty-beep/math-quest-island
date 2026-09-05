@@ -142,7 +142,124 @@ function oracle(q) {
       const e = Number(m[2]) - Number(m[1]);
       return near(e, q.answer) ? null : `missing addend: expected ${e}, got ${q.answer}`;
     }
+
+    /* --- P3 pilot: division with remainder + 3-digit-by-1-digit algorithms --- */
+    if ((m = text.match(/packs (\d+) [^.]*into (\d+) boxes[^.]*\. How many are left over\?/))) {
+      const e = Number(m[1]) % Number(m[2]);
+      return near(e, q.answer) ? null : `left over: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/packs (\d+) [^.]*into boxes of (\d+)\. How many boxes are needed/))) {
+      const e = Math.ceil(Number(m[1]) / Number(m[2]));
+      return near(e, q.answer) ? null : `boxes needed: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/quotient when (\d+) is divided by (\d+)/))) {
+      const e = Math.floor(Number(m[1]) / Number(m[2]));
+      return near(e, q.answer) ? null : `quotient: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^(\d+) x (\d+) = \?$/))) {
+      const e = Number(m[1]) * Number(m[2]);
+      return near(e, q.answer) ? null : `typed mul: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^(\d+) \/ (\d+) = \?$/))) {
+      const e = Number(m[1]) / Number(m[2]);
+      return near(e, q.answer) ? null : `typed div: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/buys (\d+) trays of eggs[^.]*\. Each tray holds (\d+) eggs\. (\d+) eggs crack/))) {
+      const e = Number(m[1]) * Number(m[2]) - Number(m[3]);
+      return near(e, q.answer) ? null : `eggs two-step: expected ${e}, got ${q.answer}`;
+    }
+
+    /* --- P3 pilot: money in decimal notation (all amounts read off the stem) --- */
+    if (/\$\d/.test(text)) {
+      const amts = [...text.matchAll(/\$(\d+\.\d{2})/g)].map(x => Math.round(parseFloat(x[1]) * 100));
+      if (amts.length >= 2) {
+        const sum = arr => arr.reduce((s, v) => s + v, 0);
+        let cents = null;
+        if (/change should/.test(text)) cents = amts[amts.length - 1] - sum(amts.slice(0, -1));
+        else if (/in total/.test(text)) cents = sum(amts);
+        else if (/money is left/.test(text)) cents = amts[0] - sum(amts.slice(1));
+        if (cents !== null) {
+          const e = Number((cents / 100).toFixed(2));
+          return near(e, q.answer) ? null : `money: expected ${e}, got ${q.answer}`;
+        }
+      }
+    }
     return false;
+  }
+
+  /* --- P3 pilot: whole numbers up to 10 000 --- */
+  if ((m = text.match(/^In (\d+), the digit (\d+) stands for how much\?$/))) {
+    const s = m[1], idx = s.indexOf(m[2]);
+    if (idx < 0) return 'stands-for: digit is not in the number ' + s;
+    if (s.split(m[2]).length > 2) return 'stands-for: digit appears twice, question is ambiguous';
+    const e = Number(m[2]) * Math.pow(10, s.length - 1 - idx);
+    return near(e, ansNum) ? null : `stands for: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Which digit is in the (thousands|hundreds|tens|ones) place of (\d+)\?$/))) {
+    const s = m[2];
+    if (s.length !== 4) return 'which-digit: expected a 4-digit number, got ' + s;
+    const e = Number(s[{ thousands: 0, hundreds: 1, tens: 2, ones: 3 }[m[1]]]);
+    return near(e, ansNum) ? null : `which digit: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Which number has (\d+) thousands, (\d+) hundreds, (\d+) tens and (\d+) ones\?$/))) {
+    const e = Number(m[1]) * 1000 + Number(m[2]) * 100 + Number(m[3]) * 10 + Number(m[4]);
+    return near(e, ansNum) ? null : `build number: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^What number is (\d+) (more|less) than (\d+)\?$/))) {
+    const e = m[2] === 'more' ? Number(m[3]) + Number(m[1]) : Number(m[3]) - Number(m[1]);
+    return near(e, ansNum) ? null : `more/less: expected ${e}, got ${ansNum}`;
+  }
+
+  /* --- P3 pilot: compound units (km/m, m/cm, kg/g, litre/ml) --- */
+  const UF = { km: 1000, m: 100, kg: 1000, 'ℓ': 1000 };
+  if ((m = text.match(/^(\d+) (km|m|kg|ℓ) (\d+) (m|cm|g|ml) = \?$/))) {
+    const e = Number(m[1]) * UF[m[2]] + Number(m[3]);
+    return near(e, ansNum) ? null : `compound -> small: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^(\d+) (m|cm|g|ml) = (\d+) (km|m|kg|ℓ) \? (m|cm|g|ml)$/))) {
+    const e = Number(m[1]) - Number(m[3]) * UF[m[4]];
+    return near(e, ansNum) ? null : `small -> compound (small part): expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^(\d+) (m|cm|g|ml) = \? (km|m|kg|ℓ) (\d+) (m|cm|g|ml)$/))) {
+    const e = (Number(m[1]) - Number(m[4])) / UF[m[3]];
+    return near(e, ansNum) ? null : `small -> compound (big part): expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/holding (\d+) (km|m|kg|ℓ) (\d+) (m|cm|g|ml) [^.]*?(?:drinks|cooks) (\d+) (m|cm|g|ml)\. How much is left/))) {
+    const e = Number(m[1]) * UF[m[2]] + Number(m[3]) - Number(m[5]);
+    return near(e, ansNum) ? null : `compound word (left): expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/(?:measures|weighs) (\d+) (km|m|kg|ℓ) (\d+) (m|cm|g|ml) and .*?(?:measures|weighs) (\d+) (km|m|kg|ℓ) (\d+) (m|cm|g|ml)\. How much (?:heavier|longer)/))) {
+    const e = (Number(m[1]) * UF[m[2]] + Number(m[3])) - (Number(m[5]) * UF[m[6]] + Number(m[7]));
+    return near(e, ansNum) ? null : `compound word (compare): expected ${e}, got ${ansNum}`;
+  }
+
+  /* --- P3 pilot: bar graphs. Values are re-derived as units x scale from the
+     rendered graph markup, never from answerText. --- */
+  if (/class="bargraph"/.test(String(q.extra))) {
+    const raw = String(q.extra);
+    const sm = raw.match(/data-scale="(\d+)"/);
+    if (!sm) return 'bar graph: no scale in the rendered graph';
+    const scale = Number(sm[1]);
+    const bars = {};
+    for (const b of raw.matchAll(/data-cat="([^"]+)" data-units="(\d+)"/g)) bars[b[1]] = Number(b[2]) * scale;
+    if (!Object.keys(bars).length) return 'bar graph: no bars in the rendered graph';
+    const val = c => (c in bars ? bars[c] : null);
+    if ((m = text.match(/does the graph show for (.+)\?$/))) {
+      const e = val(m[1]);
+      if (e === null) return 'bar graph: category "' + m[1] + '" is not on the graph';
+      return near(e, ansNum) ? null : `bar read: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/are shown for (.+) than for (.+)\?$/))) {
+      const a = val(m[1]), b = val(m[2]);
+      if (a === null || b === null) return 'bar graph: compared category is not on the graph';
+      return near(a - b, ansNum) ? null : `bar diff: expected ${a - b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/are shown for (.+) and (.+) altogether\?$/))) {
+      const a = val(m[1]), b = val(m[2]);
+      if (a === null || b === null) return 'bar graph: summed category is not on the graph';
+      return near(a + b, ansNum) ? null : `bar total: expected ${a + b}, got ${ansNum}`;
+    }
+    return 'bar graph: rendered a graph but no oracle matched the stem';
   }
 
   /* --- fraction arithmetic (rendered via fr(), so read the markup) --- */

@@ -833,7 +833,22 @@ function autoplayHook(){
     if(p.get('mode')==='patchwerk'){ DB.gameMode='patchwerk'; saveData(); }
     renderStart();
     if(shot==='map'){ setTimeout(renderMap,150); }
-    if(shot==='q'){ const t=p.get('topic'); if(t && TOPICS[t]){ TOPIC=t; setTimeout(newGame,150); } }
+    if(shot==='q'){
+      const t=p.get('topic');
+      /* find=<substring> redraws until a question whose rendered stem contains that
+         substring comes up, so a gate can screenshot ONE named item type rather than
+         whatever pool 1 happens to hand over first. Capped, and inert in production. */
+      const find=p.get('find');
+      if(t && TOPICS[t]){ TOPIC=t; setTimeout(()=>{
+        newGame();
+        if(find){ setTimeout(()=>{
+          for(let k=0;k<900 && (!Q || Q.q.indexOf(find)===-1);k++){
+            if(S) S.level = 1 + (k % 3);   /* sweep all three pools, not just pool 1 */
+            nextQuestion();
+          }
+        }, 250); }
+      },150); }
+    }
     return;
   }
   if(p.get('autoplay')!=='patchwerk') return;

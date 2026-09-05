@@ -74,6 +74,11 @@
     const ans = round3(n / k);
     if (dpOf(ans) > 3) return gDivideByPowerOfTen();
     if (Number.isInteger(ans)) return gDivideByPowerOfTen();  /* the point of the skill is the decimal that appears */
+    /* P5 Fractions+Decimals Refutation, WOUND 1: with dp = 0 this drew "2108 / 1000 = ?"
+       on 302 of 500 draws. A WHOLE number divided by 1000 is P4 3.2 (whole / whole,
+       quotient as a decimal), not P5 1.1 ("multiplying and dividing DECIMALS ... by 10,
+       100, 1000 and their multiples"). The DIVIDEND itself must carry a decimal point. */
+    if (Number.isInteger(n)) return gDivideByPowerOfTen();
     return typed3('Divide: ' + n + ' / ' + k + ' = ?', ans,
       'Dividing by ' + k + ' moves every digit ' + places + ' place' + (places > 1 ? 's' : '') +
       ' to the RIGHT, so the number gets smaller: ' + n + ' / ' + k + ' = ' + ans + '.');
@@ -102,7 +107,10 @@
     /* MOE 1.1 is "multiplying and dividing DECIMALS ... by 10, 100, 1000 and their
        multiples". "60 / 40" is a P4 whole-number item wearing this skill's badge,
        so at least one side of the item must actually carry a decimal point. */
-    if (Number.isInteger(n) && Number.isInteger(ans)) return gDivideByMultipleOfTen();
+    /* Refutation WOUND 1: requiring BOTH sides whole let "10 / 200 = 0.05" through on
+       145 of 500 draws - still a whole-number dividend, still P4. The dividend alone
+       decides it. */
+    if (Number.isInteger(n)) return gDivideByMultipleOfTen();
     const base = Math.pow(10, String(k).length - 1);
     const digit = k / base;
     return typed3('Divide: ' + n + ' / ' + k + ' = ?', ans,

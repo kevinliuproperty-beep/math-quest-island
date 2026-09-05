@@ -8,9 +8,12 @@
  *   2.1 fraction as part of a set
  *   3.1 adding and subtracting fractions with denominators of given fractions
  *       not exceeding 12 and not more than two different denominators
- * So every denominator drawn here is <= 12, and an addition or subtraction item
+ * So every denominator in a STEM is <= 12, and an addition or subtraction item
  * shows at most two different denominators (like, or related: one denominator a
- * multiple of the other).
+ * multiple of the other). The cap is on the GIVEN fractions, so a distractor may
+ * sit above it on purpose: 3/8 + 4/8 offers 7/16 because "added the denominators
+ * too" is the P4 misconception the item is hunting, and 6/18 is what that child
+ * actually writes. Distractor denominators are deliberately unclamped.
  *
  * NOT AUTHORED HERE, on purpose. Equivalent fractions, simplest form, and
  * comparing/ordering unlike fractions are the PRIMARY THREE fractions items
@@ -41,14 +44,20 @@
   /* [small, big] with big a multiple of small, both <= 12: the "related" pairs */
   const RELATED = [[2, 4], [2, 6], [2, 8], [2, 10], [2, 12], [3, 6], [3, 9], [3, 12],
                    [4, 8], [4, 12], [5, 10], [6, 12]];
-  /* [plural noun, where it sits, the subset] - kept in three pieces so the closing
-     question reads "How many pupils are there in the class?" and not the run-on
-     "How many pupils in the class are there altogether?" */
+  /* [plural noun, where it sits, the subset, the largest believable total] - kept
+     in pieces so the closing question reads "How many pupils are there in the
+     class?" and not the run-on "How many pupils in the class are there
+     altogether?". The fourth entry is the context plausibility cap: the whole of
+     the set is drawn at or below it, so no draw can ask about 108 durians in one
+     crate. The MRT carriage was dropped rather than capped - a real carriage
+     seats about 40 and has exactly 5 reserved seats, so every fraction of it that
+     the generator can draw is factually wrong, which is the same defect as the
+     "954 MRT carriages" the operations file already fixed. */
   const SETS = [
-    ['pupils', 'in the class', 'girls'],
-    ['durians', 'in the crate', 'ripe ones'],
-    ['bowls of laksa', 'on the tray', 'extra spicy ones'],
-    ['seats', 'in the MRT carriage', 'reserved ones']
+    ['pupils', 'in the class', 'girls', 40],
+    ['durians', 'in the crate', 'ripe ones', 40],
+    ['bowls of laksa', 'on the tray', 'extra spicy ones', 30],
+    ['sweets', 'in the packet', 'green ones', 40]
   ];
   const TRAYS = [
     ['kaya toast sets', 'sold'],
@@ -100,14 +109,22 @@
       'Split ' + total + ' into ' + d + ' equal groups of ' + groups + '. ' + n + ' of those groups is ' +
       n + ' x ' + groups + ' = ' + (groups * n) + '.');
   }
-  /* the whole of a set, given the part */
+  /* the whole of a set, given the part. The numerator is drawn coprime with d, not
+     hardcoded to 1, so "3/8 of the pupils are girls, there are 12 girls" is
+     reachable and not only the unit-fraction half of the skill. Coprime keeps the
+     stem fraction in simplest form, matching the rest of the file. */
   function gFracOfSetWhole() {
-    const s = pick(SETS), d = pick([3, 4, 5, 6, 8, 10, 12]);
-    const groups = ri(2, 9), part = groups;
-    return finishTyped(fr(1, d) + ' of the ' + s[0] + ' ' + s[1] + ' are ' + s[2] + '. There are ' +
-      part + ' ' + s[2] + '. How many ' + s[0] + ' are there ' + s[1] + '?', part * d,
-      'One of the ' + d + ' equal groups holds ' + part + ', so all ' + d + ' groups hold ' + d + ' x ' + part +
-      ' = ' + (part * d) + '.');
+    const s = pick(SETS), cap = s[3];
+    const d = pick([3, 4, 5, 6, 8, 10, 12].filter(x => x * 2 <= cap));
+    const groups = ri(2, Math.min(9, Math.floor(cap / d)));   /* total = groups x d stays under the cap */
+    const n = coprimeNum(d), part = groups * n, total = groups * d;
+    return finishTyped(fr(n, d) + ' of the ' + s[0] + ' ' + s[1] + ' are ' + s[2] + '. There are ' +
+      part + ' ' + s[2] + '. How many ' + s[0] + ' are there ' + s[1] + '?', total,
+      n === 1
+        ? 'One of the ' + d + ' equal groups holds ' + part + ', so all ' + d + ' groups hold ' +
+          d + ' x ' + part + ' = ' + total + '.'
+        : n + ' of the ' + d + ' equal groups hold ' + part + ', so one group holds ' + part + ' / ' +
+          n + ' = ' + groups + ', and all ' + d + ' groups hold ' + d + ' x ' + groups + ' = ' + total + '.');
   }
   /* part of a set expressed AS a fraction (multiple choice: the answer is a fraction) */
   function gSetAsFraction() {
@@ -118,9 +135,14 @@
     if (ans[1] > 12) return gSetAsFraction();   /* denominator cap, redrawn not hoped for */
     return finishFrac('A box holds ' + a + ' red marbles and ' + b + ' blue marbles. What fraction of the marbles are red?',
       '', ans,
+      /* Every candidate is reduced before it is shown. The key is always in
+         simplest form, so an unreduced distractor beside it is a free tell: the
+         child picks the odd one out by FORM without ever comparing VALUE.
+         Reducing changes no candidate's value, so buildFracChoices still drops
+         anything equal to the key or to another candidate by cross-multiplication. */
       [simp(b, total),                      /* counted the blue ones instead */
        a < b ? simp(a, b) : simp(b, a),      /* part-to-part instead of part-to-whole */
-       [ans[0], ans[1] + 1], [ans[0] + 1, ans[1] + 1]],   /* mis-counted one group */
+       simp(ans[0], ans[1] + 1), simp(ans[0] + 1, ans[1] + 1)],   /* mis-counted one group */
       'There are ' + total + ' marbles altogether and ' + a + ' are red, so ' + a + ' out of ' + total +
       ', which is ' + ans[0] + ' out of ' + ans[1] + '.');
   }

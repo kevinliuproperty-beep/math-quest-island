@@ -63,7 +63,11 @@
     const tens = Math.floor(b / 10) * 10, ones = b % 10;
     return finishTyped(a + ' x ' + b + ' = ?', a * b,
       ones === 0
-        ? 'Split ' + b + ' into ' + tens + ': ' + a + ' x ' + b + ' = ' + (a * b) + '.'
+        /* A round ten has nothing to split off, so "split 50 into 50" would be
+           telling the child to split a number into itself. Multiply by the tens
+           digit and scale by ten instead. */
+        ? b + ' is ' + (b / 10) + ' tens, so ' + a + ' x ' + (b / 10) + ' = ' + (a * (b / 10)) +
+          ' and then x 10 = ' + (a * b) + '.'
         : 'Split ' + b + ' into ' + tens + ' + ' + ones + '. ' + a + ' x ' + tens + ' = ' + (a * tens) +
           ' and ' + a + ' x ' + ones + ' = ' + (a * ones) + '. Add them: ' + (a * b) + '.');
   }

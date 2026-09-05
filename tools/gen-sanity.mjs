@@ -265,6 +265,13 @@ function oracle(q) {
     if ((m = text.match(/^Divide: ([\d.]+) \/ (\d+) = \?$/))) {
       const a = Number(m[1]), k = Number(m[2]);
       if (k % 10 !== 0) return `p5 dec div: divisor ${k} is not a multiple of ten; P5 1.1 is 10/100/1000 and their multiples only`;
+      /* P5 Fractions+Decimals Refutation, WOUND 1. MOE P5 1.1 is "multiplying and
+         dividing DECIMALS (up to 3 dp) by 10, 100, 1000 and their multiples". A WHOLE
+         number over 1000 is P4 3.2 wearing this badge, and it shipped on 302/500
+         gDivideByPowerOfTen draws and 145/500 gDivideByMultipleOfTen draws because the
+         lane note's claimed clamp did not exist in the code. The dividend must carry a
+         decimal point. */
+      if (!/\./.test(m[1])) return `p5 dec div: dividend ${a} is a whole number; that is P4 3.2, not P5 1.1`;
       if (dpOf(a) > 3) return `p5 dec div: ${a} runs past 3 decimal places`;
       if (q.dp !== 3) return 'p5 dec div: q.dp not declared, trailing-zero/rounding guard missing';
       const e = r3(a / k);

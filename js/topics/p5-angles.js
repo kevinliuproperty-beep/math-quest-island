@@ -27,6 +27,11 @@
  *    argument, never on the key alone.
  *
  * Every angle drawn is a whole number of degrees and every answer is positive.
+ *
+ * NO REFLEX ANGLE IN THE TWO ITEMS THAT CARRIED ONE (refutation wound 4). With no
+ * figure, a 225° angle in prose is a heavier read than the fact under test, so
+ * gAtPointThree bounds its ANSWER below 180 and gPointEqualAngles bounds its GIVEN
+ * angle below 180. Both still close exactly on 360.
  */
 (function () {
   const G = MQI.gen;
@@ -50,8 +55,11 @@
     const a = ri(20, 160), e = 180 - a;
     const cs = clean(e, [a, 90 - a, 360 - a, 180 + a, a + 90]);
     if (cs.length < 3) return gStraightLineTwo();
+    /* Wound 2: "no gap between them" rules out a gap BETWEEN the angles but says
+       nothing about the ends, so the pair need not span the line. The completeness
+       clause below is the line-family twin of "together they fill the whole turn". */
     return finishNum('Angle a and angle b sit side by side on a straight line, with no gap between them. Angle a is ' +
-      a + DEG + '. What is angle b?', '', e, cs, DEG,
+      a + DEG + '. Together the two angles make the whole straight line. What is angle b?', '', e, cs, DEG,
       'Angles on a straight line add up to 180' + DEG + '. So angle b = 180' + DEG + ' − ' + a +
       DEG + ' = ' + e + DEG + '.');
   }
@@ -59,7 +67,11 @@
   function gAtPointThree() {
     const a = ri(60, 150), b = ri(60, 150);
     const e = 360 - a - b;
-    if (e < 20) return gAtPointThree();
+    /* Wound 4: no reflex ANSWER. This topic has no figure by design, and a 225°
+       angle carried in prose alone is a far heavier read than the fact being
+       tested. Bounded 20 <= answer < 180, so the answer is always drawable in
+       the child's head. The configuration still closes exactly on 360. */
+    if (e < 20 || e >= 180) return gAtPointThree();
     /* misconceptions: used 180 instead of 360; forgot one given; added the givens */
     const cs = clean(e, [180 - a - b, 360 - a, 180 - a, a + b, 360 - b]);
     if (cs.length < 3) return gAtPointThree();
@@ -96,8 +108,9 @@
     if (e < 15) return gStraightLineThree();
     const cs = clean(e, [180 - a, 180 - b, a + b, 360 - a - b, 90 - a]);
     if (cs.length < 3) return gStraightLineThree();
+    /* Wound 2: completeness clause, same as gStraightLineTwo. */
     return finishNum('Three angles sit side by side on a straight line, with no gaps between them. Two of them are ' +
-      a + DEG + ' and ' + b + DEG + '. What is the third angle?', '', e, cs, DEG,
+      a + DEG + ' and ' + b + DEG + '. Together the three angles make the whole straight line. What is the third angle?', '', e, cs, DEG,
       'The three angles together make a straight line, which is 180' + DEG + '. So the third angle = 180' +
       DEG + ' − ' + a + DEG + ' − ' + b + DEG + ' = ' + e + DEG + '.');
   }
@@ -120,8 +133,9 @@
     if (e < 8) return gRightAngleOnLine();
     const cs = clean(e, [180 - a, 90 + a, a + 90 - e, 360 - a, 180 - a - a]);
     if (cs.length < 3) return gRightAngleOnLine();
+    /* Wound 2: completeness clause, same as the other two line items. */
     return finishNum('Angle x, a right angle and angle y sit side by side on a straight line, with no gaps between them. Angle x is ' +
-      a + DEG + '. What is angle y?', '', e, cs, DEG,
+      a + DEG + '. Together the three angles make the whole straight line. What is angle y?', '', e, cs, DEG,
       'A right angle is 90' + DEG + ' and the three angles make a straight line, which is 180' +
       DEG + '. So angle y = 180' + DEG + ' − 90' + DEG + ' − ' + a + DEG + ' = ' + e + DEG + '.');
   }
@@ -139,10 +153,17 @@
   }
 
   function gPointEqualAngles() {
-    const n = pick([3, 4, 5]);
-    const e = pick([40, 45, 50, 55, 60, 65, 70, 75, 80, 85]);
+    /* Wound 3: the old pool was pick(3 values) x pick(10 values) minus the guard =
+       24 distinct stems, and pool 3 draws roughly a third of a 30-question set from
+       here, so a child met the same stem repeatedly inside one session. Both n and e
+       are now ranges. Wound 4: the GIVEN angle is capped below 180, so no reflex
+       angle is ever described in prose in this figure-free topic.
+       Arithmetic stays exact: every angle is a whole number by construction and
+       known + n x e = 360 closes on the nose. Live pool = 151 distinct stems. */
+    const n = ri(3, 6);
+    const e = ri(20, 120);
     const known = 360 - n * e;
-    if (known < 20 || known > 250) return gPointEqualAngles();
+    if (known < 20 || known >= 180) return gPointEqualAngles();
     const cs = clean(e, [known, 360 - known, known / n, 180 - known, e * n]);
     if (cs.length < 3) return gPointEqualAngles();
     return finishNum('Angles meet at a point and together they fill the whole turn. One of them is ' +

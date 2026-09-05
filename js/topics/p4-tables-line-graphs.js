@@ -133,8 +133,17 @@
       units.map((u, i) => x(i) + ',' + y(u)).join(' ') + '"/>';
     for (let i = 0; i < n; i++) {
       s += '<circle cx="' + x(i) + '" cy="' + y(units[i]) + '" r="4" fill="#1d4ed8"/>' +
-        '<text class="lg-val" x="' + x(i) + '" y="' + (y(units[i]) - 9) +
-        '" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">' + vals[i] + '</text>' +
+        /* KILL FIX (P4 Area+Graphs Refutation, §5): the value label used to be drawn at
+           y(units[i]) - 9, a FIXED 9px above the dot, while one tick step is PH/maxU =
+           18.75px. Every label therefore floated half a step high and sat level with the
+           gridline ONE STEP ABOVE the value it named - 228 of 228 graphs, and on a step-5
+           graph the label was 5 units adrift of the line it lined up with. The label y is
+           now the value's OWN tick position, y(units[i]), so the printed number is level
+           with its own gridline. Drawn to the RIGHT of the dot (text-anchor="start") so it
+           never covers the point and so point 0, which sits on the y-axis itself, clears
+           the tick-number column. */
+        '<text class="lg-val" x="' + (x(i) + 12) + '" y="' + (y(units[i]) + 4) +
+        '" text-anchor="start" font-size="12" font-weight="600" fill="#0f172a">' + vals[i] + '</text>' +
         '<text class="lg-cat" x="' + x(i) + '" y="' + (PADT + PH + 17) +
         '" text-anchor="middle" font-size="11" fill="#475569">' + cats[i] + '</text>';
     }
@@ -150,7 +159,7 @@
     const o = g.vals.filter((_, j) => j !== i);
     return finishNum('On the line graph, how many ' + g.thing + ' are shown for ' + g.cats[i] + '?',
       g.html, g.val(i), [o[0], o[1], o[2], g.val(i) + 1], '',
-      'Go up from ' + g.cats[i] + ' until you reach the dot, then read the number printed above it: ' +
+      'Go up from ' + g.cats[i] + ' until you reach the dot, then read the number printed beside it: ' +
       g.val(i) + '.');
   }
 

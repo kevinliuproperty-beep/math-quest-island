@@ -49,7 +49,8 @@
       ' cm² and its length is ' + l + ' cm. What is its breadth, in cm?',
       w,
       'Area of a rectangle = length × breadth, so breadth = area ÷ length. ' +
-      area + ' ÷ ' + l + ' = ' + w + ' cm.');
+      area + ' ÷ ' + l + ' = ' + w + ' cm.',
+      'cm');
   }
 
   /* pool 1: square, perimeter given, find one side */
@@ -61,7 +62,8 @@
       ' cm. What is the length of one side, in cm?',
       s,
       'A square has 4 equal sides, so one side = perimeter ÷ 4. ' +
-      (4 * s) + ' ÷ 4 = ' + s + ' cm.');
+      (4 * s) + ' ÷ 4 = ' + s + ' cm.',
+      'cm');
   }
 
   /* pool 2: rectangle, perimeter and one side given, find the other side */
@@ -77,7 +79,8 @@
       w,
       'Perimeter = 2 × (length + breadth), so length + breadth = ' + per + ' ÷ 2 = ' +
       (per / 2) + '. Then ' + (per / 2) + ' − ' + l + ' = ' + w + ' cm. ' +
-      'Taking the length away from the whole perimeter is the usual slip.');
+      'Taking the length away from the whole perimeter is the usual slip.',
+      'cm');
   }
 
   /* pool 2: square, area given, find one side (perfect squares only) */
@@ -89,7 +92,8 @@
       ' cm². What is the length of one side, in cm?',
       s,
       'A square’s area = side × side. ' + s + ' × ' + s + ' = ' + (s * s) +
-      ', so one side is ' + s + ' cm.');
+      ', so one side is ' + s + ' cm.',
+      'cm');
   }
 
   /* ---- composite figures described in words (1.3) ---- */
@@ -104,7 +108,8 @@
       a * b + c * d,
       'Work out each rectangle, then add. ' + a + ' × ' + b + ' = ' + (a * b) + ' and ' +
       c + ' × ' + d + ' = ' + (c * d) + '. Altogether ' + (a * b) + ' + ' + (c * d) +
-      ' = ' + (a * b + c * d) + ' cm².');
+      ' = ' + (a * b + c * d) + ' cm².',
+      'cm²');
   }
 
   /* pool 3: big rectangle with a square hole cut out, area by subtraction */
@@ -118,7 +123,8 @@
       W * H - s * s,
       'Whole card: ' + W + ' × ' + H + ' = ' + (W * H) + ' cm². Hole: ' + s +
       ' × ' + s + ' = ' + (s * s) + ' cm². What is left is ' + (W * H) + ' − ' +
-      (s * s) + ' = ' + (W * H - s * s) + ' cm².');
+      (s * s) + ' = ' + (W * H - s * s) + ' cm².',
+      'cm²');
   }
 
   /* ---- composite L-shape, RENDERED with every side labelled (1.3) ---- */

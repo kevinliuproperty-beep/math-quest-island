@@ -85,6 +85,19 @@ function checkShape(q) {
   if (plain.some(p => BAD.test(p))) return 'NaN/undefined in a choice: ' + plain.join(' | ');
   if (new Set(plain).size !== plain.length) return 'duplicate choices: ' + plain.join(' | ');
   if (strip(q.choices[q.correct]) !== strip(q.answerText)) return 'answerText != choices[correct]';
+  /* Distractor-identity contract (P3 refutation 2026-09-05): a generator that sets
+     q.authored asserts that EVERY authored distractor differs from the answer and
+     that no shipped option was silently padded in by finishNum. */
+  if (Array.isArray(q.authored)) {
+    const ans = parseFloat(strip(q.answerText));
+    if (q.authored.some(c => near(c, ans))) return 'authored distractor identical to the answer: ' + q.authored.join(',');
+    const allowed = new Set(q.authored.map(Number));
+    for (let i = 0; i < q.choices.length; i++) {
+      if (i === q.correct) continue;
+      const v = parseFloat(strip(q.choices[i]));
+      if (!allowed.has(v)) return 'padded distractor shipped (' + v + '); authored: ' + q.authored.join(',');
+    }
+  }
   // numeric choices must be finite and positive (no negative or absurd distractors)
   for (const p of plain) {
     const n = parseFloat(p);
@@ -152,9 +165,9 @@ function oracle(q) {
       const e = Math.ceil(Number(m[1]) / Number(m[2]));
       return near(e, q.answer) ? null : `boxes needed: expected ${e}, got ${q.answer}`;
     }
-    if ((m = text.match(/quotient when (\d+) is divided by (\d+)/))) {
-      const e = Math.floor(Number(m[1]) / Number(m[2]));
-      return near(e, q.answer) ? null : `quotient: expected ${e}, got ${q.answer}`;
+    if ((m = text.match(/How many groups of (\d+) can be made from (\d+)\?/))) {
+      const e = Math.floor(Number(m[2]) / Number(m[1]));
+      return near(e, q.answer) ? null : `groups of: expected ${e}, got ${q.answer}`;
     }
     if ((m = text.match(/^(\d+) x (\d+) = \?$/))) {
       const e = Number(m[1]) * Number(m[2]);
@@ -201,7 +214,7 @@ function oracle(q) {
     const e = Number(s[{ thousands: 0, hundreds: 1, tens: 2, ones: 3 }[m[1]]]);
     return near(e, ansNum) ? null : `which digit: expected ${e}, got ${ansNum}`;
   }
-  if ((m = text.match(/^Which number has (\d+) thousands, (\d+) hundreds, (\d+) tens and (\d+) ones\?$/))) {
+  if ((m = text.match(/^Which number has (\d+) thousands?, (\d+) hundreds?, (\d+) tens? and (\d+) ones?\?$/))) {
     const e = Number(m[1]) * 1000 + Number(m[2]) * 100 + Number(m[3]) * 10 + Number(m[4]);
     return near(e, ansNum) ? null : `build number: expected ${e}, got ${ansNum}`;
   }
@@ -233,16 +246,29 @@ function oracle(q) {
     return near(e, ansNum) ? null : `compound word (compare): expected ${e}, got ${ansNum}`;
   }
 
-  /* --- P3 pilot: bar graphs. Values are re-derived as units x scale from the
-     rendered graph markup, never from answerText. --- */
+  /* --- P3 pilot: bar graphs. RENDERED SURFACE ONLY: every value is read off the
+     bar's own printed number label and cross-checked against the printed axis
+     ticks, exactly as a child reads it. No data-* attribute exists any more. --- */
   if (/class="bargraph"/.test(String(q.extra))) {
     const raw = String(q.extra);
-    const sm = raw.match(/data-scale="(\d+)"/);
-    if (!sm) return 'bar graph: no scale in the rendered graph';
-    const scale = Number(sm[1]);
+    const cap = extra.match(/Each unit along the bottom of the graph stands for (\d+) /);
+    if (!cap) return 'bar graph: no scale caption printed under the graph';
+    const scale = Number(cap[1]);
+    const ticks = [...raw.matchAll(/<span class="bg-tick"[^>]*>(\d+)<\/span>/g)].map(t => Number(t[1]));
+    if (ticks.length < 3) return 'bar graph: value axis has fewer than 3 printed ticks';
+    if (ticks[0] !== 0) return 'bar graph: axis does not start at 0, got ' + ticks[0];
+    for (let i = 1; i < ticks.length; i++) {
+      if (ticks[i] - ticks[i - 1] !== scale) return `bar graph: tick step ${ticks[i] - ticks[i - 1]} != scale ${scale}`;
+    }
     const bars = {};
-    for (const b of raw.matchAll(/data-cat="([^"]+)" data-units="(\d+)"/g)) bars[b[1]] = Number(b[2]) * scale;
-    if (!Object.keys(bars).length) return 'bar graph: no bars in the rendered graph';
+    for (const b of raw.matchAll(/<span class="bg-cat"[^>]*>([^<]+)<\/span><span class="bg-bar"[^>]*><\/span><span class="bg-val"[^>]*>(\d+)<\/span>/g)) {
+      bars[b[1]] = Number(b[2]);
+    }
+    const names = Object.keys(bars);
+    if (names.length < 4) return 'bar graph: fewer than 4 labelled bars rendered';
+    for (const c of names) {
+      if (!ticks.includes(bars[c])) return `bar graph: bar "${c}" prints ${bars[c]}, which is not on the axis`;
+    }
     const val = c => (c in bars ? bars[c] : null);
     if ((m = text.match(/does the graph show for (.+)\?$/))) {
       const e = val(m[1]);

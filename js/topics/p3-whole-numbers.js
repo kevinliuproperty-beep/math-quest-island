@@ -19,10 +19,14 @@
   function standsFor(posLo, posHi){
     const d = digits4(), n = numOf(d), p = ri(posLo, posHi), dig = d[p];
     const val = dig * Math.pow(10, 3 - p);
-    return finishNum('In ' + n + ', the digit ' + dig + ' stands for how much?', '', val,
-      [dig, dig*10, dig*100, dig*1000], '',
+    /* every authored distractor must differ from the answer: drop the power that IS val */
+    const cands = [dig, dig*10, dig*100, dig*1000].filter(c => c !== val);
+    const q = finishNum('In ' + n + ', the digit ' + dig + ' stands for how much?', '', val,
+      cands, '',
       'The ' + dig + ' sits in the ' + PLACES[p] + ' place, so it stands for ' +
       dig + ' x ' + Math.pow(10, 3 - p) + ' = ' + val + '.');
+    q.authored = cands;   /* harness contract: no authored distractor equals the answer */
+    return q;
   }
   function gStandsEasy(){ return standsFor(1, 2); }   /* hundreds or tens */
   function gStandsHard(){ return standsFor(0, 3); }   /* any place, thousands included */
@@ -42,8 +46,11 @@
     const o = ri(1,9);
     const n = th*1000 + h*100 + t*10 + o;
     const squashed = Number(String(th) + (h?String(h):'') + (t?String(t):'') + String(o));
-    return finishNum('Which number has ' + th + ' thousands, ' + h + ' hundreds, ' + t + ' tens and ' + o + ' ones?',
-      '', n, [squashed, n + 100, n - (h?100:10)*0 + 9, th*1000 + o*100 + t*10 + h], '',
+    const pl = (v, w) => v + ' ' + w + (v === 1 ? '' : 's');
+    return finishNum('Which number has ' + pl(th,'thousand') + ', ' + pl(h,'hundred') + ', ' + pl(t,'ten') +
+      ' and ' + pl(o,'one') + '?',
+      '', n, [squashed, n + 100, n + 9, th*1000 + o*100 + t*10 + h, n - 100, n + 1]
+        .filter(c => c > 0 && c <= 9999 && c !== n), '',
       th + ' thousands = ' + (th*1000) + ', ' + h + ' hundreds = ' + (h*100) + ', ' + t + ' tens = ' + (t*10) +
       ', ' + o + ' ones = ' + o + '. Add them: ' + n + '. A zero still needs to hold its place.');
   }
@@ -69,7 +76,11 @@
     const n = dir === 'more' ? ri(1000, 9999 - step) : ri(1000 + step, 9999);
     const ans = dir === 'more' ? n + step : n - step;
     return finishNum('What number is ' + step + ' ' + dir + ' than ' + n + '?', '', ans,
-      [dir === 'more' ? n + step*10 : n - step*10, dir === 'more' ? n + step/10 : n - step/10, n, ans + step].filter(Number.isInteger),
+      /* scope clamp (MOE p.35 "up to 10 000"): reject any option outside 1..9999 in the
+         generator, never by tolerance downstream */
+      [dir === 'more' ? n + step*10 : n - step*10, dir === 'more' ? n + step/10 : n - step/10, n, ans + step,
+       dir === 'more' ? n + step + 1 : n - step - 1, ans + 10, ans - 10]
+        .filter(c => Number.isInteger(c) && c > 0 && c <= 9999 && c !== ans),
       '', n + ' ' + (dir === 'more' ? '+ ' : '- ') + step + ' = ' + ans + '. Watch the digits that roll over.');
   }
 

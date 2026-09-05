@@ -19,13 +19,13 @@
 
   const money = c => '$' + (c/100).toFixed(2);
   const dollars = c => Number((c/100).toFixed(2));
-  /* keep the cents digit non-zero so the typed answer has no trailing-zero ambiguity */
-  function cents(lo, hi){ let c = ri(lo, hi); if (c % 10 === 0) c += ri(1, 9); return c; }
+  /* Singapore withdrew the 1-cent coin in 2002, so every hawker price must be
+     cash-payable: force the last cent digit to 0 or 5. */
+  function cents(lo, hi){ let c = ri(lo, hi); c -= c % 5; if (c < lo) c += 5; return c; }
 
   function gAddTwo(){
     const who = pick(NAMES), a = cents(120, 590);
-    let b = cents(80, 450);
-    while ((a + b) % 10 === 0) b++;              /* answer must not end in a 0 cent */
+    const b = cents(80, 450);
     const t = a + b;
     return finishTyped(who + ' spends ' + money(a) + ' on ' + pick(MEALS) + ' and ' + money(b) + ' on ' +
       pick(CHEAP) + ' at ' + pick(STALLS) + '. How much does ' + who + ' spend in total? (in dollars, e.g. 4.75)',
@@ -34,8 +34,7 @@
   }
   function gAddBig(){
     const who = pick(NAMES), a = cents(850, 2900);
-    let b = cents(650, 2400);
-    while ((a + b) % 10 === 0) b++;
+    const b = cents(650, 2400);
     const t = a + b;
     return finishTyped(who + ' spends ' + money(a) + ' on ' + pick(BIG) + ' and ' + money(b) + ' on ' +
       pick(MEALS) + ' at ' + pick(STALLS) + '. How much is spent in total? (in dollars, e.g. 14.75)',
@@ -46,8 +45,7 @@
   }
   function gAddThree(){
     const who = pick(NAMES), a = cents(150, 700), b = cents(120, 600);
-    let c = cents(90, 500);
-    while ((a + b + c) % 10 === 0) c++;
+    const c = cents(90, 500);
     const t = a + b + c;
     return finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ', ' + pick(CHEAP) + ' for ' + money(b) +
       ' and ' + pick(CHEAP) + ' for ' + money(c) + ' at ' + pick(STALLS) +
@@ -57,8 +55,7 @@
   }
   function gSubSmall(){
     const who = pick(NAMES), have = cents(600, 990);
-    let spend = cents(150, 550);
-    while ((have - spend) % 10 === 0) spend++;
+    const spend = cents(150, 550);
     const left = have - spend;
     return finishTyped(who + ' has ' + money(have) + '. ' + who + ' buys ' + pick(CHEAP) + ' for ' + money(spend) +
       ' at ' + pick(STALLS) + '. How much money is left? (in dollars, e.g. 2.35)',
@@ -75,11 +72,10 @@
   }
   function gChange(){
     const who = pick(NAMES), b = cents(120, 640);
-    let a = cents(180, 780);
+    const a = cents(180, 780);
     const note = pick([1000, 2000, 5000]);
     const given = (a + b) < note ? note : 5000;
-    let chg = given - a - b;
-    if (chg % 10 === 0) { a += 3; chg = given - a - b; }
+    const chg = given - a - b;
     return finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ' and ' + pick(CHEAP) + ' for ' + money(b) +
       ' at ' + pick(STALLS) + ', then hands the stallholder ' + money(given) +
       '. How much change should ' + who + ' get? (in dollars, e.g. 3.15)',

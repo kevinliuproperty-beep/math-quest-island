@@ -20,8 +20,8 @@
   }
   function gQuotient(){
     const d = ri(3, 9), q = ri(10, 40), r = ri(1, d - 1), n = d*q + r;
-    return finishTyped('What is the quotient when ' + n + ' is divided by ' + d + '?',
-      q, d + ' x ' + q + ' = ' + (d*q) + ', which is the closest you can get without passing ' + n + '. The quotient is ' + q + ' and the remainder is ' + r + '.');
+    return finishTyped('How many groups of ' + d + ' can be made from ' + n + '?',
+      q, d + ' x ' + q + ' = ' + (d*q) + ', which is the closest you can get without passing ' + n + '. That makes ' + q + ' groups, with ' + r + ' left over.');
   }
   function gBoxesNeeded(){
     const d = ri(4, 9), q = ri(6, 20), r = ri(1, d - 1), n = d*q + r;
@@ -37,12 +37,13 @@
       (Math.floor(a/10)*10*b) + ' and ' + (a%10) + ' x ' + b + ' = ' + ((a%10)*b) + '. Add them: ' + (a*b) + '.');
   }
   function gDivAlgo(){
-    const d = ri(3, 9), q = ri(20, 120), n = d*q;
+    /* scope clamp (MOE p.35 item 3.4): up to 3 digits by 1 digit, so d*q <= 999 */
+    const d = ri(3, 9), q = ri(20, Math.floor(999/d)), n = d*q;
     return finishTyped(n + ' / ' + d + ' = ?', q,
       'Ask: ' + d + ' x what = ' + n + '? ' + d + ' x ' + q + ' = ' + n + ', so the answer is ' + q + '.');
   }
   function gTwoStep(){
-    const who = pick(NAMES), trays = ri(4, 9), each = ri(12, 30), drop = ri(3, 20);
+    const who = pick(NAMES), trays = ri(4, 9), each = pick([10, 12, 15, 30]), drop = ri(3, 20);
     return finishTyped(who + ' buys ' + trays + ' trays of eggs at NTUC. Each tray holds ' + each +
       ' eggs. ' + drop + ' eggs crack on the MRT ride home. How many good eggs are left?',
       trays*each - drop,

@@ -19,10 +19,13 @@
     const [B, S, f] = pick(PAIRS);
     const big = ri(2, 9), small = f === 100 ? ri(10, 99) : ri(100, 900);
     const total = big*f + small;
-    const squash = Number(String(big) + String(small));
-    return finishNum(big + ' ' + B + ' ' + small + ' ' + S + ' = ?', '', total,
-      [squash, big + small, big*f, total + f], S,
+    /* real trap: the child converts with the wrong power of ten (500 m read as 50). */
+    const cands = [big*(f/10) + small, big + small, big*f, total + f].filter(c => c > 0 && c !== total);
+    const q = finishNum(big + ' ' + B + ' ' + small + ' ' + S + ' = ?', '', total,
+      cands, S,
       big + ' ' + B + ' = ' + (big*f) + ' ' + S + '. Add the extra ' + small + ' ' + S + ': ' + (big*f) + ' + ' + small + ' = ' + total + ' ' + S + '.');
+    q.authored = cands;   /* harness contract: no authored distractor equals the answer */
+    return q;
   }
   function gToSmallZero(){
     /* the classic trap: 5 km 40 m is 5040 m, not 540 m */
@@ -59,16 +62,21 @@
     const used = ri(50, Math.min(900, total - 50));
     const noun = S === 'ml' ? 'of bandung' : 'of rice';
     const verb = S === 'ml' ? 'drinks' : 'cooks';
-    return finishNum(who + ' has a container holding ' + big + ' ' + B + ' ' + small + ' ' + S + ' ' + noun +
-      ', then ' + verb + ' ' + used + ' ' + S + '. How much is left?', '', total - used,
-      [total + used, big*f - used, total - used + f, Number(String(big)+String(small)) - used].filter(x => x > 0), S,
-      big + ' ' + B + ' ' + small + ' ' + S + ' = ' + total + ' ' + S + '. Then ' + total + ' - ' + used + ' = ' + (total - used) + ' ' + S + '.');
+    const ans = total - used;
+    const cands = [total + used, big*f - used, ans + f, big*(f/10) + small - used, ans + 10, ans + 100]
+      .filter(x => x > 0 && x !== ans);
+    const q = finishNum(who + ' has a container holding ' + big + ' ' + B + ' ' + small + ' ' + S + ' ' + noun +
+      ', then ' + verb + ' ' + used + ' ' + S + '. How much is left?', '', ans,
+      cands, S,
+      big + ' ' + B + ' ' + small + ' ' + S + ' = ' + total + ' ' + S + '. Then ' + total + ' - ' + used + ' = ' + ans + ' ' + S + '.');
+    q.authored = cands;   /* harness contract: no authored distractor equals the answer */
+    return q;
   }
   function gWordCompare(){
     const [B, S, f] = pick([PAIRS[2], PAIRS[0], PAIRS[1]]);
     const who = pick(NAMES);
     let other = pick(NAMES); while (other === who) other = pick(NAMES);
-    const bigA = S === 'g' ? ri(2, 4) : ri(2, 6);          /* a 4 kg durian is already a big one */
+    const bigA = S === 'g' ? ri(2, 4) : (S === 'm' ? 2 : ri(2, 6));   /* 4 kg durian is big; a 2 km walk is the cap */
     const smallA = f === 100 ? ri(20, 95) : ri(200, 900);
     const bigB = ri(1, bigA - 1), smallB = f === 100 ? ri(5, 90) : ri(50, 900);
     const a = bigA*f + smallA, b = bigB*f + smallB;

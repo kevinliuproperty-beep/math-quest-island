@@ -742,6 +742,15 @@ function oracle(q) {
       return 'L figure: a side length is not printed on the figure';
     if (top + cuta !== bottom) return `L figure: ${top} + ${cuta} != bottom ${bottom}`;
     if (cutd + right !== left) return `L figure: ${cutd} + ${right} != left ${left}`;
+    /* WOUND 3 GATE: a cut deeper than two thirds of a side leaves a sliver a
+       child cannot picture. Was exceeded in 24% of draws (max 0.81). */
+    if (cuta * 3 > bottom * 2) return `L figure: the cut is ${cuta}/${bottom} of the width (cap 2/3)`;
+    if (cutd * 3 > left * 2) return `L figure: the cut is ${cutd}/${left} of the height (cap 2/3)`;
+    /* KILL 3 GATE: perimeter and area may never print the same number. */
+    {
+      const per = top + cutd + cuta + right + bottom + left, area = bottom * left - cuta * cutd;
+      if (per === area) return `L figure: coincidence - perimeter and area are both ${per}`;
+    }
     if (/What is the area of this figure/.test(text)) {
       const e = bottom * left - cuta * cutd;
       return near(e, ansNum) ? null : `L area: expected ${e}, got ${ansNum}`;
@@ -756,6 +765,19 @@ function oracle(q) {
       const claim = Number((text.match(/says the perimeter is (\d+) cm/) || [])[1]);
       if (!Number.isFinite(claim)) return 'L error-spot: no claimed perimeter in the stem';
       if (claim === e) return `L error-spot: the "wrong" claim ${claim} equals the true perimeter`;
+      /* KILL 1 GATE (refutation 2026-09-05). The stem says Ravi adds "the four
+         longest sides", so the two he omits must BE the two shortest sides of the
+         rendered figure, and the printed claim must be the sum of the other four.
+         Before the fix this premise was false in 67% of draws: a child obeying the
+         stem reached a third number that was neither the key nor the claim. */
+      if (/adds up only the four longest sides/.test(text)) {
+        const others = [top, right, bottom, left];
+        if (Math.max(cuta, cutd) >= Math.min(...others))
+          return `L error-spot: stem says "four longest" but the omitted notch sides (${cuta}, ${cutd}) are not the two shortest of ${[top, cutd, cuta, right, bottom, left].join(',')}`;
+        const four = others.reduce((s, v) => s + v, 0);
+        if (claim !== four)
+          return `L error-spot: the four longest sides sum to ${four}, but the stem prints ${claim}`;
+      }
       if (claim !== e - cuta - cutd) return `L error-spot: claim ${claim} is not the named misconception (${e - cuta - cutd})`;
       return near(e, ansNum) ? null : `L error-spot: expected ${e}, got ${ansNum}`;
     }
@@ -1086,13 +1108,13 @@ function oracle(q) {
       (Number(f[2]) === a || Number(f[2]) === b);
     return ok ? null : `fact family: "${strip(q.answerText)}" is not in the family of ${a}, ${b}, ${p}`;
   }
-  if ((m = text.match(/^Which of these numbers is NOT a multiple of (\d+)\?$/))) {
+  if ((m = text.match(/^Which of these numbers is NOT in the (\d+) times table\?$/))) {
     const a = Number(m[1]);
     const vals = q.choices.map(c => Number(strip(c)));
-    if (vals.some(v => !Number.isFinite(v))) return 'not-a-multiple: a choice is not a number';
+    if (vals.some(v => !Number.isFinite(v))) return 'not-in-table: a choice is not a number';
     const outs = vals.filter(v => v % a !== 0);
-    if (outs.length !== 1) return `not-a-multiple: ${outs.length} of the four options are not multiples of ${a}`;
-    return near(outs[0], ansNum) ? null : `not-a-multiple: expected ${outs[0]}, got ${ansNum}`;
+    if (outs.length !== 1) return `not-in-table: ${outs.length} of the four options are not in the ${a} times table`;
+    return near(outs[0], ansNum) ? null : `not-in-table: expected ${outs[0]}, got ${ansNum}`;
   }
   if ((m = text.match(/^You know that (\d+) × (\d+) = (\d+)\. Use doubling to work out (\d+) × (\d+)\.$/))) {
     const a = Number(m[1]), b = Number(m[2]), p = Number(m[3]);
@@ -1135,7 +1157,37 @@ function oracle(q) {
     if (gone <= 0 || gone % a !== 0) return `L inverse: cut area ${gone} is not a whole number of ${a}s`;
     const e = gone / a;
     if (e >= H) return `L inverse: the cut is ${e} cm tall in a ${H} cm rectangle`;
+    /* WOUND 3 GATE, described-in-words twin of the rendered-figure cap. */
+    if (a * 3 > W * 2) return `L inverse: the cut is ${a}/${W} of the width (cap 2/3)`;
+    if (e * 3 > H * 2) return `L inverse: the cut is ${e}/${H} of the height (cap 2/3)`;
+    if (2 * (W + H) === area) return `L inverse: coincidence - perimeter and area are both ${area}`;
     return near(e, ansNum) ? null : `L inverse: expected ${e}, got ${ansNum}`;
+  }
+
+  /* DEPTH PILOT v2: the corner cut asked as a DIFFERENCE. The answer is 0 and the
+     oracle insists on it - if a rewrite ever makes the difference non-zero the
+     item's whole point has gone. */
+  if ((m = text.match(/^A (\d+) cm by (\d+) cm rectangular tile has a corner piece (\d+) cm by (\d+) cm cut away, leaving an L-shape with right angles at every corner\. How much longer is the perimeter of the whole rectangle than the perimeter of the L-shape\?$/))) {
+    const W = Number(m[1]), H = Number(m[2]), a = Number(m[3]), b = Number(m[4]);
+    if (a * 3 > W * 2 || b * 3 > H * 2) return `L difference: the cut ${a}x${b} exceeds 2/3 of ${W}x${H}`;
+    const rectPer = 2 * (W + H), lPer = (W - a) + b + a + (H - b) + W + H;
+    if (rectPer - lPer !== 0) return `L difference: rectangle ${rectPer} vs L ${lPer}, difference is not 0`;
+    if (rectPer === W * H - a * b) return `L difference: coincidence - perimeter and area are both ${rectPer}`;
+    return /^0 cm/.test(strip(q.answerText)) ? null
+      : `L difference: expected "0 cm ...", got "${strip(q.answerText)}"`;
+  }
+
+  /* DEPTH PILOT v2: a notch in the MIDDLE of a side, not at a corner. This is the
+     one composite in the bank whose perimeter is genuinely NOT 2(W + H): the two
+     new sides are added and nothing is taken away, so it grows by twice the depth. */
+  if ((m = text.match(/^A rectangular banner is (\d+) cm long and (\d+) cm wide\. A notch (\d+) cm wide and (\d+) cm deep is cut out of the middle of one long side/))) {
+    const W = Number(m[1]), H = Number(m[2]), n = Number(m[3]), d = Number(m[4]);
+    if (n >= W - 1) return `notch: a ${n} cm notch cannot sit inside a ${W} cm side with a gap at each end`;
+    if (d >= H) return `notch: a ${d} cm notch is deeper than the ${H} cm banner`;
+    const e = 2 * (W + H) + 2 * d;
+    if (e === W * H - n * d) return `notch: coincidence - perimeter and area are both ${e}`;
+    if (e === 2 * (W + H)) return 'notch: the notch left the perimeter unchanged, so it is a corner cut';
+    return near(e, ansNum) ? null : `notch perimeter: expected ${e}, got ${ansNum}`;
   }
   if ((m = text.match(/^An L-shaped kitchen floor is a (\d+) m by (\d+) m rectangle .* at \$(\d+) per metre/))) {
     const e = 2 * (Number(m[1]) + Number(m[2])) * Number(m[3]);
@@ -1303,6 +1355,70 @@ function oracle(q) {
   return false; // no oracle matched
 }
 
+/* ---------- KILL 3 GATE: the coincidence ban, run on EVERY question ----------
+   Refutation 2026-09-05 §3: 5.7% of 8,000 perimeter/area draws printed the same
+   number for the figure's perimeter and its area (a square of side 4 is 16 and
+   16; gSquarePA 9.8%), and in "which calculation gives the perimeter?" that
+   coincidence makes two of four options defensible outright. This check reads
+   the rectangle off the RENDERED stem or figure exactly as a child does and
+   fails the harness on any coincidence - so the ban cannot silently regress in
+   a later edit. It also fails on two options that evaluate to the same number,
+   and on a printed option that equals the other quantity for the same figure.
+   Returns null when clean (or when no rectangle is nameable in the stem). */
+function coincidence(q) {
+  const text = strip(q.q), extra = strip(q.extra || '');
+  /* Only a plain number (optionally with one unit word) counts as numeric here.
+     A calculation option ("6 + 3 + 6 + 3") or a rendered mixed number would
+     otherwise parseFloat down to its first digit and collide spuriously. */
+  const PURE = /^\d+(\.\d+)?( (cm²|cm|m²|m|km|kg|g|ℓ|ml|min|s|°|%))?$/;
+  const rawOpts = (q.choices || []).map(strip);
+  const numeric = rawOpts.length > 0 && rawOpts.every(c => PURE.test(c));
+  const opts = rawOpts.map(parseFloat);
+  let m, L = null, B = null, where = '';
+  const sq = s => { L = s; B = s; };
+
+  if (/class="rectBox"/.test(String(q.extra))) {
+    const nums = (extra.match(/(\d+) cm/g) || []).map(s => parseInt(s, 10));
+    if (nums.length >= 2) { L = nums[0]; B = nums[1]; where = 'rendered rectangle'; }
+  }
+  if (L === null && (m = text.match(/A square has sides of (\d+) cm/))) { sq(Number(m[1])); where = 'square'; }
+  if (L === null && (m = text.match(/perimeter of the [a-z]+ is (\d+) cm\. What is the length of one side/))) { sq(Number(m[1]) / 4); where = 'square from perimeter'; }
+  if (L === null && (m = text.match(/has an area of (\d+) cm.\. What is the length of one side/))) { sq(Math.sqrt(Number(m[1]))); where = 'square from area'; }
+  if (L === null && (m = text.match(/A rectangle is (\d+) cm long and (\d+) cm wide/))) { L = Number(m[1]); B = Number(m[2]); where = 'rectangle in words'; }
+  if (L === null && (m = text.match(/rectangle (\d+) cm by (\d+) cm/))) { L = Number(m[1]); B = Number(m[2]); where = 'rectangle in words'; }
+  if (L === null && (m = text.match(/Rectangle A is (\d+) cm by (\d+) cm\. Rectangle B is (\d+) cm by (\d+) cm/))) {
+    for (const [x, y] of [[Number(m[1]), Number(m[2])], [Number(m[3]), Number(m[4])]])
+      if (2 * (x + y) === x * y) return `coincidence: compared rectangle ${x} by ${y} prints perimeter and area both ${x * y}`;
+  }
+  if (L === null && (m = text.match(/(\d+) m long and (\d+) m wide/))) { L = Number(m[1]); B = Number(m[2]); where = 'plot in words'; }
+  if (L === null && (m = text.match(/an area of (\d+) cm.\. Its breadth is (\d+) cm/))) { L = Number(m[1]) / Number(m[2]); B = Number(m[2]); where = 'rectangle from area'; }
+  if (L === null && (m = text.match(/an area of (\d+) cm. and (?:its|a) length is (\d+) cm/))) { L = Number(m[2]); B = Number(m[1]) / Number(m[2]); where = 'rectangle from area'; }
+  if (L === null && (m = text.match(/area of (\d+) cm. and a length of (\d+) cm/))) { L = Number(m[2]); B = Number(m[1]) / Number(m[2]); where = 'frame from area'; }
+  if (L === null && (m = text.match(/perimeter of the [a-z]+ is (\d+) cm and its length is (\d+) cm/))) { L = Number(m[2]); B = Number(m[1]) / 2 - Number(m[2]); where = 'rectangle from perimeter'; }
+  if (L === null && (m = text.match(/is (\d+) cm long and (\d+) cm wide\. A corner piece/))) { L = Number(m[1]); B = Number(m[2]); where = 'card before the cut'; }
+
+  if (L !== null && Number.isFinite(L) && Number.isFinite(B) && L > 0 && B > 0) {
+    const per = 2 * (L + B), area = L * B;
+    if (per === area) return `coincidence: ${where} (${L} by ${B}) prints perimeter and area both ${per}`;
+    /* an option that IS the other quantity is only a defect when the two are
+       different questions with the same printed number, which the line above
+       already rules out; what remains to catch is a stem asking for one of them
+       while a SECOND option also evaluates to it. */
+    if (numeric) {
+      const want = /perimeter/i.test(text) ? per : (/area/i.test(text) ? area : null);
+      if (want !== null) {
+        const hits = opts.filter(v => Math.abs(v - want) < 1e-9).length;
+        if (hits > 1) return `coincidence: ${hits} options equal the asked ${want}`;
+      }
+    }
+  }
+  if (numeric) {
+    const s = new Set(opts.map(v => Math.round(v * 1e6)));
+    if (s.size !== opts.length) return `coincidence: two options are the same number (${opts.join(', ')})`;
+  }
+  return null;
+}
+
 /* ---------- collect every registered generator ---------- */
 const GENS = []; // { topic, skill, level, name, fn }
 for (const [tid, t] of Object.entries(TOPICS)) {
@@ -1331,6 +1447,8 @@ for (const g of GENS) {
     try { q = g.fn(); } catch (e) { err = 'threw: ' + e.message; break; }
     const shape = checkShape(q);
     if (shape) { err = shape; badQ = q; break; }
+    const coin = coincidence(q);
+    if (coin) { err = coin; badQ = q; break; }
     distinct.add(qKey(q));
     const o = oracle(q);
     if (o === false) continue;

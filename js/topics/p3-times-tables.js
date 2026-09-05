@@ -98,10 +98,13 @@ function gNotMultiple(){
   let guard=0;
   while ((bad%a===0 || ms.indexOf(bad)>=0) && guard<40){ bad=pick(ms)+ri(1,a-1); guard++; }
   const opts=shuffle(ms.concat([bad]));
-  return { q:'Which of these numbers is <b>NOT</b> a multiple of '+a+'?', extra:'',
+  /* WOUND 2 (refutation 2026-09-05): "multiple" is P4 Factors and Multiples
+     vocabulary (this repo has p4-factors-multiples.js for it). The mathematics
+     is P3 3.1; only the word was out of year, so the word is what changed. */
+  return { q:'Which of these numbers is <b>NOT</b> in the '+a+' times table?', extra:'',
     choices:opts.map(String), correct:opts.indexOf(bad),
-    explain:'Count in '+a+'s: '+a+', '+(2*a)+', '+(3*a)+', '+(4*a)+'… A multiple of '+a+
-      ' divides by '+a+' with nothing left over. '+bad+' ÷ '+a+' leaves a remainder of '+(bad%a)+
+    explain:'Count in '+a+'s: '+a+', '+(2*a)+', '+(3*a)+', '+(4*a)+'… A number in the '+a+
+      ' times table divides by '+a+' with nothing left over. '+bad+' ÷ '+a+' leaves a remainder of '+(bad%a)+
       ', so '+bad+' is not in the '+a+' times table.',
     answerText:String(bad) };
 }

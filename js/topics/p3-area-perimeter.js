@@ -8,11 +8,21 @@
  * PRINCIPLE: perimeter is the total distance all the way around a flat shape;
  * area is the space inside it, and the two are not the same measurement.
  * FORMAT BANK (one principle, many stems a teacher would rotate through):
- *   direct compute (gPeri), concept check (gPeriConcept), inverse (gPeriInverse),
+ *   direct compute (gPeri), concept check (gPeriConcept),
  *   compare two figures (gPeriCompare), error spotting (gPeriError),
- *   two-step word problem (gPeriFence), working backwards (gPeriDouble),
- *   mixed principle area+perimeter (gPeriFromArea).
- * Every new stem is re-derived from its rendered text by an oracle in
+ *   two-step word problem (gPeriFence), area (gAreaRect, gSquarePA).
+ *
+ * DEPTH PILOT v2, 2026-09-05 (refutation kills 2 + 3, wound 1):
+ *  - SCOPE. gPeriInverse and gPeriDouble are gone: perimeter-in / side-out is
+ *    MOE P4 1.1 and 1.2, and `p4area` already carries both as
+ *    gRectSideFromPerimeter and gSquareSideFromPerimeter. gPeriFromArea moved
+ *    verbatim into p4-area-perimeter.js (P4 1.1, skill `missing`, pool 2).
+ *    The legacy gMissSide stays put pending its own scope pass.
+ *  - COINCIDENCE BAN. No rectangle in this file may print the same number for
+ *    its perimeter and its area, and no named distractor may collide with the
+ *    key or with another distractor. Enforced by redraw here and asserted
+ *    independently in tools/gen-sanity.mjs.
+ * Every stem is re-derived from its rendered text by an oracle in
  * tools/gen-sanity.mjs; nothing is trusted from the generator's own answerText.
  */
 (function () {
@@ -21,6 +31,26 @@
         buildFracChoices = G.buildFracChoices, finishFrac = G.finishFrac,
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
+
+/* ---- COINCIDENCE BAN (refutation kill 3, 2026-09-05) ----------------------
+   paOk: the figure's perimeter and its area must not print the same number.
+   "A square has sides of 4 cm" (perimeter 16, area 16) is the item Kevin stops
+   on, and in a which-calculation stem the coincidence makes two options
+   defensible outright (6 by 3: 6 + 3 + 6 + 3 = 18 AND 6 x 3 = 18).
+   optsOk: every NAMED distractor must be a positive integer, distinct from the
+   key and from every other named distractor. finishNum shuffles the candidate
+   list, so a collision anywhere in it can surface; requiring the whole list to
+   be clean also means the padding branch never fires and the authored-
+   distractor contract binds on every draw. */
+function paOk(L,B){ return 2*(L+B) !== L*B; }
+function optsOk(correct, cands){
+  const s = new Set([correct]);
+  for (const c of cands){
+    if (!Number.isInteger(c) || c <= 0 || s.has(c)) return false;
+    s.add(c);
+  }
+  return true;
+}
 
 /* Numeric MC whose distractors are all AUTHORED misconceptions: the helper only
    stamps q.authored when three named wrong answers survived (distinct, positive,
@@ -60,18 +90,30 @@ function rectHtml(L,B){
 
 /* FORMAT 1 - direct compute, on a labelled figure (pool 1) */
 function gPeri(){
-  const L=ri(3,12), B=ri(2,L); const p=2*(L+B);
+  let L=6,B=4,g=0;
+  do { L=ri(3,12); B=ri(2,L); g++; }
+  while (g<200 && !(paOk(L,B) && optsOk(2*(L+B),[L+B,L*B,2*L+B,2*(L+B)+2])));
+  const p=2*(L+B);
   return finishNum('What is the <b>perimeter</b> of this rectangle?',rectHtml(L,B),p,[L+B,L*B,2*L+B,p+2],'cm',
     'Perimeter = go all the way around: '+L+' + '+B+' + '+L+' + '+B+' = '+p+' cm.');
 }
 function gAreaRect(){
-  const L=ri(3,12), B=ri(2,Math.min(L,9)); const a=L*B;
+  let L=6,B=4,g=0;
+  do { L=ri(3,12); B=ri(2,Math.min(L,9)); g++; }
+  while (g<200 && !(paOk(L,B) && optsOk(L*B,[2*(L+B),L+B,L*B+L,L*B-B])));
+  const a=L*B;
   return finishNum('What is the <b>area</b> of this rectangle?',rectHtml(L,B),a,[2*(L+B),L+B,a+L,a-B],'cm²',
     'Area = length × breadth = '+L+' × '+B+' = '+a+' cm².');
 }
 function gSquarePA(){
-  const s=ri(2,12);
-  if(Math.random()<0.5){
+  const wantPeri = Math.random() < 0.5;
+  let s=5,g=0;
+  /* side 4 is the coincidence draw (perimeter 16, area 16); side 2 collides
+     4 x s with s x s in the option list. Both are redrawn out. */
+  do { s=ri(2,12); g++; }
+  while (g<200 && !(4*s !== s*s &&
+        optsOk(wantPeri?4*s:s*s, wantPeri?[s*s,2*s,4*s+s,4*s-2]:[4*s,2*s,s*s+s,s*s-s])));
+  if(wantPeri){
     const p=4*s;
     return finishNum('A square has sides of '+s+' cm. What is its <b>perimeter</b>?','',p,[s*s,2*s,p+s,p-2],'cm',
       'A square has 4 equal sides: 4 × '+s+' = '+p+' cm.');
@@ -81,15 +123,22 @@ function gSquarePA(){
     'Area of a square = side × side = '+s+' × '+s+' = '+a+' cm².');
 }
 function gMissSide(){
-  const B=ri(2,9), L=ri(B,12), a=L*B;
+  let B=3,L=7,g=0;
+  do { B=ri(2,9); L=ri(B,12); g++; }
+  while (g<200 && !(paOk(L,B) && optsOk(L,[L*B-B,B,L+1,L-1])));
+  const a=L*B;
   return finishNum('A rectangle has an <b>area of '+a+' cm²</b>. Its breadth is '+B+' cm. What is its <b>length</b>?','',
     L,[a-B,B,L+1,L-1],'cm',
     'Area = length × breadth, so length = '+a+' ÷ '+B+' = '+L+' cm.');
 }
 
-/* FORMAT 2 - concept check: which calculation is the perimeter? (pool 1) */
+/* FORMAT 2 - concept check: which calculation is the perimeter? (pool 1)
+   KILL 2 (refutation): when L x B = 2(L + B) - 6 by 3, 4 by 4 - the AREA option
+   evaluates to the perimeter and the item has two defensible answers. Redrawn. */
 function gPeriConcept(){
-  const L=ri(4,12); let B=ri(2,11); while(B===L) B=ri(2,11);
+  let L=7,B=3,g=0;
+  do { L=ri(4,12); B=ri(2,11); g++; }
+  while (g<200 && !(L!==B && paOk(L,B) && 2*L*B !== 2*(L+B)));
   return mcText('A rectangle is '+L+' cm long and '+B+' cm wide. Which calculation gives its <b>perimeter</b>?','',
     L+' + '+B+' + '+L+' + '+B,
     [L+' × '+B, L+' + '+B, L+' × '+B+' × 2'],
@@ -98,21 +147,12 @@ function gPeriConcept(){
     ' is only half the way around.');
 }
 
-/* FORMAT 3 - inverse: perimeter given, find the missing side (pool 2) */
-function gPeriInverse(){
-  const B=ri(2,9); let L=ri(3,14); while(L===B) L=ri(3,14);
-  const p=2*(L+B);
-  return mcNum('A rectangle has a perimeter of '+p+' cm and a breadth of '+B+' cm. What is its <b>length</b>?','',
-    L,[p-B, p/2, B*2],'cm',
-    'Work backwards. Perimeter = 2 × (length + breadth), so length + breadth = '+p+' ÷ 2 = '+(p/2)+
-    '. Then '+(p/2)+' − '+B+' = '+L+' cm. Taking the breadth straight off the whole perimeter is the usual slip.');
-}
-
 /* FORMAT 4 - compare two figures, and by how much (pool 2, two steps) */
 function gPeriCompare(){
-  let a,b,c,d,pa,pb,guard=0;
+  let a=10,b=8,c=5,d=4,pa=36,pb=18,guard=0;
   do { a=ri(4,14); b=ri(2,12); c=ri(3,13); d=ri(2,11); pa=2*(a+b); pb=2*(c+d); guard++; }
-  while (pa<=pb && guard<60);
+  while (guard<200 && !(pa>pb && paOk(a,b) && paOk(c,d) &&
+         optsOk(pa-pb,[(a+b)-(c+d), pa, a*b-c*d])));
   if (pa<=pb){ a=10; b=8; c=5; d=4; pa=36; pb=18; }
   return mcNum('Rectangle A is '+a+' cm by '+b+' cm. Rectangle B is '+c+' cm by '+d+
     ' cm. How much <b>longer</b> is the perimeter of A than the perimeter of B?','',
@@ -128,9 +168,10 @@ const PERI_SLIPS = [
   { key:'three', say:(L,B)=>2*L+B,   text:'She left out one side.' }
 ];
 function gPeriError(){
-  let L,B,guard=0;
+  let L=9,B=7,guard=0;
   do { L=ri(5,12); B=ri(2,9); guard++; }
-  while ((L===B || L*B===2*(L+B) || L+B===2*L+B) && guard<60);
+  while (guard<200 && !(L!==B && paOk(L,B) && L+B!==2*L+B &&
+         new Set(PERI_SLIPS.map(s=>s.say(L,B)).concat([2*(L+B)])).size === 4));
   const slip = pick(PERI_SLIPS), claim = slip.say(L,B), p = 2*(L+B);
   const wrongs = PERI_SLIPS.filter(s=>s.key!==slip.key).map(s=>s.text).concat(['She counted the four corners as well.']);
   return mcText('Mei Ling says the perimeter of a rectangle '+L+' cm by '+B+' cm is '+claim+
@@ -147,33 +188,16 @@ const FENCE_CTX = [
 ];
 function gPeriFence(){
   const c = pick(FENCE_CTX);
-  const L=ri(5,15), B=ri(3,12), rate=ri(2,9), p=2*(L+B), cost=p*rate;
+  let L=7,B=10,rate=5,g=0;
+  do { L=ri(5,15); B=ri(3,12); rate=ri(2,9); g++; }
+  while (g<200 && !(paOk(L,B) &&
+         optsOk(2*(L+B)*rate,[L*B*rate,(L+B)*rate,2*(L+B)])));
+  const p=2*(L+B), cost=p*rate;
   return mcNum(c[0]+' puts '+c[2]+' right around '+c[1]+' that is '+L+' m long and '+B+
     ' m wide. The '+c[2]+' costs $'+rate+' per metre. <b>How much does it cost altogether, in dollars?</b>','',
     cost,[L*B*rate, (L+B)*rate, p],'',
     'Step 1: the distance around is 2 × ('+L+' + '+B+') = '+p+' m. Step 2: '+p+' × $'+rate+' = $'+cost+
     '. Multiplying the area by the rate answers a different question: fencing goes around the edge, not over the ground.');
-}
-
-/* FORMAT 7 - working backwards: what happens to the side (pool 3) */
-function gPeriDouble(){
-  const s=ri(3,12), p=4*s;
-  return mcNum('A square garden tile has a perimeter of '+p+' cm. A bigger square tile has <b>double</b> that perimeter. '+
-    'What is the length of one side of the bigger tile?','',
-    2*s,[s, 4*s, p+s],'cm',
-    'One side of the first tile = '+p+' ÷ 4 = '+s+' cm. Double the perimeter is '+(2*p)+' cm, so one side of the bigger tile = '+
-    (2*p)+' ÷ 4 = '+(2*s)+' cm. Doubling the perimeter doubles every side, it does not double the number of sides.');
-}
-
-/* FORMAT 8 - mixed principle: area in, perimeter out (pool 3) */
-function gPeriFromArea(){
-  const B=ri(2,9); let L=ri(3,12); while(L===B) L=ri(3,12);
-  const a=L*B, p=2*(L+B);
-  return mcNum('A rectangular photo frame has an <b>area of '+a+' cm²</b> and a length of '+L+
-    ' cm. What is its <b>perimeter</b>?','',
-    p,[a, L+B, 2*L+B],'cm',
-    'Step 1: breadth = area ÷ length = '+a+' ÷ '+L+' = '+B+' cm. Step 2: perimeter = 2 × ('+L+' + '+B+') = '+p+
-    ' cm. Area and perimeter are different measurements: cm² for the space inside, cm for the walk around.');
 }
 
 
@@ -188,8 +212,8 @@ function gPeriFromArea(){
     },
     pools:{
       1:[[gSquarePA,'peri'],[gPeri,'peri'],[gPeriConcept,'peri']],
-      2:[[gPeriInverse,'missing'],[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquarePA,'area']],
-      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriDouble,'missing'],[gPeriFromArea,'missing'],[gMissSide,'missing']]
+      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquarePA,'area'],[gMissSide,'missing']],
+      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gMissSide,'missing'],[gPeriCompare,'peri']]
     }
   });
 })();

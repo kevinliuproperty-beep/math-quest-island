@@ -53,6 +53,28 @@
              explain: explain, answerText: correctText };
   }
 
+  /* ---- COINCIDENCE BAN (refutation kill 3, 2026-09-05) --------------------
+     paOk: no figure in this file may print the same number for its perimeter
+     and its area. optsOk: every NAMED distractor is a positive integer,
+     distinct from the key and from every other named distractor - finishNum
+     shuffles the candidate list, so the whole list has to be clean, and a
+     clean list also means the padding branch never fires and the authored-
+     distractor contract binds on every draw.
+     (gCompositeWordsSub is exempt from paOk: a card with a hole in the middle
+     has no single perimeter to coincide with, and it is never asked for one.) */
+  function paOk(per, area){ return per !== area; }
+  function optsOk(correct, cands){
+    const s = new Set([correct]);
+    for (const c of cands){
+      if (!Number.isInteger(c) || c <= 0 || s.has(c)) return false;
+      s.add(c);
+    }
+    return true;
+  }
+  /* WOUND 3 (refutation): the cut may never exceed two thirds of a side, or the
+     L is a thin unbuildable sliver. Applied to every corner cut in this file. */
+  const capCut = n => Math.max(2, Math.min(n - 3, Math.floor(2 * n / 3)));
+
   /* ---- rectangles and squares: find the missing dimension (1.1, 1.2) ---- */
 
   const RECT_CTX = [
@@ -72,9 +94,9 @@
   /* pool 1: rectangle, area and one side given, find the other side */
   function gRectSideFromArea() {
     const c = pick(RECT_CTX);
-    const l = ri(4, 15);
-    let w = ri(3, 12);
-    while (w === l) w = ri(3, 12);   /* a rectangle called a rectangle: never a square */
+    let l = 7, w = 4;
+    /* never a square, and never a coincidence draw (perimeter = area) */
+    do { l = ri(4, 15); w = ri(3, 12); } while (w === l || 2 * (l + w) === l * w);
     const area = w * l;
     return finishTyped(
       'Mei Ling has ' + c[0] + '. The ' + c[1] + ' has an area of ' + area +
@@ -88,7 +110,8 @@
   /* pool 1: square, perimeter given, find one side */
   function gSquareSideFromPerimeter() {
     const c = pick(SQ_CTX);
-    const s = ri(3, 20);
+    let s = 5;
+    do { s = ri(3, 20); } while (4 * s === s * s);   /* side 4: perimeter 16, area 16 */
     return finishTyped(
       'Ravi has ' + c[0] + '. The perimeter of the ' + c[1] + ' is ' + (4 * s) +
       ' cm. What is the length of one side, in cm?',
@@ -101,9 +124,8 @@
   /* pool 2: rectangle, perimeter and one side given, find the other side */
   function gRectSideFromPerimeter() {
     const c = pick(RECT_CTX);
-    const l = ri(4, 18);
-    let w = ri(3, 14);
-    while (w === l) w = ri(3, 14);
+    let l = 8, w = 5;
+    do { l = ri(4, 18); w = ri(3, 14); } while (w === l || 2 * (l + w) === l * w);
     const per = 2 * (w + l);
     return finishTyped(
       'Siti has ' + c[0] + '. The perimeter of the ' + c[1] + ' is ' + per +
@@ -118,7 +140,8 @@
   /* pool 2: square, area given, find one side (perfect squares only) */
   function gSquareSideFromArea() {
     const c = pick(SQ_CTX);
-    const s = ri(2, 15);
+    let s = 5;
+    do { s = ri(2, 15); } while (4 * s === s * s);   /* side 4: perimeter 16, area 16 */
     return finishTyped(
       'Kumar has ' + c[0] + '. The ' + c[1] + ' has an area of ' + (s * s) +
       ' cm². What is the length of one side, in cm?',
@@ -167,9 +190,15 @@
      Sides clockwise from the top-left corner:
        top = W - a, cut down = b, cut across = a, right = H - b, bottom = W, left = H.
      Every one of the six is printed on the figure. */
-  function makeL() {
-    const W = ri(7, 16), H = ri(6, 14);
-    const a = ri(2, W - 3), b = ri(2, H - 3);
+  function makeL(extra) {
+    let W = 13, H = 11, a = 4, b = 3, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(7, 16); H = ri(6, 14);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));
+      const per = 2 * (W + H), area = W * H - a * b;
+      ok = paOk(per, area) && (!extra || extra({ W, H, a, b, per, area }));
+    }
+    if (!ok) { W = 13; H = 11; a = 4; b = 3; }
     const lab = (cls, v, css) =>
       '<span class="lf-' + cls + '" style="position:absolute;font-size:12px;font-weight:600;' +
       'color:#0f172a;background:#fff;padding:0 2px;' + css + '">' + v + '</span>';
@@ -200,7 +229,7 @@
 
   /* pool 3: area of the rendered L-shape */
   function gLArea() {
-    const g = makeL();
+    const g = makeL(x => optsOk(x.area, [x.W * x.H, x.per, x.a * x.b, x.area + x.a, x.area + 1]));
     const wrong = g.W * g.H;
     return finishNum(
       'What is the area of this figure?', g.html, g.area,
@@ -213,32 +242,48 @@
 
   /* pool 3: perimeter of the rendered L-shape */
   function gLPerimeter() {
-    const g = makeL();
+    const g = makeL(x => optsOk(x.per, [x.area, x.W + x.H, x.per - x.a, x.per + x.a, x.per - 2 * x.b]));
     return finishNum(
       'What is the perimeter of this figure?', g.html, g.per,
       [g.area, g.W + g.H, g.per - g.a, g.per + g.a, g.per - 2 * g.b], CM,
       'Perimeter means all the way round, so add the six labelled sides: ' +
       (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W + ' + ' + g.H +
-      ' = ' + g.per + ' cm. Missing out the two short sides at the corner is the usual slip.');
+      ' = ' + g.per + ' cm. Missing out the two sides at the notch is the usual slip.');
   }
 
   /* pool 3: error spotting on the rendered figure, misconception named */
+  /* KILL 1 (refutation, 67% of draws): the stem said Ravi adds "the four longest
+     sides" while the two he omits - the notch sides a and b - were regularly NOT
+     the two shortest, so a child who did exactly what the stem describes got a
+     third number that was neither the key nor the printed claim. The premise is
+     now made TRUE of the figure by construction: the draw is rejected unless both
+     notch sides are strictly shorter than all four of the others, so "the four
+     longest sides" names exactly the four Ravi added and the printed claim IS
+     their sum. gen-sanity.mjs re-checks this from the six printed labels. */
   function gLError() {
-    const g = makeL();
-    const claim = g.per - g.a - g.b;      /* the two notch sides left out */
+    const g = makeL(x =>
+      Math.max(x.a, x.b) < Math.min(x.W - x.a, x.H - x.b, x.W, x.H) &&
+      optsOk(x.per, [x.per - x.a - x.b, x.area, x.W + x.H]));
+    const claim = g.per - g.a - g.b;      /* the four longest sides, summed */
     return mcNum(
       'Ravi walks around this figure and adds up only the four longest sides. He says the perimeter is ' +
       claim + ' cm. <b>What is the correct perimeter of this figure?</b>', g.html,
       g.per, [claim, g.area, g.W + g.H], CM,
-      'Ravi left out the two short sides at the notch, ' + g.a + ' cm and ' + g.b +
-      ' cm. Every side of an L-shape is part of the walk around: ' + (g.W - g.a) + ' + ' + g.b +
-      ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W + ' + ' + g.H + ' = ' + g.per + ' cm.');
+      'The four longest sides are ' + (g.W - g.a) + ' cm, ' + (g.H - g.b) + ' cm, ' + g.W +
+      ' cm and ' + g.H + ' cm, and they add to ' + claim + ' cm. Ravi left out the two shortest sides, ' +
+      'the ' + g.a + ' cm and the ' + g.b + ' cm at the notch. Every side of an L-shape is part of the ' +
+      'walk around: ' + (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W +
+      ' + ' + g.H + ' = ' + g.per + ' cm.');
   }
 
   /* pool 3: compare the figure with a square, and by how much */
   function gLCompare() {
     const g = makeL();
-    let s = ri(3, 20);
+    let s = ri(3, 20), sOk = false;
+    for (let i = 0; i < 200 && !sOk; i++) {
+      s = ri(3, 20);
+      sOk = 4 * s !== g.per && optsOk(Math.abs(g.per - 4 * s), [g.per, 4 * s, g.area]);
+    }
     while (4 * s === g.per) s = ri(3, 20);
     const diff = Math.abs(g.per - 4 * s);
     const bigger = g.per > 4 * s ? 'the figure' : 'the square';
@@ -253,8 +298,14 @@
 
   /* pool 2: the same figure DESCRIBED in words, every dimension stated */
   function gLWords() {
-    const W = ri(8, 18), H = ri(6, 15);
-    const a = ri(2, W - 3), b = ri(2, H - 3);
+    let W = 12, H = 9, a = 4, b = 3, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(8, 18); H = ri(6, 15);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));
+      ok = paOk(2 * (W + H), W * H - a * b) &&
+           optsOk(2 * (W + H), [2 * (W + H) - a - b, 2 * (W + H) - 2 * a - 2 * b, W * H - a * b]);
+    }
+    if (!ok) { W = 12; H = 9; a = 4; b = 3; }
     return mcNum(
       'A rectangular sheet of card is ' + W + ' cm long and ' + H + ' cm wide. A corner piece ' + a +
       ' cm by ' + b + ' cm is cut away, leaving an L-shape with right angles at every corner. ' +
@@ -278,8 +329,14 @@
 
   /* pool 3: inverse - the area is given, find the missing corner dimension */
   function gLCornerInverse() {
-    const W = ri(8, 16), H = ri(6, 14);
-    const a = ri(2, W - 3), b = ri(2, H - 3);
+    let W = 12, H = 9, a = 4, b = 3, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(8, 16); H = ri(6, 14);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));   /* wound 3: cut <= 2/3 of the side */
+      ok = paOk(2 * (W + H), W * H - a * b) &&
+           optsOk(b, [a, a * b, W * H - a * b - a]);
+    }
+    if (!ok) { W = 12; H = 9; a = 4; b = 3; }
     const area = W * H - a * b;
     return mcNum(
       'An L-shape is made from a ' + W + ' cm by ' + H + ' cm rectangle with a rectangular corner cut out. ' +
@@ -293,8 +350,15 @@
 
   /* pool 3: two-step word problem in a Singapore context */
   function gLSkirting() {
-    const W = ri(6, 14), H = ri(5, 12), rate = ri(2, 9);
-    const a = ri(2, W - 3), b = ri(2, H - 3);
+    let W = 10, H = 8, rate = 5, a = 3, b = 2, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(6, 14); H = ri(5, 12); rate = ri(2, 9);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));
+      const p = 2 * (W + H);
+      ok = paOk(p, W * H - a * b) &&
+           optsOk(p * rate, [(W * H - a * b) * rate, (p - a - b) * rate, p]);
+    }
+    if (!ok) { W = 10; H = 8; rate = 5; a = 3; b = 2; }
     const per = 2 * (W + H);
     return mcNum(
       'An L-shaped kitchen floor is a ' + W + ' m by ' + H + ' m rectangle with a ' + a + ' m by ' + b +
@@ -306,6 +370,75 @@
       ' = $' + (per * rate) + '. Costing the floor area would buy tiles, not skirting.');
   }
 
+  /* pool 2: MOVED HERE from the P3 `geometry` topic (refutation wound 1). Area in,
+     perimeter out is MOE P4 1.1 - one dimension of a rectangle from the other and
+     its area - and there is no inverse work at P3 at all. Stem unchanged so the
+     existing gen-sanity oracle keeps binding. */
+  function gPeriFromArea() {
+    let B = 4, L = 7;
+    do { B = ri(2, 9); L = ri(3, 12); }
+    while (L === B || 2 * (L + B) === L * B ||
+           !optsOk(2 * (L + B), [L * B, L + B, 2 * L + B]));
+    const a = L * B, p = 2 * (L + B);
+    return mcNum('A rectangular photo frame has an <b>area of ' + a + ' cm²</b> and a length of ' + L +
+      ' cm. What is its <b>perimeter</b>?', '',
+      p, [a, L + B, 2 * L + B], CM,
+      'Step 1: breadth = area ÷ length = ' + a + ' ÷ ' + L + ' = ' + B + ' cm. Step 2: perimeter = 2 × (' +
+      L + ' + ' + B + ') = ' + p + ' cm. Area and perimeter are different measurements: cm² for the ' +
+      'space inside, cm for the walk around.');
+  }
+
+  /* pool 2: the cut, asked as a DIFFERENCE rather than as a perimeter (refutation
+     wound 4). The answer is 0, and that is the entire point: five of the L formats
+     all evaluated 2(W + H), so this one asks the child to compare two perimeters
+     and discover the cut changed nothing. Not a 2(W + H) computation. */
+  function gLPerimDiff() {
+    let W = 12, H = 9, a = 4, b = 3, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(8, 18); H = ri(6, 15);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));
+      ok = new Set([a + b, 2 * (a + b), a * b]).size === 3 &&
+           paOk(2 * (W + H), W * H - a * b);
+    }
+    if (!ok) { W = 12; H = 9; a = 4; b = 3; }
+    return mcText(
+      'A ' + W + ' cm by ' + H + ' cm rectangular tile has a corner piece ' + a + ' cm by ' + b +
+      ' cm cut away, leaving an L-shape with right angles at every corner. <b>How much longer is ' +
+      'the perimeter of the whole rectangle than the perimeter of the L-shape?</b>', '',
+      '0 cm, the perimeters are the same.',
+      [(a + b) + ' cm', (2 * (a + b)) + ' cm', (a * b) + ' cm'],
+      'The cut removes ' + a + ' cm from one side and ' + b + ' cm from the other, but it adds two ' +
+      'brand new sides of exactly ' + a + ' cm and ' + b + ' cm at the notch. What is taken off the walk ' +
+      'is put straight back on, so both perimeters are 2 × (' + W + ' + ' + H + ') = ' + (2 * (W + H)) +
+      ' cm. It is the AREA that drops, by ' + (a * b) + ' cm².');
+  }
+
+  /* pool 3: a composite whose perimeter is NOT the bounding rectangle's. A notch
+     cut out of the MIDDLE of a side (not a corner) adds two new sides and takes
+     none away, so the walk around grows by twice the depth. Six-plus sides,
+     genuinely not 2(W + H) - the counterweight to the corner-cut family. */
+  function gNotchPerimeter() {
+    let W = 14, H = 8, n = 4, d = 3, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(12, 20); H = ri(6, 10);   /* the notched side is the LONG side */
+      n = ri(2, W - 4); d = ri(2, H - 3);
+      ok = optsOk(2 * (W + H) + 2 * d,
+                  [2 * (W + H), 2 * (W + H) + 2 * n, 2 * (W + H) - 2 * d, W * H - n * d]);
+    }
+    if (!ok) { W = 14; H = 8; n = 4; d = 3; }
+    const per = 2 * (W + H) + 2 * d;
+    return mcNum(
+      'A rectangular banner is ' + W + ' cm long and ' + H + ' cm wide. A notch ' + n +
+      ' cm wide and ' + d + ' cm deep is cut out of the middle of one long side, so the notch does not ' +
+      'reach either end. Every corner is a right angle. <b>What is the perimeter of the banner now?</b>', '',
+      per, [2 * (W + H), 2 * (W + H) + 2 * n, 2 * (W + H) - 2 * d, W * H - n * d], CM,
+      'Careful: this notch is in the middle of a side, not at a corner. The ' + n +
+      ' cm taken out of the top edge is replaced by the ' + n + ' cm along the bottom of the notch, so ' +
+      'that part of the walk is unchanged. But the two sides of the notch, ' + d + ' cm down and ' + d +
+      ' cm back up, are brand new. Perimeter = 2 × (' + W + ' + ' + H + ') + 2 × ' + d + ' = ' + per +
+      ' cm. A corner cut leaves the perimeter alone; a middle notch makes it longer.');
+  }
+
   MQI.registerTopic({
     id: 'p4area', level: 'P4', strand: 'Measurement and Geometry',
     moeSubTopic: 'Area and Perimeter: finding one dimension of a rectangle given the other dimension and its area/perimeter; finding the length of one side of a square given its area/perimeter; finding the area and perimeter of composite figures made up of rectangles and squares',
@@ -313,13 +446,15 @@
     skills: {
       missing: { label: 'Finding a missing side', tip: 'Say the formula out loud first, then work it backwards. Area ÷ length = breadth; perimeter ÷ 4 = one side of a square.' },
       compose: { label: 'Composite figures', tip: 'Cut the shape into rectangles with a pencil line, work out each piece, then add. For a hole, take the hole away from the whole.' },
-      around: { label: 'Perimeter of an L-shape', tip: 'Walk a finger right around the outside and count every labelled side. The two short sides at the notch are the ones children forget.' }
+      around: { label: 'Perimeter of an L-shape', tip: 'Walk a finger right around the outside and count every labelled side. The two sides at the notch are the ones children forget — and a corner cut never changes the perimeter, only the area.' }
     },
     pools: {
       1: [[gRectSideFromArea, 'missing'], [gSquareSideFromPerimeter, 'missing'], [gLConcept, 'around']],
-      2: [[gRectSideFromPerimeter, 'missing'], [gSquareSideFromArea, 'missing'], [gCompositeWordsAdd, 'compose'], [gLWords, 'around']],
+      2: [[gRectSideFromPerimeter, 'missing'], [gSquareSideFromArea, 'missing'], [gCompositeWordsAdd, 'compose'],
+          [gLWords, 'around'], [gPeriFromArea, 'missing'], [gLPerimDiff, 'around']],
       3: [[gCompositeWordsSub, 'compose'], [gLArea, 'compose'], [gLPerimeter, 'around'],
-          [gLError, 'around'], [gLCompare, 'around'], [gLCornerInverse, 'compose'], [gLSkirting, 'around']]
+          [gLError, 'around'], [gLCompare, 'around'], [gLCornerInverse, 'compose'], [gLSkirting, 'around'],
+          [gNotchPerimeter, 'around']]
     }
   });
 })();

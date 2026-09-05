@@ -29,8 +29,12 @@
 
   function gPartAsPercent(){
     /* whole x pct must land on a whole number of children: pair them explicitly. */
-    const CASES = [[20,[5,10,15,20,25,30,40,50,60,75]],[25,[20,40,60,80]],[50,[10,20,30,40,50,60,70]],
-                   [100,[7,12,15,23,30,45,60]],[200,[5,10,15,20,25,35,50]],[500,[4,10,20,30,40,60]]];
+    /* Wholes stay at classroom/cohort size: a "group of 500" that 4% of wear
+       spectacles is not a scene a P5 child can picture. P5 refutation fix 2.
+       Every pct here also keeps part >= 2, so the stem never reads "1 of them
+       wear spectacles". Fix 3. */
+    const CASES = [[20,[10,15,20,25,30,40,50,60,75]],[25,[20,40,60,80]],[50,[10,20,30,40,50,60,70]],
+                   [100,[7,12,15,23,30,45,60]],[120,[10,25,50,75]],[40,[10,25,50,75]]];
     const c = pick(CASES), whole = c[0], pct = pick(c[1]);
     const part = whole * pct / 100;
     const grp = pick(CLASSY);

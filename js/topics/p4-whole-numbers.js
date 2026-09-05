@@ -19,7 +19,8 @@
     { name: 'ten thousands', v: 10000 },
     { name: 'thousands',     v: 1000  },
     { name: 'hundreds',      v: 100   },
-    { name: 'tens',          v: 10    }
+    { name: 'tens',          v: 10    },
+    { name: 'ones',          v: 1     }   /* W6: declared in moeSubTopic, so it must be reachable */
   ];
 
   /* 47253 -> "47 253" */
@@ -35,7 +36,7 @@
   /* ---- place value ---- */
   function gStandsFor() {
     const d = distinct5(), n = Number(d.join(''));
-    const i = ri(0, 3), p = PLACES[i], val = d[i] * p.v;
+    const i = ri(0, PLACES.length - 1), p = PLACES[i], val = d[i] * p.v;
     return finishNum('In ' + sp(n) + ', the digit ' + d[i] + ' stands for how much?', '', val,
       /* the five place values of the same digit; exactly one collapses onto the
          answer and finishNum drops it, leaving four real misconception choices.
@@ -45,9 +46,11 @@
   }
   function gWhichDigit() {
     const d = distinct5(), n = Number(d.join(''));
-    const i = ri(0, 3), p = PLACES[i];
+    const i = ri(0, PLACES.length - 1), p = PLACES[i];
     return finishNum('Which digit is in the ' + p.name + ' place of ' + sp(n) + '?', '', d[i],
-      [d[(i + 1) % 5], d[(i + 2) % 5], d[(i + 3) % 5], d[4]], '',
+      /* the other four digits of the SAME numeral: every distractor is a digit a
+         child could have mis-counted to. W3. */
+      d.filter((_, j) => j !== i), '',
       'Count the places from the right: ones, tens, hundreds, thousands, ten thousands. The ' + p.name +
       ' digit of ' + sp(n) + ' is ' + d[i] + '.');
   }
@@ -62,13 +65,20 @@
       else if (n % unit === 0) n += ri(1, unit - 1);
       const r = roundTo(n, unit);
       const down = Math.floor(n / unit) * unit, up = down + unit;
+      /* The explanation is derived from n, NEVER from the `tie` flag: a non-tie
+         generator still DRAWS tie values (n % 10 === 5 is 11.1% of gRound10),
+         and telling a child 47 235 "is nearer 47 240" is false. P4 refutation K1/K2. */
+      const isTie = n % unit === unit / 2;
       return finishNum('Round ' + sp(n) + ' to the nearest ' + unit + '.', '', r,
         /* five candidates, all positive integers, so finishNum never has to pad with
-           correct+1 giveaways when two of them collide (P3 pilot rubric lesson 4) */
+           correct+1 giveaways when two of them collide (P3 pilot rubric lesson 4).
+           roundTo(n, unit*10) is NOT a candidate: it can leave the topic ceiling. W2. */
         [down === r ? up : down, r + unit, r > unit ? r - unit : r + 2 * unit,
-         roundTo(n, unit * 10), r + 2 * unit, Math.floor(n / unit) * unit + unit], '',
-        (tie ? 'It is exactly halfway, and halfway always rounds up. ' : '') +
-        sp(n) + ' sits between ' + sp(down) + ' and ' + sp(up) + ', and it is nearer ' + sp(r) + '.');
+         r + 2 * unit, Math.floor(n / unit) * unit + unit, r + 3 * unit], '',
+        isTie
+          ? sp(n) + ' sits exactly halfway between ' + sp(down) + ' and ' + sp(up) +
+            ', and halfway always rounds up, to ' + sp(r) + '.'
+          : sp(n) + ' sits between ' + sp(down) + ' and ' + sp(up) + ', and it is nearer ' + sp(r) + '.');
     };
   }
   /* the harness reports one row per function NAME, so a factory-made generator

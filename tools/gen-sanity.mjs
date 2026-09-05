@@ -112,6 +112,20 @@ function checkShape(q) {
   for (const [k, v] of Object.entries({ q: q.q, extra: q.extra || '', explain: q.explain || '', answerText: q.answerText })) {
     if (BAD.test(String(v))) return `NaN/undefined leaked into ${k}: ${strip(v)}`;
   }
+  /* EXPLANATION ORACLE (P4 refutation, recommended gate). A rounding item that
+     lands exactly on the halfway mark may not tell the child it "is nearer" the
+     answer: it is not nearer, it is equidistant. Checked on the RENDERED stem +
+     RENDERED explanation, so it binds any generator that writes rounding prose. */
+  {
+    const st = strip(q.q), ex = strip(q.explain || '');
+    const rm = st.match(/^Round ([\d ,]+) to the nearest (10|100|1000)\.$/);
+    if (rm) {
+      const n = Number(rm[1].replace(/[ ,]/g, '')), u = Number(rm[2]);
+      const tie = n % u === u / 2;
+      if (tie && /is nearer/.test(ex)) return `false "is nearer" on a halfway value: ${st} / ${ex}`;
+      if (!tie && /exactly halfway/.test(ex)) return `claims "exactly halfway" on a non-tie value: ${st}`;
+    }
+  }
   if (q.typed) {
     if (!Number.isFinite(q.answer)) return 'typed answer not finite';
     if (q.correct !== -1) return 'typed question must carry correct:-1';
@@ -266,7 +280,7 @@ function oracle(q) {
       const e = 2 * Number(m[1]) / Number(m[2]);
       return near(e, q.answer) ? null : `triangle height: expected ${e}, got ${q.answer}`;
     }
-    if ((m = text.match(/rectangle (\d+) cm by (\d+) cm with a triangle of base (\d+) cm and height (\d+) cm/))) {
+    if ((m = text.match(/rectangle (\d+) cm by (\d+) cm, and a triangle with base (\d+) cm and height (\d+) cm/))) {
       const e = Number(m[1]) * Number(m[2]) + Number(m[3]) * Number(m[4]) / 2;
       return near(e, q.answer) ? null : `composite area: expected ${e}, got ${q.answer}`;
     }
@@ -367,11 +381,6 @@ function oracle(q) {
   if ((m = text.match(/^What is the (\d)(?:st|nd|rd|th) multiple of (\d+)\?$/))) {
     const e = Number(m[1]) * Number(m[2]);
     return near(e, ansNum) ? null : `p4 nth multiple: expected ${e}, got ${ansNum}`;
-  }
-  if ((m = text.match(/^What is the smallest number that is a multiple of both (\d+) and (\d+)\?$/))) {
-    const a = Number(m[1]), b = Number(m[2]);
-    let e = a; while (e % b !== 0) e += a;
-    return near(e, ansNum) ? null : `p4 common multiple of ${a},${b}: expected ${e}, got ${ansNum}`;
   }
   if ((m = text.match(/^How many factors does (\d+) have\?$/))) {
     const n = Number(m[1]); let c = 0;

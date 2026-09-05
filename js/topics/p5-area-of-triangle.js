@@ -65,9 +65,11 @@
   function gComposite(){
     const L = ri(6, 20), W = ri(4, 14), b = 2 * ri(2, 8), h = ri(3, 12);
     const rect = L * W, tri = b * h / 2, a = rect + tri;
-    return finishTyped('A composite figure is made of a rectangle ' + L + ' cm by ' + W +
-      ' cm with a triangle of base ' + b + ' cm and height ' + h +
-      ' cm joined on. What is the total area, in cm²?', a,
+    /* "joined on" left the arrangement undetermined; the area is the sum however
+       the two pieces sit, so say so outright. P5 refutation fix 4. */
+    return finishTyped('A shape is made of two pieces that do not overlap: a rectangle ' + L +
+      ' cm by ' + W + ' cm, and a triangle with base ' + b + ' cm and height ' + h +
+      ' cm. What is the total area of the shape, in cm²?', a,
       'Rectangle: ' + L + ' x ' + W + ' = ' + rect + ' cm². Triangle: 1/2 x ' + b + ' x ' + h + ' = ' + tri +
       ' cm². Add them: ' + rect + ' + ' + tri + ' = ' + a + ' cm².');
   }

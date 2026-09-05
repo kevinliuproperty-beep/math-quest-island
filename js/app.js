@@ -820,6 +820,22 @@ MQI.boot = function () {
 function autoplayHook(){
   let p;
   try{ p=new URLSearchParams(location.search); }catch(e){ return; }
+  /* shot=<screen> drives a headless browser straight to one screen so the
+     integration/dress-rehearsal gates can screenshot it. Params:
+       grade=P3|P4|P5   select the level first
+       shot=start       the level picker (default screen, re-rendered)
+       shot=map         that level's island map
+       shot=q&topic=ID  one question from that topic
+     Inert without the query string; no production path reads it. */
+  const shot=p.get('shot');
+  if(shot){
+    const gd=p.get('grade'); if(gd && GRADES.includes(gd)){ DB.grade=gd; saveData(); }
+    if(p.get('mode')==='patchwerk'){ DB.gameMode='patchwerk'; saveData(); }
+    renderStart();
+    if(shot==='map'){ setTimeout(renderMap,150); }
+    if(shot==='q'){ const t=p.get('topic'); if(t && TOPICS[t]){ TOPIC=t; setTimeout(newGame,150); } }
+    return;
+  }
   if(p.get('autoplay')!=='patchwerk') return;
   const tier=p.get('tier'); if(tier) DB.pwTier=tier;
   DB.gameMode='patchwerk';

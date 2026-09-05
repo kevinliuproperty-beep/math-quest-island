@@ -13,7 +13,6 @@
 
   function factorsOf(n) { const o = []; for (let i = 1; i <= n; i++) if (n % i === 0) o.push(i); return o; }
   function gcd2(a, b) { while (b) { const t = a % b; a = b; b = t; } return a; }
-  function lcm2(a, b) { return a * b / gcd2(a, b); }
   const ORD = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th', 9: '9th' };
 
   /* ---- factors ---- */
@@ -68,20 +67,12 @@
       'The multiples of ' + d + ' are ' + d + ', ' + 2 * d + ', ' + 3 * d + ', ... so the ' + ORD[k] +
       ' one is ' + d + ' x ' + k + ' = ' + ans + '.');
   }
-  function gCommonMultiple() {
-    let a, b;
-    do { a = ri(2, 9); b = ri(2, 9); } while (a === b || lcm2(a, b) > 72);
-    const ans = lcm2(a, b);
-    /* when one number divides the other, a*b, ans*2, ans+a and ans+b collapse onto
-       each other, so carry spares: finishNum must never fall through to its
-       correct+1 giveaway padding (P3 pilot rubric lesson 4) */
-    const cands = [a * b, ans * 2, a + b, ans + a, ans + b, ans * 3, ans + a * b, a * b * 2, ans + a + b]
-      .filter(x => x !== ans && x > 0);
-    return finishNum('What is the smallest number that is a multiple of both ' + a + ' and ' + b + '?', '', ans,
-      cands, '',
-      'List the multiples of ' + a + ' and of ' + b + ' and find the first one that appears on both lists: ' +
-      ans + ' = ' + a + ' x ' + (ans / a) + ' = ' + b + ' x ' + (ans / b) + '.');
-  }
+  /* KILLED by the P4 refutation (K3): gCommonMultiple asked for the SMALLEST
+     common multiple. MOE Oct 2025 p.37 item 2.5 is "finding the common multiples
+     of two given 1-digit numbers" and names the LCM nowhere; lowest-common-multiple
+     is P6/secondary. Removed rather than reworded, so nothing half-in-scope ships.
+     A "which of these is a common multiple of a and b?" generator would be in
+     scope and is the obvious follow-up. */
 
   MQI.registerTopic({
     id: 'p4factors', level: 'P4', strand: 'Number and Algebra',
@@ -95,7 +86,7 @@
     pools: {
       1: [[gIsFactor, 'factor'], [gIsMultiple, 'multiple']],
       2: [[gCommonFactor, 'common'], [gNthMultiple, 'multiple']],
-      3: [[gCommonMultiple, 'common'], [gCountFactors, 'factor']]
+      3: [[gCountFactors, 'factor'], [gCommonFactor, 'common']]
     }
   });
 })();

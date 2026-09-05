@@ -50,7 +50,9 @@
       (l * w) + ' x ' + h + ' = ' + n + ' cubes.');
   }
   function gLitresToCm3(){
-    const l = ri(1, 9), ml = ri(1, 9) * 10 + ri(1, 9);
+    /* ml was banded 11-99, so a round "3 l 500 ml" could never appear even though
+       it is the commonest compound a child meets. P5 refutation fix 5. */
+    const l = ri(1, 9), ml = pick([ri(1, 9) * 10 + ri(1, 9), ri(1, 9) * 100, ri(1, 99) * 10, ri(2, 999)]);
     const v = l * 1000 + ml;
     return finishTyped(l + ' ℓ ' + ml + ' ml of barley water is poured into a tank. How many cm³ is that? (1 ml = 1 cm³)', v,
       '1 ml is exactly 1 cm³, and 1 ℓ = 1000 ml. So ' + l + ' ℓ ' + ml + ' ml = ' + v + ' ml = ' + v + ' cm³.');

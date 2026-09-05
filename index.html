@@ -442,16 +442,28 @@
      document.write keeps the tags synchronous, so load order is byte-identical to
      the hand-written tags it replaces. -->
 <script>
-  window.MQI_BUILD = "20260905a";
+  window.MQI_BUILD = "20260905c";
   (function () {
     var v = "?v=" + window.MQI_BUILD;
     var files = [
       "js/core.js",
       "js/topics/p2-number-beach.js",
-      "js/topics/p3-fractions.js",
+      "js/topics/p3-whole-numbers.js",
       "js/topics/p3-times-tables.js",
+      "js/topics/p3-division-remainder.js",
+      "js/topics/p3-fractions.js",
+      "js/topics/p3-money.js",
+      "js/topics/p3-measurement.js",
+      "js/topics/p3-bar-graphs.js",
       "js/topics/p3-area-perimeter.js",
       "js/topics/p3-puzzle-caves.js",
+      "js/topics/p4-whole-numbers.js",
+      "js/topics/p4-factors-multiples.js",
+      "js/topics/p4-decimals.js",
+      "js/topics/p5-whole-numbers.js",
+      "js/topics/p5-percentage.js",
+      "js/topics/p5-area-of-triangle.js",
+      "js/topics/p5-volume.js",
       "js/registry.js",
       /* modes register after core, before the shell boots (js/modes/README.md).
          Order is not load-bearing - core.js drains MQI.pendingModes. */

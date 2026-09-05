@@ -182,13 +182,13 @@
        a marking the stem never made, so a strict child was right to call it wrong.
        The stem now MAKES that marking, which is also the ∠a notation the syllabus names. */
     const out = finishText('Two straight arms meet at point ' + v + '. One arm runs from ' + v + ' to ' + p +
-      ' and the other arm runs from ' + v + ' to ' + r + '. The angle at ' + v + ' is marked ∠' +
-      v.toLowerCase() + ' on the diagram.' +
+      ' and the other arm runs from ' + v + ' to ' + r + '. The angle at ' + v + ' is also written in short as ∠' +
+      v.toLowerCase() + '.' +
       ' Three of the names below are correct names for that angle. Which one is WRONG?',
-      correct, cands.concat(['the angle marked ∠' + v.toLowerCase() + ' at the point ' + v]),
+      correct, cands.concat(['the angle written in short as ∠' + v.toLowerCase() + ' at the point ' + v]),
       'The vertex is ' + v + ', so a correct name must have ' + v +
       ' in the middle: ∠' + p + v + r + ' and ∠' + r + v + p + ' both do, and ∠' + v.toLowerCase() +
-      ' is the short way of naming the angle marked at ' + v + '. ' + correct +
+      ' is the short way of naming the angle at ' + v + '. ' + correct +
       ' puts ' + v + ' at an end, so it names a different angle.');
     return out || gNameWrong();
   }

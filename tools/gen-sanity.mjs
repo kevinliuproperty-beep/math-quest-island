@@ -1614,6 +1614,27 @@ for (const tid of Object.keys(TOPICS)) {
   if (!ok) failures++;
 }
 
+/* ---------- pool skill-coverage gate (Wave 3 blocker, Dress Rehearsal leg 2) ------
+   js/topics/p3-area-perimeter.js pool 1 tagged BOTH of its generators 'peri', so the
+   feed's skill round-robin had a single skill to cycle and served six consecutive
+   perimeter items. That is a structural fault in the data, invisible to a per-generator
+   harness. Rule: any topic declaring >= 2 skills must expose >= 2 DISTINCT skill tags
+   in every one of its three pools. --- */
+const poolSkillRows = [];
+for (const tid of Object.keys(TOPICS)) {
+  const t = TOPICS[tid];
+  const nSkills = Object.keys(t.skills || {}).length;
+  if (nSkills < 2) { poolSkillRows.push({ tid, ok: true, note: `only ${nSkills} skill declared - exempt` }); continue; }
+  for (const lvl of [1, 2, 3]) {
+    const tags = [...new Set((t.pools[lvl] || []).map(pr => pr[1]))];
+    const ok = tags.length >= 2;
+    poolSkillRows.push({ tid, ok, note: ok
+      ? `pool ${lvl}: ${tags.length} skills [${tags.join(', ')}]`
+      : `pool ${lvl} exposes only ${tags.length} skill [${tags.join(', ')}] but the topic declares ${nSkills} - the feed cannot interleave skills here` });
+    if (!ok) failures++;
+  }
+}
+
 /* ---------- manifest gate (Wave 3, W3 Pie+Cosmetics Refutation KILL) --------------
    p4-pie-charts.js passed 200/200 here while being absent from index.html's script
    list, so the topic shipped dark: the harness reads js/topics/*.js off disk and never
@@ -1647,6 +1668,11 @@ for (const r of rows) {
 }
 console.log('');
 for (const s of setRows) console.log(`${s.ok ? 'ok  ' : 'FAIL'} buildSetFor(${s.tid})  30 x 3 levels${s.note ? '  ' + s.note : ''}`);
+
+const badPoolSkill = poolSkillRows.filter(r => !r.ok);
+console.log('');
+if (badPoolSkill.length) for (const r of badPoolSkill) console.log(`FAIL pool skills  ${r.tid}  ${r.note}`);
+else console.log(`ok   pool skill coverage: every multi-skill topic exposes >= 2 skills in all 3 pools (${poolSkillRows.length} checks)`);
 
 const badManifest = manifestRows.filter(r => !r.ok);
 console.log('');

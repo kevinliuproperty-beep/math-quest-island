@@ -26,14 +26,17 @@ function gAreaRect(){
   return finishNum('What is the <b>area</b> of this rectangle?',rectHtml(L,B),a,[2*(L+B),L+B,a+L,a-B],'cm²',
     'Area = length × breadth = '+L+' × '+B+' = '+a+' cm².');
 }
-function gSquarePA(){
-  const s=ri(2,12);
-  if(Math.random()<0.5){
-    const p=4*s;
-    return finishNum('A square has sides of '+s+' cm. What is its <b>perimeter</b>?','',p,[s*s,2*s,p+s,p-2],'cm',
-      'A square has 4 equal sides: 4 × '+s+' = '+p+' cm.');
-  }
-  const a=s*s;
+/* Wave-3 blocker fix: gSquarePA rendered BOTH an area face and a perimeter face
+ * from one generator, so a pool entry tagged 'peri' could still show an area stem
+ * (and vice versa). Split into two deterministic generators so the skill tag on a
+ * pool entry is the skill the child actually meets. Same content, no new items. */
+function gSquarePeri(){
+  const s=ri(2,12); const p=4*s;
+  return finishNum('A square has sides of '+s+' cm. What is its <b>perimeter</b>?','',p,[s*s,2*s,p+s,p-2],'cm',
+    'A square has 4 equal sides: 4 × '+s+' = '+p+' cm.');
+}
+function gSquareArea(){
+  const s=ri(2,12); const a=s*s;
   return finishNum('A square has sides of '+s+' cm. What is its <b>area</b>?','',a,[4*s,2*s,a+s,a-s],'cm²',
     'Area of a square = side × side = '+s+' × '+s+' = '+a+' cm².');
 }
@@ -55,8 +58,8 @@ function gMissSide(){
       missing:{label:'Finding a missing side', tip:'Work backwards: if area = length × breadth, then length = area ÷ breadth.'}
     },
     pools:{
-      1:[[gSquarePA,'peri'],[gPeri,'peri']],
-      2:[[gPeri,'peri'],[gAreaRect,'area'],[gSquarePA,'area']],
+      1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gSquareArea,'area']],
+      2:[[gPeri,'peri'],[gAreaRect,'area'],[gSquareArea,'area']],
       3:[[gMissSide,'missing'],[gAreaRect,'area'],[gPeri,'peri']]
     }
   });

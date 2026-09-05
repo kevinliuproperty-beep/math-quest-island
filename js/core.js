@@ -348,12 +348,20 @@ function gradeTyped(raw, q){
     const seen = new Set();
     let l3flip = 0;
     let lastGen = null;   /* the generator that produced the item now on screen */
+    /* Wave-3 blocker: the carousel round-robins skills WITHIN one pool, but each
+       pool owns its own carousel, so a level change (and the level-3 alternation)
+       could hand the child the same skill twice or three times running - the
+       "perimeter, perimeter, perimeter" texture the dress rehearsal caught. The
+       skill now on screen is remembered ACROSS pools and refused the same way a
+       repeated generator is. */
+    let lastSkill = null;
 
     function accept(q, shape, key, gen){
       if (dedup && key) seen.add(key);
       ring.push(shape);
       while (ring.length > FEED_RING) ring.shift();
       lastGen = gen;
+      lastSkill = q.skill;
       return q;
     }
     function next(level){
@@ -382,6 +390,7 @@ function gradeTyped(raw, q){
            item now on screen (this is the one that carries across a pool change -
            gPeri sits in pools 1, 2 AND 3), or a stem shape seen in the last 3. */
         if (t < FEED_RETRIES * 2 && pr[0] === lastGen) continue;
+        if (t < FEED_RETRIES * 2 && c.skills.length > 1 && pr[1] === lastSkill) continue;
         if (t < FEED_RETRIES && ring.indexOf(shape) !== -1) continue;
         return accept(q, shape, key, pr[0]);
       }

@@ -83,9 +83,9 @@
       units: {label:'Litres, millilitres and cm³', tip:'1 ml is exactly 1 cm³ and 1 litre is 1000 cm³. A 1.5 ℓ bottle holds 1500 cm³.'}
     },
     pools:{
-      1:[[gCubeVolume,'solid'],[gUnitCubes,'solid']],
+      1:[[gCubeVolume,'solid'],[gUnitCubes,'solid'],[gLitresToCm3,'units']],
       2:[[gCuboidVolume,'solid'],[gLitresToCm3,'units']],
-      3:[[gTankLiquid,'tank'],[gTankLitres,'tank']]
+      3:[[gTankLiquid,'tank'],[gTankLitres,'units']]
     }
   });
 })();

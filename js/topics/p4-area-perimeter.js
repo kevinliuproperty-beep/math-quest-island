@@ -200,7 +200,7 @@
       around: { label: 'Perimeter of an L-shape', tip: 'Walk a finger right around the outside and count every labelled side. The two short sides at the notch are the ones children forget.' }
     },
     pools: {
-      1: [[gRectSideFromArea, 'missing'], [gSquareSideFromPerimeter, 'missing']],
+      1: [[gRectSideFromArea, 'missing'], [gSquareSideFromPerimeter, 'missing'], [gCompositeWordsAdd, 'compose']],
       2: [[gRectSideFromPerimeter, 'missing'], [gSquareSideFromArea, 'missing'], [gCompositeWordsAdd, 'compose']],
       3: [[gCompositeWordsSub, 'compose'], [gLArea, 'compose'], [gLPerimeter, 'around']]
     }

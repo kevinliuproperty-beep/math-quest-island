@@ -187,7 +187,7 @@
     pools: {
       1: [[gStraightLineTwo, 'line'], [gAtPointThree, 'point'], [gVertOpp, 'vert']],
       2: [[gVertAdjacent, 'vert'], [gStraightLineThree, 'line'], [gAtPointFour, 'point']],
-      3: [[gRightAngleOnLine, 'unknown'], [gTwoStepVertOpp, 'unknown'], [gPointEqualAngles, 'unknown']]
+      3: [[gRightAngleOnLine, 'line'], [gTwoStepVertOpp, 'unknown'], [gPointEqualAngles, 'unknown']]
     }
   });
 })();

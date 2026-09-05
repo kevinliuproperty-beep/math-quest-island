@@ -39,11 +39,18 @@ const GRADES = (argOf('--grades') || 'P3,P4,P5').split(',');
 /* same-template (same generator function) ceiling per level, and the worst
    same-template run any seed may produce. */
 const THRESHOLDS = {
-  P3: { sameTemplate: 0.05 },
-  P4: { sameTemplate: 0.05 },
-  P5: { sameTemplate: 0.12 }
+  P3: { sameTemplate: 0.05, sameSkill: 0.35 },
+  P4: { sameTemplate: 0.05, sameSkill: 0.35 },
+  P5: { sameTemplate: 0.12, sameSkill: 0.35 }
 };
 const MAX_RUN = 4;
+/* Wave-3 blocker (Dress Rehearsal Wave 3 leg 2): the geometry feed served six
+   consecutive items all tagged skill 'peri' and this gate did not see it, because
+   it only ever asserted on TEMPLATE identity. Skill repetition is the thing Kevin
+   actually complained about ("perimeter, perimeter, area, area"), so it is gated
+   in its own right: P(next item repeats the previous item's skill) and the longest
+   same-skill run any seed may produce. */
+const MAX_SKILL_RUN = 3;
 
 /* ---------- seeded RNG (mulberry32) ---------- */
 let _s = 1;
@@ -147,12 +154,12 @@ function measure(grade) {
   const topics = liveTopics(grade);
   let pairs = 0, sameGen = 0, sameShape = 0, sameSkill = 0, total = 0;
   const pool = { 1: 0, 2: 0, 3: 0 };
-  const runs = [];
+  const runs = [], skillRuns = [];
   for (let s = 0; s < SEEDS; s++) {
     setSeed(1000003 + s * 7919);
     const tid = topics[Math.floor(rnd() * topics.length)];
     const items = session(tid);
-    let run = 1, best = 1;
+    let run = 1, best = 1, skRun = 1, skBest = 1;
     for (let i = 0; i < items.length; i++) {
       const q = items[i];
       pool[q.pool] = (pool[q.pool] || 0) + 1; total++;
@@ -161,9 +168,10 @@ function measure(grade) {
       pairs++;
       if (p.gen === q.gen) { sameGen++; run++; } else { best = Math.max(best, run); run = 1; }
       if (p.shape === q.shape) sameShape++;
-      if (p.skill === q.skill) sameSkill++;
+      if (p.skill === q.skill) { sameSkill++; skRun++; } else { skBest = Math.max(skBest, skRun); skRun = 1; }
     }
     runs.push(Math.max(best, run));
+    skillRuns.push(Math.max(skBest, skRun));
   }
   return {
     grade,
@@ -172,6 +180,7 @@ function measure(grade) {
     sameSkill: sameSkill / pairs,
     meanRun: runs.reduce((a, b) => a + b, 0) / runs.length,
     worstRun: Math.max(...runs),
+    worstSkillRun: Math.max(...skillRuns),
     pool: [pool[1] / total, pool[2] / total, pool[3] / total]
   };
 }
@@ -180,11 +189,11 @@ function measure(grade) {
 const f3 = x => x.toFixed(3);
 console.log(`feed-sim  core=${path.relative(ROOT, COREPATH) || COREPATH}  path=${HAS_FEED ? 'createFeed (round-robin + no-repeat-3)' : 'legacy buildSetFor (uniform draw)'}`);
 console.log(`${SEEDS} seeds x ${LEN} questions, simulated accuracy ${ACC}\n`);
-console.log('Level | same template | same shape | same skill | mean run | worst run | pools 1/2/3');
-console.log('------|---------------|------------|------------|----------|-----------|------------');
+console.log('Level | same template | same shape | same skill | mean run | worst run | worst skill run | pools 1/2/3');
+console.log('------|---------------|------------|------------|----------|-----------|-----------------|------------');
 const rows = GRADES.map(measure);
 for (const r of rows) {
-  console.log(`${r.grade}    | ${f3(r.sameTemplate).padStart(13)} | ${f3(r.sameShape).padStart(10)} | ${f3(r.sameSkill).padStart(10)} | ${r.meanRun.toFixed(2).padStart(8)} | ${String(r.worstRun).padStart(9)} | ${r.pool.map(f3).join(' / ')}`);
+  console.log(`${r.grade}    | ${f3(r.sameTemplate).padStart(13)} | ${f3(r.sameShape).padStart(10)} | ${f3(r.sameSkill).padStart(10)} | ${r.meanRun.toFixed(2).padStart(8)} | ${String(r.worstRun).padStart(9)} | ${String(r.worstSkillRun).padStart(15)} | ${r.pool.map(f3).join(' / ')}`);
 }
 
 if (!GATE) process.exit(0);
@@ -195,9 +204,13 @@ for (const r of rows) {
   if (!th) { console.log(`skip ${r.grade}  no threshold declared`); continue; }
   const okT = r.sameTemplate <= th.sameTemplate;
   const okR = r.worstRun <= MAX_RUN;
+  const okS = r.sameSkill <= th.sameSkill;
+  const okSR = r.worstSkillRun <= MAX_SKILL_RUN;
   if (!okT) { bad++; console.log(`FAIL ${r.grade}  same template ${f3(r.sameTemplate)} > ${th.sameTemplate}`); }
   if (!okR) { bad++; console.log(`FAIL ${r.grade}  worst same-template run ${r.worstRun} > ${MAX_RUN}`); }
-  if (okT && okR) console.log(`ok   ${r.grade}  same template ${f3(r.sameTemplate)} <= ${th.sameTemplate}, worst run ${r.worstRun} <= ${MAX_RUN}`);
+  if (!okS) { bad++; console.log(`FAIL ${r.grade}  same skill ${f3(r.sameSkill)} > ${th.sameSkill}`); }
+  if (!okSR) { bad++; console.log(`FAIL ${r.grade}  worst same-skill run ${r.worstSkillRun} > ${MAX_SKILL_RUN}`); }
+  if (okT && okR && okS && okSR) console.log(`ok   ${r.grade}  same template ${f3(r.sameTemplate)} <= ${th.sameTemplate}, worst run ${r.worstRun} <= ${MAX_RUN}, same skill ${f3(r.sameSkill)} <= ${th.sameSkill}, worst skill run ${r.worstSkillRun} <= ${MAX_SKILL_RUN}`);
 }
 console.log(bad ? `\nfeed-sim FAILED (${bad})` : '\nfeed-sim OK');
 process.exit(bad ? 1 : 0);

@@ -103,7 +103,7 @@
     pools:{
       1:[[gPercentOfWhole,'part'],[gPartAsPercent,'express']],
       2:[[gPercentOfMoney,'part'],[gDiscount,'money']],
-      3:[[gGst,'money'],[gInterest,'money']]
+      3:[[gGst,'money'],[gInterest,'money'],[gPercentOfMoney,'part']]
     }
   });
 })();

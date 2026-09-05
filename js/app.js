@@ -15,11 +15,19 @@ const ri = MQI.gen.ri, pick = MQI.gen.pick;
 
 let TOPIC='fractions';
 let QSET=null;
+/* The normal-mode session feed (MQI.createFeed): skill round-robin inside the
+   current pool + a no-repeat-last-3-stem-shapes ring. Live rather than
+   pre-generated, because the no-repeat guard is a SERVING-order rule and the
+   mastery climb hops between pools mid-session, so three sets pre-built per pool
+   cannot enforce it across a pool change.
+   Repetition + Demand Audit 2026-09-05, fixes 1 + 2. */
+let FEED=null;
 /* A mode may install its own question feed (Patchwerk draws across every unlocked
    topic for the chosen class level). Null = the normal single-topic quiz set. */
 let MODE_FEED=null;
 function makeQuestion(level){
   if(MODE_FEED) return MODE_FEED(level);
+  if(FEED) return FEED.next(level);
   if(QSET && QSET[level] && QSET[level].length) return QSET[level].shift();
   return makeQuestionFor(TOPIC,level);
 }
@@ -156,7 +164,8 @@ function newGame(){
   if(DB.gameMode==='patchwerk'){ newPatchwerkGame(); return; }
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
   MODE_FEED=null;
-  QSET=buildSetFor(TOPIC,30);
+  QSET=null;
+  FEED=MQI.createFeed(TOPIC);
   S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
       rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
       wrongs:[], skills:{}, busy:false, t0:Date.now(), timed:DB.timed };
@@ -205,13 +214,26 @@ function newPatchwerkGame(){
   if(!topics.length){ alert('No unlocked quests for '+DB.grade+' yet.'); return; }
   const tier=mode.config.TIERS[DB.pwTier]||mode.config.TIERS[mode.config.DEFAULT_TIER];
 
-  QSET=null;
+  QSET=null; FEED=null;
+  /* Patchwerk already rotates the TOPIC on every item, which is why the audit
+     measured its repeat rate at 0.021 against the main mode's 0.376. Stack
+     weighting is untouched; the only addition is the same no-repeat-last-3 stem
+     shape ring the main feed carries, so it cannot regress into a run of clones. */
+  const pwRing=[];
   MODE_FEED=function(){
     const lvl=pwPickPool(pwStacks());
-    TOPIC=pick(topics);
-    const q=makeQuestionFor(TOPIC,lvl);
+    let last=null;
+    for(let t=0;t<6;t++){
+      TOPIC=pick(topics);
+      const q=makeQuestionFor(TOPIC,lvl);
+      const shape=MQI.shapeKey(q);
+      last={q,shape};
+      if(pwRing.indexOf(shape)!==-1) continue;
+      break;
+    }
+    pwRing.push(last.shape); while(pwRing.length>3) pwRing.shift();
     if(S) S.level=lvl;            /* keeps ctx.difficulty live */
-    return q;
+    return last.q;
   };
   S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
       rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,

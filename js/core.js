@@ -239,25 +239,166 @@ function gradeTyped(raw, q){
   }
 
   /* ---------------- question builders ---------------- */
+  /* The raw primitive: one uniform draw with replacement from a pool, no memory.
+     Kept because Patchwerk rotates TOPICS on every item and gets its variety that
+     way. The single-topic feed must NOT use this directly - see createFeed. */
   function makeQuestionFor(topic,level){
     const [g,skill]=pick(TOPICS[topic].pools[level]);
     const q=g();
     q.level=level; q.skill=skill;
     return q;
   }
-  /* Pre-generate a full quiz set with no duplicate questions across the whole run. */
+
+  /* ---------------- feed: stem shape + session selector ----------------
+   * Fixes 1 + 2 of the Repetition + Demand Audit (2026-09-05). Kevin played the
+   * shipped build and got "perimeter, perimeter, area, area"; measured, the next
+   * item repeated the previous template 32 - 38% of the time (P3 0.376) because
+   * makeQuestionFor is a uniform draw with replacement and the only rejection was
+   * an exact-duplicate guard. Kevin's ruling: repetition IS easiness.
+   */
+
+  /* Stem SHAPE key: two draws of the same template collapse to one key however
+     the numbers land. HTML tags, fractions, money, numbers, quoted strings and
+     proper nouns are all placeheld. Mirrors the audit's shapeKey (and
+     tools/feed-sim.mjs). Over-masking is safe - it only makes the no-repeat guard
+     stricter; UNDER-masking is the failure mode, so common sentence words are the
+     only capitalised tokens kept. */
+  const SHAPE_STOP = new Set(('A An The What Which How If In On At Of For From To And Or But So Then When Where Why Who '
+    + 'Find Work Round Write Express Simplify Solve Calculate Convert Complete Give Use Look Read Add Subtract Multiply '
+    + 'Divide Count Fill Choose Pick Draw Shade Here There This That It Is Are Was Were Do Does Each Every After Before '
+    + 'True False Yes No Total Sum Both All Some One Two Three Four Five Six Seven Eight Nine Ten First Second Third '
+    + 'Last Next Same Answer Question Hint Note').split(' '));
+  function shapeKey(q){
+    let s = String((q && q.q) || '') + ' ||X|| ' + String((q && q.extra) || '');
+    s = s.replace(/<span class="frac">[\s\S]*?<\/span><\/span>/g, ' [FRAC] ');
+    s = s.replace(/<span class="n">\d+<\/span><span class="d">\d+<\/span>/g, ' [FRAC] ');
+    s = s.replace(/<[^>]*>/g, ' [T] ');
+    s = s.replace(/&nbsp;/g, ' ');
+    s = s.replace(/\$\s?[\d, ]+(\.\d+)?/g, ' [MONEY] ');
+    s = s.replace(/\d[\d, ]*(\.\d+)?/g, ' [NUM] ');
+    s = s.replace(/"[^"]*"/g, ' [QUOTED] ');
+    s = s.replace(/[A-Z][a-z']+/g, w => SHAPE_STOP.has(w) ? w : ' [NAME] ');
+    return s.replace(/\s+/g, ' ').trim();
+  }
+
+  /* A question's identity for the session's no-exact-duplicate guard: stem PLUS
+     extra PLUS the options. The pre-fix key was stem + extra alone, and several
+     generators keep a fixed stem and vary only the choices ("Which number is the
+     smallest?"), so under a round-robin that key made the SECOND draw of such a
+     skill a permanent duplicate and starved the skill out of the carousel for the
+     rest of the session. This is the same identity tools/gen-sanity.mjs uses. */
+  function qIdentity(q){
+    const opts = q.typed ? String(q.answer) : (q.choices || []).join('');
+    return (q.q + '|' + (q.extra || '') + '|' + opts).replace(/\s+/g, '');
+  }
+
+  const FEED_RING = 3;        /* fix 2: how many stem shapes back we refuse to repeat */
+  const FEED_RETRIES = 8;     /* attempts before we accept a repeat - a one-generator pool must never hang */
+  const FEED_MIN_L3_SKILLS = 3;
+
+  /* A skill carousel over one pool: [gen, skill] pairs grouped by skill, cycled in
+     a shuffled order that RESHUFFLES on every full cycle (so two sessions do not
+     run the same carousel), with each skill's own generators rotated the same way. */
+  function buildCarousel(pool){
+    const bySkill = new Map();
+    for (const pr of pool){
+      const skill = pr[1] || '';
+      if (!bySkill.has(skill)) bySkill.set(skill, []);
+      bySkill.get(skill).push(pr);
+    }
+    return { skills: Array.from(bySkill.keys()), bySkill, order: [], i: 0, gi: new Map() };
+  }
+  function carouselNext(c){
+    if (c.i >= c.order.length){ c.order = shuffle(c.skills); c.i = 0; }
+    const skill = c.order[c.i++];
+    const gens = c.bySkill.get(skill);
+    let st = c.gi.get(skill);
+    if (!st || st.i >= st.order.length){ st = { order: shuffle(gens), i: 0 }; c.gi.set(skill, st); }
+    return st.order[st.i++];
+  }
+
+  /* createFeed(topic, opts) -> { next(level), shapeOf }
+   *   opts.dedup        (default true)  no two items in a session share a stem
+   *   opts.alternateL3  (default true)  see the level-3 rule below
+   *
+   * LEVEL-3 ALTERNATION RULE. The mastery climb is untouched - still 3 right in a
+   * row up, 2 wrong in a row down, capped at pool 3. But that climb pins ~58% of a
+   * session in pool 3, and where pool 3 carries FEWER THAN 3 distinct skills the
+   * carousel is too short to hide a repeat. In that case level 3 alternates a pool
+   * 3 draw with a pool 2 draw. This is deliberate: the audit's fix 3 (purify pool 3
+   * so it holds only generators absent from pools 1 and 2) does the OPPOSITE - it
+   * collapses pool 3 to one or two generators and RAISES the repeat rate to 0.49
+   * with a worst run of 24. Pool 3 cannot be purified until new pool-3 generators
+   * are written, so variety at level 3 is bought by borrowing pool 2, not by
+   * narrowing pool 3.
+   */
+  function createFeed(topic, opts){
+    const def = TOPICS[topic];
+    if (!def) throw new Error('createFeed: unknown topic ' + topic);
+    const o = opts || {};
+    const dedup = o.dedup !== false;
+    const alternateL3 = o.alternateL3 !== false;
+    const car = { 1: buildCarousel(def.pools[1]), 2: buildCarousel(def.pools[2]), 3: buildCarousel(def.pools[3]) };
+    const thinL3 = car[3].skills.length < FEED_MIN_L3_SKILLS;
+    const ring = [];
+    const seen = new Set();
+    let l3flip = 0;
+    let lastGen = null;   /* the generator that produced the item now on screen */
+
+    function accept(q, shape, key, gen){
+      if (dedup && key) seen.add(key);
+      ring.push(shape);
+      while (ring.length > FEED_RING) ring.shift();
+      lastGen = gen;
+      return q;
+    }
+    function next(level){
+      const want = (level === 2 || level === 3) ? level : 1;
+      let use = want;
+      if (want === 3 && alternateL3 && thinL3) use = (l3flip++ % 2 === 0) ? 3 : 2;
+      const c = car[use];
+      /* Three passes, loosening one guard at a time, because a pool with only 3
+         skills fills the 3-deep shape ring in a single carousel cycle and would
+         then reject EVERY candidate - including the ones that are not repeats at
+         all. Pass 1 (t < FEED_RETRIES): no repeat generator, no shape from the
+         last 3. Pass 2: no repeat generator. Pass 3: no exact duplicate only.
+         The feed must never hang: 25% of skills in the game own exactly one stem
+         shape, and a pool can be a single generator. */
+      let last = null;
+      const tries = dedup ? FEED_RETRIES * 2 + 500 : FEED_RETRIES * 2;
+      for (let t = 0; t < tries; t++){
+        const pr = carouselNext(c);
+        const q = pr[0]();
+        q.level = use; q.skill = pr[1];
+        const shape = shapeKey(q);
+        const key = dedup ? qIdentity(q) : null;
+        last = { q, shape, key, gen: pr[0] };
+        if (dedup && seen.has(key)) continue;                             /* exact duplicate, as before the fix */
+        /* fix 2, two ways of being "the same template": the same generator as the
+           item now on screen (this is the one that carries across a pool change -
+           gPeri sits in pools 1, 2 AND 3), or a stem shape seen in the last 3. */
+        if (t < FEED_RETRIES * 2 && pr[0] === lastGen) continue;
+        if (t < FEED_RETRIES && ring.indexOf(shape) !== -1) continue;
+        return accept(q, shape, key, pr[0]);
+      }
+      return accept(last.q, last.shape, last.key, last.gen);
+    }
+    return { next, shapeOf: shapeKey, thinL3, skillsPerPool: { 1: car[1].skills.length, 2: car[2].skills.length, 3: car[3].skills.length } };
+  }
+
+  /* Pre-generate a full quiz set with no duplicate questions across the whole run.
+     Now drawn through a feed, so each pool's set is skill-round-robin ordered and
+     carries the no-repeat-last-3 guard. alternateL3 is OFF here: a set built for
+     level 3 must actually be level 3 (the live feed in js/app.js owns the
+     alternation, because it is a serving-order rule, not a build-order one). */
   function buildSetFor(topic, perLevel){
     const set={1:[],2:[],3:[]};
-    const seen=new Set();
+    const feed=createFeed(topic,{alternateL3:false});
     for(const lvl of [1,2,3]){
       let guard=0;
       while(set[lvl].length<perLevel && guard<500){
         guard++;
-        const q=makeQuestionFor(topic,lvl);
-        const key=(q.q+'|'+(q.extra||'')).replace(/\s+/g,'');
-        if(seen.has(key)) continue;
-        seen.add(key);
-        set[lvl].push(q);
+        set[lvl].push(feed.next(lvl));
       }
     }
     return set;
@@ -270,7 +411,7 @@ function gradeTyped(raw, q){
     topics: TOPICS,
     modes: MODES,
     registerTopic, registerMode,
-    makeQuestionFor, buildSetFor
+    makeQuestionFor, buildSetFor, createFeed, shapeKey
   };
   /* Script-tag order must not matter for modes. A mode file that loads BEFORE
      core.js pushes itself onto MQI.pendingModes instead of calling registerMode:

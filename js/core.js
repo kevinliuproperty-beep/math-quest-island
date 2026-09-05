@@ -64,9 +64,16 @@ function gMul(tables){
     a+' × '+b+' = '+p+'. Count in '+a+'s: '+Array.from({length:Math.min(b,4)},(_,i)=>a*(i+1)).join(', ')+'…');
 }
 
-function finishTyped(qHtml, answer, explain){
+/* finishTyped(stem, answer, explain, unit)
+ * `unit` is the unit the STEM asks for ("cm²", "pages", "min", "l"...). It lands on
+ * q.unit so gradeTyped can (a) strip that unit when the child types it and (b) REJECT
+ * a wrong one. Wave-2 kill (P4 Area+Graphs Refutation, §2 unit gap): before this,
+ * finishTyped set no q.unit at all, so "113 cm" graded CORRECT for a 113 cm² answer.
+ * Leave `unit` off only when the answer is a bare count with no unit. */
+function finishTyped(qHtml, answer, explain, unit){
+  const u = unit ? String(unit) : '';
   return { q:qHtml, extra:'', typed:true, answer, choices:[], correct:-1,
-           explain, answerText:''+answer };
+           unit:u, explain, answerText: u ? (answer+' '+u) : (''+answer) };
 }
 
 /* ===== TYPED-ANSWER GRADING =========================================
@@ -80,34 +87,90 @@ function finishTyped(qHtml, answer, explain){
  *
  * Accepted on input: surrounding whitespace, a leading "$", thousands commas,
  * and a trailing unit the question declares. Never accepted: the empty string.
+ *
+ * WAVE-2 KILLS FOLDED IN HERE (P5 Rate+Angles Refutation §4, P4 Area+Graphs §2):
+ *  - a child who typed "30 pages", "10 min" or "3870 buns" was graded WRONG on a
+ *    correct answer, because the strippable-unit list held only measurement units.
+ *    TYPED_UNITS is now broad, and ANY trailing [A-Za-z°²³%$] token is stripped when
+ *    the question itself declares that token as its unit.
+ *  - a WRONG unit is now rejected: "45 cm" against a cm² answer is FALSE. A missing
+ *    unit stays accepted (a bare number is always allowed).
+ *  - mixed numbers ("1 1/2"), improper fractions ("3/2") and decimals ("1.5") are
+ *    interchangeable on a fractional answer; both sides are reduced before compare.
  */
-const TYPED_UNITS = ['cm3','cm³','km','cm','mm','ml','kg','m','g','l','ℓ','%'];
+const TYPED_UNITS = [
+  /* measurement */
+  'cm3','cm³','cm2','cm²','m2','m²','km','cm','mm','ml','kg','m','g','l','ℓ','%',
+  /* angle */
+  'degrees','degree','deg','°',
+  /* time */
+  'minutes','minute','mins','min','hours','hour','hr','h','seconds','secs','sec','s',
+  /* counts the wave-2 rate stems name */
+  'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads'
+].sort((a,b) => b.length - a.length);
+const UNIT_ALIAS = {
+  'ℓ':'l', 'litre':'l', 'litres':'l',
+  'cm³':'cm3', 'cm²':'cm2', 'm²':'m2',
+  '°':'deg', 'degree':'deg', 'degrees':'deg',
+  'minute':'min', 'minutes':'min', 'mins':'min',
+  'hour':'h', 'hours':'h', 'hr':'h',
+  'second':'s', 'seconds':'s', 'secs':'s', 'sec':'s',
+  'page':'pages', 'bun':'buns'
+};
 function normUnit(u){
   const s = String(u).trim().toLowerCase();
-  if (s === 'ℓ') return 'l';
-  if (s === 'cm³') return 'cm3';
-  return s;
+  return Object.prototype.hasOwnProperty.call(UNIT_ALIAS, s) ? UNIT_ALIAS[s] : s;
 }
-/* Returns {ok:true, value, unit, frac?} or {ok:false, reason}. */
-function parseTypedAnswer(raw){
+/* Reduce a fraction to lowest terms, sign on the numerator. */
+function reduceFrac(n, d){
+  if (!d) return null;
+  let sign = (n < 0) !== (d < 0) ? -1 : 1;
+  n = Math.abs(n); d = Math.abs(d);
+  const g = gcd(n, d) || 1;
+  return [sign * (n/g), d/g];
+}
+/* Returns {ok:true, value, unit, frac?} or {ok:false, reason}.
+ * `q` is optional; when it declares a unit, that unit is strippable even if it is
+ * not on TYPED_UNITS (so a lane may invent "crates" without touching the shared kit). */
+function parseTypedAnswer(raw, q){
   if (raw === null || raw === undefined) return { ok:false, reason:'empty' };
   let s = String(raw).trim();
   if (s === '') return { ok:false, reason:'empty' };
   let unit = '';
-  const low = s.toLowerCase();
-  for (let i=0;i<TYPED_UNITS.length;i++){
-    const u = TYPED_UNITS[i];
-    if (low.length > u.length && low.slice(low.length-u.length) === u){
-      unit = u; s = s.slice(0, s.length-u.length).trim(); break;
+  /* 1. a unit the question itself declares, whatever it is */
+  const declared = q && (q.unit || q.units);
+  if (declared){
+    const d = String(declared).trim();
+    if (d && s.length > d.length && s.slice(-d.length).toLowerCase() === d.toLowerCase()){
+      unit = d; s = s.slice(0, s.length - d.length).trim();
+    }
+  }
+  /* 2. otherwise any unit on the broad shared list */
+  if (!unit){
+    const low = s.toLowerCase();
+    for (let i=0;i<TYPED_UNITS.length;i++){
+      const u = TYPED_UNITS[i];
+      if (low.length > u.length && low.slice(low.length-u.length) === u){
+        unit = u; s = s.slice(0, s.length-u.length).trim(); break;
+      }
     }
   }
   s = s.replace(/^\$\s*/, '').replace(/,/g, '').trim();
   if (s === '') return { ok:false, reason:'empty' };
+  /* mixed number: "1 1/2" */
+  const mm = s.match(/^(-?\d+)\s+(\d+)\s*\/\s*(\d+)$/);
+  if (mm){
+    const w = Number(mm[1]), n = Number(mm[2]), d = Number(mm[3]);
+    if (!d) return { ok:false, reason:'divide by zero' };
+    const top = (w < 0 ? -1 : 1) * (Math.abs(w)*d + n);
+    return { ok:true, value:top/d, frac:reduceFrac(top, d), unit };
+  }
+  /* improper or proper fraction: "3/2", "3/4" */
   const fm = s.match(/^(-?\d+)\s*\/\s*(\d+)$/);
   if (fm){
     const n = Number(fm[1]), d = Number(fm[2]);
     if (!d) return { ok:false, reason:'divide by zero' };
-    return { ok:true, value:n/d, frac:[n,d], unit };
+    return { ok:true, value:n/d, frac:reduceFrac(n, d), unit };
   }
   if (!/^[-+]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return { ok:false, reason:'not a number' };
   const v = Number(s);
@@ -116,15 +179,21 @@ function parseTypedAnswer(raw){
 }
 /* true = correct. q may declare q.unit (expected unit) and q.dp (decimal places).
  * Tolerance: exact-after-rounding when q.dp is declared, else 1e-9 for an
- * integer answer and 0.005 for a decimal/money answer. */
+ * integer answer and 0.005 for a decimal/money answer.
+ * Unit rule: a MISSING unit is accepted, a MISMATCHED unit is rejected. */
 function gradeTyped(raw, q){
-  const p = parseTypedAnswer(raw);
+  const p = parseTypedAnswer(raw, q);
   if (!p.ok) return false;
-  if (q && q.unit && p.unit && normUnit(p.unit) !== normUnit(q.unit)) return false;
+  const want = q && (q.unit || q.units);
+  if (want && p.unit && normUnit(p.unit) !== normUnit(want)) return false;
+  /* a unit typed on a question that declares none is only accepted off the shared list */
+  if (!want && p.unit && TYPED_UNITS.indexOf(normUnit(p.unit)) === -1
+      && TYPED_UNITS.indexOf(String(p.unit).toLowerCase()) === -1) return false;
   if (q && Array.isArray(q.fracAnswer)){
-    const n = Number(q.fracAnswer[0]), d = Number(q.fracAnswer[1]);
-    if (!Number.isFinite(n) || !Number.isFinite(d) || !d) return false;
-    if (p.frac) return p.frac[0]*d === n*p.frac[1];
+    const r = reduceFrac(Number(q.fracAnswer[0]), Number(q.fracAnswer[1]));
+    if (!r || !Number.isFinite(r[0]) || !Number.isFinite(r[1])) return false;
+    const n = r[0], d = r[1];
+    if (p.frac) return p.frac[0] === n && p.frac[1] === d;
     return Math.abs(p.value - n/d) < 1e-9;
   }
   const ans = Number(q && q.answer);

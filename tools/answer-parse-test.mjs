@@ -89,7 +89,53 @@ const CASES = [
   ['$',         money,  false, 'dollar sign alone'],
   ['NaN',       plain,  false, 'the literal NaN'],
   ['Infinity',  plain,  false, 'the literal Infinity'],
-  ['1e3',       bigInt, false, 'exponent notation is not a P3 answer']
+  ['1e3',       bigInt, false, 'exponent notation is not a P3 answer'],
+
+  /* ================= WAVE 2 ================= */
+  /* --- KILL 1: units the rate stems name were rejected outright --- */
+  ['30 pages',  { answer: 30, unit: 'pages' },  true,  'W2: pages, the gFindRate kill'],
+  ['30pages',   { answer: 30, unit: 'pages' },  true,  'W2: pages, no space'],
+  ['30 Pages',  { answer: 30, unit: 'pages' },  true,  'W2: pages, case-insensitive'],
+  ['10 min',    { answer: 10, unit: 'min' },    true,  'W2: min, the gFindUnits kill'],
+  ['10 mins',   { answer: 10, unit: 'min' },    true,  'W2: mins alias of min'],
+  ['10 minutes',{ answer: 10, unit: 'min' },    true,  'W2: minutes alias of min'],
+  ['3870 buns', { answer: 3870, unit: 'buns' }, true,  'W2: buns, the gHourAndMinutes kill'],
+  ['3870',      { answer: 3870, unit: 'buns' }, true,  'W2: bare number still fine when a unit is declared'],
+  ['126°',      { answer: 126, unit: '°' },     true,  'W2: degree sign'],
+  ['126 deg',   { answer: 126, unit: '°' },     true,  'W2: deg is the degree sign'],
+  ['126 degrees',{ answer: 126, unit: '°' },    true,  'W2: degrees is the degree sign'],
+  ['90 h',      { answer: 90, unit: 'h' },      true,  'W2: hours short form'],
+  ['2 hours',   { answer: 2, unit: 'hr' },      true,  'W2: hours vs hr alias'],
+  ['45 s',      { answer: 45, unit: 's' },      true,  'W2: seconds short form'],
+  ['45 sec',    { answer: 45, unit: 'sec' },    true,  'W2: sec'],
+  ['255 l',     { answer: 255, unit: 'l' },     true,  'W2: litres for the tap items'],
+  ['1.80',      { answer: 1.8, unit: '$' },     true,  'W2: laundry money, unit declared as $'],
+  ['$1.80',     { answer: 1.8, unit: '$' },     true,  'W2: laundry money with the sign'],
+  /* --- KILL 2: finishTyped now declares a unit, so a WRONG unit is rejected --- */
+  ['113 cm²',   { answer: 113, unit: 'cm²' },   true,  'W2: correct area unit'],
+  ['113 cm2',   { answer: 113, unit: 'cm²' },   true,  'W2: ascii cm2 is cm squared'],
+  ['113 cm',    { answer: 113, unit: 'cm²' },   false, 'W2 THE KILL: cm must NOT grade correct for a cm² answer'],
+  ['45 cm',     { answer: 45, unit: 'cm²' },    false, 'W2 THE KILL: 45 cm against a cm² answer'],
+  ['46 cm²',    { answer: 46, unit: 'cm' },     false, 'W2: cm² must NOT grade correct for a perimeter in cm'],
+  ['113',       { answer: 113, unit: 'cm²' },   true,  'W2: a MISSING unit stays accepted'],
+  ['30 min',    { answer: 30, unit: 'pages' },  false, 'W2: min is not pages'],
+  ['46x',       plain,  false, 'W2: junk suffix on an undeclared-unit question stays wrong'],
+  ['42 buns',   plain,  true,  'W2: a unit on the shared list is stripped even when none is declared'],
+  /* --- KILL 3: mixed numbers, improper fractions and decimals interchange --- */
+  ['1 1/2',     { answer: 1.5, fracAnswer: [3, 2] }, true,  'W2: mixed number'],
+  ['3/2',       { answer: 1.5, fracAnswer: [3, 2] }, true,  'W2: improper fraction'],
+  ['1.5',       { answer: 1.5, fracAnswer: [3, 2] }, true,  'W2: decimal form'],
+  ['6/4',       { answer: 1.5, fracAnswer: [3, 2] }, true,  'W2: unreduced improper, reduced before compare'],
+  ['1 2/4',     { answer: 1.5, fracAnswer: [3, 2] }, true,  'W2: unreduced mixed number'],
+  ['1 1/3',     { answer: 1.5, fracAnswer: [3, 2] }, false, 'W2 REJECT: 1 1/3 is not 1.5'],
+  ['1 1/2',     { answer: 1.5 },                     true,  'W2: mixed number against a plain decimal answer'],
+  ['3/2',       { answer: 1.5 },                     true,  'W2: improper against a plain decimal answer'],
+  ['2 1/4',     { answer: 2.25, fracAnswer: [9, 4] },true,  'W2: mixed number, quarters'],
+  ['9/4',       { answer: 2.25, fracAnswer: [9, 4] },true,  'W2: improper, quarters'],
+  ['2 1/4 cm',  { answer: 2.25, fracAnswer: [9, 4], unit: 'cm' }, true, 'W2: mixed number carrying its unit'],
+  ['1 1/0',     { answer: 1.5, fracAnswer: [3, 2] }, false, 'W2: mixed number over zero'],
+  ['1 1',       plain, false, 'W2: two bare numbers is not a mixed number'],
+  ['3 3/4',     { answer: 0.75, fracAnswer: [3, 4] }, false, 'W2: whole part must count']
 ];
 
 let pass = 0, fail = 0;
@@ -108,7 +154,11 @@ const P = [
   ['$2.50', 2.5, ''],
   ['1,200', 1200, ''],
   ['3 km', 3, 'km'],
-  [' 0.5 ', 0.5, '']
+  [' 0.5 ', 0.5, ''],
+  ['30 pages', 30, 'pages'],
+  ['126°', 126, '°'],
+  ['1 1/2', 1.5, ''],
+  ['3/2', 1.5, '']
 ];
 for (const [input, val, unit] of P) {
   const r = parseTypedAnswer(input);

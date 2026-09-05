@@ -1297,6 +1297,159 @@ function oracle(q) {
     return near(e, ansNum) ? null : `at a point, equal share: expected ${e}, got ${ansNum}`;
   }
 
+  /* ===== WAVE 3 lane: P4 angles (naming + measuring) ========================
+     Every configuration is described in words, so the oracle re-derives from the
+     rendered stem exactly as a child would read it. The naming items have TEXT
+     keys, so they are checked against strip(q.answerText), not ansNum.
+     These oracles also enforce the P4 SCOPE CLAMPS: no named angle reaches 180,
+     and nothing here may lean on a straight-line (180) or point (360) fact. --- */
+  if ((m = text.match(/^Two straight arms meet at point (\w)\. One arm runs from \1 to (\w) and the other arm runs from \1 to (\w)\. Which of these is a correct name for the angle between the two arms\?$/))) {
+    const [, v, p, r] = m;
+    const key = strip(q.answerText);
+    if (key !== '∠' + p + v + r && key !== '∠' + r + v + p) return `angle naming: vertex ${v} must be the middle letter, got ${key}`;
+    for (const ch of q.choices.map(strip)) {
+      if (ch === key) continue;
+      if (ch === '∠' + p + v + r || ch === '∠' + r + v + p) return `angle naming: a distractor also names the same angle (${ch})`;
+    }
+    return null;
+  }
+  if ((m = text.match(/^An angle is named ∠(\w)(\w)(\w)\. Which of these names the SAME angle\?$/))) {
+    const [, p, v, r] = m;
+    const key = strip(q.answerText);
+    return key === '∠' + r + v + p ? null : `same angle: expected ∠${r}${v}${p}, got ${key}`;
+  }
+  if ((m = text.match(/^Two straight arms meet at point (\w)\. One arm runs from \1 to (\w) and the other arm runs from \1 to (\w)\. Three of the names below are correct names for that angle\. Which one is WRONG\?$/))) {
+    const [, v, p, r] = m;
+    const key = strip(q.answerText);
+    if (key === '∠' + p + v + r || key === '∠' + r + v + p) return `wrong-name item: key ${key} is actually correct`;
+    if (!/^∠\w\w\w$/.test(key)) return `wrong-name item: key is not a three-letter name (${key})`;
+    if (key[2] === v) return `wrong-name item: key ${key} still has the vertex in the middle`;
+    for (const ch of q.choices.map(strip)) {
+      if (ch === key) continue;
+      const ok = ch === '∠' + p + v + r || ch === '∠' + r + v + p ||
+                 ch === 'the angle marked ∠' + v.toLowerCase() + ' at the point ' + v;
+      if (!ok) return `wrong-name item: distractor ${ch} is not a correct name either`;
+    }
+    return null;
+  }
+  if ((m = text.match(/^∠\w+ is measured as (\d+)° and ∠\w+ is measured as (\d+)°\. What is the size of the larger of the two angles\?$/))) {
+    const e = Math.max(Number(m[1]), Number(m[2]));
+    if (e >= 180) return `P4 larger angle: ${e}° is not below 180`;
+    return near(e, ansNum) ? null : `P4 larger of two: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^∠(\w+) is measured as (\d+)° and ∠(\w+) is measured as (\d+)°\. How many degrees larger is ∠\3 than ∠\1\?$/))) {
+    const e = Number(m[4]) - Number(m[2]);
+    if (e <= 0) return `P4 how much larger: the named angle is not the larger one`;
+    return near(e, ansNum) ? null : `P4 how much larger: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^∠(\w)(\w)(\w) is measured as (\d+)° and ∠\3\2(\w) is measured as (\d+)°\. The two angles sit side by side at the vertex \2, sharing the arm \2\3 with no gap between them, so together they make ∠\1\2\5\. What is the size of ∠\1\2\5\?$/))) {
+    const e = Number(m[4]) + Number(m[6]);
+    if (e >= 180) return `P4 adjacent sum: ${e}° reaches 180, a P5 fact wearing a P4 badge`;
+    return near(e, ansNum) ? null : `P4 add adjacent: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^∠(\w)(\w)(\w) is measured as (\d+)° and ∠\3\2(\w) is measured as (\d+)°\. They sit side by side at \2, sharing the arm \2\3 with no gap, so together they make ∠\1\2\5\. ∠\w+ is measured as (\d+)°\. How many degrees larger is ∠\1\2\5 than ∠\w+\?$/))) {
+    const big = Number(m[4]) + Number(m[6]);
+    if (big >= 180) return `P4 two-step diff: the built angle ${big}° reaches 180`;
+    const e = big - Number(m[7]);
+    return near(e, ansNum) ? null : `P4 two-step diff: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^The arm (\w)(\w) is drawn inside ∠(\w)\1(\w), splitting it into ∠\3\1\2 and ∠\2\1\4 with no gap between them\. ∠\3\1\4 is measured as (\d+)° and ∠\3\1\2 is measured as (\d+)°\. What is the size of ∠\2\1\4\?$/))) {
+    const whole = Number(m[5]), part = Number(m[6]);
+    if (whole >= 180) return `P4 missing part: the whole angle ${whole}° reaches 180`;
+    const e = whole - part;
+    return near(e, ansNum) ? null : `P4 missing part: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ===== WAVE 3 lane: P5 triangles + four-sided figures =====================
+     Described in words, exactly one unknown, oracle re-derives from the rendered
+     stem. GEOMETRIC POSSIBILITY is enforced here as well, so a later widening that
+     emits an impossible figure fails the harness rather than shipping: every
+     triangle's three angles are positive whole numbers, each strictly below 180,
+     summing to exactly 180; every quadrilateral angle is strictly below 180. --- */
+  const triOk = (list, label) => {
+    for (const x of list) {
+      if (!Number.isFinite(x) || x <= 0 || !Number.isInteger(x)) return `${label}: angle ${x} is not a positive whole number`;
+      if (x >= 180) return `${label}: angle ${x}° is not below 180`;
+    }
+    const s = list.reduce((a, b) => a + b, 0);
+    return s === 180 ? null : `${label}: the three angles sum to ${s}, not 180`;
+  };
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), ∠\1 = (\d+)° and ∠\2 = (\d+)°\. What is the size of ∠\3\?$/))) {
+    const a = Number(m[4]), b = Number(m[5]), e = 180 - a - b;
+    const bad = triOk([a, b, e], 'triangle angle sum'); if (bad) return bad;
+    return near(e, ansNum) ? null : `triangle third angle: expected ${e}, got ${ansNum}`;
+  }
+  if (/^Triangle \w+ is an equilateral triangle\. What is the size of ∠\w\?$/.test(text)) {
+    return near(60, ansNum) ? null : `equilateral: expected 60, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), \1\2 = \1\3 and ∠\2 = (\d+)°\. What is the size of ∠\1\?$/))) {
+    const b = Number(m[4]), e = 180 - 2 * b;
+    const bad = triOk([b, b, e], 'isosceles (base given)'); if (bad) return bad;
+    return near(e, ansNum) ? null : `isosceles apex: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), \1\2 = \1\3 and ∠\1 = (\d+)°\. What is the size of ∠\2\?$/))) {
+    const a = Number(m[4]), e = (180 - a) / 2;
+    if (!Number.isInteger(e)) return `isosceles (apex given): base angle ${e} is not a whole number`;
+    const bad = triOk([a, e, e], 'isosceles (apex given)'); if (bad) return bad;
+    return near(e, ansNum) ? null : `isosceles base: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), ∠\2 is a right angle and ∠\1 = (\d+)°\. What is the size of ∠\3\?$/))) {
+    const a = Number(m[4]), e = 90 - a;
+    const bad = triOk([90, a, e], 'right-angled triangle'); if (bad) return bad;
+    return near(e, ansNum) ? null : `right triangle: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a parallelogram, with the four corners in the order \w, \w, \w, \w round the shape\. ∠\w = (\d+)°\. What is the size of ∠\w, the angle at the opposite corner\?$/))) {
+    const e = Number(m[1]);
+    if (e >= 180) return `parallelogram: given angle ${e}° is not below 180`;
+    return near(e, ansNum) ? null : `parallelogram opposite: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a parallelogram, with the four corners in the order \w, \w, \w, \w round the shape\. ∠\w = (\d+)°\. What is the size of ∠\w, the angle at the next corner along\?$/))) {
+    const a = Number(m[1]), e = 180 - a;
+    if (a >= 180 || e <= 0) return `parallelogram: ${a}° cannot sit in a parallelogram`;
+    return near(e, ansNum) ? null : `parallelogram adjacent: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a rhombus, with the four corners in the order \w, \w, \w, \w round the shape, and all four sides equal\. ∠\w = (\d+)°\. What is the size of ∠\w, the angle at the (opposite corner|next corner along)\?$/))) {
+    const a = Number(m[1]), e = m[2] === 'opposite corner' ? a : 180 - a;
+    if (a >= 180 || e <= 0) return `rhombus: ${a}° cannot sit in a rhombus`;
+    return near(e, ansNum) ? null : `rhombus: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a trapezium in which the side (\w)(\w) is parallel to the side (\w)(\w)\. The side \1\3 joins the two parallel sides\. ∠\1 = (\d+)°\. What is the size of ∠\3\?$/))) {
+    const a = Number(m[5]), e = 180 - a;
+    if (a >= 180 || e <= 0) return `trapezium: ${a}° cannot sit between the parallel sides`;
+    return near(e, ansNum) ? null : `trapezium: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), ∠\1 = (\d+)° and ∠\2 = (\d+)°\. The side \2\3 is extended to the point (\w), so \2, \3 and \6 lie on one straight line\. What is the size of ∠\1\3\6\?$/))) {
+    const a = Number(m[4]), b = Number(m[5]), inner = 180 - a - b, e = 180 - inner;
+    const bad = triOk([a, b, inner], 'exterior angle (triangle part)'); if (bad) return bad;
+    if (e >= 180) return `exterior angle: ${e}° is not below 180`;
+    return near(e, ansNum) ? null : `exterior angle: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), \1\2 = \1\3 and ∠\1 = (\d+)°\. The side \2\3 is extended to the point (\w), so \2, \3 and \5 lie on one straight line\. What is the size of ∠\1\3\5\?$/))) {
+    const a = Number(m[4]), base = (180 - a) / 2, e = 180 - base;
+    if (!Number.isInteger(base)) return `isosceles on a line: base angle ${base} is not a whole number`;
+    const bad = triOk([a, base, base], 'isosceles on a line'); if (bad) return bad;
+    if (e >= 180) return `isosceles on a line: ${e}° is not below 180`;
+    return near(e, ansNum) ? null : `isosceles on a line: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a parallelogram, with the four corners in the order (\w), (\w), (\w), (\w) round the shape\. ∠\1 = (\d+)°\. The side \4\3 is extended to the point (\w), so \4, \3 and \6 lie on one straight line\. What is the size of ∠\2\3\6\?$/))) {
+    const a = Number(m[5]), e = 180 - a;
+    if (a >= 180 || e <= 0) return `parallelogram on a line: ${a}° cannot sit in a parallelogram`;
+    return near(e, ansNum) ? null : `parallelogram on a line: expected ${e}, got ${ansNum}`;
+  }
+  if (/^Each set below is meant to be the three angles of a triangle\. Which set CANNOT be the three angles of a triangle\?$/.test(text)) {
+    const parse = s => strip(s).split(',').map(x => Number(String(x).replace('°', '').trim()));
+    let impossible = 0;
+    for (const ch of q.choices) {
+      const set = parse(ch);
+      if (set.length !== 3 || set.some(x => !Number.isInteger(x) || x <= 0 || x >= 180)) return `impossible-triangle: malformed set ${strip(ch)}`;
+      const sum = set.reduce((a, b) => a + b, 0);
+      const isKey = strip(ch) === strip(q.answerText);
+      if (sum !== 180) { impossible++; if (!isKey) return `impossible-triangle: ${strip(ch)} sums to ${sum} but is not the key`; }
+      else if (isKey) return `impossible-triangle: the key ${strip(ch)} sums to exactly 180, so it IS a triangle`;
+    }
+    return impossible === 1 ? null : `impossible-triangle: ${impossible} sets fail the 180 sum, expected exactly 1`;
+  }
+
   return false; // no oracle matched
 }
 

@@ -45,8 +45,11 @@
       if (!vals.includes(v)) vals.push(v);
     }
     const hidden = showQ ? ri(0, n - 1) : -1;
+    /* W3 cosmetic, same phone-width defect as the line graph: a 5-column table is
+       wider than a 360px column, and with no cap it pushed the whole card past the
+       right edge so the last column was unreadable. Capped and scrolled in place. */
     let html = '<div class="dtable" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left">' +
+      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%;overflow-x:auto">' +
       '<div style="font-weight:600;margin-bottom:8px">' + set.title + '</div>' +
       '<table style="border-collapse:collapse"><tr>';
     for (let i = 0; i < n; i++) {
@@ -115,10 +118,15 @@
     const W = PADL + PW + 34, H = PADT + PH + PADB;
 
     let s = '<div class="linegraph" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:10px 12px;border-radius:8px;font-size:13px;text-align:left">' +
+      'padding:10px 12px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
       '<div style="font-weight:600;margin-bottom:6px">' + set.title + '</div>' +
       '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H +
-      '" style="display:block;font-family:inherit">';
+      /* W3 cosmetic (Dress Rehearsal Wave 2, item 1), second half: at a 390px phone
+         width the fixed 380px card overflowed its column and the RIGHTMOST point and
+         its value label were cut off the screen entirely. The svg now scales to the
+         card (max-width:100%, height:auto) and the card itself is capped, so every
+         point stays inside the viewBox at any width. */
+      '" style="display:block;font-family:inherit;max-width:100%;height:auto">';
     for (let k = 0; k <= maxU; k++) {
       s += '<line x1="' + PADL + '" y1="' + y(k) + '" x2="' + (PADL + PW) + '" y2="' + y(k) +
         '" stroke="' + (k === 0 ? '#475569' : '#e2e8f0') + '" stroke-width="' + (k === 0 ? 2 : 1) + '"/>' +
@@ -142,8 +150,14 @@
            with its own gridline. Drawn to the RIGHT of the dot (text-anchor="start") so it
            never covers the point and so point 0, which sits on the y-axis itself, clears
            the tick-number column. */
-        '<text class="lg-val" x="' + (x(i) + 12) + '" y="' + (y(units[i]) + 4) +
-        '" text-anchor="start" font-size="12" font-weight="600" fill="#0f172a">' + vals[i] + '</text>' +
+        /* W3 cosmetic (Dress Rehearsal Wave 2, item 1): the RIGHTMOST point sits on
+           x = PADL + PW, so a label drawn 12px to its right ran into the last 34px of
+           the viewBox and crowded the edge once the card shrank to a phone width. The
+           last label is flipped to the LEFT of its dot (text-anchor="end", 8px clear).
+           It still sits on its own gridline, and the nearest other label is a full
+           point-gap away, so nothing overlaps. */
+        '<text class="lg-val" x="' + (i === n - 1 ? x(i) - 8 : x(i) + 12) + '" y="' + (y(units[i]) + 4) +
+        '" text-anchor="' + (i === n - 1 ? 'end' : 'start') + '" font-size="12" font-weight="600" fill="#0f172a">' + vals[i] + '</text>' +
         '<text class="lg-cat" x="' + x(i) + '" y="' + (PADT + PH + 17) +
         '" text-anchor="middle" font-size="11" fill="#475569">' + cats[i] + '</text>';
     }

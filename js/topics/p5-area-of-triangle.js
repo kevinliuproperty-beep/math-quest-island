@@ -84,7 +84,7 @@
       comp:  {label:'Composite figures', tip:'Cut the shape into a rectangle and a triangle, work out each area, then add.'}
     },
     pools:{
-      1:[[gAreaBasic,'area'],[gHalfRectangle,'area']],
+      1:[[gAreaBasic,'area'],[gHalfRectangle,'area'],[gFindBase,'unknown']],
       2:[[gAreaBigger,'area'],[gFindBase,'unknown']],
       3:[[gFindHeight,'unknown'],[gComposite,'comp']]
     }

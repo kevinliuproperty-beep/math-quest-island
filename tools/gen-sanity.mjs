@@ -753,6 +753,168 @@ function oracle(q) {
     return 'L figure: rendered a figure but no oracle matched the stem';
   }
 
+  /* --- W3 lane: PIE CHARTS (p4pie). RENDERED SURFACE ONLY. Every sector prints its
+     value twice - inside the slice (`pie-lab`) and in the legend beside the category
+     name (`pie-cat` + `pie-val`). The oracle reads the LEGEND, cross-checks it against
+     the slice labels, and re-derives every answer from those printed strings. Nothing
+     is taken from the generator's data array or from answerText. --- */
+  if (/class="piechart"/.test(String(q.extra))) {
+    const raw = String(q.extra);
+    const keys = [...raw.matchAll(/<span class="pie-cat"[^>]*>([^<]+)<\/span><b class="pie-val"[^>]*>([^<]+)<\/b>/g)];
+    const slice = [...raw.matchAll(/<text class="pie-lab"[^>]*>([^<]+)<\/text>/g)].map(t => t[1]);
+    if (keys.length < 3) return 'pie: fewer than 3 labelled sectors';
+    if (slice.length !== keys.length) return `pie: ${slice.length} slice labels but ${keys.length} legend keys`;
+    for (let i = 0; i < slice.length; i++) {
+      if (slice[i] !== keys[i][2]) return `pie: slice prints "${slice[i]}" but the key prints "${keys[i][2]}"`;
+    }
+    const names = keys.map(k => k[1]), labs = keys.map(k => k[2]);
+    if (new Set(names).size !== names.length) return 'pie: a category appears twice in the key';
+    const sectors = [...raw.matchAll(/class="pie-sec"/g)].length;
+    if (sectors !== keys.length) return `pie: ${sectors} drawn sectors but ${keys.length} keys`;
+    const fracOf = s => { const mm = /^(\d+)\/(\d+)$/.exec(s); return mm ? Number(mm[1]) / Number(mm[2]) : null; };
+    const isCount = labs.every(s => /^\d+$/.test(s));
+    const isFrac = labs.every(s => fracOf(s) !== null);
+    const hidden = labs.filter(s => s === '?').length;
+    const val = c => { const i = names.indexOf(c); return i < 0 ? null : Number(labs[i]); };
+
+    if (isFrac) {
+      const sum = labs.reduce((s, f) => s + fracOf(f), 0);
+      if (Math.abs(sum - 1) > 1e-9) return `pie fractions: printed sectors sum to ${sum}, not 1 whole`;
+      const fv = c => { const i = names.indexOf(c); return i < 0 ? null : fracOf(labs[i]); };
+      if ((m = text.match(/shows how all (\d+) .+ are shared out\. How many .+ are shown for (.+)\?$/))) {
+        const f = fv(m[2]);
+        if (f === null) return 'pie fraction-of-set: category "' + m[2] + '" is not in the key';
+        const e = f * Number(m[1]);
+        if (!Number.isInteger(e)) return `pie fraction-of-set: ${m[2]} is not a whole number of items`;
+        return near(e, ansNum) ? null : `pie fraction of set: expected ${e}, got ${ansNum}`;
+      }
+      if ((m = text.match(/^On the pie chart, the (.+) sector stands for (\d+) .+\. How many .+ are there altogether\?$/))) {
+        const i = names.indexOf(m[1]);
+        if (i < 0) return 'pie find-the-whole: category "' + m[1] + '" is not in the key';
+        /* exact rational: part / (n/d) = part * d / n. Doing this in floating point
+           turned 35 / (7/12) into 59.999999999999993 and failed a correct key. */
+        const fm = /^(\d+)\/(\d+)$/.exec(labs[i]);
+        const e = Number(m[2]) * Number(fm[2]) / Number(fm[1]);
+        if (!Number.isInteger(e)) return `pie find-the-whole: ${m[2]} over its fraction is not whole`;
+        return near(e, ansNum) ? null : `pie find the whole: expected ${e}, got ${ansNum}`;
+      }
+      return 'pie: rendered a fraction pie but no oracle matched the stem';
+    }
+
+    if (hidden === 1 && labs.filter(s => /^\d+$/.test(s)).length === labs.length - 1) {
+      if ((m = text.match(/^Altogether there are (\d+) .+ How many .+ are shown for (.+)\?$/))) {
+        const i = names.indexOf(m[2]);
+        if (i < 0) return 'pie missing: category "' + m[2] + '" is not in the key';
+        if (labs[i] !== '?') return 'pie missing: the asked sector is not the hidden one';
+        const known = labs.filter(s => s !== '?').map(Number);
+        const e = Number(m[1]) - known.reduce((s, v) => s + v, 0);
+        return near(e, ansNum) ? null : `pie missing sector: expected ${e}, got ${ansNum}`;
+      }
+      return 'pie: rendered a pie with a hidden sector but no oracle matched the stem';
+    }
+
+    if (!isCount) return 'pie: sector labels are neither all counts nor all fractions: ' + labs.join(' | ');
+    const nums = labs.map(Number);
+    const total = nums.reduce((a, b) => a + b, 0);
+    const big = Math.max.apply(null, nums), small = Math.min.apply(null, nums);
+
+    if (/^One of these statements about the pie chart is WRONG\. Which one is it\?$/.test(text)) {
+      const truth = s => {
+        let t;
+        if ((t = s.match(/^(.+) shows the most .+\.$/))) { const v = val(t[1]); return v === null ? null : v === big; }
+        if ((t = s.match(/^(.+) shows the fewest .+\.$/))) { const v = val(t[1]); return v === null ? null : v === small; }
+        if ((t = s.match(/^(.+) shows more .+ than (.+)\.$/))) {
+          const a = val(t[1]), b = val(t[2]); return (a === null || b === null) ? null : a > b;
+        }
+        if ((t = s.match(/^(.+) and (.+) together show (\d+) .+\.$/))) {
+          const a = val(t[1]), b = val(t[2]); return (a === null || b === null) ? null : a + b === Number(t[3]);
+        }
+        if ((t = s.match(/^There are (\d+) .+ altogether on the chart\.$/))) return total === Number(t[1]);
+        return null;
+      };
+      const verdicts = q.choices.map(c => truth(strip(c)));
+      if (verdicts.some(v => v === null)) return 'pie wrong-statement: an option is not a checkable claim';
+      const falses = verdicts.filter(v => v === false).length;
+      if (falses !== 1) return `pie wrong-statement: ${falses} false options, expected exactly 1`;
+      return verdicts[q.correct] === false ? null
+        : 'pie wrong-statement: the keyed option is true, not false';
+    }
+    /* Wave-3 integration: the two extra statement shapes added when the pie refuter's
+       wound 3 was applied. Same truth evaluator, inverted key / pairwise differences. */
+    const claimTruth = s2 => {
+      let t;
+      if ((t = s2.match(/^(.+) shows the most .+\.$/))) { const v = val(t[1]); return v === null ? null : v === big; }
+      if ((t = s2.match(/^(.+) shows the fewest .+\.$/))) { const v = val(t[1]); return v === null ? null : v === small; }
+      if ((t = s2.match(/^(.+) shows (\d+) more .+ than (.+)\.$/))) {
+        const a = val(t[1]), b = val(t[3]); return (a === null || b === null) ? null : a - b === Number(t[2]);
+      }
+      if ((t = s2.match(/^(.+) shows more .+ than (.+)\.$/))) {
+        const a = val(t[1]), b = val(t[2]); return (a === null || b === null) ? null : a > b;
+      }
+      if ((t = s2.match(/^(.+) and (.+) together show (\d+) .+\.$/))) {
+        const a = val(t[1]), b = val(t[2]); return (a === null || b === null) ? null : a + b === Number(t[3]);
+      }
+      if ((t = s2.match(/^There are (\d+) .+ altogether on the chart\.$/))) return total === Number(t[1]);
+      return null;
+    };
+    if (/^Three of these statements about the pie chart are WRONG\. Which one is TRUE\?$/.test(text)) {
+      const verdicts = q.choices.map(c => claimTruth(strip(c)));
+      if (verdicts.some(v => v === null)) return 'pie true-statement: an option is not a checkable claim';
+      const trues = verdicts.filter(v => v === true).length;
+      if (trues !== 1) return `pie true-statement: ${trues} true options, expected exactly 1`;
+      return verdicts[q.correct] === true ? null : 'pie true-statement: the keyed option is false, not true';
+    }
+    if (/^Each statement below compares two sectors of the pie chart\. Which one is WRONG\?$/.test(text)) {
+      const verdicts = q.choices.map(c => claimTruth(strip(c)));
+      if (verdicts.some(v => v === null)) return 'pie compare-statement: an option is not a checkable difference claim';
+      const falses = verdicts.filter(v => v === false).length;
+      if (falses !== 1) return `pie compare-statement: ${falses} false options, expected exactly 1`;
+      return verdicts[q.correct] === false ? null : 'pie compare-statement: the keyed option is true, not false';
+    }
+    if ((m = text.match(/^On the pie chart, one sector shows (\d+) .+\. Which one is it\?$/))) {
+      const hits = names.filter((_, i) => nums[i] === Number(m[1]));
+      if (hits.length !== 1) return `pie which-sector: ${hits.length} sectors print ${m[1]}`;
+      return strip(q.answerText) === hits[0] ? null
+        : `pie which sector: expected ${hits[0]}, got ${strip(q.answerText)}`;
+    }
+    if (/^How many .+ are shown on the whole pie chart altogether\?$/.test(text)) {
+      return near(total, ansNum) ? null : `pie total: expected ${total}, got ${ansNum}`;
+    }
+    if (/one sector is bigger than all the others/.test(text)) {
+      if (nums.filter(v => v === big).length !== 1) return 'pie biggest: the largest sector is tied';
+      return near(big, ansNum) ? null : `pie biggest: expected ${big}, got ${ansNum}`;
+    }
+    if (/one sector is smaller than all the others/.test(text)) {
+      if (nums.filter(v => v === small).length !== 1) return 'pie smallest: the smallest sector is tied';
+      return near(small, ansNum) ? null : `pie smallest: expected ${small}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^How many sectors of the pie chart show more than (\d+) .+\?$/))) {
+      const e = nums.filter(v => v > Number(m[1])).length;
+      return near(e, ansNum) ? null : `pie count-above: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^On the pie chart, (.+) and (.+) are put together\. How many more .+ is that than (.+) alone\?$/))) {
+      const a = val(m[1]), b = val(m[2]), c = val(m[3]);
+      if (a === null || b === null || c === null) return 'pie two-step: a named sector is not in the key';
+      return near(a + b - c, ansNum) ? null : `pie two-step: expected ${a + b - c}, got ${ansNum}`;
+    }
+    if ((m = text.match(/are shown for (.+) than for (.+)\?$/))) {
+      const a = val(m[1]), b = val(m[2]);
+      if (a === null || b === null) return 'pie diff: a compared sector is not in the key';
+      return near(a - b, ansNum) ? null : `pie diff: expected ${a - b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/are shown for (.+) and (.+) altogether\?$/))) {
+      const a = val(m[1]), b = val(m[2]);
+      if (a === null || b === null) return 'pie combine: a summed sector is not in the key';
+      return near(a + b, ansNum) ? null : `pie combine: expected ${a + b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^On the pie chart, how many .+ are shown for (.+)\?$/))) {
+      const e = val(m[1]);
+      if (e === null) return 'pie read: category "' + m[1] + '" is not in the key';
+      return near(e, ansNum) ? null : `pie read: expected ${e}, got ${ansNum}`;
+    }
+    return 'pie: rendered a pie chart but no oracle matched the stem';
+  }
+
   /* --- P4 area+graphs lane: tables. Every cell is printed text; the oracle reads the
      header row and the value row and pairs them by column order. --- */
   if (/class="dtable"/.test(String(q.extra))) {
@@ -1167,6 +1329,227 @@ function oracle(q) {
     return near(e, ansNum) ? null : `at a point, equal share: expected ${e}, got ${ansNum}`;
   }
 
+  /* ===== WAVE 3 lane: P4 angles (naming + measuring) ========================
+     Every configuration is described in words, so the oracle re-derives from the
+     rendered stem exactly as a child would read it. The naming items have TEXT
+     keys, so they are checked against strip(q.answerText), not ansNum.
+     These oracles also enforce the P4 SCOPE CLAMPS: no named angle reaches 180,
+     and nothing here may lean on a straight-line (180) or point (360) fact. --- */
+  if ((m = text.match(/^Two straight arms meet at point (\w)\. One arm runs from \1 to (\w) and the other arm runs from \1 to (\w)\. Which of these is a correct name for the angle between the two arms\?$/))) {
+    const [, v, p, r] = m;
+    const key = strip(q.answerText);
+    if (key !== '∠' + p + v + r && key !== '∠' + r + v + p) return `angle naming: vertex ${v} must be the middle letter, got ${key}`;
+    for (const ch of q.choices.map(strip)) {
+      if (ch === key) continue;
+      if (ch === '∠' + p + v + r || ch === '∠' + r + v + p) return `angle naming: a distractor also names the same angle (${ch})`;
+    }
+    return null;
+  }
+  if ((m = text.match(/^An angle is named ∠(\w)(\w)(\w)\. Which of these names the SAME angle\?$/))) {
+    const [, p, v, r] = m;
+    const key = strip(q.answerText);
+    return key === '∠' + r + v + p ? null : `same angle: expected ∠${r}${v}${p}, got ${key}`;
+  }
+  if ((m = text.match(/^Two straight arms meet at point (\w)\. One arm runs from \1 to (\w) and the other arm runs from \1 to (\w)\. Three of the names below are correct names for that angle\. Which one is WRONG\?$/))) {
+    const [, v, p, r] = m;
+    const key = strip(q.answerText);
+    if (key === '∠' + p + v + r || key === '∠' + r + v + p) return `wrong-name item: key ${key} is actually correct`;
+    if (!/^∠\w\w\w$/.test(key)) return `wrong-name item: key is not a three-letter name (${key})`;
+    if (key[2] === v) return `wrong-name item: key ${key} still has the vertex in the middle`;
+    for (const ch of q.choices.map(strip)) {
+      if (ch === key) continue;
+      const ok = ch === '∠' + p + v + r || ch === '∠' + r + v + p ||
+                 ch === 'the angle marked ∠' + v.toLowerCase() + ' at the point ' + v;
+      if (!ok) return `wrong-name item: distractor ${ch} is not a correct name either`;
+    }
+    return null;
+  }
+  if ((m = text.match(/^∠\w+ is measured as (\d+)° and ∠\w+ is measured as (\d+)°\. What is the size of the larger of the two angles\?$/))) {
+    const e = Math.max(Number(m[1]), Number(m[2]));
+    if (e >= 180) return `P4 larger angle: ${e}° is not below 180`;
+    return near(e, ansNum) ? null : `P4 larger of two: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^∠(\w+) is measured as (\d+)° and ∠(\w+) is measured as (\d+)°\. How many degrees larger is ∠\3 than ∠\1\?$/))) {
+    const e = Number(m[4]) - Number(m[2]);
+    if (e <= 0) return `P4 how much larger: the named angle is not the larger one`;
+    return near(e, ansNum) ? null : `P4 how much larger: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^∠(\w)(\w)(\w) is measured as (\d+)° and ∠\3\2(\w) is measured as (\d+)°\. The two angles sit side by side at the vertex \2, sharing the arm \2\3 with no gap between them, so together they make ∠\1\2\5\. What is the size of ∠\1\2\5\?$/))) {
+    const e = Number(m[4]) + Number(m[6]);
+    if (e >= 180) return `P4 adjacent sum: ${e}° reaches 180, a P5 fact wearing a P4 badge`;
+    return near(e, ansNum) ? null : `P4 add adjacent: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^∠(\w)(\w)(\w) is measured as (\d+)° and ∠\3\2(\w) is measured as (\d+)°\. They sit side by side at \2, sharing the arm \2\3 with no gap, so together they make ∠\1\2\5\. ∠\w+ is measured as (\d+)°\. How many degrees larger is ∠\1\2\5 than ∠\w+\?$/))) {
+    const big = Number(m[4]) + Number(m[6]);
+    if (big >= 180) return `P4 two-step diff: the built angle ${big}° reaches 180`;
+    const e = big - Number(m[7]);
+    return near(e, ansNum) ? null : `P4 two-step diff: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^The arm (\w)(\w) is drawn inside ∠(\w)\1(\w), splitting it into ∠\3\1\2 and ∠\2\1\4 with no gap between them\. ∠\3\1\4 is measured as (\d+)° and ∠\3\1\2 is measured as (\d+)°\. What is the size of ∠\2\1\4\?$/))) {
+    const whole = Number(m[5]), part = Number(m[6]);
+    if (whole >= 180) return `P4 missing part: the whole angle ${whole}° reaches 180`;
+    const e = whole - part;
+    return near(e, ansNum) ? null : `P4 missing part: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ===== WAVE 3 lane: P5 triangles + four-sided figures =====================
+     Described in words, exactly one unknown, oracle re-derives from the rendered
+     stem. GEOMETRIC POSSIBILITY is enforced here as well, so a later widening that
+     emits an impossible figure fails the harness rather than shipping: every
+     triangle's three angles are positive whole numbers, each strictly below 180,
+     summing to exactly 180; every quadrilateral angle is strictly below 180. --- */
+  const triOk = (list, label) => {
+    for (const x of list) {
+      if (!Number.isFinite(x) || x <= 0 || !Number.isInteger(x)) return `${label}: angle ${x} is not a positive whole number`;
+      if (x >= 180) return `${label}: angle ${x}° is not below 180`;
+    }
+    const s = list.reduce((a, b) => a + b, 0);
+    return s === 180 ? null : `${label}: the three angles sum to ${s}, not 180`;
+  };
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), ∠\1 = (\d+)° and ∠\2 = (\d+)°\. What is the size of ∠\3\?$/))) {
+    const a = Number(m[4]), b = Number(m[5]), e = 180 - a - b;
+    const bad = triOk([a, b, e], 'triangle angle sum'); if (bad) return bad;
+    return near(e, ansNum) ? null : `triangle third angle: expected ${e}, got ${ansNum}`;
+  }
+  if (/^Triangle \w+ is an equilateral triangle\. What is the size of ∠\w\?$/.test(text)) {
+    return near(60, ansNum) ? null : `equilateral: expected 60, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), \1\2 = \1\3 and ∠\2 = (\d+)°\. What is the size of ∠\1\?$/))) {
+    const b = Number(m[4]), e = 180 - 2 * b;
+    const bad = triOk([b, b, e], 'isosceles (base given)'); if (bad) return bad;
+    return near(e, ansNum) ? null : `isosceles apex: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), \1\2 = \1\3 and ∠\1 = (\d+)°\. What is the size of ∠\2\?$/))) {
+    const a = Number(m[4]), e = (180 - a) / 2;
+    if (!Number.isInteger(e)) return `isosceles (apex given): base angle ${e} is not a whole number`;
+    const bad = triOk([a, e, e], 'isosceles (apex given)'); if (bad) return bad;
+    return near(e, ansNum) ? null : `isosceles base: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), ∠\2 is a right angle and ∠\1 = (\d+)°\. What is the size of ∠\3\?$/))) {
+    const a = Number(m[4]), e = 90 - a;
+    const bad = triOk([90, a, e], 'right-angled triangle'); if (bad) return bad;
+    return near(e, ansNum) ? null : `right triangle: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a parallelogram, with the four corners in the order \w, \w, \w, \w round the shape\. ∠\w = (\d+)°\. What is the size of ∠\w, the angle at the opposite corner\?$/))) {
+    const e = Number(m[1]);
+    if (e >= 180) return `parallelogram: given angle ${e}° is not below 180`;
+    return near(e, ansNum) ? null : `parallelogram opposite: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a parallelogram, with the four corners in the order \w, \w, \w, \w round the shape\. ∠\w = (\d+)°\. What is the size of ∠\w, the angle at the next corner along\?$/))) {
+    const a = Number(m[1]), e = 180 - a;
+    if (a >= 180 || e <= 0) return `parallelogram: ${a}° cannot sit in a parallelogram`;
+    return near(e, ansNum) ? null : `parallelogram adjacent: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a rhombus, with the four corners in the order \w, \w, \w, \w round the shape, and all four sides equal\. ∠\w = (\d+)°\. What is the size of ∠\w, the angle at the (opposite corner|next corner along)\?$/))) {
+    const a = Number(m[1]), e = m[2] === 'opposite corner' ? a : 180 - a;
+    if (a >= 180 || e <= 0) return `rhombus: ${a}° cannot sit in a rhombus`;
+    return near(e, ansNum) ? null : `rhombus: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a trapezium in which the side (\w)(\w) is parallel to the side (\w)(\w)\. The side \1\3 joins the two parallel sides\. ∠\1 = (\d+)°\. What is the size of ∠\3\?$/))) {
+    const a = Number(m[5]), e = 180 - a;
+    if (a >= 180 || e <= 0) return `trapezium: ${a}° cannot sit between the parallel sides`;
+    return near(e, ansNum) ? null : `trapezium: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), ∠\1 = (\d+)° and ∠\2 = (\d+)°\. The side \2\3 is extended to the point (\w), so \2, \3 and \6 lie on one straight line\. What is the size of ∠\1\3\6\?$/))) {
+    const a = Number(m[4]), b = Number(m[5]), inner = 180 - a - b, e = 180 - inner;
+    const bad = triOk([a, b, inner], 'exterior angle (triangle part)'); if (bad) return bad;
+    if (e >= 180) return `exterior angle: ${e}° is not below 180`;
+    return near(e, ansNum) ? null : `exterior angle: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^In triangle (\w)(\w)(\w), \1\2 = \1\3 and ∠\1 = (\d+)°\. The side \2\3 is extended to the point (\w), so \2, \3 and \5 lie on one straight line\. What is the size of ∠\1\3\5\?$/))) {
+    const a = Number(m[4]), base = (180 - a) / 2, e = 180 - base;
+    if (!Number.isInteger(base)) return `isosceles on a line: base angle ${base} is not a whole number`;
+    const bad = triOk([a, base, base], 'isosceles on a line'); if (bad) return bad;
+    if (e >= 180) return `isosceles on a line: ${e}° is not below 180`;
+    return near(e, ansNum) ? null : `isosceles on a line: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a parallelogram, with the four corners in the order (\w), (\w), (\w), (\w) round the shape\. ∠\1 = (\d+)°\. The side \4\3 is extended to the point (\w), so \4, \3 and \6 lie on one straight line\. What is the size of ∠\2\3\6\?$/))) {
+    const a = Number(m[5]), e = 180 - a;
+    if (a >= 180 || e <= 0) return `parallelogram on a line: ${a}° cannot sit in a parallelogram`;
+    return near(e, ansNum) ? null : `parallelogram on a line: expected ${e}, got ${ansNum}`;
+  }
+  if (/^Each set below is meant to be the three angles of a triangle\. Which set CANNOT be the three angles of a triangle\?$/.test(text)) {
+    const parse = s => strip(s).split(',').map(x => Number(String(x).replace('°', '').trim()));
+    let impossible = 0;
+    for (const ch of q.choices) {
+      const set = parse(ch);
+      if (set.length !== 3 || set.some(x => !Number.isInteger(x) || x <= 0 || x >= 180)) return `impossible-triangle: malformed set ${strip(ch)}`;
+      const sum = set.reduce((a, b) => a + b, 0);
+      const isKey = strip(ch) === strip(q.answerText);
+      if (sum !== 180) { impossible++; if (!isKey) return `impossible-triangle: ${strip(ch)} sums to ${sum} but is not the key`; }
+      else if (isKey) return `impossible-triangle: the key ${strip(ch)} sums to exactly 180, so it IS a triangle`;
+    }
+    return impossible === 1 ? null : `impossible-triangle: ${impossible} sets fail the 180 sum, expected exactly 1`;
+  }
+
+  /* --- WAVE 3 integration: oracles for the five generators rewritten when the
+     angles+shapes refutation wounds were applied. Each re-derives from the NEW
+     rendered stem; the pre-rewrite oracles above no longer match those stems. --- */
+  if ((m = text.match(/^Two straight arms meet at point (\w)\. One arm runs from \1 to (\w) and the other arm runs from \1 to (\w)\. The angle at \1 is marked \u2220(\w) on the diagram\. Three of the names below are correct names for that angle\. Which one is WRONG\?$/))) {
+    const [, v, p2, r, sh] = m;
+    if (sh !== v.toLowerCase()) return `wrong-name item: the stem marks \u2220${sh} but the vertex is ${v}`;
+    const key = strip(q.answerText);
+    if (key === '\u2220' + p2 + v + r || key === '\u2220' + r + v + p2) return `wrong-name item: key ${key} is actually correct`;
+    if (!/^\u2220\w\w\w$/.test(key)) return `wrong-name item: key is not a three-letter name (${key})`;
+    if (key[2] === v) return `wrong-name item: key ${key} still has the vertex in the middle`;
+    for (const ch of q.choices.map(strip)) {
+      if (ch === key) continue;
+      const ok = ch === '\u2220' + p2 + v + r || ch === '\u2220' + r + v + p2 ||
+                 ch === 'the angle marked \u2220' + v.toLowerCase() + ' at the point ' + v;
+      if (!ok) return `wrong-name item: distractor ${ch} is not a correct name either`;
+    }
+    return null;
+  }
+  if ((m = text.match(/^The arm (\w)(\w) is drawn inside \u2220(\w)\1(\w), splitting it into \u2220\3\1\2 and \u2220\2\1\4 with no gap between them\. \u2220\3\1\4 is measured as (\d+)\u00b0 and \u2220\3\1\2 is measured as (\d+)\u00b0\. How many degrees larger is \u2220\2\1\4 than \u2220\3\1\2\?$/))) {
+    const whole = Number(m[5]), part1 = Number(m[6]);
+    if (whole >= 180) return `P4 missing part: the whole angle ${whole}\u00b0 reaches 180`;
+    const other = whole - part1;
+    if (other <= 0) return `P4 missing part: the second part is ${other}\u00b0`;
+    const e = other - part1;
+    if (e <= 0) return `P4 missing part: "how many degrees larger" but the second part is not larger`;
+    return near(e, ansNum) ? null : `P4 missing part compare: expected ${e}, got ${ansNum}`;
+  }
+  if (/^Triangle \w+ is an equilateral triangle\. What is \u2220\w \+ \u2220\w\?$/.test(text)) {
+    return near(120, ansNum) ? null : `equilateral pair: expected 120, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Triangle (\w)(\w)(\w) is an equilateral triangle\. The arm (\w)(\w) is drawn inside \u2220\4, splitting it into \u2220(\w)\4\5 and the rest, with no gap\. \u2220\6\4\5 is measured as (\d+)\u00b0\. What is the size of the other part of \u2220\4\?$/))) {
+    const a = Number(m[7]), e = 60 - a;
+    if (e <= 0) return `equilateral part: ${a}\u00b0 does not fit inside a 60\u00b0 angle`;
+    return near(e, ansNum) ? null : `equilateral part: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/is a parallelogram, with the four corners in the order (\w), (\w), (\w), (\w) round the shape\. \u2220\1 = (\d+)\u00b0\. The side \4\3 is extended to the point (\w), so \4, \3 and \6 lie on one straight line\. How many degrees larger is \u2220\2\3\6 than \u2220\2\3\4\?$/))) {
+    const a = Number(m[5]);
+    if (a >= 180) return `parallelogram on a line: ${a}\u00b0 cannot sit in a parallelogram`;
+    const onLine = 180 - a;
+    if (onLine <= 0 || onLine >= 180) return `parallelogram on a line: ${onLine}\u00b0 is not a valid angle`;
+    const e = onLine - a;
+    if (e <= 0) return `parallelogram on a line: the straight-line angle is not the larger one`;
+    return near(e, ansNum) ? null : `parallelogram on a line compare: expected ${e}, got ${ansNum}`;
+  }
+  if (/^The four corner angles of a shape are listed in order round the shape\. Which set COULD be the four angles of a rhombus\?$/.test(text)) {
+    const parse = t2 => strip(t2).split(',').map(x => Number(String(x).replace('\u00b0', '').trim()));
+    const isRhombus = set => set.length === 4 &&
+      set.every(x => Number.isInteger(x) && x > 0 && x < 180) &&
+      set[0] === set[2] && set[1] === set[3] && set[0] + set[1] === 180;
+    let good = 0;
+    for (const ch of q.choices) {
+      const set = parse(ch);
+      const isKey = strip(ch) === strip(q.answerText);
+      if (set.length !== 4 || set.some(x => !Number.isFinite(x))) return `which-rhombus: malformed set ${strip(ch)}`;
+      if (isRhombus(set)) { good++; if (!isKey) return `which-rhombus: ${strip(ch)} is a valid rhombus but is not the key`; }
+      else if (isKey) return `which-rhombus: the key ${strip(ch)} is not a valid rhombus`;
+    }
+    return good === 1 ? null : `which-rhombus: ${good} valid sets, expected exactly 1`;
+  }
+  if ((m = text.match(/is a trapezium in which the side (\w)(\w) is parallel to the side (\w)(\w)\. The side \1\3 and the side \2\4 each join the two parallel sides\. \u2220\1 = (\d+)\u00b0 and \u2220\2 = (\d+)\u00b0\. How many degrees larger is \u2220\3 than \u2220\4\?$/))) {
+    const a = Number(m[5]), b = Number(m[6]);
+    const angD = 180 - a, angC = 180 - b;
+    if (a >= 180 || b >= 180 || angD <= 0 || angC <= 0) return `trapezium difference: an angle does not fit between the parallel sides`;
+    const e = angD - angC;
+    if (e <= 0) return `trapezium difference: the named angle is not the larger one`;
+    return near(e, ansNum) ? null : `trapezium difference: expected ${e}, got ${ansNum}`;
+  }
+
   return false; // no oracle matched
 }
 
@@ -1231,6 +1614,50 @@ for (const tid of Object.keys(TOPICS)) {
   if (!ok) failures++;
 }
 
+/* ---------- pool skill-coverage gate (Wave 3 blocker, Dress Rehearsal leg 2) ------
+   js/topics/p3-area-perimeter.js pool 1 tagged BOTH of its generators 'peri', so the
+   feed's skill round-robin had a single skill to cycle and served six consecutive
+   perimeter items. That is a structural fault in the data, invisible to a per-generator
+   harness. Rule: any topic declaring >= 2 skills must expose >= 2 DISTINCT skill tags
+   in every one of its three pools. --- */
+const poolSkillRows = [];
+for (const tid of Object.keys(TOPICS)) {
+  const t = TOPICS[tid];
+  const nSkills = Object.keys(t.skills || {}).length;
+  if (nSkills < 2) { poolSkillRows.push({ tid, ok: true, note: `only ${nSkills} skill declared - exempt` }); continue; }
+  for (const lvl of [1, 2, 3]) {
+    const tags = [...new Set((t.pools[lvl] || []).map(pr => pr[1]))];
+    const ok = tags.length >= 2;
+    poolSkillRows.push({ tid, ok, note: ok
+      ? `pool ${lvl}: ${tags.length} skills [${tags.join(', ')}]`
+      : `pool ${lvl} exposes only ${tags.length} skill [${tags.join(', ')}] but the topic declares ${nSkills} - the feed cannot interleave skills here` });
+    if (!ok) failures++;
+  }
+}
+
+/* ---------- manifest gate (Wave 3, W3 Pie+Cosmetics Refutation KILL) --------------
+   p4-pie-charts.js passed 200/200 here while being absent from index.html's script
+   list, so the topic shipped dark: the harness reads js/topics/*.js off disk and never
+   read the manifest. That seam is now gated. Every topic file must be referenced by
+   index.html, and every path index.html lists must exist. --- */
+const manifestRows = [];
+{
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const listed = new Set([...html.matchAll(/"(js\/topics\/[A-Za-z0-9._-]+\.js)"/g)].map(x => x[1]));
+  for (const f of topicFiles) {
+    const rel = 'js/topics/' + f;
+    const ok = listed.has(rel);
+    manifestRows.push({ rel, ok, note: ok ? '' : 'NOT referenced by index.html - the topic would ship dark' });
+    if (!ok) failures++;
+  }
+  for (const rel of listed) {
+    if (!fs.existsSync(path.join(ROOT, rel))) {
+      manifestRows.push({ rel, ok: false, note: 'listed in index.html but the file does not exist' });
+      failures++;
+    }
+  }
+}
+
 /* ---------- report ---------- */
 const pad = (s, w) => String(s).padEnd(w);
 console.log(`\nMath Quest Island generator sanity  (SAMPLES=${N}, ${GENS.length} generators, ${Object.keys(TOPICS).length} topics)\n`);
@@ -1241,6 +1668,16 @@ for (const r of rows) {
 }
 console.log('');
 for (const s of setRows) console.log(`${s.ok ? 'ok  ' : 'FAIL'} buildSetFor(${s.tid})  30 x 3 levels${s.note ? '  ' + s.note : ''}`);
+
+const badPoolSkill = poolSkillRows.filter(r => !r.ok);
+console.log('');
+if (badPoolSkill.length) for (const r of badPoolSkill) console.log(`FAIL pool skills  ${r.tid}  ${r.note}`);
+else console.log(`ok   pool skill coverage: every multi-skill topic exposes >= 2 skills in all 3 pools (${poolSkillRows.length} checks)`);
+
+const badManifest = manifestRows.filter(r => !r.ok);
+console.log('');
+if (badManifest.length) for (const r of badManifest) console.log(`FAIL manifest  ${r.rel}  ${r.note}`);
+else console.log(`ok   index.html manifest: all ${manifestRows.length} topic files are loaded by the app`);
 
 const uncovered = rows.filter(r => r.cov === 0).map(r => r.topic + '.' + r.name);
 if (uncovered.length) console.log(`\nWARN no independent oracle matched (shape + integrity only): ${uncovered.join(', ')}`);

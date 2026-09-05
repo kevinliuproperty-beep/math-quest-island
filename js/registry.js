@@ -26,6 +26,8 @@ const MAP_NODES=[
   {id:'p4fractions',e:'🥧', name:'Mixed Number Cove',  blurb:'Mixed numbers, fraction of a set, adding & subtracting (P4)', grades:['P4']},
   {id:'p4area',    e:'📏', name:'Missing Side Marsh',  blurb:'Missing sides and composite shapes. TYPE your answer! (P4)', grades:['P4']},
   {id:'p4data',    e:'📈', name:'Line Graph Lagoon',   blurb:'Reading tables and line graphs, and comparing points (P4)', grades:['P4']},
+  {id:'p4pie',     e:'🥧', name:'Pie Chart Point',     blurb:'Reading and comparing the slices of a pie chart (P4)', grades:['P4']},
+  {id:'p4angles',  e:'📐', name:'Naming Narrows',      blurb:'Naming angles like ∠ABC, and measuring them in degrees (P4)', grades:['P4']},
   /* ---- P5 ---- */
   {id:'p5numbers', e:'🔟', name:'Ten Million Trench',  blurb:'Numbers to 10 million, powers of ten & order of operations (P5)', grades:['P5']},
   {id:'p5percent', e:'💯', name:'Percent Peak',        blurb:'Percentage of a whole, discounts, GST & interest (P5)', grades:['P5']},
@@ -34,6 +36,7 @@ const MAP_NODES=[
   {id:'p5fractions',e:'🥭', name:'Mixed Number Mangrove', blurb:'Division as a fraction, fractions as decimals, mixed numbers & multiplying (P5)', grades:['P5']},
   {id:'p5decimals',e:'⚓', name:'Thousandth Straits',   blurb:'Multiplying & dividing decimals by 10, 100, 1000 and converting units (P5)', grades:['P5']},
   {id:'p5rate',    e:'🚰', name:'Rate Rapids',         blurb:'Rate, total amount and number of units. TYPE your answer! (P5)', grades:['P5']},
+  {id:'p5shapes',  e:'🔺', name:'Triangle Temple',     blurb:'Triangles, parallelograms, rhombuses and trapeziums, and their unknown angles (P5)', grades:['P5']},
   /* Angle Ruins ships P5-only. The MOE angle sub-strand (straight line, at a point,
      vertically opposite, unknown angles) is p.42 = PRIMARY FIVE; the locked stub used
      to advertise it to P4 too, which no topic file backs. grades is ['P5']. */

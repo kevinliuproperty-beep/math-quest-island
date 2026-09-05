@@ -167,5 +167,30 @@ for (const [input, val, unit] of P) {
   } else pass++;
 }
 
+/* W3 cosmetic gate (Dress Rehearsal Wave 2, item 3): finishNum's `unit` argument used
+   to be pasted on as ' '+unit, so the P5 angle options rendered "40 °" beside a stem
+   that renders "50°". A degree sign and a percent sign now sit TIGHT against the
+   number; a word unit keeps its space. Asserted on the SHIPPED option string and on
+   answerText, both of which the child reads. */
+{
+  const U = [
+    ['°', '40°', 'degree sign tight against the number'],
+    ['%', '40%', 'percent sign tight against the number'],
+    ['cm', '40 cm', 'a word unit keeps its space'],
+    ['cm²', '40 cm²', 'a squared word unit keeps its space'],
+    ['pages', '40 pages', 'a plural word unit keeps its space'],
+    ['', '40', 'no unit, no trailing space']
+  ];
+  for (const [unit, want, why] of U) {
+    const q = ctx.MQI.gen.finishNum('stem', '', 40, [41, 42, 43], unit, 'x');
+    const shipped = q.choices[q.correct];
+    if (q.answerText === want && shipped === want) pass++;
+    else {
+      fail++;
+      console.log(`FAIL  finishNum unit ${JSON.stringify(unit)} -> answerText ${JSON.stringify(q.answerText)} / option ${JSON.stringify(shipped)}, want ${JSON.stringify(want)}   (${why})`);
+    }
+  }
+}
+
 console.log(`\nanswer-parse-test: ${pass} passed, ${fail} failed, ${pass + fail} cases`);
 process.exit(fail ? 1 : 0);

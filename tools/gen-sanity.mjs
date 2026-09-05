@@ -774,6 +774,10 @@ function oracle(q) {
         const others = [top, right, bottom, left];
         if (Math.max(cuta, cutd) >= Math.min(...others))
           return `L error-spot: stem says "four longest" but the omitted notch sides (${cuta}, ${cutd}) are not the two shortest of ${[top, cutd, cuta, right, bottom, left].join(',')}`;
+        /* WOUND 4 GATE (v3): a 1 cm gap between the 4th and 5th longest sides turned
+           "the four longest" into a sorting exercise off six near-equal labels. */
+        if (Math.max(cuta, cutd) + 2 > Math.min(...others))
+          return `L error-spot: the 4th/5th side gap is only ${Math.min(...others) - Math.max(cuta, cutd)} cm (need >= 2)`;
         const four = others.reduce((s, v) => s + v, 0);
         if (claim !== four)
           return `L error-spot: the four longest sides sum to ${four}, but the stem prints ${claim}`;
@@ -1173,8 +1177,11 @@ function oracle(q) {
     const rectPer = 2 * (W + H), lPer = (W - a) + b + a + (H - b) + W + H;
     if (rectPer - lPer !== 0) return `L difference: rectangle ${rectPer} vs L ${lPer}, difference is not 0`;
     if (rectPer === W * H - a * b) return `L difference: coincidence - perimeter and area are both ${rectPer}`;
-    return /^0 cm/.test(strip(q.answerText)) ? null
-      : `L difference: expected "0 cm ...", got "${strip(q.answerText)}"`;
+    /* KILL GATE (v3): the key is "0 cm" and nothing more. It used to read
+       "0 cm, the perimeters are the same." - the only prose option in the set, a
+       format tell a child settles in a second with no geometry at all. */
+    return strip(q.answerText) === '0 cm' ? null
+      : `L difference: expected the key "0 cm", got "${strip(q.answerText)}"`;
   }
 
   /* DEPTH PILOT v2: a notch in the MIDDLE of a side, not at a corner. This is the
@@ -1184,7 +1191,19 @@ function oracle(q) {
     const W = Number(m[1]), H = Number(m[2]), n = Number(m[3]), d = Number(m[4]);
     if (n >= W - 1) return `notch: a ${n} cm notch cannot sit inside a ${W} cm side with a gap at each end`;
     if (d >= H) return `notch: a ${d} cm notch is deeper than the ${H} cm banner`;
+    /* WOUND 3 GATE (v3): the figure must stay a notched banner and never become a U,
+       and the stem must describe all eight sides so the oracle can walk them. */
+    const sp = text.match(/there is (\d+) cm of edge before the notch and (\d+) cm after it, and the banner is still (\d+) cm wide behind the notch/);
+    if (!sp) return 'notch: the stem does not print the two edge spans, so the figure is not fully described';
+    const s1 = Number(sp[1]), s2 = Number(sp[2]), back = Number(sp[3]);
+    if (s1 + n + s2 !== W) return `notch: ${s1} + ${n} + ${s2} != the ${W} cm long side`;
+    if (back !== H - d) return `notch: ${back} cm behind the notch != ${H} - ${d}`;
+    if (2 * n >= W) return `notch: a ${n} cm notch is half or more of the ${W} cm side`;
+    if (2 * d >= H) return `notch: a ${d} cm notch cuts half or more of the ${H} cm width - a U, not a notch`;
+    if (d >= Math.min(s1, s2)) return `notch: depth ${d} is not shorter than the shortest adjacent side (${Math.min(s1, s2)})`;
     const e = 2 * (W + H) + 2 * d;
+    const walk = s1 + d + n + d + s2 + H + W + H;
+    if (walk !== e) return `notch: the eight described sides walk to ${walk}, not ${e}`;
     if (e === W * H - n * d) return `notch: coincidence - perimeter and area are both ${e}`;
     if (e === 2 * (W + H)) return 'notch: the notch left the perimeter unchanged, so it is a corner cut';
     return near(e, ansNum) ? null : `notch perimeter: expected ${e}, got ${ansNum}`;
@@ -1419,6 +1438,55 @@ function coincidence(q) {
   return null;
 }
 
+/* ---------- DEPTH PILOT v3 gates: the three pilot files only ----------------
+   PILOT_TOPICS are the files the depth pilot rewrote (p3-area-perimeter.js,
+   p3-times-tables.js, p4-area-perimeter.js). Two rules apply to them and, for
+   now, only to them - the rest of the bank has not been through the pilot pass.
+
+   RULE 1, FORMAT TELL (second-refutation KILL): no MC item may have exactly one
+   option whose FORM differs from the other three. gLPerimDiff shipped a key
+   reading "0 cm, the perimeters are the same." against three distractors reading
+   "12 cm" - in 2,000 of 2,000 draws the key was the only prose option and the only
+   one over four characters, so a child settled it in a second with no geometry.
+   Form here is coarse on purpose: a bare number, a number with a unit, an
+   arithmetic expression, or prose. A 2-2 or 3-1-by-design split of expressions is
+   fine; what is banned is the single odd one out that points at the answer.
+
+   RULE 2, "long" >= "wide": a stem that prints "X ... long and Y ... wide" must
+   print X >= Y. Was flipped in 1,710 of 8,000 draws across three generators. */
+const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area']);
+const optForm = s => {
+  const t = strip(s);
+  if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';
+  if (/^\$?\d+(\.\d+)?\s*(cm²|cm2|cm|mm|km|m|kg|g|ml|ℓ|h|min|s)$/.test(t)) return 'number+unit';
+  if (/^[\d\s+×x*÷/\-=().$]+$/.test(t)) return 'expression';
+  return 'prose';
+};
+function pilotGates(q, topic) {
+  if (!PILOT_TOPICS.has(topic)) return null;
+  const opts = q.choices || [];
+  if (opts.length === 4) {
+    const forms = opts.map(optForm);
+    const tally = new Map();
+    for (const f of forms) tally.set(f, (tally.get(f) || 0) + 1);
+    if (tally.size === 2) {
+      const odd = [...tally.entries()].find(([, c]) => c === 1);
+      if (odd) {
+        const bulk = [...tally.entries()].find(([, c]) => c === 3);
+        return `format tell: one option is ${odd[0]} while the other three are ${bulk[0]} (${opts.map(strip).join(' | ')})`;
+      }
+    }
+  }
+  const all = strip(q.q) + ' ' + strip(q.extra || '');
+  let mm;
+  const re = /(\d+)\s*(cm|m|km|mm)\s+long and\s+(\d+)\s*(cm|m|km|mm)\s+wide/g;
+  while ((mm = re.exec(all))) {
+    if (Number(mm[1]) < Number(mm[3]))
+      return `"long" prints shorter than "wide": ${mm[1]} ${mm[2]} long and ${mm[3]} ${mm[4]} wide`;
+  }
+  return null;
+}
+
 /* ---------- collect every registered generator ---------- */
 const GENS = []; // { topic, skill, level, name, fn }
 for (const [tid, t] of Object.entries(TOPICS)) {
@@ -1449,6 +1517,8 @@ for (const g of GENS) {
     if (shape) { err = shape; badQ = q; break; }
     const coin = coincidence(q);
     if (coin) { err = coin; badQ = q; break; }
+    const pilot = pilotGates(q, g.topic);
+    if (pilot) { err = pilot; badQ = q; break; }
     distinct.add(qKey(q));
     const o = oracle(q);
     if (o === false) continue;

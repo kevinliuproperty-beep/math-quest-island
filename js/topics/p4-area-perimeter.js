@@ -261,8 +261,11 @@
      longest sides" names exactly the four Ravi added and the printed claim IS
      their sum. gen-sanity.mjs re-checks this from the six printed labels. */
   function gLError() {
+    /* WOUND 4 (v3): a 1 cm gap between the 4th and 5th longest sides made "the four
+       longest" a sorting exercise off six near-equal labels. The gap is now >= 2 cm,
+       so which four Ravi added is VISIBLE, not provable. */
     const g = makeL(x =>
-      Math.max(x.a, x.b) < Math.min(x.W - x.a, x.H - x.b, x.W, x.H) &&
+      Math.max(x.a, x.b) + 2 <= Math.min(x.W - x.a, x.H - x.b, x.W, x.H) &&
       optsOk(x.per, [x.per - x.a - x.b, x.area, x.W + x.H]));
     const claim = g.per - g.a - g.b;      /* the four longest sides, summed */
     return mcNum(
@@ -302,7 +305,8 @@
     for (let i = 0; i < 400 && !ok; i++) {
       W = ri(8, 18); H = ri(6, 15);
       a = ri(2, capCut(W)); b = ri(2, capCut(H));
-      ok = paOk(2 * (W + H), W * H - a * b) &&
+      /* WOUND 2 (v3): "long" must print longer than "wide". */
+      ok = W >= H && paOk(2 * (W + H), W * H - a * b) &&
            optsOk(2 * (W + H), [2 * (W + H) - a - b, 2 * (W + H) - 2 * a - 2 * b, W * H - a * b]);
     }
     if (!ok) { W = 12; H = 9; a = 4; b = 3; }
@@ -391,7 +395,14 @@
   /* pool 2: the cut, asked as a DIFFERENCE rather than as a perimeter (refutation
      wound 4). The answer is 0, and that is the entire point: five of the L formats
      all evaluated 2(W + H), so this one asks the child to compare two perimeters
-     and discover the cut changed nothing. Not a 2(W + H) computation. */
+     and discover the cut changed nothing. Not a 2(W + H) computation.
+     KILL (second refutation, 2026-09-05): the key used to read "0 cm, the
+     perimeters are the same." while the three distractors read "12 cm" etc, so in
+     2,000/2,000 draws the key was the only prose option and the only one longer
+     than four characters - a format tell a child settles without any geometry.
+     All four options are now numeric-with-unit and the "same perimeter" idea has
+     moved into the explanation, where it belongs. gen-sanity.mjs now refuses any
+     MC in the three pilot files with exactly one odd-formed option. */
   function gLPerimDiff() {
     let W = 12, H = 9, a = 4, b = 3, ok = false;
     for (let i = 0; i < 400 && !ok; i++) {
@@ -405,8 +416,9 @@
       'A ' + W + ' cm by ' + H + ' cm rectangular tile has a corner piece ' + a + ' cm by ' + b +
       ' cm cut away, leaving an L-shape with right angles at every corner. <b>How much longer is ' +
       'the perimeter of the whole rectangle than the perimeter of the L-shape?</b>', '',
-      '0 cm, the perimeters are the same.',
+      '0 cm',
       [(a + b) + ' cm', (2 * (a + b)) + ' cm', (a * b) + ' cm'],
+      'The answer is 0 cm: the two perimeters are exactly the same. ' +
       'The cut removes ' + a + ' cm from one side and ' + b + ' cm from the other, but it adds two ' +
       'brand new sides of exactly ' + a + ' cm and ' + b + ' cm at the notch. What is taken off the walk ' +
       'is put straight back on, so both perimeters are 2 × (' + W + ' + ' + H + ') = ' + (2 * (W + H)) +
@@ -417,21 +429,36 @@
      cut out of the MIDDLE of a side (not a corner) adds two new sides and takes
      none away, so the walk around grows by twice the depth. Six-plus sides,
      genuinely not 2(W + H) - the counterweight to the corner-cut family. */
+  /* WOUND 3 (v3, second refutation): the depth was uncapped, so 511/2,000 draws cut
+     more than half way through the banner and rendered a U rather than a notched
+     banner. The notch is now capped BOTH ways - width < W/2 and depth strictly less
+     than the shortest side adjacent to it (the two spans of edge either side of the
+     notch, and the H - d of banner left below it) - and the stem now DESCRIBES THE
+     FIGURE FULLY: both spans are printed, so the eight sides are all stated in words
+     and the oracle re-derives the perimeter from the printed numbers alone. */
   function gNotchPerimeter() {
-    let W = 14, H = 8, n = 4, d = 3, ok = false;
+    let W = 16, H = 8, n = 5, d = 3, s1 = 5, s2 = 6, ok = false;
     for (let i = 0; i < 400 && !ok; i++) {
       W = ri(12, 20); H = ri(6, 10);   /* the notched side is the LONG side */
-      n = ri(2, W - 4); d = ri(2, H - 3);
-      ok = optsOk(2 * (W + H) + 2 * d,
+      n = ri(3, Math.ceil(W / 2) - 1);           /* notch width strictly under half the long side */
+      s1 = ri(3, W - n - 3); s2 = W - n - s1;    /* the two spans of edge either side */
+      d = ri(2, Math.min(Math.floor((H - 1) / 2), s1 - 1, s2 - 1));
+      ok = 2 * n < W && 2 * d < H && d < Math.min(s1, s2) &&
+           optsOk(2 * (W + H) + 2 * d,
                   [2 * (W + H), 2 * (W + H) + 2 * n, 2 * (W + H) - 2 * d, W * H - n * d]);
     }
-    if (!ok) { W = 14; H = 8; n = 4; d = 3; }
+    if (!ok) { W = 16; H = 8; n = 6; s1 = 5; s2 = 5; d = 3; }
     const per = 2 * (W + H) + 2 * d;
     return mcNum(
       'A rectangular banner is ' + W + ' cm long and ' + H + ' cm wide. A notch ' + n +
       ' cm wide and ' + d + ' cm deep is cut out of the middle of one long side, so the notch does not ' +
-      'reach either end. Every corner is a right angle. <b>What is the perimeter of the banner now?</b>', '',
+      'reach either end. Along that side there is ' + s1 + ' cm of edge before the notch and ' + s2 +
+      ' cm after it, and the banner is still ' + (H - d) +
+      ' cm wide behind the notch. Every corner is a right angle. ' +
+      '<b>What is the perimeter of the banner now?</b>', '',
       per, [2 * (W + H), 2 * (W + H) + 2 * n, 2 * (W + H) - 2 * d, W * H - n * d], CM,
+      'Walk the eight sides: ' + s1 + ' + ' + d + ' + ' + n + ' + ' + d + ' + ' + s2 + ' + ' + H +
+      ' + ' + W + ' + ' + H + ' = ' + per + ' cm. ' +
       'Careful: this notch is in the middle of a side, not at a corner. The ' + n +
       ' cm taken out of the top edge is replaced by the ' + n + ' cm along the bottom of the notch, so ' +
       'that part of the walk is unchanged. But the two sides of the notch, ' + d + ' cm down and ' + d +

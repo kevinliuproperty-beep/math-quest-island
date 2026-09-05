@@ -122,23 +122,23 @@ function gSquarePA(){
   return finishNum('A square has sides of '+s+' cm. What is its <b>area</b>?','',a,[4*s,2*s,a+s,a-s],'cm²',
     'Area of a square = side × side = '+s+' × '+s+' = '+a+' cm².');
 }
-function gMissSide(){
-  let B=3,L=7,g=0;
-  do { B=ri(2,9); L=ri(B,12); g++; }
-  while (g<200 && !(paOk(L,B) && optsOk(L,[L*B-B,B,L+1,L-1])));
-  const a=L*B;
-  return finishNum('A rectangle has an <b>area of '+a+' cm²</b>. Its breadth is '+B+' cm. What is its <b>length</b>?','',
-    L,[a-B,B,L+1,L-1],'cm',
-    'Area = length × breadth, so length = '+a+' ÷ '+B+' = '+L+' cm.');
-}
+/* gMissSide DELETED (v3, second-refutation wound 1). "Area and one dimension in,
+   the other dimension out" is MOE P4 1.1 word for word, and p4area ALREADY carries
+   the equivalent as gRectSideFromArea (area + length -> breadth, typed answer). It
+   is deleted rather than moved: moving it would duplicate an objective p4area
+   already tests. With it goes the P3 `missing` skill, which existed only to host it,
+   so this file is now exactly MOE P3 (concepts of area/perimeter; area of a
+   rectangle/square) with no inverse work at all. */
 
 /* FORMAT 2 - concept check: which calculation is the perimeter? (pool 1)
    KILL 2 (refutation): when L x B = 2(L + B) - 6 by 3, 4 by 4 - the AREA option
    evaluates to the perimeter and the item has two defensible answers. Redrawn. */
 function gPeriConcept(){
   let L=7,B=3,g=0;
+  /* WOUND 2 (v3): "long" must print longer than "wide". */
   do { L=ri(4,12); B=ri(2,11); g++; }
-  while (g<200 && !(L!==B && paOk(L,B) && 2*L*B !== 2*(L+B)));
+  while (g<200 && !(L>B && paOk(L,B) && 2*L*B !== 2*(L+B)));
+  if (L<=B){ L=7; B=3; }
   return mcText('A rectangle is '+L+' cm long and '+B+' cm wide. Which calculation gives its <b>perimeter</b>?','',
     L+' + '+B+' + '+L+' + '+B,
     [L+' × '+B, L+' + '+B, L+' × '+B+' × 2'],
@@ -189,9 +189,11 @@ const FENCE_CTX = [
 function gPeriFence(){
   const c = pick(FENCE_CTX);
   let L=7,B=10,rate=5,g=0;
+  /* WOUND 2 (v3): "long" must print longer than "wide" (was flipped in 27% of draws). */
   do { L=ri(5,15); B=ri(3,12); rate=ri(2,9); g++; }
-  while (g<200 && !(paOk(L,B) &&
+  while (g<200 && !(L>=B && paOk(L,B) &&
          optsOk(2*(L+B)*rate,[L*B*rate,(L+B)*rate,2*(L+B)])));
+  if (L<B){ L=12; B=7; rate=5; }
   const p=2*(L+B), cost=p*rate;
   return mcNum(c[0]+' puts '+c[2]+' right around '+c[1]+' that is '+L+' m long and '+B+
     ' m wide. The '+c[2]+' costs $'+rate+' per metre. <b>How much does it cost altogether, in dollars?</b>','',
@@ -207,13 +209,12 @@ function gPeriFence(){
     label:'Perimeter Palace', short:'Area & perimeter', e:'🏰',
     skills:{
       peri:   {label:'Perimeter',              tip:'Perimeter = the walk around the outside. Trace the shape with a finger while adding the sides.'},
-      area:   {label:'Area',                   tip:'Area = length × breadth (count the squares inside). Watch the unit: cm² not cm!'},
-      missing:{label:'Finding a missing side', tip:'Work backwards: if area = length × breadth, then length = area ÷ breadth.'}
+      area:   {label:'Area',                   tip:'Area = length × breadth (count the squares inside). Watch the unit: cm² not cm!'}
     },
     pools:{
       1:[[gSquarePA,'peri'],[gPeri,'peri'],[gPeriConcept,'peri']],
-      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquarePA,'area'],[gMissSide,'missing']],
-      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gMissSide,'missing'],[gPeriCompare,'peri']]
+      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquarePA,'area'],[gPeri,'peri']],
+      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area']]
     }
   });
 })();

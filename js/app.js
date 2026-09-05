@@ -6,9 +6,20 @@
  * MQI.boot() (called by js/boot.js) so topics and map nodes are registered first.
  */
 
+/* Phase 0 split regression, found by the Patchwerk integration: the shell calls the
+   bare helpers ri() and pick() (floatDmg, resolve, confetti, monsterCounterattack),
+   but core.js only re-exported TOPICS / makeQuestionFor / buildSetFor as globals.
+   Every one of those call sites was throwing ReferenceError post-split. The kit is
+   frozen, so the back-compat names are re-bound here rather than added to core.js. */
+const ri = MQI.gen.ri, pick = MQI.gen.pick;
+
 let TOPIC='fractions';
 let QSET=null;
+/* A mode may install its own question feed (Patchwerk draws across every unlocked
+   topic for the chosen class level). Null = the normal single-topic quiz set. */
+let MODE_FEED=null;
 function makeQuestion(level){
+  if(MODE_FEED) return MODE_FEED(level);
   if(QSET && QSET[level] && QSET[level].length) return QSET[level].shift();
   return makeQuestionFor(TOPIC,level);
 }
@@ -29,6 +40,11 @@ if(!AVATARS.some(a=>a[0]===DB.avatar)) DB.avatar='🦄';
 DB.sessions=DB.sessions||[];
 DB.fame=DB.fame||[];
 DB.timed=!!DB.timed;
+/* gameMode: 'relax' | 'timed' | 'patchwerk'. DB.timed is kept in sync for the
+   existing session records and the Hall of Fame rows. */
+if(['relax','timed','patchwerk'].indexOf(DB.gameMode)===-1) DB.gameMode = DB.timed?'timed':'relax';
+DB.pwTier = DB.pwTier || 'normal';
+DB.pwFame = Array.isArray(DB.pwFame) ? DB.pwFame : [];
 if(!GRADES.includes(DB.grade)) DB.grade='P3';
 
 /* ---------------- Sound ---------------- */
@@ -89,8 +105,21 @@ function renderStart(){
     });
     g.appendChild(b);
   });
-  $('modeRelax').classList.toggle('sel',!DB.timed);
-  $('modeTimed').classList.toggle('sel',DB.timed);
+  $('modeRelax').classList.toggle('sel',DB.gameMode==='relax');
+  $('modeTimed').classList.toggle('sel',DB.gameMode==='timed');
+  $('modePatch').classList.toggle('sel',DB.gameMode==='patchwerk');
+  /* Boss tier selector: only meaningful for Patchwerk, so it only shows there. */
+  $('pwPanel').classList.toggle('on',DB.gameMode==='patchwerk');
+  const tr=$('tierRow'); tr.innerHTML='';
+  const TIERS=(MQI.modes.patchwerk&&MQI.modes.patchwerk.config.TIERS)||{};
+  ['short','normal','long'].forEach(k=>{
+    const t=TIERS[k]; if(!t) return;
+    const b=document.createElement('button');
+    b.className='tierBtn'+(k===DB.pwTier?' sel':'');
+    b.innerHTML=Math.round(t.durationMs/60000)+' min<small>'+t.label+'</small>';
+    b.addEventListener('click',()=>{ DB.pwTier=k; saveData(); renderStart(); });
+    tr.appendChild(b);
+  });
   const gr=$('gradeRow'); gr.innerHTML='';
   GRADES.forEach(gd=>{
     const b=document.createElement('button');
@@ -99,10 +128,12 @@ function renderStart(){
     gr.appendChild(b);
   });
   $('muteBtn').textContent=muted?'🔇':'🔊';
+  $('toMapBtn').textContent = DB.gameMode==='patchwerk' ? 'FIGHT PATCHWERK 💀' : 'CHOOSE YOUR QUEST 🗺️';
 }
 $('nameInput').addEventListener('input',e=>{ DB.name=e.target.value.trim()||'Hero'; saveData(); });
-$('modeRelax').addEventListener('click',()=>{ DB.timed=false; saveData(); renderStart(); });
-$('modeTimed').addEventListener('click',()=>{ DB.timed=true; saveData(); renderStart(); });
+$('modeRelax').addEventListener('click',()=>{ DB.gameMode='relax'; DB.timed=false; saveData(); renderStart(); });
+$('modeTimed').addEventListener('click',()=>{ DB.gameMode='timed'; DB.timed=true; saveData(); renderStart(); });
+$('modePatch').addEventListener('click',()=>{ DB.gameMode='patchwerk'; DB.timed=false; saveData(); renderStart(); });
 
 /* ----- map ----- */
 function renderMap(){
@@ -122,7 +153,9 @@ function renderMap(){
 
 /* ----- battle ----- */
 function newGame(){
+  if(DB.gameMode==='patchwerk'){ newPatchwerkGame(); return; }
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
+  MODE_FEED=null;
   QSET=buildSetFor(TOPIC,30);
   S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
       rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
@@ -140,6 +173,133 @@ function newGame(){
   banner(TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',1400);
   setTimeout(nextQuestion,300);
 }
+/* ---------------- Patchwerk (js/modes/patchwerk.js) ---------------- */
+/* The mode owns pacing and scoring. The shell owns the DOM and the question feed. */
+
+/* Pool weighting climbs with stacks: a kid holding a big streak is fed harder
+   questions, which is where the bigger BASE_DAMAGE lives. Weights over pools 1/2/3. */
+function pwPoolWeights(stacks){
+  if(stacks>=7) return [0.10,0.30,0.60];
+  if(stacks>=4) return [0.25,0.45,0.30];
+  return [0.55,0.35,0.10];
+}
+function pwPickPool(stacks){
+  const w=pwPoolWeights(stacks); let r=Math.random(), acc=0;
+  for(let i=0;i<3;i++){ acc+=w[i]; if(r<acc) return i+1; }
+  return 3;
+}
+/* Unlocked, actually-registered topics for the chosen class level. No new topics. */
+function pwTopics(){
+  return (MQI.levelNodes[DB.grade]||[])
+    .filter(id => MQI.mapNodes.some(n=>n.id===id && n.status==='live') && MQI.topics[id]);
+}
+function pwStacks(){
+  const m=MQI.modes.patchwerk;
+  return (m && m._run) ? m._run.state().stacks : 0;
+}
+function newPatchwerkGame(){
+  const mode=MQI.modes.patchwerk;
+  if(!mode){ alert('Patchwerk mode is not loaded.'); return; }
+  DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
+  const topics=pwTopics();
+  if(!topics.length){ alert('No unlocked quests for '+DB.grade+' yet.'); return; }
+  const tier=mode.config.TIERS[DB.pwTier]||mode.config.TIERS[mode.config.DEFAULT_TIER];
+
+  QSET=null;
+  MODE_FEED=function(){
+    const lvl=pwPickPool(pwStacks());
+    TOPIC=pick(topics);
+    const q=makeQuestionFor(TOPIC,lvl);
+    if(S) S.level=lvl;            /* keeps ctx.difficulty live */
+    return q;
+  };
+  S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
+      rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
+      wrongs:[], skills:{}, busy:false, t0:Date.now(), timed:false,
+      patchwerk:true, stunUntil:0, pwRecord:null };
+  $('heroSprite').textContent=DB.avatar;
+  $('heroName').textContent=DB.name+' the '+avClass();
+  $('timerWrap').classList.remove('on');
+  $('runClock').textContent='';
+  if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
+  /* Patchwerk fights the training dummy, not the crystal chain. */
+  S.mi=MONSTERS.length-1;
+  $('monsterDots').innerHTML='';
+  renderMonster();
+  $('monsterName').textContent='Patchwerk';
+  $('monsterSprite').textContent='💀';
+  $('feedback').innerHTML='';
+  show('battleScreen');
+  MQI.startMode('patchwerk',{ durationMs:tier.durationMs, tier:DB.pwTier, onEnd:endPatchwerk });
+}
+/* One answer inside Patchwerk. No counterattack, no hero HP, no shaming visuals:
+   a wrong answer simply means the boss takes no damage for a beat. */
+function pwResolve(right){
+  const a=MQI.activeMode; if(!a) return;
+  const mode=a.mode, ctx=a.ctx;
+  const q=Q;                                     /* onAnswer may advance Q immediately */
+  const answerMs=Math.max(0,Date.now()-(S.qAt||Date.now()));
+  const probe=mode._run && mode._run.isStunned(ctx.elapsedMs);
+  if(probe){ S.busy=false; return; }              /* swallowed by the input lock */
+  recSkill(q.skill,right);
+  lockButtons();
+  const ev=mode.onAnswer(ctx,right,{ level:q.level||S.level, answerMs })||{};
+  if(ev.ignored){ S.busy=false; return; }
+  S.total++;
+  if(right){
+    S.correct++; S.streak++; S.best=Math.max(S.best,S.streak);
+    $('feedback').innerHTML='<span class="ok">'+pick(['Hit! ⚔️','Solid! 💥','Nice one! 🌟','Crunch! 🔨'])+'</span>';
+    $('heroSprite').classList.add('lunge'); setTimeout(()=>$('heroSprite').classList.remove('lunge'),450);
+    const sp=$('monsterSprite'); sp.classList.add('shake'); setTimeout(()=>sp.classList.remove('shake'),500);
+    floatDmg('-'+(ev.damage||0), ev.enraged?'#ffe66d':'#ff8f8f','right');
+  } else {
+    S.streak=0;
+    S.wrongs.push({q:q.q+(q.extra||''), a:q.answerText, ex:q.explain, skill:q.skill});
+    $('feedback').innerHTML=(ev.froze?'<span class="ok">🧊 Freeze! Your stacks are safe. </span>':'')+
+      '<span class="no">'+(q.typed?('The answer is <b>'+q.answerText+'</b>. '):'')+(q.explain||'')+'</span>';
+    S.stunUntil=Date.now()+mode.config.STUN_MS;   /* the mode's input lock, honoured */
+  }
+  /* The mode schedules the next question itself (immediately, or after the stun). */
+}
+function endPatchwerk(record){
+  MODE_FEED=null;
+  if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
+  document.body.removeAttribute('data-mode-theme');
+  if(!record){ renderStart(); show('startScreen'); return; }
+  record.name=DB.name; record.avatar=DB.avatar; record.t=Date.now();
+  DB.pwFame.push(record);
+  DB.pwFame.sort((x,y)=>y.damage-x.damage);
+  if(DB.pwFame.length>60) DB.pwFame=DB.pwFame.slice(0,60);
+  DB.sessions.push({ t:Date.now(), topic:TOPIC, won:true, correct:S.correct, total:S.total,
+                     best:S.best, crystals:0, maxLevel:S.maxLevel, skills:S.skills,
+                     ms:record.durationMs, timed:false, mode:'patchwerk',
+                     wrongs:S.wrongs.slice(0,10) });
+  if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
+  saveData();
+  sfx.win();
+  const TIERS=MQI.modes.patchwerk.config.TIERS;
+  const rank=DB.pwFame.filter(r=>r.tier===record.tier&&r.level===record.level).findIndex(r=>r===record);
+  $('pwEnd').style.display='block';
+  $('normalStats').style.display='none';
+  $('reviewBox').style.display=S.wrongs.length?'block':'none';
+  $('endEmoji').textContent='💀';
+  $('endTitle').textContent='ENRAGE!';
+  $('endMsg').textContent=(TIERS[record.tier]?TIERS[record.tier].label:record.tier)+' · '+record.level+
+    ' · the dummy is still standing, but you left a mark.'+
+    (rank===0?' 🥇 Best '+record.level+' run on this device!':rank>0?' #'+(rank+1)+' on this device.':'');
+  $('pwDamage').textContent=record.damage.toLocaleString();
+  $('pwStacks').textContent='x'+record.maxStacks;
+  $('pwHits').textContent=record.correct;
+  $('pwMiss').textContent=record.wrong;
+  $('pwFreezes').textContent=record.freezesUsed;
+  if(S.wrongs.length){
+    const seen=new Set();
+    $('reviewList').innerHTML=S.wrongs.filter(w=>{ if(seen.has(w.q))return false; seen.add(w.q); return true; })
+      .slice(0,8).map(w=>'<div class="revItem">'+w.q+'<br><span class="ansIs">Answer: '+w.a+'</span><br><span class="how">'+(w.ex||'')+'</span></div>').join('');
+  }
+  show('endScreen');
+}
+
 function renderDots(){
   $('monsterDots').innerHTML=MONSTERS.map((m,i)=>
     '<span class="'+(i===S.mi?'now':'')+'">'+(i<S.mi?'⭐':m.e)+'</span>').join('');
@@ -215,6 +375,7 @@ function nextQuestion(){
     });
   }
   S.busy=false;
+  S.qAt=Date.now();
   if(S.timed) startQTimer();
 }
 function lockButtons(){
@@ -283,28 +444,36 @@ function resolve(right){
     setTimeout(monsterCounterattack,1000);
   }
 }
+/* A mode may lock input (Patchwerk's 1.5s stun). Answers inside it are swallowed. */
+function inputLocked(){ return !!(S && S.stunUntil && Date.now() < S.stunUntil); }
 function answer(i,btn){
-  if(S.busy) return; S.busy=true;
+  if(S.busy || inputLocked()) return; S.busy=true;
   stopQTimer();
   const c=ac(); if(c&&c.resume) c.resume();
-  S.total++;
   const right = i===Q.correct;
+  if(S.patchwerk){
+    if(!right && btn){ btn.classList.remove('dim'); btn.classList.add('bad'); }
+    pwResolve(right);
+    return;
+  }
+  S.total++;
   recSkill(Q.skill,right);
   lockButtons();
   if(!right && btn){ btn.classList.remove('dim'); btn.classList.add('bad'); }
   resolve(right);
 }
 function answerTyped(){
-  if(!S || S.busy || !Q || !Q.typed) return;
+  if(!S || S.busy || !Q || !Q.typed || inputLocked()) return;
   const v=$('typedInput').value.trim();
   if(v==='') return;
   S.busy=true;
   stopQTimer();
   const c=ac(); if(c&&c.resume) c.resume();
-  S.total++;
   const right = parseInt(v,10)===Q.answer;
-  recSkill(Q.skill,right);
   $('typedInput').disabled=true;
+  if(S.patchwerk){ pwResolve(right); return; }
+  S.total++;
+  recSkill(Q.skill,right);
   resolve(right);
 }
 function monsterDown(){
@@ -362,6 +531,8 @@ function endGame(win){
   saveData();
 
   if(win){ sfx.win(); confetti(); } else sfx.lose();
+  $('pwEnd').style.display='none';
+  $('normalStats').style.display='flex';
   $('endEmoji').textContent=win?'🏆':'💪';
   $('endTitle').textContent=win?'VICTORY!':'So close, '+esc(DB.name)+'!';
   let msg = win
@@ -394,9 +565,50 @@ function fameRowHtml(f,i){
     '<span class="fn">'+esc(f.name||'Hero')+'<small>'+(TOPICS[f.topic]?TOPICS[f.topic].e+' '+TOPICS[f.topic].short:esc(f.topic||''))+' · '+(f.acc||0)+'% · '+(f.timed?'⏱️ arcade':'🌙 relaxed')+' · '+fmtDate(f.t||Date.now())+'</small></span>'+
     '<span class="ft">'+fmtMs(f.ms||0)+'</span></div>';
 }
+/* Patchwerk rows are ranked by damage and NEVER merged into the time-ranked board:
+   the units are not comparable, and a 5 min run must not outrank a 3 min one. */
+let pwFilt={ tier:'normal', level:null };
+function pwRowHtml(r,i){
+  const medals=['🥇','🥈','🥉'];
+  return '<div class="fameRow"><span class="rk">'+(medals[i]||('#'+(i+1)))+'</span>'+
+    '<span class="fa">'+esc(r.avatar||'🦄')+'</span>'+
+    '<span class="fn">'+esc(r.name||'Hero')+'<small>'+esc(r.level||'')+' · x'+(r.maxStacks||0)+' stacks · '+
+      (r.correct||0)+'/'+((r.correct||0)+(r.wrong||0))+' · '+fmtDate(r.t||Date.now())+'</small></span>'+
+    '<span class="ft">'+(r.damage||0).toLocaleString()+'</span></div>';
+}
+function renderPwFame(){
+  const TIERS=(MQI.modes.patchwerk&&MQI.modes.patchwerk.config.TIERS)||{};
+  if(!pwFilt.level) pwFilt.level=DB.grade;
+  const fb=$('pwFameFilters'); fb.style.display='flex'; fb.innerHTML='';
+  ['short','normal','long'].forEach(k=>{
+    if(!TIERS[k]) return;
+    const b=document.createElement('button');
+    b.className='pwFilt'+(k===pwFilt.tier?' sel':'');
+    b.textContent=Math.round(TIERS[k].durationMs/60000)+' min';
+    b.addEventListener('click',()=>{ pwFilt.tier=k; renderFame(); });
+    fb.appendChild(b);
+  });
+  GRADES.forEach(g=>{
+    const b=document.createElement('button');
+    b.className='pwFilt'+(g===pwFilt.level?' sel':'');
+    b.textContent=g;
+    b.addEventListener('click',()=>{ pwFilt.level=g; renderFame(); });
+    fb.appendChild(b);
+  });
+  const rows=DB.pwFame.filter(r=>r.tier===pwFilt.tier && r.level===pwFilt.level)
+                      .slice().sort((a,b)=>b.damage-a.damage).slice(0,10);
+  $('fameList').innerHTML = rows.length ? rows.map(pwRowHtml).join('')
+    : '<div style="color:#a99fd8;text-align:center;padding:10px">No Patchwerk runs at '+
+      (TIERS[pwFilt.tier]?Math.round(TIERS[pwFilt.tier].durationMs/60000)+' min':pwFilt.tier)+
+      ' · '+pwFilt.level+' yet. Go hit the dummy! 💀</div>';
+  show('fameScreen');
+}
 function renderFame(){
   $('tabGlobal').classList.toggle('sel',fameTab==='global');
   $('tabLocal').classList.toggle('sel',fameTab==='local');
+  $('tabPatch').classList.toggle('sel',fameTab==='patchwerk');
+  if(fameTab==='patchwerk') return renderPwFame();
+  $('pwFameFilters').style.display='none';
   const fl=$('fameList');
   const emptyMsg='<div style="color:#a99fd8;text-align:center;padding:10px">No victories yet. Beat Fractor to claim the first spot! 🐉</div>';
   if(fameTab==='local'){
@@ -490,7 +702,8 @@ MQI.makeModeCtx = function (opts) {
   const o = opts || {};
   const t0 = Date.now();
   return {
-    nextQuestion(){ nextQuestion(); return Q; },
+    options: o,                                   /* the mode reads ctx.options.tier */
+    nextQuestion(){ if(S) S.stunUntil = 0; nextQuestion(); return Q; },
     submitAnswer(a){
       if (Q && Q.typed) { $('typedInput').value = a; answerTyped(); }
       else { answer(a); }
@@ -510,6 +723,15 @@ MQI.makeModeCtx = function (opts) {
                       correct:'correct', wrong:'wrong', win:'win', lose:'lose' };
         const fn = sfx[map[kind] || kind];
         if (fn) fn();
+        /* visual half: a one-shot animation class on the HUD block (CSS in index.html) */
+        const el = $('modeHud');
+        if (el) {
+          const cls = 'pulse-' + kind;
+          el.classList.remove('pulse-hit','pulse-crit','pulse-freeze','pulse-enrage');
+          void el.offsetWidth;                    /* restart the animation */
+          el.classList.add(cls);
+          setTimeout(() => el.classList.remove(cls), 900);
+        }
       }
     },
     leaderboard: {
@@ -528,7 +750,17 @@ MQI.startMode = function (id, opts) {
   const mode = MQI.modes[id];
   if (!mode) throw new Error('startMode: no such mode ' + id);
   const ctx = MQI.makeModeCtx(opts);
-  MQI.activeMode = { mode, ctx, timer: setInterval(() => mode.tick(ctx), 200) };
+  /* tick() returns the score record when the clock hits zero, so the shell needs
+     no end condition of its own - it just watches for that return value. */
+  const timer = setInterval(() => {
+    const rec = mode.tick(ctx);
+    if (rec) {
+      clearInterval(timer);
+      MQI.activeMode = null;
+      if (opts && typeof opts.onEnd === 'function') opts.onEnd(rec);
+    }
+  }, 200);
+  MQI.activeMode = { mode, ctx, timer };
   mode.start(ctx);
   return ctx;
 };
@@ -544,7 +776,9 @@ MQI.endMode = function () {
 MQI.boot = function () {
   /* modes may have queued themselves before core.js ran */
   if (MQI.drainPendingModes) MQI.drainPendingModes();
-  $('toMapBtn').addEventListener('click',()=>{ ac(); renderMap(); });
+  /* Patchwerk draws across every unlocked topic for the class level, so it skips
+     the island map entirely and goes straight to the dummy. */
+  $('toMapBtn').addEventListener('click',()=>{ ac(); if(DB.gameMode==='patchwerk') newPatchwerkGame(); else renderMap(); });
   $('mapBackBtn').addEventListener('click',()=>{ renderStart(); show('startScreen'); });
   $('againBtn').addEventListener('click',newGame);
   $('endMapBtn').addEventListener('click',renderMap);
@@ -563,6 +797,49 @@ MQI.boot = function () {
   $('typedInput').addEventListener('keydown',e=>{ if(e.key==='Enter') answerTyped(); });
   $('tabGlobal').addEventListener('click',()=>{ fameTab='global'; renderFame(); });
   $('tabLocal').addEventListener('click',()=>{ fameTab='local'; renderFame(); });
-  
+  $('tabPatch').addEventListener('click',()=>{ fameTab='patchwerk'; renderFame(); });
+
   renderStart();
+  autoplayHook();
 };
+
+/* ---------------- debug: ?autoplay=patchwerk&bot=1 ----------------
+   Drives a real Patchwerk run with simulated answers so a headless browser can
+   screenshot the mode picker, a mid-run HUD and the results screen without a
+   human at the keyboard. Params:
+     autoplay=patchwerk   start the fight after a short delay
+     bot=1                answer automatically (default ~82% correct)
+     tier=short|normal|long
+     ms=<n>               override the fight length (screenshot runs)
+     acc=<0..100>         bot accuracy
+     delay=<ms>           bot think time per answer
+   Inert without the query string; no production path reads it. */
+function autoplayHook(){
+  let p;
+  try{ p=new URLSearchParams(location.search); }catch(e){ return; }
+  if(p.get('autoplay')!=='patchwerk') return;
+  const tier=p.get('tier'); if(tier) DB.pwTier=tier;
+  DB.gameMode='patchwerk';
+  const ms=parseInt(p.get('ms'),10);
+  if(ms>0){ const T=MQI.modes.patchwerk.config.TIERS; Object.keys(T).forEach(k=>T[k].durationMs=ms); }
+  renderStart();
+  if(p.get('bot')!=='1') return;
+  const acc=(parseInt(p.get('acc'),10)||82)/100;
+  const delay=parseInt(p.get('delay'),10)||600;
+  setTimeout(()=>{
+    newPatchwerkGame();
+    setInterval(()=>{
+      if(!S || !S.patchwerk || !Q || S.busy || inputLocked()) return;
+      const right=Math.random()<acc;
+      if(Q.typed){
+        $('typedInput').value = right ? String(Q.answer) : String((Q.answer||0)+1);
+        answerTyped();
+      } else {
+        const n=Q.choices.length;
+        let i=Q.correct;
+        if(!right){ i=(Q.correct+1+Math.floor(Math.random()*(n-1)))%n; }
+        answer(i, document.querySelectorAll('.ansBtn')[i]);
+      }
+    }, delay);
+  }, 400);
+}

@@ -44,6 +44,7 @@ running game:
 
 ```js
 {
+  options,                 // the opts object passed to MQI.startMode (e.g. { tier, durationMs })
   nextQuestion(),          // advance to the next question; returns the question object
   submitAnswer(a),         // a = choice index (MCQ) or the typed string (typed answers)
   timeLeftMs,              // getter; Infinity when the mode declared no duration
@@ -62,8 +63,16 @@ running game:
 }
 ```
 
-`MQI.startMode(id, { durationMs })` starts a registered mode (installs the tick interval and
-calls `start`); `MQI.endMode()` clears the interval and returns `end(ctx)`'s score record.
+`MQI.startMode(id, { durationMs, onEnd })` starts a registered mode (installs the tick interval
+and calls `start`). Everything in that opts object reaches the mode as `ctx.options`. When
+`tick(ctx)` returns a score record the shell clears the interval, drops `MQI.activeMode` and
+calls `opts.onEnd(record)`, so a mode ends its own run without the shell owning a clock.
+`MQI.endMode()` clears the interval and returns `end(ctx)`'s score record for a manual stop.
+
+A mode that locks input (Patchwerk's stun) is honoured by the shell: `answer()` and
+`answerTyped()` swallow submissions while the lock is up, and `ctx.nextQuestion()` clears it.
+A mode may also install a question feed by driving `ctx.nextQuestion()`; the shell decides
+which topic and pool that draws from.
 
 ## Rules
 

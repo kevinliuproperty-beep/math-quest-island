@@ -59,6 +59,45 @@ const allFracs = html => [...String(html).matchAll(/<span class="n">(\d+)<\/span
   .map(m => [Number(m[1]), Number(m[2])]);
 const gcd = (a, b) => { while (b) { [a, b] = [b, a % b]; } return a; };
 
+/* Independent re-evaluator for the P5 order-of-operations / brackets stems.
+   Space-separated tokens only: numbers, + - x /, and ( ). Deliberately NOT eval:
+   it re-applies the precedence rule the question is testing. Returns null if the
+   expression is not in that shape. */
+function evalExpr(src) {
+  const toks = String(src).trim().split(/\s+/);
+  if (!toks.length) return null;
+  if (!toks.every(t => /^(\d+|[+\-x/()])$/.test(t))) return null;
+  const flat = list => {
+    if (!list.length || list.length % 2 === 0) return null;
+    let vals = [Number(list[0])], ops = [];
+    for (let i = 1; i < list.length; i += 2) {
+      const op = list[i], v = Number(list[i + 1]);
+      if (!Number.isFinite(v)) return null;
+      if (op === 'x') vals[vals.length - 1] *= v;
+      else if (op === '/') vals[vals.length - 1] /= v;
+      else if (op === '+' || op === '-') { ops.push(op); vals.push(v); }
+      else return null;
+    }
+    let acc = vals[0];
+    for (let i = 0; i < ops.length; i++) acc = ops[i] === '+' ? acc + vals[i + 1] : acc - vals[i + 1];
+    return acc;
+  };
+  let work = toks.slice(), guard = 0;
+  while (work.includes('(')) {
+    if (++guard > 20) return null;
+    const close = work.indexOf(')');
+    if (close < 0) return null;
+    const open = work.lastIndexOf('(', close);
+    if (open < 0) return null;
+    const inner = flat(work.slice(open + 1, close));
+    if (inner === null || !Number.isFinite(inner)) return null;
+    work = work.slice(0, open).concat([String(inner)], work.slice(close + 1));
+  }
+  if (work.includes(')')) return null;
+  const out = flat(work);
+  return Number.isFinite(out) ? out : null;
+}
+
 /* A question's identity is its stem PLUS its rendered extra PLUS its options:
    several generators keep a fixed stem ("Which fraction is the greatest?") and
    vary only the choices, and buildSetFor's own dedup key is the raw HTML. */
@@ -167,6 +206,74 @@ function oracle(q) {
     if ((m = text.match(/buys (\d+) trays of eggs[^.]*\. Each tray holds (\d+) eggs\. (\d+) eggs crack/))) {
       const e = Number(m[1]) * Number(m[2]) - Number(m[3]);
       return near(e, q.answer) ? null : `eggs two-step: expected ${e}, got ${q.answer}`;
+    }
+
+    /* --- P5 lane: order of operations and brackets (expression re-parsed) --- */
+    if ((m = text.match(/^Work out: (.+) = \?$/))) {
+      const e = evalExpr(m[1]);
+      if (e === null) return 'order of ops: could not parse "' + m[1] + '"';
+      return near(e, q.answer) ? null : `order of ops: ${m[1]} = ${e}, got ${q.answer}`;
+    }
+
+    /* --- P5 lane: whole numbers, x / by 10, 100, 1000 and their multiples --- */
+    if ((m = text.match(/orders (\d+) packets of kaya toast[^.]*\. Each packet costs (\d+) cents/))) {
+      const e = Number(m[1]) * Number(m[2]);
+      return near(e, q.answer) ? null : `kaya toast: expected ${e}, got ${q.answer}`;
+    }
+
+    /* --- P5 lane: percentage --- */
+    if ((m = text.match(/There are (\d+) [^.]*\. (\d+) of them wear spectacles/))) {
+      const e = Number(m[2]) * 100 / Number(m[1]);
+      return near(e, q.answer) ? null : `part as %: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/saves (\d+)% of the \$(\d+) collected/))) {
+      const e = Number(m[1]) * Number(m[2]) / 100;
+      return near(e, q.answer) ? null : `% of money: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/before GST is \$(\d+)\. GST is (\d+)%/))) {
+      const p = Number(m[1]);
+      const e = p + p * Number(m[2]) / 100;
+      return near(e, q.answer) ? null : `GST: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/puts \$(\d+) into a POSB account that pays (\d+)% interest/))) {
+      const e = Number(m[1]) * Number(m[2]) / 100;
+      return near(e, q.answer) ? null : `interest: expected ${e}, got ${q.answer}`;
+    }
+
+    /* --- P5 lane: area of triangle --- */
+    if ((m = text.match(/base of (\d+) cm and a height of (\d+) cm\. What is its area/))) {
+      const e = Number(m[1]) * Number(m[2]) / 2;
+      return near(e, q.answer) ? null : `triangle area: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/area of (\d+) cm² and a height of (\d+) cm\. What is the length of its base/))) {
+      const e = 2 * Number(m[1]) / Number(m[2]);
+      return near(e, q.answer) ? null : `triangle base: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/area of (\d+) cm² and a base of (\d+) cm\. What is its height/))) {
+      const e = 2 * Number(m[1]) / Number(m[2]);
+      return near(e, q.answer) ? null : `triangle height: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/rectangle (\d+) cm by (\d+) cm with a triangle of base (\d+) cm and height (\d+) cm/))) {
+      const e = Number(m[1]) * Number(m[2]) + Number(m[3]) * Number(m[4]) / 2;
+      return near(e, q.answer) ? null : `composite area: expected ${e}, got ${q.answer}`;
+    }
+
+    /* --- P5 lane: volume of cube and cuboid --- */
+    if ((m = text.match(/builds a solid (\d+) cubes long, (\d+) cubes wide and (\d+) cubes high/))) {
+      const e = Number(m[1]) * Number(m[2]) * Number(m[3]);
+      return near(e, q.answer) ? null : `unit cubes: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^(\d+) ℓ (\d+) ml of barley water/))) {
+      const e = Number(m[1]) * 1000 + Number(m[2]);
+      return near(e, q.answer) ? null : `litres to cm³: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/base (\d+) cm by (\d+) cm\. Water is poured in to a depth of (\d+) cm/))) {
+      const e = Number(m[1]) * Number(m[2]) * Number(m[3]);
+      return near(e, q.answer) ? null : `tank volume: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/base (\d+) cm by (\d+) cm to a depth of (\d+) cm/))) {
+      const e = Number(m[1]) * Number(m[2]) * Number(m[3]);
+      return near(e, q.answer) ? null : `tank ml: expected ${e}, got ${q.answer}`;
     }
 
     /* --- P3 pilot: money in decimal notation (all amounts read off the stem) --- */
@@ -416,6 +523,33 @@ function oracle(q) {
       const e = f[0] / f[1];
       return near(e, ansNum) ? null : `frac->dec: expected ${e}, got ${ansNum}`;
     }
+  }
+
+  /* --- P5 lane: MC percentage, area of triangle, volume --- */
+  if ((m = text.match(/^(\d+)% of (\d+) = \?$/))) {
+    const e = Number(m[1]) * Number(m[2]) / 100;
+    return near(e, ansNum) ? null : `% of whole: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/costing \$(\d+) has a (\d+)% discount/))) {
+    const p = Number(m[1]);
+    const e = p - p * Number(m[2]) / 100;
+    return near(e, ansNum) ? null : `discount: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/triangle has a base of (\d+) cm and a height of (\d+) cm/))) {
+    const e = Number(m[1]) * Number(m[2]) / 2;
+    return near(e, ansNum) ? null : `triangle area (MC): expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/kite paper (\d+) cm long and (\d+) cm wide in half along a diagonal/))) {
+    const e = Number(m[1]) * Number(m[2]) / 2;
+    return near(e, ansNum) ? null : `half rectangle: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/A cube has edges of (\d+) cm\. What is its volume\?$/))) {
+    const s = Number(m[1]), e = s * s * s;
+    return near(e, ansNum) ? null : `cube volume: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/A cuboid measures (\d+) cm by (\d+) cm by (\d+) cm\. What is its volume\?$/))) {
+    const e = Number(m[1]) * Number(m[2]) * Number(m[3]);
+    return near(e, ansNum) ? null : `cuboid volume: expected ${e}, got ${ansNum}`;
   }
 
   return false; // no oracle matched

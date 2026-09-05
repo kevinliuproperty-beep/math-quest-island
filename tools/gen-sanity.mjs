@@ -303,6 +303,32 @@ function oracle(q) {
       return near(e, q.answer) ? null : `tank ml: expected ${e}, got ${q.answer}`;
     }
 
+    /* --- P5 wave 2: rate (typed). Every stem gives two of the three quantities. --- */
+    if ((m = text.match(/prints (\d+) pages in (\d+) minutes\. How many pages does it print in 1 minute\?$/))) {
+      const e = Number(m[1]) / Number(m[2]);
+      return near(e, q.answer) ? null : `rate per minute: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/packs (\d+) buns per minute\. How many minutes does it take to pack (\d+) buns\?$/))) {
+      const e = Number(m[2]) / Number(m[1]);
+      return near(e, q.answer) ? null : `rate units: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/packs (\d+) buns each minute\. How many buns does it pack in 1 hour (\d+) minutes\?$/))) {
+      const e = Number(m[1]) * (60 + Number(m[2]));
+      return near(e, q.answer) ? null : `rate hour+min: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/A tap fills (\d+) ℓ of water in (\d+) minutes\. At the same rate, how much water flows in (\d+) minutes\?$/))) {
+      const e = Number(m[1]) / Number(m[2]) * Number(m[3]);
+      return near(e, q.answer) ? null : `rate two-step: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/charges \$(\d+\.\d\d) per hour\..* parks there for (\d+) hours\./))) {
+      const e = Number((Math.round(parseFloat(m[1]) * 100) * Number(m[2]) / 100).toFixed(2));
+      return near(e, q.answer) ? null : `parking rate: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/charges \$(\d+\.\d\d) for (\d+) kg of washing\. What is the charge for 1 kg/))) {
+      const e = Number((Math.round(parseFloat(m[1]) * 100) / Number(m[2]) / 100).toFixed(2));
+      return near(e, q.answer) ? null : `laundry rate: expected ${e}, got ${q.answer}`;
+    }
+
     /* --- P3 pilot: money in decimal notation (all amounts read off the stem) --- */
     if (/\$\d/.test(text)) {
       const amts = [...text.matchAll(/\$(\d+\.\d{2})/g)].map(x => Math.round(parseFloat(x[1]) * 100));
@@ -657,6 +683,57 @@ function oracle(q) {
   if ((m = text.match(/A cuboid measures (\d+) cm by (\d+) cm by (\d+) cm\. What is its volume\?$/))) {
     const e = Number(m[1]) * Number(m[2]) * Number(m[3]);
     return near(e, ansNum) ? null : `cuboid volume: expected ${e}, got ${ansNum}`;
+  }
+
+  /* --- P5 wave 2: rate (MC) --- */
+  if ((m = text.match(/fills a tank at (\d+) ℓ per minute\. How much water flows in (\d+) minutes\?$/))) {
+    const e = Number(m[1]) * Number(m[2]);
+    return near(e, ansNum) ? null : `tap total: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/Printer A prints (\d+) pages in (\d+) minutes\. Printer B prints (\d+) pages in (\d+) minutes\. How many more pages/))) {
+    const e = Number(m[1]) / Number(m[2]) - Number(m[3]) / Number(m[4]);
+    return near(e, ansNum) ? null : `rate compare: expected ${e}, got ${ansNum}`;
+  }
+
+  /* --- P5 wave 2: angles. Every configuration is described in words, so the
+     oracle re-derives from the rendered stem exactly as a child would read it.
+     Ordered most specific first: the two-step vertically-opposite stem shares a
+     prefix with the plain vertically-opposite one. --- */
+  if ((m = text.match(/One of the four angles formed is (\d+)°\. Angle p is next to that angle on a straight line, and angle q is vertically opposite angle p\./))) {
+    const e = 180 - Number(m[1]);
+    return near(e, ansNum) ? null : `vert opp two-step: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/One of the four angles formed is (\d+)°\. Angle p is next to it, on the same straight line\./))) {
+    const e = 180 - Number(m[1]);
+    return near(e, ansNum) ? null : `vert adjacent: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/One of the four angles formed is (\d+)°\. What is the angle vertically opposite it\?$/))) {
+    const e = Number(m[1]);
+    return near(e, ansNum) ? null : `vert opposite: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Angle a and angle b sit side by side on a straight line, with no gap between them\. Angle a is (\d+)°\./))) {
+    const e = 180 - Number(m[1]);
+    return near(e, ansNum) ? null : `straight line pair: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Three angles sit side by side on a straight line, with no gaps between them\. Two of them are (\d+)° and (\d+)°\./))) {
+    const e = 180 - Number(m[1]) - Number(m[2]);
+    return near(e, ansNum) ? null : `straight line trio: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Angle x, a right angle and angle y sit side by side on a straight line, with no gaps between them\. Angle x is (\d+)°\./))) {
+    const e = 90 - Number(m[1]);
+    return near(e, ansNum) ? null : `right angle on line: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Three angles meet at a point and together they fill the whole turn\. Two of them are (\d+)° and (\d+)°\./))) {
+    const e = 360 - Number(m[1]) - Number(m[2]);
+    return near(e, ansNum) ? null : `at a point, three: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Four angles meet at a point and together they fill the whole turn\. Three of them are (\d+)°, (\d+)° and (\d+)°\./))) {
+    const e = 360 - Number(m[1]) - Number(m[2]) - Number(m[3]);
+    return near(e, ansNum) ? null : `at a point, four: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Angles meet at a point and together they fill the whole turn\. One of them is (\d+)°, and the other (\d+) angles are all equal/))) {
+    const e = (360 - Number(m[1])) / Number(m[2]);
+    return near(e, ansNum) ? null : `at a point, equal share: expected ${e}, got ${ansNum}`;
   }
 
   return false; // no oracle matched

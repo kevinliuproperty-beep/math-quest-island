@@ -5702,6 +5702,17 @@ var GUIDE = (function () {
     /* only ask about a square we can point at by the colours round it: place words do not
        survive the tip she has to make to see it */
     app.inferQ = INFER.bestQuestion(C, known, res.list, { nameable: canNameByColour });
+    /* A CUT SHORT LIST NEVER DECIDES WHAT SHE IS ALLOWED TO SAY.
+       The swatches under a question are the colours the candidate list shows at that square.
+       While the list is the whole truth that is a kindness: it is every colour the square can
+       be. The moment the search was cut short it becomes a trap, because the colour her cube
+       really is may never have made it into the sample, and then the only honest answer is
+       missing from the screen. The field test hit exactly that: a real cube, a truthful child,
+       and no button to press. Tapping None of those then told her a real cube was painted
+       wrong, and tapping the nearest colour instead quietly built a cube she is not holding.
+       Everything else in this file already refuses to treat a cut short list as truth. So does
+       this: a cut short search hands back all six colours and lets the cube say which one. */
+    if (app.inferQ && res.capped) app.inferQ.colours = C.COLOURS.slice();
     app.inferAsked = (app.inferAsked || 0) + 1;
     app.inferMsg = null;
     render();

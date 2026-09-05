@@ -200,6 +200,78 @@ function oracle(q) {
     return false;
   }
 
+  /* --- P4 lane: whole numbers up to 100 000 (spaced numerals: "47 253") ---
+     These sit ABOVE the P3 branches on purpose: the P3 stems are the same shape
+     with an unspaced numeral, and a looser branch that matched first would
+     report a content bug that is not there (P3 pilot rubric lesson 2). */
+  const unsp = s => Number(String(s).replace(/[ ,]/g, ''));
+  const chNums = qq => (qq.choices || []).map(c => unsp(String(c)));
+  if ((m = text.match(/^In (\d[\d ]*), the digit (\d) stands for how much\?$/))) {
+    const s = m[1].replace(/ /g, ''), idx = s.indexOf(m[2]);
+    if (idx < 0) return 'p4 stands-for: digit is not in the number ' + s;
+    if (s.split(m[2]).length > 2) return 'p4 stands-for: digit appears twice, question is ambiguous';
+    const e = Number(m[2]) * Math.pow(10, s.length - 1 - idx);
+    return near(e, ansNum) ? null : `p4 stands for: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Which digit is in the (ten thousands|thousands|hundreds|tens|ones) place of (\d[\d ]*)\?$/))) {
+    const s = m[2].replace(/ /g, '');
+    const pos = { 'ten thousands': 10000, thousands: 1000, hundreds: 100, tens: 10, ones: 1 }[m[1]];
+    if (Number(s) < pos) return 'p4 which-digit: number is too small for the ' + m[1] + ' place';
+    const e = Math.floor(Number(s) / pos) % 10;
+    return near(e, ansNum) ? null : `p4 which digit: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Round (\d[\d ]*) to the nearest (10|100|1000)\.$/))) {
+    const n = unsp(m[1]), u = Number(m[2]);
+    const e = Math.floor(n / u + 0.5) * u;                 /* halfway rounds up, MOE convention */
+    return near(e, ansNum) ? null : `p4 round ${n} to ${u}: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^What number continues the pattern\? (.+), \?$/))) {
+    const t = m[1].split(',').map(unsp).filter(Number.isFinite);
+    if (t.length < 3) return 'p4 pattern: could not read the sequence';
+    const d = t[1] - t[0];
+    if (!t.every((v, i) => i === 0 || v - t[i - 1] === d)) return 'p4 pattern: not an arithmetic sequence: ' + t.join(',');
+    const e = t[t.length - 1] + d;
+    return near(e, ansNum) ? null : `p4 pattern: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Which of these is the (greatest|smallest) number\?$/))) {
+    const ns = chNums(q);
+    if (ns.length !== 4 || ns.some(x => !Number.isFinite(x))) return 'p4 compare: choices are not four numbers';
+    const e = m[1] === 'greatest' ? Math.max.apply(null, ns) : Math.min.apply(null, ns);
+    return near(e, ansNum) ? null : `p4 ${m[1]}: expected ${e}, got ${ansNum}`;
+  }
+
+  /* --- P4 lane: factors and multiples --- */
+  if ((m = text.match(/^Which of these is a factor of (\d+)\?$/))) {
+    const n = Number(m[1]), hits = chNums(q).filter(c => c > 0 && n % c === 0);
+    if (hits.length !== 1) return `p4 factor: ${hits.length} of the choices divide ${n}, question is ambiguous`;
+    return near(hits[0], ansNum) ? null : `p4 factor of ${n}: expected ${hits[0]}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Which of these is a common factor of (\d+) and (\d+)\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]);
+    const hits = chNums(q).filter(c => c > 0 && a % c === 0 && b % c === 0);
+    if (hits.length !== 1) return `p4 common factor: ${hits.length} of the choices divide both ${a} and ${b}`;
+    return near(hits[0], ansNum) ? null : `p4 common factor: expected ${hits[0]}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Which of these is a multiple of (\d+)\?$/))) {
+    const d = Number(m[1]), hits = chNums(q).filter(c => c > 0 && c % d === 0);
+    if (hits.length !== 1) return `p4 multiple: ${hits.length} of the choices are multiples of ${d}`;
+    return near(hits[0], ansNum) ? null : `p4 multiple of ${d}: expected ${hits[0]}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^What is the (\d)(?:st|nd|rd|th) multiple of (\d+)\?$/))) {
+    const e = Number(m[1]) * Number(m[2]);
+    return near(e, ansNum) ? null : `p4 nth multiple: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^What is the smallest number that is a multiple of both (\d+) and (\d+)\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]);
+    let e = a; while (e % b !== 0) e += a;
+    return near(e, ansNum) ? null : `p4 common multiple of ${a},${b}: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^How many factors does (\d+) have\?$/))) {
+    const n = Number(m[1]); let c = 0;
+    for (let i = 1; i <= n; i++) if (n % i === 0) c++;
+    return near(c, ansNum) ? null : `p4 factor count of ${n}: expected ${c}, got ${ansNum}`;
+  }
+
   /* --- P3 pilot: whole numbers up to 10 000 --- */
   if ((m = text.match(/^In (\d+), the digit (\d+) stands for how much\?$/))) {
     const s = m[1], idx = s.indexOf(m[2]);

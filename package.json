@@ -4,8 +4,9 @@
   "private": true,
   "description": "Math Quest Island. Zero-build static app; this manifest exists only to carry the sanity harness.",
   "scripts": {
-    "test": "node tools/gen-sanity.mjs",
+    "test": "node tools/answer-parse-test.mjs && node tools/gen-sanity.mjs",
     "test:deep": "SAMPLES=50000 node tools/gen-sanity.mjs",
-    "serve": "python3 -m http.server 8765"
+    "serve": "python3 -m http.server 8765",
+    "test:answers": "node tools/answer-parse-test.mjs"
   }
 }

@@ -469,7 +469,10 @@ function answerTyped(){
   S.busy=true;
   stopQTimer();
   const c=ac(); if(c&&c.resume) c.resume();
-  const right = parseInt(v,10)===Q.answer;
+  /* Numeric compare, never parseInt: money answers are decimals and
+     parseInt("4.75") === 4 marked every correct money answer wrong.
+     Grader lives in js/core.js so the harness can test it DOM-free. */
+  const right = MQI.gradeTyped(v, Q);
   $('typedInput').disabled=true;
   if(S.patchwerk){ pwResolve(right); return; }
   S.total++;

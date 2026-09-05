@@ -68,6 +68,74 @@ function finishTyped(qHtml, answer, explain){
   return { q:qHtml, extra:'', typed:true, answer, choices:[], correct:-1,
            explain, answerText:''+answer };
 }
+
+/* ===== TYPED-ANSWER GRADING =========================================
+ * Shared by the app shell (js/app.js) and the harness (tools/answer-parse-test.mjs).
+ * Pure, DOM-free, so the harness can load it out of core.js in a bare vm.
+ *
+ * WHY THIS EXISTS: js/app.js used to compare with parseInt(v,10) === Q.answer.
+ * Every money answer is a decimal, so parseInt("4.75") === 4 !== 4.75 and a
+ * child who typed the correct amount was marked wrong on 100% of money items
+ * (P3 Pilot Refutation, second kill). Comparison is numeric with tolerance.
+ *
+ * Accepted on input: surrounding whitespace, a leading "$", thousands commas,
+ * and a trailing unit the question declares. Never accepted: the empty string.
+ */
+const TYPED_UNITS = ['cm3','cm³','km','cm','mm','ml','kg','m','g','l','ℓ','%'];
+function normUnit(u){
+  const s = String(u).trim().toLowerCase();
+  if (s === 'ℓ') return 'l';
+  if (s === 'cm³') return 'cm3';
+  return s;
+}
+/* Returns {ok:true, value, unit, frac?} or {ok:false, reason}. */
+function parseTypedAnswer(raw){
+  if (raw === null || raw === undefined) return { ok:false, reason:'empty' };
+  let s = String(raw).trim();
+  if (s === '') return { ok:false, reason:'empty' };
+  let unit = '';
+  const low = s.toLowerCase();
+  for (let i=0;i<TYPED_UNITS.length;i++){
+    const u = TYPED_UNITS[i];
+    if (low.length > u.length && low.slice(low.length-u.length) === u){
+      unit = u; s = s.slice(0, s.length-u.length).trim(); break;
+    }
+  }
+  s = s.replace(/^\$\s*/, '').replace(/,/g, '').trim();
+  if (s === '') return { ok:false, reason:'empty' };
+  const fm = s.match(/^(-?\d+)\s*\/\s*(\d+)$/);
+  if (fm){
+    const n = Number(fm[1]), d = Number(fm[2]);
+    if (!d) return { ok:false, reason:'divide by zero' };
+    return { ok:true, value:n/d, frac:[n,d], unit };
+  }
+  if (!/^[-+]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return { ok:false, reason:'not a number' };
+  const v = Number(s);
+  if (!Number.isFinite(v)) return { ok:false, reason:'not a number' };
+  return { ok:true, value:v, unit };
+}
+/* true = correct. q may declare q.unit (expected unit) and q.dp (decimal places).
+ * Tolerance: exact-after-rounding when q.dp is declared, else 1e-9 for an
+ * integer answer and 0.005 for a decimal/money answer. */
+function gradeTyped(raw, q){
+  const p = parseTypedAnswer(raw);
+  if (!p.ok) return false;
+  if (q && q.unit && p.unit && normUnit(p.unit) !== normUnit(q.unit)) return false;
+  if (q && Array.isArray(q.fracAnswer)){
+    const n = Number(q.fracAnswer[0]), d = Number(q.fracAnswer[1]);
+    if (!Number.isFinite(n) || !Number.isFinite(d) || !d) return false;
+    if (p.frac) return p.frac[0]*d === n*p.frac[1];
+    return Math.abs(p.value - n/d) < 1e-9;
+  }
+  const ans = Number(q && q.answer);
+  if (!Number.isFinite(ans)) return false;
+  if (q && Number.isFinite(q.dp)){
+    const f = Math.pow(10, q.dp);
+    return Math.round(p.value*f) === Math.round(ans*f);
+  }
+  const tol = Number.isInteger(ans) ? 1e-9 : 0.005;
+  return Math.abs(p.value - ans) <= tol;
+}
   /* ===== GEN-KIT-END ================================================== */
 
   /* ---------------- registries ---------------- */
@@ -129,6 +197,7 @@ function finishTyped(qHtml, answer, explain){
   const api = {
     gen: { ri, pick, shuffle, gcd, fr, eq, buildFracChoices, finishFrac, finishNum, finishTyped,
            gMul, EASY_TABLES, HARD_TABLES },
+    parseTypedAnswer, gradeTyped, normUnit,
     topics: TOPICS,
     modes: MODES,
     registerTopic, registerMode,

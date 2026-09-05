@@ -209,6 +209,85 @@ function oracle(q) {
       return near(e, q.answer) ? null : `missing addend: expected ${e}, got ${q.answer}`;
     }
 
+    /* --- P4 lane: four operations (js/topics/p4-multiplication-division.js) ---
+       These sit ABOVE the P3 "packs ... into boxes" branches on purpose: the
+       shapes are neighbours and a looser branch matching first would re-derive
+       the wrong quantity (P3 pilot rubric lesson 2). The bare "a x b = ?" and
+       "a / b = ?" stems are deliberately NOT re-stated here - the existing typed
+       mul/div branches below already re-derive them from the rendered text. */
+    if ((m = text.match(/^(\d+) ([a-z ]+) are packed into ([a-z]+) of (\d+)\. Only full \3 are sold\. How many full \3 are there\?$/))) {
+      const a = Number(m[1]), b = Number(m[4]);
+      if (b < 2 || b > 9) return `p4 full packs: divisor ${b} is not a single digit`;
+      if (a > 9999) return `p4 full packs: dividend ${a} exceeds 4 digits`;
+      const e = Math.floor(a / b);
+      return near(e, q.answer) ? null : `p4 full packs: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^(\d+) ([a-z ]+) are packed into [a-z]+ of (\d+)\. How many \2 are left over\?$/))) {
+      const a = Number(m[1]), b = Number(m[3]);
+      if (b < 2 || b > 9) return `p4 left over: divisor ${b} is not a single digit`;
+      if (a > 9999) return `p4 left over: dividend ${a} exceeds 4 digits`;
+      const e = a % b;
+      return near(e, q.answer) ? null : `p4 left over: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^What is the remainder when (\d+) is divided by (\d+)\?$/))) {
+      const a = Number(m[1]), b = Number(m[2]);
+      if (b < 2 || b > 9) return `p4 remainder: divisor ${b} is not a single digit`;
+      if (a > 9999) return `p4 remainder: dividend ${a} exceeds 4 digits`;
+      const e = a % b;
+      return near(e, q.answer) ? null : `p4 remainder: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^One ([A-Za-z ]+) holds (\d+) ([A-Za-z ]+)\. How many \3 are in (\d+) ([A-Za-z ]+)\?$/))) {
+      const per = Number(m[2]), n = Number(m[4]);
+      /* MOE p.37 3.1: 3 digits by 2 digits is the ceiling for a 2-digit multiplier */
+      if (n > 999 || per > 99) return `p4 mul word: ${n} x ${per} is outside 3 digits by 2 digits`;
+      const e = n * per;
+      return near(e, q.answer) ? null : `p4 mul word: expected ${e}, got ${q.answer}`;
+    }
+
+    /* --- P4 lane: fractions (js/topics/p4-fractions.js). Typed items only.
+       The fraction itself is read off the RENDERED markup with parseFrac, never
+       from answerText; the stripped stem collapses a rendered fraction to its
+       digits, so the words carry the match and parseFrac carries the numbers. */
+    const P4UNITS = { halves: 2, thirds: 3, quarters: 4, fifths: 5, sixths: 6,
+                      sevenths: 7, eighths: 8, ninths: 9, tenths: 10, elevenths: 11, twelfths: 12 };
+    if ((m = text.match(/^How many ([a-z]+) are there in (\d+) /))) {
+      const f = parseFrac(q.q);
+      if (!f) return 'p4 mixed->improper: no fraction rendered in the stem';
+      if (P4UNITS[m[1]] !== f[1]) return `p4 mixed->improper: stem says ${m[1]} but the fraction is /${f[1]}`;
+      if (f[1] > 12) return `p4 mixed->improper: denominator ${f[1]} exceeds 12`;
+      const e = Number(m[2]) * f[1] + f[0];
+      return near(e, q.answer) ? null : `p4 mixed->improper: expected ${e}, got ${q.answer}`;
+    }
+    if (/^Write .* as a mixed number\. What is the whole number part\?$/.test(text)) {
+      const f = parseFrac(q.q);
+      if (!f) return 'p4 improper->mixed: no fraction rendered in the stem';
+      if (f[0] <= f[1]) return `p4 improper->mixed: ${f[0]}/${f[1]} is not an improper fraction`;
+      const e = Math.floor(f[0] / f[1]);
+      return near(e, q.answer) ? null : `p4 improper->mixed whole: expected ${e}, got ${q.answer}`;
+    }
+    if (/^Write .* as a mixed number\. What is the numerator of the fraction part\?$/.test(text)) {
+      const f = parseFrac(q.q);
+      if (!f) return 'p4 improper->mixed: no fraction rendered in the stem';
+      const e = f[0] % f[1];
+      if (e === 0) return `p4 improper->mixed: ${f[0]}/${f[1]} has no fraction part`;
+      return near(e, q.answer) ? null : `p4 improper->mixed numerator: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^There are (\d+) [a-z ]+ on a tray\. \d+ of them are ([a-z ]+)\. How many are \2\?$/))) {
+      const f = parseFrac(q.q);
+      if (!f) return 'p4 fraction of a set: no fraction rendered in the stem';
+      const total = Number(m[1]);
+      if (total % f[1] !== 0) return `p4 fraction of a set: ${total} does not split into ${f[1]} equal groups`;
+      const e = total * f[0] / f[1];
+      return near(e, q.answer) ? null : `p4 fraction of a set: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/^\d+ of the [A-Za-z ]+ are ([A-Za-z ]+)\. There are (\d+) \1\. How many [A-Za-z ]+\?$/))) {
+      const f = parseFrac(q.q);
+      if (!f) return 'p4 set from a part: no fraction rendered in the stem';
+      const e = Number(m[2]) * f[1] / f[0];
+      if (!Number.isInteger(e)) return `p4 set from a part: ${m[2]} is not ${f[0]}/${f[1]} of a whole number`;
+      return near(e, q.answer) ? null : `p4 set from a part: expected ${e}, got ${q.answer}`;
+    }
+
     /* --- P3 pilot: division with remainder + 3-digit-by-1-digit algorithms --- */
     if ((m = text.match(/packs (\d+) [^.]*into (\d+) boxes[^.]*\. How many are left over\?/))) {
       const e = Number(m[1]) % Number(m[2]);
@@ -386,6 +465,19 @@ function oracle(q) {
     const n = Number(m[1]); let c = 0;
     for (let i = 1; i <= n; i++) if (n % i === 0) c++;
     return near(c, ansNum) ? null : `p4 factor count of ${n}: expected ${c}, got ${ansNum}`;
+  }
+
+  /* --- P4 lane: fraction as part of a set, answered AS a fraction (MC).
+     Sits above the generic fraction branches: the answer is compared by cross
+     multiplication, so an unsimplified key would still verify, and the simplest
+     form is asserted separately. --- */
+  if ((m = text.match(/^A box holds (\d+) red marbles and (\d+) blue marbles\. What fraction of the marbles are red\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), total = a + b;
+    if (!ansFrac) return 'p4 set as fraction: the key is not a rendered fraction';
+    if (a * ansFrac[1] !== ansFrac[0] * total) return `p4 set as fraction: expected ${a}/${total}, got ${ansFrac[0]}/${ansFrac[1]}`;
+    if (gcd(ansFrac[0], ansFrac[1]) !== 1) return `p4 set as fraction: ${ansFrac[0]}/${ansFrac[1]} is not in simplest form`;
+    if (ansFrac[1] > 12) return `p4 set as fraction: denominator ${ansFrac[1]} exceeds 12`;
+    return null;
   }
 
   /* --- P3 pilot: whole numbers up to 10 000 --- */

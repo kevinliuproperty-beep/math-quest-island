@@ -750,6 +750,22 @@ function oracle(q) {
       const e = top + cutd + cuta + right + bottom + left;
       return near(e, ansNum) ? null : `L perimeter: expected ${e}, got ${ansNum}`;
     }
+    /* DEPTH PILOT format bank on the same rendered figure. */
+    if (/What is the correct perimeter of this figure/.test(text)) {
+      const e = top + cutd + cuta + right + bottom + left;
+      const claim = Number((text.match(/says the perimeter is (\d+) cm/) || [])[1]);
+      if (!Number.isFinite(claim)) return 'L error-spot: no claimed perimeter in the stem';
+      if (claim === e) return `L error-spot: the "wrong" claim ${claim} equals the true perimeter`;
+      if (claim !== e - cuta - cutd) return `L error-spot: claim ${claim} is not the named misconception (${e - cuta - cutd})`;
+      return near(e, ansNum) ? null : `L error-spot: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/A square of side (\d+) cm sits beside this figure\. How much longer is the perimeter of (the figure|the square)/))) {
+      const per = top + cutd + cuta + right + bottom + left, sq = 4 * Number(m[1]);
+      const bigger = per > sq ? 'the figure' : 'the square';
+      if (m[2] !== bigger) return `L compare: stem names ${m[2]} as longer but ${bigger} is`;
+      const e = Math.abs(per - sq);
+      return near(e, ansNum) ? null : `L compare: expected ${e}, got ${ansNum}`;
+    }
     return 'L figure: rendered a figure but no oracle matched the stem';
   }
 
@@ -1007,6 +1023,123 @@ function oracle(q) {
       return near(on / total, ansFrac[0] / ansFrac[1]) ? null
         : `bar model: ${on}/${total} shaded but answer is ${ansFrac[0]}/${ansFrac[1]}`;
     }
+  }
+
+  /* --- DEPTH PILOT 2026-09-05: format banks for P3 perimeter, P3 mul/div facts and
+     the P4 L-shape. Each stem shape gets its own oracle, re-derived from the RENDERED
+     text exactly as a child reads it. These sit above the loose geometry and
+     whole-number branches because several of them contain the words "perimeter" or
+     a "a x b" fragment that the looser branches below would otherwise claim. --- */
+
+  /* P3 perimeter bank */
+  if ((m = text.match(/A rectangle is (\d+) cm long and (\d+) cm wide\. Which calculation gives its perimeter\?$/))) {
+    const e = 2 * (Number(m[1]) + Number(m[2]));
+    const got = evalExpr(strip(q.answerText).replace(/×/g, 'x'));
+    if (got === null) return `perimeter concept: answer "${strip(q.answerText)}" is not an evaluable calculation`;
+    return near(e, got) ? null : `perimeter concept: chosen calculation gives ${got}, perimeter is ${e}`;
+  }
+  if ((m = text.match(/^A rectangle has a perimeter of (\d+) cm and a breadth of (\d+) cm\./))) {
+    const e = Number(m[1]) / 2 - Number(m[2]);
+    return near(e, ansNum) ? null : `perimeter inverse: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Rectangle A is (\d+) cm by (\d+) cm\. Rectangle B is (\d+) cm by (\d+) cm\. How much longer is the perimeter of A/))) {
+    const e = 2 * (Number(m[1]) + Number(m[2])) - 2 * (Number(m[3]) + Number(m[4]));
+    if (e <= 0) return `perimeter compare: A is not longer than B (${e})`;
+    return near(e, ansNum) ? null : `perimeter compare: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Mei Ling says the perimeter of a rectangle (\d+) cm by (\d+) cm is (\d+) cm\. What did she do wrong\?$/))) {
+    const L = Number(m[1]), B = Number(m[2]), claim = Number(m[3]), p = 2 * (L + B);
+    if (claim === p) return `perimeter error-spot: the "wrong" claim ${claim} is the true perimeter`;
+    const want = claim === L + B ? 'She added only two sides.'
+      : claim === L * B ? 'She worked out the area instead.'
+      : claim === 2 * L + B ? 'She left out one side.' : null;
+    if (want === null) return `perimeter error-spot: claim ${claim} matches no named misconception for ${L}x${B}`;
+    return strip(q.answerText) === want ? null
+      : `perimeter error-spot: expected "${want}", got "${strip(q.answerText)}"`;
+  }
+  if ((m = text.match(/(\d+) m long and (\d+) m wide\. The [a-z ]+ costs \$(\d+) per metre/))) {
+    const e = 2 * (Number(m[1]) + Number(m[2])) * Number(m[3]);
+    return near(e, ansNum) ? null : `fence cost: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^A square garden tile has a perimeter of (\d+) cm\. A bigger square tile has double that perimeter\./))) {
+    const e = 2 * Number(m[1]) / 4;
+    return near(e, ansNum) ? null : `doubled perimeter: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/area of (\d+) cm.? and a length of (\d+) cm\. What is its perimeter\?$/))) {
+    const a = Number(m[1]), L = Number(m[2]);
+    if (a % L !== 0) return `perimeter from area: ${a} is not a whole number of ${L}s`;
+    const e = 2 * (L + a / L);
+    return near(e, ansNum) ? null : `perimeter from area: expected ${e}, got ${ansNum}`;
+  }
+
+  /* P3 multiplication / division fact bank */
+  if ((m = text.match(/(\d+) [a-z ]+, with (\d+) [a-z ]+\. How many [a-z]+ are there altogether\?$/))) {
+    const e = Number(m[1]) * Number(m[2]);
+    return near(e, ansNum) ? null : `equal groups: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^You know that (\d+) × (\d+) = (\d+)\. Which division fact belongs to the same fact family\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), p = Number(m[3]);
+    if (a * b !== p) return `fact family: the given fact ${a}x${b}=${p} is false`;
+    const f = strip(q.answerText).match(/^(\d+) ÷ (\d+) = (\d+)$/);
+    if (!f) return `fact family: chosen option "${strip(q.answerText)}" is not a division fact`;
+    const ok = Number(f[1]) === p && Number(f[1]) / Number(f[2]) === Number(f[3]) &&
+      (Number(f[2]) === a || Number(f[2]) === b);
+    return ok ? null : `fact family: "${strip(q.answerText)}" is not in the family of ${a}, ${b}, ${p}`;
+  }
+  if ((m = text.match(/^Which of these numbers is NOT a multiple of (\d+)\?$/))) {
+    const a = Number(m[1]);
+    const vals = q.choices.map(c => Number(strip(c)));
+    if (vals.some(v => !Number.isFinite(v))) return 'not-a-multiple: a choice is not a number';
+    const outs = vals.filter(v => v % a !== 0);
+    if (outs.length !== 1) return `not-a-multiple: ${outs.length} of the four options are not multiples of ${a}`;
+    return near(outs[0], ansNum) ? null : `not-a-multiple: expected ${outs[0]}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^You know that (\d+) × (\d+) = (\d+)\. Use doubling to work out (\d+) × (\d+)\.$/))) {
+    const a = Number(m[1]), b = Number(m[2]), p = Number(m[3]);
+    if (a * b !== p) return `doubling: the given fact ${a}x${b}=${p} is false`;
+    if (Number(m[4]) !== 2 * a || Number(m[5]) !== b) return 'doubling: the target fact is not the doubled one';
+    const e = 2 * p;
+    return near(e, ansNum) ? null : `doubling: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/(\d+) [a-z ]+ equally into (\d+) [a-z]+\. How many [a-z ]+ are in (\d+) [a-z]+\?$/))) {
+    const total = Number(m[1]), g = Number(m[2]), want = Number(m[3]);
+    if (total % g !== 0) return `share then take: ${total} does not divide by ${g}`;
+    if (want >= g) return `share then take: asking for ${want} of only ${g} groups`;
+    const e = total / g * want;
+    return near(e, ansNum) ? null : `share then take: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^Ravi says (\d+) ÷ (\d+) = (\d+)\. He checked it by working out (\d+) × (\d+) = (\d+)\./))) {
+    const p = Number(m[1]), a = Number(m[2]), claim = Number(m[3]);
+    if (p % a !== 0) return `division error-spot: ${p} does not divide by ${a}`;
+    if (claim === p / a) return 'division error-spot: the "wrong" claim is the true quotient';
+    if (Number(m[4]) !== a || Number(m[5]) !== claim || Number(m[6]) !== a * claim)
+      return 'division error-spot: the printed check does not match the claim';
+    const e = p / a;
+    return near(e, ansNum) ? null : `division error-spot: expected ${e}, got ${ansNum}`;
+  }
+
+  /* P4 L-shape bank, described in words */
+  if ((m = text.match(/^A rectangular sheet of card is (\d+) cm long and (\d+) cm wide\. A corner piece (\d+) cm by (\d+) cm is cut away/))) {
+    const W = Number(m[1]), H = Number(m[2]), a = Number(m[3]), b = Number(m[4]);
+    if (a >= W || b >= H) return `L in words: the cut ${a}x${b} does not fit inside ${W}x${H}`;
+    const e = 2 * (W + H);
+    return near(e, ansNum) ? null : `L in words: expected ${e}, got ${ansNum}`;
+  }
+  if (/^A rectangular corner is cut out of a rectangle to make an L-shape/.test(text)) {
+    return strip(q.answerText) === 'It stays the same.' ? null
+      : `L concept: expected "It stays the same.", got "${strip(q.answerText)}"`;
+  }
+  if ((m = text.match(/^An L-shape is made from a (\d+) cm by (\d+) cm rectangle with a rectangular corner cut out\. The corner cut out is (\d+) cm wide\. The area of the L-shape is (\d+) cm/))) {
+    const W = Number(m[1]), H = Number(m[2]), a = Number(m[3]), area = Number(m[4]);
+    const gone = W * H - area;
+    if (gone <= 0 || gone % a !== 0) return `L inverse: cut area ${gone} is not a whole number of ${a}s`;
+    const e = gone / a;
+    if (e >= H) return `L inverse: the cut is ${e} cm tall in a ${H} cm rectangle`;
+    return near(e, ansNum) ? null : `L inverse: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^An L-shaped kitchen floor is a (\d+) m by (\d+) m rectangle .* at \$(\d+) per metre/))) {
+    const e = 2 * (Number(m[1]) + Number(m[2])) * Number(m[3]);
+    return near(e, ansNum) ? null : `skirting cost: expected ${e}, got ${ansNum}`;
   }
 
   /* --- geometry --- */

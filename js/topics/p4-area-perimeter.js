@@ -20,6 +20,38 @@
 
   /* finishNum prepends its own space to the unit, so these carry none. */
   const CM2 = 'cm²', CM = 'cm';
+  const shuffle = G.shuffle;
+
+  /* DEPTH PILOT 2026-09-05 (Kevin 23:02). PRINCIPLE for the L-shape bank: the
+     perimeter of a composite figure is still the whole walk around the outside,
+     and cutting a rectangular corner out of a rectangle leaves that walk exactly
+     as long as it was. FORMAT BANK: direct compute on the rendered figure
+     (gLPerimeter, gLArea), described in words (gLWords), concept check
+     (gLConcept), error spotting (gLError), compare with a square (gLCompare),
+     inverse from area (gLCornerInverse), two-step word problem (gLSkirting). */
+  function mcNum(stem, extra, correct, cands, unit, explain){
+    const seen = new Set([correct]); const d = [];
+    for (const c of cands){
+      if (d.length >= 3) break;
+      if (!Number.isInteger(c) || c <= 0 || seen.has(c)) continue;
+      seen.add(c); d.push(c);
+    }
+    const authored = d.length === 3;
+    let t = 1;
+    while (d.length < 3 && t < 80){
+      if (!seen.has(correct + t)) { seen.add(correct + t); d.push(correct + t); }
+      else if (correct - t > 0 && !seen.has(correct - t)) { seen.add(correct - t); d.push(correct - t); }
+      t++;
+    }
+    const q = finishNum(stem, extra, correct, d, unit, explain);
+    if (authored) q.authored = d;
+    return q;
+  }
+  function mcText(stem, extra, correctText, wrongs, explain){
+    const opts = shuffle([correctText].concat(wrongs.slice(0, 3)));
+    return { q: stem, extra: extra || '', choices: opts, correct: opts.indexOf(correctText),
+             explain: explain, answerText: correctText };
+  }
 
   /* ---- rectangles and squares: find the missing dimension (1.1, 1.2) ---- */
 
@@ -190,6 +222,90 @@
       ' = ' + g.per + ' cm. Missing out the two short sides at the corner is the usual slip.');
   }
 
+  /* pool 3: error spotting on the rendered figure, misconception named */
+  function gLError() {
+    const g = makeL();
+    const claim = g.per - g.a - g.b;      /* the two notch sides left out */
+    return mcNum(
+      'Ravi walks around this figure and adds up only the four longest sides. He says the perimeter is ' +
+      claim + ' cm. <b>What is the correct perimeter of this figure?</b>', g.html,
+      g.per, [claim, g.area, g.W + g.H], CM,
+      'Ravi left out the two short sides at the notch, ' + g.a + ' cm and ' + g.b +
+      ' cm. Every side of an L-shape is part of the walk around: ' + (g.W - g.a) + ' + ' + g.b +
+      ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W + ' + ' + g.H + ' = ' + g.per + ' cm.');
+  }
+
+  /* pool 3: compare the figure with a square, and by how much */
+  function gLCompare() {
+    const g = makeL();
+    let s = ri(3, 20);
+    while (4 * s === g.per) s = ri(3, 20);
+    const diff = Math.abs(g.per - 4 * s);
+    const bigger = g.per > 4 * s ? 'the figure' : 'the square';
+    return mcNum(
+      'A square of side ' + s + ' cm sits beside this figure. <b>How much longer is the perimeter of ' +
+      bigger + ' than the perimeter of the other shape?</b>', g.html,
+      diff, [g.per, 4 * s, g.area], CM,
+      'The figure: add the six labelled sides, ' + (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' +
+      (g.H - g.b) + ' + ' + g.W + ' + ' + g.H + ' = ' + g.per + ' cm. The square: 4 × ' + s + ' = ' +
+      (4 * s) + ' cm. The difference is ' + diff + ' cm. Comparing areas answers a different question.');
+  }
+
+  /* pool 2: the same figure DESCRIBED in words, every dimension stated */
+  function gLWords() {
+    const W = ri(8, 18), H = ri(6, 15);
+    const a = ri(2, W - 3), b = ri(2, H - 3);
+    return mcNum(
+      'A rectangular sheet of card is ' + W + ' cm long and ' + H + ' cm wide. A corner piece ' + a +
+      ' cm by ' + b + ' cm is cut away, leaving an L-shape with right angles at every corner. ' +
+      '<b>What is the perimeter of the L-shape?</b>', '',
+      2 * (W + H), [2 * (W + H) - a - b, 2 * (W + H) - 2 * a - 2 * b, W * H - a * b], CM,
+      'Slide the two cut sides back out to the corner: the ' + a + ' cm across and the ' + b +
+      ' cm down replace exactly the pieces they removed. So the walk around is still 2 × (' + W +
+      ' + ' + H + ') = ' + (2 * (W + H)) + ' cm. Cutting a rectangular corner changes the area, not the perimeter.');
+  }
+
+  /* pool 2: concept check on what the cut does */
+  function gLConcept() {
+    return mcText(
+      'A rectangular corner is cut out of a rectangle to make an L-shape with right angles at every corner. ' +
+      '<b>What happens to the perimeter?</b>', '',
+      'It stays the same.',
+      ['It gets smaller.', 'It gets bigger.', 'It is halved.'],
+      'The two new sides at the notch are exactly as long as the two pieces removed from the old sides, ' +
+      'so the total walk around is unchanged. The AREA does get smaller: that is the measurement the cut takes away.');
+  }
+
+  /* pool 3: inverse - the area is given, find the missing corner dimension */
+  function gLCornerInverse() {
+    const W = ri(8, 16), H = ri(6, 14);
+    const a = ri(2, W - 3), b = ri(2, H - 3);
+    const area = W * H - a * b;
+    return mcNum(
+      'An L-shape is made from a ' + W + ' cm by ' + H + ' cm rectangle with a rectangular corner cut out. ' +
+      'The corner cut out is ' + a + ' cm wide. The area of the L-shape is ' + area +
+      ' cm². <b>How tall is the corner that was cut out?</b>', '',
+      b, [a, W * H - area, area - a], CM,
+      'Step 1: the whole rectangle is ' + W + ' × ' + H + ' = ' + (W * H) + ' cm², so the missing corner is ' +
+      (W * H) + ' − ' + area + ' = ' + (a * b) + ' cm². Step 2: ' + (a * b) + ' ÷ ' + a + ' = ' + b +
+      ' cm. Working backwards from the area is the whole move here.');
+  }
+
+  /* pool 3: two-step word problem in a Singapore context */
+  function gLSkirting() {
+    const W = ri(6, 14), H = ri(5, 12), rate = ri(2, 9);
+    const a = ri(2, W - 3), b = ri(2, H - 3);
+    const per = 2 * (W + H);
+    return mcNum(
+      'An L-shaped kitchen floor is a ' + W + ' m by ' + H + ' m rectangle with a ' + a + ' m by ' + b +
+      ' m corner taken out for a store room. Skirting board is fitted right around the edge of the floor at $' +
+      rate + ' per metre. <b>What does the skirting cost altogether, in dollars?</b>', '',
+      per * rate, [(W * H - a * b) * rate, (per - a - b) * rate, per], '',
+      'Step 1: the edge of an L-shape cut from a rectangle is still 2 × (' + W + ' + ' + H + ') = ' + per +
+      ' m, because the two cut sides replace the pieces they removed. Step 2: ' + per + ' × $' + rate +
+      ' = $' + (per * rate) + '. Costing the floor area would buy tiles, not skirting.');
+  }
+
   MQI.registerTopic({
     id: 'p4area', level: 'P4', strand: 'Measurement and Geometry',
     moeSubTopic: 'Area and Perimeter: finding one dimension of a rectangle given the other dimension and its area/perimeter; finding the length of one side of a square given its area/perimeter; finding the area and perimeter of composite figures made up of rectangles and squares',
@@ -200,9 +316,10 @@
       around: { label: 'Perimeter of an L-shape', tip: 'Walk a finger right around the outside and count every labelled side. The two short sides at the notch are the ones children forget.' }
     },
     pools: {
-      1: [[gRectSideFromArea, 'missing'], [gSquareSideFromPerimeter, 'missing']],
-      2: [[gRectSideFromPerimeter, 'missing'], [gSquareSideFromArea, 'missing'], [gCompositeWordsAdd, 'compose']],
-      3: [[gCompositeWordsSub, 'compose'], [gLArea, 'compose'], [gLPerimeter, 'around']]
+      1: [[gRectSideFromArea, 'missing'], [gSquareSideFromPerimeter, 'missing'], [gLConcept, 'around']],
+      2: [[gRectSideFromPerimeter, 'missing'], [gSquareSideFromArea, 'missing'], [gCompositeWordsAdd, 'compose'], [gLWords, 'around']],
+      3: [[gCompositeWordsSub, 'compose'], [gLArea, 'compose'], [gLPerimeter, 'around'],
+          [gLError, 'around'], [gLCompare, 'around'], [gLCornerInverse, 'compose'], [gLSkirting, 'around']]
     }
   });
 })();

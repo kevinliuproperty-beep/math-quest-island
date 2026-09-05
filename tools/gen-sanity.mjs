@@ -364,6 +364,37 @@ function oracle(q) {
       return near(e, q.answer) ? null : `composite area: expected ${e}, got ${q.answer}`;
     }
 
+    /* --- P4 area+graphs lane: missing dimension of a rectangle/square, and
+       composite figures described in words. Every dimension is re-read off the
+       rendered stem; nothing is taken from answerText. These sit ABOVE the P5
+       triangle branches' looser neighbours because each anchors on wording no
+       other topic emits ("its breadth", "length of one side", "do not overlap"). --- */
+    if ((m = text.match(/area of (\d+) cm² and its length is (\d+) cm\. What is its breadth/))) {
+      const e = Number(m[1]) / Number(m[2]);
+      return near(e, q.answer) ? null : `rect breadth from area: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/perimeter of the \w+ is (\d+) cm and its length is (\d+) cm\. What is its breadth/))) {
+      const e = Number(m[1]) / 2 - Number(m[2]);
+      return near(e, q.answer) ? null : `rect breadth from perimeter: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/perimeter of the \w+ is (\d+) cm\. What is the length of one side/))) {
+      const e = Number(m[1]) / 4;
+      return near(e, q.answer) ? null : `square side from perimeter: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/area of (\d+) cm²\. What is the length of one side/))) {
+      const e = Math.sqrt(Number(m[1]));
+      if (!Number.isInteger(e)) return `square side from area: ${m[1]} is not a perfect square`;
+      return near(e, q.answer) ? null : `square side from area: expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/two rectangles that do not overlap\. One rectangle measures (\d+) cm by (\d+) cm\. The other measures (\d+) cm by (\d+) cm/))) {
+      const e = Number(m[1]) * Number(m[2]) + Number(m[3]) * Number(m[4]);
+      return near(e, q.answer) ? null : `composite words (add): expected ${e}, got ${q.answer}`;
+    }
+    if ((m = text.match(/card measures (\d+) cm by (\d+) cm\. A square hole of side (\d+) cm is cut out/))) {
+      const e = Number(m[1]) * Number(m[2]) - Number(m[3]) * Number(m[3]);
+      return near(e, q.answer) ? null : `composite words (sub): expected ${e}, got ${q.answer}`;
+    }
+
     /* --- P5 lane: volume of cube and cuboid --- */
     if ((m = text.match(/builds a solid (\d+) cubes long, (\d+) cubes wide and (\d+) cubes high/))) {
       const e = Number(m[1]) * Number(m[2]) * Number(m[3]);
@@ -524,6 +555,107 @@ function oracle(q) {
   if ((m = text.match(/(?:measures|weighs) (\d+) (km|m|kg|ℓ) (\d+) (m|cm|g|ml) and .*?(?:measures|weighs) (\d+) (km|m|kg|ℓ) (\d+) (m|cm|g|ml)\. How much (?:heavier|longer)/))) {
     const e = (Number(m[1]) * UF[m[2]] + Number(m[3])) - (Number(m[5]) * UF[m[6]] + Number(m[7]));
     return near(e, ansNum) ? null : `compound word (compare): expected ${e}, got ${ansNum}`;
+  }
+
+  /* --- P4 area+graphs lane: composite L-shape figure. RENDERED SURFACE ONLY: the
+     six side lengths are read off the six printed labels, exactly as a child reads
+     them. The oracle first checks the figure closes (top + cut-across = bottom, and
+     cut-down + right = left), then derives area and perimeter from those six numbers
+     alone. Sits above the bar-graph branch because it anchors on class="lfig". --- */
+  if (/class="lfig"/.test(String(q.extra))) {
+    const raw = String(q.extra);
+    const side = c => {
+      const t = raw.match(new RegExp('<span class="lf-' + c + '"[^>]*>(\\d+)</span>'));
+      return t ? Number(t[1]) : null;
+    };
+    const top = side('top'), cutd = side('cutdown'), cuta = side('cutacross'),
+          right = side('right'), bottom = side('bottom'), left = side('left');
+    if ([top, cutd, cuta, right, bottom, left].some(v => v === null))
+      return 'L figure: a side length is not printed on the figure';
+    if (top + cuta !== bottom) return `L figure: ${top} + ${cuta} != bottom ${bottom}`;
+    if (cutd + right !== left) return `L figure: ${cutd} + ${right} != left ${left}`;
+    if (/What is the area of this figure/.test(text)) {
+      const e = bottom * left - cuta * cutd;
+      return near(e, ansNum) ? null : `L area: expected ${e}, got ${ansNum}`;
+    }
+    if (/What is the perimeter of this figure/.test(text)) {
+      const e = top + cutd + cuta + right + bottom + left;
+      return near(e, ansNum) ? null : `L perimeter: expected ${e}, got ${ansNum}`;
+    }
+    return 'L figure: rendered a figure but no oracle matched the stem';
+  }
+
+  /* --- P4 area+graphs lane: tables. Every cell is printed text; the oracle reads the
+     header row and the value row and pairs them by column order. --- */
+  if (/class="dtable"/.test(String(q.extra))) {
+    const raw = String(q.extra);
+    const cats = [...raw.matchAll(/<th class="dt-cat"[^>]*>([^<]+)<\/th>/g)].map(t => t[1]);
+    const cells = [...raw.matchAll(/<td class="dt-val"[^>]*>([^<]+)<\/td>/g)].map(t => t[1]);
+    if (cats.length < 4) return 'table: fewer than 4 printed column headings';
+    if (cats.length !== cells.length) return `table: ${cats.length} headings but ${cells.length} cells`;
+    const val = c => { const i = cats.indexOf(c); return i < 0 ? null : cells[i]; };
+    if ((m = text.match(/are recorded for (.+)\?$/))) {
+      const v = val(m[1]);
+      if (v === null || v === '?') return 'table: category "' + m[1] + '" is not readable in the table';
+      return near(Number(v), ansNum) ? null : `table read: expected ${v}, got ${ansNum}`;
+    }
+    if (/What is the total number of .+ in the table\?$/.test(text)) {
+      if (cells.includes('?')) return 'table total asked but a cell is hidden';
+      const e = cells.reduce((s, v) => s + Number(v), 0);
+      return near(e, ansNum) ? null : `table total: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/Altogether there were (\d+) .+ were there for (.+)\?$/))) {
+      const i = cats.indexOf(m[2]);
+      if (i < 0) return 'table: missing-cell category "' + m[2] + '" is not a column';
+      if (cells[i] !== '?') return 'table: the asked column is not the hidden one';
+      const known = cells.filter(v => v !== '?').map(Number);
+      if (known.length !== cells.length - 1) return 'table: more than one hidden cell';
+      const e = Number(m[1]) - known.reduce((s, v) => s + v, 0);
+      return near(e, ansNum) ? null : `table complete: expected ${e}, got ${ansNum}`;
+    }
+    return 'table: rendered a table but no oracle matched the stem';
+  }
+
+  /* --- P4 area+graphs lane: line graphs. RENDERED SURFACE ONLY: the value at each
+     point is read off the number printed above that point, and cross-checked against
+     the numbers printed beside the axis ticks. --- */
+  if (/class="linegraph"/.test(String(q.extra))) {
+    const raw = String(q.extra);
+    const cap = extra.match(/Each step up the side of the graph stands for (\d+)\.?/);
+    if (!cap) return 'line graph: no scale caption printed under the graph';
+    const step = Number(cap[1]);
+    const ticks = [...raw.matchAll(/<text class="lg-tick"[^>]*>(\d+)<\/text>/g)].map(t => Number(t[1]));
+    if (ticks.length < 3) return 'line graph: value axis has fewer than 3 printed ticks';
+    const asc = ticks.slice().sort((a, b) => a - b);
+    if (asc[0] !== 0) return 'line graph: axis does not start at 0, got ' + asc[0];
+    for (let i = 1; i < asc.length; i++) {
+      if (asc[i] - asc[i - 1] !== step) return `line graph: tick step ${asc[i] - asc[i - 1]} != ${step}`;
+    }
+    const vals = [...raw.matchAll(/<text class="lg-val"[^>]*>(\d+)<\/text>/g)].map(t => Number(t[1]));
+    const cats = [...raw.matchAll(/<text class="lg-cat"[^>]*>([^<]+)<\/text>/g)].map(t => t[1]);
+    if (cats.length < 4) return 'line graph: fewer than 4 labelled points';
+    if (cats.length !== vals.length) return `line graph: ${cats.length} labels but ${vals.length} values`;
+    for (let i = 0; i < vals.length; i++) {
+      if (!ticks.includes(vals[i])) return `line graph: point "${cats[i]}" prints ${vals[i]}, which is not on the axis`;
+    }
+    const val = c => { const i = cats.indexOf(c); return i < 0 ? null : vals[i]; };
+    if ((m = text.match(/^On the line graph, how many .+ are shown for (.+)\?$/)) &&
+        !/ than for | and .+ altogether/.test(text)) {
+      const e = val(m[1]);
+      if (e === null) return 'line graph: category "' + m[1] + '" is not on the graph';
+      return near(e, ansNum) ? null : `line read: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/are shown for (.+) than for (.+)\?$/))) {
+      const a = val(m[1]), b = val(m[2]);
+      if (a === null || b === null) return 'line graph: compared category is not on the graph';
+      return near(a - b, ansNum) ? null : `line diff: expected ${a - b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/are shown for (.+) and (.+) altogether\?$/))) {
+      const a = val(m[1]), b = val(m[2]);
+      if (a === null || b === null) return 'line graph: summed category is not on the graph';
+      return near(a + b, ansNum) ? null : `line total: expected ${a + b}, got ${ansNum}`;
+    }
+    return 'line graph: rendered a graph but no oracle matched the stem';
   }
 
   /* --- P3 pilot: bar graphs. RENDERED SURFACE ONLY: every value is read off the

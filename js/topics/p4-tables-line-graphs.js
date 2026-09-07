@@ -10,16 +10,21 @@
  * read off a rendered figure without angle or fraction work that sits outside P4.
  * NOT here: bar graphs (P3, topic `p3bargraph`); average (P6).
  *
- * Both surfaces render as fully self-contained inline-styled markup with EVERY number
- * a child needs printed as on-screen text: the table prints each cell, the line graph
+ * Both surfaces leave this file as PURE DATA on `q.figure` ({type:'table'} and
+ * {type:'line'}); the shared renderer js/figures.js draws them, with EVERY number a
+ * child needs printed as on-screen text: the table prints each cell, the line graph
  * prints a value axis with a number under every tick, a gridline through every tick,
- * a category under every point, and the value above every point. Nothing is carried in
- * a data-* attribute: the harness oracle re-derives every answer by parsing those same
- * printed labels.
+ * a category under every point, and the value beside every point, LEVEL WITH ITS OWN
+ * gridline (the P4 Area+Graphs kill fix now lives in the renderer). Nothing is carried
+ * in a data-* attribute: the harness oracle re-derives every answer by parsing those
+ * same rendered labels. Spec fields are documented in js/topics/README.md.
  */
 (function () {
   const G = MQI.gen;
   const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishNum = G.finishNum;
+
+  /* attach a figure spec to a finished question */
+  const fig = (q, figure) => (q.figure = figure, q);
 
   const SETS = [
     { title: 'Books borrowed from the school library', thing: 'books', group: 'days',
@@ -45,25 +50,10 @@
       if (!vals.includes(v)) vals.push(v);
     }
     const hidden = showQ ? ri(0, n - 1) : -1;
-    /* W3 cosmetic, same phone-width defect as the line graph: a 5-column table is
-       wider than a 360px column, and with no cap it pushed the whole card past the
-       right edge so the last column was unreadable. Capped and scrolled in place. */
-    let html = '<div class="dtable" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%;overflow-x:auto">' +
-      '<div style="font-weight:600;margin-bottom:8px">' + set.title + '</div>' +
-      '<table style="border-collapse:collapse"><tr>';
-    for (let i = 0; i < n; i++) {
-      html += '<th class="dt-cat" style="border:1px solid #94a3b8;padding:5px 12px;background:#f1f5f9;color:#0f172a;' +
-        'font-weight:600;white-space:nowrap">' + cats[i] + '</th>';
-    }
-    html += '</tr><tr>';
-    for (let i = 0; i < n; i++) {
-      html += '<td class="dt-val" style="border:1px solid #94a3b8;padding:5px 12px;text-align:center;color:#0f172a">' +
-        (i === hidden ? '?' : vals[i]) + '</td>';
-    }
-    html += '</tr></table><div style="margin-top:6px;font-size:.85em;color:#475569">Number of ' +
-      set.thing + '.</div></div>';
-    return { html, cats, vals, hidden, thing: set.thing, group: set.group,
+    /* `hidden` is the column the renderer prints as '?' (-1 = none). */
+    const figure = { type: 'table', title: set.title, cats, values: vals, hidden,
+                     unitLabel: set.thing };
+    return { figure, cats, vals, hidden, thing: set.thing, group: set.group,
              total: vals.reduce((a, b) => a + b, 0) };
   }
 
@@ -71,18 +61,18 @@
     const t = makeTable(5, 1, false);
     const i = ri(0, 4);
     const others = t.vals.filter((_, j) => j !== i);
-    return finishNum('In the table, how many ' + t.thing + ' are recorded for ' + t.cats[i] + '?',
-      t.html, t.vals[i], [others[0], others[1], others[2], t.vals[i] + 1], '',
+    return fig(finishNum('In the table, how many ' + t.thing + ' are recorded for ' + t.cats[i] + '?',
+      '', t.vals[i], [others[0], others[1], others[2], t.vals[i] + 1], '',
       'Find the ' + t.cats[i] + ' column, then read the number directly underneath it: ' +
-      t.vals[i] + '.');
+      t.vals[i] + '.'), t.figure);
   }
 
   function gTableTotal() {
     const t = makeTable(4, 1, false);
-    return finishNum('What is the total number of ' + t.thing + ' in the table?',
-      t.html, t.total,
+    return fig(finishNum('What is the total number of ' + t.thing + ' in the table?',
+      '', t.total,
       [t.total - t.vals[0], t.total + t.vals[0], t.total - 1, Math.max(...t.vals)], '',
-      'Add every column: ' + t.vals.join(' + ') + ' = ' + t.total + '.');
+      'Add every column: ' + t.vals.join(' + ') + ' = ' + t.total + '.'), t.figure);
   }
 
   function gTableComplete() {
@@ -90,80 +80,33 @@
     const i = t.hidden, missing = t.vals[i];
     const known = t.vals.filter((_, j) => j !== i);
     const knownSum = known.reduce((a, b) => a + b, 0);
-    return finishNum('The table is not complete. Altogether there were ' + t.total + ' ' +
+    return fig(finishNum('The table is not complete. Altogether there were ' + t.total + ' ' +
       t.thing + ' over the 5 ' + t.group + '. How many ' + t.thing + ' were there for ' +
       t.cats[i] + '?',
-      t.html, missing,
+      '', missing,
       [knownSum, t.total, missing + 1, known[0], known[1]], '',
       'The four columns you can read add up to ' + known.join(' + ') + ' = ' + knownSum +
-      '. Take that away from the total: ' + t.total + ' − ' + knownSum + ' = ' + missing + '.');
+      '. Take that away from the total: ' + t.total + ' − ' + knownSum + ' = ' + missing + '.'), t.figure);
   }
 
   /* ---------------- line graph ---------------- */
 
-  const PW = 300, PH = 150, PADL = 46, PADT = 18, PADB = 34;
+  /* The value axis always runs 0 to 8 units whatever the step, so a step-5 graph is
+     the same picture with a different scale printed up the side. */
+  const LINE_MAX_UNIT = 8;
 
   function makeLine(n, step) {
     const set = pick(SETS);
     const cats = set.cats.slice(0, n);
     const units = [];
     while (units.length < n) {
-      const u = ri(1, 8);
+      const u = ri(1, LINE_MAX_UNIT);
       if (!units.includes(u)) units.push(u);
     }
     const vals = units.map(u => u * step);
-    const maxU = 8;
-    const y = u => PADT + PH - Math.round(u / maxU * PH);
-    const x = i => PADL + Math.round(i * PW / (n - 1));
-    const W = PADL + PW + 34, H = PADT + PH + PADB;
-
-    let s = '<div class="linegraph" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:10px 12px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
-      '<div style="font-weight:600;margin-bottom:6px">' + set.title + '</div>' +
-      '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H +
-      /* W3 cosmetic (Dress Rehearsal Wave 2, item 1), second half: at a 390px phone
-         width the fixed 380px card overflowed its column and the RIGHTMOST point and
-         its value label were cut off the screen entirely. The svg now scales to the
-         card (max-width:100%, height:auto) and the card itself is capped, so every
-         point stays inside the viewBox at any width. */
-      '" style="display:block;font-family:inherit;max-width:100%;height:auto">';
-    for (let k = 0; k <= maxU; k++) {
-      s += '<line x1="' + PADL + '" y1="' + y(k) + '" x2="' + (PADL + PW) + '" y2="' + y(k) +
-        '" stroke="' + (k === 0 ? '#475569' : '#e2e8f0') + '" stroke-width="' + (k === 0 ? 2 : 1) + '"/>' +
-        '<line x1="' + (PADL - 5) + '" y1="' + y(k) + '" x2="' + PADL + '" y2="' + y(k) +
-        '" stroke="#475569" stroke-width="1"/>' +
-        '<text class="lg-tick" x="' + (PADL - 9) + '" y="' + (y(k) + 4) +
-        '" text-anchor="end" font-size="11" fill="#475569">' + (k * step) + '</text>';
-    }
-    s += '<line x1="' + PADL + '" y1="' + PADT + '" x2="' + PADL + '" y2="' + (PADT + PH) +
-      '" stroke="#475569" stroke-width="2"/>';
-    s += '<polyline fill="none" stroke="#4c8bf5" stroke-width="2.5" points="' +
-      units.map((u, i) => x(i) + ',' + y(u)).join(' ') + '"/>';
-    for (let i = 0; i < n; i++) {
-      s += '<circle cx="' + x(i) + '" cy="' + y(units[i]) + '" r="4" fill="#1d4ed8"/>' +
-        /* KILL FIX (P4 Area+Graphs Refutation, §5): the value label used to be drawn at
-           y(units[i]) - 9, a FIXED 9px above the dot, while one tick step is PH/maxU =
-           18.75px. Every label therefore floated half a step high and sat level with the
-           gridline ONE STEP ABOVE the value it named - 228 of 228 graphs, and on a step-5
-           graph the label was 5 units adrift of the line it lined up with. The label y is
-           now the value's OWN tick position, y(units[i]), so the printed number is level
-           with its own gridline. Drawn to the RIGHT of the dot (text-anchor="start") so it
-           never covers the point and so point 0, which sits on the y-axis itself, clears
-           the tick-number column. */
-        /* W3 cosmetic (Dress Rehearsal Wave 2, item 1): the RIGHTMOST point sits on
-           x = PADL + PW, so a label drawn 12px to its right ran into the last 34px of
-           the viewBox and crowded the edge once the card shrank to a phone width. The
-           last label is flipped to the LEFT of its dot (text-anchor="end", 8px clear).
-           It still sits on its own gridline, and the nearest other label is a full
-           point-gap away, so nothing overlaps. */
-        '<text class="lg-val" x="' + (i === n - 1 ? x(i) - 8 : x(i) + 12) + '" y="' + (y(units[i]) + 4) +
-        '" text-anchor="' + (i === n - 1 ? 'end' : 'start') + '" font-size="12" font-weight="600" fill="#0f172a">' + vals[i] + '</text>' +
-        '<text class="lg-cat" x="' + x(i) + '" y="' + (PADT + PH + 17) +
-        '" text-anchor="middle" font-size="11" fill="#475569">' + cats[i] + '</text>';
-    }
-    s += '</svg><div style="margin-top:2px;font-size:.85em;color:#475569">Number of ' + set.thing +
-      '. Each step up the side of the graph stands for ' + step + '.</div></div>';
-    return { html: s, cats, vals, thing: set.thing,
+    const figure = { type: 'line', title: set.title, cats, units, step,
+                     maxUnit: LINE_MAX_UNIT, unitLabel: set.thing };
+    return { figure, cats, vals, thing: set.thing,
              val: i => vals[i], idx: c => cats.indexOf(c) };
   }
 
@@ -171,20 +114,20 @@
     const g = makeLine(5, 1);
     const i = ri(0, 4);
     const o = g.vals.filter((_, j) => j !== i);
-    return finishNum('On the line graph, how many ' + g.thing + ' are shown for ' + g.cats[i] + '?',
-      g.html, g.val(i), [o[0], o[1], o[2], g.val(i) + 1], '',
+    return fig(finishNum('On the line graph, how many ' + g.thing + ' are shown for ' + g.cats[i] + '?',
+      '', g.val(i), [o[0], o[1], o[2], g.val(i) + 1], '',
       'Go up from ' + g.cats[i] + ' until you reach the dot, then read the number printed beside it: ' +
-      g.val(i) + '.');
+      g.val(i) + '.'), g.figure);
   }
 
   function gLineReadScaled() {
     const g = makeLine(5, pick([2, 5, 10]));
     const i = ri(0, 4);
     const o = g.vals.filter((_, j) => j !== i);
-    return finishNum('On the line graph, how many ' + g.thing + ' are shown for ' + g.cats[i] + '?',
-      g.html, g.val(i), [o[0], o[1], o[2], g.val(i) + 1], '',
+    return fig(finishNum('On the line graph, how many ' + g.thing + ' are shown for ' + g.cats[i] + '?',
+      '', g.val(i), [o[0], o[1], o[2], g.val(i) + 1], '',
       'Find the dot above ' + g.cats[i] + '. Check the numbers up the side of the graph, then read the value printed at the dot: ' +
-      g.val(i) + '.');
+      g.val(i) + '.'), g.figure);
   }
 
   function gLineDiff() {
@@ -193,11 +136,11 @@
     let a = ord[0], b = ord[1];
     if (g.val(a) < g.val(b)) { const t = a; a = b; b = t; }
     const d = g.val(a) - g.val(b);
-    return finishNum('On the line graph, how many more ' + g.thing + ' are shown for ' +
+    return fig(finishNum('On the line graph, how many more ' + g.thing + ' are shown for ' +
       g.cats[a] + ' than for ' + g.cats[b] + '?',
-      g.html, d, [g.val(a) + g.val(b), g.val(a), g.val(b), d + 1], '',
+      '', d, [g.val(a) + g.val(b), g.val(a), g.val(b), d + 1], '',
       g.cats[a] + ' shows ' + g.val(a) + ' and ' + g.cats[b] + ' shows ' + g.val(b) + '. ' +
-      g.val(a) + ' − ' + g.val(b) + ' = ' + d + '. "How many more" is always a subtraction.');
+      g.val(a) + ' − ' + g.val(b) + ' = ' + d + '. "How many more" is always a subtraction.'), g.figure);
   }
 
   function gLineTotal() {
@@ -205,11 +148,11 @@
     const ord = shuffle([0, 1, 2, 3, 4]);
     const a = ord[0], b = ord[1];
     const s = g.val(a) + g.val(b);
-    return finishNum('On the line graph, how many ' + g.thing + ' are shown for ' +
+    return fig(finishNum('On the line graph, how many ' + g.thing + ' are shown for ' +
       g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
-      g.html, s, [Math.abs(g.val(a) - g.val(b)), g.val(a), g.val(b), s + 1], '',
+      '', s, [Math.abs(g.val(a) - g.val(b)), g.val(a), g.val(b), s + 1], '',
       'Read both dots first: ' + g.val(a) + ' and ' + g.val(b) + '. Then ' + g.val(a) + ' + ' +
-      g.val(b) + ' = ' + s + '.');
+      g.val(b) + ' = ' + s + '.'), g.figure);
   }
 
   MQI.registerTopic({

@@ -42,6 +42,12 @@ vm.createContext(ctx);
 
 const load = f => vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f });
 load('js/core.js');
+/* js/figures.js is the ONE renderer for every diagram in the game. It is pure
+   string building with no DOM, so it loads in this bare vm exactly as it loads in
+   the browser, and the harness draws each q.figure spec with the SAME code the app
+   uses. That is what keeps every oracle below independent: they parse the rendered
+   labels a child reads, never the generator's own return values. */
+load('js/figures.js');
 const topicFiles = fs.readdirSync(path.join(ROOT, 'js/topics')).filter(f => f.endsWith('.js')).sort();
 for (const f of topicFiles) load('js/topics/' + f);
 
@@ -103,6 +109,129 @@ function evalExpr(src) {
    vary only the choices, and buildSetFor's own dedup key is the raw HTML. */
 const qKey = q => strip(q.q) + '|' + String(q.extra || '') + '|' +
   (q.typed ? String(q.answer) : (q.choices || []).map(strip).join(','));
+
+/* ---------- the figure contract (iOS phase 0) ----------
+ * A generator emits its diagram as PURE DATA on `q.figure` ({type, ...fields},
+ * documented in js/topics/README.md) and NEVER as markup, so the same engine can
+ * feed a web renderer and a SwiftUI one. Two gates enforce it:
+ *
+ *   checkNoMarkup   an ALLOWLIST over EVERY string in the question object.
+ *   drawFigure      renders q.figure through js/figures.js into q.extra BEFORE
+ *                   any oracle runs, so every answer key is still re-derived from
+ *                   the rendered labels and qKey still sees the whole picture.
+ *
+ * KILL FIX K1 (Figure Spec Refutation, 2026-09-07). The first version of this rule
+ * was a two-token DENYLIST (`<svg`, `<div`) over four named fields. The refuter
+ * walked two real bar models straight through it and onto the child's screen:
+ *
+ *   A2  '<table class=barModel><tr><td bgcolor=blue width=24 height=18>...'
+ *   B2  '<span style="display:block;width:120px;height:14px;background:#4c8bf5">'
+ *
+ * both in `q.extra` with NO `q.figure` - and app.js's figHtml() falls back to
+ * q.extra whenever q.figure is absent, so both rendered. `<img>` passed too, and
+ * so did markup on any key the four-field list did not name (wound 1, `q.extra2`).
+ * A denylist can only ever ban the pictures somebody already thought of.
+ *
+ * The rule is now inverted and total:
+ *
+ *   1. EVERY string reachable from `q` is checked - the stem, extra, explain,
+ *      answerText, every choice, every nested object and array, every key nobody
+ *      has invented yet. The walk is recursive and cycle-safe.
+ *   2. In each of those strings, a '<' followed by a letter or '/' opens a tag.
+ *      The tag must appear VERBATIM in MARKUP_ALLOWLIST below. There is no
+ *      pattern, no attribute sniffing and no denylist: an unlisted tag fails,
+ *      full stop, and so does a listed tag carrying an attribute (`<span
+ *      style=...>` is not `<span class="frac">`).
+ *   3. Adding a tag is a deliberate edit to that list plus a row in
+ *      js/topics/README.md. Pictures never qualify: a picture is a q.figure spec.
+ *   4. `q.figure` itself is held to the stricter rule it already had - data only,
+ *      not one '<' anywhere - and its `type` must be one js/figures.js draws.
+ *   5. Belt: a generator carrying a q.figure must leave q.extra EMPTY, which is
+ *      what the README already says. drawFigure() fills it in afterwards.
+ *
+ * The allowlist is INLINE TEXT markup a stem is genuinely allowed to carry: bold,
+ * emphasis, super/subscript, a line break, and the fraction spans core.js's fr()
+ * builds. Nothing here has geometry, colour or a box.
+ */
+const MARKUP_ALLOWLIST = [
+  '<b>', '</b>',
+  '<i>', '</i>',
+  '<em>', '</em>',
+  '<strong>', '</strong>',
+  '<sup>', '</sup>',
+  '<sub>', '</sub>',
+  '<br>',
+  '<span class="frac">',       /* core.js fr(): the fraction stack */
+  '<span class="n">',          /*   numerator  */
+  '<span class="d">',          /*   denominator */
+  '</span>'
+];
+const ALLOWED = new Set(MARKUP_ALLOWLIST);
+
+/* Returns the offending tag, or null. A '<' that is not followed by a letter or a
+   '/' is arithmetic ("3 < 5"), not markup, and is left alone. */
+function markupIn(s) {
+  const str = String(s);
+  for (let i = str.indexOf('<'); i >= 0; i = str.indexOf('<', i + 1)) {
+    const c = str[i + 1];
+    if (!c || !/[a-zA-Z/]/.test(c)) continue;
+    const end = str.indexOf('>', i);
+    if (end < 0) return `"${str.slice(i, i + 40)}" (unterminated tag)`;
+    const tag = str.slice(i, end + 1);
+    if (!ALLOWED.has(tag)) return `"${tag}"`;
+  }
+  return null;
+}
+
+/* Every string reachable from a value, with the path that reached it. Cycle-safe;
+   functions, numbers and booleans are skipped (they cannot carry markup). */
+function eachString(v, path, out, seen) {
+  if (v === null || v === undefined) return;
+  if (typeof v === 'string') { out.push([path || '(root)', v]); return; }
+  if (typeof v !== 'object') return;
+  if (seen.has(v)) return;
+  seen.add(v);
+  if (Array.isArray(v)) { for (let i = 0; i < v.length; i++) eachString(v[i], `${path}[${i}]`, out, seen); return; }
+  for (const k of Object.keys(v)) eachString(v[k], path ? `${path}.${k}` : k, out, seen);
+}
+
+function checkNoMarkup(q) {
+  if (!q) return null;
+  if (q.figure !== undefined) {
+    if (!q.figure || typeof q.figure !== 'object' || typeof q.figure.type !== 'string') {
+      return 'q.figure must be an object carrying a string `type`';
+    }
+    let json;
+    try { json = JSON.stringify(q.figure); } catch (e) { return 'q.figure is not serialisable data: ' + e.message; }
+    if (json === undefined || json.indexOf('<') >= 0) {
+      return 'q.figure carries markup - a figure spec is data only';
+    }
+    if (!ctx.MQI.figureTypes.includes(q.figure.type)) {
+      return `unknown figure type "${q.figure.type}" - js/figures.js draws [${ctx.MQI.figureTypes.join(', ')}]`;
+    }
+    if (q.extra) {
+      return 'a generator with a q.figure must leave q.extra empty - the harness and app.js draw the spec (js/topics/README.md)';
+    }
+  }
+  const strings = [];
+  const { figure, ...rest } = q;          /* q.figure is checked above, by the stricter rule */
+  eachString(rest, '', strings, new Set());
+  for (const [path, s] of strings) {
+    const bad = markupIn(s);
+    if (bad) {
+      return `figure markup in generator output field "${path}": ${bad} is not on the inline-text allowlist ` +
+        `- a picture is a q.figure spec, not markup (js/topics/README.md)`;
+    }
+  }
+  return null;
+}
+function drawFigure(q) {
+  if (!q || !q.figure) return null;
+  try { q.extra = ctx.MQI.renderFigure(q.figure); }
+  catch (e) { return 'renderFigure threw on this spec: ' + e.message; }
+  if (!q.extra || !q.extra.length) return 'renderFigure returned nothing for type ' + q.figure.type;
+  return null;
+}
 
 /* ---------- shape + integrity, applied to every sample ---------- */
 const BAD = /\b(NaN|undefined|null|Infinity)\b/;
@@ -1579,6 +1708,10 @@ for (const g of GENS) {
   for (let i = 0; i < N; i++) {
     let q;
     try { q = g.fn(); } catch (e) { err = 'threw: ' + e.message; break; }
+    const markup = checkNoMarkup(q);
+    if (markup) { err = markup; badQ = q; break; }
+    const drawn = drawFigure(q);
+    if (drawn) { err = drawn; badQ = q; break; }
     const shape = checkShape(q);
     if (shape) { err = shape; badQ = q; break; }
     distinct.add(qKey(q));
@@ -1605,6 +1738,12 @@ for (const tid of Object.keys(TOPICS)) {
   for (const lvl of [1, 2, 3]) {
     const set = MQI.buildSetFor(tid, 30);
     if (!set[lvl] || set[lvl].length < 30) { ok = false; note = `L${lvl} only ${set[lvl] ? set[lvl].length : 0}/30`; break; }
+    /* draw every figure spec before keying: a set's identity is the picture too */
+    for (const q of set[lvl]) {
+      const m = checkNoMarkup(q) || drawFigure(q);
+      if (m) { ok = false; note = `L${lvl} ${m}`; break; }
+    }
+    if (!ok) break;
     const keys = set[lvl].map(qKey);
     if (new Set(keys).size !== keys.length) { ok = false; note = `L${lvl} duplicate questions inside one set`; break; }
     for (const q of set[lvl]) { const e = checkShape(q); if (e) { ok = false; note = `L${lvl} ${e}`; break; } }
@@ -1656,6 +1795,43 @@ const manifestRows = [];
       failures++;
     }
   }
+  /* Same seam, one layer deeper: js/figures.js draws EVERY diagram in the game, so
+     if it drops out of the manifest the app renders empty figure slots and the
+     harness would still be green - it loads the renderer off disk. It must be
+     listed, and its position must be a TOTAL order, not a partial one.
+
+     WOUND 2 (Figure Spec Refutation, 2026-09-07): this checked only iFig > iCore,
+     so moving js/figures.js AFTER js/app.js and js/boot.js passed while the failure
+     message claimed to prove the load order. Harmless in fact - figHtml() resolves
+     MQI.renderFigure at call time - but a gate that does not prove its own message
+     is not a gate. The renderer must sit strictly between core.js (which assigns
+     window.MQI wholesale, so a renderer loaded first is thrown away) and app.js +
+     boot.js (which are the consumers). */
+  const iCore = html.indexOf('"js/core.js"'), iFig = html.indexOf('"js/figures.js"');
+  const iApp = html.indexOf('"js/app.js"'), iBoot = html.indexOf('"js/boot.js"');
+  let figNote = '';
+  if (iFig < 0) figNote = 'NOT referenced by index.html - every figure would render blank';
+  else if (iCore < 0 || iApp < 0 || iBoot < 0) figNote = 'js/core.js, js/app.js or js/boot.js is missing from the manifest';
+  else if (iFig < iCore) figNote = 'listed BEFORE js/core.js - core.js would overwrite MQI.renderFigure';
+  else if (iFig > iApp || iFig > iBoot) figNote = 'listed AFTER js/app.js or js/boot.js - the renderer must load before its consumers';
+  const figOk = figNote === '';
+  manifestRows.push({ rel: 'js/figures.js', ok: figOk, note: figNote });
+  if (!figOk) failures++;
+
+  /* WOUND 8, second half. Six of the seven renderers are self-contained; fractionBar
+     cannot be, because a segment's width is responsive (6vw). js/figures.js declares
+     those rules as MQI.figureCss - the "documented stylesheet block" a SwiftUI author
+     reads instead of index.html - and they are asserted verbatim here so the renderer
+     and the stylesheet can never drift apart in silence. */
+  const squash = s => String(s).replace(/\s+/g, '');
+  const cssHtml = squash(html);
+  for (const [sel, body] of Object.entries(ctx.MQI.figureCss || {})) {
+    const want = squash(sel + '{' + body + '}');
+    const ok = cssHtml.indexOf(want) >= 0;
+    manifestRows.push({ rel: 'figureCss ' + sel, ok, note: ok ? ''
+      : 'js/figures.js MQI.figureCss and index.html disagree - the fractionBar geometry has drifted from its documented block' });
+    if (!ok) failures++;
+  }
 }
 
 /* ---------- report ---------- */
@@ -1677,7 +1853,7 @@ else console.log(`ok   pool skill coverage: every multi-skill topic exposes >= 2
 const badManifest = manifestRows.filter(r => !r.ok);
 console.log('');
 if (badManifest.length) for (const r of badManifest) console.log(`FAIL manifest  ${r.rel}  ${r.note}`);
-else console.log(`ok   index.html manifest: all ${manifestRows.length} topic files are loaded by the app`);
+else console.log(`ok   index.html manifest: all ${manifestRows.length} topic files + the figure renderer are loaded by the app`);
 
 const uncovered = rows.filter(r => r.cov === 0).map(r => r.topic + '.' + r.name);
 if (uncovered.length) console.log(`\nWARN no independent oracle matched (shape + integrity only): ${uncovered.join(', ')}`);

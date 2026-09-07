@@ -124,7 +124,13 @@
         ? 'One of the ' + d + ' equal groups holds ' + part + ', so all ' + d + ' groups hold ' +
           d + ' x ' + part + ' = ' + total + '.'
         : n + ' of the ' + d + ' equal groups hold ' + part + ', so one group holds ' + part + ' / ' +
-          n + ' = ' + groups + ', and all ' + d + ' groups hold ' + d + ' x ' + groups + ' = ' + total + '.');
+          n + ' = ' + groups + ', and all ' + d + ' groups hold ' + d + ' x ' + groups + ' = ' + total + '.',
+      /* the answer is a COUNT of the set's own noun, and one of those nouns
+         ("pupils") is on the grader's shared TYPED_UNITS list, so a unit-less
+         typed item accepted "24 pupils" AND "24 kg" alike. Declaring the noun
+         keeps a bare "24" and "24 pupils" correct and rejects "24 kg".
+         Unit sweep, 2026-09-07. */
+      s[0]);
   }
   /* part of a set expressed AS a fraction (multiple choice: the answer is a fraction) */
   function gSetAsFraction() {

@@ -260,6 +260,10 @@ function pwResolve(right){
   const a=MQI.activeMode; if(!a) return;
   const mode=a.mode, ctx=a.ctx;
   const q=Q;                                     /* onAnswer may advance Q immediately */
+  /* Read the child's text BEFORE onAnswer runs - it may draw the next question
+     synchronously and clear the field. Play modes teach the same lesson as the
+     quest does (Unit Sweep Refutation W1). */
+  const typedRaw = q.typed ? $('typedInput').value.trim() : '';
   const answerMs=Math.max(0,Date.now()-(S.qAt||Date.now()));
   const probe=mode._run && mode._run.isStunned(ctx.elapsedMs);
   if(probe){ S.busy=false; return; }              /* swallowed by the input lock */
@@ -278,7 +282,7 @@ function pwResolve(right){
     S.streak=0;
     S.wrongs.push({q:q.q+figHtml(q), a:q.answerText, ex:q.explain, skill:q.skill});
     $('feedback').innerHTML=(ev.froze?'<span class="ok">🧊 Freeze! Your stacks are safe. </span>':'')+
-      '<span class="no">'+(q.typed?('The answer is <b>'+q.answerText+'</b>. '):'')+(q.explain||'')+'</span>';
+      '<span class="no">'+unitLead(typedRaw,q)+(q.typed?('The answer is <b>'+q.answerText+'</b>. '):'')+(q.explain||'')+'</span>';
     S.stunUntil=Date.now()+mode.config.STUN_MS;   /* the mode's input lock, honoured */
   }
   /* The mode schedules the next question itself (immediately, or after the stun). */
@@ -431,6 +435,49 @@ function monsterCounterattack(){
   if(S.heroHp<=0) setTimeout(()=>endGame(false),700);
   else setTimeout(nextQuestion,1800);
 }
+/* ===== THE UNIT TEACHING CARD ========================================
+ * Unit Sweep Refutation W1 (2026-09-07). The unit sweep declared q.unit on 20
+ * generators and turned 160 previously-accepted wrong-unit answers into
+ * rejections - and shipped no new teaching for a single one of them. Sampled 270
+ * of those rejections across nine unit classes: in 270 of 270 the child read
+ *
+ *     child typed  : 300 cm
+ *     child is told: The answer is 300 cm². 1/2 x 24 x 25 = 300 cm².
+ *
+ * sees 300 under 300, and concludes the game is broken. A rejection a child
+ * cannot decode teaches nothing, and this game's north star is fade-out.
+ *
+ * So when the NUMBER was right and only the unit was wrong, lead with that, in
+ * words a P3 can read, and say WHY that unit - the reason is the teaching, not
+ * the correction. One short sentence per unit class; never a lecture, and never
+ * shown on a wrong number.
+ *
+ * MQI.typedRejectReason is the single definition of "unit-only wrong", shared with
+ * the bridge verdict (reason: 'wrong-unit'), so the web card and a SwiftUI view
+ * cannot drift apart on when to show this. */
+const UNIT_WHY = [
+  [['cm2','m2'],                    'area is measured in squares'],
+  [['cm3','m3','ml','l'],           'this asks how much space it fills'],
+  [['cm','m','km','mm'],            'this asks how long something is'],
+  [['$','cents','cent','dollars'],  'this asks how much money'],
+  [['%'],                           'this asks for a percentage'],
+  [['kg','g'],                      'this asks how heavy it is'],
+  [['min','h','s'],                 'this asks how long it takes']
+];
+function unitWhy(unit){
+  const n = MQI.normUnit(unit);
+  for(const [members,why] of UNIT_WHY) if(members.indexOf(n)!==-1) return why;
+  return 'that is what you are counting';   /* count nouns: pupils, stickers, cubes, buns */
+}
+/* '' when this was not a unit-only miss. Otherwise the child's card, canonical
+   unit in bold (the first member when the question accepts a set of equivalents). */
+function unitLead(raw, q){
+  if(!q || !q.typed || !q.unit) return '';
+  if(MQI.typedRejectReason(raw, q) !== 'wrong-unit') return '';
+  const want = MQI.unitList(q.unit)[0];
+  if(!want) return '';
+  return 'Your number was right. The unit should be <b>'+want+'</b>, because '+unitWhy(want)+'. ';
+}
 function markWrong(feedbackHtml){
   S.streak=0; S.wrongRow++; S.rightRow=0;
   if(S.wrongRow>=2 && S.level>1){ S.level--; S.wrongRow=0; }
@@ -470,7 +517,10 @@ function resolve(right){
       else setTimeout(nextQuestion,550);
     },250);
   } else {
-    markWrong('<span class="no">'+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
+    /* The child's own text is still in the (now disabled) field - answerTyped
+       leaves it there - so the card can name the unit they actually typed. */
+    const lead = Q.typed ? unitLead($('typedInput').value.trim(), Q) : '';
+    markWrong('<span class="no">'+lead+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
     setTimeout(monsterCounterattack,1000);
   }
 }

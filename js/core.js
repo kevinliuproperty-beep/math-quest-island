@@ -68,16 +68,41 @@ function gMul(tables){
     a+' × '+b+' = '+p+'. Count in '+a+'s: '+Array.from({length:Math.min(b,4)},(_,i)=>a*(i+1)).join(', ')+'…');
 }
 
+/* unitList(unit) -> [] | ['cm³'] | ['cm³','ml']
+ * The one place that normalises `q.unit`'s two legal shapes. A STRING is one unit.
+ * An ARRAY is a set of EQUIVALENT units, any of which the child may type; the FIRST
+ * is canonical and is the one printed in answerText and explanations.
+ * Unit Sweep Refutation W2 (2026-09-07): 1 ml IS 1 cm³, and three volume generators
+ * print that identity in their own stem while rejecting the other half of it. One
+ * declared unit could not express "these two spellings are the same quantity".
+ * Blank/absent entries are dropped, so ['cm³', ''] is just ['cm³']. */
+function unitList(unit){
+  if (unit === null || unit === undefined) return [];
+  const raw = Array.isArray(unit) ? unit : [unit];
+  const out = [];
+  for (let i=0;i<raw.length;i++){
+    if (raw[i] === null || raw[i] === undefined) continue;
+    const s = String(raw[i]).trim();
+    if (s && out.indexOf(s) === -1) out.push(s);
+  }
+  return out;
+}
+
 /* finishTyped(stem, answer, explain, unit)
- * `unit` is the unit the STEM asks for ("cm²", "pages", "min", "l"...). It lands on
- * q.unit so gradeTyped can (a) strip that unit when the child types it and (b) REJECT
- * a wrong one. Wave-2 kill (P4 Area+Graphs Refutation, §2 unit gap): before this,
- * finishTyped set no q.unit at all, so "113 cm" graded CORRECT for a 113 cm² answer.
+ * `unit` is the unit the STEM asks for ("cm²", "pages", "min", "l"...), or an ARRAY
+ * of equivalent units (["cm³","ml"]) when two spellings name the same quantity. It
+ * lands on q.unit so gradeTyped can (a) strip that unit when the child types it and
+ * (b) REJECT a wrong one. Wave-2 kill (P4 Area+Graphs Refutation, §2 unit gap):
+ * before this, finishTyped set no q.unit at all, so "113 cm" graded CORRECT for a
+ * 113 cm² answer. With an array, the FIRST member is canonical: it is what
+ * answerText prints, so the child still reads one house answer.
  * Leave `unit` off only when the answer is a bare count with no unit. */
 function finishTyped(qHtml, answer, explain, unit){
-  const u = unit ? String(unit) : '';
+  const list = unitList(unit);
+  const u = list.length ? list[0] : '';
   return { q:qHtml, extra:'', typed:true, answer, choices:[], correct:-1,
-           unit:u, explain, answerText: u ? (answer+' '+u) : (''+answer) };
+           unit: list.length > 1 ? list : u, explain,
+           answerText: u ? (answer+' '+u) : (''+answer) };
 }
 
 /* ===== TYPED-ANSWER GRADING =========================================
@@ -135,18 +160,20 @@ function reduceFrac(n, d){
 }
 /* Returns {ok:true, value, unit, frac?} or {ok:false, reason}.
  * `q` is optional; when it declares a unit, that unit is strippable even if it is
- * not on TYPED_UNITS (so a lane may invent "crates" without touching the shared kit). */
+ * not on TYPED_UNITS (so a lane may invent "crates" without touching the shared kit).
+ * q.unit may be a STRING or an ARRAY of equivalent units - every member is
+ * strippable, longest spelling first so "cm³" wins over a shorter member. */
 function parseTypedAnswer(raw, q){
   if (raw === null || raw === undefined) return { ok:false, reason:'empty' };
   let s = String(raw).trim();
   if (s === '') return { ok:false, reason:'empty' };
   let unit = '';
   /* 1. a unit the question itself declares, whatever it is */
-  const declared = q && (q.unit || q.units);
-  if (declared){
-    const d = String(declared).trim();
-    if (d && s.length > d.length && s.slice(-d.length).toLowerCase() === d.toLowerCase()){
-      unit = d; s = s.slice(0, s.length - d.length).trim();
+  const declared = unitList(q && (q.unit || q.units)).sort((a,b) => b.length - a.length);
+  for (let i=0;i<declared.length;i++){
+    const d = declared[i];
+    if (s.length > d.length && s.slice(-d.length).toLowerCase() === d.toLowerCase()){
+      unit = d; s = s.slice(0, s.length - d.length).trim(); break;
     }
   }
   /* 2. otherwise any unit on the broad shared list */
@@ -176,7 +203,15 @@ function parseTypedAnswer(raw, q){
     if (!d) return { ok:false, reason:'divide by zero' };
     return { ok:true, value:n/d, frac:reduceFrac(n, d), unit };
   }
-  if (!/^[-+]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return { ok:false, reason:'not a number' };
+  /* A TRAILING FULL STOP is the one correct-value rejection a child can reach on the
+     iPad's own keypad (Unit Sweep Refutation, 2026-09-07): inputmode="decimal" offers
+     digits and a dot, and a thumb that ends "41.10." typed a right answer. "41." was
+     always fine (\d+\.\d* allows an empty fraction); a SECOND dot was not. Drop ONE
+     trailing dot, and only when what is left is otherwise a valid number - fractions
+     and mixed numbers have already matched above, so "3/4." stays wrong. */
+  const NUMERIC = /^[-+]?(\d+(\.\d*)?|\.\d+)$/;
+  if (!NUMERIC.test(s) && s.slice(-1) === '.' && NUMERIC.test(s.slice(0, -1))) s = s.slice(0, -1);
+  if (!NUMERIC.test(s)) return { ok:false, reason:'not a number' };
   const v = Number(s);
   if (!Number.isFinite(v)) return { ok:false, reason:'not a number' };
   return { ok:true, value:v, unit };
@@ -188,10 +223,17 @@ function parseTypedAnswer(raw, q){
 function gradeTyped(raw, q){
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return false;
-  const want = q && (q.unit || q.units);
-  if (want && p.unit && normUnit(p.unit) !== normUnit(want)) return false;
+  const want = unitList(q && (q.unit || q.units));
+  /* ANY declared member is accepted - a string declares one, an array declares a set
+     of equivalents ("cm³" and "ml" are the same quantity, and the stems say so). */
+  if (want.length && p.unit){
+    const got = normUnit(p.unit);
+    let hit = false;
+    for (let i=0;i<want.length;i++) if (normUnit(want[i]) === got){ hit = true; break; }
+    if (!hit) return false;
+  }
   /* a unit typed on a question that declares none is only accepted off the shared list */
-  if (!want && p.unit && TYPED_UNITS.indexOf(normUnit(p.unit)) === -1
+  if (!want.length && p.unit && TYPED_UNITS.indexOf(normUnit(p.unit)) === -1
       && TYPED_UNITS.indexOf(String(p.unit).toLowerCase()) === -1) return false;
   if (q && Array.isArray(q.fracAnswer)){
     const r = reduceFrac(Number(q.fracAnswer[0]), Number(q.fracAnswer[1]));
@@ -208,6 +250,33 @@ function gradeTyped(raw, q){
   }
   const tol = Number.isInteger(ans) ? 1e-9 : 0.005;
   return Math.abs(p.value - ans) <= tol;
+}
+/* WHY a typed answer was rejected, in machine words. Null when it was accepted.
+ *   'wrong-unit'   the VALUE is right; the only thing that rejected it is the unit
+ *   'wrong-value'  the number itself is wrong (whatever the unit said)
+ *   <parse reason>  'empty' | 'not a number' | 'divide by zero' - it never parsed
+ *
+ * Unit Sweep Refutation W1 (2026-09-07): the unit sweep manufactured 160 rejections
+ * and shipped no new teaching for them. In 270 of 270 sampled wrong-unit rejections
+ * the child read "The answer is 300 cm²" under their own "300" and had no way to
+ * tell what was wrong. ONE definition of the distinction lives here, so the web
+ * card (js/app.js resolve) and the bridge verdict (tools/engine/api.js -> Swift
+ * Verdict.Reason) can never drift apart on it.
+ *
+ * The test is not "is the number close" - it is the grader's own answer to "would
+ * this same input pass if the question declared no unit?". That inherits dp, the
+ * fraction rules and every tolerance for free, and cannot fall out of step with
+ * gradeTyped because it IS gradeTyped. */
+function typedRejectReason(raw, q){
+  const p = parseTypedAnswer(raw, q);
+  if (!p.ok) return String(p.reason || 'unparsed');
+  if (gradeTyped(raw, q)) return null;
+  if (p.unit && q){
+    const bare = {};
+    for (const k in q) if (k !== 'unit' && k !== 'units') bare[k] = q[k];
+    if (gradeTyped(raw, bare)) return 'wrong-unit';
+  }
+  return 'wrong-value';
 }
   /* ===== GEN-KIT-END ================================================== */
 
@@ -420,7 +489,7 @@ function gradeTyped(raw, q){
   const api = {
     gen: { ri, pick, shuffle, gcd, fr, eq, buildFracChoices, finishFrac, finishNum, finishTyped,
            gMul, EASY_TABLES, HARD_TABLES },
-    parseTypedAnswer, gradeTyped, normUnit,
+    parseTypedAnswer, gradeTyped, normUnit, unitList, typedRejectReason,
     topics: TOPICS,
     modes: MODES,
     registerTopic, registerMode,

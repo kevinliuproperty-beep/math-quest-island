@@ -79,8 +79,14 @@ var MQI_API = (function () {
     var k = { typed: !!q.typed, correct: (typeof q.correct === 'number' ? q.correct : -1) };
     if (q.typed) {
       k.answer = q.answer;
-      if (q.unit) k.unit = String(q.unit);
-      if (q.units) k.units = String(q.units);
+      /* q.unit may be a STRING or an ARRAY of equivalent units (["cm³","ml"]).
+         The key is what gradeTyped reads, so the array travels whole - flatten it
+         to a string here and "ml" stops being accepted on a cm³ question the
+         moment the question crosses the bridge. */
+      if (Array.isArray(q.unit)) { if (q.unit.length) k.unit = q.unit.map(String); }
+      else if (q.unit) k.unit = String(q.unit);
+      if (Array.isArray(q.units)) { if (q.units.length) k.units = q.units.map(String); }
+      else if (q.units) k.units = String(q.units);
       if (Array.isArray(q.fracAnswer)) k.fracAnswer = [Number(q.fracAnswer[0]), Number(q.fracAnswer[1])];
       if (typeof q.dp === 'number' && isFinite(q.dp)) k.dp = q.dp;
     }
@@ -119,7 +125,13 @@ var MQI_API = (function () {
       answerTextPlain: plain(q.answerText),
       explain: String(q.explain === undefined || q.explain === null ? '' : q.explain),
       explainText: plain(q.explain),
-      unit: q.unit ? String(q.unit) : (q.units ? String(q.units) : ''),
+      /* The CANONICAL unit, for a keypad to print beside the field: the first member
+         when the question declares a set of equivalents. Grading reads key.unit,
+         which carries the whole set. */
+      unit: (function () {
+        var list = MQI.unitList(q.unit || q.units);
+        return list.length ? String(list[0]) : '';
+      })(),
       key: keyOf(q)
     };
   }
@@ -299,8 +311,12 @@ var MQI_API = (function () {
       v.parsed = parsed.ok
         ? { ok: true, value: parsed.value, unit: parsed.unit || '', frac: parsed.frac || null, reason: null }
         : { ok: false, value: null, unit: '', frac: null, reason: String(parsed.reason || 'unparsed') };
-      if (!v.correct && !parsed.ok) v.reason = String(parsed.reason || 'unparsed');
-      else if (!v.correct) v.reason = 'wrong value or unit';
+      /* WHY it was wrong, machine-readable. The single string 'wrong value or unit'
+         made a SwiftUI view as blind as the web card was (Unit Sweep Refutation W1):
+         it could not tell "your number was right, the unit was not" from "that is
+         the wrong number". MQI.typedRejectReason is the ONE definition of that
+         split - the same call js/app.js resolve() makes to write the child's card. */
+      if (!v.correct) v.reason = String(MQI.typedRejectReason(raw, key) || 'wrong-value');
       v.expectedIndex = -1;
       v.expectedText = String(q.answerTextPlain || q.answerText || '');
       v.chosenIndex = -1;

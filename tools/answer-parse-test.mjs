@@ -135,7 +135,45 @@ const CASES = [
   ['2 1/4 cm',  { answer: 2.25, fracAnswer: [9, 4], unit: 'cm' }, true, 'W2: mixed number carrying its unit'],
   ['1 1/0',     { answer: 1.5, fracAnswer: [3, 2] }, false, 'W2: mixed number over zero'],
   ['1 1',       plain, false, 'W2: two bare numbers is not a mixed number'],
-  ['3 3/4',     { answer: 0.75, fracAnswer: [3, 4] }, false, 'W2: whole part must count']
+  ['3 3/4',     { answer: 0.75, fracAnswer: [3, 4] }, false, 'W2: whole part must count'],
+
+  /* ================= UNIT SWEEP REFUTATION (2026-09-07) ================= */
+  /* --- W2: EQUIVALENT UNITS. q.unit may be an ARRAY; any member is accepted, the
+         FIRST is canonical. 1 ml IS 1 cm³ and the three p5volume stems print that
+         identity themselves, so declaring one of the pair rejected a child who had
+         done the arithmetic AND understood the identity. --- */
+  ['3170 cm³',  { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2: the canonical member'],
+  ['3170 cm3',  { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2: ascii spelling of the canonical member'],
+  ['3170 ml',   { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2 THE REGRESSION: ml on a cm³ answer, 1 ml = 1 cm³'],
+  ['3170 mL',   { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2: mL aliases to ml'],
+  ['3170',      { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2: a bare number is still always accepted'],
+  ['3170 kg',   { answer: 3170, unit: ['cm³', 'ml'] }, false, 'W2: a unit OUTSIDE the set is still rejected'],
+  ['3170 cm',   { answer: 3170, unit: ['cm³', 'ml'] }, false, 'W2: cm is not cm³, array or not'],
+  ['3171 ml',   { answer: 3170, unit: ['cm³', 'ml'] }, false, 'W2: an equivalent unit does not excuse a wrong value'],
+  ['4000 cm3',  { answer: 4000, unit: ['ml', 'cm³'] }, true,  'W2: gTankLitres, cm³ on an ml answer'],
+  ['4000 ml',   { answer: 4000, unit: ['ml', 'cm³'] }, true,  'W2: gTankLitres, its own canonical unit'],
+  /* --- W3: gUnitCubes. "48 cubes" and "48 cm³" are the same quantity written two
+         ways and both are right; the opt-out that used to cover this rejected
+         "48 cubes" while ACCEPTING "48 kg". --- */
+  ['48 cubes',  { answer: 48, unit: ['cubes', 'cm³'] }, true,  'W3: the count noun, which the opt-out rejected'],
+  ['48 cm³',    { answer: 48, unit: ['cubes', 'cm³'] }, true,  'W3: 1 cm cubes, so cm³ means the same quantity'],
+  ['48 cm3',    { answer: 48, unit: ['cubes', 'cm³'] }, true,  'W3: ascii cm3'],
+  ['48',        { answer: 48, unit: ['cubes', 'cm³'] }, true,  'W3: a bare count'],
+  ['48 kg',     { answer: 48, unit: ['cubes', 'cm³'] }, false, 'W3 THE HOLE: the opt-out accepted this'],
+  ['48 pupils', { answer: 48, unit: ['cubes', 'cm³'] }, false, 'W3: and this'],
+  /* --- the TRAILING FULL STOP: the one correct-value rejection a child can reach
+         on the iPad keypad, where inputmode="decimal" offers digits and a dot and
+         no letters at all. "41." was always fine; "41.10." was not. --- */
+  ['41.10.',    { answer: 41.1 },  true,  'trailing dot after a decimal, the iPad keypad case'],
+  ['41.1.',     { answer: 41.1 },  true,  'trailing dot, one dp'],
+  ['41.',       { answer: 41 },    true,  'trailing dot on an integer, as before'],
+  ['$12.05.',   { answer: 12.05, unit: '$' }, true, 'trailing dot on money, sign and all'],
+  ['300.',      { answer: 300, unit: 'cm²' }, true, 'trailing dot with a declared unit'],
+  ['3170. ml',  { answer: 3170, unit: ['cm³', 'ml'] }, true, 'trailing dot under the unit'],
+  ['41.10.',    { answer: 41.2 },  false, 'the dot is forgiven, the value is not'],
+  ['.',         { answer: 41.1 },  false, 'a lone dot is not a number'],
+  ['3/4.',      { answer: 0.75, fracAnswer: [3, 4] }, false, 'the strip is numeric-only: a fraction keeps its shape'],
+  ['1 1/2.',    { answer: 1.5, fracAnswer: [3, 2] },  false, 'and so does a mixed number']
 ];
 
 let pass = 0, fail = 0;
@@ -165,6 +203,58 @@ for (const [input, val, unit] of P) {
   if (!r.ok || r.value !== val || r.unit !== unit) {
     fail++; console.log(`FAIL  parseTypedAnswer(${JSON.stringify(input)}) -> ${JSON.stringify(r)}, want value ${val} unit "${unit}"`);
   } else pass++;
+}
+
+/* typedRejectReason: WHY it was wrong, in machine words. Unit Sweep Refutation W1 -
+   the engine returned one string, 'wrong value or unit', for both halves, so neither
+   the web card nor a SwiftUI view could tell a child "your number was right". The
+   split has to be exact in both directions: never claim the number was right when it
+   was not, and never miss it when it was. */
+{
+  const area = { answer: 300, unit: 'cm²' };
+  const cubes = { answer: 48, unit: ['cubes', 'cm³'] };
+  const R = [
+    ['300 cm',   area,  'wrong-unit',   'the value is right, only the unit rejected it'],
+    ['300 kg',   area,  'wrong-unit',   'any wrong unit on a right value'],
+    ['300CM',    area,  'wrong-unit',   'no space, upper case, still unit-only'],
+    ['301 cm',   area,  'wrong-value',  'a wrong number is never a unit lesson'],
+    ['301 cm²',  area,  'wrong-value',  'right unit, wrong number'],
+    ['301',      area,  'wrong-value',  'bare wrong number'],
+    ['300 cm²',  area,  null,           'correct answers carry no reason'],
+    ['300',      area,  null,           'a bare right number is correct'],
+    ['',         area,  'empty',        'nothing typed'],
+    ['abc',      area,  'not a number', 'unparsed stays unparsed'],
+    ['48 kg',    cubes, 'wrong-unit',   'array form: outside the set, value right'],
+    ['48 cubes', cubes, null,           'array form: a declared member is correct'],
+    ['48 cm³',   cubes, null,           'array form: the equivalent member too'],
+    ['49 cubes', cubes, 'wrong-value',  'array form does not soften a wrong number'],
+    ['1.5 kg',   { answer: 1.5, fracAnswer: [3, 2], unit: 'l' }, 'wrong-unit', 'fractions inherit the same split'],
+    ['3.46 kg',  { answer: 3.456, dp: 2, unit: 'l' }, 'wrong-unit', 'and so does a declared dp']
+  ];
+  for (const [input, q, want, why] of R) {
+    const got = ctx.MQI.typedRejectReason(input, q);
+    if (got === want) pass++;
+    else {
+      fail++;
+      console.log(`FAIL  typedRejectReason(${JSON.stringify(input)}, ${JSON.stringify(q)}) -> ${JSON.stringify(got)}, want ${JSON.stringify(want)}   (${why})`);
+    }
+  }
+}
+
+/* finishTyped under the array form: the FIRST member is canonical, and it is what the
+   child reads on the answer card. A set of equivalents must never print as a list. */
+{
+  const A = [
+    [['cm³', 'ml'], '3170 cm³', 'first member is canonical'],
+    [['ml', 'cm³'], '3170 ml',  'order is the generator\'s choice'],
+    ['cm³',         '3170 cm³', 'a plain string is unchanged'],
+    [undefined,     '3170',     'no unit, no trailing space']
+  ];
+  for (const [unit, want, why] of A) {
+    const q = ctx.MQI.gen.finishTyped('stem', 3170, 'x', unit);
+    if (q.answerText === want) pass++;
+    else { fail++; console.log(`FAIL  finishTyped unit ${JSON.stringify(unit)} -> answerText ${JSON.stringify(q.answerText)}, want ${JSON.stringify(want)}   (${why})`); }
+  }
 }
 
 /* W3 cosmetic gate (Dress Rehearsal Wave 2, item 3): finishNum's `unit` argument used

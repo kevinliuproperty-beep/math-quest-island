@@ -35,11 +35,52 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BUNDLE = path.join(ROOT, 'ios/Packages/MQEngineJS/Sources/MQEngineJS/Resources/engine.bundle.js');
 const OUT = path.join(ROOT, 'tools/fixtures/parity-corpus.json');
+
+/* ---------- CLEAN TREE OR NOTHING (Unit Sweep Refutation W4, 2026-09-07) ----------
+ *
+ * The committed fixture carries `generatedAgainst.stamp`, its provenance line. The
+ * unit sweep shipped one reading "20260907-cb2220b-dirty": generated from an
+ * uncommitted working tree at a commit that PREDATED the fix it was recording, so
+ * the fixture could not be re-derived from any commit on the branch. Nothing went
+ * red - both gates compare `payloadHash` and only PRINT on a stamp difference - and
+ * that is exactly the problem: a stamp nobody checks is a provenance line that can
+ * lie for free.
+ *
+ * So it is checked here, at the only place that can write it, and it is a HARD FAIL
+ * with no override. Committing the sources first is the whole cost, and it is what
+ * makes the corpus a re-derivable artefact instead of a snapshot of somebody's desk.
+ * If the tree is not a git checkout at all, there is no provenance to protect and
+ * the build proceeds. */
+{
+  let porcelain = null;
+  try {
+    porcelain = execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  } catch {
+    porcelain = null;   /* not a git tree (a tarball, a sandbox): nothing to protect */
+  }
+  if (porcelain) {
+    console.error('FAIL  make-parity-corpus: the working tree is DIRTY, so the corpus would record');
+    console.error('      a `generatedAgainst.stamp` ending in "-dirty" - a provenance line naming a');
+    console.error('      tree that exists on nobody\'s machine but this one, and that no commit can');
+    console.error('      reproduce (Unit Sweep Refutation W4, 2026-09-07).');
+    console.error('');
+    console.error('      Commit the engine sources AND the rebuilt bundle first, then regenerate:');
+    console.error('        git commit …                 sources');
+    console.error('        npm run build:engine         rebuild the bundle off that commit');
+    console.error('        git commit …                 the bundle');
+    console.error('        npm run build:parity-corpus  <- clean tree, re-derivable stamp');
+    console.error('');
+    console.error('      uncommitted:');
+    for (const line of porcelain.split('\n')) console.error('        ' + line);
+    process.exit(1);
+  }
+}
 
 const DRAWS_PER_REF = Number(process.env.PARITY_DRAWS) || 2;   /* questions per generator ref */
 const FUZZ_PAIRS = Number(process.env.PARITY_FUZZ) || 3000;
@@ -71,7 +112,7 @@ function mulberry32(seed) {
 const rnd = mulberry32(20260907);
 const pick = arr => arr[Math.floor(rnd() * arr.length)];
 
-/* ---------- the 14 child spellings ----------
+/* ---------- the 15 child spellings ----------
  * Every one of these is something that actually reaches a grader from a real iPad:
  * a paste carrying NBSP, a full-width keyboard, a child who types the unit, a child
  * who types nothing. Applied to typed and choice questions alike (a choice question
@@ -99,8 +140,23 @@ function typedSpellings(base, unit) {
     ['unit-no-space', { text: n + (unit || 'cm') }],
     ['upper-unit', { text: n + ' ' + String(unit || 'cm').toUpperCase() }],
     ['nbsp-unit', { text: n + NBSP + (unit || 'cm') }],
+    /* The RIGHT number under a unit the question definitely does not want. Every
+       other unit spelling above types the question's OWN unit, so before this the
+       corpus never carried a single wrong-unit verdict and the two runtimes never
+       compared one - the exact hole that let the reason string mean two different
+       things for as long as it did (Unit Sweep Refutation W1, 2026-09-07). This is
+       the pair whose expected reason is 'wrong-unit'. */
+    ['wrong-unit', { text: n + ' ' + wrongUnitFor(unit) }],
     ['empty', { text: '' }]
   ];
+}
+/* A unit that is not the declared one and not an alias of it, so the cell is always
+   a unit rejection and never an accidental accept. */
+function wrongUnitFor(unit) {
+  const declared = new Set((Array.isArray(unit) ? unit : [unit])
+    .filter(Boolean).map(u => ctx.MQI.normUnit(u)));
+  for (const cand of ['kg', 'cm', 'pages', 'min']) if (!declared.has(cand)) return cand;
+  return 'beads';
 }
 
 function choiceSpellings(q) {
@@ -337,6 +393,15 @@ const expected = verdicts.map(v => ({
 }));
 
 const build = call('build').build;
+/* The second half of the clean-tree rule. The stamp is baked into the BUNDLE at
+   build time, not recomputed here, so a clean tree holding a bundle that was itself
+   built dirty would still write "-dirty" into the fixture's provenance. Refuse that
+   too: rebuild the bundle from the commit, then regenerate. */
+if (String(build.stamp).endsWith('-dirty')) {
+  console.error('FAIL  make-parity-corpus: the committed engine bundle carries a DIRTY stamp (' + build.stamp + ').');
+  console.error('      Re-run `npm run build:engine` on a clean tree and commit the bundle, then regenerate.');
+  process.exit(1);
+}
 const corpus = {
   note: 'Generated by tools/make-parity-corpus.mjs. Both tools/parity-test.mjs and '
     + 'ios/Packages/MQEngineJS/Tests/MQEngineJSTests/ParityCorpusTests.swift re-grade every pair '

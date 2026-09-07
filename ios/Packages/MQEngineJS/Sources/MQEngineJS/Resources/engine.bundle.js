@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260907-e9e19c4 */
-/* ENGINE_BUILD_META {"stamp":"20260907-e9e19c4","date":"2026-09-07","sha":"e9e19c4","dirty":false,"payloadHash":"ce24e9877da34185","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260907-e9e19c4","date":"2026-09-07","sha":"e9e19c4","dirty":false,"payloadHash":"ce24e9877da34185","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260907-6c174ec */
+/* ENGINE_BUILD_META {"stamp":"20260907-6c174ec","date":"2026-09-07","sha":"6c174ec","dirty":false,"payloadHash":"e807863dc45088a1","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260907-6c174ec","date":"2026-09-07","sha":"6c174ec","dirty":false,"payloadHash":"e807863dc45088a1","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -208,7 +208,14 @@ const TYPED_UNITS = [
   /* time */
   'minutes','minute','mins','min','hours','hour','hr','h','seconds','secs','sec','s',
   /* counts the wave-2 rate stems name */
-  'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads'
+  'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads',
+  /* money and the cube count. Quest Refutation K2 (2026-09-07): these are tokens
+     the STEMS write and the CHIP ROW offers, and the grader used to strip none of
+     them, so "12.50 cents" on a "$" question came back 'not a number' and the
+     teaching card fell back to "The answer is 12.5." with nothing said about the
+     unit. gen-sanity has scanned stems for them since the unit sweep; the grader
+     had not caught up. */
+  '$','cents','cent','dollars','dollar','cubes','cube'
 ].sort((a,b) => b.length - a.length);
 const UNIT_ALIAS = {
   'ℓ':'l', 'litre':'l', 'litres':'l',
@@ -217,8 +224,28 @@ const UNIT_ALIAS = {
   'minute':'min', 'minutes':'min', 'mins':'min',
   'hour':'h', 'hours':'h', 'hr':'h',
   'second':'s', 'seconds':'s', 'secs':'s', 'sec':'s',
-  'page':'pages', 'bun':'buns'
+  'page':'pages', 'bun':'buns',
+  'cent':'cents', 'dollar':'dollars', 'cube':'cubes'
 };
+/* Does `s` end with the unit token `u`, at a boundary a WORD could start on?
+ *
+ * Quest Refutation K2 (2026-09-07). The tail match used to be a bare suffix test,
+ * so a question declaring "m" ate one character off "8.5 cm", was left with
+ * "8.5 c", and reported `not a number` - a wrong UNIT reported as an unreadable
+ * answer, which is the one rejection the teaching card cannot lead. The child
+ * typed 8.5 and the card told them the answer is 8.5. Same shape for l+ml, g+kg.
+ *
+ * The rule: a token that STARTS with a letter may only match where a letter does
+ * not already run, so "m" does not match inside "cm" but does match after a space
+ * or after a digit ("8.5m"). Symbols ($ % °) start no word and need no boundary. */
+function endsWithUnit(s, u){
+  if (!u) return false;
+  const n = s.length, m = u.length;
+  if (n <= m) return false;
+  if (s.slice(n - m).toLowerCase() !== u.toLowerCase()) return false;
+  if (!/[A-Za-z]/.test(u.charAt(0))) return true;
+  return !/[A-Za-z]/.test(s.charAt(n - m - 1));
+}
 function normUnit(u){
   const s = String(u).trim().toLowerCase();
   return Object.prototype.hasOwnProperty.call(UNIT_ALIAS, s) ? UNIT_ALIAS[s] : s;
@@ -241,24 +268,20 @@ function parseTypedAnswer(raw, q){
   let s = String(raw).trim();
   if (s === '') return { ok:false, reason:'empty' };
   let unit = '';
-  /* 1. a unit the question itself declares, whatever it is */
-  const declared = unitList(q && (q.unit || q.units)).sort((a,b) => b.length - a.length);
-  for (let i=0;i<declared.length;i++){
-    const d = declared[i];
-    if (s.length > d.length && s.slice(-d.length).toLowerCase() === d.toLowerCase()){
-      unit = d; s = s.slice(0, s.length - d.length).trim(); break;
-    }
+  /* The LONGEST whole token that ends the answer, across the question's own
+     declared units and the broad shared list together - not the declared list
+     first and the shared list only if that missed. Longest-first is what stops a
+     one-letter declared unit ("m", "l", "g") from eating the tail of the longer
+     one the child actually typed ("cm", "ml", "kg"); the boundary test in
+     `endsWithUnit` is what stops it from eating a letter out of the middle.
+     Declared units are searched first so they win a tie, which keeps a lane free
+     to invent "crates" without touching the shared kit. */
+  const candidates = unitList(q && (q.unit || q.units)).concat(TYPED_UNITS);
+  for (let i=0;i<candidates.length;i++){
+    const c = candidates[i];
+    if (c.length > unit.length && endsWithUnit(s, c)) unit = c;
   }
-  /* 2. otherwise any unit on the broad shared list */
-  if (!unit){
-    const low = s.toLowerCase();
-    for (let i=0;i<TYPED_UNITS.length;i++){
-      const u = TYPED_UNITS[i];
-      if (low.length > u.length && low.slice(low.length-u.length) === u){
-        unit = u; s = s.slice(0, s.length-u.length).trim(); break;
-      }
-    }
-  }
+  if (unit) s = s.slice(0, s.length - unit.length).trim();
   s = s.replace(/^\$\s*/, '').replace(/,/g, '').trim();
   if (s === '') return { ok:false, reason:'empty' };
   /* mixed number: "1 1/2" */
@@ -623,6 +646,14 @@ var buildSetFor = MQI.buildSetFor;
  *     the pie legend prints every sector's value a second time and sectors are
  *     drawn strictly proportional to their weights; rect uses one px-per-unit
  *     on both axes.
+ *   - RESPONSIVE, NOT WIDTH-CONDITIONAL (Phone Width Lane, 2026-09-07). Every
+ *     drawing is ONE drawing at every screen width: a viewBox that scales, never a
+ *     second layout below some breakpoint. `bar` was redrawn as an svg for exactly
+ *     this reason (its HTML box model had a hard 450 px width and spilled off a
+ *     390 px phone, taking the tallest bar's printed value with it); `table` is the
+ *     one figure that scrolls instead of scaling, because shrinking a table of
+ *     numbers stops a child reading it, and that scroll now carries a visible
+ *     edge shadow. Drawings are centred in their own card.
  *
  * Load order: AFTER js/core.js (core.js assigns `window.MQI` wholesale), before
  * js/app.js. In the harness: core.js, then js/figures.js, then js/topics/*.js.
@@ -633,53 +664,167 @@ var buildSetFor = MQI.buildSetFor;
    * { type:'bar', title, cats:[String], units:[Number], scale, maxUnit, unitLabel }
    * Bar i is `units[i]` units long and prints `units[i] * scale`; the value axis
    * carries one tick per unit from 0 to maxUnit, labelled `k * scale`. */
-  const BAR_LBL = 156, BAR_PLOTW = 240;   /* px: category column, plot area */
+  const BAR_ROW = 24, BAR_BARH = 15;        /* px: row pitch, bar thickness - FIXED, never scaled */
+  const BAR_GUT = 30;                       /* px: right gutter - room for the last tick number and the longest value */
+  /* px: the plot's floor and its natural (desktop) width. The floor is 140 and not 150
+     because at 320 px a 150 px floor put a five-bar graph 2 px over its card and made
+     the whole thing scroll for the sake of those 2 px - reintroducing, behind a cue,
+     exactly the "the tallest bar's value is off the glass" defect this figure was
+     redrawn for. 140 px of plot leaves ~12 px of slack at 320 with ordinary category
+     names; longer ones still scroll, which is the sanctioned last resort. */
+  const BAR_PLOT_MIN = 140, BAR_PLOT_NAT = 240;
+  const BAR_CATPAD = 8;                     /* px: gap between the category column and the plot */
+  const BAR_AXISH = 22;                     /* px: the axis strip under the last row */
+
+  /* PHONE-WIDTH FIX, SECOND PASS (Phone Width Refutation K4, 2026-09-07).
+     ---------------------------------------------------------------------------
+     History, because both previous shapes were wrong in instructive ways:
+
+     (1) Until 2026-09-07 the bar was an absolutely-positioned HTML box model with a
+         HARD 450 px intrinsic width (12 + 156 + 240 + 30 + 12). `max-width:100%`
+         cannot shrink a block whose children are placed in px - it spills - so at a
+         390 px viewport the card ran from x = -30 to x = 420, the page gained a
+         sideways scroll, and 100% of bar graphs lost the tallest bar's printed value
+         off the right edge.
+     (2) The first phone-width pass redrew it as ONE viewBox-scaled svg. That fixed
+         the width and broke the READING: a viewBox scales EVERYTHING, text included,
+         so the 13 px category names and 11 px tick numbers came out at 7.13 px (360),
+         7.51 (375), 7.90 (390) - the smallest text in the app, under Apple's 11 pt
+         floor, on numbers a child must read to answer 52.5% of bar items. A drawing
+         whose labels shrink below reading size has lost the value just as surely as
+         one that pushes it off the screen.
+
+     (3) THE RULE NOW: the picture scales, the words never do.
+
+         The bar is an HTML/CSS box model again - but placed in PERCENTAGES of the
+         plot instead of pixels, so it is fully responsive - and every label is real
+         HTML text at a fixed size: category 13 px, value 13 px, tick number 11 px, at
+         EVERY viewport width. What absorbs a narrow screen is the PLOT: the plot
+         column is `minmax(150px, 240px)`, so it gives up bar length (and the category
+         column wraps its names) before anything gives up legibility. Only if even the
+         150 px floor plus the category column's own min-content width will not fit
+         does the card scroll horizontally IN PLACE, in the same visibly-cued
+         `.fig-scroll` box the table uses - never the page.
+
+     Geometry (js/topics/README.md carries the same numbers; a native MQFigures
+     reproduces them, and percentages port to SwiftUI unchanged):
+       two grid columns: [category: min-content..max-content, 8 px right pad]
+                         [plot cell: 150..240 px of plot + a 30 px right gutter]
+       row i is 24 px tall (taller if its category name wraps); the bar is 15 px
+         thick, vertically centred, and runs from the plot's left edge to
+         `units[i] / maxUnit * 100%` of the plot, right corners rounded r = 2
+       gridline k sits at `k / maxUnit * 100%` of the plot, full height of the rows;
+         k = 0 is #64748b, the rest #e2e8f0
+       the axis rule is a 2 px #475569 border across the whole plot cell (plot +
+         gutter); each tick drops 5 px from it at its own gridline
+       the value label starts 6 px past its bar's right edge, on the bar's own centre
+         line; the tick number is centred on its own gridline, 11 px
+     Title and caption stay prose OUTSIDE the drawing so they wrap at reading size. */
+
+  /* VERTICAL FIT (Phone Width Refutation wound 3, 2026-09-07).
+     -------------------------------------------------------------------------------
+     iOS Safari's visible area on a 390 x 844 iPhone is ~664 px with the URL bar
+     showing, and that is the state the phone is in for the first scroll of every
+     session. At 390 x 664 the pie drew 25 px ABOVE its card and 97 px BELOW it,
+     painting over both HP numbers and 55 px into the answer buttons; `line` was
+     34.3 px past its card and `lshape` 41.5 px. Nothing in the app measured height.
+
+     The rule now, and `npm run test:layout` gates it at 390x664, 375x548, 360x640,
+     320x568 and the tall viewports: a figure NEVER paints over the fighters or the
+     answer buttons. Three halves, in order of preference:
+       1. A SCALING drawing shrinks. `pie` and `line` carry `data-fit="1"`, which
+          declares "my picture may be scaled down to fit the height available; my
+          words may not". `width` and `height` are `auto` so the browser's
+          replaced-element sizing keeps the aspect ratio exactly, and syncFigures()
+          in js/app.js hands the element the height that is left once the card's own
+          prose (title, legend, caption, padding) has been measured - measured, not
+          guessed, because a guessed constant made a 1024 px desktop shrink a pie that
+          had room to spare.
+       2. Otherwise the drawing SCROLLS inside the card (#qextra), with the "⌄ more"
+          cue - the vertical twin of the table's rule. A five-row bar graph on a
+          375 x 548 SE has nowhere else to go.
+       3. It never paints over the play surface, and the page never scrolls.
+     A native MQFigures reads rule 1 as: fit the plot into (available card height -
+     the card's own text), aspect preserved, floor 72 px. */
+  const FIG_FIT = 'width:auto;height:auto;max-width:100%';
+
+  /* The ONE scroll allowance in the figure contract, shared by `table` and by `bar`
+     when even the plot's 150 px floor will not fit. Three parts:
+       - `.fig-scroll` is the box that scrolls, and the only class in the app allowed
+         to scroll sideways (tools/layout-gate.mjs whitelists exactly this class);
+       - the four-layer scroll shadow (two white covers attached `local`, two grey
+         edge shadows attached `scroll`) shades an edge only when there is more
+         content off it and draws NOTHING when the content fits, so a desktop figure
+         is pixel-unchanged;
+       - `.fig-more` is the cue a CHILD can see: a white fade and a chevron drawn
+         OUTSIDE the scroller, as a later sibling inside `.fig-frame`, so the table's
+         own opaque header row cannot paint over it (Phone Width Refutation wound 2 -
+         the shadow was previously drawn on the value row only). The shell toggles
+         `[data-more]` on the frame from `scrollWidth > clientWidth`; see FIGURE_CSS
+         at the foot of this file for the two rules, which live in index.html because
+         a cue that must appear only when there IS more cannot be an inline value. */
+  function scrollBox(cls, inner) {
+    return '<div class="fig-frame" style="position:relative;max-width:100%">' +
+      '<div class="fig-scroll ' + cls + '" style="max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;' +
+      'background:linear-gradient(to right,#fff 60%,rgba(255,255,255,0)) left/34px 100% no-repeat local,' +
+      'linear-gradient(to left,#fff 60%,rgba(255,255,255,0)) right/34px 100% no-repeat local,' +
+      'radial-gradient(farthest-side at 0 50%,rgba(15,23,42,.28),rgba(15,23,42,0)) left/12px 100% no-repeat scroll,' +
+      'radial-gradient(farthest-side at 100% 50%,rgba(15,23,42,.28),rgba(15,23,42,0)) right/12px 100% no-repeat scroll">' +
+      inner + '</div><div class="fig-more" aria-hidden="true">›</div></div>';
+  }
 
   function bar(f) {
     const cats = f.cats, units = f.units, scale = f.scale;
-    const maxU = f.maxUnit;
-    const x = k => Math.round(k / maxU * BAR_PLOTW);
+    const maxU = f.maxUnit, n = cats.length;
+    const pct = k => (k / maxU * 100).toFixed(3) + '%';
+    /* every layer measures against the PLOT, which is the cell minus its right gutter */
+    const PLOT = 'position:absolute;left:0;right:' + BAR_GUT + 'px;top:0;bottom:0';
 
-    /* WOUND 4 (Figure Spec Refutation, 2026-09-07): `.bargraph` was the only one of the
-       seven renderers with no max-width, so at a 390 px viewport its intrinsic ~450 px
-       ran past the card and 100% of bar graphs lost the tallest bar's printed value.
-       `line`, `table` and `pie` all already carried max-width:100%. NOTE: this is inert
-       on its own - the page itself still overflows at 390 px (avatar row, answer grid,
-       card), so max-width:100% resolves against a box that is already wider than the
-       screen. That page-level 390 px layout fix is ITS OWN packet and is deliberately
-       not chased here. */
-    let html = '<div class="bargraph" style="text-align:left;font-size:13px;line-height:1.3;' +
-      'color:#0f172a;background:#fff;padding:10px 12px 6px;border-radius:8px;display:inline-block;' +
-      'max-width:100%;overflow-x:auto">' +
+    /* the gridlines are ONE layer spanning every bar row, emitted first so bars and
+       value labels paint over them */
+    let s = '<div class="bg-lines" style="grid-column:2;grid-row:1/span ' + n +
+      ';position:relative"><div style="' + PLOT + '">';
+    for (let k = 0; k <= maxU; k++) {
+      s += '<div style="position:absolute;left:' + pct(k) + ';top:0;bottom:0;width:1px;background:' +
+        (k === 0 ? '#64748b' : '#e2e8f0') + (k === maxU ? ';margin-left:-1px' : '') + '"></div>';
+    }
+    s += '</div></div>';
+
+    for (let i = 0; i < n; i++) {
+      s += '<div class="bg-cat" style="grid-column:1;grid-row:' + (i + 1) +
+        ';align-self:center;text-align:right;padding-right:' + BAR_CATPAD +
+        'px;font-size:13px;color:#0f172a;overflow-wrap:break-word">' + cats[i] + '</div>' +
+        '<div style="grid-column:2;grid-row:' + (i + 1) + ';position:relative;min-height:' +
+        BAR_ROW + 'px"><div style="' + PLOT + '">' +
+        '<div class="bg-bar" style="position:absolute;left:0;top:50%;transform:translateY(-50%);height:' +
+        BAR_BARH + 'px;width:' + pct(units[i]) + ';background:#4c8bf5;border-radius:0 2px 2px 0"></div>' +
+        '<span class="bg-val" style="position:absolute;left:' + pct(units[i]) +
+        ';top:50%;transform:translateY(-50%);margin-left:6px;font-size:13px;font-weight:600;' +
+        'color:#0f172a;white-space:nowrap">' + (units[i] * scale) + '</span></div></div>';
+    }
+
+    s += '<div class="bg-axis" style="grid-column:2;grid-row:' + (n + 1) + ';position:relative;height:' +
+      BAR_AXISH + 'px;border-top:2px solid #475569"><div style="' + PLOT + '">';
+    for (let k = 0; k <= maxU; k++) {
+      s += '<div style="position:absolute;left:' + pct(k) + ';top:0;height:5px;width:1px;background:#475569' +
+        (k === maxU ? ';margin-left:-1px' : '') + '"></div>' +
+        '<span class="bg-tick" style="position:absolute;left:' + pct(k) +
+        ';top:6px;transform:translateX(-50%);font-size:11px;color:#475569;white-space:nowrap">' +
+        (k * scale) + '</span>';
+    }
+    s += '</div></div>';
+
+    return '<div class="bargraph" style="text-align:left;font-size:13px;line-height:1.3;' +
+      /* the card's own side padding tightens on a phone, exactly as the table's cell
+         padding does, and is exactly the old 12 px at any viewport >= 400 px */
+      'color:#0f172a;background:#fff;padding:10px clamp(6px,3vw,12px) 6px;border-radius:8px;display:inline-block;' +
+      'max-width:100%">' +
       '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>' +
-      '<div style="position:relative;padding-left:' + BAR_LBL + 'px">' +
-      '<div style="position:absolute;left:' + BAR_LBL + 'px;top:0;bottom:0;width:' + BAR_PLOTW + 'px">';
-    for (let k = 0; k <= maxU; k++) {
-      html += '<div style="position:absolute;left:' + x(k) + 'px;top:0;bottom:0;width:1px;background:' +
-        (k === 0 ? '#64748b' : '#e2e8f0') + '"></div>';
-    }
-    html += '</div>';
-    for (let i = 0; i < cats.length; i++) {
-      html += '<div class="bg-row" style="position:relative;display:flex;align-items:center;height:20px;margin:4px 0">' +
-        '<span class="bg-cat" style="position:absolute;left:-' + BAR_LBL + 'px;width:' + (BAR_LBL - 8) +
-        'px;text-align:right;white-space:nowrap">' + cats[i] + '</span>' +
-        '<span class="bg-bar" style="display:inline-block;height:15px;background:#4c8bf5;border-radius:0 2px 2px 0;width:' +
-        x(units[i]) + 'px"></span>' +
-        '<span class="bg-val" style="margin-left:6px;font-weight:600">' + (units[i] * scale) + '</span>' +
-        '</div>';
-    }
-    html += '</div>' +
-      '<div style="position:relative;height:24px;margin-left:' + BAR_LBL + 'px;width:' + (BAR_PLOTW + 30) +
-      'px;border-top:2px solid #475569">';
-    for (let k = 0; k <= maxU; k++) {
-      html += '<span style="position:absolute;left:' + x(k) + 'px;top:0;width:1px;height:5px;background:#475569"></span>' +
-        '<span class="bg-tick" style="position:absolute;left:' + x(k) +
-        'px;top:7px;transform:translateX(-50%);font-size:11px;color:#475569">' + (k * scale) + '</span>';
-    }
-    html += '</div>' +
+      scrollBox('bg-scroll', '<div class="bg-grid" style="display:grid;grid-template-columns:' +
+        'minmax(min-content,max-content) minmax(' + (BAR_PLOT_MIN + BAR_GUT) + 'px,' +
+        (BAR_PLOT_NAT + BAR_GUT) + 'px)">' + s + '</div>') +
       '<div style="margin-top:2px;font-size:.85em;color:#475569">Each unit along the bottom of the graph stands for ' +
       f.scale + ' ' + f.unitLabel + '.</div></div>';
-    return html;
   }
 
   /* ---------------- rect: a labelled rectangle (geometry, P3) ----------------
@@ -729,15 +874,23 @@ var buildSetFor = MQI.buildSetFor;
   function rect(f) {
     const L = f.length, B = f.breadth, unit = f.unit || 'cm';
     const s = Math.min(RECT_PXU, RECT_MAXW / L, RECT_MAXH / B);
-    const w = +(L * s).toFixed(1), h = +(B * s).toFixed(1);
-    return '<div style="display:inline-block;padding:0 56px 0 8px">' +
-      '<div class="rectBox" style="width:' + w + 'px;height:' + h + 'px;box-sizing:border-box;' +
+    const w = +(L * s).toFixed(1);   /* the height is L:B of it, drawn by aspect-ratio below */
+    /* PHONE WIDTH, 320 px (Phone Width Refutation - 320 is one of the gate's viewports
+       now). The widest box is 240 px and the label gutter is another 64, which is
+       304 px: inside a 390 px card, as the README says, and OUTSIDE a 320 px one
+       (268 px), where it made #qextra scroll sideways. `max-width:100%` plus
+       `aspect-ratio` is the isotropic answer - the box shrinks to the card and the
+       drawn aspect stays exactly length : breadth, which is the whole rect contract.
+       `width` is still the natural px size, so nothing moves where there is room. */
+    return '<div style="display:inline-block;max-width:100%;padding:0 56px 0 8px">' +
+      '<div class="rectBox" style="width:' + w + 'px;max-width:100%;aspect-ratio:' + L + '/' + B +
+      ';box-sizing:border-box;' +
       'border:3px solid #6ee7f9;border-radius:6px;background:rgba(110,231,249,.12);' +
       'display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;' +
       'font-size:13px;color:#9ef0ff;font-weight:700">' +
       '<span class="rectLabelB" style="position:absolute;right:-4px;top:50%;' +
       'transform:translate(100%,-50%);padding-left:6px">' + B + ' ' + unit + '</span></div>' +
-      '<div class="rectLabelL" style="width:' + w + 'px;text-align:center;color:#9ef0ff;' +
+      '<div class="rectLabelL" style="width:' + w + 'px;max-width:100%;text-align:center;color:#9ef0ff;' +
       'font-weight:700;font-size:13px;margin-top:4px">' + L + ' ' + unit + '</div></div>';
   }
 
@@ -774,9 +927,14 @@ var buildSetFor = MQI.buildSetFor;
       'color:#0f172a;background:#fff;padding:0 2px;' + css + '">' + v + '</span>';
 
     const w = W * L_S, h = H * L_S, aw = a * L_S, bh = b * L_S;
+    /* PHONE-WIDTH LANE 2026-09-07: `max-width:100%` on the card and `margin:0 auto` on
+       the drawing. The L is at most 176 x 154 px but its caption is one long prose
+       line, so at 1024 px the card measured 612 px and the figure hugged its left
+       edge, ~196 px left of centre - the worst case of the rehearsal's "figures sit
+       off-centre in their cards". Desktop pixels move; the 11 px/unit scale does not. */
     return '<div class="lfig" style="display:inline-block;background:#fff;padding:16px 22px;' +
-      'border-radius:8px;color:#0f172a">' +
-      '<div style="position:relative;width:' + w + 'px;height:' + h + 'px">' +
+      'border-radius:8px;color:#0f172a;max-width:100%">' +
+      '<div style="position:relative;width:' + w + 'px;height:' + h + 'px;margin:0 auto">' +
       /* the L drawn as two solid blocks */
       '<div style="position:absolute;left:0;top:0;width:' + (w - aw) + 'px;height:' + bh +
       'px;background:#93c5fd;border:2px solid #1d4ed8;border-right:none;border-bottom:none;box-sizing:border-box"></div>' +
@@ -798,25 +956,50 @@ var buildSetFor = MQI.buildSetFor;
 
   /* ---------------- table: a one-row data table ----------------
    * { type:'table', title, cats, values, hidden, unitLabel }
-   * `hidden` is the index printed as '?' (-1 for none). W3 cosmetic: a 5-column
-   * table is wider than a 360px column, so the card is capped and scrolls in
-   * place rather than pushing the last column off the screen. */
+   * `hidden` is the index printed as '?' (-1 for none).
+   *
+   * PHONE-WIDTH FIX (Phone Width Lane, 2026-09-07). The W3 lane wrote "the card is
+   * capped and scrolls in place rather than pushing the last column off the screen"
+   * and gave `.dtable` `max-width:100%; overflow-x:auto` - but the cap resolved
+   * against `#qextra`, which was a shrink-to-fit flex item and therefore ALREADY
+   * wider than the screen, so nothing capped anything: measured at 390 px, a
+   * 5-column table drew 421 px from x = -15.6 to x = 405.6 and the last column (the
+   * `?` column in 20.2% of items) sat off the glass. Three parts to the fix:
+   *   1. `#qextra` is now a full-width, min-width:0 block (index.html), so every
+   *      figure's `max-width:100%` finally resolves against the CARD.
+   *   2. Only the TABLE scrolls, not the whole card: the title and caption stay put
+   *      while `.dt-scroll` takes the overflow.
+   *   3. The scroll is VISIBLE - and, since Phone Width Refutation wound 2, visible
+   *      WHERE A CHILD LOOKS. The four-layer scroll shadow is a background of the
+   *      scroll box, so `th { background:#f1f5f9 }` painted over its top half and the
+   *      cue only ever showed on the value row. `.fig-more` (see scrollBox above) is
+   *      now drawn OUTSIDE the scroller as a later sibling - a full-height white fade
+   *      with a chevron, over the header row as well - and the shell shows it exactly
+   *      when there is more table to the right. The `?` column may still start
+   *      off-screen (that is the scroll's whole point) but the child is now told.
+   *   4. Cell padding is `clamp(5px, 2.4vw, 12px)` horizontally, which is exactly the
+   *      old 12 px at any viewport >= 500 px (desktop untouched) and tightens to
+   *      ~9 px on a phone, so most 5-column tables now fit outright and only the
+   *      widest ones need the scroll at all. */
   function table(f) {
     const cats = f.cats, values = f.values, hidden = (typeof f.hidden === 'number' ? f.hidden : -1);
+    const pad = 'padding:5px clamp(5px,2.4vw,12px)';
     let html = '<div class="dtable" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%;overflow-x:auto">' +
-      '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>' +
-      '<table style="border-collapse:collapse"><tr>';
+      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
+      '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>';
+    let rows = '<table style="border-collapse:collapse"><tr>';
     for (let i = 0; i < cats.length; i++) {
-      html += '<th class="dt-cat" style="border:1px solid #94a3b8;padding:5px 12px;background:#f1f5f9;color:#0f172a;' +
+      rows += '<th class="dt-cat" style="border:1px solid #94a3b8;' + pad + ';background:#f1f5f9;color:#0f172a;' +
         'font-weight:600;white-space:nowrap">' + cats[i] + '</th>';
     }
-    html += '</tr><tr>';
+    rows += '</tr><tr>';
     for (let i = 0; i < cats.length; i++) {
-      html += '<td class="dt-val" style="border:1px solid #94a3b8;padding:5px 12px;text-align:center;color:#0f172a">' +
+      rows += '<td class="dt-val" style="border:1px solid #94a3b8;' + pad + ';text-align:center;color:#0f172a">' +
         (i === hidden ? '?' : values[i]) + '</td>';
     }
-    html += '</tr></table><div style="margin-top:6px;font-size:.85em;color:#475569">Number of ' +
+    rows += '</tr></table>';
+    html += scrollBox('dt-scroll', rows) +
+      '<div style="margin-top:6px;font-size:.85em;color:#475569">Number of ' +
       f.unitLabel + '.</div></div>';
     return html;
   }
@@ -844,7 +1027,13 @@ var buildSetFor = MQI.buildSetFor;
          its value label were cut off the screen entirely. The svg now scales to the
          card (max-width:100%, height:auto) and the card itself is capped, so every
          point stays inside the viewBox at any width. */
-      '" style="display:block;font-family:inherit;max-width:100%;height:auto">';
+      /* PHONE-WIDTH LANE 2026-09-07: `margin:0 auto`. The svg is 380 px wide inside a
+         card that is as wide as its longest prose line (the caption), so a
+         left-aligned drawing sat off-centre in its own card - measured 12 px at
+         1024 px and up to 70 px on the pie, which is the "figures sit off-centre"
+         item on the dress rehearsal's parent-visible list. Centring the drawing
+         moves pixels at DESKTOP width; it changes no geometry inside the viewBox. */
+      '" data-fit="1" style="display:block;margin:0 auto;font-family:inherit;' + FIG_FIT + '">';
     for (let k = 0; k <= maxU; k++) {
       s += '<line x1="' + LG_PADL + '" y1="' + y(k) + '" x2="' + (LG_PADL + LG_PW) + '" y2="' + y(k) +
         '" stroke="' + (k === 0 ? '#475569' : '#e2e8f0') + '" stroke-width="' + (k === 0 ? 2 : 1) + '"/>' +
@@ -923,7 +1112,13 @@ var buildSetFor = MQI.buildSetFor;
     return '<div class="piechart" style="display:inline-block;background:#fff;color:#0f172a;' +
       'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
       '<div style="font-weight:600;margin-bottom:6px">' + f.title + '</div>' +
-      '<svg width="230" height="230" viewBox="0 0 230 230" style="display:block;font-family:inherit">' +
+      /* PHONE-WIDTH LANE 2026-09-07: `margin:0 auto` + `max-width:100%;height:auto`.
+         The 230 px circle sat at the LEFT edge of a card whose width is set by the
+         caption, so it drew 73 px left of the card's centre at 1024 px - the
+         "pie 73 px left" line on the rehearsal's parent-visible list. Desktop pixels
+         move; the sweep arithmetic does not. */
+      '<svg data-fit="1" width="230" height="230" viewBox="0 0 230 230" style="display:block;margin:0 auto;' +
+      FIG_FIT + ';font-family:inherit">' +
       svg + lab + '</svg>' + legend +
       '<div style="margin-top:6px;font-size:.85em;color:#475569">' + f.caption + '</div></div>';
   }
@@ -945,7 +1140,12 @@ var buildSetFor = MQI.buildSetFor;
   const FIGURE_CSS = {
     '.barModel': 'display:flex; gap:3px; justify-content:center;',
     '.barModel .seg': 'width:clamp(28px,6vw,46px); height:34px; border:2.5px solid #fff; border-radius:6px; background:rgba(255,255,255,.06);',
-    '.barModel .seg.fill': 'background:linear-gradient(180deg,#6ee7f9,#3aa7ff);'
+    '.barModel .seg.fill': 'background:linear-gradient(180deg,#6ee7f9,#3aa7ff);',
+    /* The scroll cue (wound 2). It is hidden by default and shown only when the shell
+       has measured more content off the right edge, which no inline value can express;
+       a native renderer draws the same 30 px fade + chevron under the same condition. */
+    '.fig-more': 'position:absolute; top:0; bottom:0; right:0; width:30px; display:none; align-items:center; justify-content:flex-end; padding-right:3px; pointer-events:none; font-size:17px; font-weight:800; line-height:1; color:#0f172a; background:linear-gradient(to left,#fff 34%,rgba(255,255,255,.92) 70%,rgba(255,255,255,0));',
+    '.fig-frame[data-more="1"] .fig-more': 'display:flex;'
   };
 
   /* ---------------- the registry ---------------- */
@@ -5717,6 +5917,7 @@ var MQI_API = (function () {
   function serialize(q, meta) {
     var typed = !!q.typed;
     var choices = typed ? [] : (q.choices || []).map(String);
+    var unitsAccepted = MQI.unitList(q.unit || q.units).map(String);
     seq += 1;
     return {
       id: 'q' + seq,
@@ -5748,10 +5949,14 @@ var MQI_API = (function () {
       /* The CANONICAL unit, for a keypad to print beside the field: the first member
          when the question declares a set of equivalents. Grading reads key.unit,
          which carries the whole set. */
-      unit: (function () {
-        var list = MQI.unitList(q.unit || q.units);
-        return list.length ? String(list[0]) : '';
-      })(),
+      unit: unitsAccepted.length ? unitsAccepted[0] : '',
+      /* EVERY unit this question accepts, canonical first. Quest Refutation K3/K7
+         (2026-09-07): a unit chip row built from the canonical member alone offers
+         "ml" as a wrong-unit distractor on a cm³ question that grades "ml" CORRECT,
+         so the app teaches a falsehood its own p5volume stem contradicts. A client
+         cannot derive the set from `unit`, and `key` is opaque to it, so the set is
+         published here. */
+      units: unitsAccepted,
       key: keyOf(q)
     };
   }
@@ -6075,4 +6280,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260907-e9e19c4 */
+/* ENGINE_BUILD_END 20260907-6c174ec */

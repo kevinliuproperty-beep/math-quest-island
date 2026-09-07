@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260907-33b2fb9 */
-/* ENGINE_BUILD_META {"stamp":"20260907-33b2fb9","date":"2026-09-07","sha":"33b2fb9","dirty":false,"payloadHash":"f478d1f53fab991c","files":["js/core.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":30,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260907-33b2fb9","date":"2026-09-07","sha":"33b2fb9","dirty":false,"payloadHash":"f478d1f53fab991c","files":["js/core.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":30,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260907-379e3e3 */
+/* ENGINE_BUILD_META {"stamp":"20260907-379e3e3","date":"2026-09-07","sha":"379e3e3","dirty":false,"payloadHash":"12e75a2de161938b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260907-379e3e3","date":"2026-09-07","sha":"379e3e3","dirty":false,"payloadHash":"12e75a2de161938b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -526,6 +526,379 @@ var makeQuestionFor = MQI.makeQuestionFor;
 var buildSetFor = MQI.buildSetFor;
 
 
+/* ===== js/figures.js ===== */
+"use strict";
+/* Math Quest Island — the figure renderer.
+ *
+ * ONE renderer for every diagram in the game. Generators emit PURE DATA
+ * (`q.figure = { type: 'bar' | 'line' | 'pie' | 'rect' | 'lshape' |
+ * 'fractionBar' | 'table', ...fields }`) and never a byte of markup; this file
+ * turns a spec into the SVG/HTML the web app paints. A native renderer (SwiftUI,
+ * `MQFigures`) is written against the same spec, from the documentation in
+ * js/topics/README.md alone — that is the whole point of the split.
+ *
+ * Rules this file lives by:
+ *   - PURE. String building only. No DOM, no `document`, no browser globals, so
+ *     tools/gen-sanity.mjs can load it in a bare Node vm and re-derive answers
+ *     from the same rendered labels a child reads.
+ *   - EVERY number the child needs is printed as on-screen TEXT. Nothing rides
+ *     in a data-* attribute: the harness oracle parses what is drawn, so a
+ *     figure that stops printing a value fails the gate rather than the child.
+ *   - THE PICTURE MATCHES THE DOC. js/topics/README.md is the contract a SwiftUI
+ *     author writes from; where this file draws something the doc does not
+ *     describe, the doc is the bug and so is this file. `rect` was killed on
+ *     exactly that (2026-09-07) and is now genuinely to scale.
+ *   - The refuter fixes are carried HERE now, and the comments travel with them:
+ *     line-graph value labels sit level with their OWN gridline; the last line
+ *     label flips left of its dot; the table scrolls in place at phone width;
+ *     the pie legend prints every sector's value a second time and sectors are
+ *     drawn strictly proportional to their weights; rect uses one px-per-unit
+ *     on both axes.
+ *
+ * Load order: AFTER js/core.js (core.js assigns `window.MQI` wholesale), before
+ * js/app.js. In the harness: core.js, then js/figures.js, then js/topics/*.js.
+ */
+(function (root) {
+
+  /* ---------------- bar: horizontal bar graph (p3bargraph) ----------------
+   * { type:'bar', title, cats:[String], units:[Number], scale, maxUnit, unitLabel }
+   * Bar i is `units[i]` units long and prints `units[i] * scale`; the value axis
+   * carries one tick per unit from 0 to maxUnit, labelled `k * scale`. */
+  const BAR_LBL = 156, BAR_PLOTW = 240;   /* px: category column, plot area */
+
+  function bar(f) {
+    const cats = f.cats, units = f.units, scale = f.scale;
+    const maxU = f.maxUnit;
+    const x = k => Math.round(k / maxU * BAR_PLOTW);
+
+    /* WOUND 4 (Figure Spec Refutation, 2026-09-07): `.bargraph` was the only one of the
+       seven renderers with no max-width, so at a 390 px viewport its intrinsic ~450 px
+       ran past the card and 100% of bar graphs lost the tallest bar's printed value.
+       `line`, `table` and `pie` all already carried max-width:100%. NOTE: this is inert
+       on its own - the page itself still overflows at 390 px (avatar row, answer grid,
+       card), so max-width:100% resolves against a box that is already wider than the
+       screen. That page-level 390 px layout fix is ITS OWN packet and is deliberately
+       not chased here. */
+    let html = '<div class="bargraph" style="text-align:left;font-size:13px;line-height:1.3;' +
+      'color:#0f172a;background:#fff;padding:10px 12px 6px;border-radius:8px;display:inline-block;' +
+      'max-width:100%;overflow-x:auto">' +
+      '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>' +
+      '<div style="position:relative;padding-left:' + BAR_LBL + 'px">' +
+      '<div style="position:absolute;left:' + BAR_LBL + 'px;top:0;bottom:0;width:' + BAR_PLOTW + 'px">';
+    for (let k = 0; k <= maxU; k++) {
+      html += '<div style="position:absolute;left:' + x(k) + 'px;top:0;bottom:0;width:1px;background:' +
+        (k === 0 ? '#64748b' : '#e2e8f0') + '"></div>';
+    }
+    html += '</div>';
+    for (let i = 0; i < cats.length; i++) {
+      html += '<div class="bg-row" style="position:relative;display:flex;align-items:center;height:20px;margin:4px 0">' +
+        '<span class="bg-cat" style="position:absolute;left:-' + BAR_LBL + 'px;width:' + (BAR_LBL - 8) +
+        'px;text-align:right;white-space:nowrap">' + cats[i] + '</span>' +
+        '<span class="bg-bar" style="display:inline-block;height:15px;background:#4c8bf5;border-radius:0 2px 2px 0;width:' +
+        x(units[i]) + 'px"></span>' +
+        '<span class="bg-val" style="margin-left:6px;font-weight:600">' + (units[i] * scale) + '</span>' +
+        '</div>';
+    }
+    html += '</div>' +
+      '<div style="position:relative;height:24px;margin-left:' + BAR_LBL + 'px;width:' + (BAR_PLOTW + 30) +
+      'px;border-top:2px solid #475569">';
+    for (let k = 0; k <= maxU; k++) {
+      html += '<span style="position:absolute;left:' + x(k) + 'px;top:0;width:1px;height:5px;background:#475569"></span>' +
+        '<span class="bg-tick" style="position:absolute;left:' + x(k) +
+        'px;top:7px;transform:translateX(-50%);font-size:11px;color:#475569">' + (k * scale) + '</span>';
+    }
+    html += '</div>' +
+      '<div style="margin-top:2px;font-size:.85em;color:#475569">Each unit along the bottom of the graph stands for ' +
+      f.scale + ' ' + f.unitLabel + '.</div></div>';
+    return html;
+  }
+
+  /* ---------------- rect: a labelled rectangle (geometry, P3) ----------------
+   * { type:'rect', length, breadth, unit }
+   *
+   * KILL FIX K2 (Figure Spec Refutation, 2026-09-07). The old rect was NOT to
+   * scale: 20 px per unit horizontally but 16 px per unit vertically, with the
+   * height floored at 34 and capped at 110 independently of the width's cap of
+   * 240. 78.9% of the rect draws the generators can make carried >20% aspect
+   * error and EVERY square drew as a wide box - 12x12 cm rendered 240x110 px,
+   * 2.18:1, and `refute/revy-a.png` caught a 4 cm x 4 cm square drawn visibly
+   * wider than tall on the live review screen. The README said "drawn to scale",
+   * so a SwiftUI MQFigures written from the doc alone would draw a materially
+   * different picture - the exact failure the figure-spec contract exists to
+   * prevent.
+   *
+   * The rule now, and it is the one written in js/topics/README.md:
+   *
+   *     s = min(20, 240 / length, 130 / breadth)      px per unit
+   *     w = length * s      h = breadth * s           (border-box)
+   *
+   * ONE scale on BOTH axes, so the drawn aspect always equals length : breadth
+   * exactly. 20 px/unit is the natural size; 240 px and 130 px are the caps, and
+   * whichever side hits its cap first pulls the other down with it, so capping
+   * never distorts. `box-sizing:border-box` is load-bearing: without it the 3 px
+   * border adds 6 px to each axis and a square stops measuring square.
+   *
+   * Sanity of the caps: 12x12 -> s = 10.83, 130x130 px, square. 40x3 -> s = 6,
+   * 240x18 px, which with the wrapper's 8 + 56 px padding is 304 px and still
+   * fits a 390 px phone card.
+   *
+   * Labels: breadth OUTSIDE the box at its right edge (the old comment here said
+   * "inside the box" and was simply wrong - .rectLabelB is right:-4px with
+   * translate(100%,-50%), i.e. outside; the README was the correct one, and the
+   * 56 px right padding on the wrapper is the room it needs). Length is centred
+   * UNDERNEATH the box, on the box's own width.
+   *
+   * WOUND 8: this renderer used to carry no styling at all - its geometry lived
+   * in index.html's `.rectBox` / `.rectLabelB` / `.rectLabelL` rules, so
+   * js/figures.js was not the "reference drawing" the contract calls it. Every
+   * declaration is now inline here and those three CSS rules are gone from
+   * index.html. The class names stay: they are how a reader and a refuter find
+   * the parts. (fractionBar keeps its rules in index.html on purpose - see
+   * FIGURE_CSS at the foot of this file, which is gated against them.) */
+  const RECT_MAXW = 240, RECT_MAXH = 130, RECT_PXU = 20;   /* px caps, px per unit */
+
+  function rect(f) {
+    const L = f.length, B = f.breadth, unit = f.unit || 'cm';
+    const s = Math.min(RECT_PXU, RECT_MAXW / L, RECT_MAXH / B);
+    const w = +(L * s).toFixed(1), h = +(B * s).toFixed(1);
+    return '<div style="display:inline-block;padding:0 56px 0 8px">' +
+      '<div class="rectBox" style="width:' + w + 'px;height:' + h + 'px;box-sizing:border-box;' +
+      'border:3px solid #6ee7f9;border-radius:6px;background:rgba(110,231,249,.12);' +
+      'display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;' +
+      'font-size:13px;color:#9ef0ff;font-weight:700">' +
+      '<span class="rectLabelB" style="position:absolute;right:-4px;top:50%;' +
+      'transform:translate(100%,-50%);padding-left:6px">' + B + ' ' + unit + '</span></div>' +
+      '<div class="rectLabelL" style="width:' + w + 'px;text-align:center;color:#9ef0ff;' +
+      'font-weight:700;font-size:13px;margin-top:4px">' + L + ' ' + unit + '</div></div>';
+  }
+
+  /* ---------------- fractionBar: the P3 bar model ----------------
+   * { type:'fractionBar', parts, filled }
+   * `parts` equal segments, the first `filled` of them shaded. The oracle counts
+   * `class="seg fill"` off this markup, so the class names are load-bearing.
+   *
+   * WOUND 8: unlike the other six this renderer emits no inline style, because a
+   * segment's width is deliberately RESPONSIVE - clamp(28px, 6vw, 46px) - which
+   * is a stylesheet job, not a string-building one. So its geometry stays in
+   * index.html and is published here instead as FIGURE_CSS (foot of this file),
+   * which tools/gen-sanity.mjs asserts verbatim against index.html. That is the
+   * "documented stylesheet block": one source of truth, gated, and a Swift
+   * author reads the numbers off FIGURE_CSS without opening index.html. */
+  function fractionBar(f) {
+    let bar = '<div class="barModel">';
+    for (let i = 0; i < f.parts; i++) bar += '<div class="seg' + (i < f.filled ? ' fill' : '') + '"></div>';
+    return bar + '</div>';
+  }
+
+  /* ---------------- lshape: composite figure, six sides labelled ----------------
+   * { type:'lshape', W, H, a, b, unit }
+   * A W x H rectangle with an a x b piece removed from the TOP-RIGHT corner.
+   * Sides clockwise from the top-left: top = W - a, cut down = b, cut across = a,
+   * right = H - b, bottom = W, left = H. All six are printed; the renderer
+   * derives them, so a spec can never disagree with its own picture. */
+  const L_S = 11;   /* px per cm */
+
+  function lshape(f) {
+    const W = f.W, H = f.H, a = f.a, b = f.b, unit = f.unit || 'cm';
+    const lab = (cls, v, css) =>
+      '<span class="lf-' + cls + '" style="position:absolute;font-size:12px;font-weight:600;' +
+      'color:#0f172a;background:#fff;padding:0 2px;' + css + '">' + v + '</span>';
+
+    const w = W * L_S, h = H * L_S, aw = a * L_S, bh = b * L_S;
+    return '<div class="lfig" style="display:inline-block;background:#fff;padding:16px 22px;' +
+      'border-radius:8px;color:#0f172a">' +
+      '<div style="position:relative;width:' + w + 'px;height:' + h + 'px">' +
+      /* the L drawn as two solid blocks */
+      '<div style="position:absolute;left:0;top:0;width:' + (w - aw) + 'px;height:' + bh +
+      'px;background:#93c5fd;border:2px solid #1d4ed8;border-right:none;border-bottom:none;box-sizing:border-box"></div>' +
+      '<div style="position:absolute;left:0;top:' + bh + 'px;width:' + w + 'px;height:' + (h - bh) +
+      'px;background:#93c5fd;border:2px solid #1d4ed8;border-top:none;box-sizing:border-box"></div>' +
+      '<div style="position:absolute;left:0;top:' + bh + 'px;width:' + (w - aw) +
+      'px;height:2px;background:#93c5fd"></div>' +
+      /* the six printed side lengths */
+      lab('top', W - a, 'left:' + ((w - aw) / 2) + 'px;top:-9px;transform:translateX(-50%)') +
+      lab('cutdown', b, 'left:' + (w - aw) + 'px;top:' + (bh / 2) + 'px;transform:translate(-50%,-50%)') +
+      lab('cutacross', a, 'left:' + (w - aw / 2) + 'px;top:' + (bh - 9) + 'px;transform:translateX(-50%)') +
+      lab('right', H - b, 'left:' + w + 'px;top:' + (bh + (h - bh) / 2) + 'px;transform:translate(-50%,-50%)') +
+      lab('bottom', W, 'left:' + (w / 2) + 'px;top:' + (h - 9) + 'px;transform:translateX(-50%)') +
+      lab('left', H, 'left:0;top:' + (h / 2) + 'px;transform:translate(-50%,-50%)') +
+      '</div>' +
+      '<div style="margin-top:10px;font-size:.85em;color:#475569">All lengths are in ' + unit + '. ' +
+      'Every side of the figure is labelled. The corners are all right angles.</div></div>';
+  }
+
+  /* ---------------- table: a one-row data table ----------------
+   * { type:'table', title, cats, values, hidden, unitLabel }
+   * `hidden` is the index printed as '?' (-1 for none). W3 cosmetic: a 5-column
+   * table is wider than a 360px column, so the card is capped and scrolls in
+   * place rather than pushing the last column off the screen. */
+  function table(f) {
+    const cats = f.cats, values = f.values, hidden = (typeof f.hidden === 'number' ? f.hidden : -1);
+    let html = '<div class="dtable" style="display:inline-block;background:#fff;color:#0f172a;' +
+      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%;overflow-x:auto">' +
+      '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>' +
+      '<table style="border-collapse:collapse"><tr>';
+    for (let i = 0; i < cats.length; i++) {
+      html += '<th class="dt-cat" style="border:1px solid #94a3b8;padding:5px 12px;background:#f1f5f9;color:#0f172a;' +
+        'font-weight:600;white-space:nowrap">' + cats[i] + '</th>';
+    }
+    html += '</tr><tr>';
+    for (let i = 0; i < cats.length; i++) {
+      html += '<td class="dt-val" style="border:1px solid #94a3b8;padding:5px 12px;text-align:center;color:#0f172a">' +
+        (i === hidden ? '?' : values[i]) + '</td>';
+    }
+    html += '</tr></table><div style="margin-top:6px;font-size:.85em;color:#475569">Number of ' +
+      f.unitLabel + '.</div></div>';
+    return html;
+  }
+
+  /* ---------------- line: a line graph ----------------
+   * { type:'line', title, cats, units, step, maxUnit, unitLabel }
+   * Point i sits `units[i]` units up and prints `units[i] * step`; the value axis
+   * carries a tick, a gridline and a number for every unit from 0 to maxUnit. */
+  const LG_PW = 300, LG_PH = 150, LG_PADL = 46, LG_PADT = 18, LG_PADB = 34;
+
+  function line(f) {
+    const cats = f.cats, units = f.units, step = f.step, n = cats.length;
+    const vals = units.map(u => u * step);
+    const maxU = f.maxUnit;
+    const y = u => LG_PADT + LG_PH - Math.round(u / maxU * LG_PH);
+    const x = i => LG_PADL + Math.round(i * LG_PW / (n - 1));
+    const W = LG_PADL + LG_PW + 34, H = LG_PADT + LG_PH + LG_PADB;
+
+    let s = '<div class="linegraph" style="display:inline-block;background:#fff;color:#0f172a;' +
+      'padding:10px 12px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
+      '<div style="font-weight:600;margin-bottom:6px">' + f.title + '</div>' +
+      '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H +
+      /* W3 cosmetic (Dress Rehearsal Wave 2, item 1), second half: at a 390px phone
+         width the fixed 380px card overflowed its column and the RIGHTMOST point and
+         its value label were cut off the screen entirely. The svg now scales to the
+         card (max-width:100%, height:auto) and the card itself is capped, so every
+         point stays inside the viewBox at any width. */
+      '" style="display:block;font-family:inherit;max-width:100%;height:auto">';
+    for (let k = 0; k <= maxU; k++) {
+      s += '<line x1="' + LG_PADL + '" y1="' + y(k) + '" x2="' + (LG_PADL + LG_PW) + '" y2="' + y(k) +
+        '" stroke="' + (k === 0 ? '#475569' : '#e2e8f0') + '" stroke-width="' + (k === 0 ? 2 : 1) + '"/>' +
+        '<line x1="' + (LG_PADL - 5) + '" y1="' + y(k) + '" x2="' + LG_PADL + '" y2="' + y(k) +
+        '" stroke="#475569" stroke-width="1"/>' +
+        '<text class="lg-tick" x="' + (LG_PADL - 9) + '" y="' + (y(k) + 4) +
+        '" text-anchor="end" font-size="11" fill="#475569">' + (k * step) + '</text>';
+    }
+    s += '<line x1="' + LG_PADL + '" y1="' + LG_PADT + '" x2="' + LG_PADL + '" y2="' + (LG_PADT + LG_PH) +
+      '" stroke="#475569" stroke-width="2"/>';
+    s += '<polyline fill="none" stroke="#4c8bf5" stroke-width="2.5" points="' +
+      units.map((u, i) => x(i) + ',' + y(u)).join(' ') + '"/>';
+    for (let i = 0; i < n; i++) {
+      s += '<circle cx="' + x(i) + '" cy="' + y(units[i]) + '" r="4" fill="#1d4ed8"/>' +
+        /* KILL FIX (P4 Area+Graphs Refutation, §5): the value label used to be drawn at
+           y(units[i]) - 9, a FIXED 9px above the dot, while one tick step is PH/maxU =
+           18.75px. Every label therefore floated half a step high and sat level with the
+           gridline ONE STEP ABOVE the value it named - 228 of 228 graphs, and on a step-5
+           graph the label was 5 units adrift of the line it lined up with. The label y is
+           now the value's OWN tick position, y(units[i]), so the printed number is level
+           with its own gridline. Drawn to the RIGHT of the dot (text-anchor="start") so it
+           never covers the point and so point 0, which sits on the y-axis itself, clears
+           the tick-number column. */
+        /* W3 cosmetic (Dress Rehearsal Wave 2, item 1): the RIGHTMOST point sits on
+           x = PADL + PW, so a label drawn 12px to its right ran into the last 34px of
+           the viewBox and crowded the edge once the card shrank to a phone width. The
+           last label is flipped to the LEFT of its dot (text-anchor="end", 8px clear).
+           It still sits on its own gridline, and the nearest other label is a full
+           point-gap away, so nothing overlaps. */
+        '<text class="lg-val" x="' + (i === n - 1 ? x(i) - 8 : x(i) + 12) + '" y="' + (y(units[i]) + 4) +
+        '" text-anchor="' + (i === n - 1 ? 'end' : 'start') + '" font-size="12" font-weight="600" fill="#0f172a">' + vals[i] + '</text>' +
+        '<text class="lg-cat" x="' + x(i) + '" y="' + (LG_PADT + LG_PH + 17) +
+        '" text-anchor="middle" font-size="11" fill="#475569">' + cats[i] + '</text>';
+    }
+    s += '</svg><div style="margin-top:2px;font-size:.85em;color:#475569">Number of ' + f.unitLabel +
+      '. Each step up the side of the graph stands for ' + step + '.</div></div>';
+    return s;
+  }
+
+  /* ---------------- pie: a pie chart with a legend ----------------
+   * { type:'pie', title, cats, weights, labels, caption }
+   * Sector i sweeps `weights[i] / sum(weights)` of the circle — strictly
+   * proportional, measured off the arc endpoints by the refuter at 0 error in
+   * 6,500 draws — and prints `labels[i]` (a count, a fraction like "1/4", or "?")
+   * INSIDE the sector and a second time in the legend beside its category name.
+   * Category names never sit on a slice, so two labels can never collide. */
+  const PIE_CX = 112, PIE_CY = 112, PIE_R = 92, PIE_LR = 57;
+  const PIE_FILL = ['#93c5fd', '#fdba74', '#86efac', '#f9a8d4', '#fcd34d'];
+  const pieX = a => PIE_CX + PIE_R * Math.cos(a), pieY = a => PIE_CY + PIE_R * Math.sin(a);
+
+  function pie(f) {
+    const cats = f.cats, weights = f.weights, labels = f.labels;
+    const S = weights.reduce((a, b) => a + b, 0);
+    let a0 = -Math.PI / 2, svg = '', lab = '';
+    for (let i = 0; i < cats.length; i++) {
+      const sweep = weights[i] / S * Math.PI * 2, a1 = a0 + sweep;
+      svg += '<path class="pie-sec" d="M ' + PIE_CX + ' ' + PIE_CY + ' L ' + pieX(a0).toFixed(1) + ' ' +
+        pieY(a0).toFixed(1) + ' A ' + PIE_R + ' ' + PIE_R + ' 0 ' + (sweep > Math.PI ? 1 : 0) + ' 1 ' +
+        pieX(a1).toFixed(1) + ' ' + pieY(a1).toFixed(1) + ' Z" fill="' + PIE_FILL[i % PIE_FILL.length] +
+        '" stroke="#ffffff" stroke-width="2"/>';
+      const am = a0 + sweep / 2;
+      lab += '<text class="pie-lab" x="' + (PIE_CX + PIE_LR * Math.cos(am)).toFixed(1) + '" y="' +
+        (PIE_CY + PIE_LR * Math.sin(am) + 5).toFixed(1) + '" text-anchor="middle" font-size="15" ' +
+        'font-weight="700" fill="#0f172a">' + labels[i] + '</text>';
+      a0 = a1;
+    }
+    let legend = '<div class="pie-legend" style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px">';
+    for (let i = 0; i < cats.length; i++) {
+      legend += '<span class="pie-key" style="display:inline-flex;align-items:center;gap:6px;font-size:13px">' +
+        '<span style="width:13px;height:13px;border-radius:3px;background:' + PIE_FILL[i % PIE_FILL.length] +
+        ';border:1px solid #94a3b8;display:inline-block"></span>' +
+        '<span class="pie-cat" style="color:#0f172a">' + cats[i] + '</span>' +
+        '<b class="pie-val" style="color:#0f172a">' + labels[i] + '</b></span>';
+    }
+    legend += '</div>';
+    return '<div class="piechart" style="display:inline-block;background:#fff;color:#0f172a;' +
+      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
+      '<div style="font-weight:600;margin-bottom:6px">' + f.title + '</div>' +
+      '<svg width="230" height="230" viewBox="0 0 230 230" style="display:block;font-family:inherit">' +
+      svg + lab + '</svg>' + legend +
+      '<div style="margin-top:6px;font-size:.85em;color:#475569">' + f.caption + '</div></div>';
+  }
+
+  /* ---------------- the documented stylesheet block (WOUND 8) ----------------
+   * Six of the seven renderers are self-contained: every declaration they need is
+   * inline in the string they build, so this file IS the reference drawing the
+   * contract claims it is. `fractionBar` is the one exception - a segment's width
+   * is responsive (`6vw`), which cannot be expressed as a fixed inline value - so
+   * its three rules live in index.html's stylesheet and are declared HERE, in the
+   * renderer, as the contract.
+   *
+   * tools/gen-sanity.mjs asserts each selector/body below appears verbatim (modulo
+   * whitespace) in index.html, so the two can never drift apart in silence. A
+   * native renderer reads the geometry off this constant: 3 px gap, segments
+   * centred, each segment 28-46 px wide (6% of viewport width) and 34 px tall,
+   * 2.5 px white border, 6 px radius, unfilled at 6% white, filled with a vertical
+   * #6ee7f9 -> #3aa7ff gradient. */
+  const FIGURE_CSS = {
+    '.barModel': 'display:flex; gap:3px; justify-content:center;',
+    '.barModel .seg': 'width:clamp(28px,6vw,46px); height:34px; border:2.5px solid #fff; border-radius:6px; background:rgba(255,255,255,.06);',
+    '.barModel .seg.fill': 'background:linear-gradient(180deg,#6ee7f9,#3aa7ff);'
+  };
+
+  /* ---------------- the registry ---------------- */
+
+  const RENDERERS = { bar, rect, fractionBar, lshape, table, line, pie };
+
+  function renderFigure(fig) {
+    if (!fig) return '';
+    const f = RENDERERS[fig.type];
+    if (!f) throw new Error('renderFigure: unknown figure type "' + fig.type + '"');
+    return f(fig);
+  }
+
+  /* core.js assigns window.MQI wholesale, so this file MUST load after it. */
+  const MQI = root.MQI = root.MQI || {};
+  MQI.renderFigure = renderFigure;
+  MQI.figureTypes = Object.keys(RENDERERS);
+  MQI.figureCss = FIGURE_CSS;
+
+})(typeof window !== 'undefined' ? window : globalThis);
+
+
 /* ===== js/topics/p2-number-beach.js ===== */
 "use strict";
 /* Math Quest Island topic: p2 (P2). Self-contained.
@@ -826,14 +1199,16 @@ function gMulMixed(){ return Math.random()<0.5 ? gMulHard() : gMul([3,4,6,7,8,9]
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
 
+/* The bar model leaves this file as PURE DATA; js/figures.js draws it.
+   Spec: { type:'fractionBar', parts, filled } - see js/topics/README.md. */
+const fig = (q, figure) => (q.figure = figure, q);
+
 function gPicIdentify(){
   const d=ri(2,8), n=ri(1,d-1);
-  let bar='<div class="barModel">';
-  for(let i=0;i<d;i++) bar+='<div class="seg'+(i<n?' fill':'')+'"></div>';
-  bar+='</div>';
   const cands=[[d-n,d],[n,d+1],[n+1,d],[n,d-1]];
-  return finishFrac('What fraction of the bar is <b>blue</b>?', bar, [n,d], cands,
-    n+' out of '+d+' parts are blue, so it is '+fr(n,d)+'.');
+  return fig(finishFrac('What fraction of the bar is <b>blue</b>?', '', [n,d], cands,
+    n+' out of '+d+' parts are blue, so it is '+fr(n,d)+'.'),
+    { type:'fractionBar', parts:d, filled:n });
 }
 function gCompare4(mode){
   let pairs=[];
@@ -1181,16 +1556,20 @@ function gSimplest(){
  * graphs, and using different scales on the axis. Reading only. No drawing of
  * graphs, no tables/line graphs/pie charts (P4), no average (P6).
  *
- * The graph is rendered into q.extra as fully self-contained inline-styled HTML:
- * a category axis down the left, a value axis along the bottom with one tick per
- * scale unit and a number under every tick, gridlines through the plot, and a
- * numeric value label at the end of each bar. NOTHING is carried in a data-*
- * attribute: the harness oracle re-derives every value by parsing the same
- * labels and ticks a child reads off the screen.
+ * The graph leaves this file as PURE DATA on `q.figure` ({type:'bar', ...}); the
+ * shared renderer js/figures.js draws it: a category axis down the left, a value
+ * axis along the bottom with one tick per scale unit and a number under every
+ * tick, gridlines through the plot, and a numeric value label at the end of each
+ * bar. NOTHING is carried in a data-* attribute: the harness oracle re-derives
+ * every value by parsing the same rendered labels and ticks a child reads off
+ * the screen. Spec fields are documented in js/topics/README.md.
  */
 (function () {
   const G = MQI.gen;
   const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishNum = G.finishNum;
+
+  /* attach a figure spec to a finished question */
+  const fig = (q, figure) => (q.figure = figure, q);
 
   const SETS = [
     { title:'Favourite hawker dish in Primary 3 Resilience', thing:'pupils',
@@ -1205,8 +1584,6 @@ function gSimplest(){
       cats:['Monday','Tuesday','Wednesday','Thursday','Friday'] }
   ];
 
-  const LBL = 156, PLOTW = 240;   /* px: category column, plot area */
-
   function makeGraph(scale, nBars){
     const set = pick(SETS);
     const cats = shuffle(set.cats).slice(0, nBars);
@@ -1215,99 +1592,70 @@ function gSimplest(){
       const u = ri(2, 9);
       if (!units.includes(u)) units.push(u);
     }
-    const maxU = Math.max(...units);
-    const x = k => Math.round(k / maxU * PLOTW);
-    const thing = scale === 1 ? set.thing.replace(/s$/, '') : set.thing;
+    /* the note under the graph says "stands for 1 pupil" but "stands for 5 pupils" */
+    const unitLabel = scale === 1 ? set.thing.replace(/s$/, '') : set.thing;
 
-    let html = '<div class="bargraph" style="text-align:left;font-size:13px;line-height:1.3;' +
-      'color:#0f172a;background:#fff;padding:10px 12px 6px;border-radius:8px;display:inline-block">' +
-      '<div style="font-weight:600;margin-bottom:8px">' + set.title + '</div>' +
-      '<div style="position:relative;padding-left:' + LBL + 'px">' +
-      '<div style="position:absolute;left:' + LBL + 'px;top:0;bottom:0;width:' + PLOTW + 'px">';
-    for (let k = 0; k <= maxU; k++){
-      html += '<div style="position:absolute;left:' + x(k) + 'px;top:0;bottom:0;width:1px;background:' +
-        (k === 0 ? '#64748b' : '#e2e8f0') + '"></div>';
-    }
-    html += '</div>';
-    for (let i = 0; i < nBars; i++){
-      html += '<div class="bg-row" style="position:relative;display:flex;align-items:center;height:20px;margin:4px 0">' +
-        '<span class="bg-cat" style="position:absolute;left:-' + LBL + 'px;width:' + (LBL - 8) +
-        'px;text-align:right;white-space:nowrap">' + cats[i] + '</span>' +
-        '<span class="bg-bar" style="display:inline-block;height:15px;background:#4c8bf5;border-radius:0 2px 2px 0;width:' +
-        x(units[i]) + 'px"></span>' +
-        '<span class="bg-val" style="margin-left:6px;font-weight:600">' + (units[i]*scale) + '</span>' +
-        '</div>';
-    }
-    html += '</div>' +
-      '<div style="position:relative;height:24px;margin-left:' + LBL + 'px;width:' + (PLOTW + 30) +
-      'px;border-top:2px solid #475569">';
-    for (let k = 0; k <= maxU; k++){
-      html += '<span style="position:absolute;left:' + x(k) + 'px;top:0;width:1px;height:5px;background:#475569"></span>' +
-        '<span class="bg-tick" style="position:absolute;left:' + x(k) +
-        'px;top:7px;transform:translateX(-50%);font-size:11px;color:#475569">' + (k*scale) + '</span>';
-    }
-    html += '</div>' +
-      '<div style="margin-top:2px;font-size:.85em;color:#475569">Each unit along the bottom of the graph stands for ' +
-      scale + ' ' + thing + '.</div></div>';
-    return { html, cats, units, scale, thing:set.thing,
+    const figure = { type:'bar', title:set.title, cats, units, scale,
+                     maxUnit: Math.max.apply(null, units), unitLabel };
+    return { figure, cats, units, scale, thing:set.thing,
              val: i => units[i]*scale };
   }
 
   function gReadOne(){
     const g = makeGraph(1, 4);
     const i = ri(0, 3);
-    return finishNum('How many ' + g.thing + ' does the graph show for ' + g.cats[i] + '?', g.html, g.val(i),
+    return fig(finishNum('How many ' + g.thing + ' does the graph show for ' + g.cats[i] + '?', '', g.val(i),
       [g.val((i+1)%4), g.val((i+2)%4), g.val(i) + 1, g.val(i) + 2], '',
-      'Follow the ' + g.cats[i] + ' bar across to the scale. It reaches ' + g.val(i) + '.');
+      'Follow the ' + g.cats[i] + ' bar across to the scale. It reaches ' + g.val(i) + '.'), g.figure);
   }
   function gDiffOne(){
     const g = makeGraph(1, 4);
     const order = shuffle([0,1,2,3]);
     let a = order[0], b = order[1];
     if (g.val(a) < g.val(b)) { const t = a; a = b; b = t; }
-    return finishNum('How many more ' + g.thing + ' are shown for ' + g.cats[a] + ' than for ' + g.cats[b] + '?',
-      g.html, g.val(a) - g.val(b),
+    return fig(finishNum('How many more ' + g.thing + ' are shown for ' + g.cats[a] + ' than for ' + g.cats[b] + '?',
+      '', g.val(a) - g.val(b),
       [g.val(a) + g.val(b), g.val(a), g.val(b), g.val(a) - g.val(b) + 1], '',
       g.cats[a] + ' shows ' + g.val(a) + ' and ' + g.cats[b] + ' shows ' + g.val(b) + '. ' +
-      g.val(a) + ' - ' + g.val(b) + ' = ' + (g.val(a) - g.val(b)) + '.');
+      g.val(a) + ' - ' + g.val(b) + ' = ' + (g.val(a) - g.val(b)) + '.'), g.figure);
   }
   function gReadScaled(){
     const g = makeGraph(pick([2, 5]), 4);
     const i = ri(0, 3);
-    return finishNum('How many ' + g.thing + ' does the graph show for ' + g.cats[i] + '?', g.html, g.val(i),
+    return fig(finishNum('How many ' + g.thing + ' does the graph show for ' + g.cats[i] + '?', '', g.val(i),
       [g.units[i], g.val(i) + g.scale, g.val((i+1)%4), g.val(i) + 1], '',
       'The ' + g.cats[i] + ' bar is ' + g.units[i] + ' units long and each unit stands for ' + g.scale +
-      ', so ' + g.units[i] + ' x ' + g.scale + ' = ' + g.val(i) + '.');
+      ', so ' + g.units[i] + ' x ' + g.scale + ' = ' + g.val(i) + '.'), g.figure);
   }
   function gDiffScaled(){
     const g = makeGraph(pick([2, 5]), 4);
     const order = shuffle([0,1,2,3]);
     let a = order[0], b = order[1];
     if (g.val(a) < g.val(b)) { const t = a; a = b; b = t; }
-    return finishNum('How many more ' + g.thing + ' are shown for ' + g.cats[a] + ' than for ' + g.cats[b] + '?',
-      g.html, g.val(a) - g.val(b),
+    return fig(finishNum('How many more ' + g.thing + ' are shown for ' + g.cats[a] + ' than for ' + g.cats[b] + '?',
+      '', g.val(a) - g.val(b),
       [g.units[a] - g.units[b], g.val(a) + g.val(b), g.val(a), g.val(b)], '',
       'Read both bars with the scale first: ' + g.val(a) + ' and ' + g.val(b) + '. Then ' + g.val(a) + ' - ' + g.val(b) +
-      ' = ' + (g.val(a) - g.val(b)) + '. Counting units instead of values is the usual slip.');
+      ' = ' + (g.val(a) - g.val(b)) + '. Counting units instead of values is the usual slip.'), g.figure);
   }
   function gTotalScaled(){
     const g = makeGraph(pick([5, 10]), 5);
     const order = shuffle([0,1,2,3,4]);
     const a = order[0], b = order[1];
-    return finishNum('How many ' + g.thing + ' are shown for ' + g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
-      g.html, g.val(a) + g.val(b),
+    return fig(finishNum('How many ' + g.thing + ' are shown for ' + g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
+      '', g.val(a) + g.val(b),
       [g.units[a] + g.units[b], Math.abs(g.val(a) - g.val(b)), g.val(a) + g.val(b) + g.scale, g.val(a)], '',
       g.cats[a] + ' is ' + g.units[a] + ' x ' + g.scale + ' = ' + g.val(a) + ' and ' + g.cats[b] + ' is ' +
-      g.units[b] + ' x ' + g.scale + ' = ' + g.val(b) + '. Altogether ' + (g.val(a) + g.val(b)) + '.');
+      g.units[b] + ' x ' + g.scale + ' = ' + g.val(b) + '. Altogether ' + (g.val(a) + g.val(b)) + '.'), g.figure);
   }
   function gTotalMixed(){
     const g = makeGraph(pick([2, 5, 10]), 5);
     const order = shuffle([0,1,2,3,4]);
     const a = order[0], b = order[1];
-    return finishNum('How many ' + g.thing + ' are shown for ' + g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
-      g.html, g.val(a) + g.val(b),
+    return fig(finishNum('How many ' + g.thing + ' are shown for ' + g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
+      '', g.val(a) + g.val(b),
       [g.units[a] + g.units[b], g.val(a) + g.val(b) + g.scale, Math.abs(g.val(a) - g.val(b)), g.val(b)], '',
-      'Each unit stands for ' + g.scale + '. ' + g.val(a) + ' + ' + g.val(b) + ' = ' + (g.val(a) + g.val(b)) + '.');
+      'Each unit stands for ' + g.scale + '. ' + g.val(a) + ' + ' + g.val(b) + ' = ' + (g.val(a) + g.val(b)) + '.'), g.figure);
   }
 
   MQI.registerTopic({
@@ -1341,21 +1689,20 @@ function gSimplest(){
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
 
-function rectHtml(L,B){
-  const w=Math.min(240,L*20), h=Math.max(34,Math.min(110,B*16));
-  return '<div style="display:inline-block;padding:0 56px 0 8px">'+
-         '<div class="rectBox" style="width:'+w+'px;height:'+h+'px"><span class="rectLabelB">'+B+' cm</span></div>'+
-         '<div class="rectLabelL" style="width:'+w+'px">'+L+' cm</div></div>';
-}
+/* The rectangle leaves this file as PURE DATA; js/figures.js draws it.
+   Spec: { type:'rect', length, breadth, unit } - see js/topics/README.md. */
+function rectFig(L,B){ return { type:'rect', length:L, breadth:B, unit:'cm' }; }
+const fig = (q, figure) => (q.figure = figure, q);
+
 function gPeri(){
   const L=ri(3,12), B=ri(2,L); const p=2*(L+B);
-  return finishNum('What is the <b>perimeter</b> of this rectangle?',rectHtml(L,B),p,[L+B,L*B,2*L+B,p+2],'cm',
-    'Perimeter = go all the way around: '+L+' + '+B+' + '+L+' + '+B+' = '+p+' cm.');
+  return fig(finishNum('What is the <b>perimeter</b> of this rectangle?','',p,[L+B,L*B,2*L+B,p+2],'cm',
+    'Perimeter = go all the way around: '+L+' + '+B+' + '+L+' + '+B+' = '+p+' cm.'), rectFig(L,B));
 }
 function gAreaRect(){
   const L=ri(3,12), B=ri(2,Math.min(L,9)); const a=L*B;
-  return finishNum('What is the <b>area</b> of this rectangle?',rectHtml(L,B),a,[2*(L+B),L+B,a+L,a-B],'cm²',
-    'Area = length × breadth = '+L+' × '+B+' = '+a+' cm².');
+  return fig(finishNum('What is the <b>area</b> of this rectangle?','',a,[2*(L+B),L+B,a+L,a-B],'cm²',
+    'Area = length × breadth = '+L+' × '+B+' = '+a+' cm².'), rectFig(L,B));
 }
 /* Wave-3 blocker fix: gSquarePA rendered BOTH an area face and a perimeter face
  * from one generator, so a pool entry tagged 'peri' could still show an area stem
@@ -2656,13 +3003,18 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
  * `geometry`); area of a triangle (P5); volume (P5).
  *
  * Composite figures are either DESCRIBED in words with every dimension stated, or
- * RENDERED as an inline-styled L-shape whose six sides ALL carry a printed number
- * label a child can read on screen. Nothing lives in a data-* attribute: the harness
- * oracle re-derives area and perimeter by parsing those same printed labels.
+ * emitted as PURE DATA on `q.figure` ({type:'lshape', W, H, a, b, unit}) and drawn
+ * by the shared renderer js/figures.js as an L-shape whose six sides ALL carry a
+ * printed number label a child can read on screen. Nothing lives in a data-*
+ * attribute: the harness oracle re-derives area and perimeter by parsing those
+ * same printed labels. Spec fields are documented in js/topics/README.md.
  */
 (function () {
   const G = MQI.gen;
   const ri = G.ri, pick = G.pick, finishNum = G.finishNum, finishTyped = G.finishTyped;
+
+  /* attach a figure spec to a finished question */
+  const fig = (q, figure) => (q.figure = figure, q);
 
   /* finishNum prepends its own space to the unit, so these carry none. */
   const CM2 = 'cm²', CM = 'cm';
@@ -2775,65 +3127,40 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
 
   /* ---- composite L-shape, RENDERED with every side labelled (1.3) ---- */
 
-  const S = 11;   /* px per cm */
-
   /* An L-shape: a W x H rectangle with an a x b piece removed from the top-right.
      Sides clockwise from the top-left corner:
        top = W - a, cut down = b, cut across = a, right = H - b, bottom = W, left = H.
-     Every one of the six is printed on the figure. */
+     The renderer derives and prints every one of the six from W/H/a/b, so the spec
+     and the picture can never disagree. */
   function makeL() {
     const W = ri(7, 16), H = ri(6, 14);
     const a = ri(2, W - 3), b = ri(2, H - 3);
-    const lab = (cls, v, css) =>
-      '<span class="lf-' + cls + '" style="position:absolute;font-size:12px;font-weight:600;' +
-      'color:#0f172a;background:#fff;padding:0 2px;' + css + '">' + v + '</span>';
-
-    const w = W * S, h = H * S, aw = a * S, bh = b * S;
-    let html = '<div class="lfig" style="display:inline-block;background:#fff;padding:16px 22px;' +
-      'border-radius:8px;color:#0f172a">' +
-      '<div style="position:relative;width:' + w + 'px;height:' + h + 'px">' +
-      /* the L drawn as two solid blocks */
-      '<div style="position:absolute;left:0;top:0;width:' + (w - aw) + 'px;height:' + bh +
-      'px;background:#93c5fd;border:2px solid #1d4ed8;border-right:none;border-bottom:none;box-sizing:border-box"></div>' +
-      '<div style="position:absolute;left:0;top:' + bh + 'px;width:' + w + 'px;height:' + (h - bh) +
-      'px;background:#93c5fd;border:2px solid #1d4ed8;border-top:none;box-sizing:border-box"></div>' +
-      '<div style="position:absolute;left:0;top:' + bh + 'px;width:' + (w - aw) +
-      'px;height:2px;background:#93c5fd"></div>' +
-      /* the six printed side lengths */
-      lab('top', W - a, 'left:' + ((w - aw) / 2) + 'px;top:-9px;transform:translateX(-50%)') +
-      lab('cutdown', b, 'left:' + (w - aw) + 'px;top:' + (bh / 2) + 'px;transform:translate(-50%,-50%)') +
-      lab('cutacross', a, 'left:' + (w - aw / 2) + 'px;top:' + (bh - 9) + 'px;transform:translateX(-50%)') +
-      lab('right', H - b, 'left:' + w + 'px;top:' + (bh + (h - bh) / 2) + 'px;transform:translate(-50%,-50%)') +
-      lab('bottom', W, 'left:' + (w / 2) + 'px;top:' + (h - 9) + 'px;transform:translateX(-50%)') +
-      lab('left', H, 'left:0;top:' + (h / 2) + 'px;transform:translate(-50%,-50%)') +
-      '</div>' +
-      '<div style="margin-top:10px;font-size:.85em;color:#475569">All lengths are in cm. ' +
-      'Every side of the figure is labelled. The corners are all right angles.</div></div>';
-    return { html, W, H, a, b, area: W * H - a * b, per: 2 * (W + H) };
+    return { figure: { type: 'lshape', W, H, a, b, unit: 'cm' },
+             W, H, a, b, area: W * H - a * b, per: 2 * (W + H) };
   }
 
   /* pool 3: area of the rendered L-shape */
   function gLArea() {
     const g = makeL();
     const wrong = g.W * g.H;
-    return finishNum(
-      'What is the area of this figure?', g.html, g.area,
+    return fig(finishNum(
+      'What is the area of this figure?', '', g.area,
       [wrong, g.per, g.a * g.b, g.area + g.a, g.area + 1], CM2,
       'Take the whole ' + g.W + ' cm by ' + g.H + ' cm rectangle, ' + g.W + ' × ' + g.H +
       ' = ' + wrong + ' cm², then take away the ' + g.a + ' cm by ' + g.b +
       ' cm corner, ' + (g.a * g.b) + ' cm². ' + wrong + ' − ' + (g.a * g.b) +
-      ' = ' + g.area + ' cm².');
+      ' = ' + g.area + ' cm².'), g.figure);
   }
 
   /* pool 3: perimeter of the rendered L-shape */
   function gLPerimeter() {
     const g = makeL();
-    return finishNum(
-      'What is the perimeter of this figure?', g.html, g.per,
+    return fig(finishNum(
+      'What is the perimeter of this figure?', '', g.per,
       [g.area, g.W + g.H, g.per - g.a, g.per + g.a, g.per - 2 * g.b], CM,
       'Perimeter means all the way round, so add the six labelled sides: ' +
       (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W + ' + ' + g.H +
-      ' = ' + g.per + ' cm. Missing out the two short sides at the corner is the usual slip.');
+      ' = ' + g.per + ' cm. Missing out the two short sides at the corner is the usual slip.'), g.figure);
   }
 
   MQI.registerTopic({
@@ -2867,16 +3194,21 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
  * read off a rendered figure without angle or fraction work that sits outside P4.
  * NOT here: bar graphs (P3, topic `p3bargraph`); average (P6).
  *
- * Both surfaces render as fully self-contained inline-styled markup with EVERY number
- * a child needs printed as on-screen text: the table prints each cell, the line graph
+ * Both surfaces leave this file as PURE DATA on `q.figure` ({type:'table'} and
+ * {type:'line'}); the shared renderer js/figures.js draws them, with EVERY number a
+ * child needs printed as on-screen text: the table prints each cell, the line graph
  * prints a value axis with a number under every tick, a gridline through every tick,
- * a category under every point, and the value above every point. Nothing is carried in
- * a data-* attribute: the harness oracle re-derives every answer by parsing those same
- * printed labels.
+ * a category under every point, and the value beside every point, LEVEL WITH ITS OWN
+ * gridline (the P4 Area+Graphs kill fix now lives in the renderer). Nothing is carried
+ * in a data-* attribute: the harness oracle re-derives every answer by parsing those
+ * same rendered labels. Spec fields are documented in js/topics/README.md.
  */
 (function () {
   const G = MQI.gen;
   const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishNum = G.finishNum;
+
+  /* attach a figure spec to a finished question */
+  const fig = (q, figure) => (q.figure = figure, q);
 
   const SETS = [
     { title: 'Books borrowed from the school library', thing: 'books', group: 'days',
@@ -2902,25 +3234,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
       if (!vals.includes(v)) vals.push(v);
     }
     const hidden = showQ ? ri(0, n - 1) : -1;
-    /* W3 cosmetic, same phone-width defect as the line graph: a 5-column table is
-       wider than a 360px column, and with no cap it pushed the whole card past the
-       right edge so the last column was unreadable. Capped and scrolled in place. */
-    let html = '<div class="dtable" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%;overflow-x:auto">' +
-      '<div style="font-weight:600;margin-bottom:8px">' + set.title + '</div>' +
-      '<table style="border-collapse:collapse"><tr>';
-    for (let i = 0; i < n; i++) {
-      html += '<th class="dt-cat" style="border:1px solid #94a3b8;padding:5px 12px;background:#f1f5f9;color:#0f172a;' +
-        'font-weight:600;white-space:nowrap">' + cats[i] + '</th>';
-    }
-    html += '</tr><tr>';
-    for (let i = 0; i < n; i++) {
-      html += '<td class="dt-val" style="border:1px solid #94a3b8;padding:5px 12px;text-align:center;color:#0f172a">' +
-        (i === hidden ? '?' : vals[i]) + '</td>';
-    }
-    html += '</tr></table><div style="margin-top:6px;font-size:.85em;color:#475569">Number of ' +
-      set.thing + '.</div></div>';
-    return { html, cats, vals, hidden, thing: set.thing, group: set.group,
+    /* `hidden` is the column the renderer prints as '?' (-1 = none). */
+    const figure = { type: 'table', title: set.title, cats, values: vals, hidden,
+                     unitLabel: set.thing };
+    return { figure, cats, vals, hidden, thing: set.thing, group: set.group,
              total: vals.reduce((a, b) => a + b, 0) };
   }
 
@@ -2928,18 +3245,18 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const t = makeTable(5, 1, false);
     const i = ri(0, 4);
     const others = t.vals.filter((_, j) => j !== i);
-    return finishNum('In the table, how many ' + t.thing + ' are recorded for ' + t.cats[i] + '?',
-      t.html, t.vals[i], [others[0], others[1], others[2], t.vals[i] + 1], '',
+    return fig(finishNum('In the table, how many ' + t.thing + ' are recorded for ' + t.cats[i] + '?',
+      '', t.vals[i], [others[0], others[1], others[2], t.vals[i] + 1], '',
       'Find the ' + t.cats[i] + ' column, then read the number directly underneath it: ' +
-      t.vals[i] + '.');
+      t.vals[i] + '.'), t.figure);
   }
 
   function gTableTotal() {
     const t = makeTable(4, 1, false);
-    return finishNum('What is the total number of ' + t.thing + ' in the table?',
-      t.html, t.total,
+    return fig(finishNum('What is the total number of ' + t.thing + ' in the table?',
+      '', t.total,
       [t.total - t.vals[0], t.total + t.vals[0], t.total - 1, Math.max(...t.vals)], '',
-      'Add every column: ' + t.vals.join(' + ') + ' = ' + t.total + '.');
+      'Add every column: ' + t.vals.join(' + ') + ' = ' + t.total + '.'), t.figure);
   }
 
   function gTableComplete() {
@@ -2947,80 +3264,33 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const i = t.hidden, missing = t.vals[i];
     const known = t.vals.filter((_, j) => j !== i);
     const knownSum = known.reduce((a, b) => a + b, 0);
-    return finishNum('The table is not complete. Altogether there were ' + t.total + ' ' +
+    return fig(finishNum('The table is not complete. Altogether there were ' + t.total + ' ' +
       t.thing + ' over the 5 ' + t.group + '. How many ' + t.thing + ' were there for ' +
       t.cats[i] + '?',
-      t.html, missing,
+      '', missing,
       [knownSum, t.total, missing + 1, known[0], known[1]], '',
       'The four columns you can read add up to ' + known.join(' + ') + ' = ' + knownSum +
-      '. Take that away from the total: ' + t.total + ' − ' + knownSum + ' = ' + missing + '.');
+      '. Take that away from the total: ' + t.total + ' − ' + knownSum + ' = ' + missing + '.'), t.figure);
   }
 
   /* ---------------- line graph ---------------- */
 
-  const PW = 300, PH = 150, PADL = 46, PADT = 18, PADB = 34;
+  /* The value axis always runs 0 to 8 units whatever the step, so a step-5 graph is
+     the same picture with a different scale printed up the side. */
+  const LINE_MAX_UNIT = 8;
 
   function makeLine(n, step) {
     const set = pick(SETS);
     const cats = set.cats.slice(0, n);
     const units = [];
     while (units.length < n) {
-      const u = ri(1, 8);
+      const u = ri(1, LINE_MAX_UNIT);
       if (!units.includes(u)) units.push(u);
     }
     const vals = units.map(u => u * step);
-    const maxU = 8;
-    const y = u => PADT + PH - Math.round(u / maxU * PH);
-    const x = i => PADL + Math.round(i * PW / (n - 1));
-    const W = PADL + PW + 34, H = PADT + PH + PADB;
-
-    let s = '<div class="linegraph" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:10px 12px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
-      '<div style="font-weight:600;margin-bottom:6px">' + set.title + '</div>' +
-      '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H +
-      /* W3 cosmetic (Dress Rehearsal Wave 2, item 1), second half: at a 390px phone
-         width the fixed 380px card overflowed its column and the RIGHTMOST point and
-         its value label were cut off the screen entirely. The svg now scales to the
-         card (max-width:100%, height:auto) and the card itself is capped, so every
-         point stays inside the viewBox at any width. */
-      '" style="display:block;font-family:inherit;max-width:100%;height:auto">';
-    for (let k = 0; k <= maxU; k++) {
-      s += '<line x1="' + PADL + '" y1="' + y(k) + '" x2="' + (PADL + PW) + '" y2="' + y(k) +
-        '" stroke="' + (k === 0 ? '#475569' : '#e2e8f0') + '" stroke-width="' + (k === 0 ? 2 : 1) + '"/>' +
-        '<line x1="' + (PADL - 5) + '" y1="' + y(k) + '" x2="' + PADL + '" y2="' + y(k) +
-        '" stroke="#475569" stroke-width="1"/>' +
-        '<text class="lg-tick" x="' + (PADL - 9) + '" y="' + (y(k) + 4) +
-        '" text-anchor="end" font-size="11" fill="#475569">' + (k * step) + '</text>';
-    }
-    s += '<line x1="' + PADL + '" y1="' + PADT + '" x2="' + PADL + '" y2="' + (PADT + PH) +
-      '" stroke="#475569" stroke-width="2"/>';
-    s += '<polyline fill="none" stroke="#4c8bf5" stroke-width="2.5" points="' +
-      units.map((u, i) => x(i) + ',' + y(u)).join(' ') + '"/>';
-    for (let i = 0; i < n; i++) {
-      s += '<circle cx="' + x(i) + '" cy="' + y(units[i]) + '" r="4" fill="#1d4ed8"/>' +
-        /* KILL FIX (P4 Area+Graphs Refutation, §5): the value label used to be drawn at
-           y(units[i]) - 9, a FIXED 9px above the dot, while one tick step is PH/maxU =
-           18.75px. Every label therefore floated half a step high and sat level with the
-           gridline ONE STEP ABOVE the value it named - 228 of 228 graphs, and on a step-5
-           graph the label was 5 units adrift of the line it lined up with. The label y is
-           now the value's OWN tick position, y(units[i]), so the printed number is level
-           with its own gridline. Drawn to the RIGHT of the dot (text-anchor="start") so it
-           never covers the point and so point 0, which sits on the y-axis itself, clears
-           the tick-number column. */
-        /* W3 cosmetic (Dress Rehearsal Wave 2, item 1): the RIGHTMOST point sits on
-           x = PADL + PW, so a label drawn 12px to its right ran into the last 34px of
-           the viewBox and crowded the edge once the card shrank to a phone width. The
-           last label is flipped to the LEFT of its dot (text-anchor="end", 8px clear).
-           It still sits on its own gridline, and the nearest other label is a full
-           point-gap away, so nothing overlaps. */
-        '<text class="lg-val" x="' + (i === n - 1 ? x(i) - 8 : x(i) + 12) + '" y="' + (y(units[i]) + 4) +
-        '" text-anchor="' + (i === n - 1 ? 'end' : 'start') + '" font-size="12" font-weight="600" fill="#0f172a">' + vals[i] + '</text>' +
-        '<text class="lg-cat" x="' + x(i) + '" y="' + (PADT + PH + 17) +
-        '" text-anchor="middle" font-size="11" fill="#475569">' + cats[i] + '</text>';
-    }
-    s += '</svg><div style="margin-top:2px;font-size:.85em;color:#475569">Number of ' + set.thing +
-      '. Each step up the side of the graph stands for ' + step + '.</div></div>';
-    return { html: s, cats, vals, thing: set.thing,
+    const figure = { type: 'line', title: set.title, cats, units, step,
+                     maxUnit: LINE_MAX_UNIT, unitLabel: set.thing };
+    return { figure, cats, vals, thing: set.thing,
              val: i => vals[i], idx: c => cats.indexOf(c) };
   }
 
@@ -3028,20 +3298,20 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const g = makeLine(5, 1);
     const i = ri(0, 4);
     const o = g.vals.filter((_, j) => j !== i);
-    return finishNum('On the line graph, how many ' + g.thing + ' are shown for ' + g.cats[i] + '?',
-      g.html, g.val(i), [o[0], o[1], o[2], g.val(i) + 1], '',
+    return fig(finishNum('On the line graph, how many ' + g.thing + ' are shown for ' + g.cats[i] + '?',
+      '', g.val(i), [o[0], o[1], o[2], g.val(i) + 1], '',
       'Go up from ' + g.cats[i] + ' until you reach the dot, then read the number printed beside it: ' +
-      g.val(i) + '.');
+      g.val(i) + '.'), g.figure);
   }
 
   function gLineReadScaled() {
     const g = makeLine(5, pick([2, 5, 10]));
     const i = ri(0, 4);
     const o = g.vals.filter((_, j) => j !== i);
-    return finishNum('On the line graph, how many ' + g.thing + ' are shown for ' + g.cats[i] + '?',
-      g.html, g.val(i), [o[0], o[1], o[2], g.val(i) + 1], '',
+    return fig(finishNum('On the line graph, how many ' + g.thing + ' are shown for ' + g.cats[i] + '?',
+      '', g.val(i), [o[0], o[1], o[2], g.val(i) + 1], '',
       'Find the dot above ' + g.cats[i] + '. Check the numbers up the side of the graph, then read the value printed at the dot: ' +
-      g.val(i) + '.');
+      g.val(i) + '.'), g.figure);
   }
 
   function gLineDiff() {
@@ -3050,11 +3320,11 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     let a = ord[0], b = ord[1];
     if (g.val(a) < g.val(b)) { const t = a; a = b; b = t; }
     const d = g.val(a) - g.val(b);
-    return finishNum('On the line graph, how many more ' + g.thing + ' are shown for ' +
+    return fig(finishNum('On the line graph, how many more ' + g.thing + ' are shown for ' +
       g.cats[a] + ' than for ' + g.cats[b] + '?',
-      g.html, d, [g.val(a) + g.val(b), g.val(a), g.val(b), d + 1], '',
+      '', d, [g.val(a) + g.val(b), g.val(a), g.val(b), d + 1], '',
       g.cats[a] + ' shows ' + g.val(a) + ' and ' + g.cats[b] + ' shows ' + g.val(b) + '. ' +
-      g.val(a) + ' − ' + g.val(b) + ' = ' + d + '. "How many more" is always a subtraction.');
+      g.val(a) + ' − ' + g.val(b) + ' = ' + d + '. "How many more" is always a subtraction.'), g.figure);
   }
 
   function gLineTotal() {
@@ -3062,11 +3332,11 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const ord = shuffle([0, 1, 2, 3, 4]);
     const a = ord[0], b = ord[1];
     const s = g.val(a) + g.val(b);
-    return finishNum('On the line graph, how many ' + g.thing + ' are shown for ' +
+    return fig(finishNum('On the line graph, how many ' + g.thing + ' are shown for ' +
       g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
-      g.html, s, [Math.abs(g.val(a) - g.val(b)), g.val(a), g.val(b), s + 1], '',
+      '', s, [Math.abs(g.val(a) - g.val(b)), g.val(a), g.val(b), s + 1], '',
       'Read both dots first: ' + g.val(a) + ' and ' + g.val(b) + '. Then ' + g.val(a) + ' + ' +
-      g.val(b) + ' = ' + s + '.');
+      g.val(b) + ' = ' + s + '.'), g.figure);
   }
 
   MQI.registerTopic({
@@ -4091,42 +4361,17 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     return hard;
   }
 
-  const CX = 112, CY = 112, R = 92, LR = 57;
-  const px = a => CX + R * Math.cos(a), py = a => CY + R * Math.sin(a);
-
-  /* makePie: `labels[i]` is the STRING printed inside sector i AND in the legend
-     beside cats[i] - a count, a fraction like "1/4", or "?" for a hidden sector. */
+  /* makePie: the PURE DATA spec for one pie chart. `labels[i]` is the STRING
+     printed inside sector i AND in the legend beside cats[i] - a count, a fraction
+     like "1/4", or "?" for a hidden sector. Sector i sweeps weights[i] / sum of
+     the circle; js/figures.js draws it and prints the legend. Spec fields are
+     documented in js/topics/README.md. */
   function makePie(set, cats, weights, labels, caption) {
-    const S = weights.reduce((a, b) => a + b, 0);
-    let a0 = -Math.PI / 2, svg = '', lab = '';
-    for (let i = 0; i < cats.length; i++) {
-      const sweep = weights[i] / S * Math.PI * 2, a1 = a0 + sweep;
-      svg += '<path class="pie-sec" d="M ' + CX + ' ' + CY + ' L ' + px(a0).toFixed(1) + ' ' +
-        py(a0).toFixed(1) + ' A ' + R + ' ' + R + ' 0 ' + (sweep > Math.PI ? 1 : 0) + ' 1 ' +
-        px(a1).toFixed(1) + ' ' + py(a1).toFixed(1) + ' Z" fill="' + FILL[i % FILL.length] +
-        '" stroke="#ffffff" stroke-width="2"/>';
-      const am = a0 + sweep / 2;
-      lab += '<text class="pie-lab" x="' + (CX + LR * Math.cos(am)).toFixed(1) + '" y="' +
-        (CY + LR * Math.sin(am) + 5).toFixed(1) + '" text-anchor="middle" font-size="15" ' +
-        'font-weight="700" fill="#0f172a">' + labels[i] + '</text>';
-      a0 = a1;
-    }
-    let legend = '<div class="pie-legend" style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px">';
-    for (let i = 0; i < cats.length; i++) {
-      legend += '<span class="pie-key" style="display:inline-flex;align-items:center;gap:6px;font-size:13px">' +
-        '<span style="width:13px;height:13px;border-radius:3px;background:' + FILL[i % FILL.length] +
-        ';border:1px solid #94a3b8;display:inline-block"></span>' +
-        '<span class="pie-cat" style="color:#0f172a">' + cats[i] + '</span>' +
-        '<b class="pie-val" style="color:#0f172a">' + labels[i] + '</b></span>';
-    }
-    legend += '</div>';
-    return '<div class="piechart" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
-      '<div style="font-weight:600;margin-bottom:6px">' + set.title + '</div>' +
-      '<svg width="230" height="230" viewBox="0 0 230 230" style="display:block;font-family:inherit">' +
-      svg + lab + '</svg>' + legend +
-      '<div style="margin-top:6px;font-size:.85em;color:#475569">' + caption + '</div></div>';
+    return { type: 'pie', title: set.title, cats, weights, labels, caption };
   }
+
+  /* attach a figure spec to a finished question */
+  const fig = (q, figure) => (q.figure = figure, q);
 
   /* A count pie: n sectors, each printing its own number. */
   function countPie(n, gap) {
@@ -4136,7 +4381,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const m = pick([1, 1, 2, 5]);
     const vals = w.map(x => x * m);
     return { set, cats, vals, thing: set.thing,
-      html: makePie(set, cats, w, vals.map(String),
+      figure: makePie(set, cats, w, vals.map(String),
         'Number of ' + set.thing + '. Each sector is labelled with its number of ' + set.thing + '.'),
       val: c => vals[cats.indexOf(c)],
       total: vals.reduce((a, b) => a + b, 0) };
@@ -4151,13 +4396,13 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const cats = shuffle(set.cats.slice()).slice(0, 3);
     const labels = w.map(x => fracText(x, 12));
     return { set, cats, w, labels, thing: set.thing,
-      html: makePie(set, cats, w, labels,
+      figure: makePie(set, cats, w, labels,
         'Each sector is labelled with its fraction of the whole circle.') };
   }
 
   /* Text-choice MC. finishNum only builds numeric options; these items answer with a
      category name or a whole sentence, so they need their own finisher. */
-  function finishText(qHtml, extraHtml, correct, distractors, explain) {
+  function finishText(qHtml, figure, correct, distractors, explain) {
     const opts = [correct];
     for (const d of shuffle(distractors.slice())) {
       if (opts.length >= 4) break;
@@ -4165,7 +4410,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     }
     if (opts.length < 4) return null;
     const order = shuffle(opts.map((_, i) => i));
-    return { q: qHtml, extra: extraHtml || '', choices: order.map(i => opts[i]),
+    return { q: qHtml, extra: '', figure, choices: order.map(i => opts[i]),
              correct: order.indexOf(0), explain, answerText: correct };
   }
 
@@ -4175,10 +4420,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const p = countPie(pick([3, 4, 5]), false);
     const i = ri(0, p.cats.length - 1);
     const o = p.vals.filter((_, j) => j !== i);
-    return finishNum('On the pie chart, how many ' + p.thing + ' are shown for ' + p.cats[i] + '?',
-      p.html, p.vals[i], [o[0], o[1], o.length > 2 ? o[2] : p.total, p.vals[i] + 1], '',
+    return fig(finishNum('On the pie chart, how many ' + p.thing + ' are shown for ' + p.cats[i] + '?',
+      '', p.vals[i], [o[0], o[1], o.length > 2 ? o[2] : p.total, p.vals[i] + 1], '',
       'Find ' + p.cats[i] + ' in the key, then read the number printed inside that sector of the circle: ' +
-      p.vals[i] + '.');
+      p.vals[i] + '.'), p.figure);
   }
 
   function gPieWhichCat() {                                /* shape 2: value -> name */
@@ -4188,17 +4433,17 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const i = ri(0, p.cats.length - 1);
     const others = p.cats.filter((_, j) => j !== i);
     return finishText('On the pie chart, one sector shows ' + p.vals[i] + ' ' + p.thing +
-      '. Which one is it?', p.html, p.cats[i], others,
+      '. Which one is it?', p.figure, p.cats[i], others,
       'Look along the key for the sector labelled ' + p.vals[i] + '. That is ' + p.cats[i] + '.');
   }
 
   function gPieTotal() {                                   /* shape 3: whole circle */
     const p = countPie(pick([3, 4]), false);
-    return finishNum('How many ' + p.thing + ' are shown on the whole pie chart altogether?',
-      p.html, p.total,
+    return fig(finishNum('How many ' + p.thing + ' are shown on the whole pie chart altogether?',
+      '', p.total,
       [p.total - p.vals[0], p.total + p.vals[0], p.total - 1, Math.max.apply(null, p.vals)], '',
       'The sectors together make the whole circle, so add every one: ' + p.vals.join(' + ') +
-      ' = ' + p.total + '.');
+      ' = ' + p.total + '.'), p.figure);
   }
 
   /* ---------------- skill: compare (3 stem shapes) ---------------- */
@@ -4208,10 +4453,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const big = Math.max.apply(null, p.vals);
     const cat = p.cats[p.vals.indexOf(big)];
     const o = p.vals.filter(v => v !== big);
-    return finishNum('On the pie chart, one sector is bigger than all the others. How many ' +
-      p.thing + ' does that sector show?', p.html, big, [o[0], o[1], big + 1, p.total], '',
+    return fig(finishNum('On the pie chart, one sector is bigger than all the others. How many ' +
+      p.thing + ' does that sector show?', '', big, [o[0], o[1], big + 1, p.total], '',
       'The biggest sector takes up the most of the circle. It is ' + cat +
-      ', and the number printed inside it is ' + big + '.');
+      ', and the number printed inside it is ' + big + '.'), p.figure);
   }
 
   function gPieLeast() {                                   /* shape 2: smallest slice */
@@ -4219,10 +4464,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const small = Math.min.apply(null, p.vals);
     const cat = p.cats[p.vals.indexOf(small)];
     const o = p.vals.filter(v => v !== small);
-    return finishNum('On the pie chart, one sector is smaller than all the others. How many ' +
-      p.thing + ' does that sector show?', p.html, small, [o[0], o[1], small + 1, p.total], '',
+    return fig(finishNum('On the pie chart, one sector is smaller than all the others. How many ' +
+      p.thing + ' does that sector show?', '', small, [o[0], o[1], small + 1, p.total], '',
       'The smallest sector takes up the least of the circle. It is ' + cat +
-      ', and the number printed inside it is ' + small + '.');
+      ', and the number printed inside it is ' + small + '.'), p.figure);
   }
 
   function gPieCountAbove() {                              /* shape 3: count sectors */
@@ -4232,11 +4477,11 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const cut = sorted[p.vals.length - k] - 1;             /* strictly below the kth largest */
     const above = p.vals.filter(v => v > cut).length;
     const cands = [1, 2, 3, 4, 5].filter(v => v !== above);
-    return finishNum('How many sectors of the pie chart show more than ' + cut + ' ' + p.thing + '?',
-      p.html, above, cands, '',
+    return fig(finishNum('How many sectors of the pie chart show more than ' + cut + ' ' + p.thing + '?',
+      '', above, cands, '',
       'Read every sector, then count only the ones bigger than ' + cut + ': ' +
       p.vals.filter(v => v > cut).join(', ') + '. That is ' + above + ' sector' +
-      (above === 1 ? '' : 's') + '.');
+      (above === 1 ? '' : 's') + '.'), p.figure);
   }
 
   /* ---------------- skill: interpret (3 stem shapes) ---------------- */
@@ -4245,11 +4490,11 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const p = countPie(pick([3, 4, 5]), false);
     const ord = shuffle(p.cats.map((_, i) => i));
     const a = ord[0], b = ord[1], s = p.vals[a] + p.vals[b];
-    return finishNum('On the pie chart, how many ' + p.thing + ' are shown for ' + p.cats[a] +
-      ' and ' + p.cats[b] + ' altogether?', p.html, s,
+    return fig(finishNum('On the pie chart, how many ' + p.thing + ' are shown for ' + p.cats[a] +
+      ' and ' + p.cats[b] + ' altogether?', '', s,
       [Math.abs(p.vals[a] - p.vals[b]), p.vals[a], p.vals[b], s + 1, p.total], '',
       'Read both sectors first: ' + p.cats[a] + ' shows ' + p.vals[a] + ' and ' + p.cats[b] +
-      ' shows ' + p.vals[b] + '. Then ' + p.vals[a] + ' + ' + p.vals[b] + ' = ' + s + '.');
+      ' shows ' + p.vals[b] + '. Then ' + p.vals[a] + ' + ' + p.vals[b] + ' = ' + s + '.'), p.figure);
   }
 
   function gPieDiff() {                                    /* shape 2: how many more */
@@ -4258,11 +4503,11 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     let a = ord[0], b = ord[1];
     if (p.vals[a] < p.vals[b]) { const t = a; a = b; b = t; }
     const d = p.vals[a] - p.vals[b];
-    return finishNum('On the pie chart, how many more ' + p.thing + ' are shown for ' + p.cats[a] +
-      ' than for ' + p.cats[b] + '?', p.html, d,
+    return fig(finishNum('On the pie chart, how many more ' + p.thing + ' are shown for ' + p.cats[a] +
+      ' than for ' + p.cats[b] + '?', '', d,
       [p.vals[a] + p.vals[b], p.vals[a], p.vals[b], d + 1], '',
       p.cats[a] + ' shows ' + p.vals[a] + ' and ' + p.cats[b] + ' shows ' + p.vals[b] + '. ' +
-      p.vals[a] + ' − ' + p.vals[b] + ' = ' + d + '. "How many more" is always a subtraction.');
+      p.vals[a] + ' − ' + p.vals[b] + ' = ' + d + '. "How many more" is always a subtraction.'), p.figure);
   }
 
   /* shape 3, POOL 3, TWO STEPS: add two sectors, then compare that total with a
@@ -4274,12 +4519,12 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
       const a = ord[0], b = ord[1], c = ord[2];
       const s = p.vals[a] + p.vals[b], d = s - p.vals[c];
       if (d <= 0) continue;
-      return finishNum('On the pie chart, ' + p.cats[a] + ' and ' + p.cats[b] +
+      return fig(finishNum('On the pie chart, ' + p.cats[a] + ' and ' + p.cats[b] +
         ' are put together. How many more ' + p.thing + ' is that than ' + p.cats[c] + ' alone?',
-        p.html, d, [s, p.vals[c], s + p.vals[c], d + 1, p.vals[a]], '',
+        '', d, [s, p.vals[c], s + p.vals[c], d + 1, p.vals[a]], '',
         'First add the two sectors: ' + p.vals[a] + ' + ' + p.vals[b] + ' = ' + s + '. Then take ' +
         p.cats[c] + ' away: ' + s + ' − ' + p.vals[c] + ' = ' + d +
-        '. Two steps, and the first answer is not the final one.');
+        '. Two steps, and the first answer is not the final one.'), p.figure);
     }
     return gPieCombine();
   }
@@ -4318,7 +4563,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const trues = shuffle([...new Set(T.filter(s => mask(s) !== wrongMask))]);
     if (trues.length < 3) return gPieWrongStatement();
     return finishText('One of these statements about the pie chart is WRONG. Which one is it?',
-      p.html, wrong, trues,
+      p.figure, wrong, trues,
       'Check each statement against the numbers printed on the chart (' +
       cats.map((c, i) => c + ' ' + vals[i]).join(', ') + '). Only one does not match: "' +
       wrong + '"');
@@ -4357,7 +4602,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const falses = shuffle([...new Set(F.filter(s => mask(s) !== rightMask))]);
     if (falses.length < 3) return gPieTrueStatement();
     return finishText('Three of these statements about the pie chart are WRONG. Which one is TRUE?',
-      p.html, right, falses,
+      p.figure, right, falses,
       'Check each statement against the numbers printed on the chart (' +
       cats.map((c, i) => c + ' ' + vals[i]).join(', ') + '). Only one matches: "' +
       right + '"');
@@ -4395,7 +4640,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     }
     if (!wrong || trues.length !== 3) return gPieCompareStatement();
     return finishText('Each statement below compares two sectors of the pie chart. Which one is WRONG?',
-      p.html, wrong, trues,
+      p.figure, wrong, trues,
       'Work out each difference from the numbers printed on the chart (' +
       cats.map((c, i) => c + ' ' + vals[i]).join(', ') + '). Every statement checks out except "' +
       wrong + '"');
@@ -4412,16 +4657,16 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const total = vals.reduce((a, b) => a + b, 0);
     const h = ri(0, n - 1);
     const labels = vals.map((v, i) => (i === h ? '?' : String(v)));
-    const html = makePie(set, cats, w, labels,
+    const figure = makePie(set, cats, w, labels,
       'Number of ' + set.thing + '. One sector is marked with a ?.');
     const known = vals.filter((_, i) => i !== h);
     const knownSum = known.reduce((a, b) => a + b, 0);
-    return finishNum('Altogether there are ' + total + ' ' + set.thing +
+    return fig(finishNum('Altogether there are ' + total + ' ' + set.thing +
       ' on the pie chart. How many ' + set.thing + ' are shown for ' + cats[h] + '?',
-      html, vals[h], [knownSum, total, vals[h] + 1, known[0], known[1]], '',
+      '', vals[h], [knownSum, total, vals[h] + 1, known[0], known[1]], '',
       'First add the sectors you can read: ' + known.join(' + ') + ' = ' + knownSum +
       '. The whole circle is ' + total + ', so the ? sector is ' + total + ' − ' + knownSum +
-      ' = ' + vals[h] + '.');
+      ' = ' + vals[h] + '.'), figure);
   }
 
   function gPieFracOfSet() {                               /* shape 2: fraction of a set */
@@ -4429,12 +4674,12 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const m = ri(2, 8), total = 12 * m;
     const i = askIndex(p.w);
     const ans = p.w[i] * m;
-    return finishNum('The pie chart shows how all ' + total + ' ' + p.thing +
+    return fig(finishNum('The pie chart shows how all ' + total + ' ' + p.thing +
       ' are shared out. How many ' + p.thing + ' are shown for ' + p.cats[i] + '?',
-      p.html, ans, [p.w[(i + 1) % 3] * m, p.w[(i + 2) % 3] * m, total, ans + 1], '',
+      '', ans, [p.w[(i + 1) % 3] * m, p.w[(i + 2) % 3] * m, total, ans + 1], '',
       p.cats[i] + ' is ' + p.labels[i] + ' of the whole circle and the whole circle is ' + total +
       ' ' + p.thing + '. Split ' + total + ' into equal parts first, then take ' + p.labels[i] +
-      ' of them: ' + ans + '.');
+      ' of them: ' + ans + '.'), p.figure);
   }
 
   function gPieFindWhole() {                               /* shape 3: find the whole */
@@ -4442,12 +4687,12 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const m = ri(2, 8), total = 12 * m;
     const i = askIndex(p.w);
     const part = p.w[i] * m;
-    return finishNum('On the pie chart, the ' + p.cats[i] + ' sector stands for ' + part + ' ' +
+    return fig(finishNum('On the pie chart, the ' + p.cats[i] + ' sector stands for ' + part + ' ' +
       p.thing + '. How many ' + p.thing + ' are there altogether?',
-      p.html, total, [part, p.w[(i + 1) % 3] * m, total - part, total + 1], '',
+      '', total, [part, p.w[(i + 1) % 3] * m, total - part, total + 1], '',
       p.cats[i] + ' is ' + p.labels[i] + ' of the whole circle, and that is ' + part + ' ' +
       p.thing + '. So one twelfth of the circle is ' + m + ', and the whole circle is 12 × ' +
-      m + ' = ' + total + '.');
+      m + ' = ' + total + '.'), p.figure);
   }
 
   MQI.registerTopic({
@@ -5664,4 +5909,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260907-33b2fb9 */
+/* ENGINE_BUILD_END 20260907-379e3e3 */

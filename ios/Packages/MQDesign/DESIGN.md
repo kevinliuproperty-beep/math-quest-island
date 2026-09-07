@@ -5,8 +5,15 @@ losing direction and the rejected first sample are gone from the tree. What
 follows is the whole system: what it is made of, what was deleted, and the gates
 that bind anyone who touches it.
 
-Render everything with `swift run mqdesign-snap` from this directory. No Xcode,
-no simulator, no window — SwiftUI `ImageRenderer` on a headless mini.
+Render everything with `swift run mqdesign-snap` **from `ios/`**. No Xcode, no
+simulator, no window — SwiftUI `ImageRenderer` on a headless mini.
+
+> **Phase 1 moved the manifest.** This package no longer has a `Package.swift` of
+> its own; it is a target in the root `ios/Package.swift`, so `swift build` and
+> `./test.command` at `ios/` cover it. Two manifests describing one target is two
+> places for the deployment target, the resource rule and the platform list to
+> drift. Its 29 tests live in `Tests/MQDesignTests/`. The seams the next lanes
+> code against are in `ios/PHASE1.md`.
 
 ---
 
@@ -174,7 +181,11 @@ drifted over the board and read as debris lying on the paper.
 
 ## Gates (non-negotiable)
 
-`swift run mqdesign-snap` writes 14 PNGs to `ios/snapshots/storybook/` and then:
+`swift run mqdesign-snap` renders the **DEVICE MATRIX** — 7 screens x 12 device
+sizes, iPad in both orientations and iPhone in portrait — writing full-resolution
+PNGs for Charlotte's iPad 9.7" (both ways) and the iPhone SE to
+`ios/snapshots/matrix/`, the two Kevin-approved sizes to `ios/snapshots/storybook/`,
+and 300 px thumbnails for all 84 to `ios/snapshots/matrix/thumbs/`. Then:
 
 1. **Bundled faces resolve.** Every Baloo weight is checked with
    `MQFonts.resolves(_:)` and a miss exits non-zero. A silent fallback to the
@@ -185,8 +196,12 @@ drifted over the board and read as debris lying on the paper.
    device is content a child never sees. It caught a 31pt overflow on the first
    sample that a visual read had passed as balanced, and a 101pt one on the
    Patchwerk enrage in this pass.
-3. **44pt tap floor.** Smallest interactive element anywhere is the 44pt pause
-   knob; answer tiles are 72–104pt.
+3. **44pt tap floor, audited as VALUES.** Every screen conforms to `MQTapAudited`
+   and declares what a child may hit, computed from the same constants its body
+   draws from. Nothing can measure a hit region out of a PNG, so this is the only
+   honest way to gate it — and it earned its keep immediately: the map marker's
+   post was 38.9pt at the compact scale of 0.72, on every phone, and nobody had
+   noticed. The scale now floors at 0.82.
 
 Current slack, iPad landscape / iPhone: entrance 244 / 179 · map 0 / 0 · battle
 164 / 3 · result 113 / 64 · patchwerk 177 / 147 · patchwerk enrage 177 / 35 ·

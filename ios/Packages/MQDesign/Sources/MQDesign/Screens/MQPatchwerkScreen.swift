@@ -14,20 +14,49 @@ import SwiftUI
 /// the sky goes red, the sea goes black, the dummy is lit from below, and the
 /// gold in the hourglass and the crystals becomes the brightest thing on the
 /// screen. A child does not need to be told; the world tells them.
-public struct MQPatchwerkScreen: View {
+public struct MQPatchwerkScreen: View, MQTapAudited {
     let scene: MQPatchwerkScene
-    let layout: MQLayout
-    let insets: MQInsets
+    let m: MQMetrics
 
-    public init(scene: MQPatchwerkScene = .sample, layout: MQLayout,
-                insets: MQInsets = .none) {
-        self.scene = scene; self.layout = layout; self.insets = insets
+    public init(scene: MQPatchwerkScene = .sample, metrics: MQMetrics) {
+        self.scene = scene; self.m = metrics
     }
 
     private var p: MQPalette { scene.enraged ? .enrage : .noon }
-    private var compact: Bool { layout == .tall }
-    private var type: MQType { compact ? .compact : .regular }
-    private var pad: CGFloat { compact ? 16 : 30 }
+    private var compact: Bool { !m.isRegular }
+    private var type: MQType { m.type }
+    private var pad: CGFloat { m.isRegular ? 30 : 16 }
+
+    /// The dummy. It is scenery, so it is the first thing that yields height on
+    /// a short frame -- the clock, the damage number and the answers do not.
+    nonisolated static func crabWidth(_ m: MQMetrics) -> CGFloat {
+        let reference: CGFloat = m.isWide ? 834 : (m.isRegular ? 1194 : 852)
+        let k = min(max(m.size.height / reference, 0.62), 1.10)
+        return (m.isWide ? 420 : (m.isRegular ? 300 : 210)) * k
+    }
+
+    nonisolated static func knobSize(_ m: MQMetrics) -> CGFloat {
+        m.isWide ? 46 : (m.isRegular ? 50 : 44)
+    }
+
+    nonisolated static func tileSize(_ m: MQMetrics) -> CGSize {
+        let padH: CGFloat = m.isRegular ? 30 : 16
+        let contentW = m.size.width - padH * 2
+        let reference: CGFloat = m.isWide ? 834 : (m.isRegular ? 1194 : 852)
+        let k = min(max(m.size.height / reference, 0.74), 1.12)
+        if m.isWide {
+            return CGSize(width: (contentW - 18 * 3) / 4,
+                          height: min(max(m.size.height * 0.1175, 72), 112))
+        }
+        return CGSize(width: (contentW - 10) / 2,
+                      height: (m.isRegular ? 92 : 68) * k)
+    }
+
+    nonisolated public static func tapTargets(_ m: MQMetrics) -> [MQTapTarget] {
+        let t = tileSize(m)
+        return [MQTapTarget("pause", square: knobSize(m))]
+            + (0..<4).map { MQTapTarget("answer \($0 + 1)", t) }
+    }
 
     /// Sand left in the hourglass. Three-minute tier, so 2:47 is nearly full and
     /// 0:18 is nearly out -- and at that point the glass reads as urgently as
@@ -36,11 +65,11 @@ public struct MQPatchwerkScreen: View {
 
     public var body: some View {
         ZStack {
-            MQWorld(p, horizon: compact ? 0.24 : 0.22)
-            (compact ? AnyView(tall) : AnyView(wide))
+            MQWorld(p, horizon: m.isWide ? 0.22 : 0.24)
+            (m.isWide ? AnyView(wide) : AnyView(tall))
                 .padding(.horizontal, pad)
-                .padding(.top, insets.top + pad * 0.6)
-                .padding(.bottom, insets.bottom + pad * 0.6)
+                .padding(.top, m.insets.top + pad * 0.6)
+                .padding(.bottom, m.insets.bottom + pad * 0.6)
         }
     }
 
@@ -57,7 +86,7 @@ public struct MQPatchwerkScreen: View {
                     MQStackSpar(p, stacks: scene.stacks, cap: scene.stackCap,
                                 multiplier: scene.multiplier)
                     freezeBlock
-                    MQKnob(p, .pause, size: 46)
+                    MQKnob(p, .pause, size: Self.knobSize(m))
                 }
                 .frame(height: 60)
             }
@@ -67,12 +96,13 @@ public struct MQPatchwerkScreen: View {
             HStack(alignment: .bottom, spacing: 12) {
                 VStack(spacing: 14) {
                     Spacer(minLength: 0)
-                    sign.frame(maxWidth: 600)
+                    sign.frame(maxWidth: min(600, m.size.width * 0.52))
                     if let flash = scene.flash { banner(flash, size: 20) }
                 }
                 .frame(maxWidth: .infinity)
                 MQCrab(p, lit: scene.enraged)
-                    .frame(width: 420, height: 420 * MQCrab.box.height / MQCrab.box.width)
+                    .frame(width: Self.crabWidth(m),
+                           height: Self.crabWidth(m) * MQCrab.box.height / MQCrab.box.width)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             answerRow
@@ -82,16 +112,16 @@ public struct MQPatchwerkScreen: View {
     // MARK: Tall
 
     private var tall: some View {
-        VStack(spacing: 8) {
-            MQRail(p, padH: 12, padV: 6) {
-                VStack(spacing: 6) {
+        VStack(spacing: m.isShort ? 5 : 8) {
+            MQRail(p, padH: 12, padV: m.isShort ? 4 : 6) {
+                VStack(spacing: m.isShort ? 4 : 6) {
                     HStack(alignment: .center, spacing: 10) {
                         MQHourglass(p, time: scene.timer, fraction: sandLeft,
                                     size: 40, urgent: scene.enraged)
                         Spacer(minLength: 4)
                         MQCarvedNumber(p, value: scene.damage, caption: "damage",
                                        valueSize: 28)
-                        MQKnob(p, .pause, size: 44)
+                        MQKnob(p, .pause, size: Self.knobSize(m))
                     }
                     HStack(spacing: 10) {
                         MQStackSpar(p, stacks: scene.stacks, cap: scene.stackCap,
@@ -108,7 +138,8 @@ public struct MQPatchwerkScreen: View {
             if let flash = scene.flash { banner(flash, size: 15) }
             sign
             MQCrab(p, lit: scene.enraged)
-                .frame(width: 210, height: 210 * MQCrab.box.height / MQCrab.box.width)
+                .frame(width: Self.crabWidth(m),
+                       height: Self.crabWidth(m) * MQCrab.box.height / MQCrab.box.width)
             Spacer(minLength: 0)
             answerGrid
         }
@@ -162,21 +193,19 @@ public struct MQPatchwerkScreen: View {
     }
 
     private var sign: some View {
-        MQSign(p, postHeight: compact ? 18 : 40, padH: compact ? 22 : 36,
-               padV: compact ? 9 : 16) {
+        MQSign(p, postHeight: m.isRegular ? 40 : (m.isShort ? 13 : 18),
+               padH: m.isRegular ? 36 : 22,
+               padV: m.isRegular ? 16 : (m.isShort ? 7 : 9)) {
             HStack(alignment: .center, spacing: 20) {
-                Text(scene.question)
-                    .font(.mq(type.question, .semibold))
-                    .foregroundStyle(p.ink)
-                    .multilineTextAlignment(compact ? .center : .leading)
-                    .lineSpacing(-1)
-                    .fixedSize(horizontal: false, vertical: true)
-                    // No `maxWidth: .infinity` here: a Patchwerk question can be
-                    // four words, and a sheet stretched to the cap around
-                    // "What is 3.6 x 100?" is the mass problem in miniature.
-                    // The board takes the width the words need, up to the cap.
-                    .frame(maxWidth: compact ? .infinity : nil,
-                           alignment: compact ? .center : .leading)
+                MQQuestionText(p, scene.question, size: type.question,
+                               alignment: m.isWide ? .leading : .center)
+                    // No `maxWidth: .infinity` in the wide case: a Patchwerk
+                    // question can be four words, and a sheet stretched to the
+                    // cap around "What is 3.6 x 100?" is the mass problem in
+                    // miniature. The board takes the width the words need, up
+                    // to the cap.
+                    .frame(maxWidth: m.isWide ? nil : .infinity,
+                           alignment: m.isWide ? .leading : .center)
                 if scene.figure != .none {
                     MQFigureView(p, scene.figure)
                         .frame(width: compact ? 170 : 190, height: compact ? 80 : 126)
@@ -191,18 +220,18 @@ public struct MQPatchwerkScreen: View {
                 MQAnswerTile(p, a, tilt: MQAnswerTile.tilts[i % 4], fontSize: type.tile)
             }
         }
-        .frame(height: 98)
+        .frame(height: Self.tileSize(m).height)
     }
 
     private var answerGrid: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: m.isShort ? 7 : 10) {
             ForEach(0..<2, id: \.self) { row in
-                HStack(spacing: 10) {
+                HStack(spacing: m.isShort ? 7 : 10) {
                     ForEach(0..<2, id: \.self) { col in
                         let i = row * 2 + col
                         MQAnswerTile(p, scene.answers[i], tilt: MQAnswerTile.tilts[i],
                                      fontSize: type.tile)
-                            .frame(height: 68)
+                            .frame(height: Self.tileSize(m).height)
                     }
                 }
             }

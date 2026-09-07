@@ -18,6 +18,22 @@ import SwiftUI
 /// 834pt frame, which made the parchment the largest, flattest and brightest
 /// object on screen and pushed the cast into the margins. The board now takes
 /// the width it is given and only the height its content needs.
+/// The signboard's fixed geometry.
+///
+/// A separate namespace because `MQSign` is generic over its content, and a
+/// generic type can hold neither a static stored property nor a static anybody
+/// can name without spelling out the generic argument. These numbers are a
+/// COMPOSITION CONTRACT rather than an implementation detail -- `MQBattleScreen`
+/// divides the screen's width by `frameInset` -- so they need a name that can
+/// be written down.
+public enum MQBoard {
+    /// How far the parchment sheet is inset from the board's outer edge, and
+    /// therefore exactly how far a creature standing in front of the board may
+    /// intrude before it is standing on the PAPER rather than on the wooden
+    /// frame. The battle line's whole width solution hangs off this number.
+    public static let frameInset: CGFloat = 15
+}
+
 public struct MQSign<Content: View>: View {
     let p: MQPalette
     let postHeight: CGFloat
@@ -88,7 +104,7 @@ public struct MQSign<Content: View>: View {
         // Parchment: a rectangular SHEET with a torn edge, not a blob. The first
         // pass used a soft superellipse with a big wobble and it read as spilled
         // milk rather than as paper nailed to wood.
-        let inset: CGFloat = 15
+        let inset = MQBoard.frameInset
         let panel = board.insetBy(dx: inset, dy: inset)
         var deckle: [CGPoint] = []
         let steps = 40
@@ -269,7 +285,11 @@ public struct MQAnswerTile: View {
     public static let tilts: [Double] = [-1.1, 0.7, -0.5, 1.2]
 
     public var body: some View {
-        Text(text)
+        // Unit-bound like every other numeral in the system: an answer tile is
+        // one line with `minimumScaleFactor`, so a break inside "46 cm" would
+        // not wrap - it would SHRINK the whole tile. Same rule, different
+        // failure mode.
+        Text(MQTypeset.bindUnits(text))
             .font(.mq(fontSize, .extrabold))
             .monospacedDigit()
             .foregroundStyle(p.carved)

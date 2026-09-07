@@ -1,4 +1,4 @@
-42
+71
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing parsed; everything below is for humans.
@@ -18,3 +18,18 @@
 # 42 = MQEngineJS bridge (10) + MQContent models (8) + Figure spec decoding (14, incl.
 #      parameterised cases) + Grading parity corpus (4) + Engine lifetime and memory (6)
 #      as of the fix pass on lane/engine-bridge, 2026-09-07.
+#
+# 71 = those 42 + MQDesign's 29, wired into the root manifest on feat/ios-phase1,
+#      2026-09-07:
+#        Tokens resolve                       10  (type scale, space, motion, tap floor,
+#                                                  3 palettes x roles, times of day, theme)
+#        Metrics classify the matrix          14  (12 device sizes + 2 explicit cases)
+#        Typesetting: units never break        6
+#        Bundled fonts register and resolve    8  (5 weights + register + idempotent +
+#                                                  a negative control)
+#        Components render without overflow   12  (sign, 2 figures, 2 tiles, chrome,
+#                                                  4 creatures, 2 tokens, marker floor)
+#        Every screen fits every device       24  (12 sizes x overflow, 12 x tap floor)
+#        The cast never crosses the parchment  4  (the 4 landscape sizes)
+#      The parameterised suites are counted by CASE here because that is what the
+#      runner's summary counts; the 29 is the delta the runner reported (42 -> 71).

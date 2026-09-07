@@ -15,29 +15,61 @@ import SwiftUI
 ///    rather than lying defeated.
 ///  * **The review is the point.** It gets the biggest object on screen -- the
 ///    scroll -- and the score gets four small carved numbers, not a trophy.
-public struct MQResultScreen: View {
+public struct MQResultScreen: View, MQTapAudited {
     let scene: MQResultScene
-    let layout: MQLayout
-    let insets: MQInsets
+    let m: MQMetrics
     let p: MQPalette
 
-    public init(scene: MQResultScene = .sample, layout: MQLayout,
-                insets: MQInsets = .none, palette: MQPalette = .noon) {
-        self.scene = scene; self.layout = layout
-        self.insets = insets; self.p = palette
+    public init(scene: MQResultScene = .sample, metrics: MQMetrics,
+                palette: MQPalette = .noon) {
+        self.scene = scene; self.m = metrics; self.p = palette
     }
 
-    private var compact: Bool { layout == .tall }
-    private var type: MQType { compact ? .compact : .regular }
-    private var pad: CGFloat { compact ? 16 : 30 }
+    private var compact: Bool { !m.isRegular }
+    private var type: MQType { m.type }
+    private var pad: CGFloat { m.isRegular ? 30 : 16 }
+
+    /// The review scroll is the biggest object on the screen and the reason a
+    /// result screen exists, so on a short frame the CAST shrinks and the
+    /// scroll does not. Referenced to the authored heights (834 landscape /
+    /// 852 portrait), floored so the two of them never become stickers.
+    nonisolated static func castHeight(_ m: MQMetrics) -> CGFloat {
+        let reference: CGFloat = m.isWide ? 834 : (m.isRegular ? 1194 : 852)
+        let k = min(max(m.size.height / reference, 0.70), 1.10)
+        return (m.isWide ? 150 : (m.isRegular ? 150 : 96)) * k
+    }
+
+    /// How many review rows the frame can carry. The landscape column can hold
+    /// all three; a phone holds two; a 667 pt SE holds one, and one row a child
+    /// can actually read beats three rows clipped off the bottom.
+    nonisolated static func reviewRows(_ m: MQMetrics) -> Int {
+        if m.isWide { return 3 }
+        return m.size.height >= 800 ? 2 : 1
+    }
+
+    nonisolated static func buttonSize(_ m: MQMetrics, primary: Bool) -> CGFloat {
+        let f: CGFloat = primary ? (m.isRegular ? 24 : 18) : (m.isRegular ? 20 : 15)
+        return max(MQTap.min, f * 1.32 + (primary ? 30 : 24))
+    }
+
+    /// `MQPlankButton` carries its own `.frame(minHeight: MQTap.min)`, so these
+    /// can never go under the floor by accident -- they are audited anyway so
+    /// that removing that floor shows up as a red gate rather than as nothing.
+    nonisolated public static func tapTargets(_ m: MQMetrics) -> [MQTapTarget] {
+        [MQTapTarget("play again",
+                     CGSize(width: MQTap.min, height: buttonSize(m, primary: true)))]
+        + MQResultScene.sample.secondaryActions.map {
+            MQTapTarget($0, CGSize(width: MQTap.min, height: buttonSize(m, primary: false)))
+        }
+    }
 
     public var body: some View {
         ZStack {
-            MQWorld(p, horizon: compact ? 0.26 : 0.34)
-            (compact ? AnyView(tall) : AnyView(wide))
+            MQWorld(p, horizon: m.isWide ? 0.34 : 0.26)
+            (m.isWide ? AnyView(wide) : AnyView(tall))
                 .padding(.horizontal, pad)
-                .padding(.top, insets.top + pad * 0.6)
-                .padding(.bottom, insets.bottom + pad * 0.6)
+                .padding(.top, m.insets.top + pad * 0.6)
+                .padding(.bottom, m.insets.bottom + pad * 0.6)
         }
     }
 
@@ -52,11 +84,12 @@ public struct MQResultScreen: View {
                     Spacer(minLength: 0)
                     // Pushed to the bottom of the column so the two of them are
                     // standing on the dry sand rather than paddling.
-                    cast(height: 150)
+                    cast(height: Self.castHeight(m))
                 }
-                .frame(width: 320)
+                .frame(width: min(320, m.size.width * 0.30))
                 MQScroll(p, padH: 26, padV: 14) {
-                    reviewList(rows: scene.reviews, figureWidth: 108, figureHeight: 70)
+                    reviewList(rows: Array(scene.reviews.prefix(Self.reviewRows(m))),
+                               figureWidth: 108, figureHeight: 70)
                 }
             }
             .frame(maxHeight: .infinity)
@@ -70,12 +103,13 @@ public struct MQResultScreen: View {
         VStack(spacing: 10) {
             titleBlock
             statGrid
-            MQScroll(p, padH: 16, padV: 12) {
-                reviewList(rows: Array(scene.reviews.prefix(2)),
-                           figureWidth: 86, figureHeight: 62)
+            MQScroll(p, padH: m.isRegular ? 26 : 16, padV: m.isRegular ? 14 : 12) {
+                reviewList(rows: Array(scene.reviews.prefix(Self.reviewRows(m))),
+                           figureWidth: m.isRegular ? 108 : 86,
+                           figureHeight: m.isRegular ? 70 : 62)
             }
             Spacer(minLength: 0)
-            cast(height: 96)
+            cast(height: Self.castHeight(m))
             buttonRow
         }
     }
@@ -167,11 +201,12 @@ public struct MQResultScreen: View {
                             .frame(width: figureWidth, height: figureHeight)
                     }
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(item.question)
-                            .font(.mq(compact ? 13 : 17, .semibold))
-                            .foregroundStyle(p.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Text(item.answer)
+                        // Same typesetting rule as the battle board: the review
+                        // is where a child re-reads the question they got
+                        // wrong, so "14 cm" holding together matters MORE here,
+                        // not less.
+                        MQQuestionText(p, item.question, size: compact ? 13 : 17)
+                        Text(MQTypeset.bindUnits(item.answer))
                             .font(.mq(compact ? 15 : 20, .extrabold))
                             .monospacedDigit()
                             .foregroundStyle(p.leafDeep)
@@ -204,9 +239,9 @@ public struct MQResultScreen: View {
     private var buttonRow: some View {
         HStack(spacing: compact ? 8 : 16) {
             MQPlankButton(p, scene.primaryAction, primary: true,
-                          fontSize: compact ? 18 : 24)
+                          fontSize: m.isRegular ? 24 : 18)
             ForEach(scene.secondaryActions, id: \.self) { a in
-                MQPlankButton(p, a, fontSize: compact ? 15 : 20)
+                MQPlankButton(p, a, fontSize: m.isRegular ? 20 : 15)
             }
         }
     }

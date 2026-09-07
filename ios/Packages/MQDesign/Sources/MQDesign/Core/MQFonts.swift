@@ -34,7 +34,10 @@ public enum MQFonts {
 
     private static let files = ["Baloo2-Variable"]
 
-    private static var didRegister = false
+    // Guarded by `lock` below, which is why the unchecked annotation is
+    // honest rather than a way past the compiler: every read and every write
+    // happens inside `lock.lock()`.
+    nonisolated(unsafe) private static var didRegister = false
     private static let lock = NSLock()
 
     /// Idempotent. Call once before rendering anything; calling it again is

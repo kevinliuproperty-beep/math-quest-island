@@ -11,6 +11,28 @@
 //   MQContent   pure Swift, the seam. Foundation only, no Apple UI frameworks.
 //   MQEngineJS  the JavaScriptCore implementation of MQContent.QuestionSource.
 //               JavaScriptCore is a macOS framework, so this builds and tests here.
+//   MQDesign    the whole look: palette, type, cast, components, screens. SwiftUI,
+//               which compiles for macOS, so `swift build` and the suites run here.
+//               Its snapshot executable `mqdesign-snap` renders every screen at every
+//               size in the DEVICE MATRIX through ImageRenderer - no window, no
+//               simulator, no Xcode - and exits non-zero on an overflow or a tap
+//               target under 44 pt.
+//
+// MQDesign HAS NO MANIFEST OF ITS OWN. It arrived on lane/design-sample as a nested
+// package (ios/Packages/MQDesign/Package.swift) so the lane could run before this root
+// manifest existed. That file is DELETED here on purpose: two manifests describing one
+// target is two places for the deployment target, the resource rule and the platform
+// list to drift, and the whole point of ios/Package.swift is that Supreme adds ONE
+// local package to an Xcode project. Run the snapshot tool from ios/:
+//     swift run mqdesign-snap            (writes ios/snapshots/)
+//
+// DEPLOYMENT TARGET: iOS 16, and that is a hardware fact, not a preference.
+// Charlotte's iPad is a 6th-generation 9.7" (1024x768 pt), which tops out at iPadOS 17
+// and is the device this whole app exists for. iOS 16 leaves margin under that. Every
+// iOS 17+ API is therefore banned outright rather than guarded: `#available` islands in
+// a design system produce a look that silently differs by device, which is worse than
+// not shipping the API. macOS 13 is the matching floor for the Kai gate (ImageRenderer
+// is macOS 13 / iOS 16, so the floor and the tool agree).
 //
 // RUNNING THE TESTS ON KAI
 //   ./test.command                (from ios/)   <- THE GATE. Use this.
@@ -41,12 +63,13 @@ import PackageDescription
 let package = Package(
     name: "MathQuestIsland",
     platforms: [
-        .iOS(.v17),
-        .macOS(.v14)   // macOS is the Kai gate: the suites run on this platform
+        .iOS(.v16),    // Charlotte's iPad 6 caps at iPadOS 17; 16 is the floor we hold
+        .macOS(.v13)   // macOS is the Kai gate: the suites run on this platform
     ],
     products: [
         .library(name: "MQContent", targets: ["MQContent"]),
-        .library(name: "MQEngineJS", targets: ["MQEngineJS"])
+        .library(name: "MQEngineJS", targets: ["MQEngineJS"]),
+        .library(name: "MQDesign", targets: ["MQDesign"])
     ],
     targets: [
         .target(
@@ -72,6 +95,29 @@ let package = Package(
             name: "MQEngineJSTests",
             dependencies: ["MQEngineJS", "MQContent"],
             path: "Packages/MQEngineJS/Tests/MQEngineJSTests"
+        ),
+        .target(
+            name: "MQDesign",
+            path: "Packages/MQDesign/Sources/MQDesign",
+            resources: [
+                // The bundled OFL display face (Baloo 2). Registered at RUNTIME with
+                // CTFontManagerRegisterFontsForURL rather than an Info.plist key,
+                // because the gate renders headlessly with no app bundle at all - and
+                // the same call is what iOS will use.
+                .process("Resources")
+            ]
+        ),
+        .testTarget(
+            name: "MQDesignTests",
+            dependencies: ["MQDesign"],
+            path: "Packages/MQDesign/Tests/MQDesignTests"
+        ),
+        // macOS-only. Guarded internally by `#if os(macOS)` so an iOS build of the
+        // package tree still compiles it to a stub rather than failing.
+        .executableTarget(
+            name: "mqdesign-snap",
+            dependencies: ["MQDesign"],
+            path: "Packages/MQDesign/Sources/mqdesign-snap"
         )
     ]
 )

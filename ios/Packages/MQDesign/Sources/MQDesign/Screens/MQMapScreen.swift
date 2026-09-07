@@ -12,29 +12,48 @@ import SwiftUI
 /// The screen takes its `size` rather than reading a `GeometryReader`, so the
 /// unconstrained fit check still measures something real. In the app this comes
 /// from the navigation container.
-public struct MQMapScreen: View {
+public struct MQMapScreen: View, MQTapAudited {
     let scene: MQMapScene
-    let layout: MQLayout
-    let insets: MQInsets
+    let m: MQMetrics
     let p: MQPalette
-    let size: CGSize
 
-    public init(scene: MQMapScene = .sample, layout: MQLayout,
-                insets: MQInsets = .none, palette: MQPalette = .noon, size: CGSize) {
-        self.scene = scene; self.layout = layout
-        self.insets = insets; self.p = palette; self.size = size
+    public init(scene: MQMapScene = .sample, metrics: MQMetrics,
+                palette: MQPalette = .noon) {
+        self.scene = scene; self.m = metrics; self.p = palette
     }
 
-    private var compact: Bool { layout == .tall }
-    private var pad: CGFloat { compact ? 14 : 26 }
-    private var type: MQType { compact ? .compact : .regular }
-    private var markerScale: CGFloat { compact ? 0.72 : 1 }
+    private var size: CGSize { m.size }
+    private var compact: Bool { !m.isRegular }
+    private var pad: CGFloat { m.isRegular ? 26 : 14 }
+    private var type: MQType { m.type }
+
+    /// **The tap-target finding of this lane.** The design lane drew the compact
+    /// marker at 0.72, which puts the post -- the narrowest part of the object a
+    /// child aims at -- at 38.9 pt, under Apple's 44 pt floor, on every phone.
+    /// It was never caught because nothing measured it. The scale now has a
+    /// floor of 0.82 (54 x 0.82 = 44.3) and the matrix gate audits it at all
+    /// twelve sizes. The upper clamp keeps a 13" iPad from drawing dinner-plate
+    /// markers.
+    nonisolated static func markerScale(_ m: MQMetrics) -> CGFloat {
+        min(max(min(m.size.width, m.size.height) / 834, 0.82), 1.05)
+    }
+    private var markerScale: CGFloat { Self.markerScale(m) }
+
+    nonisolated static func knobSize(_ m: MQMetrics) -> CGFloat { m.isRegular ? 52 : 44 }
+
+    nonisolated public static func tapTargets(_ m: MQMetrics) -> [MQTapTarget] {
+        let s = markerScale(m)
+        return [MQTapTarget("back", square: knobSize(m))]
+            + MQMapScene.sample.nodes.map {
+                MQTapTarget("node: \($0.name)", MQMapMarker.hitBox(scale: s))
+            }
+    }
 
     /// On a phone the island is read bottom to top, so the stops are laid out as
     /// a climbing zig-zag rather than at their landscape coordinates. Same
     /// island, same order, different frame.
     private func place(_ i: Int) -> CGPoint {
-        guard compact else { return scene.nodes[i].at }
+        guard !m.isWide else { return scene.nodes[i].at }
         let n = max(scene.nodes.count - 1, 1)
         let t = CGFloat(i) / CGFloat(n)
         return CGPoint(x: i.isMultiple(of: 2) ? 0.26 : 0.72, y: 0.86 - t * 0.66)
@@ -51,14 +70,14 @@ public struct MQMapScreen: View {
             map
             header
                 .padding(.horizontal, pad)
-                .padding(.top, insets.top + pad * 0.6)
+                .padding(.top, m.insets.top + pad * 0.6)
         }
         .frame(width: size.width, height: size.height)
     }
 
     private var header: some View {
         HStack(alignment: .center, spacing: compact ? 10 : 16) {
-            MQKnob(p, .back, size: compact ? 44 : 52)
+            MQKnob(p, .back, size: Self.knobSize(m))
             // Dark on the fog rather than cream on it. The island's misty top is
             // the lightest thing on this screen, so the title borrows it as its
             // paper instead of fighting it with a drop shadow.
@@ -94,7 +113,7 @@ public struct MQMapScreen: View {
         }
         return ZStack(alignment: .topLeading) {
             MQIslandMap(p, landmarks: marks, route: route,
-                        mistBelow: compact ? 0.18 : 0.30)
+                        mistBelow: m.isWide ? 0.30 : 0.18)
                 .frame(width: w, height: h)
             // "You are here", drawn: the explorer is standing at the stop they
             // are part-way through. No arrow, no pulsing ring, no label.

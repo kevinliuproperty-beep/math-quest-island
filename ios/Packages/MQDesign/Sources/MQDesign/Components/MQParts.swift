@@ -156,6 +156,20 @@ public struct MQMapMarker: View {
         self.p = p; self.node = node; self.scale = scale
     }
 
+    /// The post at the top of the marker, which is the NARROWEST part of the
+    /// thing a child aims at. The name plank below it is always wider (ten-odd
+    /// characters plus padding), so this is the dimension that decides whether
+    /// the marker clears the 44 pt floor -- and at the design lane's compact
+    /// scale of 0.72 it did not: 54 x 0.72 = 38.9 pt. `MQMapScreen` now floors
+    /// the scale at 0.82 for exactly this reason.
+    nonisolated public static let postBox = CGSize(width: 54, height: 64)
+
+    /// What the audit measures. Conservative on purpose: the post only, never
+    /// the plank, so the number can be trusted without measuring text.
+    nonisolated public static func hitBox(scale: CGFloat) -> CGSize {
+        CGSize(width: postBox.width * scale, height: (postBox.height + 3) * scale)
+    }
+
     private var locked: Bool {
         if case .comingSoon = node.state { return true }
         return false
@@ -179,6 +193,10 @@ public struct MQMapMarker: View {
             }
             .opacity(locked ? 0.82 : 1)
         }
+        // The WHOLE marker is the target -- post, plank and the gap between
+        // them -- not just whatever ink happens to be under the finger. Without
+        // this a child has to hit a 12 pt-wide wooden post.
+        .contentShape(Rectangle())
     }
 
     @ViewBuilder private var detail: some View {

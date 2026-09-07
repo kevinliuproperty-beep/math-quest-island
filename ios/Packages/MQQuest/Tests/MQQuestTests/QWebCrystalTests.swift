@@ -194,6 +194,8 @@ struct QWebCrystalTests {
             }
         }
 
+        print("CRYSTAL  rows \(rowsChecked)  rolls recovered \(rollsRecovered)  "
+              + "monsters felled \(fellRows)  divergences \(mismatches.count)")
         let report = "\(mismatches.count) divergences, first 5: "
             + mismatches.prefix(5).joined(separator: " | ")
         #expect(mismatches.isEmpty, "\(report)")
@@ -255,6 +257,8 @@ struct QWebCrystalTests {
             if summary.crystalsEarned >= 6 { filled += 1 }
         }
 
+        print("CRYSTAL  sessions 200  crystals \(total)  rope filled \(filled)  "
+              + "divergences \(divergences)")
         #expect(divergences == 0, "\(divergences) of 200 sessions disagreed with the web")
         #expect(filled == c.expect.ropeFilled)
         let mean = Double(total) / Double(c.runs.count)

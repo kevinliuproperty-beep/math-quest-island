@@ -55,8 +55,13 @@ public struct MQFigures: View {
     /// smaller, and never drawn outside the box.
     let typeFloor: CGFloat
 
-    public static let iPadTypeFloor: CGFloat = 11
-    public static let phoneTypeFloor: CGFloat = 10
+    // `nonisolated`, because the type floor is read by geometry functions that
+    // are themselves nonisolated so a tap audit can run off the main actor. A
+    // `View`'s statics are MainActor-isolated by default, which made
+    // `QBattleView.growTiles` - nonisolated, and the function that decides how
+    // tall an answer plank has to be - two Swift 6 warnings on a clean build.
+    nonisolated public static let iPadTypeFloor: CGFloat = 11
+    nonisolated public static let phoneTypeFloor: CGFloat = 10
 
     public init(_ p: MQPalette = .noon, _ figure: Figure, fallbackText: String = "",
                 typeFloor: CGFloat = MQFigures.iPadTypeFloor) {

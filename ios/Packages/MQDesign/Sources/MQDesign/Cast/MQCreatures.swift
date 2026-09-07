@@ -28,7 +28,12 @@ public struct MQCreature: View {
         self.cast = cast; self.p = p
     }
 
-    public static func box(_ cast: MQCast) -> CGSize {
+    /// `nonisolated`: this is the creature's aspect ratio, not a drawing, and the
+    /// geometry functions that place a creature - `MQMapScreen.heroSize` and
+    /// `heroCentre`, which decide where the "you are here" explorer stands and
+    /// clamp her to the glass - are nonisolated so a tap audit can run off the
+    /// main actor. A `View`'s statics are MainActor-isolated by default.
+    nonisolated public static func box(_ cast: MQCast) -> CGSize {
         switch cast {
         case .unicorn: return MQUnicorn.box
         case .turtle:  return MQTurtle.box
@@ -53,7 +58,7 @@ public struct MQUnicorn: View {
     let p: MQPalette
     public init(_ p: MQPalette = .noon) { self.p = p }
 
-    public static let box = CGSize(width: 240, height: 250)
+    nonisolated public static let box = CGSize(width: 240, height: 250)
 
     public var body: some View {
         MQFigureCanvas(box: Self.box) { ctx, _ in Self.draw(&ctx, p) }
@@ -255,7 +260,7 @@ public struct MQTurtle: View {
     let p: MQPalette
     public init(_ p: MQPalette = .noon) { self.p = p }
 
-    public static let box = CGSize(width: 230, height: 190)
+    nonisolated public static let box = CGSize(width: 230, height: 190)
 
     public var body: some View {
         MQFigureCanvas(box: Self.box) { ctx, _ in Self.draw(&ctx, p) }
@@ -363,7 +368,7 @@ public struct MQOctopus: View {
     let p: MQPalette
     public init(_ p: MQPalette = .noon) { self.p = p }
 
-    public static let box = CGSize(width: 210, height: 200)
+    nonisolated public static let box = CGSize(width: 210, height: 200)
 
     public var body: some View {
         MQFigureCanvas(box: Self.box) { ctx, _ in Self.draw(&ctx, p) }
@@ -479,7 +484,7 @@ public struct MQCrab: View {
     /// 232 wide, not 220: the raised claw's outer jaw genuinely reaches x=223,
     /// and the box has to contain the drawing rather than the drawing being
     /// trimmed to a round number.
-    public static let box = CGSize(width: 232, height: 190)
+    nonisolated public static let box = CGSize(width: 232, height: 190)
 
     public var body: some View {
         MQFigureCanvas(box: Self.box) { ctx, _ in Self.draw(&ctx, p, underlight: lit) }

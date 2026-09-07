@@ -4,7 +4,7 @@
   "private": true,
   "description": "Math Quest Island. Zero-build static app; this manifest carries the sanity harness and the engine-bundle build.",
   "scripts": {
-    "test": "node tools/answer-parse-test.mjs && node tools/gen-sanity.mjs && node tools/feed-sim.mjs && node tools/engine-api-test.mjs && node tools/parity-test.mjs && node tools/make-patchwerk-parity.mjs --check && node tools/make-name-parity.mjs --check",
+    "test": "node tools/answer-parse-test.mjs && node tools/gen-sanity.mjs && node tools/feed-sim.mjs && node tools/engine-api-test.mjs && node tools/parity-test.mjs && node tools/make-patchwerk-parity.mjs --check && node tools/make-name-parity.mjs --check && node tools/build-cube-engine.mjs --check && node cube/tools/cube-engine-sanity.mjs && node tools/make-cube-api-golden.mjs --verify && node tools/cube-parity-test.mjs",
     "test:deep": "SAMPLES=50000 node tools/gen-sanity.mjs",
     "test:feed": "node tools/feed-sim.mjs",
     "serve": "python3 -m http.server 8765",
@@ -18,6 +18,13 @@
     "test:patchwerk-parity": "node tools/make-patchwerk-parity.mjs --check",
     "build:name-corpus": "node tools/make-name-parity.mjs",
     "test:name-parity": "node tools/make-name-parity.mjs --check",
+    "build:cube-engine": "node tools/build-cube-engine.mjs",
+    "check:cube-engine": "node tools/build-cube-engine.mjs --check",
+    "test:cube-engine": "node cube/tools/cube-engine-sanity.mjs",
+    "test:cube-parity": "node tools/cube-parity-test.mjs",
+    "build:cube-parity-corpus": "node tools/make-cube-parity-corpus.mjs",
+    "build:cube-api-golden": "node tools/make-cube-api-golden.mjs",
+    "verify:cube-api-golden": "node tools/make-cube-api-golden.mjs --verify",
     "test:swift": "ios/test.command"
   }
 }

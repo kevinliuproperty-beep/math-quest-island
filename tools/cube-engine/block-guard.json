@@ -1,0 +1,94 @@
+{
+  "note": "Recorded expectation for tools/build-cube-engine.mjs. A missing, duplicated or moved marker, or a changed boundary neighbourhood, FAILS the build by name. A change INSIDE a block also FAILS the build now (refutation kill 2: a NOTICE was laundered to silence by three documented commands). Re-record deliberately with `node tools/build-cube-engine.mjs --record-guard --ack \"<why>\"`, which writes the reason and the full diff into tools/cube-engine/guard-changelog.md.",
+  "source": "cube/index.html",
+  "sourceSha256": "d65f279a3b3c07537eff77389619905326705ec2e39ad01a1d4e955a73c80878",
+  "context": 3,
+  "recordedAck": "Fix pass 2026-09-07: re-recorded through the new signed --ack path so block-guard.json carries the ack fields. No block content changed; the four block shas are unchanged.",
+  "recordedDate": "2026-09-07",
+  "blocks": {
+    "CORE": {
+      "start": "/* ===== CORE START =====",
+      "end": "/* ===== CORE END ===== */",
+      "startLine": 724,
+      "endLine": 1661,
+      "beforeHash": "d0defdb825fbe99a",
+      "before": [
+        "</div>",
+        "",
+        "<script>"
+      ],
+      "afterHash": "248610a16a153526",
+      "after": [
+        "/* ===== CORE3 START =====",
+        "   The big cube core. Pure logic only, no DOM.",
+        "   Model: 8 corner blocks (permutation + twist), 12 edge blocks (permutation + flip),"
+      ],
+      "blockSha256": "0ad36436a8ce5951",
+      "bytes": 46040,
+      "lines": 938
+    },
+    "CORE3": {
+      "start": "/* ===== CORE3 START =====",
+      "end": "/* ===== CORE3 END ===== */",
+      "startLine": 1662,
+      "endLine": 2921,
+      "beforeHash": "41fa022375b3058c",
+      "before": [
+        "  };",
+        "})();",
+        "/* ===== CORE END ===== */"
+      ],
+      "afterHash": "e317c66524ae4eeb",
+      "after": [
+        "/* ===== INFER START =====",
+        "   Working out the sides she cannot see.",
+        "   Given some painted squares, list every legal cube that agrees with them."
+      ],
+      "blockSha256": "ccd530ba34201eaf",
+      "bytes": 74516,
+      "lines": 1260
+    },
+    "INFER": {
+      "start": "/* ===== INFER START =====",
+      "end": "/* ===== INFER END ===== */",
+      "startLine": 2922,
+      "endLine": 3199,
+      "beforeHash": "2a7680cf28327a94",
+      "before": [
+        "  };",
+        "})();",
+        "/* ===== CORE3 END ===== */"
+      ],
+      "afterHash": "089b86ddd6fbff23",
+      "after": [
+        "/* ===== GUIDE START =====",
+        "   Just guide me. The method is STATE BLIND: it reads the cube as it goes, so the straightest",
+        "   path to a solve needs nothing typed in and nothing painted. This is that path, written as a"
+      ],
+      "blockSha256": "4e63b7378c55c973",
+      "bytes": 12255,
+      "lines": 278
+    },
+    "GUIDE": {
+      "start": "/* ===== GUIDE START =====",
+      "end": "/* ===== GUIDE END ===== */",
+      "startLine": 3200,
+      "endLine": 3598,
+      "beforeHash": "d7c5bfef3da136b4",
+      "before": [
+        "           pieceOf: pieceOf, blockSids: blockSids, findable: findable, stickerCount: stickerCount };",
+        "})();",
+        "/* ===== INFER END ===== */"
+      ],
+      "afterHash": "c7307315f2e1902c",
+      "after": [
+        "",
+        "/* ===== STUDIO UI ===== */",
+        "(function () {"
+      ],
+      "blockSha256": "fdcdfcd0d55d878b",
+      "bytes": 32038,
+      "lines": 399
+    }
+  }
+}

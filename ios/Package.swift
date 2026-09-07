@@ -8,15 +8,33 @@
 // gate Kai can actually hold (Command Line Tools, no Xcode, macOS target only).
 //
 // Kai-testable today:
-//   MQContent   pure Swift, the seam. Foundation only, no Apple UI frameworks.
-//   MQEngineJS  the JavaScriptCore implementation of MQContent.QuestionSource.
-//               JavaScriptCore is a macOS framework, so this builds and tests here.
-//   MQDesign    the whole look: palette, type, cast, components, screens. SwiftUI,
-//               which compiles for macOS, so `swift build` and the suites run here.
-//               Its snapshot executable `mqdesign-snap` renders every screen at every
-//               size in the DEVICE MATRIX through ImageRenderer - no window, no
-//               simulator, no Xcode - and exits non-zero on an overflow or a tap
-//               target under 44 pt.
+//   MQContent       pure Swift, the seam. Foundation only, no Apple UI frameworks.
+//                   It also owns the shared VALUE types every layer names (MQProfile,
+//                   MQCast, MQFigure, MQReviewItem, MQMapNode, MQLandmark) - MQDesign
+//                   re-exports them, so no logic package imports a UI package.
+//   MQEngineJS      the JavaScriptCore implementation of MQContent.QuestionSource.
+//                   JavaScriptCore is a macOS framework, so this builds and tests here.
+//   MQCubeContent   the CUBE seam. Sibling of MQContent, not part of it: Cube Quest
+//                   shares no type with the question engine, and one module carrying
+//                   both would couple two independently-versioned bundles and make
+//                   every quiz screen rebuild when a rotation matrix changes.
+//   MQCubeEngineJS  the JavaScriptCore implementation of MQCubeContent.CubeEngine, over
+//                   cube-engine.bundle.js - the four logic blocks extracted verbatim
+//                   from cube/index.html by tools/build-cube-engine.mjs (Kevin's Q83
+//                   ruling: Extract only; the vault Studio file stays canonical and the
+//                   web cube stays a monolith). Its own actor, its own JSContext.
+//   MQProgress      mastery, the in-session streak, the one-way scaffold fade and the
+//                   JSON-on-disk store. MQContent only; it draws nothing.
+//   MQDesign        the whole look: palette, type, cast, components, screens. SwiftUI,
+//                   which compiles for macOS, so `swift build` and the suites run here.
+//                   Its snapshot executable `mqdesign-snap` renders every screen at
+//                   every size in the DEVICE MATRIX through ImageRenderer - no window,
+//                   no simulator, no Xcode - and exits non-zero on an overflow or a tap
+//                   target under 44 pt.
+//   MQQuest         Quest mode (entrance -> map -> battle -> result) + `mqhost`, the
+//                   headless macOS driver that plays it through the real engine.
+//   MQPatchwerk     Kevin's timed damage mode, over MQServices' on-device board.
+//   MQServices      the leaderboard seam. Foundation only. No analytics, no ads.
 //
 // MQDesign HAS NO MANIFEST OF ITS OWN. It arrived on lane/design-sample as a nested
 // package (ios/Packages/MQDesign/Package.swift) so the lane could run before this root
@@ -32,7 +50,9 @@
 // iOS 17+ API is therefore banned outright rather than guarded: `#available` islands in
 // a design system produce a look that silently differs by device, which is worse than
 // not shipping the API. macOS 13 is the matching floor for the Kai gate (ImageRenderer
-// is macOS 13 / iOS 16, so the floor and the tool agree).
+// is macOS 13 / iOS 16, so the floor and the tool agree). ONE platform list, here, for
+// every module in the tree - lane/cube-extract's manifest said .iOS(.v17)/.macOS(.v14)
+// and that is overruled by the hardware (Integration Phase 1, 2026-09-07).
 //
 // RUNNING THE TESTS ON KAI
 //   ./test.command                (from ios/)   <- THE GATE. Use this.
@@ -78,8 +98,12 @@ let package = Package(
         // end lane/quest
         // lane/patchwerk
         .library(name: "MQServices", targets: ["MQServices"]),
-        .library(name: "MQPatchwerk", targets: ["MQPatchwerk"])
+        .library(name: "MQPatchwerk", targets: ["MQPatchwerk"]),
         // end lane/patchwerk
+        // lane/cube-extract
+        .library(name: "MQCubeContent", targets: ["MQCubeContent"]),
+        .library(name: "MQCubeEngineJS", targets: ["MQCubeEngineJS"])
+        // end lane/cube-extract
     ],
     targets: [
         .target(
@@ -227,7 +251,40 @@ let package = Package(
             // found by walking up from `#filePath` to `tools/fixtures/`, the same
             // way MQEngineJSTests finds its own. One copy in the repository, and
             // the Swift side cannot be testing a stale duplicate of it.
-        )
+        ),
         // end lane/patchwerk --------------------------------------------------
+
+        // lane/cube-extract ---------------------------------------------------
+        // Deliberately NO dependency on MQContent: the cube seam shares no type with the
+        // question seam, and a dependency here would be the coupling the split into two
+        // packages exists to avoid.
+        .target(
+            name: "MQCubeContent",
+            path: "Packages/MQCubeContent/Sources/MQCubeContent"
+        ),
+        .testTarget(
+            name: "MQCubeContentTests",
+            dependencies: ["MQCubeContent"],
+            path: "Packages/MQCubeContent/Tests/MQCubeContentTests"
+        ),
+        .target(
+            name: "MQCubeEngineJS",
+            dependencies: ["MQCubeContent"],
+            path: "Packages/MQCubeEngineJS/Sources/MQCubeEngineJS",
+            resources: [
+                // Generated by `npm run build:cube-engine` at the repo root and COMMITTED.
+                // `npm run check:cube-engine` (and ios/test.command) hash these bytes
+                // against a fresh extraction of cube/index.html, so a stale or hand-edited
+                // bundle cannot ship quietly - that hash IS this lane's answer to the
+                // refutation's wound 4 (a versioned verify must cover every shipped file).
+                .copy("Resources")
+            ]
+        ),
+        .testTarget(
+            name: "MQCubeEngineJSTests",
+            dependencies: ["MQCubeEngineJS", "MQCubeContent"],
+            path: "Packages/MQCubeEngineJS/Tests/MQCubeEngineJSTests"
+        )
+        // end lane/cube-extract -----------------------------------------------
     ]
 )

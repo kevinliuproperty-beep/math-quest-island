@@ -13,8 +13,14 @@ struct EngineBridgeTests {
 
     /// Draws per generator. The gate value is 200 - the same sample size
     /// `tools/gen-sanity.mjs` uses on the web side. `MQ_DRAWS=20` for a fast loop.
+    ///
+    /// On a GATE run (`MQ_GATE=1`, exported by `ios/test.command` when no filter is given)
+    /// setting `MQ_DRAWS` is a FAILURE naming the variable. `MQ_DRAWS=0` already failed;
+    /// `MQ_DRAWS=1` did not, and the cube refutation showed the whole family riding
+    /// through together: `MQ_CUBE_PARITY_ROWS=1 MQ_CUBE_SOLVES=1 MQ_DRAWS=1` printed
+    /// "GATE PASSED" in 1.3 s. The floor lives in ios/gate-floor.txt beside the test count.
     static var drawsPerGenerator: Int {
-        Int(ProcessInfo.processInfo.environment["MQ_DRAWS"] ?? "") ?? 200
+        GateFloor.sampleSize(env: "MQ_DRAWS", floorKey: "engine-draws", default: 200)
     }
 
     private func engine() throws -> JSQuestionEngine { try JSQuestionEngine() }
@@ -180,6 +186,8 @@ struct EngineBridgeTests {
         }
 
         #expect(totalDrawn == 250 * draws)
+        GateFloor.expectAtLeast(draws, floorKey: "engine-draws", default: 200,
+                                what: "draws per generator ref")
         #expect(totalGraded == totalDrawn * 2)
         #expect(choiceCount > 0)
         #expect(typedCount > 0)

@@ -150,12 +150,19 @@ struct ParityCorpusTests {
                 "the parity corpus must stay at or above the refuter's 8,580 pairs (has \(corpus.pairs.count))")
         #expect(corpus.counts.refs == 250, "the corpus must cover every generator ref")
 
+        // WOUND 4 of the cube-extract refutation, and it was found on THIS file: the same
+        // commit had two policies for the same failure class. `CubeParityCorpusTests`
+        // asserted its corpus was recorded against the running bundle; this one PRINTED it
+        // and passed - one line inside a 58-line log that `test.command` greps only for the
+        // summary.
+        //
+        // A stale corpus is not a nag. It holds node's answers for an OLDER engine, so
+        // "Swift agrees with the file" stops meaning "node and Swift agree today" while the
+        // light stays green. Same failure class, same policy: an expectation.
         let build = try await e.engineBuild()
-        if build.payloadHash != corpus.generatedAgainst.payloadHash {
-            print("parity corpus: recorded against payload \(corpus.generatedAgainst.payloadHash), "
-                  + "running against \(build.payloadHash) - regenerate with "
-                  + "`node tools/make-parity-corpus.mjs` if the divergences below are intended")
-        }
+        #expect(build.payloadHash == corpus.generatedAgainst.payloadHash, note("the parity corpus was recorded against payload \(corpus.generatedAgainst.payloadHash) "
+                + "and the bundle is \(build.payloadHash). Agreement with a corpus recorded against "
+                + "different logic proves nothing. Regenerate: `npm run build:parity-corpus`."))
 
         var divergences = 0
         var throwsCount = 0

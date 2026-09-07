@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import CryptoKit
 @testable import MQPatchwerk
 
 /// THE GATE OF THIS LANE: 300 recorded web runs, replayed in Swift, compared
@@ -86,23 +87,29 @@ struct ParityCorpusTests {
         "freezes", "freezesUsed", "earnProgress", "stunUntilMs", "bossHp", "bossPhase"
     ]
 
+    /// Walk up from this file to a path in the repository root. One copy in the
+    /// repository, and the Swift side cannot be testing a stale duplicate.
+    static func repoFile(_ relative: String) -> URL? {
+        var dir = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+        for _ in 0..<10 {
+            let candidate = dir.appendingPathComponent(relative)
+            if FileManager.default.fileExists(atPath: candidate.path) { return candidate }
+            dir = dir.deletingLastPathComponent()
+        }
+        return nil
+    }
+
     /// Loaded once for the whole suite: 1.3 MB decoded 300 times would dominate
     /// the gate's runtime and prove nothing extra.
     static let corpus: Corpus = {
         // A COMMITTED fixture at tools/fixtures/, not a build output and not a
         // bundle resource - one copy in the repository, found by walking up from
         // this file, exactly as MQEngineJSTests finds its own.
-        var dir = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-        for _ in 0..<10 {
-            let candidate = dir.appendingPathComponent("tools/fixtures/patchwerk-parity.json")
-            if FileManager.default.fileExists(atPath: candidate.path) {
-                let data = try! Data(contentsOf: candidate)
-                return try! JSONDecoder().decode(Corpus.self, from: data)
-            }
-            dir = dir.deletingLastPathComponent()
+        guard let url = repoFile("tools/fixtures/patchwerk-parity.json") else {
+            fatalError("tools/fixtures/patchwerk-parity.json not found. It is a committed fixture, "
+                       + "not a build output; regenerate it with `node tools/make-patchwerk-parity.mjs`.")
         }
-        fatalError("tools/fixtures/patchwerk-parity.json not found. It is a committed fixture, "
-                   + "not a build output; regenerate it with `node tools/make-patchwerk-parity.mjs`.")
+        return try! JSONDecoder().decode(Corpus.self, from: try! Data(contentsOf: url))
     }()
 
     // MARK: The corpus describes what we think it describes
@@ -127,6 +134,40 @@ struct ParityCorpusTests {
         #expect(froze > 200, "too few freeze absorptions")
         #expect(earned > 200, "too few freeze credits earned")
         #expect(Set(c.runs.map(\.tier)) == ["short", "normal", "long"])
+    }
+
+    /// THE PIN. Without this the 300 runs below are a recording that nothing
+    /// forces to stay a recording OF ANYTHING.
+    ///
+    /// The refutation of 2026-09-07 forked the web's own scoring
+    /// (`STACK_STEP: 0.10 -> 0.12`, one character) and both gates stayed green:
+    /// `tools/make-patchwerk-parity.mjs --check` was referenced by no gate at all,
+    /// and this suite decoded `sourceSha256` and never compared it to anything.
+    /// Replaying the lane's own 300 scripts through the forked web gave a maximum
+    /// damage gap of 321 - the exact property this lane exists to defend, silently
+    /// broken.
+    ///
+    /// So: the corpus's recorded sha is compared against a sha-256 THIS TEST
+    /// COMPUTES from `js/modes/patchwerk.js` on disk, found by the same walk that
+    /// finds the corpus. Change the web's scoring without regenerating and this
+    /// goes red in milliseconds. The node half of the pin lives in `npm test`
+    /// (`node tools/make-patchwerk-parity.mjs --check`), which catches the same
+    /// fork from the other side - a corpus regenerated but not committed.
+    @Test("The corpus is pinned to the web file it was recorded from")
+    func corpusPinnedToSource() throws {
+        let url = try #require(Self.repoFile("js/modes/patchwerk.js"),
+                               "js/modes/patchwerk.js not found by walking up from #filePath; the parity corpus cannot be pinned to a file that is not there.")
+        let bytes = try Data(contentsOf: url)
+        let digest = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
+        #expect(digest == Self.corpus.sourceSha256,
+                """
+                tools/fixtures/patchwerk-parity.json was recorded from a DIFFERENT \
+                js/modes/patchwerk.js than the one on disk.
+                  corpus says  \(Self.corpus.sourceSha256)
+                  file is      \(digest)
+                The web's scoring changed and the corpus did not. Regenerate it:
+                  node tools/make-patchwerk-parity.mjs   (and commit the result)
+                """)
     }
 
     @Test("Every mirrored constant equals the web's own CONFIG")

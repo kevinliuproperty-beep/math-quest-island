@@ -45,6 +45,23 @@ public struct PatchwerkRunView: View {
         MQPatchwerkScreen.tapTargets(m).first { $0.name == "pause" }?.least ?? 44
     }
 
+    /// The pause button's hit rect: never under Apple's floor, and centred on the
+    /// knob the screen draws.
+    ///
+    /// The knob is 44/46/50 pt, so `max` only ever bites if the design shrinks it;
+    /// the floor is here so that a smaller drawn knob grows the hit region instead
+    /// of shipping an under-floor target. The CENTRING is the actual fix: this
+    /// layer used to pin its button to the top of the rail's content box while the
+    /// screen centres the knob in the rail row, which put the hit rect 5-8 pt
+    /// above the drawn knob at every one of the twelve device sizes - 44x36 pt of
+    /// effective on-target area on the iPhone SE and in Split View. Nothing else
+    /// sits under the knob, so a missed tap was a no-op rather than a wrong
+    /// action, which is why it survived a tap audit that measures the declared
+    /// square. (Refutation, 2026-09-07.)
+    nonisolated public static func pauseHitSize(_ m: MQMetrics) -> CGFloat {
+        max(MQTap.min, knobSize(m))
+    }
+
     public var body: some View {
         ZStack(alignment: .top) {
             MQPatchwerkScreen(scene: scene, metrics: m)
@@ -54,21 +71,26 @@ public struct PatchwerkRunView: View {
     }
 
     // The pause knob sits at the end of the top rail: outer padding, then the
-    // rail's own padH/padV.
+    // rail's own padH/padV, and then CENTRED in the rail row - the same row height
+    // `MQPatchwerkScreen` pins the drawn knob's row to. Reading that height off
+    // the screen rather than guessing it is what makes the two rects coincide;
+    // `HUDPixelTests` measures both out of the pixels at all twelve sizes.
     private var pauseLayer: some View {
         let railPadH: CGFloat = m.isWide ? 22 : 12
         let railPadV: CGFloat = m.isWide ? 6 : (m.isShort ? 4 : 6)
-        return VStack {
-            HStack {
+        let hit = Self.pauseHitSize(m)
+        return VStack(spacing: 0) {
+            HStack(spacing: 0) {
                 Spacer(minLength: 0)
                 Button(action: onPause) {
-                    Color.clear
-                        .frame(width: Self.knobSize(m), height: Self.knobSize(m))
+                    MQProbe.overlayTint(4)
+                        .frame(width: hit, height: hit)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Pause")
             }
+            .frame(height: MQPatchwerkScreen.railRowHeight(m))
             Spacer(minLength: 0)
         }
         .padding(.horizontal, Self.pad(m) + railPadH)
@@ -97,7 +119,7 @@ public struct PatchwerkRunView: View {
 
     private func tile(_ i: Int) -> some View {
         Button { onAnswer(i) } label: {
-            Color.clear
+            MQProbe.overlayTint(i)
                 .frame(maxWidth: .infinity)
                 .frame(height: Self.tileSize(m).height)
                 .contentShape(Rectangle())

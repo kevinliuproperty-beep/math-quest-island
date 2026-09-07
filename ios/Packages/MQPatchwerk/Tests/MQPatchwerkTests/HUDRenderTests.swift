@@ -135,18 +135,28 @@ struct HUDRenderTests {
         }
     }
 
-    @Test("The interaction layer sits on the tiles the screen actually draws",
+    /// **This test is a WIRING check and nothing more. It is not the overlay
+    /// gate.** It used to be sold as one, and the 2026-09-07 refutation killed it
+    /// in a line: it asserted `PatchwerkRunView.tileSize(m) ==
+    /// MQPatchwerkScreen.tapTargets(m)...size`, and `tileSize(m)` is implemented
+    /// as exactly that expression - `X == X`. Under it the pause knob's hit rect
+    /// sat 5-8 pt above the drawn knob at all twelve sizes.
+    ///
+    /// What it still buys: if someone re-derives a size here instead of reading
+    /// the screen's contract, this goes red without a render. The real assertion
+    /// is `HUDPixelTests.overlaySitsOnTheDrawnControl`, which measures both rects
+    /// out of two separate PNGs.
+    @Test("The interaction layer still reads its sizes from the screen's contract",
           arguments: devices)
-    func overlayMatchesTheDrawnScreen(_ device: Device) {
+    func overlayReadsTheScreensContract(_ device: Device) {
         let m = device.metrics
-        // The overlay reads its sizes out of the drawn screen's own public
-        // contract rather than re-deriving them, so this is the assertion that
-        // the wiring is still connected.
         let declared = MQPatchwerkScreen.tapTargets(m).first { $0.name == "answer 1" }?.size
         #expect(PatchwerkRunView.tileSize(m) == declared)
         #expect(PatchwerkRunView.knobSize(m)
                 == MQPatchwerkScreen.tapTargets(m).first { $0.name == "pause" }?.least)
         #expect(PatchwerkRunView.tileSize(m).height >= 44)
+        #expect(PatchwerkRunView.pauseHitSize(m) >= 44)
+        #expect(PatchwerkRunView.pauseHitSize(m) >= PatchwerkRunView.knobSize(m))
     }
 
     // MARK: The hourglass trap

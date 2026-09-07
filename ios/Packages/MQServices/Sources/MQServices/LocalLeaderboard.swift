@@ -19,9 +19,21 @@ public actor LocalLeaderboard: LeaderboardService {
 
     public nonisolated var leavesTheDevice: Bool { false }
 
+    /// The only schema this build can read. A file carrying anything else is
+    /// treated exactly like a corrupt one: quarantined, never overwritten.
+    /// `Stored.schema` used to be written and never read, which is the same thing
+    /// as not having a version at all.
+    public static let schema = 1
+
     private let url: URL
     private var buckets: [String: [LeaderboardEntry]]
     private var loaded = false
+    /// Set when a file could not be read AND could not be moved aside. While it is
+    /// true nothing is written: an unreadable board that we failed to preserve is
+    /// the one file that must not be clobbered by the next submit.
+    private var writesRefused = false
+    /// Where the last unreadable board was preserved, for the test and the log.
+    private var quarantined: URL?
 
     /// Where the board lives by default: Application Support, which is backed up
     /// and is not user-visible. Passing a URL is what the tests do.
@@ -45,18 +57,77 @@ public actor LocalLeaderboard: LeaderboardService {
         var buckets: [String: [LeaderboardEntry]]
     }
 
+    /// A board this build cannot read is NEVER DESTROYED.
+    ///
+    /// It used to be. `load()` returned an empty board on any decode failure and
+    /// the next `save()` wrote over the file: measured on 2026-09-07, five real
+    /// runs (1,255 B) became one row (292 B) on one submit, with no warning and no
+    /// backup - silent data loss on the path a child had just finished a run on,
+    /// which is the exact case this function was written to be careful about.
+    ///
+    /// So the unreadable bytes are moved aside first, under a timestamped name, and
+    /// only then does a fresh board start. If the move itself fails, writes are
+    /// REFUSED for the lifetime of this actor rather than risking the original -
+    /// a board that stops recording is a smaller loss than a board that eats what
+    /// is already there.
     private func load() {
         guard !loaded else { return }
         loaded = true
         guard let data = try? Data(contentsOf: url) else { return }
-        // A corrupt or half-written board is an EMPTY board, never a crash and
-        // never a thrown error on the path a child just finished a run on.
-        guard let stored = try? JSONDecoder().decode(Stored.self, from: data) else { return }
-        buckets = stored.buckets.mapValues { $0.sorted(by: LeaderboardEntry.outranks) }
+
+        let stored = try? JSONDecoder().decode(Stored.self, from: data)
+        if let stored, stored.schema == Self.schema {
+            buckets = stored.buckets.mapValues { $0.sorted(by: LeaderboardEntry.outranks) }
+            return
+        }
+
+        let why = stored == nil
+            ? "the file does not decode as a board"
+            : "schema \(stored!.schema), and this build reads schema \(Self.schema)"
+        quarantine(reason: why, bytes: data.count)
+    }
+
+    private func quarantine(reason: String, bytes: Int) {
+        let stamp = Int(Date().timeIntervalSince1970 * 1000)
+        let stem = url.deletingPathExtension().lastPathComponent
+        let aside = url.deletingLastPathComponent()
+            .appendingPathComponent("\(stem).corrupt-\(stamp).json")
+        do {
+            try FileManager.default.moveItem(at: url, to: aside)
+            quarantined = aside
+            log("kept \(bytes) unreadable byte(s) aside as \(aside.lastPathComponent) "
+                + "(\(reason)); starting a fresh board.")
+        } catch {
+            writesRefused = true
+            quarantined = nil
+            log("REFUSING ALL WRITES. \(bytes) byte(s) at \(url.lastPathComponent) are "
+                + "unreadable (\(reason)) and could not be moved aside (\(error)). "
+                + "The existing file will not be overwritten.")
+        }
+    }
+
+    /// Where the last unreadable board was preserved. `nil` if nothing was ever
+    /// quarantined - or if quarantining failed, in which case `writesBlocked` is
+    /// true and the original file is still on disk untouched.
+    public var quarantinedFile: URL? {
+        load()
+        return quarantined
+    }
+
+    /// True when an unreadable board could not be preserved and this actor has
+    /// therefore stopped writing.
+    public var writesBlocked: Bool {
+        load()
+        return writesRefused
+    }
+
+    private nonisolated func log(_ message: String) {
+        FileHandle.standardError.write(Data(("LocalLeaderboard: " + message + "\n").utf8))
     }
 
     private func save() {
-        let stored = Stored(schema: 1, buckets: buckets)
+        guard !writesRefused else { return }
+        let stored = Stored(schema: Self.schema, buckets: buckets)
         guard let data = try? JSONEncoder().encode(stored) else { return }
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
                                                 withIntermediateDirectories: true)

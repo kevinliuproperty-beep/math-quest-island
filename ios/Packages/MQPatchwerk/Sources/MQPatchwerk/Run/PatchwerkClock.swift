@@ -19,14 +19,40 @@ public protocol PatchwerkClock: Sendable {
     var nowMs: Int { get }
 }
 
-/// The device clock.
+/// The device clock: MONOTONIC, and continuous across sleep.
 ///
-/// `Date` rather than a monotonic source deliberately: `ProcessInfo`'s
+/// It used to read `Date()`, and the doc comment defended that: `ProcessInfo`'s
 /// `systemUptime` stops during sleep, and an iPad that sleeps mid-run should end
-/// the run when it wakes, not resume a fight the child walked away from.
+/// the run when it wakes rather than resume a fight the child walked away from.
+/// The requirement was right; the clock was not. Measured on 2026-09-07: drive the
+/// wall clock backwards ten minutes mid-run on the two-minute tier and
+/// `timeLeftMs` became **700,000 on a 120,000 ms tier**, phase still `.running`,
+/// five further answers scored onto a board a sibling reads. Every device on
+/// earth moves its wall clock - NTP steps it, a timezone tool sets it, and a
+/// child can set it by hand in Settings while a run is going.
+///
+/// `CLOCK_MONOTONIC_RAW` on Darwin is exactly what was wanted and `Date()` was
+/// standing in for: it cannot be set, it never runs backwards, and unlike
+/// `CLOCK_UPTIME_RAW`/`mach_absolute_time` it DOES keep counting while the system
+/// is asleep - so the sleep behaviour the old comment argued for is preserved
+/// while the hole is closed. (This is `ContinuousClock`'s own source; the C call
+/// is used because it yields an absolute nanosecond count with no per-instance
+/// origin, so two `PatchwerkSystemClock` values are interchangeable - which the
+/// run relies on, since it stores `startedAtMs` from one and reads `nowMs` from
+/// whichever it is handed later.)
+///
+/// **Web parity note.** `js/modes/patchwerk.js` computes `Date.now() - t0` and has
+/// the identical hole. We are deliberately STRICTER than the web here, and it
+/// cannot affect scoring parity: the parity corpus supplies every timestamp
+/// explicitly (`PatchwerkRun.answer(_:level:answerMs:at:)`), so the clock source
+/// is never on the corpus's path. The web posts no Patchwerk score anywhere;
+/// iOS persists one to a local board, which is why the two runtimes may differ
+/// on this and only this.
 public struct PatchwerkSystemClock: PatchwerkClock {
     public init() {}
-    public var nowMs: Int { Int((Date().timeIntervalSince1970 * 1000).rounded()) }
+    public var nowMs: Int {
+        Int(clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW) / 1_000_000)
+    }
 }
 
 /// A clock the tests drive by hand.

@@ -107,6 +107,10 @@ struct LocalLeaderboardTests {
         let broken = LocalLeaderboard(url: url)
         let empty = try await broken.top(Self.normalP4, limit: 20)
         #expect(empty.isEmpty, "a corrupt board must be an empty board, never a crash")
+        // ...and the bytes are kept, not destroyed. See BoardQuarantineTests for
+        // the whole of that behaviour; this is the line that stops the two tests
+        // drifting apart.
+        #expect(await broken.quarantinedFile != nil)
     }
 
     @Test("Deleting a profile takes its name off every board")

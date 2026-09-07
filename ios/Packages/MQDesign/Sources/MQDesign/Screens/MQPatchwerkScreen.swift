@@ -39,6 +39,49 @@ public struct MQPatchwerkScreen: View, MQTapAudited {
         m.isWide ? 46 : (m.isRegular ? 50 : 44)
     }
 
+    /// The height of the rail row the pause knob is vertically CENTRED in.
+    ///
+    /// Hoisted and pinned rather than left to intrinsic sizing, because the knob's
+    /// position in this row is the one thing a consumer has to be able to compute.
+    /// `PatchwerkRunView` lays a transparent button over the drawn knob; before
+    /// this existed the wide row was pinned to 60 and the tall row was whatever
+    /// its contents happened to want, so the overlay pinned its button to the TOP
+    /// of the rail and the hit rect sat 5-8 pt ABOVE the drawn knob at all twelve
+    /// device sizes - 44x36 pt of effective on-target area on the iPhone SE and in
+    /// Split View, under Apple's floor in the vertical, and invisible to a tap
+    /// audit that measures the DECLARED 44/46/50 pt square. (Refutation,
+    /// 2026-09-07.)
+    ///
+    /// 61 for the tall layout is the natural height of that row measured on Kai
+    /// (60.0 at iPad type, 60.8 at phone type, both with the hourglass and the
+    /// carved damage number in it), rounded up so pinning it cannot clip.
+    /// PHASE1.md's rule for interactive elements: put the number in the screen's
+    /// geometry, draw from it, and let the audit read the same value.
+    nonisolated public static func railRowHeight(_ m: MQMetrics) -> CGFloat {
+        m.isWide ? 60 : 61
+    }
+
+    /// The hourglass's size in the live rail, and the rect its canvas occupies on
+    /// the full screen. The measurement suite reads the sand out of the PIXELS in
+    /// this rect, so it is declared here beside the drawing rather than
+    /// re-derived from padding constants in a test.
+    nonisolated public static func hourglassSize(_ m: MQMetrics) -> CGFloat {
+        m.isWide ? 56 : 40
+    }
+
+    nonisolated public static func hourglassRect(_ m: MQMetrics) -> CGRect {
+        let pad: CGFloat = m.isRegular ? 30 : 16
+        let railPadH: CGFloat = m.isWide ? 22 : 12
+        let railPadV: CGFloat = m.isWide ? 6 : (m.isShort ? 4 : 6)
+        let size = hourglassSize(m)
+        let row = railRowHeight(m)
+        // MQHourglass is `Canvas().frame(width: size * 0.66, height: size)` at the
+        // leading edge of the row, vertically centred in it.
+        return CGRect(x: pad + railPadH,
+                      y: m.insets.top + pad * 0.6 + railPadV + (row - size) / 2,
+                      width: size * 0.66, height: size)
+    }
+
     nonisolated static func tileSize(_ m: MQMetrics) -> CGSize {
         let padH: CGFloat = m.isRegular ? 30 : 16
         let contentW = m.size.width - padH * 2
@@ -58,10 +101,12 @@ public struct MQPatchwerkScreen: View, MQTapAudited {
             + (0..<4).map { MQTapTarget("answer \($0 + 1)", t) }
     }
 
-    /// Sand left in the hourglass. Three-minute tier, so 2:47 is nearly full and
-    /// 0:18 is nearly out -- and at that point the glass reads as urgently as
-    /// the number does.
-    private var sandLeft: Double { scene.enraged ? 0.10 : 0.92 }
+    /// Sand left in the hourglass: the run's own fraction, not a mood.
+    ///
+    /// This was `scene.enraged ? 0.10 : 0.92` -- a constant, so the glass read
+    /// nearly full for the whole fight and then jumped to nearly empty at the
+    /// enrage. See `MQPatchwerkScene.sand`.
+    private var sandLeft: Double { scene.sand }
 
     public var body: some View {
         ZStack {
@@ -80,15 +125,16 @@ public struct MQPatchwerkScreen: View, MQTapAudited {
             MQRail(p, padH: 22, padV: 6) {
                 HStack(alignment: .center, spacing: 22) {
                     MQHourglass(p, time: scene.timer, fraction: sandLeft,
-                                size: 56, urgent: scene.enraged)
+                                size: Self.hourglassSize(m), urgent: scene.enraged)
                     MQCarvedNumber(p, value: scene.damage, caption: "damage", valueSize: 40)
                     Spacer(minLength: 12)
                     MQStackSpar(p, stacks: scene.stacks, cap: scene.stackCap,
                                 multiplier: scene.multiplier)
                     freezeBlock
                     MQKnob(p, .pause, size: Self.knobSize(m))
+                        .overlay { MQProbe.screenTint(4) }
                 }
-                .frame(height: 60)
+                .frame(height: Self.railRowHeight(m))
             }
             bossLine
             // Board on the left, dummy on the right -- the same battle line the
@@ -117,12 +163,14 @@ public struct MQPatchwerkScreen: View, MQTapAudited {
                 VStack(spacing: m.isShort ? 4 : 6) {
                     HStack(alignment: .center, spacing: 10) {
                         MQHourglass(p, time: scene.timer, fraction: sandLeft,
-                                    size: 40, urgent: scene.enraged)
+                                    size: Self.hourglassSize(m), urgent: scene.enraged)
                         Spacer(minLength: 4)
                         MQCarvedNumber(p, value: scene.damage, caption: "damage",
                                        valueSize: 28)
                         MQKnob(p, .pause, size: Self.knobSize(m))
+                            .overlay { MQProbe.screenTint(4) }
                     }
+                    .frame(height: Self.railRowHeight(m))
                     HStack(spacing: 10) {
                         MQStackSpar(p, stacks: scene.stacks, cap: scene.stackCap,
                                     multiplier: scene.multiplier, compact: true)
@@ -218,6 +266,7 @@ public struct MQPatchwerkScreen: View, MQTapAudited {
         HStack(spacing: 18) {
             ForEach(Array(scene.answers.enumerated()), id: \.offset) { i, a in
                 MQAnswerTile(p, a, tilt: MQAnswerTile.tilts[i % 4], fontSize: type.tile)
+                    .overlay { MQProbe.screenTint(i) }
             }
         }
         .frame(height: Self.tileSize(m).height)
@@ -232,6 +281,7 @@ public struct MQPatchwerkScreen: View, MQTapAudited {
                         MQAnswerTile(p, scene.answers[i], tilt: MQAnswerTile.tilts[i],
                                      fontSize: type.tile)
                             .frame(height: Self.tileSize(m).height)
+                            .overlay { MQProbe.screenTint(i) }
                     }
                 }
             }

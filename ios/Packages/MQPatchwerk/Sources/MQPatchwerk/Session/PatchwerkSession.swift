@@ -117,6 +117,10 @@ public final class PatchwerkSession: ObservableObject {
         s.tierName = tier.label
         s.level = player.level
         s.timer = PatchwerkRun.clockLabel(ms: timeLeftMs)
+        // The glass and the digits are the same clock. `sand` used to have no
+        // field to arrive in and the screen drew a constant, so the picture was a
+        // lie for the whole fight - see MQPatchwerkScene.sand.
+        s.sand = sandFraction
         s.damage = PatchwerkSession.grouped(st.damage)
         s.stacks = st.stacks
         s.stackCap = config.stackCap

@@ -1,4 +1,4 @@
-143
+166
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing parsed; everything below is for humans.
@@ -62,3 +62,40 @@
 #      300-run parity replay is one line in this total, not 300. The MQDesign entry above
 #      counted cases because that is what the runner reported at the time; if the two ever
 #      have to be reconciled, the floor is whatever an unfiltered run prints, nothing more.
+
+# 166 = those 143 + 23 from the FIX PASS on lane/patchwerk answering the 2026-09-07
+#      refutation (SURVIVED-wounded, 7 wounds):
+#        Patchwerk scoring parity with the web    +1  (W1: the corpus's recorded
+#                                                      sourceSha256 against a sha-256
+#                                                      this suite computes from
+#                                                      js/modes/patchwerk.js on disk.
+#                                                      The node half of the same pin is
+#                                                      `node tools/make-patchwerk-parity.mjs
+#                                                      --check`, now inside `npm test`.)
+#        The Patchwerk HUD, measured on the pixels +16 (W2: 12 device sizes x 3 scenes x
+#                                                      5 controls, drawn frame vs overlay
+#                                                      frame out of two separate renders,
+#                                                      counted as 12 parameterised cases;
+#                                                      the probe's negative control; W3:
+#                                                      the sand at 0:21, the sand at four
+#                                                      moments of a fight, and the wire
+#                                                      from PatchwerkRun.sandFraction)
+#        The clock cannot be driven backwards,    +7  (W6: monotonicity over 200,000 reads,
+#        and the ticker is one per run                 real-time advance, a backwards clock
+#                                                      on all 3 tiers, the clamp at every
+#                                                      boundary, and the web-parity argument
+#                                                      as an assertion. W7: 100 view
+#                                                      re-inits make no timer, 100 starts
+#                                                      make one, and stop() really stops.)
+#        Leaderboard names agree with the web     +4  (W4: the corpus pinned to
+#                                                      api/leaderboard.js by sha, all 7,053
+#                                                      names, coverage of the decomposition
+#                                                      class, and the named cases)
+#        An unreadable board is kept, never       +5  (W5: quarantine, the schema case,
+#        clobbered                                     writes refused when the move aside
+#                                                      fails, a healthy board untouched,
+#                                                      and a missing file is not a
+#                                                      corruption)
+#      Minus nothing: no test was removed. The old `overlayMatchesTheDrawnScreen` was the
+#      tautology the refutation named; it is kept, renamed to what it actually checks
+#      (the wiring), with the real gate now beside it in HUDPixelTests.

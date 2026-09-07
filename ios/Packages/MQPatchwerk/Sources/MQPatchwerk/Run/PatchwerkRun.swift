@@ -85,7 +85,24 @@ public final class PatchwerkRun {
     /// Milliseconds since the run began, from the injected clock.
     public var elapsedMs: Int { clock.nowMs - startedAtMs }
 
-    public func timeLeftMs(at elapsed: Int) -> Int { max(0, tier.durationMs - elapsed) }
+    /// Time left, CLAMPED TO THE TIER at both ends.
+    ///
+    /// The upper clamp is the second half of the backwards-clock fix. Even with a
+    /// monotonic clock, a caller (or the corpus, which supplies timestamps
+    /// directly) can hand in a negative elapsed - the web's shell genuinely
+    /// delivers out-of-order timestamps and the corpus scripts 72 of them - and
+    /// `dur - elapsed` would then be MORE than the tier. A fight cannot last
+    /// longer than the tier the child chose, ever, for any reason.
+    ///
+    /// It is not a parity change: the clamp can only fire when `elapsed < 0`, and
+    /// every threshold this feeds (`<= 0` for expiry, `<= enrageWindowMs` for the
+    /// enrage) reads the same either side of it, because the shortest tier is
+    /// 120,000 ms and the enrage window is 20,000. Proved by the 300-run corpus
+    /// and by 200 adversarial runs, both of which include the negative-timestamp
+    /// runs, replaying with 0 divergences.
+    public func timeLeftMs(at elapsed: Int) -> Int {
+        min(tier.durationMs, max(0, tier.durationMs - elapsed))
+    }
     public var timeLeftMs: Int { timeLeftMs(at: elapsedMs) }
 
     /// The last `ENRAGE_WINDOW_MS` of the fight. Note the upper bound: at exactly

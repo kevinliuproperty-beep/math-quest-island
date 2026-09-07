@@ -4,9 +4,9 @@
  * logic through this extractor. Change the method in the Studio, deploy, re-run
  * `npm run build:cube-engine`, and commit the result.
  */
-/* CUBE_ENGINE_BUILD 20260907-bac7adf */
-/* CUBE_ENGINE_BUILD_META {"stamp":"20260907-bac7adf","date":"2026-09-07","sha":"bac7adf","dirty":false,"payloadHash":"8b1c305f90a26523","source":"cube/index.html","sourceSha256":"d65f279a3b3c07537eff773896199053","blocks":[{"name":"CORE","startLine":724,"endLine":1661,"bytes":46040,"sha256":"0ad36436a8ce5951"},{"name":"CORE3","startLine":1662,"endLine":2921,"bytes":74516,"sha256":"ccd530ba34201eaf"},{"name":"INFER","startLine":2922,"endLine":3199,"bytes":12255,"sha256":"4e63b7378c55c973"},{"name":"GUIDE","startLine":3200,"endLine":3598,"bytes":32038,"sha256":"fdcdfcd0d55d878b"}],"generator":"tools/build-cube-engine.mjs"} */
-var CUBE_ENGINE_META = {"stamp":"20260907-bac7adf","date":"2026-09-07","sha":"bac7adf","dirty":false,"payloadHash":"8b1c305f90a26523","source":"cube/index.html","sourceSha256":"d65f279a3b3c07537eff773896199053","blocks":[{"name":"CORE","startLine":724,"endLine":1661,"bytes":46040,"sha256":"0ad36436a8ce5951"},{"name":"CORE3","startLine":1662,"endLine":2921,"bytes":74516,"sha256":"ccd530ba34201eaf"},{"name":"INFER","startLine":2922,"endLine":3199,"bytes":12255,"sha256":"4e63b7378c55c973"},{"name":"GUIDE","startLine":3200,"endLine":3598,"bytes":32038,"sha256":"fdcdfcd0d55d878b"}],"generator":"tools/build-cube-engine.mjs"};
+/* CUBE_ENGINE_BUILD 20260907-3077cdf */
+/* CUBE_ENGINE_BUILD_META {"stamp":"20260907-3077cdf","date":"2026-09-07","sha":"3077cdf","dirty":false,"payloadHash":"8b1c305f90a26523","source":"cube/index.html","sourceSha256":"d65f279a3b3c07537eff773896199053","blocks":[{"name":"CORE","startLine":724,"endLine":1661,"bytes":46040,"sha256":"0ad36436a8ce5951"},{"name":"CORE3","startLine":1662,"endLine":2921,"bytes":74516,"sha256":"ccd530ba34201eaf"},{"name":"INFER","startLine":2922,"endLine":3199,"bytes":12255,"sha256":"4e63b7378c55c973"},{"name":"GUIDE","startLine":3200,"endLine":3598,"bytes":32038,"sha256":"fdcdfcd0d55d878b"}],"generator":"tools/build-cube-engine.mjs"} */
+var CUBE_ENGINE_META = {"stamp":"20260907-3077cdf","date":"2026-09-07","sha":"3077cdf","dirty":false,"payloadHash":"8b1c305f90a26523","source":"cube/index.html","sourceSha256":"d65f279a3b3c07537eff773896199053","blocks":[{"name":"CORE","startLine":724,"endLine":1661,"bytes":46040,"sha256":"0ad36436a8ce5951"},{"name":"CORE3","startLine":1662,"endLine":2921,"bytes":74516,"sha256":"ccd530ba34201eaf"},{"name":"INFER","startLine":2922,"endLine":3199,"bytes":12255,"sha256":"4e63b7378c55c973"},{"name":"GUIDE","startLine":3200,"endLine":3598,"bytes":32038,"sha256":"fdcdfcd0d55d878b"}],"generator":"tools/build-cube-engine.mjs"};
 
 /* ===== cube engine bundle: HOST SHIM (prepended by tools/build-cube-engine.mjs) =====
  *
@@ -3847,4 +3847,4 @@ var CUBE_API = (function () {
   return API;
 })();
 
-/* CUBE_ENGINE_BUILD_END 20260907-bac7adf */
+/* CUBE_ENGINE_BUILD_END 20260907-3077cdf */

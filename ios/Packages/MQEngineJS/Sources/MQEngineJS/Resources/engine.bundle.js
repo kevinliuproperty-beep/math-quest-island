@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260907-f847c1b */
-/* ENGINE_BUILD_META {"stamp":"20260907-f847c1b","date":"2026-09-07","sha":"f847c1b","dirty":false,"payloadHash":"ed5980f91b0ee0b6","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260907-f847c1b","date":"2026-09-07","sha":"f847c1b","dirty":false,"payloadHash":"ed5980f91b0ee0b6","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260907-e9e19c4 */
+/* ENGINE_BUILD_META {"stamp":"20260907-e9e19c4","date":"2026-09-07","sha":"e9e19c4","dirty":false,"payloadHash":"ce24e9877da34185","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260907-e9e19c4","date":"2026-09-07","sha":"e9e19c4","dirty":false,"payloadHash":"ce24e9877da34185","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -141,16 +141,41 @@ function gMul(tables){
     a+' × '+b+' = '+p+'. Count in '+a+'s: '+Array.from({length:Math.min(b,4)},(_,i)=>a*(i+1)).join(', ')+'…');
 }
 
+/* unitList(unit) -> [] | ['cm³'] | ['cm³','ml']
+ * The one place that normalises `q.unit`'s two legal shapes. A STRING is one unit.
+ * An ARRAY is a set of EQUIVALENT units, any of which the child may type; the FIRST
+ * is canonical and is the one printed in answerText and explanations.
+ * Unit Sweep Refutation W2 (2026-09-07): 1 ml IS 1 cm³, and three volume generators
+ * print that identity in their own stem while rejecting the other half of it. One
+ * declared unit could not express "these two spellings are the same quantity".
+ * Blank/absent entries are dropped, so ['cm³', ''] is just ['cm³']. */
+function unitList(unit){
+  if (unit === null || unit === undefined) return [];
+  const raw = Array.isArray(unit) ? unit : [unit];
+  const out = [];
+  for (let i=0;i<raw.length;i++){
+    if (raw[i] === null || raw[i] === undefined) continue;
+    const s = String(raw[i]).trim();
+    if (s && out.indexOf(s) === -1) out.push(s);
+  }
+  return out;
+}
+
 /* finishTyped(stem, answer, explain, unit)
- * `unit` is the unit the STEM asks for ("cm²", "pages", "min", "l"...). It lands on
- * q.unit so gradeTyped can (a) strip that unit when the child types it and (b) REJECT
- * a wrong one. Wave-2 kill (P4 Area+Graphs Refutation, §2 unit gap): before this,
- * finishTyped set no q.unit at all, so "113 cm" graded CORRECT for a 113 cm² answer.
+ * `unit` is the unit the STEM asks for ("cm²", "pages", "min", "l"...), or an ARRAY
+ * of equivalent units (["cm³","ml"]) when two spellings name the same quantity. It
+ * lands on q.unit so gradeTyped can (a) strip that unit when the child types it and
+ * (b) REJECT a wrong one. Wave-2 kill (P4 Area+Graphs Refutation, §2 unit gap):
+ * before this, finishTyped set no q.unit at all, so "113 cm" graded CORRECT for a
+ * 113 cm² answer. With an array, the FIRST member is canonical: it is what
+ * answerText prints, so the child still reads one house answer.
  * Leave `unit` off only when the answer is a bare count with no unit. */
 function finishTyped(qHtml, answer, explain, unit){
-  const u = unit ? String(unit) : '';
+  const list = unitList(unit);
+  const u = list.length ? list[0] : '';
   return { q:qHtml, extra:'', typed:true, answer, choices:[], correct:-1,
-           unit:u, explain, answerText: u ? (answer+' '+u) : (''+answer) };
+           unit: list.length > 1 ? list : u, explain,
+           answerText: u ? (answer+' '+u) : (''+answer) };
 }
 
 /* ===== TYPED-ANSWER GRADING =========================================
@@ -208,18 +233,20 @@ function reduceFrac(n, d){
 }
 /* Returns {ok:true, value, unit, frac?} or {ok:false, reason}.
  * `q` is optional; when it declares a unit, that unit is strippable even if it is
- * not on TYPED_UNITS (so a lane may invent "crates" without touching the shared kit). */
+ * not on TYPED_UNITS (so a lane may invent "crates" without touching the shared kit).
+ * q.unit may be a STRING or an ARRAY of equivalent units - every member is
+ * strippable, longest spelling first so "cm³" wins over a shorter member. */
 function parseTypedAnswer(raw, q){
   if (raw === null || raw === undefined) return { ok:false, reason:'empty' };
   let s = String(raw).trim();
   if (s === '') return { ok:false, reason:'empty' };
   let unit = '';
   /* 1. a unit the question itself declares, whatever it is */
-  const declared = q && (q.unit || q.units);
-  if (declared){
-    const d = String(declared).trim();
-    if (d && s.length > d.length && s.slice(-d.length).toLowerCase() === d.toLowerCase()){
-      unit = d; s = s.slice(0, s.length - d.length).trim();
+  const declared = unitList(q && (q.unit || q.units)).sort((a,b) => b.length - a.length);
+  for (let i=0;i<declared.length;i++){
+    const d = declared[i];
+    if (s.length > d.length && s.slice(-d.length).toLowerCase() === d.toLowerCase()){
+      unit = d; s = s.slice(0, s.length - d.length).trim(); break;
     }
   }
   /* 2. otherwise any unit on the broad shared list */
@@ -249,7 +276,15 @@ function parseTypedAnswer(raw, q){
     if (!d) return { ok:false, reason:'divide by zero' };
     return { ok:true, value:n/d, frac:reduceFrac(n, d), unit };
   }
-  if (!/^[-+]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return { ok:false, reason:'not a number' };
+  /* A TRAILING FULL STOP is the one correct-value rejection a child can reach on the
+     iPad's own keypad (Unit Sweep Refutation, 2026-09-07): inputmode="decimal" offers
+     digits and a dot, and a thumb that ends "41.10." typed a right answer. "41." was
+     always fine (\d+\.\d* allows an empty fraction); a SECOND dot was not. Drop ONE
+     trailing dot, and only when what is left is otherwise a valid number - fractions
+     and mixed numbers have already matched above, so "3/4." stays wrong. */
+  const NUMERIC = /^[-+]?(\d+(\.\d*)?|\.\d+)$/;
+  if (!NUMERIC.test(s) && s.slice(-1) === '.' && NUMERIC.test(s.slice(0, -1))) s = s.slice(0, -1);
+  if (!NUMERIC.test(s)) return { ok:false, reason:'not a number' };
   const v = Number(s);
   if (!Number.isFinite(v)) return { ok:false, reason:'not a number' };
   return { ok:true, value:v, unit };
@@ -261,10 +296,17 @@ function parseTypedAnswer(raw, q){
 function gradeTyped(raw, q){
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return false;
-  const want = q && (q.unit || q.units);
-  if (want && p.unit && normUnit(p.unit) !== normUnit(want)) return false;
+  const want = unitList(q && (q.unit || q.units));
+  /* ANY declared member is accepted - a string declares one, an array declares a set
+     of equivalents ("cm³" and "ml" are the same quantity, and the stems say so). */
+  if (want.length && p.unit){
+    const got = normUnit(p.unit);
+    let hit = false;
+    for (let i=0;i<want.length;i++) if (normUnit(want[i]) === got){ hit = true; break; }
+    if (!hit) return false;
+  }
   /* a unit typed on a question that declares none is only accepted off the shared list */
-  if (!want && p.unit && TYPED_UNITS.indexOf(normUnit(p.unit)) === -1
+  if (!want.length && p.unit && TYPED_UNITS.indexOf(normUnit(p.unit)) === -1
       && TYPED_UNITS.indexOf(String(p.unit).toLowerCase()) === -1) return false;
   if (q && Array.isArray(q.fracAnswer)){
     const r = reduceFrac(Number(q.fracAnswer[0]), Number(q.fracAnswer[1]));
@@ -281,6 +323,33 @@ function gradeTyped(raw, q){
   }
   const tol = Number.isInteger(ans) ? 1e-9 : 0.005;
   return Math.abs(p.value - ans) <= tol;
+}
+/* WHY a typed answer was rejected, in machine words. Null when it was accepted.
+ *   'wrong-unit'   the VALUE is right; the only thing that rejected it is the unit
+ *   'wrong-value'  the number itself is wrong (whatever the unit said)
+ *   <parse reason>  'empty' | 'not a number' | 'divide by zero' - it never parsed
+ *
+ * Unit Sweep Refutation W1 (2026-09-07): the unit sweep manufactured 160 rejections
+ * and shipped no new teaching for them. In 270 of 270 sampled wrong-unit rejections
+ * the child read "The answer is 300 cm²" under their own "300" and had no way to
+ * tell what was wrong. ONE definition of the distinction lives here, so the web
+ * card (js/app.js resolve) and the bridge verdict (tools/engine/api.js -> Swift
+ * Verdict.Reason) can never drift apart on it.
+ *
+ * The test is not "is the number close" - it is the grader's own answer to "would
+ * this same input pass if the question declared no unit?". That inherits dp, the
+ * fraction rules and every tolerance for free, and cannot fall out of step with
+ * gradeTyped because it IS gradeTyped. */
+function typedRejectReason(raw, q){
+  const p = parseTypedAnswer(raw, q);
+  if (!p.ok) return String(p.reason || 'unparsed');
+  if (gradeTyped(raw, q)) return null;
+  if (p.unit && q){
+    const bare = {};
+    for (const k in q) if (k !== 'unit' && k !== 'units') bare[k] = q[k];
+    if (gradeTyped(raw, bare)) return 'wrong-unit';
+  }
+  return 'wrong-value';
 }
   /* ===== GEN-KIT-END ================================================== */
 
@@ -493,7 +562,7 @@ function gradeTyped(raw, q){
   const api = {
     gen: { ri, pick, shuffle, gcd, fr, eq, buildFracChoices, finishFrac, finishNum, finishTyped,
            gMul, EASY_TABLES, HARD_TABLES },
-    parseTypedAnswer, gradeTyped, normUnit,
+    parseTypedAnswer, gradeTyped, normUnit, unitList, typedRejectReason,
     topics: TOPICS,
     modes: MODES,
     registerTopic, registerMode,
@@ -2601,9 +2670,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
  * All answers are positive whole numbers, so finishNum keeps the authored
  * distractors (rubric lesson 4) and no typed answer is a decimal.
  * TYPED UNITS: every finishTyped here declares its answer's unit as the 4th
- * argument, so gradeTyped rejects a wrong one. The one exception, gUnitCubes,
- * opts out EXPLICITLY with a reason (see noUnit below): its answer is a bare
- * count of cubes and any declaration would mark a right answer wrong.
+ * argument, so gradeTyped rejects a wrong one. Three of them declare an ARRAY of
+ * EQUIVALENT units, because on this topic two spellings really are the same
+ * quantity - see "1 ml = 1 cm³" below. The first member is canonical and is what
+ * the answer card prints.
  */
 (function () {
   const G = MQI.gen;
@@ -2614,14 +2684,21 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
   /* No authored distractor may collapse onto the correct answer: finishNum drops it
      silently and pads with correct+1 giveaways. Filter, and redraw if fewer than 3
      real misconceptions survive (6 x s² equals s³ at s = 6, for instance). */
-  /* EXPLICIT UNIT OPT-OUT. tools/gen-sanity.mjs fails any typed generator whose
-     STEM names a unit token while q.unit is empty (that hole let "140 kg" grade
-     correct on a cm² question). A generator whose answer is genuinely a bare
-     number opts out here, in its own file, by attaching the REASON - the harness
-     accepts the opt-out only with one, and only on a typed item that declares no
-     unit. An empty or missing reason is a failure, so the escape hatch cannot be
-     used silently. */
-  const noUnit = (q, why) => (q.unitOptOut = why, q);
+  /* EQUIVALENT UNITS. finishTyped's 4th argument takes an ARRAY when two spellings
+     name the SAME quantity; gradeTyped accepts any member and the FIRST is what the
+     answer card prints. 1 ml IS 1 cm³ - these stems print that identity themselves
+     ("(1 ml = 1 cm³)"), and gTankLitres' own explanation says "Volume = 25 x 20 x 11
+     = 5500 cm³, and 1 cm³ = 1 ml, so it is 5500 ml". Declaring one unit made the
+     game assert the equality and mark it wrong in the same breath: a child who
+     writes 5500 cm3 there has done the arithmetic AND understood the identity
+     (Unit Sweep Refutation W2, 2026-09-07 - the only correct-value regression the
+     unit sweep caused). The canonical member is still the unit the stem asks for,
+     so the conversion is still what the item teaches.
+
+     gUnitCubes was the unit sweep's one opt-out, and the array retires it: its
+     answer is a count of 1 cm cubes, so "48 cubes" and "48 cm³" are the same
+     quantity written two ways and BOTH are right, while "48 kg" - which the
+     opt-out kept accepting - is now rejected (Unit Sweep Refutation W3). */
 
   function clean(correct, list){
     const out = [];
@@ -2647,14 +2724,11 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
   function gUnitCubes(){
     const l = ri(2, 8), w = ri(2, 6), h = ri(2, 5), n = l * w * h;
     const who = pick(NAMES);
-    return noUnit(finishTyped(who + ' builds a solid ' + l + ' cubes long, ' + w + ' cubes wide and ' + h +
+    return finishTyped(who + ' builds a solid ' + l + ' cubes long, ' + w + ' cubes wide and ' + h +
       ' cubes high from 1 cm cubes. How many unit cubes are used?', n,
       'Each layer uses ' + l + ' x ' + w + ' = ' + (l * w) + ' cubes and there are ' + h + ' layers, so ' +
-      (l * w) + ' x ' + h + ' = ' + n + ' cubes.'),
-      'the stem names cm only to size the little cubes; the answer is a bare COUNT ' +
-      'of unit cubes. Declaring any unit here would mark a right answer wrong - a ' +
-      'child who writes 70 cm3 has read the 1 cm cube correctly and means the same ' +
-      'quantity, and a child who writes 70 cubes is also right.');
+      (l * w) + ' x ' + h + ' = ' + n + ' cubes.',
+      ['cubes', 'cm³']);
   }
   function gLitresToCm3(){
     /* ml was banded 11-99, so a round "3 l 500 ml" could never appear even though
@@ -2663,7 +2737,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const v = l * 1000 + ml;
     return finishTyped(l + ' ℓ ' + ml + ' ml of barley water is poured into a tank. How many cm³ is that? (1 ml = 1 cm³)', v,
       '1 ml is exactly 1 cm³, and 1 ℓ = 1000 ml. So ' + l + ' ℓ ' + ml + ' ml = ' + v + ' ml = ' + v + ' cm³.',
-      'cm³');
+      ['cm³', 'ml']);
   }
   function gTankLiquid(){
     const l = pick([10, 15, 20, 25, 30]), w = pick([10, 12, 20, 25]), d = ri(2, 12);
@@ -2671,7 +2745,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     return finishTyped('A rectangular tank has a base ' + l + ' cm by ' + w + ' cm. Water is poured in to a depth of ' +
       d + ' cm. What is the volume of the water, in cm³?', cm3,
       'The water is a cuboid: ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³.',
-      'cm³');
+      ['cm³', 'ml']);
   }
   function gTankLitres(){
     const l = pick([10, 20, 25, 50]), w = pick([10, 20, 40]), d = ri(2, 12);
@@ -2680,7 +2754,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     return finishTyped(who + ' fills a rectangular tank with a base ' + l + ' cm by ' + w +
       ' cm to a depth of ' + d + ' cm. How many millilitres of water is that? (1 cm³ = 1 ml)', cm3,
       'Volume = ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³, and 1 cm³ = 1 ml, so it is ' + cm3 + ' ml.',
-      'ml');
+      ['ml', 'cm³']);
   }
 
   MQI.registerTopic({
@@ -3934,7 +4008,12 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     return typed3(scene + ' ' + val + ' ' + large + VERB[p[3]] + '. Express that in ' + small +
       '. (type the number of ' + small + ', e.g. 1750)', ans,
       'There are ' + per + ' ' + small + ' in 1 ' + large + ', so multiply by ' + per + ': ' + val +
-      ' ' + large + ' = ' + ans + ' ' + small + '.', small);
+      ' ' + large + ' = ' + ans + ' ' + small + '.',
+      /* 1 ml IS 1 cm³, so on the litre pair both spellings name the same quantity and
+         both are right - the same identity p5-volume.js declares, and the fourth of
+         the four correct-value cells the unit sweep regressed (Unit Sweep Refutation
+         W2, 2026-09-07). 'ml' stays canonical: it is the unit the stem asks for. */
+      small === 'ml' ? ['ml', 'cm³'] : small);
   }
   function gConversionWordProblem(){
     /* Two lengths in different units, added, answered in the larger unit. This is
@@ -5620,8 +5699,14 @@ var MQI_API = (function () {
     var k = { typed: !!q.typed, correct: (typeof q.correct === 'number' ? q.correct : -1) };
     if (q.typed) {
       k.answer = q.answer;
-      if (q.unit) k.unit = String(q.unit);
-      if (q.units) k.units = String(q.units);
+      /* q.unit may be a STRING or an ARRAY of equivalent units (["cm³","ml"]).
+         The key is what gradeTyped reads, so the array travels whole - flatten it
+         to a string here and "ml" stops being accepted on a cm³ question the
+         moment the question crosses the bridge. */
+      if (Array.isArray(q.unit)) { if (q.unit.length) k.unit = q.unit.map(String); }
+      else if (q.unit) k.unit = String(q.unit);
+      if (Array.isArray(q.units)) { if (q.units.length) k.units = q.units.map(String); }
+      else if (q.units) k.units = String(q.units);
       if (Array.isArray(q.fracAnswer)) k.fracAnswer = [Number(q.fracAnswer[0]), Number(q.fracAnswer[1])];
       if (typeof q.dp === 'number' && isFinite(q.dp)) k.dp = q.dp;
     }
@@ -5660,7 +5745,13 @@ var MQI_API = (function () {
       answerTextPlain: plain(q.answerText),
       explain: String(q.explain === undefined || q.explain === null ? '' : q.explain),
       explainText: plain(q.explain),
-      unit: q.unit ? String(q.unit) : (q.units ? String(q.units) : ''),
+      /* The CANONICAL unit, for a keypad to print beside the field: the first member
+         when the question declares a set of equivalents. Grading reads key.unit,
+         which carries the whole set. */
+      unit: (function () {
+        var list = MQI.unitList(q.unit || q.units);
+        return list.length ? String(list[0]) : '';
+      })(),
       key: keyOf(q)
     };
   }
@@ -5840,8 +5931,12 @@ var MQI_API = (function () {
       v.parsed = parsed.ok
         ? { ok: true, value: parsed.value, unit: parsed.unit || '', frac: parsed.frac || null, reason: null }
         : { ok: false, value: null, unit: '', frac: null, reason: String(parsed.reason || 'unparsed') };
-      if (!v.correct && !parsed.ok) v.reason = String(parsed.reason || 'unparsed');
-      else if (!v.correct) v.reason = 'wrong value or unit';
+      /* WHY it was wrong, machine-readable. The single string 'wrong value or unit'
+         made a SwiftUI view as blind as the web card was (Unit Sweep Refutation W1):
+         it could not tell "your number was right, the unit was not" from "that is
+         the wrong number". MQI.typedRejectReason is the ONE definition of that
+         split - the same call js/app.js resolve() makes to write the child's card. */
+      if (!v.correct) v.reason = String(MQI.typedRejectReason(raw, key) || 'wrong-value');
       v.expectedIndex = -1;
       v.expectedText = String(q.answerTextPlain || q.answerText || '');
       v.chosenIndex = -1;
@@ -5980,4 +6075,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260907-f847c1b */
+/* ENGINE_BUILD_END 20260907-e9e19c4 */

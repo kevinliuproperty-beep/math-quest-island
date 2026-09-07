@@ -80,17 +80,31 @@
   .pathDots { text-align:center; color:#8f83d8; font-size:14px; letter-spacing:6px; }
 
   /* ---------- BATTLE ---------- */
-  #hud { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 2px 8px; }
-  #monsterDots { display:flex; gap:6px; font-size:20px; }
+  /* WOUND 1 (Phone Width Refutation, 2026-09-07): at 320 px - iPhone SE 1st gen, and
+     the small Androids still in the wild - #muteBtn was laid out at 330..354 in a
+     320 px viewport and #streakBox at 266..322, page scrollWidth 354. body{overflow
+     :hidden} means a child could not scroll to the sound toggle: it simply did not
+     exist on that phone, and it had never existed, on either checkout. The row now
+     fits: the monster dots and the mute glyph scale down with the viewport, and the
+     two min-widths (which existed only to stop the clock and streak jittering as
+     their digits change) are expressed as `ch` of their own type instead of a fixed
+     px that no longer fits. 320 px is now one of the gate's measured viewports. */
+  #hud { display:flex; align-items:center; justify-content:space-between; gap:clamp(4px,2vw,10px); padding:4px 2px 8px; }
+  #monsterDots { display:flex; gap:clamp(3px,1.6vw,6px); font-size:clamp(15px,5vw,20px); }
   #monsterDots span.now { transform:scale(1.3); }
-  #runClock { font-size:17px; font-weight:800; color:#9ef0ff; min-width:64px; }
-  #streakBox { font-size:18px; font-weight:800; color:#ffd166; min-width:56px; text-align:right; }
-  #muteBtn { background:none; border:none; font-size:24px; cursor:pointer; }
+  #runClock { font-size:clamp(14px,4.4vw,17px); font-weight:800; color:#9ef0ff; min-width:4.2ch; }
+  #streakBox { font-size:clamp(15px,4.6vw,18px); font-weight:800; color:#ffd166; min-width:3.6ch; text-align:right; }
+  #muteBtn { background:none; border:none; font-size:clamp(19px,6vw,24px); cursor:pointer; padding:2px; }
 
+  /* The arena and the rows around it each give back a few px so the banner's reserved
+     band (below) is paid for out of decoration rather than out of the drawing. The
+     sprite's desktop cap comes down from 92 px to 80 px for the same reason: without
+     it, a 1024 x 900 desktop had only 15 px of column slack and the band would have
+     forced the pie chart to scale down on a screen with room to spare. */
   #arena { position:relative; display:flex; align-items:flex-end; justify-content:space-between;
-           padding:6px 18px 10px; min-height:150px; }
+           padding:4px 18px 8px; min-height:140px; }
   .fighter { display:flex; flex-direction:column; align-items:center; gap:6px; width:44%; }
-  .sprite { font-size:clamp(56px,11vw,92px); line-height:1; filter:drop-shadow(0 6px 6px rgba(0,0,0,.45)); }
+  .sprite { font-size:clamp(56px,11vw,80px); line-height:1; filter:drop-shadow(0 6px 6px rgba(0,0,0,.45)); }
   #heroSprite { animation:bob 2.4s ease-in-out infinite; }
   #monsterSprite { animation:bob 2s ease-in-out infinite .4s; }
   .fname { font-size:15px; font-weight:700; color:#e2dcff; }
@@ -113,7 +127,34 @@
   #qcard { background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.18); border-radius:22px;
            padding:14px 18px 12px; text-align:center; margin:2px 0 10px; min-height:104px;
            display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
-  #qtext { font-size:clamp(20px,4.4vw,27px); font-weight:700; line-height:1.5; }
+  #qtext { font-size:clamp(20px,4.4vw,27px); font-weight:700; line-height:1.5; max-width:100%; }
+  /* PHONE-WIDTH LANE (2026-09-07). #qcard is a centred COLUMN flex container, so
+     #qextra was a shrink-to-fit flex item with the default min-width:auto: it took the
+     figure's intrinsic width even when that was wider than the card, and every
+     `max-width:100%` inside js/figures.js then resolved against a box that was ALREADY
+     off the screen. That is why the figure-spec lane's max-width on .bargraph was inert
+     and why the W3 "the table is capped and scrolls in place" claim was not true on the
+     glass (measured 421 px of table in a 364 px card at 390 px). Making #qextra a
+     full-width, min-width:0 block is the single line that gives every figure a real
+     card to cap against - and it centres the drawings inside it. */
+  /* VERTICAL FIT (Phone Width Refutation wound 3). js/app.js measures the column and
+     publishes the height the drawing may have as --mqFigMaxH; js/figures.js's scaling
+     figures cap themselves against it. The max-height + overflow here is the backstop
+     for the figures that cannot scale (a table's rows, an L-shape's fixed 11 px/unit):
+     they scroll inside the card, with the same visible cue, rather than painting over
+     the HP numbers or the answer buttons. */
+  #qextra { width:100%; max-width:100%; min-width:0; text-align:center;
+            max-height:var(--mqFigMaxH,none); overflow:auto; overscroll-behavior:contain; }
+  /* ...and when even that is not enough - a five-row bar graph on a 375 x 548 iPhone
+     SE with the URL bar showing - the drawing scrolls INSIDE the card, with a cue,
+     exactly as the table scrolls sideways inside its own box. It never paints over
+     the answer buttons and the page never scrolls. Same [data-more] contract as
+     .fig-frame, same syncFigures() in js/app.js. */
+  #qextraFrame { position:relative; width:100%; min-width:0; }
+  #qmore { position:absolute; left:50%; bottom:1px; transform:translateX(-50%); display:none;
+           padding:1px 10px; border-radius:9px; background:rgba(15,23,42,.88); color:#ffe66d;
+           font-size:12px; font-weight:800; letter-spacing:.4px; pointer-events:none; }
+  #qextraFrame[data-more="1"] #qmore { display:block; }
 
   #timerWrap { display:none; width:100%; max-width:420px; align-items:center; gap:8px; }
   #timerWrap.on { display:flex; }
@@ -135,6 +176,16 @@
   .barModel { display:flex; gap:3px; justify-content:center; }
   .barModel .seg { width:clamp(28px,6vw,46px); height:34px; border:2.5px solid #fff; border-radius:6px; background:rgba(255,255,255,.06); }
   .barModel .seg.fill { background:linear-gradient(180deg,#6ee7f9,#3aa7ff); }
+
+  /* The figure scroll cue (Phone Width Refutation wound 2). Same deal as .barModel:
+     js/figures.js publishes these two rules as MQI.figureCss and npm test asserts they
+     match, because a cue that must appear ONLY when there is more content off the right
+     edge cannot be an inline value - the shell measures and sets [data-more] on the
+     frame (see syncFigures() in js/app.js). The cue is drawn OUTSIDE the scroll box, so
+     the table's own opaque header row cannot paint over it, which is exactly what went
+     wrong with the background-only shadow. */
+  .fig-more { position:absolute; top:0; bottom:0; right:0; width:30px; display:none; align-items:center; justify-content:flex-end; padding-right:3px; pointer-events:none; font-size:17px; font-weight:800; line-height:1; color:#0f172a; background:linear-gradient(to left,#fff 34%,rgba(255,255,255,.92) 70%,rgba(255,255,255,0)); }
+  .fig-frame[data-more="1"] .fig-more { display:flex; }
 
   /* .rectBox / .rectLabelB / .rectLabelL used to live here. They are inline in
      js/figures.js now (Figure Spec Refutation wound 8: the renderer has to be the
@@ -163,18 +214,44 @@
     cursor:pointer; box-shadow:0 4px 0 #b36a00; }
   #typedGo:active { transform:translateY(3px); box-shadow:0 1px 0 #b36a00; }
 
-  #fameTabs { display:flex; gap:8px; }
+  /* wrap at 320 px: the three tabs measured 11..309 in a 300 px content box, so the
+     Hall of Fame scrolled sideways on an iPhone SE (Phone Width Refutation wound 1's
+     screen, now one of the gate's viewports) */
+  #fameTabs { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:100%; }
   .fameTab { font-family:inherit; font-size:15px; font-weight:800; color:#d5cdff;
     background:rgba(255,255,255,.08); border:2px solid transparent; border-radius:12px; padding:8px 18px; cursor:pointer; }
   .fameTab.sel { border-color:#ffe66d; color:#fff; background:rgba(255,230,109,.18); }
 
-  #feedback { min-height:32px; text-align:center; font-size:18px; font-weight:800; padding-bottom:4px; }
+  #feedback { min-height:26px; text-align:center; font-size:18px; font-weight:800; padding-bottom:2px; }
   #feedback .ok { color:#7dffb0; } #feedback .no { color:#ffc9c2; }
 
-  #banner { position:absolute; inset:0; display:none; align-items:center; justify-content:center; z-index:20; pointer-events:none; }
-  #banner .inner { font-size:clamp(28px,6vw,46px); font-weight:900; text-align:center;
-                   text-shadow:0 4px 0 rgba(0,0,0,.4); animation:bannerIn .8s; color:#ffe66d; padding:0 10px; }
-  @keyframes bannerIn { 0%{transform:scale(.3); opacity:0} 45%{transform:scale(1.15)} 70%{transform:scale(1)} 100%{opacity:1} }
+  /* THE BANNER SITS IN A RESERVED BAND, AND COVERS NOTHING (Phone Width Refutation K3).
+     Two wrong answers preceded this one:
+       - originally `inset:0` inside #arena with `align-items:center`, which painted
+         "CRITICAL HIT!" straight across both sprites and both fighter NAMES;
+       - then `top:100%`, hung from the arena's bottom edge - which is exactly where
+         #qcard begins, so by construction every banner of every kind landed on the
+         QUESTION. Measured: 190 live firings, 190/190 crossing #qtext. The lane's
+         defence ("the child is not reading the question at the instant they have just
+         answered") is true of CRITICAL HIT and false of the topic banner, which fires
+         WITH a fresh question the child has never seen.
+     A banner that must not cover anything needs room of its own, so it gets a band:
+     #bannerBand is a real flex item between the arena and the question card, always
+     present, always the same height, holding nothing else. The banner is centred
+     inside it and pushes nothing when it appears. It costs ~40 px of column, which is
+     paid for by the short-viewport block at the foot of this stylesheet.
+     `bannerIn`'s overshoot is 1.06 rather than 1.15: at 1.15 the box grew past the
+     band (and, on a phone, past the viewport - the refuter measured 5.5 px out on the
+     branch and 14.2 px on main), which is a banner covering something again.
+     pointer-events stay off, so it can never eat a tap. */
+  #bannerBand { position:relative; flex:0 0 auto; height:clamp(36px,4.6vh,42px); margin-bottom:2px; }
+  #banner { position:absolute; left:0; right:0; top:0; bottom:0; display:none; align-items:center;
+            justify-content:center; z-index:20; pointer-events:none; }
+  #banner .inner { font-size:clamp(15px,4.2vw,20px); font-weight:900; line-height:1.15; text-align:center;
+                   animation:bannerIn .8s; color:#ffe66d; padding:4px 14px; max-width:86%;
+                   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+                   background:rgba(15,23,42,.92); border:2px solid #ffe66d; border-radius:14px; }
+  @keyframes bannerIn { 0%{transform:scale(.3); opacity:0} 45%{transform:scale(1.06)} 70%{transform:scale(1)} 100%{opacity:1} }
 
   /* ---------- END / PARENT / FAME ---------- */
   #endScreen, #parentScreen { align-items:center; justify-content:flex-start; text-align:center; gap:14px; overflow-y:auto; padding:20px 8px; }
@@ -265,18 +342,16 @@
   @keyframes pwFreezeAnim { 0%,100%{filter:none} 50%{filter:drop-shadow(0 0 10px #6ee7f9) brightness(1.3)} }
   @keyframes pwEnrageAnim { 0%,100%{filter:none} 50%{filter:drop-shadow(0 0 14px #ff5e62) brightness(1.35)} }
 
-  /* W3 cosmetic (Dress Rehearsal Wave 2, item 2): #banner is inset:0 and centres its
-     text over the whole play area, so the one-shot "ENRAGE!" line was drawn straight
-     across the hero + Patchwerk avatar row and half-covered both sprites. In this mode
-     the banner is pinned to the BOTTOM of the play area and boxed, so the avatars stay
-     visible for the whole fight. Patchwerk block only; every other mode is untouched. */
-  body[data-mode-theme^="mode-patchwerk"] #banner,
-  body[data-mode-theme="enrage"] #banner { align-items:flex-end; padding-bottom:0; }
+  /* W3 cosmetic (Dress Rehearsal Wave 2, item 2): the one-shot "ENRAGE!" line used to be
+     drawn straight across the hero + Patchwerk avatar row. The base #banner rule above
+     now hangs every banner below the arena, so this block only keeps Patchwerk's own
+     smaller type and red border. The `transform:translateY(52%)` that used to live here
+     is GONE: the W3 refutation flagged that it pushed roughly half the boxed banner
+     below the play area, where `body{overflow:hidden}` would clip it (Phone Width Lane,
+     2026-09-07 - the box now sits fully inside the page at every width). */
   body[data-mode-theme^="mode-patchwerk"] #banner .inner,
   body[data-mode-theme="enrage"] #banner .inner {
-    font-size:clamp(17px,3.2vw,25px); background:rgba(15,23,42,.9);
-    border:2px solid #ff5e62; border-radius:12px; padding:7px 14px; text-shadow:none;
-    transform:translateY(52%); }
+    font-size:clamp(12px,2.9vw,17px); border-color:#ff5e62; border-radius:12px; padding:6px 12px; }
 
   /* The dummy's health is the HUD bar (it refills). The arena HP bars carry a fail
      state Patchwerk does not have, so they are hidden for the duration. */
@@ -292,6 +367,30 @@
             background:rgba(255,255,255,.08); border:2px solid transparent; border-radius:10px;
             padding:6px 12px; cursor:pointer; }
   .pwFilt.sel { border-color:#ff8f8f; color:#fff; background:rgba(255,111,97,.2); }
+
+  /* ---------- SHORT VIEWPORTS (Phone Width Refutation wound 3) ----------
+     The gate used to emulate 390 x 844 - the DEVICE height. iOS Safari gives a page
+     ~664 px of that with the URL bar showing, and an iPhone SE is 375 x 548 in the
+     same state. At those heights the column does not fit and #qcard, a shrinkable
+     flex item, was squeezed under its content: the figure kept its own height and
+     painted straight down through the answer buttons. Height is a layout dimension
+     like width, so it gets the same treatment - ONE layout that gives up decoration
+     first. Nothing here is width-conditional and no figure geometry is touched: the
+     arena, the HUD, the banner band and the answer buttons give back ~90 px, the
+     answer buttons stay well over the 44 px tap floor, and js/app.js then hands the
+     remaining room to the drawing as --mqFigMaxH. */
+  @media (max-height: 720px) {
+    #arena { min-height:0; padding:2px 14px 6px; }
+    .sprite { font-size:clamp(38px,9vw,58px); }
+    .hpbar { height:12px; }
+    .hptext { font-size:11px; }
+    #bannerBand { height:clamp(34px,5.4vh,44px); }
+    #qcard { padding:8px 14px 8px; min-height:0; gap:6px; margin:0 0 6px; }
+    #qtext { font-size:clamp(17px,4.4vw,24px); line-height:1.35; }
+    #feedback { min-height:24px; font-size:16px; }
+    #answers { gap:8px; }
+    .ansBtn { min-height:58px; font-size:clamp(19px,4.4vw,25px); border-radius:14px; }
+  }
 </style>
 </head>
 <body>
@@ -370,11 +469,11 @@
         <div class="hpbar" id="monHp"><div class="hpfill"></div></div>
         <div class="hptext" id="monHpText"></div>
       </div>
-      <div id="banner"><div class="inner" id="bannerText"></div></div>
     </div>
+    <div id="bannerBand"><div id="banner"><div class="inner" id="bannerText"></div></div></div>
     <div id="qcard">
       <div id="qtext"></div>
-      <div id="qextra"></div>
+      <div id="qextraFrame"><div id="qextra"></div><div id="qmore" aria-hidden="true">⌄ more</div></div>
       <div id="timerWrap"><div id="timerBar"><div id="timerFill"></div></div><div id="timerNum">20</div></div>
     </div>
     <div id="feedback"></div>
@@ -459,7 +558,7 @@
      document.write keeps the tags synchronous, so load order is byte-identical to
      the hand-written tags it replaces. -->
 <script>
-  window.MQI_BUILD = "20260907units";
+  window.MQI_BUILD = "20260907web2";
   (function () {
     var v = "?v=" + window.MQI_BUILD;
     var files = [

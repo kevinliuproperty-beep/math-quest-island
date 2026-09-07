@@ -1263,6 +1263,16 @@ function oracle(q) {
     const cap = extra.match(/Each unit along the bottom of the graph stands for (\d+) /);
     if (!cap) return 'bar graph: no scale caption printed under the graph';
     const scale = Number(cap[1]);
+    /* `bar` has been redrawn twice on 2026-09-07 and the oracle has followed both
+       times WITHOUT loosening: the same four printed labels in the same order -
+       .bg-cat, .bg-bar, .bg-val per row and .bg-tick on the axis - only the elements
+       carrying them change. Pre-lane: <span>/<span>. Phone Width Lane: <text>/<path>/
+       <text> inside a viewBox svg. Phone Width Refutation K4 (the viewBox scaled the
+       LABELS down to 7.9 px on a 390 px phone): back to an HTML box model, but placed
+       in percentages of the plot, so .bg-cat/.bg-val/.bg-tick are real HTML text at a
+       fixed reading size. Still adjacency-strict: .bg-bar must be IMMEDIATELY followed
+       by its .bg-val, and no second .bg-cat may appear between a category and its bar,
+       so a row that stops printing any of the three still fails here. */
     const ticks = [...raw.matchAll(/<span class="bg-tick"[^>]*>(\d+)<\/span>/g)].map(t => Number(t[1]));
     if (ticks.length < 3) return 'bar graph: value axis has fewer than 3 printed ticks';
     if (ticks[0] !== 0) return 'bar graph: axis does not start at 0, got ' + ticks[0];
@@ -1270,7 +1280,7 @@ function oracle(q) {
       if (ticks[i] - ticks[i - 1] !== scale) return `bar graph: tick step ${ticks[i] - ticks[i - 1]} != scale ${scale}`;
     }
     const bars = {};
-    for (const b of raw.matchAll(/<span class="bg-cat"[^>]*>([^<]+)<\/span><span class="bg-bar"[^>]*><\/span><span class="bg-val"[^>]*>(\d+)<\/span>/g)) {
+    for (const b of raw.matchAll(/<div class="bg-cat"[^>]*>([^<]+)<\/div>(?:(?!class="bg-cat")[\s\S])*?<div class="bg-bar"[^>]*><\/div><span class="bg-val"[^>]*>(\d+)<\/span>/g)) {
       bars[b[1]] = Number(b[2]);
     }
     const names = Object.keys(bars);

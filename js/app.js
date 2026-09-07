@@ -179,8 +179,20 @@ function newGame(){
   }
   renderDots(); renderMonster(); renderHp(); updateStreak();
   show('battleScreen');
-  banner(TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',1400);
-  setTimeout(nextQuestion,300);
+  /* K3(b), Phone Width Refutation. This used to be banner(...,1400) with the first
+     question scheduled at +300 ms, so 1,100 ms of every quest's FIRST question - a
+     question the child has never seen - was painted underneath the banner, unread.
+     The banner has a reserved band of its own now and covers nothing, so this is no
+     longer a legibility bug; it is a pacing one, and both halves are fixed together:
+     the announcement is shortened to 900 ms (long enough to read three words, and
+     the topic name is also on the map node the child just tapped) and the question
+     is dealt AFTER it clears, at 950 ms. Total dead air at quest start falls from
+     1,400 ms to 950 ms, and no question is ever dealt under a banner.
+     The post-answer banners are deliberately NOT delayed: CRITICAL HIT is a reward
+     that should ride over the next question, and now that it has its own band it can
+     do that without covering a word of it. */
+  banner(TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
+  setTimeout(nextQuestion,950);
 }
 /* ---------------- Patchwerk (js/modes/patchwerk.js) ---------------- */
 /* The mode owns pacing and scoring. The shell owns the DOM and the question feed. */
@@ -384,6 +396,102 @@ function figHtml(q){
   if(q && q.figure && MQI.renderFigure) return MQI.renderFigure(q.figure);
   return (q && q.extra) || '';
 }
+
+/* ---------------- the two measurements a drawing cannot make for itself ----------
+ * (Phone Width Refutation, 2026-09-07.) js/figures.js is pure string building and
+ * knows nothing about the viewport; these are the shell's side of the contract, and
+ * both are gated by `npm run test:layout`.
+ *
+ *  --mqFigMaxH  The height the drawing may actually have. Measured from the LIVE
+ *               column: the battle screen's inner height minus every sibling of the
+ *               question card, minus the card's own padding and its other children.
+ *               A scaling figure (pie, line) caps itself against it and shrinks with
+ *               its aspect preserved; the rest scroll inside #qextra. Without it, a
+ *               390 x 664 iPhone (the state Safari is in with the URL bar showing)
+ *               painted the pie 97 px past its card, through both HP numbers and
+ *               55 px into the answer buttons.
+ *  [data-more]  Whether a .fig-scroll box has more content off its right edge. This
+ *               is what makes the table's scroll cue REAL: the background-shadow
+ *               trick could only draw behind the cells, so the opaque header row
+ *               painted over it and the cue showed on the value row alone.
+ *
+ * Driven by one MutationObserver on #app plus resize and scroll, debounced to a
+ * frame - so every render site (a question, a Patchwerk round, the end screen's
+ * review list) is covered without a call at each one. */
+function syncFigures(){
+  const q=$('qextra'), frame=$('qextraFrame'), card=$('qcard'), scr=$('battleScreen');
+  if(q && frame && card && scr && scr.classList.contains('active')){
+    let used=0;
+    for(const el of scr.children){ if(el!==card) used+=el.getBoundingClientRect().height; }
+    const cs=getComputedStyle(card), n=v=>parseFloat(v)||0;
+    const gap=n(cs.rowGap);
+    let box=n(cs.paddingTop)+n(cs.paddingBottom)+n(cs.borderTopWidth)+n(cs.borderBottomWidth)
+           +n(cs.marginTop)+n(cs.marginBottom);
+    for(const el of card.children){ if(el!==frame && el.offsetParent!==null) box+=el.getBoundingClientRect().height+gap; }
+    const budget=Math.max(96, Math.round(scr.clientHeight-used-box));
+    q.style.setProperty('--mqFigMaxH', budget+'px');
+    /* A drawing that declares data-fit may be scaled to fit; its prose may not. Hand
+       it exactly the height left over once the card's own words are measured - a
+       guessed constant made a 1024 px desktop shrink a pie that had room to spare.
+       Recomputed only when the drawing, the budget or the width actually changed, so
+       the twice-a-second clock tick does not re-lay-out the figure. */
+    const fits=q.querySelectorAll('svg[data-fit="1"]');
+    /* the signature must not include the style attribute this block writes, or every
+       sync would see a "changed" figure and re-lay it out */
+    const sig=(q.firstElementChild?q.firstElementChild.className:'')+'|'+(q.textContent||'').length
+             +'|'+budget+'|'+window.innerWidth;
+    if(fits.length && q.dataset.figSig!==sig){
+      q.dataset.figSig=sig;
+      for(const svg of fits) svg.style.removeProperty('max-height');
+      const root=q.firstElementChild;
+      /* THE FIT IS BOUNDED BY THE READING FLOOR. Scaling a drawing down to make it fit
+         is the same trade the bar graph was killed for making: at 390 x 664 an
+         unbounded height fit put the pie's own sector numbers at 7.24 px. So the fit
+         may shrink a drawing only until its smallest label reaches 11 px on the glass
+         (10 px at 320) - past that it stops, and the card scrolls instead, with the
+         "⌄ more" cue. Readability first, scroll second, cover nothing ever. */
+      const floor=window.innerWidth<=320?10:11;
+      for(const svg of fits){
+        const natural=root?root.getBoundingClientRect().height:0;
+        const svgH=svg.getBoundingClientRect().height;
+        if(!(natural>budget) || !(svgH>0)) continue;
+        let minDecl=Infinity;
+        for(const t of svg.querySelectorAll('text')){
+          const fs=parseFloat(getComputedStyle(t).fontSize);
+          if(fs>0) minDecl=Math.min(minDecl,fs);
+        }
+        const vbH=(svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.height)||svgH;
+        /* +0.2 px of margin on the floor: without it the fit lands EXACTLY on the
+           floor and sub-pixel rounding puts the measured size a hundredth under it. */
+        const readable=isFinite(minDecl)? vbH*(floor+0.2)/minDecl : 0;
+        const want=svgH-(natural-budget);
+        if(want>=svgH) continue;
+        const h=Math.max(72, readable, want);
+        if(h<svgH) svg.style.maxHeight=Math.ceil(h)+'px';
+      }
+    } else if(!fits.length) delete q.dataset.figSig;
+    frame.setAttribute('data-more', (q.scrollHeight-q.clientHeight-q.scrollTop)>1 ? '1':'0');
+  }
+  for(const fr of document.querySelectorAll('.fig-frame')){
+    const sc=fr.querySelector('.fig-scroll');
+    fr.setAttribute('data-more', sc && (sc.scrollWidth-sc.clientWidth-sc.scrollLeft)>1 ? '1':'0');
+  }
+}
+(function(){
+  let queued=false;
+  const kick=()=>{ if(queued) return; queued=true;
+    requestAnimationFrame(()=>{ queued=false; try{ syncFigures(); }catch(e){} }); };
+  const arm=()=>{
+    const app=document.getElementById('app');
+    if(!app) return;
+    new MutationObserver(kick).observe(app,{childList:true,subtree:true});
+    app.addEventListener('scroll', kick, true);
+    kick();
+  };
+  window.addEventListener('resize', kick);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', arm);
+  else arm();
+})();
 
 function nextQuestion(){
   if(!S) return;

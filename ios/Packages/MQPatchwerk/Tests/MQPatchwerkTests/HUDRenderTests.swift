@@ -2,6 +2,7 @@
 import Testing
 import SwiftUI
 import AppKit
+import ImageIO
 import MQDesign
 import MQServices
 @testable import MQPatchwerk
@@ -235,11 +236,47 @@ struct HUDRenderTests {
                 let rep = NSBitmapImageRep(cgImage: image)
                 rep.size = m.size
                 let data = try #require(rep.representation(using: .png, properties: [:]))
-                try data.write(to: dir.appendingPathComponent("\(id)-\(device.name).png"))
+                let url = dir.appendingPathComponent("\(id)-\(device.name).png")
+                // WRITE ONLY IF THE PICTURE CHANGED, compared on DECODED PIXELS.
+                //
+                // `NSBitmapImageRep.representation(using: .png)` is not byte-stable: two
+                // runs of this test produced two different files for the board and the
+                // result screen whose decoded buffers differ in exactly ZERO pixels
+                // (measured on the phase 1 integration, 2026-09-07). Fifteen files that
+                // live in the repository forever must not turn `git status` dirty every
+                // time the gate runs - a phantom diff trains a reader to ignore diffs in
+                // committed renders, which is the one thing these files are for.
+                if !Self.samePixels(image, asFileAt: url) {
+                    try data.write(to: url)
+                }
                 written += 1
             }
         }
         #expect(written == 15)
+    }
+
+    /// Whether the PNG already on disk decodes to the same pixels as `image`.
+    /// Missing, unreadable or a different size all count as "not the same".
+    static func samePixels(_ image: CGImage, asFileAt url: URL) -> Bool {
+        guard let src = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let old = CGImageSourceCreateImageAtIndex(src, 0, nil),
+              old.width == image.width, old.height == image.height else { return false }
+        func buffer(_ img: CGImage) -> [UInt8]? {
+            let w = img.width, h = img.height
+            var bytes = [UInt8](repeating: 0, count: w * h * 4)
+            let ok: Bool = bytes.withUnsafeMutableBytes { raw -> Bool in
+                guard let ctx = CGContext(data: raw.baseAddress, width: w, height: h,
+                                          bitsPerComponent: 8, bytesPerRow: w * 4,
+                                          space: CGColorSpaceCreateDeviceRGB(),
+                                          bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+                else { return false }
+                ctx.draw(img, in: CGRect(x: 0, y: 0, width: w, height: h))
+                return true
+            }
+            return ok ? bytes : nil
+        }
+        guard let a = buffer(image), let b = buffer(old) else { return false }
+        return a == b
     }
 
     /// `ios/Packages/MQPatchwerk/Snapshots/` - inside this lane's own package, so

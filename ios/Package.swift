@@ -69,7 +69,10 @@ let package = Package(
     products: [
         .library(name: "MQContent", targets: ["MQContent"]),
         .library(name: "MQEngineJS", targets: ["MQEngineJS"]),
-        .library(name: "MQDesign", targets: ["MQDesign"])
+        .library(name: "MQDesign", targets: ["MQDesign"]),
+        // lane/progress
+        .library(name: "MQProgress", targets: ["MQProgress"])
+        // end lane/progress
     ],
     targets: [
         .target(
@@ -112,6 +115,22 @@ let package = Package(
             dependencies: ["MQDesign"],
             path: "Packages/MQDesign/Tests/MQDesignTests"
         ),
+        // lane/progress
+        // Mastery, streaks, scaffold fading and local persistence. Depends on MQContent
+        // for `Verdict` (the engine's ruling) and `Topic` (a node's skill list), and on
+        // MQDesign for the three value types the ProgressStore contract in PHASE1.md
+        // names by hand: MQProfile, MQCast and MQReviewItem. It draws nothing.
+        .target(
+            name: "MQProgress",
+            dependencies: ["MQContent", "MQDesign"],
+            path: "Packages/MQProgress/Sources/MQProgress"
+        ),
+        .testTarget(
+            name: "MQProgressTests",
+            dependencies: ["MQProgress", "MQContent", "MQDesign"],
+            path: "Packages/MQProgress/Tests/MQProgressTests"
+        ),
+        // end lane/progress
         // macOS-only. Guarded internally by `#if os(macOS)` so an iOS build of the
         // package tree still compiles it to a stub rather than failing.
         .executableTarget(

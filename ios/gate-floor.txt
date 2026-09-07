@@ -1,4 +1,4 @@
-71
+136
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing parsed; everything below is for humans.
@@ -33,3 +33,31 @@
 #        The cast never crosses the parchment  4  (the 4 landscape sizes)
 #      The parameterised suites are counted by CASE here because that is what the
 #      runner's summary counts; the 29 is the delta the runner reported (42 -> 71).
+#
+# 136 = those 71 + MQProgress's 65, added on lane/progress, 2026-09-07:
+#         The scaffold never rises              6  (10,000 seeded random events; an
+#                                                   up-request is a no-op; a failing run,
+#                                                   a new session and the parent-screen
+#                                                   reset all keep the fade)
+#         The mastery climb matches the web     9  (a 509-history corpus recorded from
+#                                                   js/app.js by tools/fixtures/
+#                                                   gen-pool-climb.mjs, named edges, and
+#                                                   the two counters that must NOT reset
+#                                                   at the pool boundaries)
+#         Node state derives from the record    9  (cleared / in progress / open / coming
+#                                                   soon, incl. the zero-skill trap that
+#                                                   would paint an unwritten island done)
+#         Sessions summarise what happened     14  (in-session streak only, idempotent
+#                                                   end, the crystal rule, the unit-vs-
+#                                                   value split, the review list, caps)
+#         JSON on disk, torn write loses none   8  (round trip, schema stamp, TWO injected
+#                                                   write faults, temp litter, empty file,
+#                                                   garbage, shared codec)
+#         Schema migration                      9  (v0 missing, v0 unstamped, a hand-
+#                                                   written v1 file, unknown scaffold
+#                                                   name, a refused future schema)
+#         Profiles are local and separate      10  (one child's fade never reaches
+#                                                   another's; unique names; removal)
+#       Measured per suite with `./test.command --filter MQProgressTests.<Suite>`; the
+#       runner's summary counts test FUNCTIONS, so a parameterised @Test counts once
+#       here even though it prints a line per case.

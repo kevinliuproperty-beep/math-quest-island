@@ -1,4 +1,4 @@
-402
+443
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing test.command parses; the `key: value` lines
@@ -18,6 +18,45 @@
 # to justify it in a message. Never edit it to turn a red gate green.
 #
 # ===========================================================================
+# 443 = the PHASE 1 REHEARSAL FIX PASS, 2026-09-07. The clean-room dress rehearsal
+#       ruled the branch NOT READY on four blockers; 41 tests were added closing
+#       them, and every one of the four is now behind a gate that fails when the
+#       defect is put back. Measured off `--filter <target>`, and they sum to 443:
+#
+#   MQContentTests         21   unchanged
+#   MQEngineJSTests        21   unchanged
+#   MQDesignTests          43   +12: the answer tile's measured advance and line
+#                               height, three-line layout, plank words, and the
+#                               4.5:1 caption/subtitle contrast floor with its
+#                               grounds enumerated
+#   MQProgressTests        97   unchanged
+#   MQQuestTests          114   +23: PROGRESS SURVIVES THE PROCESS (12 items on a
+#                               FILE store, reopened cold: skills, sessions,
+#                               crystals, node state), profile isolation, the `+`
+#                               token end to end, "no source file builds a
+#                               ProfileID out of a display string", the Patchwerk
+#                               plank and the new-explorer sheet at 12 sizes, the
+#                               level badge under a long name, the pie's asked
+#                               category over 500 real pies x 3 slots, the longest
+#                               option of all 250 refs x 12 sizes, the L-shape's
+#                               closure, the line graph's y axis, figure growth
+#   MQPatchwerkTests       74   +6: a driven 2-minute run in which every item is
+#                               answerable and every carried figure is drawn, the
+#                               typed arena's fit and tap targets at 12 sizes
+#   MQServicesTests        27   unchanged
+#   MQCubeContentTests     10   unchanged
+#   MQCubeEngineJSTests    36   unchanged
+#   ------------------------------------------------------------------------
+#                         443
+#
+# NEGATIVE CONTROLS RUN, not just written. Putting `ProfileID(chosen.profile.name)`
+# back takes 6 of the 8 persistence tests red with 18 issues, every one naming the
+# rehearsal's own symptom (skills 0, sessions 0, crystals 0 against 6, node .open).
+# Restoring `.fixedSize()` on the hero token's name takes the badge probe from 117
+# sampled pixels to 0. Restoring the pre-fix L-shape draw order fails the closure
+# gate at all three slots.
+#
+# ---------------------------------------------------------------------------
 # 402 = the PHASE 1 INTEGRATION, 2026-09-07: feat/ios-phase1 with lane/quest (which
 #       already carried feat/unit-sweep), lane/progress, lane/patchwerk and
 #       lane/cube-extract merged, plus the integrator's own reconciliation.

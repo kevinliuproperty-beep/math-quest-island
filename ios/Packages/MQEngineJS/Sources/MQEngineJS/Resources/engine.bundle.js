@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260907-379e3e3 */
-/* ENGINE_BUILD_META {"stamp":"20260907-379e3e3","date":"2026-09-07","sha":"379e3e3","dirty":false,"payloadHash":"12e75a2de161938b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260907-379e3e3","date":"2026-09-07","sha":"379e3e3","dirty":false,"payloadHash":"12e75a2de161938b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260907-f847c1b */
+/* ENGINE_BUILD_META {"stamp":"20260907-f847c1b","date":"2026-09-07","sha":"f847c1b","dirty":false,"payloadHash":"ed5980f91b0ee0b6","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260907-f847c1b","date":"2026-09-07","sha":"f847c1b","dirty":false,"payloadHash":"ed5980f91b0ee0b6","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -1342,7 +1342,8 @@ function gSimplest(){
  * notation ONLY. No multiplication or division of money (that is P4 decimals),
  * amounts kept under $100, answers never negative.
  * Unit convention: the unit lives in the QUESTION STEM ("in dollars, e.g. 4.75")
- * and the typed answer is a bare number, per js/topics/README.md.
+ * and the typed answer is a bare number, per js/topics/README.md - but every
+ * finishTyped here ALSO declares '$' so gradeTyped rejects a wrong unit.
  */
 (function () {
   const G = MQI.gen;
@@ -1360,52 +1361,67 @@ function gSimplest(){
      cash-payable: force the last cent digit to 0 or 5. */
   function cents(lo, hi){ let c = ri(lo, hi); c -= c % 5; if (c < lo) c += 5; return c; }
 
+  /* UNIT DECLARED as '$' on every typed item here. The stem says "in dollars" and
+     the answer is a bare decimal, but a typed question that declares NO unit lets
+     gradeTyped accept any token off the shared TYPED_UNITS list - "4.75 kg" and
+     "4.75 pupils" both graded CORRECT (Dress Rehearsal Phase 0, 2026-09-07, same
+     defect class as p5triangle). With '$' declared, a bare "4.75" still passes, a
+     leading "$4.75" still passes, and a wrong unit is now rejected.
+     answerText is re-rendered as money so the review card reads "$4.75" rather
+     than finishTyped's default "4.75 $" - same shape as p5-rate.js gParkingCharge. */
+  const asMoney = (q, c) => (q.answerText = money(c), q);
+
   function gAddTwo(){
     const who = pick(NAMES), a = cents(120, 590);
     const b = cents(80, 450);
     const t = a + b;
-    return finishTyped(who + ' spends ' + money(a) + ' on ' + pick(MEALS) + ' and ' + money(b) + ' on ' +
+    return asMoney(finishTyped(who + ' spends ' + money(a) + ' on ' + pick(MEALS) + ' and ' + money(b) + ' on ' +
       pick(CHEAP) + ' at ' + pick(STALLS) + '. How much does ' + who + ' spend in total? (in dollars, e.g. 4.75)',
       dollars(t),
-      'Line up the dollars with the dollars and the cents with the cents: ' + money(a) + ' + ' + money(b) + ' = ' + money(t) + '.');
+      'Line up the dollars with the dollars and the cents with the cents: ' + money(a) + ' + ' + money(b) + ' = ' + money(t) + '.',
+      '$'), t);
   }
   function gAddBig(){
     const who = pick(NAMES), a = cents(850, 2900);
     const b = cents(650, 2400);
     const t = a + b;
-    return finishTyped(who + ' spends ' + money(a) + ' on ' + pick(BIG) + ' and ' + money(b) + ' on ' +
+    return asMoney(finishTyped(who + ' spends ' + money(a) + ' on ' + pick(BIG) + ' and ' + money(b) + ' on ' +
       pick(MEALS) + ' at ' + pick(STALLS) + '. How much is spent in total? (in dollars, e.g. 14.75)',
       dollars(t),
       'Add the cents first: they make ' + ((a%100)+(b%100)) + ' cents' +
       (((a%100)+(b%100)) >= 100 ? ', which is over a dollar, so carry 1 to the dollars. ' : '. ') +
-      money(a) + ' + ' + money(b) + ' = ' + money(t) + '.');
+      money(a) + ' + ' + money(b) + ' = ' + money(t) + '.',
+      '$'), t);
   }
   function gAddThree(){
     const who = pick(NAMES), a = cents(150, 700), b = cents(120, 600);
     const c = cents(90, 500);
     const t = a + b + c;
-    return finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ', ' + pick(CHEAP) + ' for ' + money(b) +
+    return asMoney(finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ', ' + pick(CHEAP) + ' for ' + money(b) +
       ' and ' + pick(CHEAP) + ' for ' + money(c) + ' at ' + pick(STALLS) +
       '. How much does the food cost in total? (in dollars, e.g. 9.85)',
       dollars(t),
-      'Add two at a time: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + ', then ' + money(a+b) + ' + ' + money(c) + ' = ' + money(t) + '.');
+      'Add two at a time: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + ', then ' + money(a+b) + ' + ' + money(c) + ' = ' + money(t) + '.',
+      '$'), t);
   }
   function gSubSmall(){
     const who = pick(NAMES), have = cents(600, 990);
     const spend = cents(150, 550);
     const left = have - spend;
-    return finishTyped(who + ' has ' + money(have) + '. ' + who + ' buys ' + pick(CHEAP) + ' for ' + money(spend) +
+    return asMoney(finishTyped(who + ' has ' + money(have) + '. ' + who + ' buys ' + pick(CHEAP) + ' for ' + money(spend) +
       ' at ' + pick(STALLS) + '. How much money is left? (in dollars, e.g. 2.35)',
       dollars(left),
-      money(have) + ' - ' + money(spend) + ' = ' + money(left) + '. Subtract the cents first, then the dollars.');
+      money(have) + ' - ' + money(spend) + ' = ' + money(left) + '. Subtract the cents first, then the dollars.',
+      '$'), left);
   }
   function gSubBorrow(){
     const who = pick(NAMES), spend = cents(1250, 4400), left = cents(120, 900);
     const have = spend + left;
-    return finishTyped(who + ' has ' + money(have) + '. ' + who + ' pays ' + money(spend) + ' for ' + pick(BIG) +
+    return asMoney(finishTyped(who + ' has ' + money(have) + '. ' + who + ' pays ' + money(spend) + ' for ' + pick(BIG) +
       ' at ' + pick(STALLS) + '. How much money is left? (in dollars, e.g. 6.45)',
       dollars(left),
-      'Change one dollar into 100 cents if the cents will not subtract: ' + money(have) + ' - ' + money(spend) + ' = ' + money(left) + '.');
+      'Change one dollar into 100 cents if the cents will not subtract: ' + money(have) + ' - ' + money(spend) + ' = ' + money(left) + '.',
+      '$'), left);
   }
   function gChange(){
     const who = pick(NAMES), b = cents(120, 640);
@@ -1413,11 +1429,12 @@ function gSimplest(){
     const note = pick([1000, 2000, 5000]);
     const given = (a + b) < note ? note : 5000;
     const chg = given - a - b;
-    return finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ' and ' + pick(CHEAP) + ' for ' + money(b) +
+    return asMoney(finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ' and ' + pick(CHEAP) + ' for ' + money(b) +
       ' at ' + pick(STALLS) + ', then hands the stallholder ' + money(given) +
       '. How much change should ' + who + ' get? (in dollars, e.g. 3.15)',
       dollars(chg),
-      'First find the cost: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + '. Then ' + money(given) + ' - ' + money(a+b) + ' = ' + money(chg) + '.');
+      'First find the cost: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + '. Then ' + money(given) + ' - ' + money(a+b) + ' = ' + money(chg) + '.',
+      '$'), chg);
   }
 
   MQI.registerTopic({
@@ -1787,7 +1804,11 @@ function gGiveTake(){
   const start=ri(10,60), gave=ri(2,9), got=ri(2,9);
   const now=start-gave+got;
   return finishTyped('Mei had some stickers. She <b>gave away '+gave+'</b>, then <b>got '+got+' more</b>. Now she has <b>'+now+'</b>. How many did she have at first?',
-    start,'Work backwards: '+now+' − '+got+' = '+(now-got)+', then '+(now-got)+' + '+gave+' = '+start+'.');
+    start,'Work backwards: '+now+' − '+got+' = '+(now-got)+', then '+(now-got)+' + '+gave+' = '+start+'.',
+    /* the answer is a count of STICKERS, and "stickers" is on the grader's shared
+       TYPED_UNITS list, so declare it: "32 stickers" and a bare "32" pass, "32 kg"
+       is now rejected (unit sweep, 2026-09-07). */
+    'stickers');
 }
 function gHeadsLegs(){
   const g=ri(1,5), c=ri(2,7);
@@ -2314,7 +2335,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const who = pick(NAMES), p = pick([100, 1000]), each = ri(12, 95);
     return finishTyped(who + ' orders ' + p + ' packets of kaya toast for the school fun fair. Each packet costs ' +
       each + ' cents. How many cents is that altogether?', each * p,
-      each + ' x ' + p + ' = ' + (each * p) + ' cents. Multiplying by ' + p + ' just shifts the digits left.');
+      each + ' x ' + p + ' = ' + (each * p) + ' cents. Multiplying by ' + p + ' just shifts the digits left.',
+      /* the one unit-bearing stem in this file: the answer is a number of CENTS,
+         so declare it and a wrong unit is rejected (unit sweep, 2026-09-07). */
+      'cents');
   }
 
   MQI.registerTopic({
@@ -2365,6 +2389,15 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     return out;
   }
 
+  /* TYPED UNITS. Every finishTyped here declares the unit its stem asks for ('%'
+     or '$'), so gradeTyped REJECTS a wrong one: a typed question that declares no
+     unit accepts ANY token off the shared TYPED_UNITS list, so "30 kg" graded
+     CORRECT on "What percentage...?" (Dress Rehearsal Phase 0, 2026-09-07). A
+     bare number is still accepted, as always. answerText is re-rendered tight
+     ("$80", "30%") rather than finishTyped's default "80 $" / "30 %". */
+  const asMoney   = (q, n) => (q.answerText = '$' + n, q);
+  const asPercent = (q, n) => (q.answerText = n + '%', q);
+
   function gPartAsPercent(){
     /* whole x pct must land on a whole number of children: pair them explicitly. */
     /* Wholes stay at classroom/cohort size: a "group of 500" that 4% of wear
@@ -2376,9 +2409,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const c = pick(CASES), whole = c[0], pct = pick(c[1]);
     const part = whole * pct / 100;
     const grp = pick(CLASSY);
-    return finishTyped('There are ' + whole + ' ' + grp + '. ' + part +
+    return asPercent(finishTyped('There are ' + whole + ' ' + grp + '. ' + part +
       ' of them wear spectacles. What percentage of them wear spectacles? (answer in %, e.g. 35)', pct,
-      part + ' out of ' + whole + ' is ' + part + '/' + whole + '. Multiply by 100 to get a percentage: ' + pct + '%.');
+      part + ' out of ' + whole + ' is ' + part + '/' + whole + '. Multiply by 100 to get a percentage: ' + pct + '%.',
+      '%'), pct);
   }
   function gPercentOfWhole(){
     const whole = pick([40, 60, 80, 120, 200, 300, 400]);
@@ -2394,9 +2428,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const pct = pick([10, 20, 30, 40, 60]);
     const ans = whole * pct / 100;
     const who = pick(NAMES);
-    return finishTyped(who + ' saves ' + pct + '% of the $' + whole +
+    return asMoney(finishTyped(who + ' saves ' + pct + '% of the $' + whole +
       ' collected at the class food sale. How many dollars does ' + who + ' save? (in dollars, e.g. 25)', ans,
-      pct + '% of $' + whole + ' is ' + pct + '/100 x ' + whole + ' = $' + ans + '.');
+      pct + '% of $' + whole + ' is ' + pct + '/100 x ' + whole + ' = $' + ans + '.',
+      '$'), ans);
   }
   function gDiscount(){
     const price = pick([40, 60, 80, 120, 150, 200, 250]);
@@ -2415,18 +2450,20 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const gst = price * 9 / 100;
     const ans = price + gst;
     const item = pick(GOODS);
-    return finishTyped('The price of ' + item + ' before GST is $' + price +
+    return asMoney(finishTyped('The price of ' + item + ' before GST is $' + price +
       '. GST is 9%. How many dollars must be paid in total? (in dollars, e.g. 327)', ans,
-      'GST is 9% of $' + price + ' = $' + gst + '. Total to pay = $' + price + ' + $' + gst + ' = $' + ans + '.');
+      'GST is 9% of $' + price + ' = $' + gst + '. Total to pay = $' + price + ' + $' + gst + ' = $' + ans + '.',
+      '$'), ans);
   }
   function gInterest(){
     const sum = pick([1000, 2000, 3000, 4000, 5000]);
     const rate = pick([2, 3, 4, 5]);
     const ans = sum * rate / 100;
     const who = pick(NAMES);
-    return finishTyped(who + ' puts $' + sum + ' into a POSB account that pays ' + rate +
+    return asMoney(finishTyped(who + ' puts $' + sum + ' into a POSB account that pays ' + rate +
       '% interest a year. How many dollars of interest is earned in one year? (in dollars, e.g. 60)', ans,
-      rate + '% of $' + sum + ' is ' + rate + '/100 x ' + sum + ' = $' + ans + '.');
+      rate + '% of $' + sum + ' is ' + rate + '/100 x ' + sum + ' = $' + ans + '.',
+      '$'), ans);
   }
 
   MQI.registerTopic({
@@ -2458,6 +2495,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
  * Every base is even, so every area is a whole number and finishNum keeps the
  * authored distractors (rubric lesson 4). No generator renders a figure, so
  * typed answers stay legal (rubric lesson 1: finishTyped cannot carry extra).
+ * TYPED UNITS: every finishTyped here passes the unit its stem asks for as the
+ * 4th argument, so gradeTyped REJECTS a wrong one. Dress Rehearsal Phase 0
+ * (2026-09-07) found this file passing none: on "What is its area, in cm²?"
+ * the grader took "140 cm", "140 kg" and "140 pupils" as correct.
  */
 (function () {
   const G = MQI.gen;
@@ -2488,19 +2529,22 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const b = 2 * ri(6, 25), h = ri(8, 30), a = b * h / 2;
     return finishTyped('A triangle has a base of ' + b + ' cm and a height of ' + h +
       ' cm. What is its area, in cm²? (a whole number, e.g. 48)', a,
-      '1/2 x ' + b + ' x ' + h + ' = ' + a + ' cm². Halve one of the two numbers first if that is easier.');
+      '1/2 x ' + b + ' x ' + h + ' = ' + a + ' cm². Halve one of the two numbers first if that is easier.',
+      'cm²');
   }
   function gFindBase(){
     const b = 2 * ri(3, 15), h = ri(4, 20), a = b * h / 2;
     return finishTyped('A triangle has an area of ' + a + ' cm² and a height of ' + h +
       ' cm. What is the length of its base, in cm?', b,
-      'Area = 1/2 x base x height, so base = 2 x area / height = 2 x ' + a + ' / ' + h + ' = ' + b + ' cm.');
+      'Area = 1/2 x base x height, so base = 2 x area / height = 2 x ' + a + ' / ' + h + ' = ' + b + ' cm.',
+      'cm');
   }
   function gFindHeight(){
     const b = 2 * ri(3, 15), h = ri(4, 20), a = b * h / 2;
     return finishTyped('A triangle has an area of ' + a + ' cm² and a base of ' + b +
       ' cm. What is its height, in cm?', h,
-      'Area = 1/2 x base x height, so height = 2 x area / base = 2 x ' + a + ' / ' + b + ' = ' + h + ' cm.');
+      'Area = 1/2 x base x height, so height = 2 x area / base = 2 x ' + a + ' / ' + b + ' = ' + h + ' cm.',
+      'cm');
   }
   function gHalfRectangle(){
     const L = 2 * ri(4, 15), W = ri(4, 15), a = L * W / 2;
@@ -2521,7 +2565,8 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
       ' cm by ' + W + ' cm, and a triangle with base ' + b + ' cm and height ' + h +
       ' cm. What is the total area of the shape, in cm²?', a,
       'Rectangle: ' + L + ' x ' + W + ' = ' + rect + ' cm². Triangle: 1/2 x ' + b + ' x ' + h + ' = ' + tri +
-      ' cm². Add them: ' + rect + ' + ' + tri + ' = ' + a + ' cm².');
+      ' cm². Add them: ' + rect + ' + ' + tri + ' = ' + a + ' cm².',
+      'cm²');
   }
 
   MQI.registerTopic({
@@ -2555,6 +2600,10 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
  * surface the app does not have.
  * All answers are positive whole numbers, so finishNum keeps the authored
  * distractors (rubric lesson 4) and no typed answer is a decimal.
+ * TYPED UNITS: every finishTyped here declares its answer's unit as the 4th
+ * argument, so gradeTyped rejects a wrong one. The one exception, gUnitCubes,
+ * opts out EXPLICITLY with a reason (see noUnit below): its answer is a bare
+ * count of cubes and any declaration would mark a right answer wrong.
  */
 (function () {
   const G = MQI.gen;
@@ -2565,6 +2614,15 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
   /* No authored distractor may collapse onto the correct answer: finishNum drops it
      silently and pads with correct+1 giveaways. Filter, and redraw if fewer than 3
      real misconceptions survive (6 x s² equals s³ at s = 6, for instance). */
+  /* EXPLICIT UNIT OPT-OUT. tools/gen-sanity.mjs fails any typed generator whose
+     STEM names a unit token while q.unit is empty (that hole let "140 kg" grade
+     correct on a cm² question). A generator whose answer is genuinely a bare
+     number opts out here, in its own file, by attaching the REASON - the harness
+     accepts the opt-out only with one, and only on a typed item that declares no
+     unit. An empty or missing reason is a failure, so the escape hatch cannot be
+     used silently. */
+  const noUnit = (q, why) => (q.unitOptOut = why, q);
+
   function clean(correct, list){
     const out = [];
     for (const c of list) if (c > 0 && Number.isInteger(c) && Math.abs(c - correct) > 3 && !out.includes(c)) out.push(c);
@@ -2589,10 +2647,14 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
   function gUnitCubes(){
     const l = ri(2, 8), w = ri(2, 6), h = ri(2, 5), n = l * w * h;
     const who = pick(NAMES);
-    return finishTyped(who + ' builds a solid ' + l + ' cubes long, ' + w + ' cubes wide and ' + h +
+    return noUnit(finishTyped(who + ' builds a solid ' + l + ' cubes long, ' + w + ' cubes wide and ' + h +
       ' cubes high from 1 cm cubes. How many unit cubes are used?', n,
       'Each layer uses ' + l + ' x ' + w + ' = ' + (l * w) + ' cubes and there are ' + h + ' layers, so ' +
-      (l * w) + ' x ' + h + ' = ' + n + ' cubes.');
+      (l * w) + ' x ' + h + ' = ' + n + ' cubes.'),
+      'the stem names cm only to size the little cubes; the answer is a bare COUNT ' +
+      'of unit cubes. Declaring any unit here would mark a right answer wrong - a ' +
+      'child who writes 70 cm3 has read the 1 cm cube correctly and means the same ' +
+      'quantity, and a child who writes 70 cubes is also right.');
   }
   function gLitresToCm3(){
     /* ml was banded 11-99, so a round "3 l 500 ml" could never appear even though
@@ -2600,14 +2662,16 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const l = ri(1, 9), ml = pick([ri(1, 9) * 10 + ri(1, 9), ri(1, 9) * 100, ri(1, 99) * 10, ri(2, 999)]);
     const v = l * 1000 + ml;
     return finishTyped(l + ' ℓ ' + ml + ' ml of barley water is poured into a tank. How many cm³ is that? (1 ml = 1 cm³)', v,
-      '1 ml is exactly 1 cm³, and 1 ℓ = 1000 ml. So ' + l + ' ℓ ' + ml + ' ml = ' + v + ' ml = ' + v + ' cm³.');
+      '1 ml is exactly 1 cm³, and 1 ℓ = 1000 ml. So ' + l + ' ℓ ' + ml + ' ml = ' + v + ' ml = ' + v + ' cm³.',
+      'cm³');
   }
   function gTankLiquid(){
     const l = pick([10, 15, 20, 25, 30]), w = pick([10, 12, 20, 25]), d = ri(2, 12);
     const cm3 = l * w * d;
     return finishTyped('A rectangular tank has a base ' + l + ' cm by ' + w + ' cm. Water is poured in to a depth of ' +
       d + ' cm. What is the volume of the water, in cm³?', cm3,
-      'The water is a cuboid: ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³.');
+      'The water is a cuboid: ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³.',
+      'cm³');
   }
   function gTankLitres(){
     const l = pick([10, 20, 25, 50]), w = pick([10, 20, 40]), d = ri(2, 12);
@@ -2615,7 +2679,8 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     const who = pick(NAMES);
     return finishTyped(who + ' fills a rectangular tank with a base ' + l + ' cm by ' + w +
       ' cm to a depth of ' + d + ' cm. How many millilitres of water is that? (1 cm³ = 1 ml)', cm3,
-      'Volume = ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³, and 1 cm³ = 1 ml, so it is ' + cm3 + ' ml.');
+      'Volume = ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³, and 1 cm³ = 1 ml, so it is ' + cm3 + ' ml.',
+      'ml');
   }
 
   MQI.registerTopic({
@@ -2904,7 +2969,13 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
         ? 'One of the ' + d + ' equal groups holds ' + part + ', so all ' + d + ' groups hold ' +
           d + ' x ' + part + ' = ' + total + '.'
         : n + ' of the ' + d + ' equal groups hold ' + part + ', so one group holds ' + part + ' / ' +
-          n + ' = ' + groups + ', and all ' + d + ' groups hold ' + d + ' x ' + groups + ' = ' + total + '.');
+          n + ' = ' + groups + ', and all ' + d + ' groups hold ' + d + ' x ' + groups + ' = ' + total + '.',
+      /* the answer is a COUNT of the set's own noun, and one of those nouns
+         ("pupils") is on the grader's shared TYPED_UNITS list, so a unit-less
+         typed item accepted "24 pupils" AND "24 kg" alike. Declaring the noun
+         keeps a bare "24" and "24 pupils" correct and rejects "24 kg".
+         Unit sweep, 2026-09-07. */
+      s[0]);
   }
   /* part of a set expressed AS a fraction (multiple choice: the answer is a fraction) */
   function gSetAsFraction() {
@@ -5909,4 +5980,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260907-379e3e3 */
+/* ENGINE_BUILD_END 20260907-f847c1b */

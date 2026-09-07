@@ -97,6 +97,7 @@ var MQI_API = (function () {
   function serialize(q, meta) {
     var typed = !!q.typed;
     var choices = typed ? [] : (q.choices || []).map(String);
+    var unitsAccepted = MQI.unitList(q.unit || q.units).map(String);
     seq += 1;
     return {
       id: 'q' + seq,
@@ -128,10 +129,14 @@ var MQI_API = (function () {
       /* The CANONICAL unit, for a keypad to print beside the field: the first member
          when the question declares a set of equivalents. Grading reads key.unit,
          which carries the whole set. */
-      unit: (function () {
-        var list = MQI.unitList(q.unit || q.units);
-        return list.length ? String(list[0]) : '';
-      })(),
+      unit: unitsAccepted.length ? unitsAccepted[0] : '',
+      /* EVERY unit this question accepts, canonical first. Quest Refutation K3/K7
+         (2026-09-07): a unit chip row built from the canonical member alone offers
+         "ml" as a wrong-unit distractor on a cm³ question that grades "ml" CORRECT,
+         so the app teaches a falsehood its own p5volume stem contradicts. A client
+         cannot derive the set from `unit`, and `key` is opaque to it, so the set is
+         published here. */
+      units: unitsAccepted,
       key: keyOf(q)
     };
   }

@@ -354,7 +354,10 @@ function checkTypedUnit(q) {
 /* Drift guard: every measurement token above must still be one core.js strips off
    a typed answer. If TYPED_UNITS is ever narrowed, this rule would be scanning for
    something the grader no longer accepts, and the list has to be re-cut by hand. */
-const UNIT_STEM_ONLY = new Set(['$', 'cents', 'cent', 'dollars', 'dollar', 'm3', 'm³',
+/* Quest Refutation K2 (2026-09-07): `$ cents cent dollars dollar` used to live in
+   here, because the stems wrote them and the grader stripped none of them. They
+   are on TYPED_UNITS now, so the drift guard checks them like any other token. */
+const UNIT_STEM_ONLY = new Set(['m3', 'm³',
   'book', 'pupil', 'marble', 'sticker', 'bead']);
 {
   const drift = [];

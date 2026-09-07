@@ -135,7 +135,14 @@ const TYPED_UNITS = [
   /* time */
   'minutes','minute','mins','min','hours','hour','hr','h','seconds','secs','sec','s',
   /* counts the wave-2 rate stems name */
-  'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads'
+  'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads',
+  /* money and the cube count. Quest Refutation K2 (2026-09-07): these are tokens
+     the STEMS write and the CHIP ROW offers, and the grader used to strip none of
+     them, so "12.50 cents" on a "$" question came back 'not a number' and the
+     teaching card fell back to "The answer is 12.5." with nothing said about the
+     unit. gen-sanity has scanned stems for them since the unit sweep; the grader
+     had not caught up. */
+  '$','cents','cent','dollars','dollar','cubes','cube'
 ].sort((a,b) => b.length - a.length);
 const UNIT_ALIAS = {
   'ℓ':'l', 'litre':'l', 'litres':'l',
@@ -144,8 +151,28 @@ const UNIT_ALIAS = {
   'minute':'min', 'minutes':'min', 'mins':'min',
   'hour':'h', 'hours':'h', 'hr':'h',
   'second':'s', 'seconds':'s', 'secs':'s', 'sec':'s',
-  'page':'pages', 'bun':'buns'
+  'page':'pages', 'bun':'buns',
+  'cent':'cents', 'dollar':'dollars', 'cube':'cubes'
 };
+/* Does `s` end with the unit token `u`, at a boundary a WORD could start on?
+ *
+ * Quest Refutation K2 (2026-09-07). The tail match used to be a bare suffix test,
+ * so a question declaring "m" ate one character off "8.5 cm", was left with
+ * "8.5 c", and reported `not a number` - a wrong UNIT reported as an unreadable
+ * answer, which is the one rejection the teaching card cannot lead. The child
+ * typed 8.5 and the card told them the answer is 8.5. Same shape for l+ml, g+kg.
+ *
+ * The rule: a token that STARTS with a letter may only match where a letter does
+ * not already run, so "m" does not match inside "cm" but does match after a space
+ * or after a digit ("8.5m"). Symbols ($ % °) start no word and need no boundary. */
+function endsWithUnit(s, u){
+  if (!u) return false;
+  const n = s.length, m = u.length;
+  if (n <= m) return false;
+  if (s.slice(n - m).toLowerCase() !== u.toLowerCase()) return false;
+  if (!/[A-Za-z]/.test(u.charAt(0))) return true;
+  return !/[A-Za-z]/.test(s.charAt(n - m - 1));
+}
 function normUnit(u){
   const s = String(u).trim().toLowerCase();
   return Object.prototype.hasOwnProperty.call(UNIT_ALIAS, s) ? UNIT_ALIAS[s] : s;
@@ -168,24 +195,20 @@ function parseTypedAnswer(raw, q){
   let s = String(raw).trim();
   if (s === '') return { ok:false, reason:'empty' };
   let unit = '';
-  /* 1. a unit the question itself declares, whatever it is */
-  const declared = unitList(q && (q.unit || q.units)).sort((a,b) => b.length - a.length);
-  for (let i=0;i<declared.length;i++){
-    const d = declared[i];
-    if (s.length > d.length && s.slice(-d.length).toLowerCase() === d.toLowerCase()){
-      unit = d; s = s.slice(0, s.length - d.length).trim(); break;
-    }
+  /* The LONGEST whole token that ends the answer, across the question's own
+     declared units and the broad shared list together - not the declared list
+     first and the shared list only if that missed. Longest-first is what stops a
+     one-letter declared unit ("m", "l", "g") from eating the tail of the longer
+     one the child actually typed ("cm", "ml", "kg"); the boundary test in
+     `endsWithUnit` is what stops it from eating a letter out of the middle.
+     Declared units are searched first so they win a tie, which keeps a lane free
+     to invent "crates" without touching the shared kit. */
+  const candidates = unitList(q && (q.unit || q.units)).concat(TYPED_UNITS);
+  for (let i=0;i<candidates.length;i++){
+    const c = candidates[i];
+    if (c.length > unit.length && endsWithUnit(s, c)) unit = c;
   }
-  /* 2. otherwise any unit on the broad shared list */
-  if (!unit){
-    const low = s.toLowerCase();
-    for (let i=0;i<TYPED_UNITS.length;i++){
-      const u = TYPED_UNITS[i];
-      if (low.length > u.length && low.slice(low.length-u.length) === u){
-        unit = u; s = s.slice(0, s.length-u.length).trim(); break;
-      }
-    }
-  }
+  if (unit) s = s.slice(0, s.length - unit.length).trim();
   s = s.replace(/^\$\s*/, '').replace(/,/g, '').trim();
   if (s === '') return { ok:false, reason:'empty' };
   /* mixed number: "1 1/2" */

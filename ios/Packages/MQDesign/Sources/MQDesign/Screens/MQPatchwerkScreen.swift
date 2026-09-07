@@ -1,0 +1,211 @@
+import SwiftUI
+
+/// Patchwerk: a fixed clock, a training dummy, and as much damage as you can do
+/// before it enrages.
+///
+/// What is deliberately NOT on this screen: hero health and monster health. They
+/// carry a fail state Patchwerk does not have, and the clock is the only thing
+/// that can end a run. The boss bar drains and refills; it is scenery.
+///
+/// **The enrage is the light.** The Patchwerk note flagged the stack badge and
+/// the freeze pips as the one thing that has to be judged by eye, and the web
+/// build answered the enrage with a red pulsing border round the app frame.
+/// Here the last twenty seconds simply turn the island into a storm at dusk:
+/// the sky goes red, the sea goes black, the dummy is lit from below, and the
+/// gold in the hourglass and the crystals becomes the brightest thing on the
+/// screen. A child does not need to be told; the world tells them.
+public struct MQPatchwerkScreen: View {
+    let scene: MQPatchwerkScene
+    let layout: MQLayout
+    let insets: MQInsets
+
+    public init(scene: MQPatchwerkScene = .sample, layout: MQLayout,
+                insets: MQInsets = .none) {
+        self.scene = scene; self.layout = layout; self.insets = insets
+    }
+
+    private var p: MQPalette { scene.enraged ? .enrage : .noon }
+    private var compact: Bool { layout == .tall }
+    private var type: MQType { compact ? .compact : .regular }
+    private var pad: CGFloat { compact ? 16 : 30 }
+
+    /// Sand left in the hourglass. Three-minute tier, so 2:47 is nearly full and
+    /// 0:18 is nearly out -- and at that point the glass reads as urgently as
+    /// the number does.
+    private var sandLeft: Double { scene.enraged ? 0.10 : 0.92 }
+
+    public var body: some View {
+        ZStack {
+            MQWorld(p, horizon: compact ? 0.24 : 0.22)
+            (compact ? AnyView(tall) : AnyView(wide))
+                .padding(.horizontal, pad)
+                .padding(.top, insets.top + pad * 0.6)
+                .padding(.bottom, insets.bottom + pad * 0.6)
+        }
+    }
+
+    // MARK: Wide
+
+    private var wide: some View {
+        VStack(spacing: 12) {
+            MQRail(p, padH: 22, padV: 6) {
+                HStack(alignment: .center, spacing: 22) {
+                    MQHourglass(p, time: scene.timer, fraction: sandLeft,
+                                size: 56, urgent: scene.enraged)
+                    MQCarvedNumber(p, value: scene.damage, caption: "damage", valueSize: 40)
+                    Spacer(minLength: 12)
+                    MQStackSpar(p, stacks: scene.stacks, cap: scene.stackCap,
+                                multiplier: scene.multiplier)
+                    freezeBlock
+                    MQKnob(p, .pause, size: 46)
+                }
+                .frame(height: 60)
+            }
+            bossLine
+            // Board on the left, dummy on the right -- the same battle line the
+            // Quest screen uses, so the two modes are recognisably one game.
+            HStack(alignment: .bottom, spacing: 12) {
+                VStack(spacing: 14) {
+                    Spacer(minLength: 0)
+                    sign.frame(maxWidth: 600)
+                    if let flash = scene.flash { banner(flash, size: 20) }
+                }
+                .frame(maxWidth: .infinity)
+                MQCrab(p, lit: scene.enraged)
+                    .frame(width: 420, height: 420 * MQCrab.box.height / MQCrab.box.width)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            answerRow
+        }
+    }
+
+    // MARK: Tall
+
+    private var tall: some View {
+        VStack(spacing: 8) {
+            MQRail(p, padH: 12, padV: 6) {
+                VStack(spacing: 6) {
+                    HStack(alignment: .center, spacing: 10) {
+                        MQHourglass(p, time: scene.timer, fraction: sandLeft,
+                                    size: 40, urgent: scene.enraged)
+                        Spacer(minLength: 4)
+                        MQCarvedNumber(p, value: scene.damage, caption: "damage",
+                                       valueSize: 28)
+                        MQKnob(p, .pause, size: 44)
+                    }
+                    HStack(spacing: 10) {
+                        MQStackSpar(p, stacks: scene.stacks, cap: scene.stackCap,
+                                    multiplier: scene.multiplier, compact: true)
+                        Spacer(minLength: 4)
+                        freezeBlock
+                    }
+                }
+            }
+            bossLine
+            // The free height goes ABOVE the board, so its posts land on the
+            // dry sand instead of standing in the sea.
+            Spacer(minLength: 0)
+            if let flash = scene.flash { banner(flash, size: 15) }
+            sign
+            MQCrab(p, lit: scene.enraged)
+                .frame(width: 210, height: 210 * MQCrab.box.height / MQCrab.box.width)
+            Spacer(minLength: 0)
+            answerGrid
+        }
+    }
+
+    // MARK: Parts
+
+    private var freezeBlock: some View {
+        VStack(spacing: 1) {
+            MQFreezePips(p, held: scene.freezeHeld, total: scene.freezeTotal,
+                         size: compact ? 22 : 30)
+            Text("freeze")
+                .font(.mq(compact ? 11 : 14, .bold))
+                .foregroundStyle(p.carved.opacity(0.82))
+                .shadow(color: p.woodDeep.opacity(0.7), radius: 0, x: 0, y: 1.5)
+        }
+    }
+
+    /// The dummy's bar, and the one place the tier and class level are stated.
+    private var bossLine: some View {
+        HStack(spacing: 12) {
+            Text("\(scene.tierName) - \(scene.level)")
+                .font(.mq(compact ? 13 : 17, .bold))
+                .foregroundStyle(p.carved)
+                .shadow(color: p.woodDeep.opacity(0.8), radius: 0, x: 0, y: 1.5)
+                .fixedSize()
+            MQGauge(p, value: scene.bossHP, side: .boss, height: compact ? 18 : 24)
+        }
+    }
+
+    private func banner(_ text: String, size: CGFloat) -> some View {
+        Text(text)
+            .font(.mq(size, .extrabold))
+            .foregroundStyle(p.carved)
+            .padding(.horizontal, size)
+            .padding(.vertical, size * 0.28)
+            .background {
+                Canvas { ctx, s in
+                    let cloth = Path.smoothClosed([
+                        CGPoint(x: 3, y: 3), CGPoint(x: s.width * 0.5, y: 0),
+                        CGPoint(x: s.width - 3, y: 4), CGPoint(x: s.width, y: s.height - 3),
+                        CGPoint(x: s.width * 0.5, y: s.height), CGPoint(x: 2, y: s.height - 4)
+                    ], tension: 0.14)
+                    ctx.fill(cloth, with: .linearGradient(
+                        Gradient(colors: [p.coral, p.coralDeep]),
+                        startPoint: .zero, endPoint: CGPoint(x: 0, y: s.height)))
+                    ctx.stroke(cloth, with: .color(Color(hex: 0x63200F).opacity(0.8)),
+                               lineWidth: 2)
+                }
+            }
+    }
+
+    private var sign: some View {
+        MQSign(p, postHeight: compact ? 18 : 40, padH: compact ? 22 : 36,
+               padV: compact ? 9 : 16) {
+            HStack(alignment: .center, spacing: 20) {
+                Text(scene.question)
+                    .font(.mq(type.question, .semibold))
+                    .foregroundStyle(p.ink)
+                    .multilineTextAlignment(compact ? .center : .leading)
+                    .lineSpacing(-1)
+                    .fixedSize(horizontal: false, vertical: true)
+                    // No `maxWidth: .infinity` here: a Patchwerk question can be
+                    // four words, and a sheet stretched to the cap around
+                    // "What is 3.6 x 100?" is the mass problem in miniature.
+                    // The board takes the width the words need, up to the cap.
+                    .frame(maxWidth: compact ? .infinity : nil,
+                           alignment: compact ? .center : .leading)
+                if scene.figure != .none {
+                    MQFigureView(p, scene.figure)
+                        .frame(width: compact ? 170 : 190, height: compact ? 80 : 126)
+                }
+            }
+        }
+    }
+
+    private var answerRow: some View {
+        HStack(spacing: 18) {
+            ForEach(Array(scene.answers.enumerated()), id: \.offset) { i, a in
+                MQAnswerTile(p, a, tilt: MQAnswerTile.tilts[i % 4], fontSize: type.tile)
+            }
+        }
+        .frame(height: 98)
+    }
+
+    private var answerGrid: some View {
+        VStack(spacing: 10) {
+            ForEach(0..<2, id: \.self) { row in
+                HStack(spacing: 10) {
+                    ForEach(0..<2, id: \.self) { col in
+                        let i = row * 2 + col
+                        MQAnswerTile(p, scene.answers[i], tilt: MQAnswerTile.tilts[i],
+                                     fontSize: type.tile)
+                            .frame(height: 68)
+                    }
+                }
+            }
+        }
+    }
+}

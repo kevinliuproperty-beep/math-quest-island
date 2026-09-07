@@ -3,161 +3,126 @@ import AppKit
 import SwiftUI
 import MQDesign
 
-// Renders the MQDesign sample screens to PNG with SwiftUI's ImageRenderer.
-// No window, no simulator, no Xcode -- which is the whole point: Kai has
-// Command Line Tools only, and the taste gate still has to be judged as images.
+// Renders MQDesign's screens to PNG with SwiftUI's ImageRenderer. No window, no
+// simulator, no Xcode -- which is the whole point: Kai has Command Line Tools
+// only, and the taste gate still has to be judged as images.
+//
+// Two gates run here and both are non-negotiable:
+//
+//  1. **Bundled faces resolve.** A silent fallback to the system font turns a
+//     bespoke direction back into the template it replaced, so a face that does
+//     not resolve exits non-zero rather than rendering.
+//  2. **The fit check.** Every screen is re-rendered at device width with height
+//     UNCONSTRAINED and compared against the device. Nothing in this app
+//     scrolls, so anything taller than the device is content a child never sees.
+//     It caught a 31pt overflow on iPad landscape that a visual read had passed
+//     as balanced.
 
 struct Device {
     let name: String
     let points: CGSize
     let scale: CGFloat
-    let layout: QuestBattleSample.Layout
+    let layout: MQLayout
     let type: MQType
     let safeTop: CGFloat
     let safeBottom: CGFloat
 
-    var pixels: CGSize {
-        CGSize(width: points.width * scale, height: points.height * scale)
-    }
-
-    var reworkLayout: MQLayout { layout == .wide ? .wide : .tall }
     var insets: MQInsets { MQInsets(top: safeTop, bottom: safeBottom) }
+    var pixels: CGSize { CGSize(width: points.width * scale, height: points.height * scale) }
 }
 
+/// The two sizes Kevin actually judges on: the iPad he will hand over, and the
+/// phone the photo ballot lands on.
 let devices: [Device] = [
-    Device(name: "ipad11-landscape", points: CGSize(width: 1194, height: 834), scale: 2,
-           layout: .wide, type: .regular, safeTop: 24, safeBottom: 20),
-    Device(name: "ipad11-portrait", points: CGSize(width: 834, height: 1194), scale: 2,
-           layout: .tall, type: .regular, safeTop: 24, safeBottom: 20),
-    Device(name: "iphone15", points: CGSize(width: 393, height: 852), scale: 3,
-           layout: .tall, type: .compact, safeTop: 59, safeBottom: 34)
-]
-
-/// The two rework directions render at exactly the two sizes Kevin judges on:
-/// the iPad he will actually hand over, and the phone he will actually look at
-/// the ballot on.
-let reworkDevices: [Device] = [
     Device(name: "ipad-landscape", points: CGSize(width: 1194, height: 834), scale: 2,
            layout: .wide, type: .regular, safeTop: 24, safeBottom: 20),
     Device(name: "iphone", points: CGSize(width: 393, height: 852), scale: 3,
            layout: .tall, type: .compact, safeTop: 59, safeBottom: 34)
 ]
 
-enum Mode: String, CaseIterable {
-    case light, dark
-    var theme: MQTheme { self == .light ? .day : .night }
-}
-
 @main
 @MainActor
 struct Snap {
+    static var failures = 0
+
     static func main() async {
         _ = NSApplication.shared
 
-        // Bundled OFL faces. A silent fallback to the system font would turn a
-        // bespoke direction back into the template we are replacing, so this is
-        // a hard gate rather than a best effort.
         let missing = MQFonts.register()
         if !missing.isEmpty {
             FileHandle.standardError.write(Data("font registration failed: \(missing)\n".utf8))
             exit(1)
         }
-        for face in [MQFonts.Baloo.semibold, MQFonts.Baloo.extrabold,
-                     MQFonts.Fredoka.semibold, MQFonts.Fredoka.bold] {
+        for face in [MQFonts.Baloo.regular, MQFonts.Baloo.medium, MQFonts.Baloo.semibold,
+                     MQFonts.Baloo.bold, MQFonts.Baloo.extrabold] {
             if !MQFonts.resolves(face) {
                 FileHandle.standardError.write(Data("face does not resolve: \(face)\n".utf8))
                 exit(1)
             }
         }
 
-        let outDir = resolveOutputDirectory()
-        let reworkDir = outDir.appendingPathComponent("rework")
-        for dir in [outDir, reworkDir] {
-            do {
-                try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            } catch {
-                FileHandle.standardError.write(Data("cannot create \(dir.path): \(error)\n".utf8))
-                exit(1)
-            }
+        let out = resolveOutputDirectory().appendingPathComponent("storybook")
+        do {
+            try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+        } catch {
+            FileHandle.standardError.write(Data("cannot create \(out.path): \(error)\n".utf8))
+            exit(1)
         }
 
-        var failures = 0
-        let only = CommandLine.arguments.contains("--rework-only")
-
-        // ---- The rejected first sample, kept so the comparison is possible.
-        if !only {
-            for device in devices {
-                for mode in Mode.allCases {
-                    let theme = mode.theme.sized(device.type)
-                    let view = QuestBattleSample(
-                        layout: device.layout,
-                        safeTop: device.safeTop,
-                        safeBottom: device.safeBottom
-                    )
-                    .mqTheme(theme)
-                    .environment(\.colorScheme, mode == .light ? .light : .dark)
-
-                    let url = outDir.appendingPathComponent("battle-\(device.name)-\(mode.rawValue).png")
-                    failures += emit(view, device: device, url: url)
-                }
-            }
-        }
-
-        // ---- Rework: two directions, same scene, same devices.
-        for device in reworkDevices {
-            let storybook = StorybookBattleScreen(layout: device.reworkLayout,
-                                                  insets: device.insets)
-            failures += emit(storybook, device: device,
-                             url: reworkDir.appendingPathComponent("storybook-\(device.name)-light.png"))
-
-            let arcade = ArcadeBattleScreen(layout: device.reworkLayout,
-                                            insets: device.insets)
-            failures += emit(arcade, device: device,
-                             url: reworkDir.appendingPathComponent("arcade-\(device.name)-light.png"))
+        for d in devices {
+            emit(MQEntranceScreen(layout: d.layout, insets: d.insets),
+                 d, out, "entrance")
+            emit(MQMapScreen(layout: d.layout, insets: d.insets, size: d.points),
+                 d, out, "map")
+            emit(MQBattleScreen(layout: d.layout, insets: d.insets, palette: .noon),
+                 d, out, "battle")
+            emit(MQResultScreen(layout: d.layout, insets: d.insets),
+                 d, out, "result")
+            emit(MQPatchwerkScreen(scene: .sample, layout: d.layout, insets: d.insets),
+                 d, out, "patchwerk")
+            emit(MQPatchwerkScreen(scene: .enraged, layout: d.layout, insets: d.insets),
+                 d, out, "patchwerk-enrage")
+            emit(MQBattleScreen(layout: d.layout, insets: d.insets, palette: .dusk),
+                 d, out, "battle-dusk")
         }
 
         if failures > 0 { exit(1) }
         print("done")
     }
 
-    /// Render + the fit check. Kept from the first sample and non-negotiable:
-    /// the screen is re-rendered at device width with height UNCONSTRAINED, and
-    /// anything taller than the device is content a child would never see.
-    /// It caught a 31pt overflow that a visual read had passed as balanced.
-    static func emit(_ view: some View, device: Device, url: URL) -> Int {
-        var failures = 0
+    static func emit(_ view: some View, _ device: Device, _ dir: URL, _ screen: String) {
+        let url = dir.appendingPathComponent("\(screen)-\(device.name).png")
         let framed = view.frame(width: device.points.width, height: device.points.height)
         do {
             try write(framed, points: device.points, scale: device.scale, to: url)
             let px = device.pixels
             print("wrote \(url.lastPathComponent)  \(Int(px.width))x\(Int(px.height)) px "
-                  + "(\(Int(device.points.width))x\(Int(device.points.height)) pt @\(Int(device.scale))x)")
+                  + "(\(Int(device.points.width))x\(Int(device.points.height)) pt "
+                  + "@\(Int(device.scale))x)")
         } catch {
             FileHandle.standardError.write(Data("FAILED \(url.lastPathComponent): \(error)\n".utf8))
-            return 1
+            failures += 1
+            return
         }
         if let natural = naturalHeight(view, width: device.points.width, scale: device.scale) {
             let slack = device.points.height - natural
             if slack < -0.5 {
                 failures += 1
                 print("  OVERFLOWS by \(String(format: "%.0f", -slack)) pt "
-                      + "(needs \(String(format: "%.0f", natural)) pt, has \(Int(device.points.height)))")
+                      + "(needs \(String(format: "%.0f", natural)) pt, "
+                      + "has \(Int(device.points.height)))")
             } else {
                 print("  fits, \(String(format: "%.0f", slack)) pt of slack")
             }
         }
-        return failures
     }
 
-    struct RenderError: Error, CustomStringConvertible {
-        let description: String
-    }
+    struct RenderError: Error, CustomStringConvertible { let description: String }
 
     static func write(_ view: some View, points: CGSize, scale: CGFloat, to url: URL) throws {
         let renderer = ImageRenderer(content: view)
         renderer.scale = scale
         renderer.proposedSize = ProposedViewSize(points)
-
         guard let cgImage = renderer.cgImage else {
             throw RenderError(description: "ImageRenderer produced no image")
         }
@@ -185,7 +150,6 @@ struct Snap {
         if let first = args.first {
             return URL(fileURLWithPath: first).standardizedFileURL
         }
-        // .../ios/Packages/MQDesign/Sources/mqdesign-snap/Snap.swift
         var url = URL(fileURLWithPath: #filePath)
         for _ in 0..<5 { url.deleteLastPathComponent() }   // -> .../ios
         return url.appendingPathComponent("snapshots").standardizedFileURL
@@ -197,7 +161,7 @@ struct Snap {
 @main
 struct Snap {
     static func main() {
-        print("mqdesign-snap renders on macOS only (SwiftUI ImageRenderer + AppKit PNG encoding).")
+        print("mqdesign-snap renders on macOS only (SwiftUI ImageRenderer + AppKit PNG).")
     }
 }
 

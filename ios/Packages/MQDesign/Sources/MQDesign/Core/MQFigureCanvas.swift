@@ -22,6 +22,12 @@ public struct MQFigureCanvas: View {
             ctx.translateBy(x: (size.width - box.width * k) / 2,
                             y: (size.height - box.height * k) / 2)
             ctx.scaleBy(x: k, y: k)
+            // A creature is clipped to its own box. Without this a stroke that
+            // overshoots by a couple of design units -- a claw jaw, a horn tip --
+            // draws all the way across the screen behind everything else, which
+            // is exactly the stray dark line that survived two passes of the
+            // crab unnoticed.
+            ctx.clip(to: Path(CGRect(origin: .zero, size: box)))
             draw(&ctx, box)
         }
         .aspectRatio(box.width / box.height, contentMode: .fit)

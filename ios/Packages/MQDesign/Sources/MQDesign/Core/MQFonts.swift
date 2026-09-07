@@ -5,17 +5,17 @@ import CoreText
 ///
 /// The first sample was set entirely in SF Rounded. SF Rounded is the
 /// platform's own toy voice, which means it is also every other kid app's toy
-/// voice -- the single loudest reason that render read as a template. Both
-/// rework directions bundle an OFL face instead and register it at runtime, so
-/// the type is the app's rather than the OS's.
+/// voice -- the single loudest reason that render read as a template. The system
+/// bundles one OFL face instead and registers it at runtime, so the type is the
+/// app's rather than the OS's.
 ///
 /// Registration goes through CoreText rather than an Info.plist key, because
 /// the taste gate renders headlessly on macOS with no app bundle at all. The
 /// same call works unchanged on iOS.
 ///
-/// Both files are variable fonts; CoreText exposes their named instances under
-/// ordinary PostScript names (`Baloo2-ExtraBold`, `Fredoka-SemiBold`), so
-/// `Font.custom` resolves them without any variation-axis plumbing.
+/// The file is a variable font; CoreText exposes its named instances under
+/// ordinary PostScript names (`Baloo2-ExtraBold`), so `Font.custom` resolves
+/// them without any variation-axis plumbing.
 public enum MQFonts {
 
     /// Baloo 2 -- Ek Type. A rounded face with a hand-cut wobble in the
@@ -28,16 +28,11 @@ public enum MQFonts {
         public static let extrabold = "Baloo2-ExtraBold"
     }
 
-    /// Fredoka -- Milena Brandao / Hafontia. Geometric, wide, uniform stroke.
-    /// Reads like moulded plastic: the arcade voice.
-    public enum Fredoka {
-        public static let regular  = "Fredoka-Regular"
-        public static let medium   = "Fredoka-Medium"
-        public static let semibold = "Fredoka-SemiBold"
-        public static let bold     = "Fredoka-Bold"
-    }
+    // Fredoka shipped with the Arcade direction and went with it when Q84 chose
+    // Storybook. One family is the point: a second display face in a system this
+    // small is a second voice with nothing to say.
 
-    private static let files = ["Baloo2-Variable", "Fredoka-Variable"]
+    private static let files = ["Baloo2-Variable"]
 
     private static var didRegister = false
     private static let lock = NSLock()

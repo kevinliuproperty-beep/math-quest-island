@@ -246,7 +246,7 @@ struct HUDRenderTests {
                 // live in the repository forever must not turn `git status` dirty every
                 // time the gate runs - a phantom diff trains a reader to ignore diffs in
                 // committed renders, which is the one thing these files are for.
-                if !Self.samePixels(image, asFileAt: url) {
+                if !Self.samePixels(data, asFileAt: url) {
                     try data.write(to: url)
                 }
                 written += 1
@@ -255,13 +255,19 @@ struct HUDRenderTests {
         #expect(written == 15)
     }
 
-    /// Whether the PNG already on disk decodes to the same pixels as `image`.
-    /// Missing, unreadable or a different size all count as "not the same".
-    static func samePixels(_ image: CGImage, asFileAt url: URL) -> Bool {
-        guard let src = CGImageSourceCreateWithURL(url as CFURL, nil),
-              let old = CGImageSourceCreateImageAtIndex(src, 0, nil),
-              old.width == image.width, old.height == image.height else { return false }
-        func buffer(_ img: CGImage) -> [UInt8]? {
+    /// Whether the PNG already on disk decodes to the same pixels as the PNG about to
+    /// be written. Missing, unreadable or a different size all count as "not the same".
+    ///
+    /// **Both sides go through the PNG round trip**, deliberately. Comparing the live
+    /// `CGImage` against the decoded file does NOT work: the rendered image and the file
+    /// carry different colour profiles, so the same picture comes back with different
+    /// numbers in it and every file rewrites itself forever. Encode, then compare
+    /// decodes; that is the only comparison where "the same picture" means the same
+    /// picture.
+    static func samePixels(_ png: Data, asFileAt url: URL) -> Bool {
+        func buffer(_ data: Data) -> [UInt8]? {
+            guard let src = CGImageSourceCreateWithData(data as CFData, nil),
+                  let img = CGImageSourceCreateImageAtIndex(src, 0, nil) else { return nil }
             let w = img.width, h = img.height
             var bytes = [UInt8](repeating: 0, count: w * h * 4)
             let ok: Bool = bytes.withUnsafeMutableBytes { raw -> Bool in
@@ -275,8 +281,22 @@ struct HUDRenderTests {
             }
             return ok ? bytes : nil
         }
-        guard let a = buffer(image), let b = buffer(old) else { return false }
-        return a == b
+        guard let existing = try? Data(contentsOf: url),
+              let a = buffer(png), let b = buffer(existing), a.count == b.count else { return false }
+        // A CHANNEL DELTA OF 2 IS NOT A CHANGE. Core Graphics dithers its gradients, so
+        // two renders of the identical view differ in about 0.57% of pixels by a
+        // measured maximum of 2 out of 255 (measured on the 9.7" landscape HUD, phase 1
+        // integration 2026-09-07: 4,493 of 786,432 pixels, 4,492 of them by exactly 1).
+        // A real change is nothing like that - the shoreline fix moved whole bands from
+        // transparent to opaque sea, deltas in the hundreds. So the threshold sits well
+        // above the dither and far below anything an eye could see.
+        var i = 0
+        while i < a.count {
+            for k in 0..<3 where abs(Int(a[i + k]) - Int(b[i + k])) > 4 { return false }
+            if abs(Int(a[i + 3]) - Int(b[i + 3])) > 4 { return false }
+            i += 4
+        }
+        return true
     }
 
     /// `ios/Packages/MQPatchwerk/Snapshots/` - inside this lane's own package, so

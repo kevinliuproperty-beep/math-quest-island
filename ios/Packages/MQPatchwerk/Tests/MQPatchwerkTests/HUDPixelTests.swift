@@ -4,6 +4,7 @@ import SwiftUI
 import AppKit
 import MQContent
 import MQDesign
+import MQProgress
 import MQServices
 @testable import MQPatchwerk
 
@@ -321,7 +322,7 @@ struct HUDPixelTests {
             source: StubQuestionSource(catalogue: StubQuestionSource.sampleCatalogue(),
                                        questions: SessionTests.questions()),
             leaderboard: LocalLeaderboard(url: dir.appendingPathComponent("b.json")),
-            progress: InMemoryProgressStore(),
+            progress: MQProgressStore.inMemory(),
             player: .init(profile: ProfileID("c"), name: "Charlotte", cast: .unicorn, level: "P4"),
             clock: clock, config: .mirrored, rngSeed: 3, today: { "2026-09-07" })
         session.choose(tier: tier)

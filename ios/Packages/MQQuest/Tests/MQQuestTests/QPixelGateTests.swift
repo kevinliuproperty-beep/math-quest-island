@@ -3,6 +3,7 @@ import SwiftUI
 import Foundation
 import MQContent
 import MQDesign
+import MQProgress
 import MQEngineJS
 @testable import MQQuest
 #if canImport(AppKit)
@@ -82,7 +83,7 @@ struct QPixelGateTests {
     @MainActor
     static func worstCaseResult() async throws -> QQuestModel {
         QTestFonts.ensure()
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: Self.engine, store: store,
                             random: QFixedRandom([0]), setSize: 6)
@@ -187,7 +188,7 @@ struct QPixelGateTests {
     func nineWrongRenderAcrossPages(_ device: (String, CGSize)) async throws {
         let (name, size) = device
         QTestFonts.ensure()
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         // p4data is the topic whose review rows carry a FIGURE, which is the half
         // `MQReviewItem` could not represent at all.

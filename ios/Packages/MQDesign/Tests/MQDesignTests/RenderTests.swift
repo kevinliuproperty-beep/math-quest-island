@@ -246,4 +246,104 @@ struct ScreenMatrixTests {
         #expect(g.castW >= 150)
     }
 }
+
+// =============================================================================
+
+/// **THE WORLD PAINTS EVERY PIXEL IT IS GIVEN.**
+///
+/// A screen that leaves a hole in its own background is not a cosmetic problem:
+/// a transparent band is invisible on a white page and reads as a DARK LINE the
+/// moment it is composited on anything else - a dark viewer, a contact sheet, the
+/// iPad scrolling it under a finger.
+///
+/// That is what "the dark line right of the crab" was, and it took three passes to
+/// name because two of them looked for a stray STROKE. It was not ink at all. The
+/// sea rectangle stopped at `beach`; the wet-sand path below it is a curve that
+/// sags past `beach`; and nothing was painted in between. On the 9.7" landscape
+/// battle that wedge was a 261 px run of near-zero alpha at y=784 - `beach` lands
+/// at 391.7 pt there, which is 783.4 px at 2x - running from the signboard's right
+/// edge to x=2047. Fixed in `MQWorld` on the phase 1 integration, 2026-09-07.
+///
+/// Pinned here rather than in the snapshot tool because a law only the
+/// picture-maker enforces is a law nobody enforces.
+@MainActor
+@Suite("A screen leaves no holes in its own background")
+struct OpaqueBackgroundTests {
+
+    init() { _ = NSApplication.shared; MQFonts.register() }
+
+    /// Every pixel of a rendered screen, and how transparent the worst of them is.
+    static func worstAlpha(_ view: some View, size: CGSize, scale: CGFloat) -> (min: Int, count: Int, run: (len: Int, y: Int, x0: Int))? {
+        let renderer = ImageRenderer(content: view.frame(width: size.width, height: size.height))
+        renderer.scale = scale
+        guard let cg = renderer.cgImage else { return nil }
+        let w = cg.width, h = cg.height
+        var buf = [UInt8](repeating: 0, count: w * h * 4)
+        let cs = CGColorSpace(name: CGColorSpace.sRGB)!
+        guard let ctx = CGContext(data: &buf, width: w, height: h, bitsPerComponent: 8,
+                                  bytesPerRow: w * 4, space: cs,
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return nil }
+        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
+        var worst = 255, count = 0
+        var best = (len: 0, y: 0, x0: 0)
+        for y in 0..<h {
+            var run = 0, start = 0
+            for x in 0..<w {
+                let a = Int(buf[(y * w + x) * 4 + 3])
+                if a < worst { worst = a }
+                if a < 250 {
+                    count += 1
+                    if run == 0 { start = x }
+                    run += 1
+                    if run > best.len { best = (run, y, start) }
+                } else { run = 0 }
+            }
+        }
+        return (worst, count, best)
+    }
+
+    static let screens: [String] = ["entrance", "map", "battle", "result", "patchwerk", "battle-dusk"]
+
+    static func view(_ key: String, _ m: MQMetrics) -> AnyView {
+        switch key {
+        case "entrance":    return AnyView(MQEntranceScreen(metrics: m))
+        case "map":         return AnyView(MQMapScreen(metrics: m))
+        case "battle":      return AnyView(MQBattleScreen(metrics: m, palette: .noon))
+        case "result":      return AnyView(MQResultScreen(metrics: m))
+        case "patchwerk":   return AnyView(MQPatchwerkScreen(scene: .sample, metrics: m))
+        default:            return AnyView(MQBattleScreen(metrics: m, palette: .dusk))
+        }
+    }
+
+    /// Charlotte's iPad, both ways up, at the retina scale the device actually
+    /// draws at - the scale the hole was measured on and the scale it hid from at 1x.
+    @Test("No screen leaves a transparent pixel on the 9.7 inch iPad",
+          arguments: [CGSize(width: 1024, height: 768), CGSize(width: 768, height: 1024)])
+    func noHoles(_ size: CGSize) throws {
+        let m = MQMetrics.device(size, insets: .none)
+        for key in Self.screens {
+            let r = try #require(Self.worstAlpha(Self.view(key, m), size: size, scale: 2),
+                                 "\(key) produced no render")
+            let why = "\(key) at \(Int(size.width))x\(Int(size.height)) has \(r.count) non-opaque "
+                + "pixels, worst alpha \(r.min), longest run \(r.run.len) px at y=\(r.run.y) "
+                + "from x=\(r.run.x0)"
+            #expect(r.count == 0, "\(why)")
+        }
+    }
+
+    /// The negative control. Painting the world one point SHORT of its own frame
+    /// reproduces the defect, so a green result above is a measurement and not a
+    /// scanner that always says zero.
+    @Test("The scanner can see a hole when there is one")
+    func negativeControl() throws {
+        let holed = ZStack {
+            Color.clear
+            MQWorld(.noon).padding(.bottom, 8)
+        }
+        let r = try #require(Self.worstAlpha(holed, size: CGSize(width: 1024, height: 768), scale: 2))
+        #expect(r.count > 0, "a deliberately holed render scanned as fully opaque")
+    }
+}
+
 #endif

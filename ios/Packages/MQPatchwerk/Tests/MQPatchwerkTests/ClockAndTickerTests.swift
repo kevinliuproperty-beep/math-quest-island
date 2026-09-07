@@ -2,6 +2,7 @@ import Testing
 import Foundation
 import MQContent
 import MQDesign
+import MQProgress
 import MQServices
 @testable import MQPatchwerk
 
@@ -134,7 +135,7 @@ struct ClockAndTickerTests {
             source: StubQuestionSource(catalogue: StubQuestionSource.sampleCatalogue(),
                                        questions: SessionTests.questions()),
             leaderboard: LocalLeaderboard(url: dir.appendingPathComponent("b.json")),
-            progress: InMemoryProgressStore(),
+            progress: MQProgressStore.inMemory(),
             player: .init(profile: ProfileID("c"), name: "Charlotte", cast: .unicorn, level: "P4"),
             clock: PatchwerkManualClock(0))
         let m = MQMetrics.device(CGSize(width: 1024, height: 768))

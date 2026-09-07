@@ -99,9 +99,16 @@ let matrix: [MatrixDevice] = [
                  note: "iPhone 15 Pro Max")
 ]
 
-/// The photo-gate set: the two sizes Kevin has already ruled on, kept at full
-/// resolution under `snapshots/storybook/` exactly as the design lane left them,
-/// so the approved images stay comparable across this lane's edits.
+/// The photo-gate set: the two sizes Kevin has already ruled on. Kept under
+/// `snapshots/storybook/` so the approved compositions stay findable across edits.
+///
+/// **Written at THUMBNAIL scale since the phase 1 integration, 2026-09-07 (PM ruling on
+/// `ios/snapshots/`).** Full resolution is kept for exactly three sizes - Charlotte's
+/// 9.7" iPad both ways up and the iPhone SE, the `keepFull` column below - and thumbnails
+/// for everything else. `storybook/` at 2x and 3x was 34 MB of the directory's 80 MB, and
+/// it was 34 MB of the WRONG device: the 9.7" iPad is the one Charlotte holds and the one
+/// every gate in the tree is measured on. Anything needing a full-resolution look at an
+/// 11" iPad regenerates it with one command; a repository does not carry it.
 let approvedSizes: Set<String> = ["ipad11-landscape", "iphone15"]
 
 // MARK: - The screens
@@ -192,7 +199,7 @@ struct Snap {
                 if approvedSizes.contains(device.name) {
                     write(view, device: device, screen: screen.key,
                           to: storybook.appendingPathComponent(fileName(screen.key, device)),
-                          scale: device.scale)
+                          scale: thumbScale(device))
                 }
                 if device.keepFull {
                     write(view, device: device, screen: screen.key,

@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import MQContent
 import MQDesign
+import MQProgress
 
 /// One answered item, kept so the result screen and the transcript can both read
 /// it without asking the engine again.
@@ -180,7 +181,8 @@ public final class QQuestModel: ObservableObject {
         entry = QTypedEntry()
         startedAt = Date()
         openCount += 1
-        sessionID = await store.beginSession(profile: profileID, mode: .quest)
+        sessionID = await store.beginSession(profile: profileID, mode: .quest,
+                                             topic: node?.topicID)
         engineSession = "quest-\(profileID.raw)-\(target.topicID)-"
             + "\(Int(startedAt.timeIntervalSince1970))-\(openCount)"
         await drawNext()
@@ -256,11 +258,43 @@ public final class QQuestModel: ObservableObject {
             var explanation: Explanation?
             if !verdict.correct { explanation = try? await source.explain(q) }
 
+            // THE CRYSTAL REPORT (Progress Refutation W1, wired on the phase 1
+            // integration, 2026-09-07).
+            //
+            // A store owns no monster and no damage roll, so it cannot re-derive the
+            // web's crystal; the battle can, and did, eight lines up. `resolution` came
+            // out of `QRunState.apply`, which is `js/app.js`'s own arithmetic:
+            //
+            //     const crit = S.streak >= 3
+            //     const dmg  = (18 + S.level*6 + ri(0,4)) * (crit ? 2 : 1)
+            //     S.mHp -= dmg ; if (S.mHp <= 0) monsterDown()
+            //
+            // and `monsterFell` IS `monsterDown()` - the web's crystal. It is reported
+            // here, one per felled monster, and the store BOUNDS it (never more than
+            // one on a correct answer, never anything on a wrong one, never more than
+            // six a session). `monsterDown` resets `S.mHp` on the web, so overkill
+            // never carries and 1 is the true ceiling for one answer.
+            //
+            // The re-derivation this replaces (mastery crossing a threshold) awarded a
+            // mean of 2.55 crystals a session and filled the six-crystal rope 0 times
+            // in 200 real web sessions, against the web's own 5.285 and 145 of 200.
+            // The corpus is tools/fixtures/web-crystals-200.json and QFlowTests
+            // asserts this call against it.
+            let reviewSnapshot: ReviewSnapshot? = verdict.correct ? nil : ReviewSnapshot(
+                question: q.stem,
+                figure: q.figure,
+                answer: verdict.expectedText,
+                explanation: explanation?.text ?? "")
             await store.record(Attempt(
                 session: sessionID, profile: profileID, skill: SkillID(q.skill),
                 verdict: verdict, elapsed: 0,
                 scaffoldShown: await store.scaffold(profile: profileID,
-                                                    skill: SkillID(q.skill))))
+                                                    skill: SkillID(q.skill)),
+                timedOut: false,
+                item: reviewSnapshot,
+                topic: node?.topicID,
+                crystalsReported: resolution.monsterFell ? 1 : 0,
+                mode: .quest))
 
             let item = QAnsweredItem(question: q, answer: answer, submitted: submitted,
                                      unitChip: chip, verdict: verdict, reason: reason,

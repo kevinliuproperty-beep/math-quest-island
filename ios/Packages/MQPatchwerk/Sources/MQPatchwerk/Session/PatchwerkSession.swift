@@ -1,6 +1,7 @@
 import Foundation
 import MQContent
 import MQDesign
+import MQProgress
 import MQServices
 
 /// The whole mode as one object: tier picker -> run -> result -> board.
@@ -226,9 +227,15 @@ public final class PatchwerkSession: ObservableObject {
 
         guard !event.ignored else { return }
 
-        // Progress is recorded for EVERY counted answer, the same way Quest does
-        // it. Damage is a play number; mastery is a learning number, and Patchwerk
-        // may not touch mastery differently just because it is the fun mode.
+        // Every counted answer is recorded, so a run's SCORE is auditable - and the
+        // store fences it: a Patchwerk attempt moves no mastery, no pool and no
+        // scaffold (Progress Refutation W3, and PHASE1.md section 3 was rewritten on
+        // the phase 1 integration to say so). `mode: .patchwerk` is what arms that
+        // fence; it is not decoration. Damage is a play number, mastery is a learning
+        // number, and this is where the two are kept apart.
+        //
+        // No crystal is reported: Patchwerk has no monster chain, so there is no
+        // `monsterDown()` to mirror and `crystalsReported` stays at its 0 default.
         if let session {
             await progress.record(Attempt(
                 session: session, profile: player.profile,
@@ -237,7 +244,8 @@ public final class PatchwerkSession: ObservableObject {
                 // Patchwerk draws no scaffold at all, so what the child was shown
                 // is `.none`. Recording the STORE's level here would put help in
                 // the audit record that was never on the screen.
-                scaffoldShown: .none))
+                scaffoldShown: .none,
+                mode: .patchwerk))
         }
 
         if event.correct {
@@ -342,6 +350,14 @@ public final class PatchwerkSession: ObservableObject {
 
     /// The row this run produced, if it is still on the board.
     public var myEntryID: String? { entryID }
+
+    /// The `MQProgress` session this run is recording into, while one is open.
+    ///
+    /// Exposed on the phase 1 integration (2026-09-07). The real store mints a UUID per
+    /// session, so a gate can no longer GUESS the id the way it could against the
+    /// lane's deleted stand-in (`"patchwerk-1"`) - and a test that guesses wrong reads
+    /// zero out of an empty dictionary and passes for the wrong reason.
+    public var progressSessionID: SessionID? { session }
 
     public func backToPicker() {
         phase = .picker

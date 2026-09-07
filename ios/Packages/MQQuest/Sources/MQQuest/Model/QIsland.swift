@@ -2,6 +2,7 @@ import Foundation
 import CoreGraphics
 import MQContent
 import MQDesign
+import MQProgress
 
 /// One stop on the island: a topic, plus where the child has got to on it.
 ///

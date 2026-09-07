@@ -2,6 +2,7 @@ import Testing
 import Foundation
 import MQContent
 import MQDesign
+import MQProgress
 @testable import MQQuest
 
 // =============================================================================
@@ -150,9 +151,9 @@ struct QSetFlowTests {
 
     @MainActor
     static func model(_ questions: [Question], setSize: Int,
-                      rolls: [Int] = [0]) async -> (QQuestModel, InMemoryProgressStore) {
+                      rolls: [Int] = [0]) async -> (QQuestModel, MQProgressStore) {
         QTestFonts.ensure()
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: ScriptedSource(questions), store: store,
                             random: QFixedRandom(rolls), setSize: setSize)
@@ -221,7 +222,7 @@ struct QSetFlowTests {
     @Test("the feed is asked for the level the ladder is currently on")
     func feedFollowsTheLadder() async {
         let source = ScriptedSource(Self.script(8))
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: source, store: store,
                             random: QFixedRandom([0]), setSize: 8)
@@ -257,7 +258,7 @@ struct QSetFlowTests {
     @Test("the engine's feed session is retired when the set ends")
     func sessionRetired() async {
         let source = ScriptedSource(Self.script(3))
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: source, store: store,
                             random: QFixedRandom([0]), setSize: 3)
@@ -283,7 +284,7 @@ struct QSetFlowTests {
     @Test("sixty-four pause presses leave zero sessions open")
     func pauseEndsBothSessions() async {
         let source = ScriptedSource(Self.script(400))
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: source, store: store,
                             random: QFixedRandom([0]), setSize: 6)
@@ -314,7 +315,7 @@ struct QSetFlowTests {
     @Test("two opens in the same second are two different engine sessions")
     func sessionIDsAreUniqueSubSecond() async {
         let source = ScriptedSource(Self.script(40))
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: source, store: store,
                             random: QFixedRandom([0]), setSize: 2)
@@ -423,28 +424,60 @@ struct QProgressStoreTests {
 
     @Test("mastery is derived from attempts; there is no other write")
     func masteryDerived() async {
-        let store = InMemoryProgressStore()
-        let p = ProfileID("c"), s = SkillID("area")
+        let store = MQProgressStore.inMemory()
+        // The real store keys everything off a profile ROW: no profile, no progress,
+        // and `record` returns a zero delta rather than trapping (an answer for a
+        // just-deleted profile is a race, not a bug). The lane's deleted stand-in had
+        // no such row, so these three tests used to invent a ProfileID out of a string.
+        let p = await store.addProfile(name: "c", cast: .unicorn, level: "P4")
+        let s = SkillID("area")
         let session = await store.beginSession(profile: p, mode: .quest)
         #expect(await store.mastery(profile: p, skill: s) == 0)
         let correct = Verdict(correct: true, kind: .typed, questionId: "q1",
                               expectedIndex: -1, expectedText: "", chosenIndex: -1,
                               reason: nil, parsed: nil, typedRaw: nil)
+        let wrong = Verdict(correct: false, kind: .typed, questionId: "q1",
+                            expectedIndex: -1, expectedText: "", chosenIndex: -1,
+                            reason: "wrong-value", parsed: nil, typedRaw: nil)
+
+        // The real store's rule is `correct / attempts`, not the stand-in's exponential
+        // approach to 1. So "every correct answer raises it" is FALSE against the real
+        // store from the second answer on - the first takes it to 1.0 and it stays there
+        // - and asserting it was asserting the deleted stand-in's arithmetic. What is
+        // true, and what the contract actually says, is that mastery is DERIVED from the
+        // record of attempts and there is no other way to move it.
         var last = 0.0
         for _ in 0..<10 {
             let d = await store.record(Attempt(session: session, profile: p, skill: s,
                                                verdict: correct, elapsed: 0,
                                                scaffoldShown: .full))
-            #expect(d.masteryAfter > d.masteryBefore)
+            #expect(d.masteryAfter >= d.masteryBefore)
             last = d.masteryAfter
         }
         #expect(last > QNode.masteredAt)
+
+        // A wrong answer is part of the record too, and it moves the number DOWN. That
+        // is the half a monotonic assertion can never see.
+        let down = await store.record(Attempt(session: session, profile: p, skill: s,
+                                              verdict: wrong, elapsed: 0,
+                                              scaffoldShown: .full))
+        #expect(down.masteryAfter < down.masteryBefore)
+        #expect(await store.mastery(profile: p, skill: s) == down.masteryAfter)
+
+        // And there IS no other write: a second profile's record moves nothing here,
+        // and no API on the store sets a mastery number directly.
+        let other = await store.addProfile(name: "d", cast: .turtle, level: "P4")
+        let otherSession = await store.beginSession(profile: other, mode: .quest)
+        await store.record(Attempt(session: otherSession, profile: other, skill: s,
+                                   verdict: correct, elapsed: 0, scaffoldShown: .full))
+        #expect(await store.mastery(profile: p, skill: s) == down.masteryAfter)
     }
 
     @Test("the scaffold fades and can never be re-grown")
     func scaffoldFadesOneWay() async {
-        let store = InMemoryProgressStore()
-        let p = ProfileID("c"), s = SkillID("area")
+        let store = MQProgressStore.inMemory()
+        let p = await store.addProfile(name: "c", cast: .unicorn, level: "P4")
+        let s = SkillID("area")
         #expect(await store.scaffold(profile: p, skill: s) == .full)
         #expect(await store.fadeScaffold(profile: p, skill: s, to: .partial) == .partial)
         #expect(await store.fadeScaffold(profile: p, skill: s, to: .hint) == .hint)
@@ -456,8 +489,8 @@ struct QProgressStoreTests {
 
     @Test("the streak is per session and never spans one")
     func streakPerSession() async {
-        let store = InMemoryProgressStore()
-        let p = ProfileID("c")
+        let store = MQProgressStore.inMemory()
+        let p = await store.addProfile(name: "c", cast: .unicorn, level: "P4")
         let a = await store.beginSession(profile: p, mode: .quest)
         let correct = Verdict(correct: true, kind: .typed, questionId: nil,
                               expectedIndex: -1, expectedText: "", chosenIndex: -1,
@@ -473,7 +506,7 @@ struct QProgressStoreTests {
 
     @Test("endSession is idempotent")
     func endSessionIdempotent() async {
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         let s = await store.beginSession(profile: ProfileID("c"), mode: .quest)
         let first = await store.endSession(s)
         let second = await store.endSession(s)

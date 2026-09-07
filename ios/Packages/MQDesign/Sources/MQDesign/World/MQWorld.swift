@@ -120,7 +120,33 @@ public struct MQWorld: View {
             // 6. Sea: three bands, darkest at the horizon, a light path under
             //    the sun, and a foam line where it meets the sand.
             let beach = hy + (H - hy) * 0.30
-            ctx.fill(Path(CGRect(x: 0, y: hy, width: W, height: beach - hy)),
+            // THE SHORELINE HOLE, closed 2026-09-07 (phase 1 integration).
+            //
+            // This rectangle used to stop dead at `beach`, but the wet-sand path
+            // below it does NOT start at `beach`: it is a curve that sags to
+            // `beach + (H - hy) * 0.03` at the right-hand edge and further still
+            // under its first control point. Between the sea's straight bottom and
+            // that sagging curve was a wedge of canvas NOBODY PAINTED - transparent
+            // pixels with only the 0.85-alpha foam stroke over part of them.
+            //
+            // On a white page that hole is invisible, which is why two passes called
+            // the reported "dark line right of the crab" a downscaling artefact and
+            // said it was "confirmed not in the pixels". It IS in the pixels: at
+            // 2048x1536 the 9.7" landscape battle carried a 261 px run of near-zero
+            // alpha at y=784, starting at the signboard's right edge and running to
+            // x=2047, because `beach` lands at exactly 391.7 pt = 783.4 px there.
+            // Composited on anything but white - a dark viewer, a thumbnail sheet,
+            // the iPad's own scrolling - a transparent band reads as a dark line.
+            //
+            // The fix is the smallest one that can work: paint the sea far enough
+            // past `beach` to sit BEHIND the whole excursion of the curve. The
+            // gradient keeps its original start and end points, so every pixel that
+            // was visible before is the same colour it was; the only pixels that
+            // change are the ones that were holes, and they become the sea, which is
+            // what is behind a beach. It is NOT the crab and NOT `MQFigureCanvas`,
+            // whose clip box has been in place since 6fa9814 and does its job.
+            let seaOverdraw = (H - hy) * 0.12
+            ctx.fill(Path(CGRect(x: 0, y: hy, width: W, height: beach - hy + seaOverdraw)),
                      with: .linearGradient(
                         Gradient(colors: [p.seaDeep, p.seaMid, p.seaShallow]),
                         startPoint: CGPoint(x: 0, y: hy),

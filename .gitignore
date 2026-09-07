@@ -12,3 +12,9 @@ dist/
 ios/.build/
 ios/.swiftpm/
 .DS_Store
+
+# Driven-session output (`swift run mqhost --drive ...`). The default now lands in the
+# system temp directory, outside the checkout; this line is the belt-and-braces for a
+# `--out` pointed back in here by hand. Transcripts and their PNGs are evidence for one
+# session, not artifacts of the project.
+mqhost-out/

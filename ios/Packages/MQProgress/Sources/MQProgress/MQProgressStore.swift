@@ -155,6 +155,17 @@ public actor MQProgressStore: ProgressStore {
     /// before it tears the process down.
     public var hasPendingWrite: Bool { dirty }
 
+    /// Sessions begun and never ended. **A gate reader, not a feature.**
+    ///
+    /// Added on the phase 1 integration (2026-09-07) because it is the only witness to
+    /// the quiet half of Quest Refutation K6: `toMap()` used to leave `sessionID` set,
+    /// so the abandoned session's `SessionSummary` was never computed and the store
+    /// inherited an unterminated record per pause press. Attempts are recorded per
+    /// answer, so nothing was LOST - but nothing could see the leak either. This can,
+    /// and `MQQuest`'s "64 pause presses leave zero sessions open" test reads it. It
+    /// replaces the identically-named property on the lane's deleted stand-in store.
+    public var openSessionCount: Int { live.count }
+
     // MARK: - Mastery
 
     public func mastery(profile: ProfileID, skill: SkillID) async -> Double {

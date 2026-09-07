@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import MQContent
 import MQDesign
+import MQProgress
 #if os(macOS)
 import AppKit
 #else
@@ -248,7 +249,7 @@ public final class QDriver {
         _ = MQFonts.register()
         try FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
 
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: script.profile.name,
                                    cast: script.profile.mqCast,
                                    level: script.profile.level)

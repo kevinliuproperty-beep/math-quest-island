@@ -124,10 +124,19 @@ lane keeps its state elsewhere and hands a scene down.
 (or a `static func` next to it), draw from that value, and return it from `tapTargets`.
 An element sized by a literal in the body is invisible to the gate.
 
-## 3. `ProgressStore` — the sketch MQProgress implements
+## 3. `ProgressStore` — the protocol `MQProgress` ships
 
 `MQProgress` owns this. `MQQuest` and `MQPatchwerk` consume it and never write their own
 mastery, streak or scaffold state. It is deliberately small: a store, not a service.
+
+**STATUS, 2026-09-07 (phase 1 integration).** This is no longer a sketch. `MQProgress`
+ships the real declaration and `MQProgressStore` implements it; both lanes' transcribed
+copies (`MQQuest/Progress/ProgressStore.swift`, `MQPatchwerk/Contract/ProgressStore.swift`)
+are **deleted** and both targets depend on `MQProgress`. The module's protocol is a
+superset of what is printed below - every addition is marked `// + delta` at its
+declaration - and nothing printed below was renamed, reordered or removed. Where this file
+and the module disagree, **the module is now the contract** and this section says so
+rather than being quietly wrong.
 
 ```swift
 import MQContent   // Question, Verdict, Answer
@@ -167,6 +176,8 @@ public protocol ProgressStore: Sendable {
                       to level: ScaffoldLevel) async -> ScaffoldLevel
 
     // ---- session --------------------------------------------------------------
+    // + delta in the module: `beginSession(profile:mode:topic:)`, so a record can name
+    //   the island it was played on. This two-argument form delegates to it with nil.
     func beginSession(profile: ProfileID, mode: PlayMode) async -> SessionID
     /// Ends the session and returns what the result screen renders. Idempotent:
     /// calling it twice returns the same summary and starts nothing.
@@ -197,6 +208,9 @@ public struct Attempt: Sendable {
     public var elapsed: TimeInterval
     /// What the child was actually shown. Recorded so a later fade is auditable.
     public var scaffoldShown: ScaffoldLevel
+    // + delta in the module: `timedOut`, `item` (a ReviewSnapshot carrying the engine's
+    //   whole `MQContent.Figure`), `topic`, `crystalsReported` and `mode`. All defaulted,
+    //   so an attempt written against the four lines above still compiles.
 }
 
 /// What changed, so a mode can animate it without re-reading the store.
@@ -226,9 +240,40 @@ Consumer rules, in one line each:
 
 - **MQQuest** calls `beginSession`, `record` per answer, `endSession` once, and reads
   `scaffold(profile:skill:)` to decide what to draw. It never writes scaffold up.
-- **MQPatchwerk** does the same and may keep `streak` (a play mode is allowed a streak);
-  it may not read or write mastery differently from Quest, because damage is a play
-  number and mastery is a learning number.
+- **MQPatchwerk** calls the same three and may keep `streak` — a play mode is allowed a
+  streak. **A Patchwerk answer touches NO teaching state**: no mastery, no pool, no
+  scaffold, and no skill row is even created. It is counted (the session tally, the
+  in-session streak, the run's damage) and it teaches nothing.
+
+  *This sentence was reversed on the phase 1 integration, 2026-09-07, and the reversal is
+  the integrator's ruling.* It used to read "it may not read or write mastery differently
+  from Quest, because damage is a play number and mastery is a learning number" — and the
+  second half of that sentence is the argument for the OPPOSITE of its first half.
+  Patchwerk's item pool is drawn from `pwPoolWeights(stacks)`, a random 1/2/3 weighted by
+  a **scoring** number; letting that write the child's teaching pool is exactly the
+  crossing the play/teaching split exists to prevent. `MQProgress`'s fix pass had already
+  built the fence and flagged the conflict for this desk (Progress Refutation W3); the
+  module keeps the fence and the contract now agrees with it.
+
+  The fence is armed by `Attempt.mode`, so a mode must SAY which it is:
+  `PatchwerkSession` passes `mode: .patchwerk` and `QQuestModel` passes `mode: .quest`.
+  An attempt on a session the store has never seen is treated as Quest, because losing a
+  child's learning to a mode that forgot to open a session is the worse failure. Gated
+  from both sides: `MQProgressTests` drives 30 Patchwerk answers through `record()` and
+  asserts mastery, pool, scaffold and the skill row all unmoved, and `MQPatchwerkTests`
+  drives a whole real run and asserts the same through the real store.
+
+  This is Kevin's law drawn rather than described: **play modes keep streaks, teaching
+  scaffolds fade.** A streak is play state and may move; a scaffold is teaching state and
+  only ever fades.
+
+- **The crystal is REPORTED, not derived.** A store owns no monster and no damage roll, so
+  it cannot compute the web's crystal. The battle computes it — `monsterFell` is
+  `js/app.js`'s `monsterDown()` — and hands it over as `Attempt.crystalsReported`; the
+  store BOUNDS it (at most one per correct answer, none on a wrong one, at most six a
+  session). A mode that models no monster leaves it at 0 and no crystal is awarded.
+  Graded end to end against 200 real web sessions in `tools/fixtures/web-crystals-200.json`
+  (`MQQuestTests.QWebCrystalTests`, `MQProgressTests.WebCrystalTests`).
 - **UI never imports `MQEngineJS`** — only `MQContent`. The composition root wires one
   `JSQuestionEngine` at launch and hands it up as a `QuestionSource`.
 

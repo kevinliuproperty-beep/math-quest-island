@@ -26,6 +26,7 @@ import MQContent
 import MQDesign
 import MQEngineJS
 import MQQuest
+import MQProgress
 #if os(macOS)
 import AppKit
 #endif
@@ -34,7 +35,16 @@ import AppKit
 
 struct HostArgs {
     var drive: String?
-    var out: String = FileManager.default.currentDirectoryPath + "/mqhost-out"
+    /// Where a driven session writes its transcript and its PNGs.
+    ///
+    /// **Outside the repository by default** (phase 1 integration, 2026-09-07). It used
+    /// to be `<cwd>/mqhost-out`, and the cwd for `swift run mqhost` is `ios/` - so the
+    /// documented invocation dropped ~800 PNGs of one driven run inside the checkout,
+    /// next to a snapshots directory that had just been cut from 80 MB to 43 MB for
+    /// exactly that reason. A driver output is evidence for one session, not an artifact
+    /// of the project; `--out` still puts it wherever the caller wants. The path is
+    /// printed on every run, so it stays findable.
+    var out: String = NSTemporaryDirectory() + "mqhost-out"
     var device: String?
     var node: String?
     var items: Int?
@@ -251,7 +261,7 @@ do {
     FileHandle.standardError.write(Data("mqhost: \(error)\n".utf8))
     exit(1)
 }
-let store = InMemoryProgressStore()
+let store = MQProgressStore.inMemory()
 _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
 _ = await store.addProfile(name: "Ben", cast: .turtle, level: "P3")
 let model = await MainActor.run {

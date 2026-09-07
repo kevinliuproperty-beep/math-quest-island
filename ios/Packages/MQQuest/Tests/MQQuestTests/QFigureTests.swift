@@ -3,6 +3,7 @@ import SwiftUI
 import Foundation
 import MQContent
 import MQDesign
+import MQProgress
 import MQEngineJS
 @testable import MQQuest
 
@@ -158,7 +159,7 @@ struct QScreenFitTests {
             : QFixtures.question(kind: "choice", unit: "", answer: 46,
                                  choices: ["46 cm", "23 cm", "126 cm", "32 cm"],
                                  correctIndex: 0)
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: ScriptedSource([q, q, q]), store: store,
                             random: QFixedRandom([0]), setSize: 3)
@@ -232,7 +233,7 @@ struct QScreenFitTests {
     @Test("the result screen fits with real word problems and a unit lesson in every row")
     func resultFitsRealContent() async throws {
         QTestFonts.ensure()
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: Self.engine, store: store,
                             random: QFixedRandom([0]), setSize: 6)
@@ -277,7 +278,7 @@ struct QScreenFitTests {
     @Test("the battle fits with a real question and a real figure on the board")
     func battleFitsRealContent() async throws {
         QTestFonts.ensure()
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: Self.engine, store: store,
                             random: QFixedRandom([0]), setSize: 6)
@@ -363,7 +364,7 @@ struct QTypedMatrixFitTests {
     @MainActor
     static func model(_ questions: [Question]) async -> QQuestModel {
         QTestFonts.ensure()
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: ScriptedSource(questions), store: store,
                             random: QFixedRandom([0]), setSize: max(questions.count, 1))

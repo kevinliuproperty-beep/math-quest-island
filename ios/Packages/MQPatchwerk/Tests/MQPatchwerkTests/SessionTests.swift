@@ -2,6 +2,7 @@ import Testing
 import Foundation
 import MQContent
 import MQDesign
+import MQProgress
 import MQServices
 @testable import MQPatchwerk
 
@@ -35,7 +36,7 @@ struct SessionTests {
             source: StubQuestionSource(catalogue: StubQuestionSource.sampleCatalogue(),
                                        questions: questions()),
             leaderboard: board,
-            progress: InMemoryProgressStore(),
+            progress: MQProgressStore.inMemory(),
             player: .init(profile: ProfileID("charlotte"), name: "Charlotte",
                           cast: .unicorn, level: "P4"),
             clock: clock, config: .mirrored, rngSeed: 20260907,
@@ -182,9 +183,10 @@ struct SessionTests {
         #expect(longRows?.isEmpty == true, "a 2-minute run appeared on the 5-minute board")
     }
 
-    @Test("Progress is recorded for every counted answer, and the streak is in-session")
+    @Test("A Patchwerk answer is counted and teaches nothing - the fence, through the real store")
     func progressRecorded() async {
-        let store = InMemoryProgressStore()
+        let store = MQProgressStore.inMemory()
+        let profile = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let clock = PatchwerkManualClock(0)
         let session = PatchwerkSession(
             source: StubQuestionSource(catalogue: StubQuestionSource.sampleCatalogue(),
@@ -193,22 +195,38 @@ struct SessionTests {
                 url: URL(fileURLWithPath: NSTemporaryDirectory())
                     .appendingPathComponent("mqi-\(UUID().uuidString).json")),
             progress: store,
-            player: .init(profile: ProfileID("charlotte"), name: "Charlotte",
+            player: .init(profile: profile, name: "Charlotte",
                           cast: .unicorn, level: "P4"),
             clock: clock, config: .mirrored, rngSeed: 1, today: { "2026-09-07" })
         session.choose(tier: "short")
         await session.start()
+        let progressSession = session.progressSessionID
+        #expect(progressSession != nil, "the run opened no progress session at all")
         for i in 1...6 { clock.set(i * 3_000); await session.tick(); await session.answer(choice: 0) }
 
-        let mastery = await store.mastery(profile: ProfileID("charlotte"))
-        #expect(mastery.isEmpty == false, "six answers left no trace in the store")
-        #expect(mastery.values.allSatisfy { $0 > 0 })
+        // THE FENCE (Progress Refutation W3, ruled at integration and now the wording in
+        // ios/PHASE1.md section 3). Six Patchwerk answers are COUNTED - the session tally
+        // and the in-session streak move - and they teach NOTHING: no mastery, no pool,
+        // no scaffold, and not even a skill row. This test used to assert the opposite
+        // (`mastery.isEmpty == false`) against the lane's stand-in store, which had no
+        // fence in it; the real store's `record()` is fenced on `Attempt.mode`, and the
+        // mode is `.patchwerk` because PatchwerkSession now says so explicitly.
+        let mastery = await store.mastery(profile: profile)
+        #expect(mastery.isEmpty, "a Patchwerk answer bought teaching state")
+        #expect(await store.skillProgress(profile: profile).isEmpty,
+                "a Patchwerk answer created a skill row")
+
+        // Counted, though: the streak is play state and play state is allowed to move.
+        if let progressSession {
+            #expect(await store.streak(session: progressSession) == 6)
+        }
 
         clock.set(session.tier.durationMs)
         await session.tick()
         // The session's streak dies with the session; nothing spans runs.
-        let after = await store.streak(session: SessionID("patchwerk-1"))
-        #expect(after == 0)
+        if let progressSession {
+            #expect(await store.streak(session: progressSession) == 0)
+        }
     }
 
     @Test("A profile with no unlocked topics is refused before a clock starts")
@@ -220,7 +238,7 @@ struct SessionTests {
             leaderboard: LocalLeaderboard(
                 url: URL(fileURLWithPath: NSTemporaryDirectory())
                     .appendingPathComponent("mqi-\(UUID().uuidString).json")),
-            progress: InMemoryProgressStore(),
+            progress: MQProgressStore.inMemory(),
             player: .init(profile: ProfileID("ben"), name: "Ben", cast: .turtle, level: "P6"),
             clock: clock, rngSeed: 1, today: { "2026-09-07" })
         await s.start()

@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 @testable import MQCubeEngineJS
+import MQCubeContent
 
 /// The two committed fixtures the Swift gate replays, and the two hashes it needs.
 ///
@@ -59,6 +60,11 @@ enum CubeFixtures {
             let exports: [String]
             let guide: Guide
             let refusals: Refusals
+            /// The word surface, recorded from the MONOLITH by
+            /// `cube-engine-sanity.mjs --record`. It decodes straight into the same
+            /// `CubeWords` the bridge returns, which is what lets the Swift gate compare
+            /// them field for field - see `CubeWordsTests`.
+            let words: CubeWords
         }
         struct Probe: Decodable { let sizes: [String: Size] }
         let capturedFrom: String

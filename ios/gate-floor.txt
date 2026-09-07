@@ -1,4 +1,4 @@
-71
+143
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing parsed; everything below is for humans.
@@ -33,3 +33,32 @@
 #        The cast never crosses the parchment  4  (the 4 landscape sizes)
 #      The parameterised suites are counted by CASE here because that is what the
 #      runner's summary counts; the 29 is the delta the runner reported (42 -> 71).
+
+# 143 = those 71 + 72 from lane/patchwerk (MQPatchwerk 55 + MQServices 17), 2026-09-07:
+#        Patchwerk scoring parity with the web    4  (corpus shape, the mirrored CONFIG,
+#                                                     300 recorded runs replayed as 300
+#                                                     parameterised cases, and the same
+#                                                     300 counted again in one test)
+#        The fight is the clock                   8  (a whole tier per case, the enrage
+#                                                     boundary per tier, expiry, the stun,
+#                                                     monotonic damage, the clock label,
+#                                                     the boss refill, the record shape)
+#        Stacks, freezes and the anti-quit rules   8
+#        The Patchwerk question feed               8  (topic filter, pool weights, harder
+#                                                     with stacks, the no-repeat ring,
+#                                                     bounded redraws, pool-not-feed draws)
+#        The mirrored PRNG                         4
+#        Stem shapes                               5
+#        A whole fight, picker to board            9
+#        Patchwerk screens fit the glass           7  (fit and tap floor across 4 devices x
+#                                                     5 screens, the overlay contract, the
+#                                                     hourglass floor across the 12-size
+#                                                     matrix, the trap's negative control,
+#                                                     and the PNG render)
+#        The device leaderboard                    9
+#        Leaderboard names                         6
+#        Game Center is a stub, and admits it      2
+#      NOTE the runner counts a parameterised @Test as ONE here, not once per case - the
+#      300-run parity replay is one line in this total, not 300. The MQDesign entry above
+#      counted cases because that is what the runner reported at the time; if the two ever
+#      have to be reconciled, the floor is whatever an unfiltered run prints, nothing more.

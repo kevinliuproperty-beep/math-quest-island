@@ -69,7 +69,11 @@ let package = Package(
     products: [
         .library(name: "MQContent", targets: ["MQContent"]),
         .library(name: "MQEngineJS", targets: ["MQEngineJS"]),
-        .library(name: "MQDesign", targets: ["MQDesign"])
+        .library(name: "MQDesign", targets: ["MQDesign"]),
+        // lane/patchwerk
+        .library(name: "MQServices", targets: ["MQServices"]),
+        .library(name: "MQPatchwerk", targets: ["MQPatchwerk"])
+        // end lane/patchwerk
     ],
     targets: [
         .target(
@@ -118,6 +122,44 @@ let package = Package(
             name: "mqdesign-snap",
             dependencies: ["MQDesign"],
             path: "Packages/MQDesign/Sources/mqdesign-snap"
+        ),
+
+        // lane/patchwerk -----------------------------------------------------
+        // Kevin's timed damage mode, plus the leaderboard seam it needs.
+        //
+        // MQServices holds the LeaderboardService protocol, the on-device
+        // LocalLeaderboard (a JSON file, nothing leaves the iPad) and a compiled
+        // Game Center STUB. It depends on Foundation only - deliberately not on
+        // MQDesign, so a board can never start rendering itself.
+        //
+        // MQPatchwerk is the mode: a deterministic run engine fed by an injected
+        // clock, the question feed, and the four screens. It consumes MQContent
+        // (questions), MQDesign (the look) and MQServices (the board). It does
+        // NOT depend on MQEngineJS - UI never imports the engine; the
+        // composition root hands a QuestionSource up.
+        .target(
+            name: "MQServices",
+            path: "Packages/MQServices/Sources/MQServices"
+        ),
+        .testTarget(
+            name: "MQServicesTests",
+            dependencies: ["MQServices"],
+            path: "Packages/MQServices/Tests/MQServicesTests"
+        ),
+        .target(
+            name: "MQPatchwerk",
+            dependencies: ["MQContent", "MQDesign", "MQServices"],
+            path: "Packages/MQPatchwerk/Sources/MQPatchwerk"
+        ),
+        .testTarget(
+            name: "MQPatchwerkTests",
+            dependencies: ["MQPatchwerk", "MQContent", "MQDesign", "MQServices"],
+            path: "Packages/MQPatchwerk/Tests/MQPatchwerkTests"
+            // The 300-run scoring parity corpus is NOT a bundled resource: it is
+            // found by walking up from `#filePath` to `tools/fixtures/`, the same
+            // way MQEngineJSTests finds its own. One copy in the repository, and
+            // the Swift side cannot be testing a stale duplicate of it.
         )
+        // end lane/patchwerk --------------------------------------------------
     ]
 )

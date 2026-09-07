@@ -171,7 +171,12 @@
     return typed3(scene + ' ' + val + ' ' + large + VERB[p[3]] + '. Express that in ' + small +
       '. (type the number of ' + small + ', e.g. 1750)', ans,
       'There are ' + per + ' ' + small + ' in 1 ' + large + ', so multiply by ' + per + ': ' + val +
-      ' ' + large + ' = ' + ans + ' ' + small + '.', small);
+      ' ' + large + ' = ' + ans + ' ' + small + '.',
+      /* 1 ml IS 1 cm³, so on the litre pair both spellings name the same quantity and
+         both are right - the same identity p5-volume.js declares, and the fourth of
+         the four correct-value cells the unit sweep regressed (Unit Sweep Refutation
+         W2, 2026-09-07). 'ml' stays canonical: it is the unit the stem asks for. */
+      small === 'ml' ? ['ml', 'cm³'] : small);
   }
   function gConversionWordProblem(){
     /* Two lengths in different units, added, answered in the larger unit. This is

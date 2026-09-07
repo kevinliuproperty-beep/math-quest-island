@@ -56,7 +56,7 @@ node name. One file = one registered topic id.
 |---|---|---|
 | Multiple choice, numeric | `finishNum(q, extra, correct, cands, unit, explain)` | 4 choices, `correct` index, `answerText` |
 | Multiple choice, fraction | `finishFrac(q, extra, [n,d], cands, explain, count)` | fraction choices rendered by `fr(n,d)` |
-| Typed numeric | `finishTyped(q, answer, explain, unit)` | `{ typed:true, answer, correct:-1, unit }` |
+| Typed numeric | `finishTyped(q, answer, explain, unit)` — `unit` is a string, or an array of equivalent units | `{ typed:true, answer, correct:-1, unit }` (the array's first member is canonical and is what `answerText` prints) |
 | Typed fraction | `finishTyped` with the answer as a reduced `n/d` string, plus a `fracAnswer:[n,d]` field | grader compares cross-multiplied |
 | Typed unit-bearing | `finishTyped` with the unit in the question stem and a bare number as the answer, or `finishNum(..., unit, ...)` for MCQ | unit is appended to every choice, never only the key |
 
@@ -82,22 +82,57 @@ The rule does not check that the unit is the *right* one — `gFindBase`'s stem 
 its answer is in cm, and both are correct. Declaring anything is enough; declaring nothing
 is the bug.
 
+#### Equivalent units: `q.unit` may be an array
+
+`q.unit` takes a **string** (one unit) or an **array of equivalent units**. `gradeTyped`
+accepts any member; the **first is canonical** and is the one `answerText` prints, so the
+child still reads one house answer.
+
+```js
+finishTyped(stem, cm3, explain, ['cm³', 'ml']);   // "1 ml = 1 cm³" is printed in the stem
+finishTyped(stem, n,   explain, ['cubes', 'cm³']); // a count of 1 cm cubes
+```
+
+Use it only where two spellings really are **the same quantity**, never for two spellings
+of one unit — `cm3`/`cm²`/`mL`/`ℓ` already alias inside `core.js`, and declaring a spelling
+twice is a build failure. Today's users are `p5-volume.js` (`gLitresToCm3`, `gTankLiquid`
+= `['cm³','ml']`; `gTankLitres` = `['ml','cm³']`; `gUnitCubes` = `['cubes','cm³']`) and
+`p5-decimals.js` `gLargeToSmall` on its litre pair. Why: those stems print `1 ml = 1 cm³`
+themselves, and `gTankLitres`'s own explanation says *"= 5500 cm³, and 1 cm³ = 1 ml, so it
+is 5500 ml"* — with one declared unit the game asserted the identity and marked it wrong in
+the same breath (Unit Sweep Refutation W2, 2026-09-07). The canonical member is still the
+unit the stem asks for, so the conversion is still what the item teaches.
+
 **Count answers** ("How many pupils are there in the class?") name a token while the answer
-is a bare number. Two legal exits, pick one deliberately:
+is a bare number. Three legal exits, pick one deliberately:
 
 1. **Declare the count noun.** `p5-rate.js` already ships `'pages'` and `'buns'` this way.
    A bare number still passes — a missing unit is always accepted — and `24 kg` starts
    failing. This is the right exit for most count stems.
-2. **Opt out explicitly, with a reason**, when declaring any unit would mark a RIGHT answer
-   wrong. Attach it in your own topic file:
+2. **Declare an array** when two spellings are both right. `p5-volume.js` `gUnitCubes`
+   counts 1 cm cubes, so `48 cubes` and `48 cm³` are the same quantity and it declares
+   `['cubes','cm³']`. This is the exit that used to need the opt-out, and it closes the
+   hole the opt-out left open (`48 kg` was being accepted the whole time).
+3. **Opt out explicitly, with a reason** — the last resort, when *no* declaration can say
+   what is right. **There is no user of it today.** Attach it in your own topic file:
    ```js
    const noUnit = (q, why) => (q.unitOptOut = why, q);   // one line, per file
    ```
    The reason is mandatory and must be a real sentence; an empty, missing or token reason
    is itself a build failure, and the opt-out is refused on a generator that also declares
-   a unit. The one user today is `p5-volume.js` `gUnitCubes`: its stem says "1 cm cubes",
-   but a child answering `70 cm3` has read the figure correctly and means the same
-   quantity.
+   a unit. Before reaching for it, check the array form cannot express what you mean — the
+   one opt-out the unit sweep took had a reason that named a right answer the build
+   rejected, which no gate can catch (Unit Sweep Refutation W3).
+
+#### The child is told when only the unit was wrong
+
+`MQI.typedRejectReason(raw, q)` returns `'wrong-unit'` when the child's **number was right**
+and only the unit rejected it, `'wrong-value'` when the number itself is wrong, or the parse
+reason. `js/app.js` uses it to lead the wrong-answer card with *"Your number was right. The
+unit should be **cm²**, because area is measured in squares."*, and the engine's bridge
+verdict carries the same word as `reason`, which `MQContent.Verdict.Reason` decodes. One
+definition, so the web card and a SwiftUI view cannot drift apart. A generator gets this for
+free by declaring its unit; there is nothing to author.
 
 Money is a settled convention: declare `'$'` and re-render `answerText` yourself
 (`q.answerText = '$' + n`), so the review card reads `$4.75` rather than `finishTyped`'s
@@ -251,8 +286,11 @@ the place — and `core.js` is frozen, so that is its own packet.
 5. **Set wiring.** `buildSetFor(topic, 30)` must fill all three levels with 30 questions each,
    with no duplicate question inside a set.
 6. **Typed unit declared.** A typed question whose STEM carries a unit token must declare
-   `q.unit`, or opt out with a reasoned `q.unitOptOut`. See "Typed items must declare their
-   unit" above for the token list and the two legal exits. Failure names the generator.
+   `q.unit` — a **string**, or an **array of equivalent units** (`['cm³','ml']`) when two
+   spellings name the same quantity — or opt out with a reasoned `q.unitOptOut`. An array
+   is also shape-checked: empty, blank/non-string members, and two members that normalise
+   to the same unit are all build failures. See "Typed items must declare their unit" above
+   for the token list and the three legal exits. Failure names the generator.
 
 Gate for a content lane: `SAMPLES=50000 npm run test:deep` green, and 0% oracle coverage
 appearing nowhere in your topic's rows.

@@ -98,8 +98,10 @@ public enum MQHaptics {
 import UIKit
 
 private extension MQHaptics {
-    @MainActor
-    static func _fireOnMain(_ kind: Kind) {
+    // Deliberately not @MainActor-annotated: MainActor.assumeIsolated is
+    // iOS 17+, and this package deploys to iOS 16. The main-thread guarantee
+    // UIFeedbackGenerator needs is enforced below by hand instead.
+    static func _perform(_ kind: Kind) {
         switch kind {
         case .tap:
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -117,9 +119,9 @@ private extension MQHaptics {
 
     static func _fire(_ kind: Kind) {
         if Thread.isMainThread {
-            MainActor.assumeIsolated { _fireOnMain(kind) }
+            _perform(kind)
         } else {
-            DispatchQueue.main.async { _fireOnMain(kind) }
+            DispatchQueue.main.async { _perform(kind) }
         }
     }
 }

@@ -1,4 +1,4 @@
-42
+80
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing parsed; everything below is for humans.
@@ -18,3 +18,10 @@
 # 42 = MQEngineJS bridge (10) + MQContent models (8) + Figure spec decoding (14, incl.
 #      parameterised cases) + Grading parity corpus (4) + Engine lifetime and memory (6)
 #      as of the fix pass on lane/engine-bridge, 2026-09-07.
+#
+# 80 = the 42 above + the cube engine, added by lane/cube-extract on 2026-09-07:
+#      Cube content models (10) + Cube engine bridge (16) + Cube solve (3) +
+#      Cube guided script (2) + Cube validate refusals (4) + Cube parity corpus (3).
+#      Several of those are parameterised over both cube sizes; the runner counts a
+#      parameterised @Test once, so this floor is a floor on test FUNCTIONS discovered,
+#      not on cases executed - which is the thing that silently shrinks.

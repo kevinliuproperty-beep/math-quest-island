@@ -1,8 +1,11 @@
-# Build output of `npm run build:engine`. Regenerable in one command, so it is not
-# committed here - the COMMITTED copy of the engine bundle is the Swift package resource
-# at ios/Packages/MQEngineJS/Sources/MQEngineJS/Resources/engine.bundle.js, which SwiftPM
-# and Xcode need on disk without running Node. `npm run check:engine` proves that copy is
-# not stale; `npm test` runs the same check.
+# Build output of `npm run build:engine` and `npm run build:cube-engine`. Regenerable in
+# one command each, so neither is committed here - the COMMITTED copies are the Swift
+# package resources at
+#   ios/Packages/MQEngineJS/Sources/MQEngineJS/Resources/engine.bundle.js
+#   ios/Packages/MQCubeEngineJS/Sources/MQCubeEngineJS/Resources/cube-engine.bundle.js
+# which SwiftPM and Xcode need on disk without running Node. `npm run check:engine` and
+# `npm run check:cube-engine` prove those copies are not stale by hashing their OWN BYTES
+# against a fresh build; `npm test` and `ios/test.command` run both checks.
 dist/
 
 # SwiftPM

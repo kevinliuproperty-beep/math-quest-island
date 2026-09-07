@@ -69,9 +69,21 @@ if command -v node >/dev/null 2>&1; then
     echo "  Run: npm run build:engine   (and commit the result)" >&2
     exit 1
   fi
+  # The CUBE bundle gets the same treatment, and it is the same argument one layer along:
+  # the refutation of the cube split found that the deploy verification and the ?v= link
+  # covered 10.5% of the shipped bytes. On iOS there is no CDN and no cache to defeat -
+  # the shipped file is a committed package resource - so THIS byte-hash IS the coverage.
+  # A cube bundle that is not an extraction of the current cube/index.html never reaches
+  # the simulator, let alone the iPad.
+  echo "bundle:    checking the committed cube engine bundle's own bytes against a fresh extraction of cube/index.html"
+  if ! node ../tools/build-cube-engine.mjs --check; then
+    echo "GATE FAILED: the committed cube engine bundle is not an extraction of cube/index.html." >&2
+    echo "  Run: npm run build:cube-engine   (and commit the result)" >&2
+    exit 1
+  fi
 else
-  echo "GATE FAILED: node is not on PATH, so the committed engine bundle cannot be" >&2
-  echo "  verified against js/. The Swift suite would be testing an unattested blob." >&2
+  echo "GATE FAILED: node is not on PATH, so the committed bundles cannot be verified" >&2
+  echo "  against their sources. The Swift suite would be testing unattested blobs." >&2
   echo "  Install node, or run the gate on a box that has it." >&2
   exit 1
 fi

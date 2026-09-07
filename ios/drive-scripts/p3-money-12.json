@@ -1,0 +1,18 @@
+{
+  "name": "p3-money-12",
+  "seed": 4711,
+  "device": "ipad97-portrait",
+  "profile": { "name": "Ben", "cast": "turtle", "level": "P3" },
+  "node": "p3money",
+  "items": 12,
+  "palette": "noon",
+  "scale": 1,
+  "strategies": [
+    "always-correct", "always-correct",
+    "always-wrong",
+    "always-correct", "always-correct", "always-correct",
+    "always-wrong",
+    "always-correct", "always-correct", "always-correct",
+    "random", "random"
+  ]
+}

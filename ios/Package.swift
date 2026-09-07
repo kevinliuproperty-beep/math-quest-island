@@ -69,7 +69,9 @@ let package = Package(
     products: [
         .library(name: "MQContent", targets: ["MQContent"]),
         .library(name: "MQEngineJS", targets: ["MQEngineJS"]),
-        .library(name: "MQDesign", targets: ["MQDesign"])
+        .library(name: "MQDesign", targets: ["MQDesign"]),
+        // lane/quest
+        .library(name: "MQQuest", targets: ["MQQuest"])
     ],
     targets: [
         .target(
@@ -118,6 +120,41 @@ let package = Package(
             name: "mqdesign-snap",
             dependencies: ["MQDesign"],
             path: "Packages/MQDesign/Sources/mqdesign-snap"
+        ),
+
+        // ------------------------------------------------------------ lane/quest
+        // The Quest mode (entrance -> map -> battle -> result) and the macOS host
+        // that runs it. Three targets, one contiguous block, so the integrator can
+        // see the whole lane in one diff hunk.
+        //
+        // MQQuest depends on MQContent and MQDesign and NOT on MQEngineJS: the
+        // contract rule is that UI never imports the engine. `mqhost` is the
+        // composition root and is the only place `JSQuestionEngine` is named.
+        //
+        // MQQuestTests DOES depend on MQEngineJS, deliberately. "The unit chip is
+        // accepted and the distractor is rejected" is a claim about the real
+        // grader; asserting it against a fake source would prove nothing at all.
+        //
+        // ON MERGE WITH lane/progress: add "MQProgress" to MQQuest's dependencies
+        // and delete Packages/MQQuest/Sources/MQQuest/Progress/ProgressStore.swift
+        // (its header says the same thing).
+        .target(
+            name: "MQQuest",
+            dependencies: ["MQContent", "MQDesign"],
+            path: "Packages/MQQuest/Sources/MQQuest"
+        ),
+        .testTarget(
+            name: "MQQuestTests",
+            dependencies: ["MQQuest", "MQContent", "MQDesign", "MQEngineJS"],
+            path: "Packages/MQQuest/Tests/MQQuestTests"
+        ),
+        // macOS-only, and guarded internally by `#if os(macOS)` so an iOS build
+        // of the package tree still compiles it rather than failing.
+        .executableTarget(
+            name: "mqhost",
+            dependencies: ["MQQuest", "MQEngineJS", "MQContent", "MQDesign"],
+            path: "Host"
         )
+        // -------------------------------------------------------- end lane/quest
     ]
 )

@@ -1,4 +1,4 @@
-71
+143
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing parsed; everything below is for humans.
@@ -33,3 +33,45 @@
 #        The cast never crosses the parchment  4  (the 4 landscape sizes)
 #      The parameterised suites are counted by CASE here because that is what the
 #      runner's summary counts; the 29 is the delta the runner reported (42 -> 71).
+#
+# 143 = those 71 + MQQuest's 72, added on lane/quest, 2026-09-07:
+#         HP and streak follow the web's own formulas   14  (6 damage cases +
+#                                                            crit, chain, two
+#                                                            ladder tests, streak,
+#                                                            monster down, heal cap,
+#                                                            per-monster damage)
+#         The set runs, ends and reviews                 7  (set completes, review is
+#                                                            exactly the wrong items,
+#                                                            empty review, feed level,
+#                                                            defeat, session retired,
+#                                                            locked node refused)
+#         The island is the catalogue + the store        3
+#         The store enforces the contract's laws         4  (mastery derived, scaffold
+#                                                            one-way, streak per
+#                                                            session, idempotent end)
+#         The keypad produces the web's string          17  (5 digits + 5 decimals
+#                                                            parameterised, fractions,
+#                                                            refusals, cap, undo,
+#                                                            submission, enablement)
+#         Unit chips graded by the real engine           5
+#         The chip row is deterministic                 20  (16 units parameterised +
+#                                                            ordering, area example,
+#                                                            equivalents, every unit
+#                                                            teaches)
+#         Fractions and decimals via the keypad          3
+#         Figures: all seven, from drawn questions      17  (7 fit + 7 ink + lshape
+#                                                            sides + unsupported +
+#                                                            (the two suites' shared
+#                                                            engine draw))
+#         Every Quest screen fits both devices           4  (battle choice/typed,
+#                                                            feedback, entrance +
+#                                                            result, tap floor)
+#         The driver and its transcript                  5
+#         The keypad policy is measured                  2
+#         The copy obeys the fade-out law                5
+#         The buttons are on the glass, in pixels        3  (review list fits its
+#                                                            plank, buttons on
+#                                                            glass, title on glass)
+#         (result + battle at real engine content)       2
+#       Counted by CASE, which is what the runner's summary counts; 72 is the delta
+#       the runner reported (71 -> 143).

@@ -66,6 +66,9 @@ struct CubeGoldenTests {
             let calls: [String: String]
             /// move -> the same, for `moveGeometry`
             let moveGeometry: [String: String]
+            /// move SEQUENCE -> the same, for `applyMoves`. The battery would otherwise
+            /// never call it, and `inverse` is a field a corruption can move on its own.
+            let applyMoves: [String: String]
             let questions: [Question]
         }
         struct Band: Decodable {
@@ -163,6 +166,12 @@ struct CubeGoldenTests {
                                               argumentsJSON: try Self.encodeMoveGeo(size: size, state: row.state, move: move))
                 checked += 1
                 if Self.hash(raw) != want { drift.append("\(row.label)/moveGeometry(\(move))") }
+            }
+            for (seq, want) in row.applyMoves.sorted(by: { $0.key < $1.key }) {
+                let raw = try await e.callRaw("applyMoves",
+                                              argumentsJSON: try Self.encodeApply(size: size, state: row.state, moves: seq))
+                checked += 1
+                if Self.hash(raw) != want { drift.append("\(row.label)/applyMoves(\(seq))") }
             }
             if drift.count > 8 { break }
         }
@@ -285,6 +294,7 @@ struct CubeGoldenTests {
     private struct NodeArgs: Encodable { let size: Int; let id: String }
     private struct MoveGeoArgs: Encodable { let size: Int; let state: CubeState; let move: String }
     private struct ValidateArgs: Encodable { let size: Int; let stickers: [String?] }
+    private struct ApplyArgs: Encodable { let size: Int; let state: CubeState; let moves: String }
 
     private static func encodeState(size: CubeSize, state: CubeState) throws -> String {
         String(data: try encoder.encode(StateArgs(size: size.rawValue, state: state)), encoding: .utf8)!
@@ -297,6 +307,9 @@ struct CubeGoldenTests {
     }
     private static func encodeMoveGeo(size: CubeSize, state: CubeState, move: String) throws -> String {
         String(data: try encoder.encode(MoveGeoArgs(size: size.rawValue, state: state, move: move)), encoding: .utf8)!
+    }
+    private static func encodeApply(size: CubeSize, state: CubeState, moves: String) throws -> String {
+        String(data: try encoder.encode(ApplyArgs(size: size.rawValue, state: state, moves: moves)), encoding: .utf8)!
     }
     private static func encodeValidate(size: CubeSize, stickers: [String]) throws -> String {
         String(data: try encoder.encode(ValidateArgs(size: size.rawValue, stickers: stickers.map { Optional($0) })),

@@ -698,6 +698,14 @@ for (const size of [2, 3]) {
       moveCells++;
       if (got !== want) misses.push(row.label + '/moveGeometry(' + move + ')');
     }
+    /* applyMoves, chants and whole-cube turns included. This is the one method the state
+       battery would otherwise never reach, and `inverse` is a field a corruption can move
+       without touching anything else. */
+    for (const [seq, want] of Object.entries(row.applyMoves || {})) {
+      const got = gsha(rawCall('applyMoves', { size, state, moves: seq }));
+      moveCells++;
+      if (got !== want) misses.push(row.label + '/applyMoves(' + seq + ')');
+    }
     for (const q of row.questions || []) {
       const gotBest = gsha(rawCall('bestQuestion', { size, painted: q.painted }));
       const gotPlain = gsha(rawCall('bestQuestion', { size, painted: q.painted, nameable: false }));

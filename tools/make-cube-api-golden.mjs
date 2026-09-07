@@ -381,6 +381,13 @@ function record() {
       if (stable(inScript) !== stable(n.node)) problems.push(tag + 'guideNode(' + id + ') differs from the script node');
     }
 
+    /* MOVE SEQUENCES, fixed per size. applyMoves is the one method the state battery would
+       otherwise never reach - and `inverse` is one of the three fields the refuter could
+       corrupt with only the Swift bridge noticing (`inverse: moves`). The list deliberately
+       mixes a chant, a plain face turn, a whole-cube turn (which the SMALL core expands
+       through its own WHOLE table rather than carrying as a move) and a long sequence. */
+    const applySeqs = ["R U R' U'", "R'", 'y', 'x2', "R U R' U' R' F R2 U' R' U' R U R' F'"];
+
     const rows = [];
     const witnesses = [];
 
@@ -433,6 +440,29 @@ function record() {
         }
       }
       row.moveGeometry = mg;
+
+      /* ---- applyMoves, including the inverse the caller undoes with ---- */
+      const am = {};
+      for (const seq of applySeqs) {
+        const r = call('applyMoves', { size, state, moves: seq });
+        callTotal++;
+        if (!r.ok) { problems.push(tag + label + ': applyMoves(' + seq + ') returned ' + r.error.message); continue; }
+        am[seq] = h(r.__raw);
+        /* the cores' own answer for the same sentence, expanded the way movesIn expands it */
+        const toks = CC.seqFromString(seq);
+        let want = [];
+        for (const t of toks) want = want.concat(CC.MOVE[t] ? [t] : CC.WHOLE[t].moves.slice());
+        if (stable(r.moves) !== stable(want)) {
+          problems.push(tag + label + ': applyMoves(' + seq + ').moves is not the core\'s own expansion');
+        }
+        if (stable(r.inverse) !== stable(CC.invertSeq(want))) {
+          problems.push(tag + label + ': applyMoves(' + seq + ').inverse is not CC.invertSeq');
+        }
+        if (r.key !== CC.keyOf(CC.applySeq(s, want))) {
+          problems.push(tag + label + ': applyMoves(' + seq + ').key is not the core\'s own');
+        }
+      }
+      row.applyMoves = am;
 
       /* ---- bestQuestion, WITH and WITHOUT the nameable option, on two painting shapes ---- */
       row.questions = [];
@@ -595,6 +625,7 @@ function record() {
       stateCount: rows.length,
       moves: moves,
       wholeKeys: wholeKeys,
+      applySeqs: applySeqs,
       solvedKey: CC.keyOf(CC.solved()),
       words: h(wordsR.__raw),
       wordsVerbatim: wordsR.words,
@@ -604,7 +635,7 @@ function record() {
       guideNodes,
       rows,
       witnesses,
-      rollup: h(JSON.stringify(rows.map(r => [r.calls, r.moveGeometry,
+      rollup: h(JSON.stringify(rows.map(r => [r.calls, r.moveGeometry, r.applyMoves,
         r.questions.map(q => [q.bestQuestion, q.bestQuestionPlain])])))
     };
     console.log('  ' + tag + rows.length + ' states, ' + moves.length + ' moves, '

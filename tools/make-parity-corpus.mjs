@@ -112,7 +112,7 @@ function mulberry32(seed) {
 const rnd = mulberry32(20260907);
 const pick = arr => arr[Math.floor(rnd() * arr.length)];
 
-/* ---------- the 14 child spellings ----------
+/* ---------- the 15 child spellings ----------
  * Every one of these is something that actually reaches a grader from a real iPad:
  * a paste carrying NBSP, a full-width keyboard, a child who types the unit, a child
  * who types nothing. Applied to typed and choice questions alike (a choice question
@@ -140,8 +140,23 @@ function typedSpellings(base, unit) {
     ['unit-no-space', { text: n + (unit || 'cm') }],
     ['upper-unit', { text: n + ' ' + String(unit || 'cm').toUpperCase() }],
     ['nbsp-unit', { text: n + NBSP + (unit || 'cm') }],
+    /* The RIGHT number under a unit the question definitely does not want. Every
+       other unit spelling above types the question's OWN unit, so before this the
+       corpus never carried a single wrong-unit verdict and the two runtimes never
+       compared one - the exact hole that let the reason string mean two different
+       things for as long as it did (Unit Sweep Refutation W1, 2026-09-07). This is
+       the pair whose expected reason is 'wrong-unit'. */
+    ['wrong-unit', { text: n + ' ' + wrongUnitFor(unit) }],
     ['empty', { text: '' }]
   ];
+}
+/* A unit that is not the declared one and not an alias of it, so the cell is always
+   a unit rejection and never an accidental accept. */
+function wrongUnitFor(unit) {
+  const declared = new Set((Array.isArray(unit) ? unit : [unit])
+    .filter(Boolean).map(u => ctx.MQI.normUnit(u)));
+  for (const cand of ['kg', 'cm', 'pages', 'min']) if (!declared.has(cand)) return cand;
+  return 'beads';
 }
 
 function choiceSpellings(q) {

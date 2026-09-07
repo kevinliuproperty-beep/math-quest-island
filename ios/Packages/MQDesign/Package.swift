@@ -13,7 +13,11 @@ let package = Package(
     targets: [
         .target(
             name: "MQDesign",
-            path: "Sources/MQDesign"
+            path: "Sources/MQDesign",
+            // Bundled OFL display faces. Registered at runtime with
+            // CTFontManagerRegisterFontsForURL so they resolve identically under
+            // ImageRenderer on macOS (headless taste gate) and on iOS.
+            resources: [.process("Resources")]
         ),
         // macOS-only snapshot renderer. Uses SwiftUI ImageRenderer so the design
         // system can be judged as images on a box with no Xcode and no window.

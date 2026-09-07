@@ -286,13 +286,25 @@ Consumer rules, in one line each:
 | Screen | Components it composes |
 |---|---|
 | Entrance (`MQEntranceScreen`) | `MQWorld` · **`MQBeachCamp`** · `MQHeroToken` x N+1 (depth-staggered) · `MQTag` (parent line) · `mqDrawCrystal` (title crystals) |
-| Island map (`MQMapScreen`) | `MQWorld` via `MQIslandMap` · `MQMapMarker` per node · `MQCreature` ("you are here") · `MQKnob(.back)` · `MQNameTag` |
+| Island map (`MQMapScreen`) | `MQWorld` via `MQIslandMap` · `MQMapMarker` per node · `MQCreature` ("you are here", clamped to the glass and clear of the post) · `MQKnob(.back)` · **`MQPlankButton` (the Patchwerk entry)** · `MQNameTag` |
+| New explorer (`MQNewExplorerScreen`) | `MQWorld` · `MQBeachCamp` · a carved disc + `MQCreature` x3 · a class plank x4 · `MQPlankButton` x2 |
 | Quest battle (`MQBattleScreen`) | `MQWorld` · `MQNameTag` · `MQCrystalRope` · `MQLantern` · `MQKnob(.pause)` · `MQSign` + **`MQQuestionText`** + `MQFigureView` · `MQGauge` x2 · `MQMonsterName` · `MQCreature` x2 · `MQAnswerTile` x4 |
 | Result (`MQResultScreen`) | `MQWorld` · `MQTag` (stat grid) · `MQScroll` + **`MQQuestionText`** + `MQFigureView` per review row · `MQCreature` x2 · `MQPlankButton` x3 |
-| Patchwerk (`MQPatchwerkScreen`) | `MQWorld` · `MQRail` · `MQHourglass` · `MQCarvedNumber` · `MQStackSpar` · `MQFreezePips` · `MQKnob(.pause)` · `MQGauge(.boss)` · `MQSign` + **`MQQuestionText`** + `MQFigureView` · `MQCrab(lit:)` · `MQAnswerTile` x4 |
+| Patchwerk (`MQPatchwerkScreen`) | `MQWorld` · `MQRail` · `MQHourglass` · `MQCarvedNumber` · `MQStackSpar` · `MQFreezePips` · `MQKnob(.pause)` · `MQGauge(.boss)` · `MQSign` + **`MQQuestionText`** + **`MQFigures`** · `MQCrab(lit:)` · **either `MQAnswerTile` x4 OR `MQAnswerSlot` + `MQUnitChipRow` + `MQKeypad`** |
 
-Screens not yet drawn and who owns them: pause sheet (MQQuest), profile creation
-(MQApp), Patchwerk tier picker (MQPatchwerk), Game Center leaderboard (MQServices).
+**ONE QUESTION SURFACE, BOTH MODES** (rehearsal fix pass, 2026-09-07). `MQFigures` (was
+`MQQuest.QFigureView`) draws all eight figure kinds and `MQFigureView` draws two; the
+battle, the review row and the Patchwerk arena all go through `MQFigures`. The typed
+surface - `MQTypedEntry`, `MQUnits`, `MQAnswerSlot`, `MQUnitChipRow`, `MQKeypad` - moved
+into MQDesign for the same reason. This mirrors `js/app.js`, where `nextQuestion()` is the
+one surface every mode's feed goes through. Patchwerk drew neither before: 50 of 150 items
+in a real run reached four blank planks, and 35 figures went undrawn.
+
+Screens not yet drawn and who owns them: pause sheet (MQQuest), Patchwerk tier picker
+(MQPatchwerk), Game Center leaderboard (MQServices). **Profile creation is drawn** -
+`MQNewExplorerScreen` - because the `+` token did nothing at all and a parent on a fresh
+install could not start; MQApp may replace it with a fuller editor (a name field, rename,
+delete), but not with a dead control.
 
 ## 5. Gate commands
 
@@ -300,7 +312,7 @@ Screens not yet drawn and who owns them: pause sheet (MQQuest), profile creation
 cd ios
 swift build                 # every module in the tree
 ./test.command              # THE gate: 401 executed tests, floor in gate-floor.txt
-swift run mqdesign-snap     # DEVICE MATRIX: 12 sizes x 7 screens, PNGs + slack table
+swift run mqdesign-snap     # DEVICE MATRIX: 12 sizes x 9 screens, PNGs + slack table
 ```
 
 At the repository root, and part of the same gate:

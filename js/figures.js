@@ -15,11 +15,16 @@
  *   - EVERY number the child needs is printed as on-screen TEXT. Nothing rides
  *     in a data-* attribute: the harness oracle parses what is drawn, so a
  *     figure that stops printing a value fails the gate rather than the child.
+ *   - THE PICTURE MATCHES THE DOC. js/topics/README.md is the contract a SwiftUI
+ *     author writes from; where this file draws something the doc does not
+ *     describe, the doc is the bug and so is this file. `rect` was killed on
+ *     exactly that (2026-09-07) and is now genuinely to scale.
  *   - The refuter fixes are carried HERE now, and the comments travel with them:
  *     line-graph value labels sit level with their OWN gridline; the last line
  *     label flips left of its dot; the table scrolls in place at phone width;
  *     the pie legend prints every sector's value a second time and sectors are
- *     drawn strictly proportional to their weights.
+ *     drawn strictly proportional to their weights; rect uses one px-per-unit
+ *     on both axes.
  *
  * Load order: AFTER js/core.js (core.js assigns `window.MQI` wholesale), before
  * js/app.js. In the harness: core.js, then js/figures.js, then js/topics/*.js.
@@ -72,21 +77,75 @@
 
   /* ---------------- rect: a labelled rectangle (geometry, P3) ----------------
    * { type:'rect', length, breadth, unit }
-   * Breadth is printed inside the box, length underneath it. The box is drawn to
-   * scale within caps so a 12 cm side never runs off a phone. */
+   *
+   * KILL FIX K2 (Figure Spec Refutation, 2026-09-07). The old rect was NOT to
+   * scale: 20 px per unit horizontally but 16 px per unit vertically, with the
+   * height floored at 34 and capped at 110 independently of the width's cap of
+   * 240. 78.9% of the rect draws the generators can make carried >20% aspect
+   * error and EVERY square drew as a wide box - 12x12 cm rendered 240x110 px,
+   * 2.18:1, and `refute/revy-a.png` caught a 4 cm x 4 cm square drawn visibly
+   * wider than tall on the live review screen. The README said "drawn to scale",
+   * so a SwiftUI MQFigures written from the doc alone would draw a materially
+   * different picture - the exact failure the figure-spec contract exists to
+   * prevent.
+   *
+   * The rule now, and it is the one written in js/topics/README.md:
+   *
+   *     s = min(20, 240 / length, 130 / breadth)      px per unit
+   *     w = length * s      h = breadth * s           (border-box)
+   *
+   * ONE scale on BOTH axes, so the drawn aspect always equals length : breadth
+   * exactly. 20 px/unit is the natural size; 240 px and 130 px are the caps, and
+   * whichever side hits its cap first pulls the other down with it, so capping
+   * never distorts. `box-sizing:border-box` is load-bearing: without it the 3 px
+   * border adds 6 px to each axis and a square stops measuring square.
+   *
+   * Sanity of the caps: 12x12 -> s = 10.83, 130x130 px, square. 40x3 -> s = 6,
+   * 240x18 px, which with the wrapper's 8 + 56 px padding is 304 px and still
+   * fits a 390 px phone card.
+   *
+   * Labels: breadth OUTSIDE the box at its right edge (the old comment here said
+   * "inside the box" and was simply wrong - .rectLabelB is right:-4px with
+   * translate(100%,-50%), i.e. outside; the README was the correct one, and the
+   * 56 px right padding on the wrapper is the room it needs). Length is centred
+   * UNDERNEATH the box, on the box's own width.
+   *
+   * WOUND 8: this renderer used to carry no styling at all - its geometry lived
+   * in index.html's `.rectBox` / `.rectLabelB` / `.rectLabelL` rules, so
+   * js/figures.js was not the "reference drawing" the contract calls it. Every
+   * declaration is now inline here and those three CSS rules are gone from
+   * index.html. The class names stay: they are how a reader and a refuter find
+   * the parts. (fractionBar keeps its rules in index.html on purpose - see
+   * FIGURE_CSS at the foot of this file, which is gated against them.) */
+  const RECT_MAXW = 240, RECT_MAXH = 130, RECT_PXU = 20;   /* px caps, px per unit */
+
   function rect(f) {
     const L = f.length, B = f.breadth, unit = f.unit || 'cm';
-    const w = Math.min(240, L * 20), h = Math.max(34, Math.min(110, B * 16));
+    const s = Math.min(RECT_PXU, RECT_MAXW / L, RECT_MAXH / B);
+    const w = +(L * s).toFixed(1), h = +(B * s).toFixed(1);
     return '<div style="display:inline-block;padding:0 56px 0 8px">' +
-      '<div class="rectBox" style="width:' + w + 'px;height:' + h + 'px"><span class="rectLabelB">' +
-      B + ' ' + unit + '</span></div>' +
-      '<div class="rectLabelL" style="width:' + w + 'px">' + L + ' ' + unit + '</div></div>';
+      '<div class="rectBox" style="width:' + w + 'px;height:' + h + 'px;box-sizing:border-box;' +
+      'border:3px solid #6ee7f9;border-radius:6px;background:rgba(110,231,249,.12);' +
+      'display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;' +
+      'font-size:13px;color:#9ef0ff;font-weight:700">' +
+      '<span class="rectLabelB" style="position:absolute;right:-4px;top:50%;' +
+      'transform:translate(100%,-50%);padding-left:6px">' + B + ' ' + unit + '</span></div>' +
+      '<div class="rectLabelL" style="width:' + w + 'px;text-align:center;color:#9ef0ff;' +
+      'font-weight:700;font-size:13px;margin-top:4px">' + L + ' ' + unit + '</div></div>';
   }
 
   /* ---------------- fractionBar: the P3 bar model ----------------
    * { type:'fractionBar', parts, filled }
    * `parts` equal segments, the first `filled` of them shaded. The oracle counts
-   * `class="seg fill"` off this markup, so the class names are load-bearing. */
+   * `class="seg fill"` off this markup, so the class names are load-bearing.
+   *
+   * WOUND 8: unlike the other six this renderer emits no inline style, because a
+   * segment's width is deliberately RESPONSIVE - clamp(28px, 6vw, 46px) - which
+   * is a stylesheet job, not a string-building one. So its geometry stays in
+   * index.html and is published here instead as FIGURE_CSS (foot of this file),
+   * which tools/gen-sanity.mjs asserts verbatim against index.html. That is the
+   * "documented stylesheet block": one source of truth, gated, and a Swift
+   * author reads the numbers off FIGURE_CSS without opening index.html. */
   function fractionBar(f) {
     let bar = '<div class="barModel">';
     for (let i = 0; i < f.parts; i++) bar += '<div class="seg' + (i < f.filled ? ' fill' : '') + '"></div>';
@@ -262,6 +321,26 @@
       '<div style="margin-top:6px;font-size:.85em;color:#475569">' + f.caption + '</div></div>';
   }
 
+  /* ---------------- the documented stylesheet block (WOUND 8) ----------------
+   * Six of the seven renderers are self-contained: every declaration they need is
+   * inline in the string they build, so this file IS the reference drawing the
+   * contract claims it is. `fractionBar` is the one exception - a segment's width
+   * is responsive (`6vw`), which cannot be expressed as a fixed inline value - so
+   * its three rules live in index.html's stylesheet and are declared HERE, in the
+   * renderer, as the contract.
+   *
+   * tools/gen-sanity.mjs asserts each selector/body below appears verbatim (modulo
+   * whitespace) in index.html, so the two can never drift apart in silence. A
+   * native renderer reads the geometry off this constant: 3 px gap, segments
+   * centred, each segment 28-46 px wide (6% of viewport width) and 34 px tall,
+   * 2.5 px white border, 6 px radius, unfilled at 6% white, filled with a vertical
+   * #6ee7f9 -> #3aa7ff gradient. */
+  const FIGURE_CSS = {
+    '.barModel': 'display:flex; gap:3px; justify-content:center;',
+    '.barModel .seg': 'width:clamp(28px,6vw,46px); height:34px; border:2.5px solid #fff; border-radius:6px; background:rgba(255,255,255,.06);',
+    '.barModel .seg.fill': 'background:linear-gradient(180deg,#6ee7f9,#3aa7ff);'
+  };
+
   /* ---------------- the registry ---------------- */
 
   const RENDERERS = { bar, rect, fractionBar, lshape, table, line, pie };
@@ -277,5 +356,6 @@
   const MQI = root.MQI = root.MQI || {};
   MQI.renderFigure = renderFigure;
   MQI.figureTypes = Object.keys(RENDERERS);
+  MQI.figureCss = FIGURE_CSS;
 
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -127,15 +127,19 @@
   .frac .n { padding:0 6px; }
   .frac .d { padding:0 6px; border-top:3px solid currentColor; }
 
+  /* The fractionBar figure. These three rules are the ONE piece of figure geometry
+     that is not inline in js/figures.js, because a segment's width is responsive
+     (6vw) and cannot be a fixed inline value. js/figures.js publishes them verbatim
+     as MQI.figureCss and tools/gen-sanity.mjs asserts the two match, so editing
+     either one alone turns npm test red. (Figure Spec Refutation wound 8.) */
   .barModel { display:flex; gap:3px; justify-content:center; }
   .barModel .seg { width:clamp(28px,6vw,46px); height:34px; border:2.5px solid #fff; border-radius:6px; background:rgba(255,255,255,.06); }
   .barModel .seg.fill { background:linear-gradient(180deg,#6ee7f9,#3aa7ff); }
 
-  .rectBox { border:3px solid #6ee7f9; border-radius:6px; background:rgba(110,231,249,.12);
-             display:flex; align-items:center; justify-content:center; margin:0 auto;
-             font-size:13px; color:#9ef0ff; font-weight:700; position:relative; }
-  .rectLabelB { position:absolute; right:-4px; top:50%; transform:translate(100%,-50%); padding-left:6px; }
-  .rectLabelL { text-align:center; color:#9ef0ff; font-weight:700; font-size:13px; margin-top:4px; }
+  /* .rectBox / .rectLabelB / .rectLabelL used to live here. They are inline in
+     js/figures.js now (Figure Spec Refutation wound 8: the renderer has to be the
+     reference drawing, and half of rect's geometry sitting in this file meant it
+     was not). Do not re-add them - rect's scale rule is derived per draw. */
 
   #answers { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-bottom:8px; }
   .ansBtn {

@@ -904,16 +904,33 @@ function autoplayHook(){
       const t=p.get('topic');
       /* find=<substring> redraws until a question whose rendered stem contains that
          substring comes up, so a gate can screenshot ONE named item type rather than
-         whatever pool 1 happens to hand over first. Capped, and inert in production. */
+         whatever pool 1 happens to hand over first. Capped, and inert in production.
+
+         WOUND 5 (Figure Spec Refutation, 2026-09-07). This was written up as "does
+         not work"; it is a 50 ms race. newGame() ends with setTimeout(nextQuestion,
+         300), so the find loop - scheduled at +250 ms - ran its 900 draws and was
+         then OVERWRITTEN by that deferred first draw 50 ms later, and the gate
+         always screenshotted a random item. Rather than swap one magic delay for a
+         bigger one, wait for the first draw to actually land (Q goes non-null) and
+         sweep only then: deterministic on a slow machine too.
+
+         Side effect worth keeping in the gate playbook: the loop leaves S.level = 3,
+         so find=<a string that never matches> is a working live-play route to pool
+         3 - a pool-3 figure can be shot from the real app with no bench page. */
       const find=p.get('find');
       if(t && TOPICS[t]){ TOPIC=t; setTimeout(()=>{
         newGame();
-        if(find){ setTimeout(()=>{
-          for(let k=0;k<900 && (!Q || Q.q.indexOf(find)===-1);k++){
-            if(S) S.level = 1 + (k % 3);   /* sweep all three pools, not just pool 1 */
-            nextQuestion();
-          }
-        }, 250); }
+        if(find){
+          Q=null;   /* newGame() does not clear it; the wait below keys off it */
+          const sweep=()=>{
+            for(let k=0;k<900 && (!Q || Q.q.indexOf(find)===-1);k++){
+              if(S) S.level = 1 + (k % 3);   /* sweep all three pools, not just pool 1 */
+              nextQuestion();
+            }
+          };
+          const afterFirstDraw=n=>{ if(Q || n>40){ sweep(); return; } setTimeout(()=>afterFirstDraw(n+1),25); };
+          afterFirstDraw(0);
+        }
       },150); }
     }
     return;

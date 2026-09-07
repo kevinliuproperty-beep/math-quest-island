@@ -42,8 +42,17 @@
     const maxU = f.maxUnit;
     const x = k => Math.round(k / maxU * BAR_PLOTW);
 
+    /* WOUND 4 (Figure Spec Refutation, 2026-09-07): `.bargraph` was the only one of the
+       seven renderers with no max-width, so at a 390 px viewport its intrinsic ~450 px
+       ran past the card and 100% of bar graphs lost the tallest bar's printed value.
+       `line`, `table` and `pie` all already carried max-width:100%. NOTE: this is inert
+       on its own - the page itself still overflows at 390 px (avatar row, answer grid,
+       card), so max-width:100% resolves against a box that is already wider than the
+       screen. That page-level 390 px layout fix is ITS OWN packet and is deliberately
+       not chased here. */
     let html = '<div class="bargraph" style="text-align:left;font-size:13px;line-height:1.3;' +
-      'color:#0f172a;background:#fff;padding:10px 12px 6px;border-radius:8px;display:inline-block">' +
+      'color:#0f172a;background:#fff;padding:10px 12px 6px;border-radius:8px;display:inline-block;' +
+      'max-width:100%;overflow-x:auto">' +
       '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>' +
       '<div style="position:relative;padding-left:' + BAR_LBL + 'px">' +
       '<div style="position:absolute;left:' + BAR_LBL + 'px;top:0;bottom:0;width:' + BAR_PLOTW + 'px">';

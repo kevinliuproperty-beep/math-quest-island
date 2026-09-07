@@ -1798,14 +1798,40 @@ const manifestRows = [];
   /* Same seam, one layer deeper: js/figures.js draws EVERY diagram in the game, so
      if it drops out of the manifest the app renders empty figure slots and the
      harness would still be green - it loads the renderer off disk. It must be
-     listed, and it must be listed AFTER js/core.js (core.js assigns window.MQI
-     wholesale, so a renderer loaded first would be thrown away). */
+     listed, and its position must be a TOTAL order, not a partial one.
+
+     WOUND 2 (Figure Spec Refutation, 2026-09-07): this checked only iFig > iCore,
+     so moving js/figures.js AFTER js/app.js and js/boot.js passed while the failure
+     message claimed to prove the load order. Harmless in fact - figHtml() resolves
+     MQI.renderFigure at call time - but a gate that does not prove its own message
+     is not a gate. The renderer must sit strictly between core.js (which assigns
+     window.MQI wholesale, so a renderer loaded first is thrown away) and app.js +
+     boot.js (which are the consumers). */
   const iCore = html.indexOf('"js/core.js"'), iFig = html.indexOf('"js/figures.js"');
-  const figOk = iFig > 0 && iCore > 0 && iFig > iCore;
-  manifestRows.push({ rel: 'js/figures.js', ok: figOk, note: figOk ? ''
-    : (iFig < 0 ? 'NOT referenced by index.html - every figure would render blank'
-                : 'listed BEFORE js/core.js - core.js would overwrite MQI.renderFigure') });
+  const iApp = html.indexOf('"js/app.js"'), iBoot = html.indexOf('"js/boot.js"');
+  let figNote = '';
+  if (iFig < 0) figNote = 'NOT referenced by index.html - every figure would render blank';
+  else if (iCore < 0 || iApp < 0 || iBoot < 0) figNote = 'js/core.js, js/app.js or js/boot.js is missing from the manifest';
+  else if (iFig < iCore) figNote = 'listed BEFORE js/core.js - core.js would overwrite MQI.renderFigure';
+  else if (iFig > iApp || iFig > iBoot) figNote = 'listed AFTER js/app.js or js/boot.js - the renderer must load before its consumers';
+  const figOk = figNote === '';
+  manifestRows.push({ rel: 'js/figures.js', ok: figOk, note: figNote });
   if (!figOk) failures++;
+
+  /* WOUND 8, second half. Six of the seven renderers are self-contained; fractionBar
+     cannot be, because a segment's width is responsive (6vw). js/figures.js declares
+     those rules as MQI.figureCss - the "documented stylesheet block" a SwiftUI author
+     reads instead of index.html - and they are asserted verbatim here so the renderer
+     and the stylesheet can never drift apart in silence. */
+  const squash = s => String(s).replace(/\s+/g, '');
+  const cssHtml = squash(html);
+  for (const [sel, body] of Object.entries(ctx.MQI.figureCss || {})) {
+    const want = squash(sel + '{' + body + '}');
+    const ok = cssHtml.indexOf(want) >= 0;
+    manifestRows.push({ rel: 'figureCss ' + sel, ok, note: ok ? ''
+      : 'js/figures.js MQI.figureCss and index.html disagree - the fractionBar geometry has drifted from its documented block' });
+    if (!ok) failures++;
+  }
 }
 
 /* ---------- report ---------- */

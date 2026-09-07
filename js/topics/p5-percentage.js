@@ -27,6 +27,15 @@
     return out;
   }
 
+  /* TYPED UNITS. Every finishTyped here declares the unit its stem asks for ('%'
+     or '$'), so gradeTyped REJECTS a wrong one: a typed question that declares no
+     unit accepts ANY token off the shared TYPED_UNITS list, so "30 kg" graded
+     CORRECT on "What percentage...?" (Dress Rehearsal Phase 0, 2026-09-07). A
+     bare number is still accepted, as always. answerText is re-rendered tight
+     ("$80", "30%") rather than finishTyped's default "80 $" / "30 %". */
+  const asMoney   = (q, n) => (q.answerText = '$' + n, q);
+  const asPercent = (q, n) => (q.answerText = n + '%', q);
+
   function gPartAsPercent(){
     /* whole x pct must land on a whole number of children: pair them explicitly. */
     /* Wholes stay at classroom/cohort size: a "group of 500" that 4% of wear
@@ -38,9 +47,10 @@
     const c = pick(CASES), whole = c[0], pct = pick(c[1]);
     const part = whole * pct / 100;
     const grp = pick(CLASSY);
-    return finishTyped('There are ' + whole + ' ' + grp + '. ' + part +
+    return asPercent(finishTyped('There are ' + whole + ' ' + grp + '. ' + part +
       ' of them wear spectacles. What percentage of them wear spectacles? (answer in %, e.g. 35)', pct,
-      part + ' out of ' + whole + ' is ' + part + '/' + whole + '. Multiply by 100 to get a percentage: ' + pct + '%.');
+      part + ' out of ' + whole + ' is ' + part + '/' + whole + '. Multiply by 100 to get a percentage: ' + pct + '%.',
+      '%'), pct);
   }
   function gPercentOfWhole(){
     const whole = pick([40, 60, 80, 120, 200, 300, 400]);
@@ -56,9 +66,10 @@
     const pct = pick([10, 20, 30, 40, 60]);
     const ans = whole * pct / 100;
     const who = pick(NAMES);
-    return finishTyped(who + ' saves ' + pct + '% of the $' + whole +
+    return asMoney(finishTyped(who + ' saves ' + pct + '% of the $' + whole +
       ' collected at the class food sale. How many dollars does ' + who + ' save? (in dollars, e.g. 25)', ans,
-      pct + '% of $' + whole + ' is ' + pct + '/100 x ' + whole + ' = $' + ans + '.');
+      pct + '% of $' + whole + ' is ' + pct + '/100 x ' + whole + ' = $' + ans + '.',
+      '$'), ans);
   }
   function gDiscount(){
     const price = pick([40, 60, 80, 120, 150, 200, 250]);
@@ -77,18 +88,20 @@
     const gst = price * 9 / 100;
     const ans = price + gst;
     const item = pick(GOODS);
-    return finishTyped('The price of ' + item + ' before GST is $' + price +
+    return asMoney(finishTyped('The price of ' + item + ' before GST is $' + price +
       '. GST is 9%. How many dollars must be paid in total? (in dollars, e.g. 327)', ans,
-      'GST is 9% of $' + price + ' = $' + gst + '. Total to pay = $' + price + ' + $' + gst + ' = $' + ans + '.');
+      'GST is 9% of $' + price + ' = $' + gst + '. Total to pay = $' + price + ' + $' + gst + ' = $' + ans + '.',
+      '$'), ans);
   }
   function gInterest(){
     const sum = pick([1000, 2000, 3000, 4000, 5000]);
     const rate = pick([2, 3, 4, 5]);
     const ans = sum * rate / 100;
     const who = pick(NAMES);
-    return finishTyped(who + ' puts $' + sum + ' into a POSB account that pays ' + rate +
+    return asMoney(finishTyped(who + ' puts $' + sum + ' into a POSB account that pays ' + rate +
       '% interest a year. How many dollars of interest is earned in one year? (in dollars, e.g. 60)', ans,
-      rate + '% of $' + sum + ' is ' + rate + '/100 x ' + sum + ' = $' + ans + '.');
+      rate + '% of $' + sum + ' is ' + rate + '/100 x ' + sum + ' = $' + ans + '.',
+      '$'), ans);
   }
 
   MQI.registerTopic({

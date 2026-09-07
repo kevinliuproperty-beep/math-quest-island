@@ -233,11 +233,28 @@ struct EngineBridgeTests {
         let wrongUnit = try await e.grade(question: q, answer: .typed("\(n) cm"))
         #expect(wrongUnit.parsed?.ok == true, "\"\(n) cm\" parses fine; it is the UNIT that is wrong")
         #expect(wrongUnit.parsed?.unit == "cm")
-        #expect(wrongUnit.reason == "wrong value or unit")
+        // The reason SPLITS: the number was right, so this is not "wrong-value".
+        // A view that cannot tell those apart can only ever say "wrong" to the child.
+        #expect(wrongUnit.reason == "wrong-unit")
+        #expect(wrongUnit.reasonKind == .wrongUnit)
+        #expect(wrongUnit.isWrongUnit)
+
+        // ...and the other half of the split, on the same question: a wrong NUMBER
+        // carrying the right unit is never "wrong-unit".
+        let wrongValue = try await e.grade(question: q, answer: .typed("\(n)7 cm\u{00B2}"))
+        #expect(wrongValue.correct == false)
+        #expect(wrongValue.reason == "wrong-value")
+        #expect(wrongValue.reasonKind == .wrongValue)
+        #expect(wrongValue.isWrongUnit == false)
+
+        // An unknown reason must decode, not throw: .other keeps the raw text.
+        #expect(Verdict.Reason(raw: "brand new reason") == .other("brand new reason"))
+        #expect(Verdict.Reason(raw: "wrong-unit").rawValue == "wrong-unit")
 
         let empty = try await e.grade(question: q, answer: .typed(""))
         #expect(empty.parsed?.ok == false)
         #expect(empty.reason == "empty")
+        #expect(empty.reasonKind == .empty)
     }
 
     /// Money answers are decimals; `parseInt("4.75") === 4` once marked every correct

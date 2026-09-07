@@ -10,6 +10,11 @@
  * surface the app does not have.
  * All answers are positive whole numbers, so finishNum keeps the authored
  * distractors (rubric lesson 4) and no typed answer is a decimal.
+ * TYPED UNITS: every finishTyped here declares its answer's unit as the 4th
+ * argument, so gradeTyped rejects a wrong one. Three of them declare an ARRAY of
+ * EQUIVALENT units, because on this topic two spellings really are the same
+ * quantity - see "1 ml = 1 cm³" below. The first member is canonical and is what
+ * the answer card prints.
  */
 (function () {
   const G = MQI.gen;
@@ -20,6 +25,22 @@
   /* No authored distractor may collapse onto the correct answer: finishNum drops it
      silently and pads with correct+1 giveaways. Filter, and redraw if fewer than 3
      real misconceptions survive (6 x s² equals s³ at s = 6, for instance). */
+  /* EQUIVALENT UNITS. finishTyped's 4th argument takes an ARRAY when two spellings
+     name the SAME quantity; gradeTyped accepts any member and the FIRST is what the
+     answer card prints. 1 ml IS 1 cm³ - these stems print that identity themselves
+     ("(1 ml = 1 cm³)"), and gTankLitres' own explanation says "Volume = 25 x 20 x 11
+     = 5500 cm³, and 1 cm³ = 1 ml, so it is 5500 ml". Declaring one unit made the
+     game assert the equality and mark it wrong in the same breath: a child who
+     writes 5500 cm3 there has done the arithmetic AND understood the identity
+     (Unit Sweep Refutation W2, 2026-09-07 - the only correct-value regression the
+     unit sweep caused). The canonical member is still the unit the stem asks for,
+     so the conversion is still what the item teaches.
+
+     gUnitCubes was the unit sweep's one opt-out, and the array retires it: its
+     answer is a count of 1 cm cubes, so "48 cubes" and "48 cm³" are the same
+     quantity written two ways and BOTH are right, while "48 kg" - which the
+     opt-out kept accepting - is now rejected (Unit Sweep Refutation W3). */
+
   function clean(correct, list){
     const out = [];
     for (const c of list) if (c > 0 && Number.isInteger(c) && Math.abs(c - correct) > 3 && !out.includes(c)) out.push(c);
@@ -47,7 +68,8 @@
     return finishTyped(who + ' builds a solid ' + l + ' cubes long, ' + w + ' cubes wide and ' + h +
       ' cubes high from 1 cm cubes. How many unit cubes are used?', n,
       'Each layer uses ' + l + ' x ' + w + ' = ' + (l * w) + ' cubes and there are ' + h + ' layers, so ' +
-      (l * w) + ' x ' + h + ' = ' + n + ' cubes.');
+      (l * w) + ' x ' + h + ' = ' + n + ' cubes.',
+      ['cubes', 'cm³']);
   }
   function gLitresToCm3(){
     /* ml was banded 11-99, so a round "3 l 500 ml" could never appear even though
@@ -55,14 +77,16 @@
     const l = ri(1, 9), ml = pick([ri(1, 9) * 10 + ri(1, 9), ri(1, 9) * 100, ri(1, 99) * 10, ri(2, 999)]);
     const v = l * 1000 + ml;
     return finishTyped(l + ' ℓ ' + ml + ' ml of barley water is poured into a tank. How many cm³ is that? (1 ml = 1 cm³)', v,
-      '1 ml is exactly 1 cm³, and 1 ℓ = 1000 ml. So ' + l + ' ℓ ' + ml + ' ml = ' + v + ' ml = ' + v + ' cm³.');
+      '1 ml is exactly 1 cm³, and 1 ℓ = 1000 ml. So ' + l + ' ℓ ' + ml + ' ml = ' + v + ' ml = ' + v + ' cm³.',
+      ['cm³', 'ml']);
   }
   function gTankLiquid(){
     const l = pick([10, 15, 20, 25, 30]), w = pick([10, 12, 20, 25]), d = ri(2, 12);
     const cm3 = l * w * d;
     return finishTyped('A rectangular tank has a base ' + l + ' cm by ' + w + ' cm. Water is poured in to a depth of ' +
       d + ' cm. What is the volume of the water, in cm³?', cm3,
-      'The water is a cuboid: ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³.');
+      'The water is a cuboid: ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³.',
+      ['cm³', 'ml']);
   }
   function gTankLitres(){
     const l = pick([10, 20, 25, 50]), w = pick([10, 20, 40]), d = ri(2, 12);
@@ -70,7 +94,8 @@
     const who = pick(NAMES);
     return finishTyped(who + ' fills a rectangular tank with a base ' + l + ' cm by ' + w +
       ' cm to a depth of ' + d + ' cm. How many millilitres of water is that? (1 cm³ = 1 ml)', cm3,
-      'Volume = ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³, and 1 cm³ = 1 ml, so it is ' + cm3 + ' ml.');
+      'Volume = ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³, and 1 cm³ = 1 ml, so it is ' + cm3 + ' ml.',
+      ['ml', 'cm³']);
   }
 
   MQI.registerTopic({

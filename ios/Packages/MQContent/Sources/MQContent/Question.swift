@@ -48,10 +48,32 @@ public struct Question: Codable, Hashable, Sendable, Identifiable {
     public let answerTextPlain: String
     public let explain: String
     public let explainText: String
-    /// The unit the stem asks for (`"cm2"`, `"min"`, `"pages"`). Empty when the answer
-    /// is a bare count. Never used by Swift to grade - it is here so a keypad can show
-    /// the unit beside the field.
+    /// The CANONICAL unit the stem asks for (`"cm2"`, `"min"`, `"pages"`). Empty when
+    /// the answer is a bare count. Never used by Swift to grade - it is here so a keypad
+    /// can show the unit beside the field. When the question accepts a SET of equivalent
+    /// spellings this is the first member; `units` carries the whole set.
     public let unit: String
+
+    /// EVERY unit this question accepts, canonical first.
+    ///
+    /// `q.unit` in the engine may be a string or an array of equivalents (`['cm³','ml']`
+    /// - 1 ml IS 1 cm³, and `p5volume`'s own stem says so). `unit` above is only the
+    /// canonical member, so a client that builds a unit chooser from it offers an
+    /// accepted equivalent as a WRONG-unit distractor and teaches a falsehood the app
+    /// itself contradicts (Quest Refutation K3/K7, 2026-09-07). `key` is opaque to
+    /// Swift, so the set is published as its own field.
+    ///
+    /// Optional so a payload recorded before this field existed still decodes; prefer
+    /// `acceptedUnits`, which falls back to `[unit]`.
+    public let units: [String]?
+
+    /// Every unit the grader would accept on this question, canonical first, and empty
+    /// when the answer is a bare number. **This is the list a unit chooser must consult**
+    /// - never `unit` alone.
+    public var acceptedUnits: [String] {
+        if let units, !units.isEmpty { return units }
+        return unit.isEmpty ? [] : [unit]
+    }
 
     /// The engine's grading key, carried opaquely and handed straight back to
     /// `grade`. Swift must not interpret it: see `JSONValue`.
@@ -166,9 +188,75 @@ public struct Verdict: Codable, Hashable, Sendable {
     public let expectedIndex: Int
     public let expectedText: String
     public let chosenIndex: Int
-    /// Why it was wrong, in engine words (`"wrong option"`, `"wrong value or unit"`,
-    /// `"not a number"`, `"empty"`). Nil when correct.
+    /// Why a wrong answer was wrong, as a case rather than a string to match on.
+    ///
+    /// `wrongUnit` is the one the child's card turns on: the NUMBER was right and
+    /// only the unit rejected it ("300 cm" on a cm² answer). The engine used to
+    /// return one string, `"wrong value or unit"`, for both halves, so a view built
+    /// on this could only ever say "wrong" - the wound the Unit Sweep Refutation
+    /// found on the web card, inherited (Unit Sweep Refutation W1, 2026-09-07).
+    ///
+    /// **Unknown reasons stay legal.** A reason this enum has never heard of decodes
+    /// as `.other(raw)` and keeps its text; it is never an error, and `Verdict.reason`
+    /// carries the raw string regardless. A verdict must survive an engine that
+    /// learned a new word.
+    public enum Reason: Hashable, Sendable {
+        /// The value is right; the unit is not.
+        case wrongUnit
+        /// The number itself is wrong.
+        case wrongValue
+        /// A multiple-choice answer picked the wrong option.
+        case wrongOption
+        /// No option was chosen / no answer given.
+        case noAnswer
+        /// The chosen text matched no option.
+        case noSuchChoice
+        /// Nothing was typed.
+        case empty
+        /// What was typed did not parse as a number.
+        case notANumber
+        /// Anything the engine says that this enum does not know yet.
+        case other(String)
+
+        public init(raw: String) {
+            switch raw {
+            case "wrong-unit":      self = .wrongUnit
+            case "wrong-value":     self = .wrongValue
+            case "wrong option":    self = .wrongOption
+            case "no answer given": self = .noAnswer
+            case "no such choice":  self = .noSuchChoice
+            case "empty":           self = .empty
+            case "not a number":    self = .notANumber
+            default:                self = .other(raw)
+            }
+        }
+
+        public var rawValue: String {
+            switch self {
+            case .wrongUnit:    return "wrong-unit"
+            case .wrongValue:   return "wrong-value"
+            case .wrongOption:  return "wrong option"
+            case .noAnswer:     return "no answer given"
+            case .noSuchChoice: return "no such choice"
+            case .empty:        return "empty"
+            case .notANumber:   return "not a number"
+            case .other(let s): return s
+            }
+        }
+    }
+
+    /// Why it was wrong, in engine words (`"wrong option"`, `"wrong-unit"`,
+    /// `"wrong-value"`, `"not a number"`, `"empty"`). Nil when correct.
+    /// Prefer `reasonKind` to match on it.
     public let reason: String?
+
+    /// `reason` as a case. Nil when the verdict is correct (or carries no reason);
+    /// an unrecognised reason is `.other(raw)`, never an error.
+    public var reasonKind: Reason? { reason.map(Reason.init(raw:)) }
+
+    /// True when the child's NUMBER was right and only the unit rejected the answer -
+    /// the cue for "Your number was right, the unit should be cm²" rather than "wrong".
+    public var isWrongUnit: Bool { reasonKind == .wrongUnit }
     /// Present for typed answers: how the JS grader read what the child typed.
     public let parsed: Parsed?
     public let typedRaw: String?

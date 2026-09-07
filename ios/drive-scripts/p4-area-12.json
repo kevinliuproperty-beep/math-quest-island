@@ -1,0 +1,19 @@
+{
+  "name": "p4-area-12",
+  "seed": 20260907,
+  "device": "ipad97-landscape",
+  "profile": { "name": "Charlotte", "cast": "unicorn", "level": "P4" },
+  "node": "p4area",
+  "items": 12,
+  "palette": "noon",
+  "scale": 1,
+  "strategies": [
+    "always-correct", "always-correct", "always-correct",
+    "wrong-unit",
+    "always-correct", "always-correct",
+    "always-wrong",
+    "wrong-unit",
+    "always-correct", "always-correct", "always-correct",
+    "random"
+  ]
+}

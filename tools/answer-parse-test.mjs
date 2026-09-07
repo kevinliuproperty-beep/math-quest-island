@@ -135,7 +135,72 @@ const CASES = [
   ['2 1/4 cm',  { answer: 2.25, fracAnswer: [9, 4], unit: 'cm' }, true, 'W2: mixed number carrying its unit'],
   ['1 1/0',     { answer: 1.5, fracAnswer: [3, 2] }, false, 'W2: mixed number over zero'],
   ['1 1',       plain, false, 'W2: two bare numbers is not a mixed number'],
-  ['3 3/4',     { answer: 0.75, fracAnswer: [3, 4] }, false, 'W2: whole part must count']
+  ['3 3/4',     { answer: 0.75, fracAnswer: [3, 4] }, false, 'W2: whole part must count'],
+
+  /* ================= UNIT SWEEP REFUTATION (2026-09-07) ================= */
+  /* --- W2: EQUIVALENT UNITS. q.unit may be an ARRAY; any member is accepted, the
+         FIRST is canonical. 1 ml IS 1 cm³ and the three p5volume stems print that
+         identity themselves, so declaring one of the pair rejected a child who had
+         done the arithmetic AND understood the identity. --- */
+  ['3170 cm³',  { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2: the canonical member'],
+  ['3170 cm3',  { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2: ascii spelling of the canonical member'],
+  ['3170 ml',   { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2 THE REGRESSION: ml on a cm³ answer, 1 ml = 1 cm³'],
+  ['3170 mL',   { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2: mL aliases to ml'],
+  ['3170',      { answer: 3170, unit: ['cm³', 'ml'] }, true,  'W2: a bare number is still always accepted'],
+  ['3170 kg',   { answer: 3170, unit: ['cm³', 'ml'] }, false, 'W2: a unit OUTSIDE the set is still rejected'],
+  ['3170 cm',   { answer: 3170, unit: ['cm³', 'ml'] }, false, 'W2: cm is not cm³, array or not'],
+  ['3171 ml',   { answer: 3170, unit: ['cm³', 'ml'] }, false, 'W2: an equivalent unit does not excuse a wrong value'],
+  ['4000 cm3',  { answer: 4000, unit: ['ml', 'cm³'] }, true,  'W2: gTankLitres, cm³ on an ml answer'],
+  ['4000 ml',   { answer: 4000, unit: ['ml', 'cm³'] }, true,  'W2: gTankLitres, its own canonical unit'],
+  /* --- W3: gUnitCubes. "48 cubes" and "48 cm³" are the same quantity written two
+         ways and both are right; the opt-out that used to cover this rejected
+         "48 cubes" while ACCEPTING "48 kg". --- */
+  ['48 cubes',  { answer: 48, unit: ['cubes', 'cm³'] }, true,  'W3: the count noun, which the opt-out rejected'],
+  ['48 cm³',    { answer: 48, unit: ['cubes', 'cm³'] }, true,  'W3: 1 cm cubes, so cm³ means the same quantity'],
+  ['48 cm3',    { answer: 48, unit: ['cubes', 'cm³'] }, true,  'W3: ascii cm3'],
+  ['48',        { answer: 48, unit: ['cubes', 'cm³'] }, true,  'W3: a bare count'],
+  ['48 kg',     { answer: 48, unit: ['cubes', 'cm³'] }, false, 'W3 THE HOLE: the opt-out accepted this'],
+  ['48 pupils', { answer: 48, unit: ['cubes', 'cm³'] }, false, 'W3: and this'],
+  /* --- the TRAILING FULL STOP: the one correct-value rejection a child can reach
+         on the iPad keypad, where inputmode="decimal" offers digits and a dot and
+         no letters at all. "41." was always fine; "41.10." was not. --- */
+  ['41.10.',    { answer: 41.1 },  true,  'trailing dot after a decimal, the iPad keypad case'],
+  ['41.1.',     { answer: 41.1 },  true,  'trailing dot, one dp'],
+  ['41.',       { answer: 41 },    true,  'trailing dot on an integer, as before'],
+  ['$12.05.',   { answer: 12.05, unit: '$' }, true, 'trailing dot on money, sign and all'],
+  ['300.',      { answer: 300, unit: 'cm²' }, true, 'trailing dot with a declared unit'],
+  ['3170. ml',  { answer: 3170, unit: ['cm³', 'ml'] }, true, 'trailing dot under the unit'],
+  ['41.10.',    { answer: 41.2 },  false, 'the dot is forgiven, the value is not'],
+  ['.',         { answer: 41.1 },  false, 'a lone dot is not a number'],
+  ['3/4.',      { answer: 0.75, fracAnswer: [3, 4] }, false, 'the strip is numeric-only: a fraction keeps its shape'],
+  ['1 1/2.',    { answer: 1.5, fracAnswer: [3, 2] },  false, 'and so does a mixed number'],
+  /* ================= QUEST REFUTATION K2 (2026-09-07) =================
+     THE DEFECT. The tail strip was a bare suffix test, longest DECLARED unit
+     first and the shared list only if that missed. A question declaring "m" and
+     given "8.5 cm" therefore took ONE character, was left with "8.5 c" and
+     reported `not a number` - so `typedRejectReason` could not say `wrong-unit`
+     and the child, who had the number right, read "The answer is 8.5." with
+     nothing said about the unit. Unreachable on the web (inputmode="decimal" has
+     no letters); the Quest lane's unit chip row is the surface that produces it.
+     The verdicts below did NOT move - every one of these was already false. What
+     moved is what the grader can SAY about them. */
+  ['8.5 cm',    { answer: 8.5, unit: 'm' },   false, 'K2: cm on an m answer stays wrong'],
+  ['8.5 m',     { answer: 8.5, unit: 'm' },   true,  'K2: and the declared unit still grades'],
+  ['8.5m',      { answer: 8.5, unit: 'm' },   true,  'K2: a digit is a boundary, no space needed'],
+  ['7.5 ml',    { answer: 7.5, unit: 'l' },   false, 'K2: ml on an l answer'],
+  ['7.5 l',     { answer: 7.5, unit: 'l' },   true,  'K2: l itself'],
+  ['12.5 kg',   { answer: 12.5, unit: 'g' },  false, 'K2: kg on a g answer'],
+  ['12.5 g',    { answer: 12.5, unit: 'g' },  true,  'K2: g itself'],
+  ['4.35 cents',{ answer: 4.35, unit: '$' },  false, 'K2: cents on a dollars answer'],
+  ['4.35 $',    { answer: 4.35, unit: '$' },  true,  'K2: a trailing $ is the unit, not noise'],
+  ['$4.35',     { answer: 4.35, unit: '$' },  true,  'K2: and a leading one still is noise'],
+  ['5700 cents',{ answer: 5700, unit: 'cents' }, true,  'K2: cents on a cents answer'],
+  ['5700 $',    { answer: 5700, unit: 'cents' }, false, 'K2: $ on a cents answer'],
+  ['48 cubes',  { answer: 48, unit: 'cubes' }, true,  'K2: the count noun the grader never stripped'],
+  ['48 kg',     { answer: 48, unit: 'cubes' }, false, 'K2: and a measurement on a count of cubes'],
+  ['2025 km',   { answer: 2025, unit: 'm' },  false, 'K2: km is not m'],
+  ['2025 mm',   { answer: 2025, unit: 'm' },  false, 'K2: nor is mm'],
+  ['12 deg',    { answer: 12, unit: 'g' },    false, 'K2: "deg" does not end in a strippable "g"']
 ];
 
 let pass = 0, fail = 0;
@@ -158,13 +223,96 @@ const P = [
   ['30 pages', 30, 'pages'],
   ['126°', 126, '°'],
   ['1 1/2', 1.5, ''],
-  ['3/2', 1.5, '']
+  ['3/2', 1.5, ''],
+  /* K2: the LONGEST whole token wins, and a token may not start inside a word. */
+  ['8.5 cm', 8.5, 'cm'],
+  ['7.5 ml', 7.5, 'ml'],
+  ['12.5 kg', 12.5, 'kg'],
+  ['4.35 cents', 4.35, 'cents'],
+  ['4.35 dollars', 4.35, 'dollars'],
+  ['48 cubes', 48, 'cubes'],
+  ['12 mins', 12, 'mins']
 ];
+/* The same, with the one-letter unit DECLARED - the shape that produced K2. */
+for (const [input, val, unit, decl] of [
+  ['8.5 cm', 8.5, 'cm', 'm'], ['7.5 ml', 7.5, 'ml', 'l'], ['12.5 kg', 12.5, 'kg', 'g'],
+  ['8.5 m', 8.5, 'm', 'm'], ['2025 km', 2025, 'km', 'm'], ['4.35 cents', 4.35, 'cents', '$']
+]) {
+  const r = parseTypedAnswer(input, { answer: val, unit: decl });
+  if (!r.ok || r.value !== val || r.unit !== unit) {
+    fail++; console.log(`FAIL  K2 parseTypedAnswer(${JSON.stringify(input)}, unit ${JSON.stringify(decl)}) -> ${JSON.stringify(r)}, want value ${val} unit "${unit}"`);
+  } else pass++;
+}
 for (const [input, val, unit] of P) {
   const r = parseTypedAnswer(input);
   if (!r.ok || r.value !== val || r.unit !== unit) {
     fail++; console.log(`FAIL  parseTypedAnswer(${JSON.stringify(input)}) -> ${JSON.stringify(r)}, want value ${val} unit "${unit}"`);
   } else pass++;
+}
+
+/* typedRejectReason: WHY it was wrong, in machine words. Unit Sweep Refutation W1 -
+   the engine returned one string, 'wrong value or unit', for both halves, so neither
+   the web card nor a SwiftUI view could tell a child "your number was right". The
+   split has to be exact in both directions: never claim the number was right when it
+   was not, and never miss it when it was. */
+{
+  const area = { answer: 300, unit: 'cm²' };
+  const cubes = { answer: 48, unit: ['cubes', 'cm³'] };
+  const R = [
+    ['300 cm',   area,  'wrong-unit',   'the value is right, only the unit rejected it'],
+    ['300 kg',   area,  'wrong-unit',   'any wrong unit on a right value'],
+    ['300CM',    area,  'wrong-unit',   'no space, upper case, still unit-only'],
+    ['301 cm',   area,  'wrong-value',  'a wrong number is never a unit lesson'],
+    ['301 cm²',  area,  'wrong-value',  'right unit, wrong number'],
+    ['301',      area,  'wrong-value',  'bare wrong number'],
+    ['300 cm²',  area,  null,           'correct answers carry no reason'],
+    ['300',      area,  null,           'a bare right number is correct'],
+    ['',         area,  'empty',        'nothing typed'],
+    ['abc',      area,  'not a number', 'unparsed stays unparsed'],
+    ['48 kg',    cubes, 'wrong-unit',   'array form: outside the set, value right'],
+    ['48 cubes', cubes, null,           'array form: a declared member is correct'],
+    ['48 cm³',   cubes, null,           'array form: the equivalent member too'],
+    ['49 cubes', cubes, 'wrong-value',  'array form does not soften a wrong number'],
+    ['1.5 kg',   { answer: 1.5, fracAnswer: [3, 2], unit: 'l' }, 'wrong-unit', 'fractions inherit the same split'],
+    ['3.46 kg',  { answer: 3.456, dp: 2, unit: 'l' }, 'wrong-unit', 'and so does a declared dp'],
+    /* K2 (Quest Refutation, 2026-09-07): every one of these used to come back
+       'not a number', which is the one reason the teaching card cannot lead on -
+       the child read "The answer is 8.5." under their own 8.5. */
+    ['8.5 cm',   { answer: 8.5, unit: 'm' },   'wrong-unit', 'K2: m ate the m out of cm'],
+    ['7.5 ml',   { answer: 7.5, unit: 'l' },   'wrong-unit', 'K2: l ate the l out of ml'],
+    ['12.5 kg',  { answer: 12.5, unit: 'g' },  'wrong-unit', 'K2: g ate the g out of kg'],
+    ['2025 km',  { answer: 2025, unit: 'm' },  'wrong-unit', 'K2: and out of km'],
+    ['2025 mm',  { answer: 2025, unit: 'm' },  'wrong-unit', 'K2: and out of mm'],
+    ['4.35 cents', { answer: 4.35, unit: '$' }, 'wrong-unit', 'K2: cents was never strippable'],
+    ['4.35 dollars', { answer: 4.35, unit: '$' }, 'wrong-unit', 'K2: nor was dollars'],
+    ['2025 cubes', { answer: 2025, unit: 'cm' }, 'wrong-unit', 'K2: nor was cubes'],
+    ['5700 $',   { answer: 5700, unit: 'cents' }, 'wrong-unit', 'K2: a trailing $ is a unit'],
+    ['8.6 cm',   { answer: 8.5, unit: 'm' },   'wrong-value', 'K2: and a wrong number is still a wrong number']
+  ];
+  for (const [input, q, want, why] of R) {
+    const got = ctx.MQI.typedRejectReason(input, q);
+    if (got === want) pass++;
+    else {
+      fail++;
+      console.log(`FAIL  typedRejectReason(${JSON.stringify(input)}, ${JSON.stringify(q)}) -> ${JSON.stringify(got)}, want ${JSON.stringify(want)}   (${why})`);
+    }
+  }
+}
+
+/* finishTyped under the array form: the FIRST member is canonical, and it is what the
+   child reads on the answer card. A set of equivalents must never print as a list. */
+{
+  const A = [
+    [['cm³', 'ml'], '3170 cm³', 'first member is canonical'],
+    [['ml', 'cm³'], '3170 ml',  'order is the generator\'s choice'],
+    ['cm³',         '3170 cm³', 'a plain string is unchanged'],
+    [undefined,     '3170',     'no unit, no trailing space']
+  ];
+  for (const [unit, want, why] of A) {
+    const q = ctx.MQI.gen.finishTyped('stem', 3170, 'x', unit);
+    if (q.answerText === want) pass++;
+    else { fail++; console.log(`FAIL  finishTyped unit ${JSON.stringify(unit)} -> answerText ${JSON.stringify(q.answerText)}, want ${JSON.stringify(want)}   (${why})`); }
+  }
 }
 
 /* W3 cosmetic gate (Dress Rehearsal Wave 2, item 3): finishNum's `unit` argument used

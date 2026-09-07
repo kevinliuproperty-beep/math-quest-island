@@ -233,6 +233,145 @@ function drawFigure(q) {
   return null;
 }
 
+/* ---------- the typed-unit gate (Dress Rehearsal Phase 0, 2026-09-07) ----------
+ *
+ * THE DEFECT. finishTyped's 4th argument lands on q.unit, and gradeTyped rejects
+ * a MISMATCHED unit while accepting a missing one. A generator that passes no
+ * unit therefore leaves q.unit empty, and gradeTyped's other branch takes over:
+ * a unit typed on a question that declares none is accepted whenever it appears
+ * on core.js's shared TYPED_UNITS list. On Triangle Terrace's
+ *   "A triangle has a base of 14 cm and a height of 20 cm. What is its area, in cm²?"
+ * the clean-room rehearsal typed into the live grader and got
+ *   140 -> true · 140 cm -> true · 140 kg -> true · 140 pupils -> true.
+ * Not a wrong key and never a right answer marked wrong, but the wave-2 unit
+ * contract simply not applied. Four generators in one file, and the harness had
+ * nothing to say about it.
+ *
+ * THE RULE. A TYPED question whose STEM text carries a unit token must declare
+ * q.unit. Anything else fails the build, naming the generator. The token list is
+ * the set of things the grader will silently strip off a child's answer
+ * (core.js TYPED_UNITS) plus the three the stems write but core does not strip
+ * ('$', 'cents', 'dollars'). Stem text only - the explanation is not scanned,
+ * because the explanation is not what the child is answering.
+ *
+ * q.unit may be a STRING or an ARRAY of EQUIVALENT units (['cm³','ml']); the array
+ * satisfies the rule the same way and its shape is validated by unitDeclErr below.
+ *
+ * WHAT THE RULE DOES NOT DO. It does not check that the declared unit is the
+ * RIGHT one: gFindBase's stem says cm² and its answer is in cm, and both are
+ * correct. Declaring anything is enough; declaring nothing is the bug.
+ *
+ * COUNT ANSWERS, and how they are disambiguated. "How many pupils are there in
+ * the class?" names a token ('pupils' is on TYPED_UNITS, so the grader strips it)
+ * but the answer is a bare number. Three legal ways out, and a lane must pick one
+ * deliberately:
+ *   1. DECLARE the count noun - p5-rate.js already ships 'pages' and 'buns' this
+ *      way. A bare number still passes (a missing unit is always accepted), and
+ *      "24 kg" starts failing. This is the right answer for most count stems and
+ *      is what p4-fractions.js gFracOfSetWhole and p3-puzzle-caves.js gGiveTake
+ *      now do.
+ *   2. DECLARE AN ARRAY when two spellings are the same quantity and BOTH are
+ *      right - p5-volume.js gUnitCubes counts 1 cm cubes, so 'cubes' and 'cm³' are
+ *      both correct and it declares ['cubes','cm³']. That is the exit that used to
+ *      need the opt-out below, and it closes the hole the opt-out left ("48 kg" was
+ *      being accepted the whole time).
+ *   3. OPT OUT EXPLICITLY, with a reason, when NO declaration can express what is
+ *      right - the last resort, and there is NO USER of it today (gUnitCubes, the
+ *      only one the unit sweep took, moved to the array form under Unit Sweep
+ *      Refutation W3, whose finding was that its reason named a right answer the
+ *      build rejected). The generator attaches `q.unitOptOut = '<why>'` in its own
+ *      topic file. The reason is mandatory and must be a real sentence - an empty,
+ *      missing or token reason is itself a failure, so the escape hatch cannot be
+ *      taken silently, and it is refused outright on a generator that DOES declare
+ *      a unit. Before taking it, check the array form cannot say what you mean.
+ */
+const UNIT_SYMBOLS = ['cm³', 'cm3', 'cm²', 'cm2', 'm³', 'm3', 'm²', 'm2', 'ℓ', '°', '%', '$'];
+/* Word tokens are matched on their own, never inside a word, and never straight
+   after a full stop or an apostrophe - which is what keeps the 'g' in "e.g." and
+   the 's' in "Children's Day" from reading as grams and seconds. The two
+   one-letter time units core.js strips, 'h' and 's', are deliberately NOT scanned
+   for here: no stem in the app writes them, and they collide with ordinary prose.
+   Every other token below is one core.js will strip off a typed answer. */
+const UNIT_WORDS = ['km', 'cm', 'mm', 'ml', 'kg', 'm', 'g', 'l',
+  'degrees', 'degree', 'deg',
+  'minutes', 'minute', 'mins', 'min', 'hours', 'hour', 'hr', 'seconds', 'secs', 'sec',
+  'litres', 'litre', 'cents', 'cent', 'dollars', 'dollar',
+  'pages', 'page', 'buns', 'bun', 'books', 'book', 'pupils', 'pupil',
+  'marbles', 'marble', 'stickers', 'sticker', 'beads', 'bead'].sort((a, b) => b.length - a.length);
+const UNIT_WORD_RE = new RegExp("(?<![A-Za-z0-9.'’])(" + UNIT_WORDS.join('|') + ')(?![A-Za-z0-9])', 'i');
+function stemUnitToken(text) {
+  for (const s of UNIT_SYMBOLS) if (text.indexOf(s) !== -1) return s;
+  const m = text.match(UNIT_WORD_RE);
+  return m ? m[1].toLowerCase() : null;
+}
+/* THE ARRAY FORM. q.unit may be a STRING (one unit) or an ARRAY of EQUIVALENT units
+   (['cm³','ml']), any of which gradeTyped accepts, the FIRST being canonical and the
+   one printed. It exists because 1 ml IS 1 cm³ and three p5volume stems print that
+   identity themselves while a single declared unit rejected the other half of it
+   (Unit Sweep Refutation W2, 2026-09-07). The gate validates the shape rather than
+   trusting it: an empty array declares nothing, a blank or non-string member is a
+   typo, and two members that normalise to the SAME unit ('cm³' + 'cm3') are a
+   misunderstanding of what the array is for - it is for equivalent QUANTITIES, not
+   for spellings, which core.js's alias table already handles. */
+function unitDeclErr(declared) {
+  if (!Array.isArray(declared)) return null;
+  if (!declared.length) return 'declares q.unit as an EMPTY array, which declares nothing (pass a string, or the units in accept order)';
+  const seen = new Set();
+  for (const u of declared) {
+    if (typeof u !== 'string' || !u.trim()) {
+      return `q.unit array holds a non-string / blank member ${JSON.stringify(u)} - every member must be a unit the child may type`;
+    }
+    const n = ctx.MQI.normUnit(u);
+    if (seen.has(n)) {
+      return `q.unit array lists ${JSON.stringify(u)} twice over (it normalises to "${n}", already declared) - ` +
+        `the array is for EQUIVALENT quantities, not spellings; core.js aliases cm3/cm² style spellings already`;
+    }
+    seen.add(n);
+  }
+  return null;
+}
+function checkTypedUnit(q) {
+  if (!q || !q.typed) return null;
+  const declared = q.unit || q.units || '';
+  const why = typeof q.unitOptOut === 'string' ? q.unitOptOut.trim() : '';
+  const shapeErr = unitDeclErr(declared);
+  if (shapeErr) return shapeErr;
+  const declares = Array.isArray(declared) ? declared.length > 0 : !!declared;
+  if (declares && why) return 'declares a unit AND opts out of the unit rule: pick one';
+  if (declares) return null;
+  const tok = stemUnitToken(strip(q.q));
+  if (!tok) return null;
+  if (!why) {
+    return `typed stem names the unit "${tok}" but the generator declares no q.unit, ` +
+      `so the grader accepts ANY unit on it (pass the unit as finishTyped's 4th argument, ` +
+      `or opt out with q.unitOptOut = '<why the answer is a bare number>')`;
+  }
+  if (why.length < 20 || why.split(/\s+/).length < 5) {
+    return `q.unitOptOut needs a real reason, got ${JSON.stringify(q.unitOptOut)}`;
+  }
+  return null;
+}
+/* Drift guard: every measurement token above must still be one core.js strips off
+   a typed answer. If TYPED_UNITS is ever narrowed, this rule would be scanning for
+   something the grader no longer accepts, and the list has to be re-cut by hand. */
+/* Quest Refutation K2 (2026-09-07): `$ cents cent dollars dollar` used to live in
+   here, because the stems wrote them and the grader stripped none of them. They
+   are on TYPED_UNITS now, so the drift guard checks them like any other token. */
+const UNIT_STEM_ONLY = new Set(['m3', 'm³',
+  'book', 'pupil', 'marble', 'sticker', 'bead']);
+{
+  const drift = [];
+  for (const t of UNIT_SYMBOLS.concat(UNIT_WORDS)) {
+    if (UNIT_STEM_ONLY.has(t)) continue;
+    const p = ctx.MQI.parseTypedAnswer('7 ' + t);
+    if (!p.ok || p.unit.toLowerCase() !== t.toLowerCase()) drift.push(t);
+  }
+  if (drift.length) {
+    console.error(`FAIL  typed-unit gate: core.js no longer strips ${drift.join(', ')} - re-cut UNIT_WORDS/UNIT_SYMBOLS against TYPED_UNITS`);
+    process.exit(1);
+  }
+}
+
 /* ---------- shape + integrity, applied to every sample ---------- */
 const BAD = /\b(NaN|undefined|null|Infinity)\b/;
 function checkShape(q) {
@@ -416,7 +555,8 @@ function oracle(q) {
       if (down === undefined && up === undefined)
         return `p5 convert: ${from} -> ${to} is not one of the four MOE P5 pairs (km/m, m/cm, kg/g, l/ml)`;
       if (q.dp !== 3) return 'p5 convert: q.dp not declared';
-      if (q.unit && q.unit !== to) return `p5 convert: q.unit "${q.unit}" contradicts the unit the stem asks for, "${to}"`;
+      const declTo = ctx.MQI.unitList(q.unit)[0] || '';
+      if (declTo && declTo !== to) return `p5 convert: q.unit "${declTo}" contradicts the unit the stem asks for, "${to}"`;
       const e = down !== undefined ? r3(val / down) : r3(val * up);
       if (dpOf(e) > 3) return `p5 convert: ${val} ${from} = ${e} ${to} runs past 3 decimal places`;
       /* Going to the smaller unit must land on a whole number of that unit:
@@ -436,7 +576,8 @@ function oracle(q) {
       const per = PER[small[1] + '|' + big[1]];
       if (per === undefined) return `p5 convert word: ${small[1]} -> ${big[1]} is not one of the four MOE P5 pairs`;
       if (q.dp !== 3) return 'p5 convert word: q.dp not declared';
-      if (q.unit && q.unit !== asked[1]) return `p5 convert word: q.unit "${q.unit}" contradicts the asked unit "${asked[1]}"`;
+      const declAsked = ctx.MQI.unitList(q.unit)[0] || '';
+      if (declAsked && declAsked !== asked[1]) return `p5 convert word: q.unit "${declAsked}" contradicts the asked unit "${asked[1]}"`;
       const e = r3(big[0] + small[0] / per);
       if (dpOf(e) > 3) return `p5 convert word: ${e} runs past 3 decimal places`;
       if (!saysIt(String(e))) return `p5 convert word: explanation never states ${e}`;
@@ -1714,6 +1855,8 @@ for (const g of GENS) {
     if (drawn) { err = drawn; badQ = q; break; }
     const shape = checkShape(q);
     if (shape) { err = shape; badQ = q; break; }
+    const unitErr = checkTypedUnit(q);
+    if (unitErr) { err = unitErr; badQ = q; break; }
     distinct.add(qKey(q));
     const o = oracle(q);
     if (o === false) continue;

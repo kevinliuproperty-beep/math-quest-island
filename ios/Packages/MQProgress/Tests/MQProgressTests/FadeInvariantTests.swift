@@ -73,6 +73,105 @@ struct FadeInvariantTests {
         #expect(fades > 0, "nothing ever faded, so nothing was actually being guarded")
     }
 
+    /// **THE SAME HAMMER, THROUGH A FILE, ACROSS REOPENS.**
+    ///
+    /// The 10,000-event run above lives entirely in memory, and Progress Refutation W10
+    /// was that the law was enforced on the MUTATOR and not on LOAD: a document could be
+    /// written with one scaffold and read back with a weaker one, and no in-memory test
+    /// could ever see it. The lane closed that and proved it with a 40,000-event probe on
+    /// the file backend - which lived in a session scratchpad and died with the session.
+    ///
+    /// Promoted to a gate on the phase 1 integration, 2026-09-07. A proof nobody can
+    /// re-run is a story about a proof.
+    @Test("40,000 adversarial events on the FILE backend, across reopens, never rise")
+    func fortyThousandOnDisk() async throws {
+        let dir = Fixtures.tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let url = dir.appendingPathComponent("progress.json")
+
+        var store = try MQProgressStore(persistence: FilePersistence(url: url),
+                                        writes: .coalesced(seconds: 0.4))
+        var rng = SeededRNG(0x9E3779B9)
+
+        var profiles: [ProfileID] = []
+        for i in 0..<4 {
+            profiles.append(await store.addProfile(name: "Hero \(i)", cast: .turtle, level: "P5"))
+        }
+        let skills = ["perimeter", "area", "missingSide", "compare", "convert"]
+        var sessions: [ProfileID: SessionID] = [:]
+        for p in profiles { sessions[p] = await store.beginSession(profile: p, mode: .quest) }
+
+        // The high-water mark, kept OUTSIDE the store and carried across every reopen.
+        var held: [String: ScaffoldLevel] = [:]
+        var rises = 0, upRequests = 0, fades = 0, reopens = 0, risesOnLoad = 0
+        var patchwerkAnswers = 0
+
+        for step in 0..<40_000 {
+            let profile = profiles[rng.pick(profiles.count)]
+            let skill = skills[rng.pick(skills.count)]
+            let key = profile.raw + "|" + skill
+
+            switch rng.pick(12) {
+            case 0...5:
+                await store.answer(sessions[profile]!, profile, skill,
+                                   correct: rng.chance(0.72), mode: .quest)
+            case 6:
+                // A PATCHWERK answer. It must move no teaching state at all, which
+                // includes never nudging a scaffold in either direction.
+                patchwerkAnswers += 1
+                await store.answer(sessions[profile]!, profile, skill,
+                                   correct: rng.chance(0.72), mode: .patchwerk)
+            case 7:
+                await store.answer(sessions[profile]!, profile, skill,
+                                   correct: false, timedOut: true, mode: .quest)
+            case 8, 9:
+                let wanted = ScaffoldLevel.allCases[rng.pick(ScaffoldLevel.allCases.count)]
+                let before = await store.scaffold(profile: profile, skill: SkillID(skill))
+                let after = await store.fadeScaffold(profile: profile, skill: SkillID(skill),
+                                                     to: wanted)
+                if wanted > before { upRequests += 1 }
+                if after < before { fades += 1 }
+                #expect(after <= before)
+            case 10:
+                _ = await store.endSession(sessions[profile]!)
+                sessions[profile] = await store.beginSession(
+                    profile: profile, mode: rng.chance(0.5) ? .quest : .patchwerk)
+            default:
+                if rng.chance(0.03) { await store.resetHistory(profile: profile) }
+            }
+
+            let now = await store.scaffold(profile: profile, skill: SkillID(skill))
+            if let mark = held[key], now > mark { rises += 1 }
+            held[key] = min(now, held[key] ?? .full)
+
+            // Every 2,000 events: flush, close, and OPEN THE DOCUMENT AGAIN. This is the
+            // half W10 was about - the load path has to hold the law too.
+            if step % 2_000 == 1_999 {
+                await store.flush()
+                store = try MQProgressStore(persistence: FilePersistence(url: url),
+                                            writes: .coalesced(seconds: 0.4))
+                reopens += 1
+                for (k, mark) in held {
+                    let parts = k.split(separator: "|", maxSplits: 1)
+                    let after = await store.scaffold(profile: ProfileID(String(parts[0])),
+                                                     skill: SkillID(String(parts[1])))
+                    if after > mark { risesOnLoad += 1 }
+                    held[k] = min(after, mark)
+                }
+                // Reopening loses the live sessions; a real relaunch starts new ones.
+                for p in profiles { sessions[p] = await store.beginSession(profile: p, mode: .quest) }
+            }
+        }
+
+        #expect(rises == 0, "the scaffold rose \(rises) times inside a run")
+        #expect(risesOnLoad == 0, "the scaffold rose \(risesOnLoad) times ON LOAD")
+        // The run has to have actually exercised what it claims to guard.
+        #expect(reopens == 20, "\(reopens) reopens")
+        #expect(upRequests > 1_000, "only \(upRequests) up-requests were attempted")
+        #expect(fades > 0, "nothing ever faded, so nothing was being guarded")
+        #expect(patchwerkAnswers > 2_000, "only \(patchwerkAnswers) Patchwerk answers")
+    }
+
     @Test("An up request is a no-op that returns the level held", arguments: [
         (ScaffoldLevel.hint, ScaffoldLevel.full),
         (ScaffoldLevel.hint, ScaffoldLevel.partial),

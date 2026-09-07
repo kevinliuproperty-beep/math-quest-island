@@ -1,4 +1,4 @@
-401
+402
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing test.command parses; the `key: value` lines
@@ -18,7 +18,7 @@
 # to justify it in a message. Never edit it to turn a red gate green.
 #
 # ===========================================================================
-# 401 = the PHASE 1 INTEGRATION, 2026-09-07: feat/ios-phase1 with lane/quest (which
+# 402 = the PHASE 1 INTEGRATION, 2026-09-07: feat/ios-phase1 with lane/quest (which
 #       already carried feat/unit-sweep), lane/progress, lane/patchwerk and
 #       lane/cube-extract merged, plus the integrator's own reconciliation.
 #
@@ -26,15 +26,17 @@
 # branch, so the four lanes' numbers (160, 167, 166, 88) share the 42 + 29 that were
 # already here and cannot be summed. The floor is what `./test.command` actually
 # executed on the merged tree, and the per-target counts below were each read off
-# `./test.command --filter <target>`. They sum to exactly 401, which is the check that
+# `./test.command --filter <target>`. They sum to exactly 402, which is the check that
 # nothing is being counted twice or not at all.
 #
 #   MQContentTests         21   the seam: models, Verdict.Reason, the eight-kind Figure
 #   MQEngineJSTests        21   the JavaScriptCore bridge, lifetime, grading parity
 #   MQDesignTests          31   tokens, metrics, typesetting, fonts, the device matrix,
 #                               + 2 NEW: a screen leaves no holes in its own background
-#   MQProgressTests        96   mastery, the one-way fade, persistence, migration,
-#                               profiles, the web-crystal corpus, the Patchwerk fence
+#   MQProgressTests        97   mastery, the one-way fade, persistence, migration,
+#                               profiles, the web-crystal corpus, the Patchwerk fence,
+#                               + 1 NEW: 40,000 adversarial fade events on the FILE
+#                               backend, across 20 reopens
 #   MQQuestTests           91   the flow, typed entry, unit chips, figures, the pixel
 #                               gate, the driver, + 2 NEW: the crystal end to end
 #   MQPatchwerkTests       68   scoring parity, the HUD in pixels, the clock, the ticker
@@ -42,12 +44,12 @@
 #   MQCubeContentTests     10   cube state, domain refusals
 #   MQCubeEngineJSTests    36   the cube bridge, the golden corpus, words, parity, solves
 #   ------------------------------------------------------------------------
-#                         401
+#                         402
 #
 # Counted by CASE where a @Test is parameterised, because that is what the runner's
 # summary line counts and the summary is what test.command parses.
 #
-# WHAT THE INTEGRATION ADDED (4, on top of the 397 the merge itself produced):
+# WHAT THE INTEGRATION ADDED (5, on top of the 397 the merge itself produced):
 #   MQDesignTests    "No screen leaves a transparent pixel on the 9.7 inch iPad" (2 cases)
 #                    and its negative control - MQWorld left an unpainted wedge along the
 #                    shoreline, which is what "the dark line right of the crab" actually
@@ -55,6 +57,10 @@
 #   MQQuestTests     "QRunState fells a monster exactly where the web awarded a crystal"
 #                    and "Reported through Attempt.crystalsReported, every session lands
 #                    on the web's rope" - 200 real web sessions, battle to store.
+#   MQProgressTests  "40,000 adversarial events on the FILE backend, across reopens,
+#                    never rise" - the lane proved this in a session scratchpad that died
+#                    with the session, and the load path is the half W10 was actually
+#                    about. A proof nobody can re-run is a story about a proof.
 #
 # WHAT THE INTEGRATION DID NOT LOSE. Three MQQuestTests were REWRITTEN rather than
 # removed when the lanes' stand-in stores were deleted: they were asserting the deleted
@@ -90,7 +96,7 @@
 #      kills.
 #
 # Each of those was measured on its own branch. On the merged tree the shared 71 is
-# counted once, which is why 401 and not 160+167+166+88.
+# counted once, which is why 402 and not 160+167+166+88.
 #
 # ---------------------------------------------------------------------------
 # SAMPLE-SIZE FLOORS  (wound 2 of the extract refutation)

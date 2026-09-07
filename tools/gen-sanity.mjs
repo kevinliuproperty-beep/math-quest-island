@@ -115,27 +115,88 @@ const qKey = q => strip(q.q) + '|' + String(q.extra || '') + '|' +
  * documented in js/topics/README.md) and NEVER as markup, so the same engine can
  * feed a web renderer and a SwiftUI one. Two gates enforce it:
  *
- *   checkNoMarkup   fails any generator whose output carries figure markup - a
- *                   '<svg' or '<div' anywhere in the stem, the extra, the
- *                   explanation, the answer text or a choice, or ANY '<' inside
- *                   the figure spec itself. (Inline text markup a stem is allowed
- *                   to carry - <b>, <span class="frac"> - is untouched.)
+ *   checkNoMarkup   an ALLOWLIST over EVERY string in the question object.
  *   drawFigure      renders q.figure through js/figures.js into q.extra BEFORE
  *                   any oracle runs, so every answer key is still re-derived from
  *                   the rendered labels and qKey still sees the whole picture.
+ *
+ * KILL FIX K1 (Figure Spec Refutation, 2026-09-07). The first version of this rule
+ * was a two-token DENYLIST (`<svg`, `<div`) over four named fields. The refuter
+ * walked two real bar models straight through it and onto the child's screen:
+ *
+ *   A2  '<table class=barModel><tr><td bgcolor=blue width=24 height=18>...'
+ *   B2  '<span style="display:block;width:120px;height:14px;background:#4c8bf5">'
+ *
+ * both in `q.extra` with NO `q.figure` - and app.js's figHtml() falls back to
+ * q.extra whenever q.figure is absent, so both rendered. `<img>` passed too, and
+ * so did markup on any key the four-field list did not name (wound 1, `q.extra2`).
+ * A denylist can only ever ban the pictures somebody already thought of.
+ *
+ * The rule is now inverted and total:
+ *
+ *   1. EVERY string reachable from `q` is checked - the stem, extra, explain,
+ *      answerText, every choice, every nested object and array, every key nobody
+ *      has invented yet. The walk is recursive and cycle-safe.
+ *   2. In each of those strings, a '<' followed by a letter or '/' opens a tag.
+ *      The tag must appear VERBATIM in MARKUP_ALLOWLIST below. There is no
+ *      pattern, no attribute sniffing and no denylist: an unlisted tag fails,
+ *      full stop, and so does a listed tag carrying an attribute (`<span
+ *      style=...>` is not `<span class="frac">`).
+ *   3. Adding a tag is a deliberate edit to that list plus a row in
+ *      js/topics/README.md. Pictures never qualify: a picture is a q.figure spec.
+ *   4. `q.figure` itself is held to the stricter rule it already had - data only,
+ *      not one '<' anywhere - and its `type` must be one js/figures.js draws.
+ *   5. Belt: a generator carrying a q.figure must leave q.extra EMPTY, which is
+ *      what the README already says. drawFigure() fills it in afterwards.
+ *
+ * The allowlist is INLINE TEXT markup a stem is genuinely allowed to carry: bold,
+ * emphasis, super/subscript, a line break, and the fraction spans core.js's fr()
+ * builds. Nothing here has geometry, colour or a box.
  */
-const FIG_MARKUP = /<\s*(svg|div)\b/i;
-const FIG_FIELDS = ['q', 'extra', 'explain', 'answerText'];
+const MARKUP_ALLOWLIST = [
+  '<b>', '</b>',
+  '<i>', '</i>',
+  '<em>', '</em>',
+  '<strong>', '</strong>',
+  '<sup>', '</sup>',
+  '<sub>', '</sub>',
+  '<br>',
+  '<span class="frac">',       /* core.js fr(): the fraction stack */
+  '<span class="n">',          /*   numerator  */
+  '<span class="d">',          /*   denominator */
+  '</span>'
+];
+const ALLOWED = new Set(MARKUP_ALLOWLIST);
+
+/* Returns the offending tag, or null. A '<' that is not followed by a letter or a
+   '/' is arithmetic ("3 < 5"), not markup, and is left alone. */
+function markupIn(s) {
+  const str = String(s);
+  for (let i = str.indexOf('<'); i >= 0; i = str.indexOf('<', i + 1)) {
+    const c = str[i + 1];
+    if (!c || !/[a-zA-Z/]/.test(c)) continue;
+    const end = str.indexOf('>', i);
+    if (end < 0) return `"${str.slice(i, i + 40)}" (unterminated tag)`;
+    const tag = str.slice(i, end + 1);
+    if (!ALLOWED.has(tag)) return `"${tag}"`;
+  }
+  return null;
+}
+
+/* Every string reachable from a value, with the path that reached it. Cycle-safe;
+   functions, numbers and booleans are skipped (they cannot carry markup). */
+function eachString(v, path, out, seen) {
+  if (v === null || v === undefined) return;
+  if (typeof v === 'string') { out.push([path || '(root)', v]); return; }
+  if (typeof v !== 'object') return;
+  if (seen.has(v)) return;
+  seen.add(v);
+  if (Array.isArray(v)) { for (let i = 0; i < v.length; i++) eachString(v[i], `${path}[${i}]`, out, seen); return; }
+  for (const k of Object.keys(v)) eachString(v[k], path ? `${path}.${k}` : k, out, seen);
+}
+
 function checkNoMarkup(q) {
   if (!q) return null;
-  for (const k of FIG_FIELDS) {
-    if (FIG_MARKUP.test(String(q[k] === undefined ? '' : q[k]))) {
-      return `figure markup in generator output field "${k}" - emit a q.figure spec instead (js/topics/README.md)`;
-    }
-  }
-  for (const c of (q.choices || [])) {
-    if (FIG_MARKUP.test(String(c))) return 'figure markup in a choice - emit a q.figure spec instead';
-  }
   if (q.figure !== undefined) {
     if (!q.figure || typeof q.figure !== 'object' || typeof q.figure.type !== 'string') {
       return 'q.figure must be an object carrying a string `type`';
@@ -147,6 +208,19 @@ function checkNoMarkup(q) {
     }
     if (!ctx.MQI.figureTypes.includes(q.figure.type)) {
       return `unknown figure type "${q.figure.type}" - js/figures.js draws [${ctx.MQI.figureTypes.join(', ')}]`;
+    }
+    if (q.extra) {
+      return 'a generator with a q.figure must leave q.extra empty - the harness and app.js draw the spec (js/topics/README.md)';
+    }
+  }
+  const strings = [];
+  const { figure, ...rest } = q;          /* q.figure is checked above, by the stricter rule */
+  eachString(rest, '', strings, new Set());
+  for (const [path, s] of strings) {
+    const bad = markupIn(s);
+    if (bad) {
+      return `figure markup in generator output field "${path}": ${bad} is not on the inline-text allowlist ` +
+        `- a picture is a q.figure spec, not markup (js/topics/README.md)`;
     }
   }
   return null;

@@ -83,10 +83,25 @@ function gLArea() {
 
 Rules:
 
-- **No markup leaves a generator.** `tools/gen-sanity.mjs` fails any generator whose `q`,
-  `extra`, `explain`, `answerText` or a choice contains `<svg` or `<div`, and any figure
-  spec whose JSON contains `<` at all. Inline TEXT markup in a stem is still fine (`<b>`,
-  `<span class="frac">`) — the rule is about pictures.
+- **No markup leaves a generator — and the rule is an ALLOWLIST.** `tools/gen-sanity.mjs`
+  walks **every string reachable from `q`** (the stem, `extra`, `explain`, `answerText`,
+  every choice, every nested object and array, every key nobody has invented yet) and
+  fails on any `<` followed by a letter or `/` unless the whole tag appears verbatim in
+  its allowlist. The list is exactly:
+  `<b> </b> <i> </i> <em> </em> <strong> </strong> <sup> </sup> <sub> </sub> <br>`,
+  `<span class="frac"> <span class="n"> <span class="d"> </span>`.
+  Nothing else. A listed tag carrying an attribute is *not* the listed tag, so
+  `<span style="width:120px;background:#4c8bf5">` fails even though `<span class="frac">`
+  passes. `3 < 5` is arithmetic, not a tag, and is left alone. Adding a tag is a
+  deliberate edit to `MARKUP_ALLOWLIST` plus a line here — and a picture never qualifies,
+  because a picture is a `q.figure` spec.
+  *Why an allowlist:* the first version banned only `<svg` and `<div` on four named
+  fields, and a refuter walked a `<table>` bar model, a `<span>`-box bar model, an
+  `<img>` and markup on an undeclared key straight through it and onto the child's
+  screen (`app.js` `figHtml()` falls back to `q.extra` when there is no `q.figure`).
+  A denylist can only ban the pictures somebody already thought of.
+- **A generator with a `q.figure` leaves `q.extra` empty.** The harness and `app.js` draw
+  the spec; `q.extra` is where the drawing lands, not an input. Gated.
 - **A spec is JSON-serialisable data**: numbers, strings, arrays. No functions, no HTML,
   no `null` (use `-1` for "no index"), no colours, no pixel geometry. Sizes, padding,
   palette and label placement belong to the renderer, so the two platforms can differ

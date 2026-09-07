@@ -66,7 +66,23 @@ public protocol CubeEngine: Sendable {
     func guideNode(size: CubeSize, id: String) async throws -> CubeGuideNode
 
     /// Which single square is worth asking about next, and the whole ask ranking.
-    func bestQuestion(size: CubeSize, painted: [String?]) async throws -> CubeQuestion
+    ///
+    /// The answer comes back TWICE - see ``CubeQuestion``. `best` is the web's own
+    /// question, asked with the `nameable` predicate the painter supplies; `plain` is the
+    /// no-options answer this bridge used to give on its own, and they are different
+    /// squares often enough that the refutation called it a wound.
+    ///
+    /// `nameable` lets a caller supply the resolved boolean array itself (JSON cannot
+    /// carry a function). Passing `nil` - the normal case - has the engine compute the
+    /// page's own `canNameByColour`.
+    func bestQuestion(size: CubeSize, painted: [String?], nameable: [Bool]?) async throws -> CubeQuestion
+
+    /// Is this thing a cube at all, and is it a cube a child could be holding?
+    ///
+    /// A restored save goes through here BEFORE it is drawn. Statelessness means a
+    /// `CubeState` can be written to disk and read back months later by a different build;
+    /// nothing else in this protocol checks that what came back is a cube.
+    func validateState(size: CubeSize, state: CubeState) async throws -> CubeStateValidation
 
     /// Everything a SceneKit view needs to place the blocks of this cube.
     func geometry(size: CubeSize, state: CubeState) async throws -> CubeGeometry
@@ -76,6 +92,13 @@ public protocol CubeEngine: Sendable {
 
     /// The words: captions, chants, preset hints, slot names, ordinals.
     func words(size: CubeSize) async throws -> CubeWords
+}
+
+public extension CubeEngine {
+    /// The common case: let the engine resolve the page's own nameable predicate.
+    func bestQuestion(size: CubeSize, painted: [String?]) async throws -> CubeQuestion {
+        try await bestQuestion(size: size, painted: painted, nameable: nil)
+    }
 }
 
 /// The two cube sizes. Not an `Int`, because "size 4" is not a thing and the engine

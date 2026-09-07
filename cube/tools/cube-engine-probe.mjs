@@ -46,14 +46,19 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { createHash } from 'node:crypto';
+import { blockRegex } from '../../tools/cube-engine/markers.mjs';
 
 /* ------------------------------------------------------------------ loading */
 
+/* WOUND 6: one marker matcher for the whole pipeline. The namespace a block DEFINES is not
+   the block's NAME (the 2x2 core lives in the CORE block), so the mapping is spelled out
+   here and the regexes themselves come from tools/cube-engine/markers.mjs. */
+const BLOCK_OF = { CUBE: 'CORE', CUBE3: 'CORE3', INFER: 'INFER', GUIDE: 'GUIDE' };
 const MARKERS = {
-  CUBE: /\/\* ===== CORE START =====[\s\S]*?\/\* ===== CORE END ===== \*\//,
-  CUBE3: /\/\* ===== CORE3 START =====[\s\S]*?\/\* ===== CORE3 END ===== \*\//,
-  INFER: /\/\* ===== INFER START =====[\s\S]*?\/\* ===== INFER END ===== \*\//,
-  GUIDE: /\/\* ===== GUIDE START =====[\s\S]*?\/\* ===== GUIDE END ===== \*\//
+  CUBE: blockRegex('CORE'),
+  CUBE3: blockRegex('CORE3'),
+  INFER: blockRegex('INFER'),
+  GUIDE: blockRegex('GUIDE')
 };
 
 /* A context with nothing a browser would give you. Math and JSON and the language, and

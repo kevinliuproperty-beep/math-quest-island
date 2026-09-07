@@ -246,6 +246,22 @@ struct CubeBridgeTests {
         #expect(q.ranking.count <= 8)
         // the ranking must be a genuine ORDER: no square asked twice
         #expect(Set(q.ranking.map(\.sid)).count == q.ranking.count)
+
+        // WOUND 1. The web asks with { nameable: canNameByColour }; this bridge used to ask
+        // with {} and got a different square in 200 of 200 seeded paintings. Both answers
+        // now cross, and the predicate has to be a real array of the right length rather
+        // than a field that is always nil.
+        #expect(q.nameable?.count == size.squareCount,
+                "no resolved nameable array came back - the predicate is not crossing the bridge")
+        #expect(q.nameableCount > 0 && q.nameableCount <= size.squareCount)
+        #expect(q.plain != nil, "the un-named answer must come back beside the named one")
+        #expect(!q.plainRanking.isEmpty)
+        #expect(q.slack == 1, "the web's own slack is 1; a different one is a different question")
+        // and supplying an all-false predicate must reproduce the plain answer exactly
+        let none = try await e.bestQuestion(size: size, painted: painted,
+                                            nameable: Array(repeating: false, count: size.squareCount))
+        #expect(none.bestSid == q.plainSid,
+                "a caller-supplied all-false nameable array did not fall back to the plain answer")
     }
 
     @Test("bad arguments come back as named errors, with the JS stack")

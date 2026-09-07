@@ -17,10 +17,16 @@ import MQCubeContent
 @Suite("Cube parity corpus")
 struct CubeParityCorpusTests {
 
-    /// Every row by default. MQ_CUBE_PARITY_ROWS caps it for a fast edit loop; the gate
-    /// value is the whole file.
+    /// Every row by default. `MQ_CUBE_PARITY_ROWS` caps it for a fast edit loop - and on a
+    /// GATE run (`MQ_GATE=1`, which `ios/test.command` exports when no filter is given)
+    /// setting it is a FAILURE naming the variable, not a silently honoured cap.
+    ///
+    /// Refutation wound 2: `MQ_CUBE_PARITY_ROWS=1 MQ_CUBE_SOLVES=1 MQ_DRAWS=1
+    /// ios/test.command` printed "80 tests, floor cleared, GATE PASSED" in 1.3 s. The
+    /// assertion below it was `checked == rows.count`, which is true for any cap - so the
+    /// headline "20,000 rows" was environment-controlled with nothing under it.
     static var rowCap: Int {
-        Int(ProcessInfo.processInfo.environment["MQ_CUBE_PARITY_ROWS"] ?? "") ?? Int.max
+        GateFloor.sampleSize(env: "MQ_CUBE_PARITY_ROWS", floorKey: "cube-parity-rows", default: 10_000)
     }
 
     @Test("the corpus was recorded against the bundle that is about to be tested")
@@ -81,6 +87,10 @@ struct CubeParityCorpusTests {
         }
 
         #expect(checked == rows.count)
+        // ...and `rows.count` itself has to clear a number in a committed file, because
+        // `checked == rows.count` is true for two rows just as happily as for ten thousand.
+        GateFloor.expectAtLeast(checked, floorKey: "cube-parity-rows", default: 10_000,
+                                what: "\(size.rawValue)x\(size.rawValue) parity rows replayed")
         #expect(diverged == 0,
                 "\(size.rawValue)x\(size.rawValue): \(diverged) of \(checked) rows diverged from node. First: \(first ?? "-")")
     }

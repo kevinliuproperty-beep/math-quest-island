@@ -1,8 +1,10 @@
 {
-  "note": "Recorded expectation for tools/build-cube-engine.mjs. A missing, duplicated or moved marker, or a changed boundary neighbourhood, FAILS the build by name. A change inside a block is legitimate and only NOTICEd - it moves the bundle hash instead. Re-record deliberately with `node tools/build-cube-engine.mjs --record-guard`.",
+  "note": "Recorded expectation for tools/build-cube-engine.mjs. A missing, duplicated or moved marker, or a changed boundary neighbourhood, FAILS the build by name. A change INSIDE a block also FAILS the build now (refutation kill 2: a NOTICE was laundered to silence by three documented commands). Re-record deliberately with `node tools/build-cube-engine.mjs --record-guard --ack \"<why>\"`, which writes the reason and the full diff into tools/cube-engine/guard-changelog.md.",
   "source": "cube/index.html",
   "sourceSha256": "d65f279a3b3c07537eff77389619905326705ec2e39ad01a1d4e955a73c80878",
   "context": 3,
+  "recordedAck": "Fix pass 2026-09-07: re-recorded through the new signed --ack path so block-guard.json carries the ack fields. No block content changed; the four block shas are unchanged.",
+  "recordedDate": "2026-09-07",
   "blocks": {
     "CORE": {
       "start": "/* ===== CORE START =====",

@@ -1,0 +1,9 @@
+{
+  "note": "The sha256 of cube/index.html as it stood when standing law 6's DEPLOY PROCEDURE last ran (copy the vault Studio original, scrub, commit + push main, 20 consecutive full-body sha256 checks against the live origin, hail Kevin with a ?v=<sha> link). tools/build-cube-engine.mjs REFUSES TO BUILD unless the file on disk hashes to this. THE DEPLOY LANE IS THE ONLY WRITER: run `node tools/build-cube-engine.mjs --record-deploy` as the last step of the deploy, never to get past a red build. Editing this file by hand to match an undeployed page is exactly the laundering the refutation killed this pipeline for.",
+  "source": "cube/index.html",
+  "sha256": "d65f279a3b3c07537eff77389619905326705ec2e39ad01a1d4e955a73c80878",
+  "bytes": 425786,
+  "recordedDate": "2026-09-07",
+  "recordedBy": "node tools/build-cube-engine.mjs --record-deploy",
+  "law": "Cube Quest standing law 6 (deploy procedure), vault `Cube Quest - State of the World`"
+}

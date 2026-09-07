@@ -1,15 +1,16 @@
-80
+87
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
-# The first run of digits is the only thing parsed; everything below is for humans.
+# The first run of digits is the only thing test.command parses; the `key: value` lines
+# below are parsed by the SUITES (see GateFloor.swift, one copy in each test target).
+# Everything else is for humans.
 #
 # WHY IT EXISTS. This gate was killed for reporting success with zero tests executed:
 # `./test.command --filter <anything that matches nothing>` printed
 # "Test run with 0 tests in 0 suites passed" and exited 0. Requiring a non-zero count
 # closes that. This file closes the other half - a suite that quietly stops being
 # DISCOVERED (a renamed file, a target dropped from Package.swift, a @Suite that no
-# longer compiles in) shrinks the count without failing anything, and the gate stays
-# green over a smaller and smaller surface.
+# longer compiles in) shrinks the count without failing anything.
 #
 # HOW TO CHANGE IT. Raise it in the same commit that adds tests. LOWER it only in the
 # same commit that removes them, so the reduction appears in the diff and somebody has
@@ -25,3 +26,48 @@
 #      Several of those are parameterised over both cube sizes; the runner counts a
 #      parameterised @Test once, so this floor is a floor on test FUNCTIONS discovered,
 #      not on cases executed - which is the thing that silently shrinks.
+#
+# 87 = the 80 above + the fix pass of 2026-09-07, answering the extract refutation:
+#      Cube API golden corpus (4, kill 1 - the value oracle for CUBE_API) +
+#      Cube state domain (3, wound 5 - permutation / range / fixed-width-integer refusals).
+#      Measured, not counted by hand: `./test.command` reports 87 executed.
+#
+# ---------------------------------------------------------------------------
+# SAMPLE-SIZE FLOORS  (wound 2 of the extract refutation)
+# ---------------------------------------------------------------------------
+# `MQ_CUBE_PARITY_ROWS=1 MQ_CUBE_SOLVES=1 MQ_DRAWS=1 ios/test.command` used to print
+# "80 tests, floor cleared, GATE PASSED" in 1.3 s instead of 5.4 s: every suite asserted
+# `checked == rows.count`, which is true for ANY cap. The test count was floored and the
+# amount each test measured was not.
+#
+# So the sizes are floored here too, and the suites read these keys. On a gate run
+# (test.command exports MQ_GATE=1 when no --filter and no --skip is given) setting the
+# matching environment variable is a FAILURE naming the variable, not a silently honoured
+# cap.
+#
+# Raise these when the corpora grow. Lower them only in the commit that shrinks the
+# corpus, for the same reason as the test count.
+
+cube-parity-rows: 10000
+# ^ MQ_CUBE_PARITY_ROWS. Rows replayed PER SIZE out of tools/fixtures/cube-parity-corpus.json
+#   (20,000 across both sizes), in node by tools/cube-parity-test.mjs and in JavaScriptCore
+#   by CubeParityCorpusTests.
+
+cube-solves: 12
+# ^ MQ_CUBE_SOLVES. Full 50-move scrambles solved beat by beat through the bridge, per size.
+
+cube-golden-states: 300
+# ^ States per size replayed out of tools/fixtures/cube-api-golden.json - the value oracle
+#   for CUBE_API, which is not one of the four guarded blocks and which eleven refuter
+#   corruptions rode straight through every gate before that file existed. The corpus
+#   carries 320; the floor is 300 so a trim is visible without being brittle.
+
+cube-golden-asks: 300
+# ^ bestQuestion calls per size in CubeGoldenTests, which replays every FOURTH golden row
+#   (one ask is a completion search plus two full ask rankings, ~27 ms through
+#   JavaScriptCore, so the whole battery is 70 s of a 5 s gate). The exhaustive walk over
+#   all 640 paintings runs on the node side in cube-engine-sanity section G; this floor
+#   stops the Swift stride quietly becoming "the first row".
+
+engine-draws: 200
+# ^ MQ_DRAWS. Draws per generator ref in the question engine's bridge gate (250 refs).

@@ -31,7 +31,9 @@
 #
 # Usage:  ./test.command                    every suite; must clear the floor
 #         ./test.command --filter Figure    one suite; must still run > 0 tests
-#         MQ_DRAWS=20 ./test.command        fast loop (the gate value is 200)
+#         MQ_DRAWS=20 ./test.command --filter Bridge
+#                                           fast loop. The knob is REFUSED on an unfiltered
+#                                           run (see MQ_GATE below); the gate value is 200.
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -89,12 +91,40 @@ else
 fi
 
 # ---------------------------------------------------------------- run
+# --filter and --skip are NOT the same thing for the floor, and treating them as one was
+# refutation wound 3: `./test.command --skip Cube` executed 42 tests and printed
+# GATE PASSED. A CI line carrying a --skip for one flaky suite silently dropped the floor
+# for all of them.
+#
+#   --filter  narrows to a named subset. The run does not claim to be the gate, so the
+#             floor is not applied (the > 0 check still is).
+#   --skip    removes tests from a run that is otherwise the whole suite. It NEVER lifts
+#             the floor - which means a --skip that actually removes anything fails, and
+#             says why. That is the point: the floor is what "the whole suite ran" means.
 FILTERED=0
+SKIPPED=0
 for arg in "$@"; do
   case "$arg" in
-    --filter|--filter=*|--skip|--skip=*) FILTERED=1 ;;
+    --filter|--filter=*) FILTERED=1 ;;
+    --skip|--skip=*)     SKIPPED=1 ;;
   esac
 done
+# A --skip anywhere keeps the floor armed, even alongside a --filter.
+APPLY_FLOOR=1
+if [ "$FILTERED" -eq 1 ] && [ "$SKIPPED" -eq 0 ]; then APPLY_FLOOR=0; fi
+
+# THE GATE FLAG (refutation wound 2). On a run that claims to be the gate, the suites
+# refuse the sample-size knobs - MQ_CUBE_PARITY_ROWS, MQ_CUBE_SOLVES, MQ_DRAWS - instead of
+# quietly honouring them. `MQ_CUBE_PARITY_ROWS=1 MQ_CUBE_SOLVES=1 MQ_DRAWS=1 ./test.command`
+# used to print "80 tests, floor cleared, GATE PASSED" in 1.3 s over two rows. A filtered
+# run is a developer's edit loop and is left alone; it never claimed the floor either.
+if [ "$APPLY_FLOOR" -eq 1 ]; then
+  export MQ_GATE=1
+  echo "gate:      MQ_GATE=1 - sample-size overrides are refused on this run"
+else
+  unset MQ_GATE || true
+  echo "gate:      filtered run - MQ_GATE is not set, sample-size overrides are honoured"
+fi
 
 LOG="$(mktemp -t mqi-swift-gate)"
 trap 'rm -f "$LOG"' EXIT
@@ -128,7 +158,7 @@ fi
 
 if [ "$EXECUTED" -eq 0 ]; then
   echo "GATE FAILED: ZERO tests executed. A run that executes nothing is not a pass." >&2
-  if [ "$FILTERED" -eq 1 ]; then
+  if [ "$FILTERED" -eq 1 ] || [ "$SKIPPED" -eq 1 ]; then
     echo "  A --filter/--skip matched no test. Check the name against:" >&2
     echo "    swift test ${ARGS[*]} --list-tests" >&2
   else
@@ -152,7 +182,7 @@ fi
 # That is the other half of the false green: a suite that silently stops being
 # discovered (a renamed file, a target dropped from Package.swift, a @Suite that no
 # longer compiles in) shrinks the count without failing anything.
-if [ "$FILTERED" -eq 1 ]; then
+if [ "$APPLY_FLOOR" -eq 0 ]; then
   echo "gate:      filtered run - the floor is not applied (${EXECUTED} test(s) ran, which is > 0)"
 elif [ -f "$FLOOR_FILE" ]; then
   FLOOR="$(grep -oE '^[0-9]+' "$FLOOR_FILE" | head -1 || true)"
@@ -166,6 +196,12 @@ elif [ -f "$FLOOR_FILE" ]; then
     echo "  recorded in ios/${FLOOR_FILE}. Tests have gone MISSING - a suite is no longer" >&2
     echo "  being discovered. If the drop is deliberate, lower the floor in the same" >&2
     echo "  commit that removes the tests, so it appears in the diff." >&2
+    if [ "$SKIPPED" -eq 1 ]; then
+      echo "" >&2
+      echo "  A --skip was given. --skip does NOT lift the floor: a run with tests removed" >&2
+      echo "  from it is not the gate, whatever it is called. Use --filter for an edit loop," >&2
+      echo "  or run the whole suite." >&2
+    fi
     exit 1
   fi
   echo "gate:      ${EXECUTED} test(s) executed, floor ${FLOOR} cleared"

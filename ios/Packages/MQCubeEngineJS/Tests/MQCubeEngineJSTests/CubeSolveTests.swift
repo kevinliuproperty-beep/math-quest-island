@@ -20,9 +20,11 @@ struct CubeSolveTests {
     static let scrambleDepth = 50
 
     /// Kept low by default because a 3x3 plan is ~110 beats and the replay is the
-    /// expensive part. MQ_CUBE_SOLVES raises it for a deeper run.
+    /// expensive part. `MQ_CUBE_SOLVES` raises it for a deeper run - and LOWERS it for a
+    /// fast edit loop, which is why it is refused on a gate run: `MQ_CUBE_SOLVES=1` used to
+    /// clear the gate in 1.3 s (refutation wound 2). The floor lives in ios/gate-floor.txt.
     static var solveCount: Int {
-        Int(ProcessInfo.processInfo.environment["MQ_CUBE_SOLVES"] ?? "") ?? 12
+        GateFloor.sampleSize(env: "MQ_CUBE_SOLVES", floorKey: "cube-solves", default: 12)
     }
 
     @Test("a 50-move scramble is solved by its own plan", arguments: CubeSize.allCases)
@@ -54,6 +56,8 @@ struct CubeSolveTests {
             if let endKey = body.endKey, endKey == verdict.key { endMatched += 1 }
         }
 
+        GateFloor.expectAtLeast(Self.solveCount, floorKey: "cube-solves", default: 12,
+                                what: "\(size.rawValue)x\(size.rawValue) full solves replayed")
         #expect(solved == Self.solveCount,
                 "\(size.rawValue)x\(size.rawValue): only \(solved) of \(Self.solveCount) plans finished the cube")
         #expect(endMatched == Self.solveCount,

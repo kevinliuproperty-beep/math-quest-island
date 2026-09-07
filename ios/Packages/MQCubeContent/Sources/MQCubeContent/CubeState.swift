@@ -32,6 +32,76 @@ public struct CubeState: Codable, Sendable, Hashable {
             return ep?.count == 12 && eo?.count == 12 && cn?.count == 6
         }
     }
+
+    /// Everything wrong with this state's DOMAIN, in the same words the engine uses.
+    /// Empty means the engine will accept it.
+    ///
+    /// Shape is not enough and the refutation proved it: `cp` all zero is well formed, and
+    /// the engine cheerfully answered "buildPlan ok, beats 0" - a plan that finishes
+    /// nothing. `cp`, `ep` and `cn` are PERMUTATIONS; `co` is 0...2 and `eo` is 0...1;
+    /// every entry has to survive the trip through a JavaScript number, which `Int.max`
+    /// does not (it comes back as 9223372036854776000 and Swift's decoder throws on it).
+    ///
+    /// This is deliberately a mirror of `CUBE_API.validateState`'s `problems`, kept in
+    /// `MQCubeContent` so a UI can refuse a corrupt save without waking JavaScriptCore.
+    /// `CubeGoldenTests` asserts the two agree, case for case.
+    public func domainProblems(for size: CubeSize) -> [String] {
+        var out: [String] = []
+        // The largest whole number that survives a JavaScript double. The engine's own
+        // SAFE_INT, spelled the same way on both sides.
+        let safe = 9_007_199_254_740_991
+
+        func check(_ name: String, _ v: [Int]?, count: Int, min lo: Int, max hi: Int, permutation: Bool) {
+            guard let v, v.count == count else {
+                out.append("state.\(name) must be an array of \(count) (got \(v.map { "\($0.count)" } ?? "undefined"))")
+                return
+            }
+            var seen = Set<Int>()
+            for (i, n) in v.enumerated() {
+                if n > safe || n < -safe {
+                    out.append("state.\(name)[\(i)] is outside the range a whole number survives (\(n))")
+                    continue
+                }
+                if n < lo || n > hi {
+                    out.append("state.\(name)[\(i)] is \(n), outside \(lo)..\(hi)")
+                    continue
+                }
+                if permutation {
+                    if seen.contains(n) {
+                        out.append("state.\(name) names slot \(n) more than once, so it is not a permutation")
+                    }
+                    seen.insert(n)
+                }
+            }
+            if permutation {
+                let missing = (lo...hi).filter { !seen.contains($0) }
+                if !missing.isEmpty {
+                    out.append("state.\(name) never names \(missing.map(String.init).joined(separator: ", ")), so it is not a permutation")
+                }
+            }
+        }
+
+        switch size {
+        case .small:
+            for (name, value) in [("ep", ep), ("eo", eo), ("cn", cn)] where value != nil {
+                out.append("state.\(name) does not exist on the 2x2")
+            }
+        case .big:
+            break
+        }
+        check("cp", cp, count: 8, min: 0, max: 7, permutation: true)
+        check("co", co, count: 8, min: 0, max: 2, permutation: false)
+        if size == .big {
+            check("ep", ep, count: 12, min: 0, max: 11, permutation: true)
+            check("eo", eo, count: 12, min: 0, max: 1, permutation: false)
+            check("cn", cn, count: 6, min: 0, max: 5, permutation: true)
+        }
+        return out
+    }
+
+    /// A cube the engine will accept. Not a claim that it is REACHABLE - that is
+    /// `CUBE_API.validateState`'s `legal`, which runs the cores' own `validate`.
+    public func isInDomain(for size: CubeSize) -> Bool { domainProblems(for: size).isEmpty }
 }
 
 /// A cube plus the key that identifies it. `key` is the cores' own `keyOf` string, so two
@@ -242,6 +312,26 @@ public struct CubeGuideScript: Codable, Sendable {
 /// `ranking` is the whole ask order, not only the winner: a tie-break that changes which
 /// of two equally sharp squares wins moves the ranking while leaving `best` alone, and
 /// that is precisely the mutation the split lane's first probe walked past.
+///
+/// # The nameable predicate, and why there are two answers here
+///
+/// The web painter asks `INFER.bestQuestion(C, known, res.list, { nameable: canNameByColour })`
+/// and this bridge used to ask it with `{}`. The refutation measured the consequence: with
+/// the predicate supplied, the winning square differs from the `{}` answer in 200 of 200
+/// seeded paintings. **The iPad was asking the child about a different square from the web.**
+///
+/// The reason the predicate exists is the child's, not the engine's: place words do not
+/// survive the tip she has to make to see a hidden square, so a square is named by the
+/// colours around it - *"a question nobody can name is a question nobody can answer"*. A
+/// nameable square wins whenever it is no more than one candidate worse than the sharpest.
+///
+/// So both answers come back, always:
+/// * ``best`` / ``ranking`` - **with** the predicate. This is the web's own question and
+///   the one a UI should ask.
+/// * ``plain`` / ``plainRanking`` - with no options. Kept so a caller can SEE the
+///   difference rather than inherit it silently.
+/// * ``nameable`` - the resolved boolean array, so a painter can read why a square won, or
+///   hand its own array back in.
 public struct CubeQuestion: Codable, Sendable {
     public struct Completions: Codable, Sendable { public let count: Int; public let capped: Bool; public let listSize: Int }
     public struct Rank: Codable, Sendable, Hashable {
@@ -249,12 +339,61 @@ public struct CubeQuestion: Codable, Sendable {
         public let worst: Int
         public let spread: Int
         public let easy: Int
+        /// Whether this square can be pointed at by the colours round it.
+        public let nameable: Bool?
     }
     public let size: Int
     public let completions: Completions
+    /// The winner WITH the nameable predicate - the square the web would ask about.
     public let best: JSONValue?
+    /// The winner with no options at all - what this bridge used to answer on its own.
+    public let plain: JSONValue?
     public let schemeCount: Int
     public let ranking: [Rank]
+    public let plainRanking: [Rank]
+    /// One entry per square: can the asker point at it by the colours round it?
+    public let nameable: [Bool]?
+    public let nameableCount: Int
+    /// How much sharper an un-nameable square has to be before it wins anyway. 1 on the web.
+    public let slack: Double?
+    /// True when the two winners are different squares - i.e. when supplying the predicate
+    /// changed the question. This is the field a gate watches.
+    public let differs: Bool
+
+    /// The sid of the square a UI should ask about.
+    public var bestSid: Int? {
+        if case .object(let o)? = best, case .number(let d)? = o["sid"] { return Int(d) }
+        return nil
+    }
+    public var plainSid: Int? {
+        if case .object(let o)? = plain, case .number(let d)? = o["sid"] { return Int(d) }
+        return nil
+    }
+}
+
+/// Whether a `CubeState` off disk is a cube at all, and whether it is a cube a child could
+/// be holding. Two different questions, answered separately.
+///
+/// The refutation reached `{"ok":true,...}` from the lane's own public typed API with
+/// `cp` all `Int.max` (which JavaScript rounds to 9223372036854776000, and which Swift's
+/// `JSONDecoder` then THREW on), with fractional and negative orientations, and with a
+/// well-shaped nonsense cube that answered *"buildPlan ok, beats 0"* - a plan that finishes
+/// nothing, shown to a child. `domainOk` is the first wall; `legal` is the cores' own
+/// `validate` run over the state's sticker view.
+public struct CubeStateValidation: Codable, Sendable {
+    public let size: Int
+    /// Eight corners, a permutation, twists in range, every number one a fixed-width
+    /// integer survives.
+    public let domainOk: Bool
+    /// Every reason it is not a state, in the engine's own words.
+    public let problems: [String]
+    /// Whether it is a cube that can exist. False whenever `domainOk` is false.
+    public let legal: Bool
+    /// The cores' own refusal code (`twist`, `parity`, ...) or `bad-state`.
+    public let code: String?
+    public let message: String
+    public let key: String?
+    public let facesAllOneColour: Bool?
 }
 
 /// One block, placed. This is the SceneKit contract.

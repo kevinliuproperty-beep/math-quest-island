@@ -43,7 +43,7 @@ public actor JSCubeEngine: CubeEngine {
     /// clear error at startup rather than a decode failure three screens in.
     static let requiredMethods = [
         "build", "newSolved", "scramble", "applyMoves", "isSolved", "stickers", "validate",
-        "stepStatus", "buildPlan", "guideScript", "guideNode", "bestQuestion",
+        "validateState", "stepStatus", "buildPlan", "guideScript", "guideNode", "bestQuestion",
         "geometry", "moveGeometry", "words", "drainLogs"
     ]
 
@@ -166,7 +166,16 @@ public actor JSCubeEngine: CubeEngine {
     // MARK: - Envelope
 
     private struct Failure: Decodable {
-        struct Detail: Decodable { let name: String; let message: String; let stack: String; let `where`: String }
+        /// `code` is the runtime-independent handle; `hostDetail` is deliberately NOT
+        /// decoded into anything a caller can branch on - it is the one field that carries
+        /// a runtime's own wording (wound 7).
+        struct Detail: Decodable {
+            let name: String
+            let code: String?
+            let message: String
+            let stack: String
+            let `where`: String
+        }
         let ok: Bool
         let error: Detail?
     }
@@ -185,6 +194,7 @@ public actor JSCubeEngine: CubeEngine {
             let d = failure.error
             throw CubeEngineError.engineRejected(method: method,
                                                  name: d?.name ?? "Error",
+                                                 code: d?.code ?? "engine-threw",
                                                  message: d?.message ?? "unknown",
                                                  stack: d?.stack ?? "",
                                                  at: d?.where ?? method)
@@ -212,7 +222,7 @@ public actor JSCubeEngine: CubeEngine {
     private struct StickerArgs: Encodable { let size: Int; let stickers: [String?] }
     private struct PlanArgs: Encodable { let size: Int; let state: CubeState; let text: Bool }
     private struct NodeArgs: Encodable { let size: Int; let id: String }
-    private struct PaintedArgs: Encodable { let size: Int; let painted: [String?] }
+    private struct PaintedArgs: Encodable { let size: Int; let painted: [String?]; let nameable: [Bool]? }
     private struct MoveGeoArgs: Encodable { let size: Int; let state: CubeState; let move: String }
 
     private struct BuildResponse: Decodable { let build: CubeBuild }
@@ -287,9 +297,21 @@ public actor JSCubeEngine: CubeEngine {
                  as: NodeResponse.self).node
     }
 
-    public func bestQuestion(size: CubeSize, painted: [String?]) async throws -> CubeQuestion {
-        try call("bestQuestion", try encodeArgs(PaintedArgs(size: size.rawValue, painted: painted), method: "bestQuestion"),
+    public func bestQuestion(size: CubeSize, painted: [String?], nameable: [Bool]? = nil) async throws -> CubeQuestion {
+        try call("bestQuestion",
+                 try encodeArgs(PaintedArgs(size: size.rawValue, painted: painted, nameable: nameable),
+                                method: "bestQuestion"),
                  as: CubeQuestion.self)
+    }
+
+    /// Is this a cube at all, and is it a cube a child could be holding?
+    ///
+    /// Never throws for a malformed state: the whole point is that a corrupt save comes
+    /// back as an ANSWER a UI can show, not as a decode failure three frames in. It throws
+    /// only if the engine itself is broken.
+    public func validateState(size: CubeSize, state: CubeState) async throws -> CubeStateValidation {
+        try call("validateState", try encodeArgs(StateArgs(size: size.rawValue, state: state), method: "validateState"),
+                 as: CubeStateValidation.self)
     }
 
     public func geometry(size: CubeSize, state: CubeState) async throws -> CubeGeometry {

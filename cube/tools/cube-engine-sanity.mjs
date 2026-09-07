@@ -46,8 +46,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { loadBundle, loadMonolith, runValueProbe, sha, mulberry32 } from './cube-engine-probe.mjs';
+import { allBlocks as markerBlocks } from '../../tools/cube-engine/markers.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, '..', '..');
@@ -59,6 +61,8 @@ const SOURCE = path.resolve(arg('--source') || path.join(ROOT, 'cube/index.html'
 const SNAPSHOT = path.resolve(arg('--snapshot') || path.join(here, 'fixtures', 'cube-engine-snapshot.json'));
 const RECORD = process.argv.includes('--record');
 const VERBOSE = process.argv.includes('--verbose');
+
+const sha256Full = str => crypto.createHash('sha256').update(str).digest('hex');
 
 let checks = 0;
 const fails = [];
@@ -169,20 +173,13 @@ function stripCodeOnly(src) {
 /* ================================================================ B. byte identity */
 section('B. the four blocks are cube/index.html\'s own bytes');
 
-const BLOCK_RE = {
-  CORE: /\/\* ===== CORE START =====[\s\S]*?\/\* ===== CORE END ===== \*\//g,
-  CORE3: /\/\* ===== CORE3 START =====[\s\S]*?\/\* ===== CORE3 END ===== \*\//g,
-  INFER: /\/\* ===== INFER START =====[\s\S]*?\/\* ===== INFER END ===== \*\//g,
-  GUIDE: /\/\* ===== GUIDE START =====[\s\S]*?\/\* ===== GUIDE END ===== \*\//g
-};
-function allBlocks(text) {
-  const out = {};
-  for (const [name, re] of Object.entries(BLOCK_RE)) {
-    re.lastIndex = 0;
-    out[name] = text.match(re) || [];
-  }
-  return out;
-}
+/* WOUND 6. This used to be four free non-greedy regexes declared right here, while the
+   extractor next door insisted on a whole-line match. An INDENTED end marker planted inside
+   CORE therefore built, --check'd and --record-guard'd clean, and was caught only because
+   the two tools then disagreed about the block's bytes - a check that fires because two
+   tools disagree is not a check. There is now ONE matcher, in tools/cube-engine/markers.mjs,
+   and the extractor, this gate, the probe and the golden recorder all import it. */
+const allBlocks = markerBlocks;
 if (!fs.existsSync(SOURCE)) {
   ok(false, 'cube/index.html exists to compare against', SOURCE);
 } else {
@@ -377,7 +374,8 @@ function keyToState3(key) {
 section('F. CUBE_API answers what the cores answer (the normalisation layer is new code)');
 
 const API = ns.CUBE_API;
-const call = (m, a) => JSON.parse(API[m](a === undefined ? undefined : JSON.stringify(a)));
+const rawCall = (m, a) => API[m](a === undefined ? undefined : JSON.stringify(a));
+const call = (m, a) => JSON.parse(rawCall(m, a));
 
 {
   const b = call('build');
@@ -512,15 +510,65 @@ for (const size of [2, 3]) {
   ok(mgw.ok === true && mgw.isWhole === true && mgw.pieces.length === wantPieces,
      tag + 'moveGeometry handles a whole-cube turn on both sizes');
 
-  /* bestQuestion through the API, against INFER directly */
+  /* bestQuestion through the API, against INFER directly.
+     WOUND 1: the API used to call INFER with {} while the web calls it with
+     { nameable: canNameByColour }, and this very check could not see it because it compared
+     CUBE_API to INFER with the same empty opts. Now BOTH answers come back and both are
+     checked against the thing they are supposed to be. */
   const painted = st.stickers.map((c, i) => (i % 4 === 0 ? c : null));
   const bq = call('bestQuestion', { size, painted });
   const comp = ns.INFER.completions(CC, painted, { cap: 240, budget: 20000 });
-  const rawBest = ns.INFER.bestQuestion(CC, painted, comp.list, {});
+  const rawPlain = ns.INFER.bestQuestion(CC, painted, comp.list, {});
   ok(bq.completions.count === comp.count, tag + 'bestQuestion reports INFER\'s own completion count');
-  ok(JSON.stringify(bq.best && bq.best.sid) === JSON.stringify(rawBest && rawBest.sid),
-     tag + 'bestQuestion picks INFER\'s own square');
+  ok(JSON.stringify(bq.plain && bq.plain.sid) === JSON.stringify(rawPlain && rawPlain.sid),
+     tag + 'bestQuestion\'s `plain` answer is INFER with no options, unchanged');
+  ok(Array.isArray(bq.nameable) && bq.nameable.length === (size === 2 ? 24 : 54),
+     tag + 'bestQuestion resolves the nameable predicate the web supplies');
+  const rawNamed = ns.INFER.bestQuestion(CC, painted, comp.list,
+    { nameable: sid => !!bq.nameable[sid], slack: 1 });
+  ok(JSON.stringify(bq.best && bq.best.sid) === JSON.stringify(rawNamed && rawNamed.sid),
+     tag + 'bestQuestion\'s `best` answer is INFER WITH the nameable predicate');
   ok(bq.ranking.length > 0, tag + 'the whole ask ranking comes back, not just the winner');
+  ok(bq.plainRanking.length > 0, tag + 'and the un-named ranking beside it');
+  /* an explicit boolean array must be honoured, and an all-false one must fall back to plain */
+  const none = new Array(size === 2 ? 24 : 54).fill(false);
+  const bqNone = call('bestQuestion', { size, painted, nameable: none });
+  ok(JSON.stringify(bqNone.best && bqNone.best.sid) === JSON.stringify(rawPlain && rawPlain.sid),
+     tag + 'a caller-supplied all-false nameable array falls back to the plain answer');
+
+  /* stateIn's domain checks (wound 5): a nonsense cube is REFUSED, not answered */
+  {
+    const nonsense = size === 2 ? { cp: [0,0,0,0,0,0,0,0], co: [0,0,0,0,0,0,0,0] }
+                                : { cp: [0,0,0,0,0,0,0,0], co: [0,0,0,0,0,0,0,0],
+                                    ep: [0,0,0,0,0,0,0,0,0,0,0,0], eo: [0,0,0,0,0,0,0,0,0,0,0,0],
+                                    cn: [0,0,0,0,0,0] };
+    const p = call('buildPlan', { size, state: nonsense });
+    ok(p.ok === false && p.error.code === 'bad-state',
+       tag + 'a cp of all zeros is refused, not answered with "plan ok, beats 0"',
+       JSON.stringify(p).slice(0, 120));
+    const big = JSON.parse(JSON.stringify(nonsense));
+    big.cp = [9007199254740993, 1, 2, 3, 4, 5, 6, 7];
+    const bigR = call('isSolved', { size, state: big });
+    ok(bigR.ok === false && bigR.error.code === 'bad-state',
+       tag + 'a number too big for a fixed-width integer is refused by name');
+    const frac = JSON.parse(JSON.stringify(a1.state));
+    frac.co = frac.co.slice(); frac.co[0] = 0.5;
+    const fracR = call('stepStatus', { size, state: frac });
+    ok(fracR.ok === false && fracR.error.code === 'bad-state',
+       tag + 'a fractional orientation is refused by name');
+    const neg = JSON.parse(JSON.stringify(a1.state));
+    neg.co = neg.co.slice(); neg.co[0] = -1;
+    const negR = call('stepStatus', { size, state: neg });
+    ok(negR.ok === false && negR.error.code === 'bad-state',
+       tag + 'a negative orientation is refused by name');
+    /* and validateState says the same thing, in a shape a UI can show */
+    const vs = call('validateState', { size, state: nonsense });
+    ok(vs.ok === true && vs.domainOk === false && vs.problems.length > 0,
+       tag + 'validateState names the problems instead of throwing');
+    const vsGood = call('validateState', { size, state: a1.state });
+    ok(vsGood.ok === true && vsGood.domainOk === true && vsGood.legal === true,
+       tag + 'validateState accepts a real cube and says it is legal');
+  }
 
   /* words through the API */
   const wds = call('words', { size });
@@ -545,10 +593,143 @@ for (const size of [2, 3]) {
   const badMove = call('applyMoves', { size, state: a1.state, moves: 'Q' });
   ok(badMove.ok === false && badMove.error.stack.length > 0,
      tag + 'an unknown move comes back with a JS stack');
+  ok(badMove.error.code === 'bad-move', tag + 'and with a runtime-independent code');
+  /* WOUND 7: the host's own JSON parser wording must not cross the boundary in `message` */
+  const badJSON = JSON.parse(API.applyMoves('{oops'));
+  ok(badJSON.ok === false && badJSON.error.code === 'bad-json',
+     tag + 'bad JSON comes back as the code `bad-json`');
+  ok(badJSON.error.message === 'applyMoves: arguments were not JSON',
+     tag + '...and the message carries no runtime-specific parser text',
+     JSON.stringify(badJSON.error.message));
+  ok(typeof badJSON.error.hostDetail === 'string' && badJSON.error.hostDetail.length > 0,
+     tag + '...with the runtime\'s own wording quarantined in hostDetail');
 }
 {
   const bad = call('newSolved', { size: 4 });
   ok(bad.ok === false && /size must be 2 or 3/.test(bad.error.message), 'size 4 is refused by name');
+}
+
+
+/* ================================================================ G. the golden corpus */
+/* KILL 1. tools/cube-engine/api.js is not one of the four guarded blocks, the snapshot is
+   recorded from a monolith that contains no CUBE_API at all, and section F above checks
+   the normalisation layer by SPOT CHECK. Eleven refuter corruptions of api.js rode through
+   all of it: every edge block's stickers swapped faces, the wrong four blocks animating on
+   every turn, the six face normals reversed, every sentence of the coached solve replaced,
+   the method restarting at step 1 forever, the colour map dropped after a legal painting.
+
+   tools/fixtures/cube-api-golden.json is the value oracle those needed. It is recorded from
+   cube/index.html itself by tools/make-cube-api-golden.mjs - which refuses to record unless
+   CUBE_API agrees with the cores' own functions AND with the page's own canNameByColour -
+   and everything below replays it through the COMMITTED BUNDLE and compares the engine's
+   own JSON strings, hash for hash. */
+section('G. kill 1 - the golden corpus: CUBE_API\'s own answers, hash for hash');
+
+const GOLDEN = path.resolve(arg('--golden') || path.join(ROOT, 'tools/fixtures/cube-api-golden.json'));
+if (!fs.existsSync(GOLDEN)) {
+  ok(false, 'the CUBE_API golden corpus exists', GOLDEN + '  (record it: npm run build:cube-api-golden)');
+  report();
+}
+const golden = JSON.parse(fs.readFileSync(GOLDEN, 'utf8'));
+const gsha = str => sha(str);   /* the probe's sha() is sha256 truncated to 32, same as the recorder's */
+
+{
+  const srcSha = fs.existsSync(SOURCE) ? sha256Full(fs.readFileSync(SOURCE, 'utf8')) : null;
+  ok(golden.sourceSha256 === srcSha,
+     'the golden was recorded from THIS cube/index.html',
+     'golden ' + String(golden.sourceSha256).slice(0, 16) + ' vs page ' + String(srcSha).slice(0, 16)
+     + '  (re-record: npm run build:cube-api-golden)');
+  const apiPath = path.join(ROOT, 'tools/cube-engine/api.js');
+  const apiSha = fs.existsSync(apiPath) ? sha256Full(fs.readFileSync(apiPath, 'utf8')) : null;
+  ok(golden.apiSha256 === apiSha,
+     'the golden was recorded from THIS tools/cube-engine/api.js',
+     'golden ' + String(golden.apiSha256).slice(0, 16) + ' vs api.js ' + String(apiSha).slice(0, 16)
+     + '  (api.js changed - re-record the golden and read the diff)');
+  ok(golden.statesPerSize >= 300, 'the golden battery carries at least 300 states per size  ['
+     + golden.statesPerSize + ']');
+  ok(golden.liftedPredicate && golden.liftedPredicate.names.indexOf('canNameByColour') >= 0,
+     'the golden lifted the page\'s own canNameByColour to check the reimplementation against');
+}
+
+for (const size of [2, 3]) {
+  const band = golden.sizes[String(size)];
+  const tag = size + 'x' + size + ': ';
+  if (!band) { ok(false, tag + 'the golden carries this size'); continue; }
+
+  ok(band.rows.length >= 300, tag + 'the golden battery has ' + band.rows.length + ' states');
+  ok(new Set(band.rows.map(r => r.key)).size === band.rows.length,
+     tag + 'every golden state is a DIFFERENT cube (a repeated row proves nothing)');
+  ok(call('newSolved', { size }).key === band.solvedKey, tag + 'the solved key matches the golden');
+
+  /* the singletons */
+  ok(gsha(rawCall('words', { size })) === band.words, tag + 'words() is the golden\'s, byte for byte');
+  ok(gsha(rawCall('guideScript', { size })) === band.guideScript,
+     tag + 'guideScript() is the golden\'s in full (' + band.guideNodeCount + ' nodes)');
+  {
+    const script = call('guideScript', { size });
+    ok(gsha(script.script.nodes.map(n => n.id + ' ' + n.say + ' ' + n.why + ' ' + n.title).join(''))
+       === band.guideScriptText, tag + 'the guided script TEXT hashes to the golden');
+    let nodeBad = 0, firstNode = null;
+    for (const id of Object.keys(band.guideNodes)) {
+      if (gsha(rawCall('guideNode', { size, id })) !== band.guideNodes[id]) {
+        nodeBad++; if (!firstNode) firstNode = id;
+      }
+    }
+    ok(nodeBad === 0, tag + 'guideNode(id) matches the golden for all '
+       + Object.keys(band.guideNodes).length + ' nodes',
+       nodeBad ? nodeBad + ' differ, first: ' + firstNode : '');
+  }
+
+  /* the battery */
+  const misses = [];
+  let cells = 0, moveCells = 0, questionCells = 0, differing = 0;
+  for (const row of band.rows) {
+    const state = row.state;
+    for (const [method, want] of Object.entries(row.calls)) {
+      const args = method === 'validate'
+        ? { size, stickers: call('stickers', { size, state }).stickers }
+        : { size, state };
+      const got = gsha(rawCall(method, args));
+      cells++;
+      if (got !== want) misses.push(row.label + '/' + method);
+    }
+    for (const [move, want] of Object.entries(row.moveGeometry || {})) {
+      const got = gsha(rawCall('moveGeometry', { size, state, move }));
+      moveCells++;
+      if (got !== want) misses.push(row.label + '/moveGeometry(' + move + ')');
+    }
+    for (const q of row.questions || []) {
+      const gotBest = gsha(rawCall('bestQuestion', { size, painted: q.painted }));
+      const gotPlain = gsha(rawCall('bestQuestion', { size, painted: q.painted, nameable: false }));
+      questionCells += 2;
+      if (gotBest !== q.bestQuestion) misses.push(row.label + '/bestQuestion(' + q.kind + ')');
+      if (gotPlain !== q.bestQuestionPlain) misses.push(row.label + '/bestQuestion-plain(' + q.kind + ')');
+      if (q.differs) differing++;
+    }
+    if (misses.length > 40) break;
+  }
+  ok(misses.length === 0,
+     tag + cells + ' state calls + ' + moveCells + ' move-geometry calls + ' + questionCells
+     + ' ask calls all match the golden',
+     misses.length ? misses.length + '+ differ, first: ' + misses.slice(0, 5).join(', ') : '');
+  console.log('   ' + String(band.rows.length).padStart(4) + '  ' + tag + 'golden states, '
+    + (cells + moveCells + questionCells) + ' CUBE_API calls replayed');
+
+  /* THE NAMEABLE BRANCH IS ALIVE. If somebody drops the predicate again, every one of these
+     rows goes back to agreeing with `plain` - so the count is asserted by name and not left
+     to a hash that could be re-recorded without anyone noticing what it meant. */
+  const allQ = band.rows.flatMap(r => r.questions || []);
+  ok(allQ.length >= 2 * band.rows.length,
+     tag + 'every golden state carries both painting shapes  [' + allQ.length + ']');
+  const varied = new Set(allQ.map(q => q.nameableCount));
+  ok(varied.size > 5, tag + 'the nameable predicate is not constant across the battery  ['
+     + varied.size + ' distinct counts, min ' + Math.min(...varied) + ', max ' + Math.max(...varied) + ']');
+  if (size === 3) {
+    ok(differing >= 25,
+       '3x3: the nameable option CHANGES THE QUESTION in ' + differing + ' golden paintings',
+       'the web asks with { nameable: canNameByColour }; if this drops to 0 the bridge is '
+       + 'asking a different question from the web again');
+  }
 }
 
 report();

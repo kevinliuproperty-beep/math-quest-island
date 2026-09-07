@@ -74,7 +74,12 @@ let package = Package(
         .library(name: "MQProgress", targets: ["MQProgress"]),
         // end lane/progress
         // lane/quest
-        .library(name: "MQQuest", targets: ["MQQuest"])
+        .library(name: "MQQuest", targets: ["MQQuest"]),
+        // end lane/quest
+        // lane/patchwerk
+        .library(name: "MQServices", targets: ["MQServices"]),
+        .library(name: "MQPatchwerk", targets: ["MQPatchwerk"])
+        // end lane/patchwerk
     ],
     targets: [
         .target(
@@ -162,26 +167,67 @@ let package = Package(
         // accepted and the distractor is rejected" is a claim about the real
         // grader; asserting it against a fake source would prove nothing at all.
         //
-        // ON MERGE WITH lane/progress: add "MQProgress" to MQQuest's dependencies
-        // and delete Packages/MQQuest/Sources/MQQuest/Progress/ProgressStore.swift
-        // (its header says the same thing).
+        // DONE ON MERGE (Integration Phase 1, 2026-09-07): "MQProgress" is in the
+        // dependency list and Packages/MQQuest/Sources/MQQuest/Progress/ProgressStore.swift
+        // - the lane's transcription of PHASE1.md section 3 - is deleted. There is one
+        // ProgressStore protocol in this tree and MQProgress owns it.
         .target(
             name: "MQQuest",
-            dependencies: ["MQContent", "MQDesign"],
+            dependencies: ["MQContent", "MQDesign", "MQProgress"],
             path: "Packages/MQQuest/Sources/MQQuest"
         ),
         .testTarget(
             name: "MQQuestTests",
-            dependencies: ["MQQuest", "MQContent", "MQDesign", "MQEngineJS"],
+            dependencies: ["MQQuest", "MQContent", "MQDesign", "MQProgress", "MQEngineJS"],
             path: "Packages/MQQuest/Tests/MQQuestTests"
         ),
         // macOS-only, and guarded internally by `#if os(macOS)` so an iOS build
         // of the package tree still compiles it rather than failing.
         .executableTarget(
             name: "mqhost",
-            dependencies: ["MQQuest", "MQEngineJS", "MQContent", "MQDesign"],
+            dependencies: ["MQQuest", "MQEngineJS", "MQContent", "MQDesign", "MQProgress"],
             path: "Host"
-        )
+        ),
         // -------------------------------------------------------- end lane/quest
+        // lane/patchwerk -----------------------------------------------------
+        // Kevin's timed damage mode, plus the leaderboard seam it needs.
+        //
+        // MQServices holds the LeaderboardService protocol, the on-device
+        // LocalLeaderboard (a JSON file, nothing leaves the iPad) and a compiled
+        // Game Center STUB. It depends on Foundation only - deliberately not on
+        // MQDesign, so a board can never start rendering itself.
+        //
+        // MQPatchwerk is the mode: a deterministic run engine fed by an injected
+        // clock, the question feed, and the four screens. It consumes MQContent
+        // (questions), MQDesign (the look) and MQServices (the board). It does
+        // NOT depend on MQEngineJS - UI never imports the engine; the
+        // composition root hands a QuestionSource up.
+        .target(
+            name: "MQServices",
+            path: "Packages/MQServices/Sources/MQServices"
+        ),
+        .testTarget(
+            name: "MQServicesTests",
+            dependencies: ["MQServices"],
+            path: "Packages/MQServices/Tests/MQServicesTests"
+        ),
+        // As with MQQuest: MQPatchwerk/Contract/ProgressStore.swift, this lane's own
+        // transcription of PHASE1.md section 3, is DELETED on merge and the module
+        // depends on MQProgress instead (Integration Phase 1, 2026-09-07).
+        .target(
+            name: "MQPatchwerk",
+            dependencies: ["MQContent", "MQDesign", "MQServices", "MQProgress"],
+            path: "Packages/MQPatchwerk/Sources/MQPatchwerk"
+        ),
+        .testTarget(
+            name: "MQPatchwerkTests",
+            dependencies: ["MQPatchwerk", "MQContent", "MQDesign", "MQServices", "MQProgress"],
+            path: "Packages/MQPatchwerk/Tests/MQPatchwerkTests"
+            // The 300-run scoring parity corpus is NOT a bundled resource: it is
+            // found by walking up from `#filePath` to `tools/fixtures/`, the same
+            // way MQEngineJSTests finds its own. One copy in the repository, and
+            // the Swift side cannot be testing a stale duplicate of it.
+        )
+        // end lane/patchwerk --------------------------------------------------
     ]
 )

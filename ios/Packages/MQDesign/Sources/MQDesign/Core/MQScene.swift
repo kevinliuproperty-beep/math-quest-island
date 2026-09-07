@@ -221,6 +221,19 @@ public struct MQPatchwerkScene: Sendable, Equatable {
     public var level: String
     /// mm:ss.
     public var timer: String
+    /// Sand still in the hourglass, 0...1. The PICTURE of the clock, and it has to
+    /// be the same clock the digits are.
+    ///
+    /// It is a field because it used to be a constant. `MQPatchwerkScreen`'s
+    /// `sandLeft` was `scene.enraged ? 0.10 : 0.92`, so the glass read 92% full at
+    /// 0:21 left of a three-minute fight and then jumped to 10% the instant the
+    /// enrage began: the digits correct throughout, the picture a lie for the
+    /// whole fight, and `PatchwerkRun.sandFraction(at:)` sitting unused because
+    /// the scene had nothing to carry it in. (Refutation, 2026-09-07.)
+    ///
+    /// The design still does no arithmetic - the mode computes the fraction and
+    /// hands it down, exactly like `damage`.
+    public var sand: Double
     /// Already comma-formatted; the design never does arithmetic.
     public var damage: String
     public var stacks: Int
@@ -243,6 +256,9 @@ public struct MQPatchwerkScene: Sendable, Equatable {
         tierName: "Patchwerk",
         level: "P4",
         timer: "2:47",
+        // 2:47 of a 3:00 fight. The sample's glass and the sample's digits now
+        // agree, which they did not when this was a constant.
+        sand: 167.0 / 180.0,
         damage: "1,240",
         stacks: 7,
         stackCap: 10,
@@ -263,6 +279,7 @@ public struct MQPatchwerkScene: Sendable, Equatable {
     public static let enraged: MQPatchwerkScene = {
         var s = MQPatchwerkScene.sample
         s.timer = "0:18"
+        s.sand = 18.0 / 180.0
         s.damage = "1,806"
         s.stacks = 10
         s.multiplier = "2.00x"

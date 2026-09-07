@@ -8,6 +8,10 @@
  * Every base is even, so every area is a whole number and finishNum keeps the
  * authored distractors (rubric lesson 4). No generator renders a figure, so
  * typed answers stay legal (rubric lesson 1: finishTyped cannot carry extra).
+ * TYPED UNITS: every finishTyped here passes the unit its stem asks for as the
+ * 4th argument, so gradeTyped REJECTS a wrong one. Dress Rehearsal Phase 0
+ * (2026-09-07) found this file passing none: on "What is its area, in cm²?"
+ * the grader took "140 cm", "140 kg" and "140 pupils" as correct.
  */
 (function () {
   const G = MQI.gen;
@@ -38,19 +42,22 @@
     const b = 2 * ri(6, 25), h = ri(8, 30), a = b * h / 2;
     return finishTyped('A triangle has a base of ' + b + ' cm and a height of ' + h +
       ' cm. What is its area, in cm²? (a whole number, e.g. 48)', a,
-      '1/2 x ' + b + ' x ' + h + ' = ' + a + ' cm². Halve one of the two numbers first if that is easier.');
+      '1/2 x ' + b + ' x ' + h + ' = ' + a + ' cm². Halve one of the two numbers first if that is easier.',
+      'cm²');
   }
   function gFindBase(){
     const b = 2 * ri(3, 15), h = ri(4, 20), a = b * h / 2;
     return finishTyped('A triangle has an area of ' + a + ' cm² and a height of ' + h +
       ' cm. What is the length of its base, in cm?', b,
-      'Area = 1/2 x base x height, so base = 2 x area / height = 2 x ' + a + ' / ' + h + ' = ' + b + ' cm.');
+      'Area = 1/2 x base x height, so base = 2 x area / height = 2 x ' + a + ' / ' + h + ' = ' + b + ' cm.',
+      'cm');
   }
   function gFindHeight(){
     const b = 2 * ri(3, 15), h = ri(4, 20), a = b * h / 2;
     return finishTyped('A triangle has an area of ' + a + ' cm² and a base of ' + b +
       ' cm. What is its height, in cm?', h,
-      'Area = 1/2 x base x height, so height = 2 x area / base = 2 x ' + a + ' / ' + b + ' = ' + h + ' cm.');
+      'Area = 1/2 x base x height, so height = 2 x area / base = 2 x ' + a + ' / ' + b + ' = ' + h + ' cm.',
+      'cm');
   }
   function gHalfRectangle(){
     const L = 2 * ri(4, 15), W = ri(4, 15), a = L * W / 2;
@@ -71,7 +78,8 @@
       ' cm by ' + W + ' cm, and a triangle with base ' + b + ' cm and height ' + h +
       ' cm. What is the total area of the shape, in cm²?', a,
       'Rectangle: ' + L + ' x ' + W + ' = ' + rect + ' cm². Triangle: 1/2 x ' + b + ' x ' + h + ' = ' + tri +
-      ' cm². Add them: ' + rect + ' + ' + tri + ' = ' + a + ' cm².');
+      ' cm². Add them: ' + rect + ' + ' + tri + ' = ' + a + ' cm².',
+      'cm²');
   }
 
   MQI.registerTopic({

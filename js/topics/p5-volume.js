@@ -10,6 +10,10 @@
  * surface the app does not have.
  * All answers are positive whole numbers, so finishNum keeps the authored
  * distractors (rubric lesson 4) and no typed answer is a decimal.
+ * TYPED UNITS: every finishTyped here declares its answer's unit as the 4th
+ * argument, so gradeTyped rejects a wrong one. The one exception, gUnitCubes,
+ * opts out EXPLICITLY with a reason (see noUnit below): its answer is a bare
+ * count of cubes and any declaration would mark a right answer wrong.
  */
 (function () {
   const G = MQI.gen;
@@ -20,6 +24,15 @@
   /* No authored distractor may collapse onto the correct answer: finishNum drops it
      silently and pads with correct+1 giveaways. Filter, and redraw if fewer than 3
      real misconceptions survive (6 x s² equals s³ at s = 6, for instance). */
+  /* EXPLICIT UNIT OPT-OUT. tools/gen-sanity.mjs fails any typed generator whose
+     STEM names a unit token while q.unit is empty (that hole let "140 kg" grade
+     correct on a cm² question). A generator whose answer is genuinely a bare
+     number opts out here, in its own file, by attaching the REASON - the harness
+     accepts the opt-out only with one, and only on a typed item that declares no
+     unit. An empty or missing reason is a failure, so the escape hatch cannot be
+     used silently. */
+  const noUnit = (q, why) => (q.unitOptOut = why, q);
+
   function clean(correct, list){
     const out = [];
     for (const c of list) if (c > 0 && Number.isInteger(c) && Math.abs(c - correct) > 3 && !out.includes(c)) out.push(c);
@@ -44,10 +57,14 @@
   function gUnitCubes(){
     const l = ri(2, 8), w = ri(2, 6), h = ri(2, 5), n = l * w * h;
     const who = pick(NAMES);
-    return finishTyped(who + ' builds a solid ' + l + ' cubes long, ' + w + ' cubes wide and ' + h +
+    return noUnit(finishTyped(who + ' builds a solid ' + l + ' cubes long, ' + w + ' cubes wide and ' + h +
       ' cubes high from 1 cm cubes. How many unit cubes are used?', n,
       'Each layer uses ' + l + ' x ' + w + ' = ' + (l * w) + ' cubes and there are ' + h + ' layers, so ' +
-      (l * w) + ' x ' + h + ' = ' + n + ' cubes.');
+      (l * w) + ' x ' + h + ' = ' + n + ' cubes.'),
+      'the stem names cm only to size the little cubes; the answer is a bare COUNT ' +
+      'of unit cubes. Declaring any unit here would mark a right answer wrong - a ' +
+      'child who writes 70 cm3 has read the 1 cm cube correctly and means the same ' +
+      'quantity, and a child who writes 70 cubes is also right.');
   }
   function gLitresToCm3(){
     /* ml was banded 11-99, so a round "3 l 500 ml" could never appear even though
@@ -55,14 +72,16 @@
     const l = ri(1, 9), ml = pick([ri(1, 9) * 10 + ri(1, 9), ri(1, 9) * 100, ri(1, 99) * 10, ri(2, 999)]);
     const v = l * 1000 + ml;
     return finishTyped(l + ' ℓ ' + ml + ' ml of barley water is poured into a tank. How many cm³ is that? (1 ml = 1 cm³)', v,
-      '1 ml is exactly 1 cm³, and 1 ℓ = 1000 ml. So ' + l + ' ℓ ' + ml + ' ml = ' + v + ' ml = ' + v + ' cm³.');
+      '1 ml is exactly 1 cm³, and 1 ℓ = 1000 ml. So ' + l + ' ℓ ' + ml + ' ml = ' + v + ' ml = ' + v + ' cm³.',
+      'cm³');
   }
   function gTankLiquid(){
     const l = pick([10, 15, 20, 25, 30]), w = pick([10, 12, 20, 25]), d = ri(2, 12);
     const cm3 = l * w * d;
     return finishTyped('A rectangular tank has a base ' + l + ' cm by ' + w + ' cm. Water is poured in to a depth of ' +
       d + ' cm. What is the volume of the water, in cm³?', cm3,
-      'The water is a cuboid: ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³.');
+      'The water is a cuboid: ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³.',
+      'cm³');
   }
   function gTankLitres(){
     const l = pick([10, 20, 25, 50]), w = pick([10, 20, 40]), d = ri(2, 12);
@@ -70,7 +89,8 @@
     const who = pick(NAMES);
     return finishTyped(who + ' fills a rectangular tank with a base ' + l + ' cm by ' + w +
       ' cm to a depth of ' + d + ' cm. How many millilitres of water is that? (1 cm³ = 1 ml)', cm3,
-      'Volume = ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³, and 1 cm³ = 1 ml, so it is ' + cm3 + ' ml.');
+      'Volume = ' + l + ' x ' + w + ' x ' + d + ' = ' + cm3 + ' cm³, and 1 cm³ = 1 ml, so it is ' + cm3 + ' ml.',
+      'ml');
   }
 
   MQI.registerTopic({

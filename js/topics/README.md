@@ -56,12 +56,52 @@ node name. One file = one registered topic id.
 |---|---|---|
 | Multiple choice, numeric | `finishNum(q, extra, correct, cands, unit, explain)` | 4 choices, `correct` index, `answerText` |
 | Multiple choice, fraction | `finishFrac(q, extra, [n,d], cands, explain, count)` | fraction choices rendered by `fr(n,d)` |
-| Typed numeric | `finishTyped(q, answer, explain)` | `{ typed:true, answer, correct:-1 }` |
+| Typed numeric | `finishTyped(q, answer, explain, unit)` | `{ typed:true, answer, correct:-1, unit }` |
 | Typed fraction | `finishTyped` with the answer as a reduced `n/d` string, plus a `fracAnswer:[n,d]` field | grader compares cross-multiplied |
 | Typed unit-bearing | `finishTyped` with the unit in the question stem and a bare number as the answer, or `finishNum(..., unit, ...)` for MCQ | unit is appended to every choice, never only the key |
 
 Units belong to the question or to every choice. A unit that appears only on the correct
 answer is a tell and the harness will not catch it: do not do it.
+
+### Typed items must declare their unit (gated)
+
+`finishTyped`'s 4th argument lands on `q.unit`. `gradeTyped` accepts a MISSING unit and
+rejects a MISMATCHED one — but only if the question declares one. A typed item that
+declares nothing falls into the other branch, where **any** token on `core.js`'s shared
+`TYPED_UNITS` list is accepted. That is how Triangle Terrace shipped a "What is its area,
+in cm²?" that graded `140 cm`, `140 kg` and `140 pupils` as correct (Dress Rehearsal
+Phase 0, 2026-09-07).
+
+**Rule, gated by `tools/gen-sanity.mjs`:** a typed generator whose **stem** carries a unit
+token must declare `q.unit`. The build fails and names the generator otherwise. The token
+list is what the grader silently strips (`cm`, `cm²`, `m`, `km`, `kg`, `g`, `ml`, `l`, `°`,
+`%`, `min`, `hours`, `pages`, `pupils`, …) plus `$`, `cents` and `dollars`, which stems
+write but core does not strip. Only the stem is scanned; the explanation is not.
+
+The rule does not check that the unit is the *right* one — `gFindBase`'s stem says cm² and
+its answer is in cm, and both are correct. Declaring anything is enough; declaring nothing
+is the bug.
+
+**Count answers** ("How many pupils are there in the class?") name a token while the answer
+is a bare number. Two legal exits, pick one deliberately:
+
+1. **Declare the count noun.** `p5-rate.js` already ships `'pages'` and `'buns'` this way.
+   A bare number still passes — a missing unit is always accepted — and `24 kg` starts
+   failing. This is the right exit for most count stems.
+2. **Opt out explicitly, with a reason**, when declaring any unit would mark a RIGHT answer
+   wrong. Attach it in your own topic file:
+   ```js
+   const noUnit = (q, why) => (q.unitOptOut = why, q);   // one line, per file
+   ```
+   The reason is mandatory and must be a real sentence; an empty, missing or token reason
+   is itself a build failure, and the opt-out is refused on a generator that also declares
+   a unit. The one user today is `p5-volume.js` `gUnitCubes`: its stem says "1 cm cubes",
+   but a child answering `70 cm3` has read the figure correctly and means the same
+   quantity.
+
+Money is a settled convention: declare `'$'` and re-render `answerText` yourself
+(`q.answerText = '$' + n`), so the review card reads `$4.75` rather than `finishTyped`'s
+default `4.75 $`. `p5-rate.js` `gParkingCharge` is the reference.
 
 ## Figure specs — diagrams are DATA, never markup
 
@@ -210,6 +250,9 @@ the place — and `core.js` is frozen, so that is its own packet.
    generator fails.
 5. **Set wiring.** `buildSetFor(topic, 30)` must fill all three levels with 30 questions each,
    with no duplicate question inside a set.
+6. **Typed unit declared.** A typed question whose STEM carries a unit token must declare
+   `q.unit`, or opt out with a reasoned `q.unitOptOut`. See "Typed items must declare their
+   unit" above for the token list and the two legal exits. Failure names the generator.
 
 Gate for a content lane: `SAMPLES=50000 npm run test:deep` green, and 0% oracle coverage
 appearing nowhere in your topic's rows.

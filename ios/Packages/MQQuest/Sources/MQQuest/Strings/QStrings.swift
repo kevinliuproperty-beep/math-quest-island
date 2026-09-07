@@ -79,6 +79,25 @@ public enum QStrings {
     public static let resultTitleAllCorrect = "Perfect run!"
     public static let resultTitleCleared = "Quest cleared!"
     public static let resultTitleGoodRun = "Good run!"
+    /// The hero's HP reached zero. There was no branch for this and a 0-of-9
+    /// wipeout was announced as *"Good run!"* (Quest Refutation, wound 2) - which
+    /// is not encouragement, it is the screen not looking at what happened.
+    /// The fade-out law bans SHAMING, not honesty; the crab winning a round is a
+    /// thing that happened and the child watched it happen.
+    public static let resultTitleDefeated = "Out of magic this time!"
+
+    // MARK: - The review, paged
+    //
+    // Quest Refutation K4: the screen showed 2 of up to 12 wrong items on a
+    // landscape iPad and 1 anywhere else, with no scroll, no page and no count -
+    // and `ScrollView` renders EMPTY under `ImageRenderer`, so a scroll is not
+    // available on this toolchain. Planks and a count, then.
+
+    public static func reviewPageOf(first: Int, last: Int, total: Int) -> String {
+        first == last ? "\(first) of \(total)" : "\(first)-\(last) of \(total)"
+    }
+    public static let reviewOlder = "Back"
+    public static let reviewNewer = "More"
 
     public static func resultMessage(hero: String, node: String,
                                      correct: Int, total: Int) -> String {
@@ -126,9 +145,11 @@ public enum QStrings {
             typeYourAnswer, unitRowPrompt, unitOptional, submit, backspace, pause,
             nextQuestion, finishSet,
             resultTitleAllCorrect, resultTitleCleared, resultTitleGoodRun,
+            resultTitleDefeated, reviewOlder, reviewNewer,
             statCorrect, statAccuracy, statBestStreak, statCrystals,
             reviewHeading, reviewEmpty, playAgain, islandMap, home
         ]
+        out.append(reviewPageOf(first: 1, last: 2, total: 9))
         out += correctCheers
         out.append(mapSubtitle(level: "P4"))
         out.append(crystalsFound(3))

@@ -16,8 +16,18 @@ import MQDesign
 ///    and "the answer is 360 cm²" on its own teaches them they got the sum wrong.
 public struct QResultView: View, MQTapAudited {
     @ObservedObject var model: QQuestModel
+    @Environment(\.qHitMap) private var hitMap
     let m: MQMetrics
     let p: MQPalette
+
+    /// The hit-map names the driver taps by.
+    public enum Hit {
+        public static let playAgain = "play-again"
+        public static let islandMap = "island-map"
+        public static let home = "home"
+        public static let reviewBack = "review-back"
+        public static let reviewMore = "review-more"
+    }
 
     public init(model: QQuestModel, metrics: MQMetrics, palette: MQPalette = .noon) {
         self.model = model; self.m = metrics; self.p = palette
@@ -33,28 +43,21 @@ public struct QResultView: View, MQTapAudited {
         return (m.isWide ? 150 : (m.isRegular ? 150 : 96)) * k
     }
 
-    /// **The review scroll is the ONE surface in this app that scrolls, and the
-    /// deviation is deliberate.**
+    /// **The review is PAGED, and every wrong item is on one of the pages.**
     ///
-    /// `MQFit`'s own header says "Nothing in this app scrolls. A battle screen
-    /// that scrolls is a worksheet." That law is about the BATTLE, and it holds:
-    /// nothing on `QBattleView` scrolls. The result review is the one surface
-    /// whose content length is not bounded by the design - up to twelve wrong
-    /// items, each a three-line P4 word problem plus a two-line unit lesson plus
-    /// the generator's working - and `MQResultScreen`'s answer to that (show the
-    /// first three, drop the rest) was measured on this branch and does not fit:
-    /// three real rows ran the title off the top of a 9.7" iPad and the buttons
-    /// off the bottom.
+    /// The doc comment that used to live here argued for a bounded ScrollView and
+    /// described a screen that was never built: `ScrollView` renders EMPTY under
+    /// `ImageRenderer` (this lane's own finding), so the scroll was removed and
+    /// what shipped was `items.prefix(reviewRows(m))` - **2 of up to 12 wrong
+    /// items on a landscape iPad and 1 everywhere else, with no scroll, no page,
+    /// no count and no hint that anything was missing.** A 0-of-9 knockout showed
+    /// items 1 and 2 and then nothing (Quest Refutation K4).
     ///
-    /// The three options were: clip the working (teaches half a method), show one
-    /// row (the review IS the result screen, per that screen's own third law), or
-    /// bound the scroll's HEIGHT and let the content move inside it. The third
-    /// keeps every wrong answer complete and keeps the frame deterministic, which
-    /// is what `reviewHeight` is: the height is a function of the device, hoisted
-    /// here per PHASE1's rule, so the fit gate measures a fixed number rather
-    /// than however much content this run happened to produce.
-    ///
-    /// **Worth Kevin's eye**, because it is a departure from a design-lane note.
+    /// Paging is the option a headless gate can both drive and see: the plank
+    /// keeps its deterministic height, every row stays complete, and the page
+    /// state lives on `QQuestModel` (not in `@State`) so the gate can turn the
+    /// page and render it. The count band says "3-4 of 9" so the child knows the
+    /// list has more in it than the plank is holding.
     nonisolated static func reviewHeight(_ m: MQMetrics) -> CGFloat {
         // A SHARE of the frame, not a chrome subtraction. The subtraction was
         // tried first and was wrong at every size by a different amount (22 pt
@@ -64,8 +67,15 @@ public struct QResultView: View, MQTapAudited {
         // a function of the height. A share is one number, is right by
         // construction, and is what the gate measures.
         let usable = m.size.height - m.insets.top - m.insets.bottom
-        let share: CGFloat = m.isWide ? 0.65 : (m.isRegular ? 0.43 : 0.45)
-        return max(usable * share, 120)
+        // The pager band sits under the plank, so the plank yields its height.
+        let share: CGFloat = m.isWide ? 0.60 : (m.isRegular ? 0.372 : 0.40)
+        return max(usable * share, 110)
+    }
+
+    /// The height of the page band under the plank. Zero when there is one page:
+    /// a pager on a one-page list is chrome about nothing.
+    nonisolated static func pagerHeight(_ m: MQMetrics) -> CGFloat {
+        max(MQTap.min, (m.isRegular ? 17 : 14) * 1.32 + 16)
     }
 
     /// How many review rows the bounded scroll can hold.
@@ -113,12 +123,29 @@ public struct QResultView: View, MQTapAudited {
         reviewHeight(m) - (m.isRegular ? 28 : 24)
     }
 
+    /// The items on one page. The ONE definition of the slice, so the gate, the
+    /// count band and the drawn list can never be three different lists - which is
+    /// exactly how K4 hid: the flow test asserted `model.wrongItems` and the
+    /// screen drew `items.prefix(reviewRows(m))`.
+    nonisolated public static func pageSlice(_ items: [QAnsweredItem], page: Int,
+                                             rows: Int) -> ArraySlice<QAnsweredItem> {
+        guard rows > 0, !items.isEmpty else { return [] }
+        let start = min(max(page, 0) * rows, max(items.count - 1, 0))
+        return items[start..<min(start + rows, items.count)]
+    }
+
+    nonisolated public static func pageCount(_ items: [QAnsweredItem], rows: Int) -> Int {
+        guard rows > 0 else { return 1 }
+        return max(1, Int((Double(items.count) / Double(rows)).rounded(.up)))
+    }
+
     /// The list exactly as the body draws it. Public so the fit gate renders the
     /// same view the child sees rather than a reconstruction of it.
     @MainActor
     public static func reviewListView(_ p: MQPalette, items: [QAnsweredItem],
-                                      metrics m: MQMetrics) -> some View {
-        QReviewList(p: p, items: Array(items.prefix(reviewRows(m))), m: m)
+                                      metrics m: MQMetrics, page: Int = 0) -> some View {
+        QReviewList(p: p, items: Array(pageSlice(items, page: page, rows: reviewRows(m))),
+                    m: m)
     }
 
     nonisolated static func buttonSize(_ m: MQMetrics, primary: Bool) -> CGFloat {
@@ -132,7 +159,11 @@ public struct QResultView: View, MQTapAudited {
          MQTapTarget(QStrings.islandMap,
                      CGSize(width: MQTap.min, height: buttonSize(m, primary: false))),
          MQTapTarget(QStrings.home,
-                     CGSize(width: MQTap.min, height: buttonSize(m, primary: false)))]
+                     CGSize(width: MQTap.min, height: buttonSize(m, primary: false))),
+         MQTapTarget(QStrings.reviewOlder,
+                     CGSize(width: MQTap.min + 24, height: pagerHeight(m))),
+         MQTapTarget(QStrings.reviewNewer,
+                     CGSize(width: MQTap.min + 24, height: pagerHeight(m)))]
     }
 
     public var body: some View {
@@ -143,6 +174,17 @@ public struct QResultView: View, MQTapAudited {
                 .padding(.top, m.insets.top + pad * 0.6)
                 .padding(.bottom, m.insets.bottom + pad * 0.6)
         }
+        .coordinateSpace(name: QHitMap.space)
+    }
+
+    private func hitButton<L: View>(
+        _ name: String, enabled: Bool = true,
+        action: @escaping @MainActor @Sendable () async -> Void,
+        @ViewBuilder label: () -> L) -> some View {
+        Button { Task { await action() } } label: { label() }
+            .buttonStyle(.plain)
+            .disabled(!enabled)
+            .qHit(hitMap, name, enabled: enabled, fire: action)
     }
 
     private var wide: some View {
@@ -155,10 +197,13 @@ public struct QResultView: View, MQTapAudited {
                     cast(height: Self.castHeight(m))
                 }
                 .frame(width: min(272, m.size.width * 0.27))
-                MQScroll(p, padH: 26, padV: 14) {
-                    reviewList
+                VStack(spacing: 6) {
+                    MQScroll(p, padH: 26, padV: 14) {
+                        reviewList
+                    }
+                    .frame(height: Self.reviewHeight(m))
+                    pager
                 }
-                .frame(height: Self.reviewHeight(m))
             }
             buttonRow
         }
@@ -172,6 +217,7 @@ public struct QResultView: View, MQTapAudited {
                 reviewList
             }
             .frame(height: Self.reviewHeight(m))
+            pager
             Spacer(minLength: 0)
             cast(height: Self.castHeight(m))
             buttonRow
@@ -244,8 +290,47 @@ public struct QResultView: View, MQTapAudited {
         .frame(maxWidth: .infinity)
     }
 
+    private var reviewItems: [QAnsweredItem] { summary?.review ?? [] }
+    private var rows: Int { Self.reviewRows(m) }
+    private var pageCount: Int { Self.pageCount(reviewItems, rows: rows) }
+    private var page: Int { min(model.reviewPage, pageCount - 1) }
+
     private var reviewList: some View {
-        Self.reviewListView(p, items: summary?.review ?? [], metrics: m)
+        Self.reviewListView(p, items: reviewItems, metrics: m, page: page)
+    }
+
+    /// **The band that says the list is longer than the plank.**
+    ///
+    /// Drawn only when there is more than one page. Two planks and a count, in the
+    /// same material as every other control on this screen; nothing here scrolls,
+    /// because `ScrollView` renders empty under `ImageRenderer` and a surface a
+    /// headless gate cannot see is a surface nobody has checked.
+    @ViewBuilder private var pager: some View {
+        if pageCount > 1 {
+            let first = page * rows + 1
+            let last = min(first + rows - 1, reviewItems.count)
+            let rowsNow = rows
+            HStack(spacing: compact ? 8 : 14) {
+                hitButton(Hit.reviewBack, enabled: page > 0,
+                          action: { [model] in model.reviewPageBack(rows: rowsNow) }) {
+                    MQPlankButton(p, QStrings.reviewOlder, fontSize: m.isRegular ? 17 : 14)
+                }
+                .opacity(page == 0 ? 0.4 : 1)
+                Text(QStrings.reviewPageOf(first: first, last: last,
+                                           total: reviewItems.count))
+                    .font(.mq(m.isRegular ? 17 : 14, .bold))
+                    .monospacedDigit()
+                    .foregroundStyle(p.carved)
+                    .shadow(color: p.woodDeep.opacity(0.75), radius: 0, x: 0, y: 2)
+                    .lineLimit(1)
+                hitButton(Hit.reviewMore, enabled: page < pageCount - 1,
+                          action: { [model] in model.reviewPageForward(rows: rowsNow) }) {
+                    MQPlankButton(p, QStrings.reviewNewer, fontSize: m.isRegular ? 17 : 14)
+                }
+                .opacity(page >= pageCount - 1 ? 0.4 : 1)
+            }
+            .frame(height: Self.pagerHeight(m))
+        }
     }
 
     private func cast(height: CGFloat) -> some View {
@@ -262,19 +347,16 @@ public struct QResultView: View, MQTapAudited {
 
     private var buttonRow: some View {
         HStack(spacing: compact ? 8 : 16) {
-            Button { Task { await model.playAgain() } } label: {
+            hitButton(Hit.playAgain, action: { [model] in await model.playAgain() }) {
                 MQPlankButton(p, QStrings.playAgain, primary: true,
                               fontSize: m.isRegular ? 24 : 18)
             }
-            .buttonStyle(.plain)
-            Button { Task { await model.toMap() } } label: {
+            hitButton(Hit.islandMap, action: { [model] in await model.toMap() }) {
                 MQPlankButton(p, QStrings.islandMap, fontSize: m.isRegular ? 20 : 15)
             }
-            .buttonStyle(.plain)
-            Button { Task { await model.backToEntrance() } } label: {
+            hitButton(Hit.home, action: { [model] in await model.backToEntrance() }) {
                 MQPlankButton(p, QStrings.home, fontSize: m.isRegular ? 20 : 15)
             }
-            .buttonStyle(.plain)
         }
     }
 }
@@ -322,7 +404,9 @@ struct QReviewList: View {
     private func row(_ item: QAnsweredItem) -> some View {
         HStack(alignment: .top, spacing: compact ? 10 : 16) {
             if let f = item.question.figure {
-                QFigureView(p, f, fallbackText: item.question.extraText)
+                QFigureView(p, f, fallbackText: item.question.extraText,
+                            typeFloor: m.isRegular ? QFigureView.iPadTypeFloor
+                                                   : QFigureView.phoneTypeFloor)
                     .frame(width: figureWidth, height: figureHeight)
             }
             VStack(alignment: .leading, spacing: 1) {
@@ -331,8 +415,8 @@ struct QReviewList: View {
                 // The unit lesson, FIRST, and only when the number was right.
                 if case .wrongUnit = item.reason {
                     Text(MQTypeset.bindUnits(QStrings.unitLesson(
-                        unit: QUnits.canonical(item.question.unit),
-                        why: QUnits.why(for: QUnits.canonical(item.question.unit)))))
+                        unit: QUnits.canonical(item.question),
+                        why: QUnits.why(for: QUnits.canonical(item.question)))))
                         .font(.mq(compact ? 13 : 16, .bold))
                         .foregroundStyle(p.ink)
                         .lineLimit(QResultView.lessonLines)

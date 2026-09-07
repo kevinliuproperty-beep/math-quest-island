@@ -151,6 +151,7 @@ struct QSetFlowTests {
     @MainActor
     static func model(_ questions: [Question], setSize: Int,
                       rolls: [Int] = [0]) async -> (QQuestModel, InMemoryProgressStore) {
+        QTestFonts.ensure()
         let store = InMemoryProgressStore()
         _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let m = QQuestModel(source: ScriptedSource(questions), store: store,
@@ -267,6 +268,96 @@ struct QSetFlowTests {
         let ended = await source.endedSessions
         #expect(ended.count == 1)
         #expect(ended[0].hasPrefix("quest-Charlotte-"))
+    }
+
+    /// **K6: the pause knob ends the run's sessions.**
+    ///
+    /// `QRoot`'s own doc comment says a back swipe that popped the battle without
+    /// ending the engine's feed session would leak a no-repeat ring per swipe, and
+    /// `toMap()` - which is what the pause knob calls - did exactly that. Measured
+    /// against the real engine it was monotonic: one leaked session per press, to
+    /// the engine's cap of 64, after which it evicts silently and LIVE sessions
+    /// start losing their rings. Sixty-four presses, because 64 is the cap: this
+    /// walks right up to the wall the old code fell over.
+    @MainActor
+    @Test("sixty-four pause presses leave zero sessions open")
+    func pauseEndsBothSessions() async {
+        let source = ScriptedSource(Self.script(400))
+        let store = InMemoryProgressStore()
+        _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
+        let m = QQuestModel(source: source, store: store,
+                            random: QFixedRandom([0]), setSize: 6)
+        await m.load()
+        await m.pick(m.profiles[0])
+        let node = m.island!.nodes.first { $0.playable }!
+
+        for _ in 0..<64 {
+            await m.open(node)
+            await Self.answer(m, correct: true)      // one item in, then pause
+            await m.toMap()
+            #expect(m.phase == .map)
+        }
+        let ended = await source.endedSessions
+        #expect(ended.count == 64,
+                "64 opens, \(ended.count) engine sessions ended - \(64 - ended.count) leaked")
+        #expect(Set(ended).count == 64,
+                "session ids collided, so a run replayed another run's no-repeat ring")
+        let open = await store.openSessionCount
+        #expect(open == 0, "\(open) progress-store session(s) left open")
+    }
+
+    /// A second open inside the same second used to reuse one engine feed session
+    /// (`quest-<profile>-<topic>-<unix seconds>`), so "play again" replayed the
+    /// first run's ring. `playAgain`'s own doc says a new id is what makes a
+    /// second run a second run.
+    @MainActor
+    @Test("two opens in the same second are two different engine sessions")
+    func sessionIDsAreUniqueSubSecond() async {
+        let source = ScriptedSource(Self.script(40))
+        let store = InMemoryProgressStore()
+        _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
+        let m = QQuestModel(source: source, store: store,
+                            random: QFixedRandom([0]), setSize: 2)
+        await m.load()
+        await m.pick(m.profiles[0])
+        let node = m.island!.nodes.first { $0.playable }!
+        for _ in 0..<5 { await m.open(node); await m.toMap() }
+        let ended = await source.endedSessions
+        #expect(ended.count == 5)
+        #expect(Set(ended).count == 5, "ids repeated inside one second: \(ended)")
+    }
+
+    /// **K4: every wrong item is on one of the review's pages.**
+    ///
+    /// The screen drew `items.prefix(reviewRows(m))` - 2 of up to 12 on a
+    /// landscape iPad, 1 everywhere else - while the flow test asserted
+    /// `model.wrongItems`. Two different lists, and the test was looking at the
+    /// one nobody sees. This one walks the pages the screen actually draws.
+    @MainActor
+    @Test("a nine-wrong session puts all nine wrong items on the review's pages",
+          arguments: [CGSize(width: 768, height: 1024), CGSize(width: 375, height: 667),
+                      CGSize(width: 1024, height: 768)])
+    func everyWrongItemIsReachable(_ size: CGSize) async {
+        let (m, _) = await Self.model(Self.script(9), setSize: 9)
+        for _ in 0..<9 { await Self.answer(m, correct: false) }
+        #expect(m.phase == .result)
+        let review = m.summary?.review ?? []
+        #expect(review.count == 9)
+
+        let metrics = MQMetrics.device(size)
+        let rows = QResultView.reviewRows(metrics)
+        let pages = QResultView.pageCount(review, rows: rows)
+        #expect(pages == Int((Double(9) / Double(rows)).rounded(.up)))
+
+        var seen: [String] = []
+        for page in 0..<pages {
+            m.showReviewPage(page, rows: rows)
+            #expect(m.reviewPage == page)
+            seen += QResultView.pageSlice(review, page: page, rows: rows).map(\.id)
+        }
+        #expect(seen == review.map(\.id),
+                "the pages do not carry every wrong item, in order: \(seen)")
+        #expect(Set(seen).count == 9)
     }
 
     @MainActor

@@ -1,4 +1,4 @@
-143
+160
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing parsed; everything below is for humans.
@@ -75,3 +75,35 @@
 #         (result + battle at real engine content)       2
 #       Counted by CASE, which is what the runner's summary counts; 72 is the delta
 #       the runner reported (71 -> 143).
+#
+# 160 = those 143 + MQQuest's 17, added on lane/quest in the fix pass, 2026-09-07,
+#       against Quest Refutation - 2026-09-07:
+#         The typed battle fits every matrix size        3  (8 topics x 12 sizes x 20
+#                                                            REAL engine draws, all
+#                                                            counted as one case per
+#                                                            @Test; keypad keys drawn
+#                                                            whole and on the glass at
+#                                                            every size; every typed
+#                                                            topic is in the gate)  K1
+#         cm3/ml are never each other's distractors      2  (p5volume, p5decimals,
+#                                                            through the real bridge) K3/K7
+#         alias spellings are never distractors          1                            K3
+#         the chip bridge, per topic                     4  (p4area, p5decimals,
+#                                                            p5rate, p5volume, p3money
+#                                                            - was one hard-coded
+#                                                            p4area)                  K2
+#         64 pause presses leave zero sessions open      1                            K6
+#         two opens in one second are two sessions       1                            K6
+#         nine wrong items across the review's pages     1  (3 sizes, one case)        K4
+#         nine wrong items RENDERED across the pages     1  (9.7" portrait + SE)       K4
+#         figure labels inside the box, floor binds      2  (p4data + p4pie, pixels)   K5
+#         the driver drives the drawn views              2  (a session per matrix size
+#                                                            + the --model path)   K1/driver
+#         the keypad cap clears the engine's answerText  1                     wound 3
+#         a half-written fraction is not submittable     1                     wound "3/"
+#         the choice battle fits every matrix size    1  (4 figure topics x 12 sizes
+#                                                          x 20 real draws; found and
+#                                                          closed five pre-existing
+#                                                          overflows nothing measured)
+#       Counted by CASE, which is what the runner's summary counts; 17 is the delta
+#       the runner reported (143 -> 160).

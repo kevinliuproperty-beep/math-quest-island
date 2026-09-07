@@ -48,10 +48,32 @@ public struct Question: Codable, Hashable, Sendable, Identifiable {
     public let answerTextPlain: String
     public let explain: String
     public let explainText: String
-    /// The unit the stem asks for (`"cm2"`, `"min"`, `"pages"`). Empty when the answer
-    /// is a bare count. Never used by Swift to grade - it is here so a keypad can show
-    /// the unit beside the field.
+    /// The CANONICAL unit the stem asks for (`"cm2"`, `"min"`, `"pages"`). Empty when
+    /// the answer is a bare count. Never used by Swift to grade - it is here so a keypad
+    /// can show the unit beside the field. When the question accepts a SET of equivalent
+    /// spellings this is the first member; `units` carries the whole set.
     public let unit: String
+
+    /// EVERY unit this question accepts, canonical first.
+    ///
+    /// `q.unit` in the engine may be a string or an array of equivalents (`['cm³','ml']`
+    /// - 1 ml IS 1 cm³, and `p5volume`'s own stem says so). `unit` above is only the
+    /// canonical member, so a client that builds a unit chooser from it offers an
+    /// accepted equivalent as a WRONG-unit distractor and teaches a falsehood the app
+    /// itself contradicts (Quest Refutation K3/K7, 2026-09-07). `key` is opaque to
+    /// Swift, so the set is published as its own field.
+    ///
+    /// Optional so a payload recorded before this field existed still decodes; prefer
+    /// `acceptedUnits`, which falls back to `[unit]`.
+    public let units: [String]?
+
+    /// Every unit the grader would accept on this question, canonical first, and empty
+    /// when the answer is a bare number. **This is the list a unit chooser must consult**
+    /// - never `unit` alone.
+    public var acceptedUnits: [String] {
+        if let units, !units.isEmpty { return units }
+        return unit.isEmpty ? [] : [unit]
+    }
 
     /// The engine's grading key, carried opaquely and handed straight back to
     /// `grade`. Swift must not interpret it: see `JSONValue`.

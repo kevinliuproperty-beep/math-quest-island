@@ -86,12 +86,14 @@ public struct QUnitChipRow: View {
     let chips: [String]
     let selected: String?
     let compact: Bool
-    let tap: (String) -> Void
+    let hitMap: QHitMap?
+    let tap: @MainActor @Sendable (String) -> Void
 
     public init(_ p: MQPalette = .noon, chips: [String], selected: String?,
-                compact: Bool = false, tap: @escaping (String) -> Void) {
+                compact: Bool = false, hitMap: QHitMap? = nil,
+                tap: @escaping @MainActor @Sendable (String) -> Void) {
         self.p = p; self.chips = chips; self.selected = selected
-        self.compact = compact; self.tap = tap
+        self.compact = compact; self.hitMap = hitMap; self.tap = tap
     }
 
     /// The chip's own box. Returned from the screen's `tapTargets`, so a chip can
@@ -106,8 +108,13 @@ public struct QUnitChipRow: View {
                 .font(.mq(compact ? 12 : 15, .medium))
                 .foregroundStyle(p.inkSoft)
             ForEach(chips, id: \.self) { chip in
+                // ONE chip is ONE unit string. It comes out of
+                // `Question.acceptedUnits`, which the engine API publishes as an
+                // array, so there is no comma-joined `"cm³,ml"` for a tap to
+                // submit any more (Quest Refutation K7).
                 Button { tap(chip) } label: { tag(chip) }
                     .buttonStyle(.plain)
+                    .qHit(hitMap, QBattleView.Hit.chip(chip)) { tap(chip) }
             }
             Text(QStrings.unitOptional)
                 .font(.mq(compact ? 11 : 14, .regular))
@@ -182,14 +189,17 @@ public struct QKeypad: View {
     let entry: QTypedEntry
     let policy: QKeypadPolicy
     let metrics: QKeypad.Geo
-    let press: (QTypedEntry.Key) -> Void
-    let submit: () -> Void
+    let hitMap: QHitMap?
+    let press: @MainActor @Sendable (QTypedEntry.Key) -> Void
+    let submit: @MainActor @Sendable () async -> Void
 
     public init(_ p: MQPalette = .noon, entry: QTypedEntry, policy: QKeypadPolicy,
-                geometry: QKeypad.Geo, press: @escaping (QTypedEntry.Key) -> Void,
-                submit: @escaping () -> Void) {
+                geometry: QKeypad.Geo, hitMap: QHitMap? = nil,
+                press: @escaping @MainActor @Sendable (QTypedEntry.Key) -> Void,
+                submit: @escaping @MainActor @Sendable () async -> Void) {
         self.p = p; self.entry = entry; self.policy = policy
-        self.metrics = geometry; self.press = press; self.submit = submit
+        self.metrics = geometry; self.hitMap = hitMap
+        self.press = press; self.submit = submit
     }
 
     // MARK: Geometry
@@ -250,14 +260,25 @@ public struct QKeypad: View {
                 }
             }
             VStack(spacing: metrics.gap) {
+                let canUndo = entry.isEnabled(.backspace, policy: policy)
                 action(QStrings.backspace, primary: false) { press(.backspace) }
                     .frame(height: metrics.key.height)
-                    .disabled(!entry.isEnabled(.backspace, policy: policy))
-                    .opacity(entry.isEnabled(.backspace, policy: policy) ? 1 : 0.4)
-                action(QStrings.submit, primary: true, action: submit)
-                    .frame(maxHeight: .infinity)
-                    .disabled(entry.isEmpty)
-                    .opacity(entry.isEmpty ? 0.45 : 1)
+                    .disabled(!canUndo)
+                    .opacity(canUndo ? 1 : 0.4)
+                    .qHit(hitMap, QBattleView.Hit.undo, enabled: canUndo) {
+                        press(.backspace)
+                    }
+                Button { Task { await submit() } } label: {
+                    MQPlankButton(p, QStrings.submit, primary: true,
+                                  fontSize: metrics.glyph * 0.62)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .buttonStyle(.plain)
+                .frame(maxHeight: .infinity)
+                .disabled(!entry.isSubmittable)
+                .opacity(entry.isSubmittable ? 1 : 0.45)
+                .qHit(hitMap, QBattleView.Hit.check, enabled: entry.isSubmittable,
+                      fire: submit)
             }
             .frame(width: metrics.actionWidth)
         }
@@ -304,6 +325,7 @@ public struct QKeypad: View {
         .buttonStyle(.plain)
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.42)
+        .qHit(hitMap, QBattleView.Hit.key(k), enabled: enabled) { press(k) }
     }
 
     private func action(_ title: String, primary: Bool,

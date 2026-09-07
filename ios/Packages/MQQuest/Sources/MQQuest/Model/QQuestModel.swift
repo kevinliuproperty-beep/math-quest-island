@@ -78,18 +78,38 @@ public final class QQuestModel: ObservableObject {
     @Published public private(set) var feedback: QFeedback?
     @Published public private(set) var summary: QSummary?
     @Published public private(set) var engineStamp: String = ""
+    /// Which page of the review the result screen is showing.
+    ///
+    /// It lives on the MODEL rather than in `@State` on the view because the
+    /// headless gate and the driver have to be able to turn the page and render
+    /// it: `ImageRenderer` renders a view once, from the outside, and cannot
+    /// press a button that lives in `@State`. Reset by `finish()`.
+    @Published public private(set) var reviewPage: Int = 0
 
     private var catalogue: TopicCatalogue?
     private var profileID: ProfileID?
     private var sessionID: SessionID?
     private var engineSession: String = ""
     private var startedAt: Date = .init()
+    /// Bumped on every `open()`, and part of the engine session id.
+    ///
+    /// The id used to be `quest-<profile>-<topic>-<unix seconds>`, so two opens
+    /// inside the same second SHARED one feed session and the second run replayed
+    /// the first's no-repeat ring - which `playAgain`'s own doc says is the thing a
+    /// new id exists to prevent. Tapped promptly, it was not a new run (Quest
+    /// Refutation K6, third finding).
+    private var openCount: Int = 0
 
     // MARK: - Derived
 
+    /// The unit chips for the question on screen.
+    ///
+    /// Built from the question's whole ACCEPTED SET, never from `unit` alone: the
+    /// canonical member is what the chip prints, and the set is what a distractor
+    /// is filtered against (Quest Refutation K3/K7).
     public var chips: [String] {
-        guard let q = question, q.isTyped, !q.unit.isEmpty else { return [] }
-        return QUnits.chips(declared: q.unit, questionID: q.id)
+        guard let q = question, q.isTyped, !q.acceptedUnits.isEmpty else { return [] }
+        return QUnits.chips(q)
     }
 
     public var keypadPolicy: QKeypadPolicy {
@@ -98,7 +118,7 @@ public final class QQuestModel: ObservableObject {
 
     public var canSubmit: Bool {
         guard phase == .asking, let q = question else { return false }
-        return q.isTyped ? !entry.isEmpty : true
+        return q.isTyped ? entry.isSubmittable : true
     }
 
     public var wrongItems: [QAnsweredItem] { answered.filter { !$0.isCorrect } }
@@ -130,6 +150,8 @@ public final class QQuestModel: ObservableObject {
     }
 
     public func backToEntrance() async {
+        if phase == .asking || phase == .feedback { await abandonRun() }
+        await endSessions()
         profile = nil; profileID = nil; island = nil; node = nil
         phase = .entrance
     }
@@ -146,15 +168,21 @@ public final class QQuestModel: ObservableObject {
     /// this refuses it anyway rather than trusting the screen.
     public func open(_ target: QNode) async {
         guard target.playable, let profileID else { return }
+        // A node opened while a run is live ends that run's sessions first. Without
+        // this an `open()` overwrites `sessionID` and `engineSession` and both leak.
+        await endSessions()
         node = target
         run = QRunState(startLevel: 1)
         answered = []
         feedback = nil
         summary = nil
+        reviewPage = 0
         entry = QTypedEntry()
         startedAt = Date()
+        openCount += 1
         sessionID = await store.beginSession(profile: profileID, mode: .quest)
-        engineSession = "quest-\(profileID.raw)-\(target.topicID)-\(Int(startedAt.timeIntervalSince1970))"
+        engineSession = "quest-\(profileID.raw)-\(target.topicID)-"
+            + "\(Int(startedAt.timeIntervalSince1970))-\(openCount)"
         await drawNext()
     }
 
@@ -169,6 +197,21 @@ public final class QQuestModel: ObservableObject {
         } catch {
             phase = .failed("The next question could not be drawn. \(error)")
         }
+    }
+
+    /// **Put one specific question on the board, for a LAYOUT measurement.**
+    ///
+    /// The fit gate has to measure the battle screen against the longest stem a
+    /// topic actually produces, which means putting twenty real drawn questions
+    /// on the board one after another without answering any of them. It clears the
+    /// entry and the feedback card, touches no run state, and records no attempt -
+    /// so it can never stand in for a real draw. Named for what it is, because a
+    /// method that quietly swaps the question mid-run would be a bug factory.
+    public func showQuestionForMeasurement(_ q: Question) {
+        question = q
+        entry = QTypedEntry()
+        feedback = nil
+        phase = .asking
     }
 
     // MARK: - Typed input
@@ -188,7 +231,8 @@ public final class QQuestModel: ObservableObject {
     // MARK: - Answering
 
     public func submitTyped() async {
-        guard phase == .asking, let q = question, q.isTyped, !entry.isEmpty else { return }
+        guard phase == .asking, let q = question, q.isTyped,
+              entry.isSubmittable else { return }
         await submit(.typed(entry.submission), submitted: entry.submission, chip: entry.unit)
     }
 
@@ -202,11 +246,8 @@ public final class QQuestModel: ObservableObject {
         guard let q = question, let profileID, let sessionID else { return }
         do {
             let verdict = try await source.grade(question: q, answer: answer)
-            let reason = await QReasonClassifier.classify(
-                question: q, answer: answer, verdict: verdict,
-                regradeBare: { [source] bare in
-                    try await source.grade(question: q, answer: .typed(bare))
-                })
+            let reason = QReasonClassifier.classify(question: q, answer: answer,
+                                                    verdict: verdict)
 
             let resolution = run.apply(correct: verdict.correct,
                                        heroRoll: random.ri(0, 4),
@@ -242,6 +283,23 @@ public final class QQuestModel: ObservableObject {
     /// Move on from the feedback card. The set ends on the Nth item, on the
     /// hero's HP reaching zero, or on the chain being cleared - whichever comes
     /// first.
+    ///
+    /// **A PERFECT RUN ENDS ON ITEM 11, NOT 12, AND THAT IS THE WEB'S BEHAVIOUR.**
+    /// Recorded because it reads like a bug in a transcript (Quest Refutation,
+    /// wound 1: three perfect runs, three times 11 of a nominal 12). The six-monster
+    /// chain holds 490 HP and always-correct clears it on item 11, and `js/app.js`
+    /// ends the run at exactly that point:
+    ///
+    /// ```js
+    /// S.mi++;
+    /// if(S.mi>=MONSTERS.length){ endGame(true); return; }   // js/app.js:569
+    /// ```
+    ///
+    /// The web has no set at all - it runs until the chain falls or the hero does -
+    /// so clearing the chain IS the ending, and stopping there is parity rather
+    /// than a short set. What the set size bounds is the LONGEST a run can be. The
+    /// content-quality gate ("Kevin plays 10 items per level") should count items
+    /// answered, not the nominal N.
     public func advance() async {
         guard phase == .feedback else { return }
         if run.answered >= setSize || run.isDefeated || run.clearedTheChain {
@@ -256,6 +314,8 @@ public final class QQuestModel: ObservableObject {
     public func finish() async {
         guard let sessionID else { return }
         let stored = await store.endSession(sessionID)
+        self.sessionID = nil
+        reviewPage = 0
         summary = QSummary(
             correct: run.correct,
             total: run.answered,
@@ -267,9 +327,59 @@ public final class QQuestModel: ObservableObject {
             review: wrongItems,
             storeSummary: stored)
         try? await source.endSession(engineSession)
+        engineSession = ""
         await refreshIsland()
         phase = .result
     }
+
+    /// **End both sessions, whatever the run was doing.** Idempotent.
+    ///
+    /// `QRoot`'s own doc comment says a back swipe that popped the battle without
+    /// ending the engine's feed session would leak a no-repeat ring per swipe. The
+    /// pause knob did exactly that: `toMap()` refreshed the island and set the
+    /// phase, and left one engine feed session open per press - measured monotonic
+    /// to the engine's cap of 64, after which it evicts silently and LIVE sessions
+    /// start losing their rings (Quest Refutation K6). The progress store's session
+    /// leaked with it, so its `SessionSummary` was never computed.
+    private func endSessions() async {
+        if let sessionID {
+            _ = await store.endSession(sessionID)
+            self.sessionID = nil
+        }
+        if !engineSession.isEmpty {
+            try? await source.endSession(engineSession)
+            engineSession = ""
+        }
+    }
+
+    /// Abandon a run without a result screen: the pause knob, and any back
+    /// navigation out of the battle. **Ends both sessions** - see `endSessions`.
+    public func abandonRun() async {
+        await endSessions()
+        run = QRunState(startLevel: 1)
+        answered = []
+        feedback = nil
+        question = nil
+        entry = QTypedEntry()
+    }
+
+    // MARK: - The review, paged
+
+    /// How many wrong items the result screen can show on one page at this size.
+    /// Public so the gate can compute the page count without drawing.
+    public func reviewPageCount(_ rows: Int) -> Int {
+        let n = summary?.review.count ?? 0
+        guard rows > 0 else { return 1 }
+        return max(1, Int((Double(n) / Double(rows)).rounded(.up)))
+    }
+
+    public func showReviewPage(_ index: Int, rows: Int) {
+        let count = reviewPageCount(rows)
+        reviewPage = min(max(index, 0), count - 1)
+    }
+
+    public func reviewPageForward(rows: Int) { showReviewPage(reviewPage + 1, rows: rows) }
+    public func reviewPageBack(rows: Int) { showReviewPage(reviewPage - 1, rows: rows) }
 
     /// Play the same node again. A "play again" that re-enters the same feed
     /// session would replay the same no-repeat ring; a new session id is what
@@ -279,7 +389,10 @@ public final class QQuestModel: ObservableObject {
         await open(node)
     }
 
+    /// Back to the island. From a LIVE battle this abandons the run, and
+    /// abandoning a run ends its sessions - see `abandonRun`.
     public func toMap() async {
+        if phase == .asking || phase == .feedback { await abandonRun() }
         await refreshIsland()
         question = nil
         phase = .map
@@ -304,7 +417,7 @@ public struct QFeedback: Sendable, Equatable {
         }
         var out: [String] = []
         if case .wrongUnit = item.reason {
-            let canonical = QUnits.canonical(item.question.unit)
+            let canonical = QUnits.canonical(item.question)
             out.append(QStrings.unitLesson(unit: canonical,
                                            why: QUnits.why(for: canonical)))
         }
@@ -341,7 +454,15 @@ public struct QSummary: Sendable {
         total == 0 ? 0 : Int((Double(correct) / Double(total) * 100).rounded())
     }
 
+    /// **Defeat is checked before anything else.**
+    ///
+    /// There was no defeat branch at all, so a 0-of-9 knockout with the hero on
+    /// -4 HP was titled *"Good run!"* (Quest Refutation, wound 2). A screen that
+    /// says the same thing whatever happened is not encouraging, it is not
+    /// looking. `cleared` and `defeated` are the web's own two endings
+    /// (`endGame(true)` / `endGame(false)` in `js/app.js`).
     public var title: String {
+        if defeated { return QStrings.resultTitleDefeated }
         if total > 0 && correct == total { return QStrings.resultTitleAllCorrect }
         if cleared { return QStrings.resultTitleCleared }
         return QStrings.resultTitleGoodRun

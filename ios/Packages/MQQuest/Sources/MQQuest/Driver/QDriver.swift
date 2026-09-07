@@ -64,6 +64,14 @@ public struct QDriveScript: Codable, Sendable {
     public var strategies: [QStrategy]?
     /// `noon` (default) | `dusk`.
     public var palette: String?
+    /// **How the driver answers: through the drawn VIEW, or through the model.**
+    ///
+    /// `true` (the default, and what the gate uses) hit-tests the drawn bounds of
+    /// the tile / key / chip and fires the Button's own action, so a control that
+    /// is off the glass records a MISS instead of a green transcript row - which
+    /// is exactly what K1 hid. `false` is `--model`: the old fast path, kept for
+    /// bulk runs where layout is not the question.
+    public var viewPath: Bool?
     /// Render scale. 1 by default: these are read by an agent and by a human at
     /// 100%, and @2x quadruples the bytes for no extra legibility.
     public var scale: CGFloat?
@@ -71,12 +79,14 @@ public struct QDriveScript: Codable, Sendable {
     public init(name: String, seed: UInt64, device: String, profile: QDriveProfile,
                 node: String, items: Int, strategy: QStrategy? = nil,
                 strategies: [QStrategy]? = nil, palette: String? = nil,
-                scale: CGFloat? = nil) {
+                scale: CGFloat? = nil, viewPath: Bool? = nil) {
         self.name = name; self.seed = seed; self.device = device
         self.profile = profile; self.node = node; self.items = items
         self.strategy = strategy; self.strategies = strategies
-        self.palette = palette; self.scale = scale
+        self.palette = palette; self.scale = scale; self.viewPath = viewPath
     }
+
+    public var drivesTheViewPath: Bool { viewPath ?? true }
 
     /// The device matrix names `mqdesign-snap` uses, so a driven PNG can be laid
     /// beside a matrix PNG of the same screen at the same size.
@@ -139,6 +149,14 @@ public struct QTranscriptItem: Codable, Sendable {
     public var chipsOffered: [String]
     public var chipTapped: String?
     public var choiceIndex: Int?
+    /// `"view"` when every tap in this item went through the drawn Button, or
+    /// `"model"` when the run was asked for the fast path.
+    public var inputPath: String?
+    /// **Taps that could not be made.** A control that is not drawn, is drawn off
+    /// the glass, or is disabled. Empty on a healthy item; a key that is 18 pt
+    /// tall and flush to the bottom of the frame lands here instead of typing a
+    /// perfect answer nobody could have typed (Quest Refutation K1).
+    public var tapMisses: [String]?
 
     public var correct: Bool
     /// The engine's own words.
@@ -168,7 +186,9 @@ public struct QTranscriptItem: Codable, Sendable {
 public struct QTranscript: Codable, Sendable {
     /// Bumped when a field is removed or its meaning changes, so a refuter's
     /// reader can fail loudly instead of reading a stale shape.
-    public static let schemaVersion = 1
+    /// 2: `inputPath`, `tapMisses` and `unitsAccepted` per item; `tapMisses` and
+    /// `inputPath` on the run.
+    public static let schemaVersion = 2
 
     public var schema: Int = QTranscript.schemaVersion
     public var name: String
@@ -192,6 +212,12 @@ public struct QTranscript: Codable, Sendable {
     public var accuracy: Int
     public var reviewCount: Int
     public var screenshots: [String]
+    /// `"view"` or `"model"`. A gate run is `"view"`.
+    public var inputPath: String = "view"
+    /// Every tap in the run that could not be made. **Empty is the pass.**
+    public var tapMisses: [String] = []
+    /// How many pages the review needed, and how many were rendered.
+    public var reviewPages: Int = 1
 }
 
 // MARK: - The driver
@@ -211,6 +237,8 @@ public final class QDriver {
     let source: any QuestionSource
     let script: QDriveScript
     let outDir: URL
+    /// Filled in by every render, read by every tap. See `QHitMap`.
+    let hits = QHitMap()
 
     public init(source: any QuestionSource, script: QDriveScript, outDir: URL) {
         self.source = source; self.script = script; self.outDir = outDir
@@ -250,6 +278,7 @@ public final class QDriver {
         await model.open(node)
 
         var items: [QTranscriptItem] = []
+        var misses: [String] = []
         var index = 0
         while model.phase == .asking, index < script.items {
             guard let q = model.question else { break }
@@ -262,12 +291,13 @@ public final class QDriver {
             // is the only one that shows the keypad in use, the digits in the
             // slot and the chosen chip lit - which is exactly the state a
             // refuter needs and the state a builder never screenshots.
-            let played = await enter(model, question: q, strategy: strategy)
+            var played = await enter(model, metrics, palette, question: q,
+                                     strategy: strategy)
             if q.isTyped {
                 let typedName = String(format: "%02d-q%02d-typed", index + 3, index + 1)
                 pngs.append(try shoot(model, metrics, palette, scale, typedName))
             }
-            await submit(model, question: q, played: played)
+            await submit(model, metrics, palette, question: q, played: &played)
 
             let fbName = String(format: "%02d-q%02d-answer", index + 3, index + 1)
             let fb = try shoot(model, metrics, palette, scale, fbName)
@@ -279,13 +309,45 @@ public final class QDriver {
                                             item: last, model: model,
                                             chips: played.chips, chip: played.chip,
                                             choiceIndex: played.choiceIndex,
+                                            misses: played.misses,
                                             ask: ask, feedback: fb))
+            } else if !played.misses.isEmpty {
+                // The item could not be answered AT ALL through the drawn screen.
+                // Recorded loudly rather than skipped: this is the K1 signal.
+                misses += played.misses.map { "item \(index + 1): \($0)" }
             }
             index += 1
-            await model.advance()
+            if script.drivesTheViewPath, model.phase == .feedback {
+                var advanceMisses: [String] = []
+                await tap(model, metrics, palette, QBattleView.Hit.next, &advanceMisses)
+                misses += advanceMisses.map { "item \(index): \($0)" }
+                if model.phase == .feedback { await model.advance() }
+            } else {
+                await model.advance()
+            }
         }
         if model.phase != .result { await model.finish() }
         pngs.append(try shoot(model, metrics, palette, scale, "99-result"))
+
+        // **Every review page gets a PNG.** K4's whole point: the screen shows a
+        // page of the wrong items, and a driven run that only ever renders page
+        // one proves nothing about the rest. Paged through the drawn "More"
+        // plank on the view path, so the pager is driven the way a finger drives
+        // it rather than by setting the page on the model.
+        let reviewRows = QResultView.reviewRows(metrics)
+        let reviewPages = QResultView.pageCount(model.summary?.review ?? [],
+                                                rows: reviewRows)
+        for page in 1..<max(reviewPages, 1) {
+            if script.drivesTheViewPath {
+                var pageMisses: [String] = []
+                await tap(model, metrics, palette, QResultView.Hit.reviewMore, &pageMisses)
+                misses += pageMisses.map { "review page \(page + 1): \($0)" }
+            }
+            if model.reviewPage != page { model.showReviewPage(page, rows: reviewRows) }
+            pngs.append(try shoot(model, metrics, palette, scale,
+                                  String(format: "99-result-p%02d", page + 1)))
+        }
+        if reviewPages > 1 { model.showReviewPage(0, rows: reviewRows) }
 
         let build = try? await source.engineBuild()
         let transcript = QTranscript(
@@ -308,7 +370,11 @@ public final class QDriver {
             heroHP: model.run.heroHP,
             accuracy: model.summary?.accuracy ?? 0,
             reviewCount: model.wrongItems.count,
-            screenshots: pngs.map { URL(fileURLWithPath: $0).lastPathComponent })
+            screenshots: pngs.map { URL(fileURLWithPath: $0).lastPathComponent },
+            inputPath: script.drivesTheViewPath ? "view" : "model",
+            tapMisses: misses + items.flatMap { row in
+                (row.tapMisses ?? []).map { "item \(row.index + 1): \($0)" } },
+            reviewPages: reviewPages)
 
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -324,11 +390,16 @@ public final class QDriver {
         var chip: String?
         var choiceIndex: Int?
         var fellBackTo: String?
+        var misses: [String] = []
     }
 
-    /// Fill the entry (or pick the choice index) without submitting.
-    private func enter(_ model: QQuestModel, question q: Question,
-                       strategy: QStrategy) async -> Played {
+    /// Fill the entry (or pick the choice) without submitting.
+    ///
+    /// On the view path every one of these is a hit test against the DRAWN bounds
+    /// followed by the Button's own action; on `--model` they are the model calls
+    /// the old driver made.
+    private func enter(_ model: QQuestModel, _ m: MQMetrics, _ p: MQPalette,
+                       question q: Question, strategy: QStrategy) async -> Played {
         var played = Played()
         played.chips = model.chips
 
@@ -346,23 +417,23 @@ public final class QDriver {
 
         if q.isTyped {
             let correctText = Self.correctTypedText(q)
+            let accepted = q.acceptedUnits
             switch effective {
-            case .alwaysCorrect:
-                type(model, correctText)
-                if let chip = played.chips.first(where: {
-                    QUnits.accepts($0, declared: q.unit) }) {
-                    model.toggleChip(chip); played.chip = chip
+            case .alwaysCorrect, .random:
+                await type(model, m, p, correctText, &played.misses)
+                if effective == .alwaysCorrect,
+                   let chip = played.chips.first(where: {
+                       QUnits.accepts($0, in: accepted) }) {
+                    await tapChip(model, m, p, chip, &played)
                 }
             case .alwaysWrong:
-                type(model, Self.wrongTypedText(correctText))
+                await type(model, m, p, Self.wrongTypedText(correctText), &played.misses)
             case .wrongUnit:
-                type(model, correctText)
+                await type(model, m, p, correctText, &played.misses)
                 if let chip = played.chips.first(where: {
-                    !QUnits.accepts($0, declared: q.unit) }) {
-                    model.toggleChip(chip); played.chip = chip
+                    !QUnits.accepts($0, in: accepted) }) {
+                    await tapChip(model, m, p, chip, &played)
                 }
-            case .random:
-                type(model, correctText)
             }
         } else {
             let correct = max(q.correctIndex, 0)
@@ -376,27 +447,52 @@ public final class QDriver {
         return played
     }
 
-    private func submit(_ model: QQuestModel, question q: Question,
-                        played: Played) async {
+    private func tapChip(_ model: QQuestModel, _ m: MQMetrics, _ p: MQPalette,
+                         _ chip: String, _ played: inout Played) async {
+        if script.drivesTheViewPath {
+            await tap(model, m, p, QBattleView.Hit.chip(chip), &played.misses)
+        } else {
+            model.toggleChip(chip)
+        }
+        played.chip = model.entry.unit
+    }
+
+    private func submit(_ model: QQuestModel, _ m: MQMetrics, _ p: MQPalette,
+                        question q: Question, played: inout Played) async {
         if q.isTyped {
-            await model.submitTyped()
+            if script.drivesTheViewPath {
+                await tap(model, m, p, QBattleView.Hit.check, &played.misses)
+            } else {
+                await model.submitTyped()
+            }
         } else if let i = played.choiceIndex {
-            await model.choose(i)
+            if script.drivesTheViewPath {
+                await tap(model, m, p, QBattleView.Hit.answer(i), &played.misses)
+            } else {
+                await model.choose(i)
+            }
         }
     }
 
-    /// Every character goes through the KEYPAD, not into the entry directly. That
-    /// is the point: a driven session proves the child's actual input path, so a
-    /// digit the keypad cannot produce shows up here as a short answer rather
-    /// than as a green test.
-    private func type(_ model: QQuestModel, _ text: String) {
+    /// Every character goes through the KEYPAD's own key, not into the entry
+    /// directly - and on the view path through the key as DRAWN, so a key that is
+    /// off the glass records a miss instead of typing perfectly.
+    private func type(_ model: QQuestModel, _ m: MQMetrics, _ p: MQPalette,
+                      _ text: String, _ misses: inout [String]) async {
         for ch in text {
+            let key: QTypedEntry.Key?
             switch ch {
-            case "0"..."9": model.press(.digit(Int(String(ch)) ?? 0))
-            case ".":       model.press(.decimalPoint)
-            case "/":       model.press(.slash)
-            case "-":       model.press(.minus)
-            default:        break
+            case "0"..."9": key = .digit(Int(String(ch)) ?? 0)
+            case ".":       key = .decimalPoint
+            case "/":       key = .slash
+            case "-":       key = .minus
+            default:        key = nil
+            }
+            guard let key else { continue }
+            if script.drivesTheViewPath {
+                await tap(model, m, p, QBattleView.Hit.key(key), &misses)
+            } else {
+                model.press(key)
             }
         }
     }
@@ -419,6 +515,7 @@ public final class QDriver {
     private func transcriptItem(index: Int, strategy: QStrategy, fellBackTo: String?,
                                 item: QAnsweredItem, model: QQuestModel,
                                 chips: [String], chip: String?, choiceIndex: Int?,
+                                misses: [String],
                                 ask: String, feedback: String) -> QTranscriptItem {
         let q = item.question
         return QTranscriptItem(
@@ -432,6 +529,8 @@ public final class QDriver {
             choices: q.choiceTexts, expected: q.answerTextPlain,
             submitted: item.submitted, chipsOffered: chips, chipTapped: chip,
             choiceIndex: choiceIndex,
+            inputPath: script.drivesTheViewPath ? "view" : "model",
+            tapMisses: misses.isEmpty ? nil : misses,
             correct: item.verdict.correct,
             engineReason: item.verdict.reason,
             reason: item.reason.token,
@@ -456,10 +555,40 @@ public final class QDriver {
 
     // MARK: Rendering
 
+    /// The screen, with the hit map hung on it. Every render this driver performs
+    /// goes through here, so the map is never one state behind the pixels.
+    private func screenView(_ model: QQuestModel, _ m: MQMetrics,
+                            _ p: MQPalette) -> some View {
+        hits.beginPass()
+        hits.setScreen(m.size)
+        return QScreenForPhase(model: model, metrics: m, palette: p)
+            .environment(\.qHitMap, hits)
+    }
+
+    /// Lay the current screen out WITHOUT writing a file, purely to refresh the
+    /// hit map before a tap. `cgImage` rather than `render { }` because the
+    /// `GeometryReader` bodies that do the recording only run on a real pass.
+    private func refreshHits(_ model: QQuestModel, _ m: MQMetrics, _ p: MQPalette) {
+        let view = screenView(model, m, p)
+        let renderer = ImageRenderer(content:
+            view.frame(width: m.size.width, height: m.size.height))
+        renderer.scale = 1
+        renderer.proposedSize = ProposedViewSize(m.size)
+        _ = renderer.cgImage
+    }
+
+    /// **A tap: hit-test the drawn bounds, then fire the Button's own action.**
+    /// A miss is recorded and nothing is fired.
+    private func tap(_ model: QQuestModel, _ m: MQMetrics, _ p: MQPalette,
+                     _ name: String, _ misses: inout [String]) async {
+        refreshHits(model, m, p)
+        if let miss = await hits.tap(name) { misses.append(miss.description) }
+    }
+
     @discardableResult
     private func shoot(_ model: QQuestModel, _ m: MQMetrics, _ p: MQPalette,
                        _ scale: CGFloat, _ name: String) throws -> String {
-        let view = QScreenForPhase(model: model, metrics: m, palette: p)
+        let view = screenView(model, m, p)
         let url = outDir.appendingPathComponent("\(name).png")
         guard let data = QDriver.png(view, size: m.size, scale: scale) else {
             throw QDriverError.renderFailed(name)

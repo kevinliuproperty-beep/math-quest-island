@@ -121,9 +121,19 @@ public struct QTypedEntry: Equatable, Sendable {
     /// a bare number has always been accepted and still is.
     public var unit: String?
 
-    /// A number long enough for `9007199254740993` and short enough that a stuck
-    /// finger cannot fill the slot. The web field had no limit; a keypad should.
-    public static let maxDigits = 16
+    /// Long enough to type any answer the ENGINE prints, and short enough that a
+    /// stuck finger cannot fill the slot. The web field had no limit; a keypad
+    /// should.
+    ///
+    /// It was 16, which truncated the engine's own `answerText`: `p5fractions`
+    /// prints `0.8333333333333334` (18 characters) and `0.05555555555555555` (19)
+    /// as "the answer", and a child copying the review row could not type it back
+    /// (Quest Refutation, wound 3 - the two truncations that slipped through
+    /// graded correct by luck, because `fracAnswer`'s 1e-9 tolerance swallows a
+    /// 14-decimal truncation). 24 clears the longest `answerText` the island
+    /// produces with room to spare, and `QKeypadPolicyTests` measures that against
+    /// the live engine rather than trusting this comment.
+    public static let maxDigits = 24
 
     public init(digits: String = "", unit: String? = nil) {
         self.digits = digits; self.unit = unit
@@ -139,6 +149,21 @@ public struct QTypedEntry: Equatable, Sendable {
     }
 
     public var isEmpty: Bool { digits.isEmpty }
+
+    /// Whether `Check` should be live.
+    ///
+    /// Not just "something was typed". `"3/"` is reachable from the keypad - the
+    /// slash needs a trailing digit to be pressed, but nothing needed a digit
+    /// AFTER it - and it was submittable, so a child could hand the grader a
+    /// half-written fraction, be told "not a number" and take damage for a key
+    /// they had not finished pressing (Quest Refutation, wound: a submittable
+    /// dead end). Same for a bare `"-"`. The web behaves identically, which makes
+    /// it a shared wound rather than a divergence, and the keypad is the surface
+    /// that can close it.
+    public var isSubmittable: Bool {
+        guard let last = digits.last else { return false }
+        return last.isNumber || last == "."
+    }
 
     public var answer: Answer { .typed(submission) }
 

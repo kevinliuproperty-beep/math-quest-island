@@ -249,7 +249,7 @@ struct QScreenFitTests {
                 for ch in QDriver.correctTypedText(q) {
                     if let d = Int(String(ch)) { m.press(.digit(d)) }
                 }
-                if let bad = m.chips.first(where: { !QUnits.accepts($0, declared: q.unit) }) {
+                if let bad = m.chips.first(where: { !QUnits.accepts($0, question: q) }) {
                     m.toggleChip(bad)
                 }
                 await m.submitTyped()
@@ -298,15 +298,205 @@ struct QScreenFitTests {
 
     @Test("every tap target on every Quest screen clears the 44 pt floor")
     func tapFloor() {
-        for (name, size) in Self.sizes {
-            let m = MQMetrics.device(size)
+        QTestFonts.ensure()
+        for device in QDevices.matrix {
+            let m = device.metrics
             let targets = QBattleView.tapTargets(m) + QMapView.tapTargets(m)
                 + QResultView.tapTargets(m) + QEntranceView.tapTargets(m)
             #expect(!targets.isEmpty)
             for t in targets {
                 #expect(t.clearsFloor,
-                        "\(name): \"\(t.name)\" is \(t.least) pt, under the 44 pt floor")
+                        "\(device.name): \"\(t.name)\" is \(t.least) pt, under the 44 pt floor")
             }
         }
+    }
+}
+
+// =============================================================================
+
+/// **THE TYPED BATTLE, AT EVERY SIZE IN THE MATRIX, ON REAL ENGINE STEMS.**
+///
+/// Quest Refutation K1. The fit gate's typed fixture was
+/// `QFixtures.question(kind: "typed", unit: "cm2", answer: 113)` whose stem is
+/// the one line *"What is the area, in cm2?"* on `p4area` - a topic whose real
+/// stems are the four-line *"A badge is made of two rectangles that do not
+/// overlap..."*. Measured against real content the typed screen overflowed the
+/// 9.7" iPad in PORTRAIT by up to 107 pt, cut the name tag, the streak lantern
+/// and the crystal rope off the top, and left the `0` and `.` keys presenting
+/// 18 pt of a declared 58 pt target. It also only ever measured three sizes.
+///
+/// So: every typed topic, at least twenty REAL draws per topic per size, at all
+/// twelve matrix sizes, safe-area insets included. Nothing here is a fixture.
+@Suite("The typed battle fits every device in the matrix on real engine stems",
+       .serialized)
+struct QTypedMatrixFitTests {
+
+    static let engine = try! JSQuestionEngine()
+
+    /// >= 20, and `MQ_DRAWS` may raise it as far as 60. It may not lower it below
+    /// 20: the point of the gate is the LONGEST stem a topic produces, and a
+    /// sample of five never finds it. The cap is there because this suite renders
+    /// `draws x 12 sizes x 8 topics` screens, and the gate's own `MQ_DRAWS=200`
+    /// would be nineteen thousand of them.
+    static var draws: Int {
+        min(max(20, Int(ProcessInfo.processInfo.environment["MQ_DRAWS"] ?? "") ?? 20), 60)
+    }
+
+    /// The topics that draw a keypad and declare units. `everyTypedTopicIsGated`
+    /// holds this list against what the engine actually produces.
+    static let topics = ["p4area", "p3money", "p5decimals", "p5rate", "p5fractions",
+                         "p5volume", "p5percent", "p5triangle"]
+
+    /// Real typed questions, drawn once and measured at every size.
+    static func drawTyped(_ topic: String, count: Int) async throws -> [Question] {
+        var out: [Question] = []
+        var guardRail = 0
+        while out.count < count, guardRail < count * 8 {
+            guardRail += 1
+            let level = [1, 2, 3][guardRail % 3]
+            let q = try await engine.nextQuestion(.pool(topic: topic, level: level))
+            if q.isTyped { out.append(q) }
+        }
+        return out
+    }
+
+    @MainActor
+    static func model(_ questions: [Question]) async -> QQuestModel {
+        QTestFonts.ensure()
+        let store = InMemoryProgressStore()
+        _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
+        let m = QQuestModel(source: ScriptedSource(questions), store: store,
+                            random: QFixedRandom([0]), setSize: max(questions.count, 1))
+        await m.load()
+        await m.pick(m.profiles[0])
+        await m.open(m.island!.nodes[0])
+        return m
+    }
+
+    @Test("the typed battle fits at all twelve matrix sizes, on real stems",
+          arguments: QTypedMatrixFitTests.topics)
+    func typedFitsEverywhere(_ topic: String) async throws {
+        let questions = try await Self.drawTyped(topic, count: Self.draws)
+        #expect(questions.count >= 20,
+                "\(topic): only \(questions.count) typed draws, the gate needs 20")
+
+        var worst: [(String, CGFloat)] = []
+        for device in QDevices.matrix {
+            let m = device.metrics
+            let model = await Self.model(questions)
+            var deviceWorst = CGFloat.greatestFiniteMagnitude
+            var worstStem = ""
+            for q in questions {
+                await MainActor.run { model.showQuestionForMeasurement(q) }
+                let slack = await MainActor.run {
+                    MQFit.slack(QBattleView(model: model, metrics: m), in: device.points)
+                }
+                let s = slack ?? -1
+                if s < deviceWorst { deviceWorst = s; worstStem = q.stemText }
+            }
+            worst.append((device.name, deviceWorst))
+            #expect(deviceWorst >= 0,
+                    "\(topic) on \(device.name) overflows by \(-deviceWorst) pt over \(questions.count) real draws, worst: \"\(worstStem.prefix(90))\"")
+        }
+        let row = worst.map { "\($0.0)=\(Int($0.1))" }.joined(separator: " ")
+        print("FIT \(topic.padding(toLength: 12, withPad: " ", startingAt: 0)) \(row)")
+    }
+
+    /// Every keypad key keeps its declared target AND is drawn on the glass.
+    /// The tap audit measures the DECLARED size and cannot see the frame edge -
+    /// that is the other half of K1, and this is the half that can.
+    @Test("every keypad key is drawn whole, on the glass, at every matrix size")
+    func keysAreOnTheGlass() async throws {
+        let questions = try await Self.drawTyped("p4area", count: 3)
+        let q = try #require(questions.first)
+        for device in QDevices.matrix {
+            let m = device.metrics
+            let model = await Self.model([q])
+            try await MainActor.run {
+                let hits = QHitMap()
+                hits.setScreen(device.points)
+                let view = QBattleView(model: model, metrics: m)
+                    .environment(\.qHitMap, hits)
+                _ = QDriver.png(view, size: device.points, scale: 1)
+
+                let keypad = QKeypad.geometry(m)
+                for digit in 0...9 {
+                    let name = QBattleView.Hit.key(.digit(digit))
+                    let t = try #require(hits.target(name),
+                                         "\(device.name): key \(digit) was not drawn")
+                    #expect(hits.isOnScreen(t),
+                            "\(device.name): key \(digit) is drawn at \(t.frame), off a \(Int(device.points.width))x\(Int(device.points.height)) screen")
+                    #expect(t.frame.height >= keypad.key.height - 0.5,
+                            "\(device.name): key \(digit) is \(t.frame.height) pt tall, declared \(keypad.key.height)")
+                    #expect(t.frame.width >= keypad.key.width - 0.5)
+                }
+                for name in [QBattleView.Hit.check, QBattleView.Hit.undo,
+                             QBattleView.Hit.pause] {
+                    let t = try #require(hits.target(name),
+                                         "\(device.name): \(name) not drawn")
+                    #expect(hits.isOnScreen(t),
+                            "\(device.name): \(name) is drawn at \(t.frame), off the glass")
+                }
+                for chip in model.chips {
+                    let t = try #require(hits.target(QBattleView.Hit.chip(chip)),
+                                         "\(device.name): chip \(chip) not drawn")
+                    #expect(hits.isOnScreen(t),
+                            "\(device.name): chip \(chip) is off the glass")
+                    #expect(t.frame.height >= MQTap.min - 0.5)
+                }
+            }
+        }
+    }
+
+    /// The CHOICE branch at every size too, on the figure topics. Not required by
+    /// the kill, but the figure slot on a phone grew to make the pie's labels
+    /// legible (K5) and this is what says the board still fits after it did.
+    @Test("the choice battle fits at all twelve matrix sizes, figures and all",
+          arguments: ["p4pie", "p4data", "geometry", "p3bargraph"])
+    func choiceFitsEverywhere(_ topic: String) async throws {
+        var questions: [Question] = []
+        var guardRail = 0
+        while questions.count < 20, guardRail < 160 {
+            guardRail += 1
+            let q = try await Self.engine.nextQuestion(
+                .pool(topic: topic, level: [1, 2, 3][guardRail % 3]))
+            if !q.isTyped { questions.append(q) }
+        }
+        #expect(questions.count >= 20, "\(topic): only \(questions.count) choice draws")
+        for device in QDevices.matrix {
+            let m = device.metrics
+            let model = await Self.model(questions)
+            var worst = CGFloat.greatestFiniteMagnitude
+            for q in questions {
+                await MainActor.run { model.showQuestionForMeasurement(q) }
+                let s = await MainActor.run {
+                    MQFit.slack(QBattleView(model: model, metrics: m),
+                                in: device.points)
+                } ?? -1
+                worst = min(worst, s)
+            }
+            #expect(worst >= 0,
+                    "\(topic) (choice) on \(device.name) overflows by \(-worst) pt")
+        }
+    }
+
+    /// A typed topic with no row in this suite's list is a topic the matrix gate
+    /// has never measured, which is exactly how `p5decimals` went unmeasured.
+    @Test("every topic whose keypad is drawn is in the matrix gate")
+    func everyTypedTopicIsGated() async throws {
+        var typed: Set<String> = []
+        for topic in QKeypadPolicy.byTopic.keys {
+            for _ in 0..<6 {
+                let q = try await Self.engine.nextQuestion(.pool(topic: topic, level: 1))
+                if q.isTyped { typed.insert(topic); break }
+            }
+        }
+        // The five left out are whole-number arithmetic topics with no declared
+        // unit and no chip row; they are covered by the choice/typed fixtures.
+        let noChipRow: Set<String> = ["p5numbers", "p4fractions", "p4ops",
+                                      "p3divide", "heuristics"]
+        let missing = typed.subtracting(Self.topics).subtracting(noChipRow)
+        #expect(missing.isEmpty,
+                "typed topics not in the matrix fit gate: \(missing.sorted())")
     }
 }

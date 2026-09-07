@@ -152,6 +152,17 @@ public actor InMemoryProgressStore: ProgressStore {
         return summary
     }
 
+    /// Sessions begun and never ended.
+    ///
+    /// The store's leak is the quiet half of Quest Refutation K6: `toMap()` left
+    /// `sessionID` set and the next `open()` overwrote it, so the abandoned
+    /// session's `SessionSummary` was never computed and a persistent store would
+    /// inherit an unterminated record per pause. Attempts are recorded per answer,
+    /// so no mastery was lost - but nothing could see the leak either. This can.
+    public var openSessionCount: Int {
+        sessions.values.filter { $0.summary == nil }.count
+    }
+
     // MARK: Profiles
 
     public func profiles() async -> [MQProfile] { order }

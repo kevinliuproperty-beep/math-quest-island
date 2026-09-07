@@ -33,9 +33,71 @@ struct QDriverTests {
                      node: node, items: items, strategies: strategies, scale: 1)
     }
 
+    /// **The driver drives the VIEW, at every size in the matrix.**
+    ///
+    /// Quest Refutation K1, second half: the driver called `model.press`,
+    /// `model.toggleChip`, `model.choose` - model methods, never the `Button`
+    /// actions in `QBattleView` - so a keypad key drawn 18 pt tall and flush to
+    /// the bottom of the frame typed perfectly in the transcript. On the view path
+    /// every tap hit-tests the control's DRAWN bounds against the glass first, so
+    /// an unreachable key is a recorded miss and the run says so.
+    ///
+    /// One full session per size, all twelve, on a topic whose keypad and chip
+    /// row are both drawn.
+    @MainActor
+    @Test("a session per matrix size, driven through the drawn views, with no misses",
+          arguments: QDevices.matrix.map(\.name))
+    func viewPathPlaysEverySize(_ device: String) async throws {
+        QTestFonts.ensure()
+        let out = Self.tempDir("viewpath")
+        defer { try? FileManager.default.removeItem(at: out) }
+        var script = Self.script([.alwaysCorrect, .wrongUnit, .alwaysWrong],
+                                 items: 3, node: "p5decimals", level: "P5",
+                                 device: device)
+        script.viewPath = true
+        let result = try await QDriver(source: Self.engine, script: script,
+                                       outDir: out).run()
+        let t = result.transcript
+        #expect(t.inputPath == "view")
+        #expect(t.tapMisses.isEmpty,
+                "\(device): \(t.tapMisses.count) tap(s) could not be made: \(t.tapMisses.prefix(4).joined(separator: " | "))")
+        #expect(t.items.count == 3, "\(device): \(t.items.count) items played, wanted 3")
+        for row in t.items {
+            #expect(row.inputPath == "view")
+            #expect(row.tapMisses == nil)
+            #expect(!row.submitted.isEmpty,
+                    "\(device): item \(row.index + 1) submitted nothing")
+        }
+        // The wrong-unit item went through a CHIP a finger could reach, and the
+        // engine said which half was wrong.
+        if let unit = t.items.first(where: { $0.strategy == "wrong-unit"
+            && $0.strategyFellBackTo == nil }) {
+            #expect(unit.chipTapped != nil, "\(device): the wrong-unit item tapped no chip")
+            #expect(unit.reason == "wrong-unit",
+                    "\(device): wrong-unit item came back \(unit.reason)")
+        }
+    }
+
+    /// `--model` still exists, still plays, and says so in the transcript.
+    @MainActor
+    @Test("the model path still plays and is recorded as the model path")
+    func modelPathStillWorks() async throws {
+        QTestFonts.ensure()
+        let out = Self.tempDir("modelpath")
+        defer { try? FileManager.default.removeItem(at: out) }
+        var script = Self.script([.alwaysCorrect, .alwaysWrong], items: 2)
+        script.viewPath = false
+        let t = try await QDriver(source: Self.engine, script: script,
+                                  outDir: out).run().transcript
+        #expect(t.inputPath == "model")
+        #expect(t.items.count == 2)
+        #expect(t.items.allSatisfy { $0.inputPath == "model" })
+    }
+
     @MainActor
     @Test("a driven session writes a PNG per screen and a decodable transcript")
     func writesEverything() async throws {
+        QTestFonts.ensure()
         let out = Self.tempDir("shape")
         defer { try? FileManager.default.removeItem(at: out) }
         let driver = QDriver(source: Self.engine,

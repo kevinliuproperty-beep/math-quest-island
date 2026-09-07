@@ -42,6 +42,10 @@ struct HostArgs {
     var strategy: String?
     var palette: String?
     var scale: Double?
+    /// `--model` opts OUT of the view path: taps go straight to the model, which
+    /// is faster and blind to layout. The default is the view path, because that
+    /// is the one that catches a key drawn off the glass (Quest Refutation K1).
+    var modelPath = false
     var help = false
 
     static func parse(_ argv: [String]) -> HostArgs {
@@ -59,6 +63,8 @@ struct HostArgs {
             case "--strategy": a.strategy = next()
             case "--palette":  a.palette = next()
             case "--scale":    a.scale = Double(next() ?? "")
+            case "--model":    a.modelPath = true
+            case "--view":     a.modelPath = false
             case "-h", "--help": a.help = true
             default: break
             }
@@ -87,6 +93,11 @@ mqhost - Math Quest Island, Quest flow, on macOS.
       --strategy <s>        always-correct | always-wrong | wrong-unit | random
       --palette noon|dusk
       --scale <n>           render scale (default 1)
+      --model               tap through the MODEL instead of the drawn views.
+                            Faster, and blind to a control that is off the glass;
+                            the default (--view) hit-tests the drawn bounds and
+                            fires the Button's own action, so an unreachable key
+                            is recorded as a MISS in the transcript.
 
   Script shape:
       { "name":"p4-12", "seed":20260907, "device":"ipad97-landscape",
@@ -130,6 +141,7 @@ func loadScript(_ args: HostArgs) throws -> QDriveScript {
     }
     if let p = args.palette { script.palette = p }
     if let s = args.scale { script.scale = CGFloat(s) }
+    if args.modelPath { script.viewPath = false }
     return script
 }
 
@@ -144,7 +156,8 @@ func drive() async -> Int32 {
         mqhost: engine \(build.stamp) payload \(build.payloadHash) \
         (\(build.topicCount) topics, \(build.distinctGenerators) generators)
         mqhost: driving "\(script.name)" node=\(script.node) items=\(script.items) \
-        device=\(script.device) seed=\(script.seed)
+        device=\(script.device) seed=\(script.seed) \
+        input=\(script.drivesTheViewPath ? "view (hit-tested)" : "model")
 
         """.utf8))
 
@@ -158,6 +171,15 @@ func drive() async -> Int32 {
         crystals \(t.crystals), hero HP \(t.heroHP), \(t.reviewCount) for review
         mqhost: transcript \(result.transcriptPath)
         """)
+        if !t.tapMisses.isEmpty {
+            // A tap that could not be made is the K1 signal, and it is not a
+            // footnote: the run answered items a finger could not have answered.
+            FileHandle.standardError.write(Data(
+                ("mqhost: " + String(t.tapMisses.count) + " TAP MISS(ES) - a control was not "
+                 + "drawn, was off the glass, or was disabled:\n"
+                 + t.tapMisses.map { "         " + $0 }.joined(separator: "\n") + "\n").utf8))
+            return 2
+        }
         return 0
     } catch {
         FileHandle.standardError.write(Data("mqhost: \(error)\n".utf8))

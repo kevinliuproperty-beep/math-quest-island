@@ -75,6 +75,12 @@ enum QFixtures {
     static func fmt(_ d: Double) -> String { JSONValue.numberText(d) }
 
     static func decode<T: Decodable>(_ type: T.Type, _ dict: [String: Any]) -> T {
+        // **Font registration, by construction rather than by suite ordering.**
+        // `QTestFonts.ensure()` appeared in two of six test files and worked
+        // because those suites happened to run first (Quest Refutation, wound 7).
+        // Registration is process-global and idempotent, so the honest place for
+        // it is the one call every test in this target makes.
+        QTestFonts.ensure()
         let data = try! JSONSerialization.data(withJSONObject: dict)
         return try! JSONDecoder().decode(T.self, from: data)
     }
@@ -160,16 +166,40 @@ actor ScriptedSource: QuestionSource {
                            expectedText: question.answerTextPlain, chosenIndex: i,
                            reason: ok ? nil : "wrong option", parsed: nil, typedRaw: nil)
         case .typed(let text):
-            let bare = text.replacingOccurrences(of: question.unit, with: "")
+            // The SPLIT reason, because that is what the engine emits since the
+            // unit sweep and `QReasonClassifier` is now a pure mapping of it. A
+            // fake that still said "wrong value or unit" would be testing a
+            // string no shipped bundle produces.
+            var unit = ""
+            for candidate in question.acceptedUnits
+                    .sorted(by: { $0.count > $1.count })
+            where text.lowercased().hasSuffix(candidate.lowercased()) {
+                unit = candidate; break
+            }
+            let bare = (unit.isEmpty ? text : String(text.dropLast(unit.count)))
                 .trimmingCharacters(in: .whitespaces)
             let want = question.key["answer"]?.doubleValue
-            let ok = Double(bare) == want
-                && (text == bare || text.hasSuffix(question.unit))
+            let valueRight = Double(bare) == want
+            let unitRight = unit.isEmpty || QUnits.accepts(unit, question: question)
+            // A unit the question does not accept leaves the tail unstripped, so
+            // `bare` still carries it and the value comparison fails; measure the
+            // number on its own to tell the two halves apart.
+            let numberOnly = text.split(separator: " ").first.map(String.init) ?? text
+            let numberRight = Double(numberOnly) == want
+            let ok = valueRight && unitRight
+            let reason: String? = ok ? nil : (numberRight ? "wrong-unit" : "wrong-value")
             return Verdict(correct: ok, kind: .typed, questionId: question.id,
                            expectedIndex: -1, expectedText: question.answerTextPlain,
                            chosenIndex: -1,
-                           reason: ok ? nil : "wrong value or unit",
-                           parsed: nil, typedRaw: text)
+                           reason: reason,
+                           parsed: Verdict.Parsed(ok: numberRight,
+                                                  value: Double(numberOnly),
+                                                  unit: unit.isEmpty
+                                                      ? (text.split(separator: " ").count > 1
+                                                         ? String(text.split(separator: " ")[1]) : "")
+                                                      : unit,
+                                                  frac: nil, reason: nil),
+                           typedRaw: text)
         }
     }
 

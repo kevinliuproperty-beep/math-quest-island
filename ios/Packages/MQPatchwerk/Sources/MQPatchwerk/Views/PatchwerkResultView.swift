@@ -99,10 +99,16 @@ public struct PatchwerkResultView: View, MQTapAudited {
                 .font(.mq(m.isRegular ? 34 : 26, .extrabold))
                 .foregroundStyle(p.gold)
                 .shadow(color: p.woodDeep.opacity(0.85), radius: 0, x: 0, y: 2)
-            Text("\(tierLabel) - \(level) - the dummy is still standing, but you left a mark.")
-                .font(.mq(m.isRegular ? 17 : 13, .semibold))
-                .foregroundStyle(p.carved.opacity(0.88))
-                .multilineTextAlignment(.center)
+            // On a plank. Cream at 88% straight onto the world measures 1.22:1
+            // against `skyLow` and 1.30:1 against `sandFar` - "white captions on
+            // pale sand", item 9 of the dress rehearsal's parent's-eye list.
+            MQRail(p, padH: m.isRegular ? 18 : 12, padV: m.isRegular ? 5 : 3) {
+                Text("\(tierLabel) - \(level) - the dummy is still standing, but you left a mark.")
+                    .font(.mq(m.isRegular ? 17 : 13, .semibold))
+                    .foregroundStyle(p.captionOnDark)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
@@ -120,24 +126,54 @@ public struct PatchwerkResultView: View, MQTapAudited {
             (record.accuracyLabel, "accuracy"),
             ("\(record.freezesUsed)", "freezes used")
         ]
-        return MQTag(p) {
+        // **A rail, not a tag.** The five numbers were gold on pale wood - 1.20:1
+        // to 1.70:1 - with cream captions under them at 1.22:1: the whole row was
+        // a smudge in `pw-05-result.png` and Kevin picked it out by eye. Moving
+        // the row onto the HUD's own dark plank fixes value and caption together
+        // with one object rather than two colour sets, which is MQRail's own
+        // stated argument for existing. Cream reads 5.34:1 there.
+        //
+        // The gold does not follow it up here on purpose: gold on `woodDark`
+        // measures 2.74:1, and gold stays reserved for the ONE number that is the
+        // point of the screen - the damage above.
+        return MQRail(p, padH: m.isRegular ? 22 : 10, padV: m.isRegular ? 12 : 8) {
             HStack(spacing: m.isRegular ? 26 : 10) {
                 ForEach(items, id: \.1) { value, caption in
-                    MQCarvedNumber(p, value: value, caption: caption,
-                                   valueSize: m.isRegular ? 30 : 21)
-                    .frame(maxWidth: .infinity)
+                    statPair(value, caption).frame(maxWidth: .infinity)
                 }
             }
-            .padding(.horizontal, m.isRegular ? 22 : 10)
-            .padding(.vertical, m.isRegular ? 14 : 9)
+        }
+    }
+
+    /// One stat. Not `MQCarvedNumber`: its caption is `carved.opacity(0.82)`,
+    /// which measures 4.19:1 on `woodDark` and misses WCAG AA by 0.31.
+    private func statPair(_ value: String, _ caption: String) -> some View {
+        VStack(spacing: -(m.isRegular ? 3.0 : 2.0)) {
+            Text(value)
+                .font(.mq(m.isRegular ? 30 : 21, .extrabold))
+                .monospacedDigit()
+                .foregroundStyle(p.captionOnDark)
+                .shadow(color: p.woodDeep.opacity(0.9), radius: 0, x: 0, y: 2)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            Text(caption)
+                .font(.mq(m.isRegular ? 13 : 11, .bold))
+                .foregroundStyle(p.captionOnDark)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
     }
 
     @ViewBuilder private var rankLine: some View {
-        Text(rankText)
-            .font(.mq(m.isRegular ? 19 : 15, .bold))
-            .foregroundStyle(p.carved)
-            .multilineTextAlignment(.center)
+        // The celebration line of the whole run, and it was cream on pale sand at
+        // 1.30:1 - "very nearly invisible", item 9. On a plank it reads 5.34:1.
+        MQRail(p, padH: m.isRegular ? 18 : 12, padV: m.isRegular ? 5 : 3) {
+            Text(rankText)
+                .font(.mq(m.isRegular ? 19 : 15, .bold))
+                .foregroundStyle(p.captionOnDark)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private var rankText: String {

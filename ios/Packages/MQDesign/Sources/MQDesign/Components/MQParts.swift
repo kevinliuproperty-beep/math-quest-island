@@ -46,16 +46,37 @@ public struct MQHeroToken: View {
             if let profile {
                 MQTag(p) {
                     HStack(spacing: 7) {
+                        // **THE NAME YIELDS; THE BADGE DOES NOT.**
+                        //
+                        // Both of these carried `.fixedSize()`, so the plaque
+                        // demanded whatever "Charlotte" + "P4" happened to want
+                        // and the 2x2 portrait layout - which gives a token half
+                        // a 768 pt screen, not the whole of it - clipped the
+                        // overflow. The overflow is the TRAILING edge, so the
+                        // level badge was cut to a green sliver on Charlotte's
+                        // own iPad in her own second orientation, while "Ben P3"
+                        // and "Mei P5" fitted and nobody noticed (Phase 1 dress
+                        // rehearsal, leg 1; crop entrance-portrait-charlotte-plaque.png).
+                        //
+                        // A name is a string of unbounded length and a class
+                        // level is three characters, so the name is the part
+                        // that can afford to shrink. It scales, floored at 0.62
+                        // (25 pt -> 15.5 pt on an iPad, 17 -> 10.5 compact) and
+                        // truncates only below that; the badge keeps `fixedSize`
+                        // and takes layout priority, so it is never the thing
+                        // that goes.
                         Text(profile.name)
                             .font(.mq(compact ? 17 : 25, .extrabold))
                             .foregroundStyle(p.underLight(Color(hex: 0x4A2C12)))
                             .lineLimit(1)
-                            .fixedSize()
+                            .minimumScaleFactor(0.62)
                         Text(profile.level)
                             .font(.mq(compact ? 12 : 14, .bold))
                             .foregroundStyle(p.carved)
                             .padding(.horizontal, 7).padding(.vertical, 1)
                             .background(Capsule().fill(p.leafDeep))
+                            .fixedSize()
+                            .layoutPriority(1)
                     }
                     .padding(.horizontal, compact ? 10 : 16)
                     .padding(.vertical, compact ? 5 : 7)
@@ -488,7 +509,14 @@ public struct MQCarvedNumber: View {
                 .shadow(color: p.woodDeep.opacity(0.9), radius: 0, x: 0, y: 3)
             Text(caption)
                 .font(.mq(max(11, valueSize * 0.24), .bold))
-                .foregroundStyle(p.carved.opacity(0.82))
+                // **Full strength, not 82%.** Measured on the rehearsal fix pass:
+                // this cream at 0.82 alpha over `MQRail`'s light stop
+                // (`woodDark`) is 4.19:1, which misses WCAG AA by 0.31 - and the
+                // 18% IS the whole of the cause, because the same cream at full
+                // strength measures 5.34:1. This is the HUD's "damage" caption,
+                // one of the strings behind the parent's "white captions on pale
+                // sand" (Phase 1 dress rehearsal, parent's list item 9).
+                .foregroundStyle(p.captionOnDark)
                 .shadow(color: p.woodDeep.opacity(0.7), radius: 0, x: 0, y: 1.5)
         }
     }

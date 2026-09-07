@@ -1,5 +1,7 @@
 import SwiftUI
+import MQContent
 import MQDesign
+import MQProgress
 
 /// The front door, interactive.
 ///
@@ -11,6 +13,7 @@ import MQDesign
 /// this iPad, one empty slot, no accounts anywhere.
 public struct QEntranceView: View, MQTapAudited {
     @ObservedObject var model: QQuestModel
+    @Environment(\.qHitMap) private var hitMap
     let m: MQMetrics
     let p: MQPalette
 
@@ -18,11 +21,26 @@ public struct QEntranceView: View, MQTapAudited {
         self.model = model; self.m = metrics; self.p = palette
     }
 
-    private var slots: Int { model.profiles.count + 1 }
+    private var slots: Int { model.records.count + 1 }
     private var g: MQEntranceScreen.Geo { MQEntranceScreen.geometry(m, slots: slots) }
 
     nonisolated public static func tapTargets(_ m: MQMetrics) -> [MQTapTarget] {
         MQEntranceScreen.tapTargets(m)
+    }
+
+    /// The hit-map names the driver taps by.
+    ///
+    /// **The entrance registered NONE before the rehearsal fix pass.** Only
+    /// `QBattleView` and `QResultView` called `.qHit`, so no driven run could
+    /// prove a profile token was even on the glass - which is how a `+` that did
+    /// nothing survived every gate in the packet (Phase 1 dress rehearsal,
+    /// leg 1). A driven run now taps a real token and a real `+`.
+    public enum Hit {
+        /// Named by the STORE's id, never by the child's name. Two children
+        /// called Ben would collide on a name, and a display name standing in
+        /// for an identity is precisely the blocker this pass closes.
+        public static func profile(_ id: ProfileID) -> String { "profile-\(id.raw)" }
+        public static let newExplorer = "new-explorer"
     }
 
     public var body: some View {
@@ -40,6 +58,7 @@ public struct QEntranceView: View, MQTapAudited {
             .padding(.top, m.insets.top + g.pad * 0.6)
             .padding(.bottom, m.insets.bottom + g.pad * 0.6)
         }
+        .coordinateSpace(name: QHitMap.space)
     }
 
     private var title: some View {
@@ -72,7 +91,10 @@ public struct QEntranceView: View, MQTapAudited {
     }
 
     @ViewBuilder private var tokens: some View {
-        let entries: [MQProfile?] = model.profiles.map { $0 } + [nil]
+        // **`ProfileRecord?`, not `MQProfile?`.** The token has to hand back the
+        // STORE's id, and `MQProfile.id` is the child's display name - see
+        // `QQuestModel.records` for the whole of what that cost.
+        let entries: [ProfileRecord?] = model.records.map { $0 } + [nil]
         if g.oneRow {
             HStack(alignment: .bottom, spacing: g.spacing) {
                 ForEach(0..<entries.count, id: \.self) { i in token(entries[i], i) }
@@ -93,16 +115,25 @@ public struct QEntranceView: View, MQTapAudited {
         }
     }
 
-    private func token(_ profile: MQProfile?, _ i: Int) -> some View {
+    /// One slot. **The empty one opens the new-explorer sheet.**
+    ///
+    /// It used to be `Button { guard let profile else { return } ... }` - the
+    /// empty slot's action returned immediately and nothing in the app called
+    /// `addProfile`, so a parent on a fresh install met a dead `+` and could not
+    /// start at all. Both branches now record a hit target and both fire.
+    private func token(_ record: ProfileRecord?, _ i: Int) -> some View {
         let d = MQEntranceScreen.depth[i % MQEntranceScreen.depth.count]
-        return Button {
-            guard let profile else { return }
-            Task { await model.pick(profile) }
-        } label: {
-            MQHeroToken(p, profile: profile, newLabel: QStrings.newExplorer,
+        let name = record.map { Hit.profile($0.id) } ?? Hit.newExplorer
+        let fire: @MainActor @Sendable () async -> Void = { [model] in
+            if let record { await model.pick(record) }
+            else { await MainActor.run { model.beginNewExplorer() } }
+        }
+        return Button { Task { await fire() } } label: {
+            MQHeroToken(p, profile: record?.profile, newLabel: QStrings.newExplorer,
                         diameter: g.diameter * d.scale, compact: !m.isRegular)
         }
         .buttonStyle(.plain)
+        .qHit(hitMap, name, fire: fire)
         .offset(y: d.dy * (g.diameter / (m.isRegular ? 186 : 124)))
     }
 

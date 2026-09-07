@@ -88,7 +88,7 @@ struct QPixelGateTests {
         let m = QQuestModel(source: Self.engine, store: store,
                             random: QFixedRandom([0]), setSize: 6)
         await m.load()
-        await m.pick(try #require(m.profiles.first))
+        await m.pick(try #require(m.records.first))
         await m.open(try #require(m.island?.nodes.first { $0.topicID == "p4area" }))
         var guardRail = 0
         while m.phase == .asking, guardRail < 12 {
@@ -195,7 +195,7 @@ struct QPixelGateTests {
         let m = QQuestModel(source: Self.engine, store: store,
                             random: QFixedRandom([0]), setSize: 9)
         await m.load()
-        await m.pick(try #require(m.profiles.first))
+        await m.pick(try #require(m.records.first))
         await m.open(try #require(m.island?.nodes.first { $0.topicID == "p4data" }))
         var guardRail = 0
         while m.phase == .asking, guardRail < 12 {
@@ -316,18 +316,35 @@ struct QPixelGateTests {
     }
     /// **The floor is not decoration: it changes what is drawn.**
     ///
-    /// At the battle board's figure slot `k = min(1, max(0.46, h/150))` is well
-    /// under 1, so the nominal `11 * k` header is 5-9 pt and the floor binds. Two
-    /// renders of the same figure, one at the shipped floor and one at 3 pt, must
-    /// differ by a lot of ink - which is the measurable form of "the type got
-    /// bigger". Red-provable: set the floor to 3 in the source and this goes red.
+    /// Two renders of the same figure, one at the shipped floor and one at 3 pt,
+    /// must differ by a lot of ink - which is the measurable form of "the type
+    /// got bigger". Red-provable: set the floor to 3 in the source and this goes
+    /// red.
+    ///
+    /// **The box is now named by a STEM LENGTH, and the assertion is unchanged.**
+    ///
+    /// This test carried its own premise - `k(box) * 11 < iPadTypeFloor`, i.e.
+    /// "the nominal size is below the floor, so the floor is doing something" -
+    /// and on 2026-09-07 that premise stopped holding for the box it was asking
+    /// for. `QBattleView.geometry` now gives the figure the board's empty half
+    /// (the rehearsal's fifth parent-list item), and its default `stemLength: 0`
+    /// means the SHORTEST possible stem, i.e. the biggest figure: at that box
+    /// `figureH` clears 150 pt, `k` saturates at 1, and `11 * k` IS 11.
+    ///
+    /// So the call says which stem it wants. A 200-character P4 word problem
+    /// uses its whole line budget, the figure does not grow, and the box is
+    /// exactly the 151 x 103 slot this gate was written against and Quest
+    /// Refutation K5 was measured on. Nothing was weakened; the box that was
+    /// implied by a default is now spelled out, and the premise below still
+    /// fails loudly if it ever stops holding.
     @MainActor
     @Test("the type floor binds at the battle slot and puts more ink on the board",
           arguments: ["p4data", "p4pie"])
     func floorBinds(_ topic: String) async throws {
         QTestFonts.ensure()
         let metrics = MQMetrics.device(CGSize(width: 1024, height: 768))
-        let battle = QBattleView.geometry(metrics, typed: false)
+        let battle = QBattleView.geometry(metrics, typed: false, stemLength: 200,
+                                          hasFigure: true)
         let box = CGSize(width: battle.figureW.rounded(.up),
                          height: battle.figureH.rounded(.up))
         #expect(QFigureView.k(box) * 11 < QFigureView.iPadTypeFloor,

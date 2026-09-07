@@ -200,6 +200,42 @@ public extension MQPalette {
     }()
 }
 
+// MARK: - Text roles, with a measured contrast floor
+
+public extension MQPalette {
+
+    /// **A caption or subtitle drawn on a DARK ground** - a rail, a plank, the
+    /// oiled driftwood the HUD hangs from. Cream, at full strength.
+    ///
+    /// The strength is the role. `p.carved.opacity(0.82)` measures **4.19:1** on
+    /// `woodDark` at noon and is what the HUD's own captions were set in; the
+    /// same cream at full opacity measures 5.34:1. WCAG AA for body text is
+    /// 4.5:1, so the 18% was the whole difference between passing and failing.
+    var captionOnDark: Color { carved }
+
+    /// **A caption or subtitle drawn on a PALE ground** - a tag, parchment, a
+    /// scroll, open sand.
+    ///
+    /// The Phase 1 dress rehearsal's parent's-eye list, item 9: on the Patchwerk
+    /// result screen *"Best Trash Pull run at P4 on this iPad."* - the
+    /// celebration line of the whole run - and `best stacks / hits / misses /
+    /// accuracy / freezes used` were **cream on pale sand at 1.22:1 to 1.62:1**,
+    /// which is invisible, and the Quest result screen's stat captions were
+    /// `#8A6A45` on the tag at **2.81:1** at noon and **1.67:1** at dusk.
+    ///
+    /// `#442618` is the LIGHTEST brown that clears 4.5:1 against every pale
+    /// ground this system draws - measured, not chosen: the binding one is the
+    /// `MQTag` gradient's lower stop under dusk light (`#AA9278`), where it
+    /// measures 4.60:1. It is deliberately not `ink`: a caption should still read
+    /// as lighter than the value above it, and `ink` is the question's own
+    /// weight.
+    ///
+    /// Not put under `underLight`: dusk pulls a colour toward `#2C2A57`, which
+    /// makes this DARKER and the tag under it darker too - the pair stays above
+    /// the floor either way, and a fixed value is the one a test can assert.
+    var captionOnLight: Color { Color(hex: 0x442618) }
+}
+
 public extension MQPalette {
     /// Put a locally-authored colour under this scene's light.
     ///

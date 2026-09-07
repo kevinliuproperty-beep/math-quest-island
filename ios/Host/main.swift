@@ -27,6 +27,8 @@ import MQDesign
 import MQEngineJS
 import MQQuest
 import MQProgress
+import MQPatchwerk
+import MQServices
 #if os(macOS)
 import AppKit
 #endif
@@ -56,6 +58,16 @@ struct HostArgs {
     /// is faster and blind to layout. The default is the view path, because that
     /// is the one that catches a key drawn off the glass (Quest Refutation K1).
     var modelPath = false
+    /// Where the progress document lives. Absent means in-memory, which is what
+    /// every driven run used until the rehearsal fix pass - and an in-memory
+    /// store nobody reopens cannot tell you that not one answer a child gives is
+    /// ever written down, which is exactly what was happening.
+    var store: String?
+    /// Reopen `--store` rather than seeding a profile into it: the cold-process
+    /// half of a persistence gate.
+    var reopen = false
+    /// Make the profile through the `+` token's own sheet.
+    var createProfile = false
     var help = false
 
     static func parse(_ argv: [String]) -> HostArgs {
@@ -75,6 +87,9 @@ struct HostArgs {
             case "--scale":    a.scale = Double(next() ?? "")
             case "--model":    a.modelPath = true
             case "--view":     a.modelPath = false
+            case "--store":    a.store = next()
+            case "--reopen":   a.reopen = true
+            case "--create-profile": a.createProfile = true
             case "-h", "--help": a.help = true
             default: break
             }
@@ -108,6 +123,16 @@ mqhost - Math Quest Island, Quest flow, on macOS.
                             the default (--view) hit-tests the drawn bounds and
                             fires the Button's own action, so an unreachable key
                             is recorded as a MISS in the transcript.
+      --store <path>        keep progress in a JSON document at <path>, written
+                            immediately. Without it the run is in-memory and
+                            nothing it does can be read back afterwards.
+      --reopen              reopen --store instead of seeding a profile into it.
+                            The cold-process half of a persistence check: play a
+                            set with --store, then re-run with --reopen and read
+                            the transcript's "store" block.
+      --create-profile      make the profile by tapping the entrance's + token
+                            and the new-explorer sheet, the way a parent on a
+                            fresh install has to.
 
   Script shape:
       { "name":"p4-12", "seed":20260907, "device":"ipad97-landscape",
@@ -152,6 +177,9 @@ func loadScript(_ args: HostArgs) throws -> QDriveScript {
     if let p = args.palette { script.palette = p }
     if let s = args.scale { script.scale = CGFloat(s) }
     if args.modelPath { script.viewPath = false }
+    if let s = args.store { script.storePath = s }
+    if args.reopen { script.reopenStore = true }
+    if args.createProfile { script.createProfile = true }
     return script
 }
 
@@ -181,6 +209,15 @@ func drive() async -> Int32 {
         crystals \(t.crystals), hero HP \(t.heroHP), \(t.reviewCount) for review
         mqhost: transcript \(result.transcriptPath)
         """)
+        // **What the STORE holds, printed.** On the branch the Phase 1 dress
+        // rehearsal drove, this line would have read `skills 0, sessions 0,
+        // crystals 0` after 34 correct answers, and the whole packet was green.
+        if let s = t.store {
+            print("mqhost: store profile \(s.profileID) - skills \(s.skills), "
+                  + "sessions \(s.sessions), lifetime crystals \(s.lifetimeCrystals), "
+                  + "cleared nodes \(s.clearedNodes)"
+                  + (s.path.map { " @ \($0)" } ?? " (in memory)"))
+        }
         if !t.tapMisses.isEmpty {
             // A tap that could not be made is the K1 signal, and it is not a
             // footnote: the run answered items a finger could not have answered.
@@ -204,8 +241,11 @@ func drive() async -> Int32 {
 final class HostWindow: NSObject, NSApplicationDelegate {
     var window: NSWindow?
     let model: QQuestModel
+    let leaderboard: LeaderboardService
 
-    init(model: QQuestModel) { self.model = model }
+    init(model: QQuestModel, leaderboard: LeaderboardService) {
+        self.model = model; self.leaderboard = leaderboard
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let size = CGSize(width: 1024, height: 768)
@@ -219,7 +259,7 @@ final class HostWindow: NSObject, NSApplicationDelegate {
         // per PHASE1: a screen never reads a GeometryReader, because an
         // unbounded proposal reports zero and the fit gate would measure nothing.
         w.contentView = NSHostingView(
-            rootView: HostRoot(model: model, initial: size))
+            rootView: HostRoot(model: model, leaderboard: leaderboard, initial: size))
         w.makeKeyAndOrderFront(nil)
         window = w
         NSApp.activate(ignoringOtherApps: true)
@@ -233,14 +273,62 @@ final class HostWindow: NSObject, NSApplicationDelegate {
 /// window and builds `MQMetrics` once, exactly as the iOS app's scene root will.
 struct HostRoot: View {
     @ObservedObject var model: QQuestModel
+    let leaderboard: LeaderboardService
     let initial: CGSize
 
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size.width > 1 ? proxy.size : initial
-            QRoot(model: model, metrics: MQMetrics.device(size))
-                .frame(width: size.width, height: size.height)
+            let m = MQMetrics.device(size)
+            QRoot(model: model, metrics: m, patchwerk: {
+                // Only ever built for a child who has been PICKED, so the
+                // session's `Player` carries the store's own id and this file
+                // never has to invent one. `QQuestModel.openPatchwerk` refuses
+                // off the map for the same reason.
+                if let id = model.currentProfileID, let who = model.profile {
+                    return AnyView(HostPatchwerk(model: model, profileID: id, who: who,
+                                                 leaderboard: leaderboard, metrics: m))
+                }
+                return AnyView(EmptyView())
+            })
+            .frame(width: size.width, height: size.height)
         }
+    }
+}
+
+/// **Patchwerk, wired.** The whole of what a composition root has to do.
+///
+/// The mode had no entry point anywhere in the app: nothing in `MQQuest` or in
+/// this file referenced `MQPatchwerk`, there was no mode row and no "Fight
+/// Patchwerk" button, and the Phase 1 dress rehearsal could reach the arena only
+/// by constructing a `PatchwerkSession` by hand (leg 6). `MQQuest` still does not
+/// import `MQPatchwerk` - one mode may not depend on another - so the map raises
+/// `QQuestModel.showsPatchwerk` and this view, which lives where both modules are
+/// already named, builds the session.
+///
+/// The session is built HERE and not in `QQuestModel` because it needs a
+/// `Player`, which needs the child who is playing, which is only known once a
+/// profile has been picked. `@StateObject` with an autoclosure holds it for the
+/// life of the arena and drops it when the child leaves.
+struct HostPatchwerk: View {
+    @ObservedObject var model: QQuestModel
+    @StateObject private var session: PatchwerkSession
+    let metrics: MQMetrics
+
+    init(model: QQuestModel, profileID: ProfileID, who: MQProfile,
+         leaderboard: LeaderboardService, metrics: MQMetrics) {
+        self.model = model
+        self.metrics = metrics
+        let player = PatchwerkSession.Player(profile: profileID, name: who.name,
+                                             cast: who.cast, level: who.level)
+        _session = StateObject(wrappedValue: PatchwerkSession(
+            source: model.source, leaderboard: leaderboard,
+            progress: model.store, player: player))
+    }
+
+    var body: some View {
+        PatchwerkFlow(session: session, metrics: metrics,
+                      onExit: { Task { await model.closePatchwerk() } })
     }
 }
 #endif
@@ -261,14 +349,28 @@ do {
     FileHandle.standardError.write(Data("mqhost: \(error)\n".utf8))
     exit(1)
 }
-let store = MQProgressStore.inMemory()
-_ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
-_ = await store.addProfile(name: "Ben", cast: .turtle, level: "P3")
-let model = await MainActor.run {
-    QQuestModel(source: engine, store: store)
+// `--store <path>` gives the window a real document, so a hand-played session on
+// this box can be quit and reopened - which is the only way to see with your own
+// eyes that the answers were written down.
+let store: MQProgressStore
+if let path = args.store {
+    store = try MQProgressStore.onDisk(url: URL(fileURLWithPath: path),
+                                       writes: .coalesced(seconds: 0.4))
+} else {
+    store = MQProgressStore.inMemory()
 }
+// Seeded only into a store that is empty, so `--store` on an existing document
+// reopens a family rather than adding two more children to it every launch.
+if await store.profileRecords().isEmpty, !args.createProfile {
+    _ = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
+    _ = await store.addProfile(name: "Ben", cast: .turtle, level: "P3")
+}
+let model = await MainActor.run {
+    QQuestModel(source: engine, store: store, patchwerkAvailable: true)
+}
+let board = LocalLeaderboard()
 let app = NSApplication.shared
-let delegate = await MainActor.run { HostWindow(model: model) }
+let delegate = await MainActor.run { HostWindow(model: model, leaderboard: board) }
 app.delegate = delegate
 app.setActivationPolicy(.regular)
 app.run()

@@ -28,7 +28,11 @@ public struct QBattleView: View, MQTapAudited {
         self.model = model; self.m = metrics; self.p = palette
     }
 
-    private var g: Geo { Self.geometry(m, typed: model.question?.isTyped ?? false) }
+    private var g: Geo {
+        Self.geometry(m, typed: model.question?.isTyped ?? false,
+                      stemLength: q?.stemText.count ?? 0, hasFigure: hasFigure,
+                      optionLength: q?.choiceTexts.map(\.count).max() ?? 0)
+    }
     private var type: MQType { m.type }
     private var q: Question? { model.question }
 
@@ -75,7 +79,39 @@ public struct QBattleView: View, MQTapAudited {
     nonisolated static let signMaxWidth: CGFloat = 620
     nonisolated static let sideBySideFloor: CGFloat = 250
 
-    nonisolated public static func geometry(_ m: MQMetrics, typed: Bool) -> Geo {
+    /// **The figure gets the room the stem does not need.**
+    ///
+    /// Dress rehearsal, 2026-09-07, `rehearsal-p1-G-lshape-land/09-q07-ask.png`:
+    /// the L-shape drew about **85 x 95 px inside a 480 x 250 board whose other
+    /// 90% is empty parchment**, at ~6 pt labels, under the stem *"What is the
+    /// perimeter of this figure?"* - 36 characters of a four-line budget that
+    /// holds about 92. The figure box was two literals (`figureW` from
+    /// `signW * 0.31`, `figureH` from a fixed 190:130) and had no way to know
+    /// the board was empty.
+    ///
+    /// It knows now. Two rules, one per composition:
+    ///
+    ///  * **stacked** (the stem above, the figure below - which is every 9.7"
+    ///    landscape board, because `signW - 80 - figureW - 22` is 234 against a
+    ///    250 pt side-by-side floor): count the lines the stem does NOT use and
+    ///    give the figure that height, `spare * base * 1.35`;
+    ///  * **side by side**: reserve the width the stem needs for its own line
+    ///    budget, `ceil(len / budget) * base * 0.52`, and the figure takes what
+    ///    is left.
+    ///
+    /// Both are then capped as a fraction of the glass, and both are held by the
+    /// existing fit gates - `QTypedMatrixFitTests.choiceFitsEverywhere` measures
+    /// 20 real draws of `p4pie`, `p4data`, `geometry` and `p3bargraph` at all
+    /// twelve matrix sizes, so a figure that pushes the stem or the answer row
+    /// off the glass is a red build, not a nicer screenshot.
+    ///
+    /// `stemLength: 0` means "the shortest possible stem", i.e. the LARGEST
+    /// figure this frame will ever draw. That is the default on purpose: a gate
+    /// that calls `geometry(m, typed:)` with no stem measures the worst case.
+    nonisolated public static func geometry(_ m: MQMetrics, typed: Bool,
+                                            stemLength: Int = 0,
+                                            hasFigure: Bool = true,
+                                            optionLength: Int = 0) -> Geo {
         var g = Geo(pad: m.isWide ? 26 : (m.isRegular ? 24 : 14), contentW: 0, typed: typed)
         g.contentW = m.size.width - g.pad * 2
         g.keypad = QKeypad.geometry(m)
@@ -154,7 +190,113 @@ public struct QBattleView: View, MQTapAudited {
                 g.figureW *= 0.86
             }
         }
+        if hasFigure { grow(&g, m, typed: typed, stemLength: stemLength) }
+        growTiles(&g, m, optionLength: optionLength)
         return g
+    }
+
+    /// **The answer plank gets taller for an option that needs three lines.**
+    ///
+    /// BLOCKER 3b's second half. `MQAnswerTile.heightNeeded` is the arithmetic -
+    /// shared with the component and with `MQDesignTests.TileFitTests` - and this
+    /// is where the row is given the height it asks for. On the iPhone SE the
+    /// 47-character `p4angles` option needs 64 pt of plank against the 56 pt the
+    /// row had, which is 16 pt of a 667 pt screen across two rows.
+    ///
+    /// `optionLength: 0` leaves the row exactly as it was, which is what
+    /// `tapTargets` measures: the tap floor is a MINIMUM, so it is audited
+    /// against the smallest tile the row ever draws.
+    nonisolated static func growTiles(_ g: inout Geo, _ m: MQMetrics, optionLength: Int) {
+        guard optionLength > 0, g.tileW > 40 else { return }
+        let floor = m.isRegular ? MQFigures.iPadTypeFloor : MQFigures.phoneTypeFloor
+        let need = MQAnswerTile.heightNeeded(String(repeating: "x", count: optionLength),
+                                             width: g.tileW, floor: floor)
+        // One row of planks on a wide frame, two on a tall one, so a tall frame
+        // pays twice for every point.
+        let cap = m.isWide ? min(m.size.height * 0.20, 150)
+                           : min(m.size.height * 0.115, 110)
+        g.tileH = min(max(g.tileH, need), cap)
+    }
+
+    /// The second pass: the figure claims the board's empty half. See
+    /// `geometry`'s doc comment for the measurement that forced it.
+    nonisolated static func grow(_ g: inout Geo, _ m: MQMetrics,
+                                 typed: Bool, stemLength: Int) {
+        guard g.figureW > 0, g.figureH > 0, g.stemLineBudget != .max,
+              g.stemLineBudget > 0, g.stemWidth > 40 else { return }
+        // The size the stem starts at, before `fittedQuestionSize` shrinks it.
+        let base = !typed ? m.type.question
+            : (m.isWide ? m.type.question * 0.90
+                        : m.type.question * (m.isShort ? 0.78 : 0.84))
+
+        // **MEASURED CAPS, not taste, and they are the whole safety argument.**
+        //
+        // `stemLineBudget` is a SHRINK THRESHOLD, not a verified height: it is
+        // the point at which `fittedQuestionSize` starts taking points off the
+        // type. Nothing ever proved the board fits a full-budget stem AND a
+        // figure, and the figure topics never produce one - `p4data` and
+        // `p3bargraph` stems run one or two lines of a four-line budget - so
+        // "spend the whole spare" spends room that was never there. First cut
+        // did exactly that (`spare * base * 1.35`, capped at 0.34 of the height)
+        // and the 9.7" landscape board went 14 pt over the glass and the 9.7"
+        // portrait one put the second answer row at y = 970 on a 1024 pt screen.
+        //
+        // So the allowance is 0.55 of a line, not a whole one, and the caps are
+        // per REGIME rather than one fraction of the height:
+        //
+        //   wide          0.24 h, 200   -> worst slack +32 (9.7" landscape)
+        //   tall regular  0.115 h, 160  -> worst slack +46 (9.7" portrait)
+        //   tall compact  0.20 h, 200   -> worst slack +82 (iPhone SE)
+        //
+        // measured over 360 real choice questions from six figure topics at all
+        // twelve matrix sizes, worst case per size, three consecutive runs. The
+        // split matters: a phone in portrait carries no cast beside a figure and
+        // has 80 to 180 pt of slack, and a single fraction low enough for the
+        // 9.7" landscape came out BELOW the iPhone 15's base figure - which
+        // silently switched the growth off exactly where there was most room.
+        // `max(g.figureH, ...)` below is the guard against that recurring.
+        let hCap = max(g.figureH,
+                       m.isWide ? min(m.size.height * 0.20, 190)
+                       : (m.isRegular ? min(m.size.height * 0.115, 160)
+                                      : min(m.size.height * 0.20, 200)))
+        let wCap = max(g.figureW, m.isWide ? min(g.signW * 0.62, 340)
+                                           : min(g.contentW * 0.80, 340))
+
+        if m.isWide && !g.stackFigure {
+            // **Side by side: the figure grows DOWN, never sideways.**
+            //
+            // The board is `HStack { stem; figure }`, so its height is the
+            // taller of the two and every point the figure gains under the
+            // stem's own height is free. Widening is not: the first cut took
+            // width off the stem column, which pushed the stem onto another line
+            // or forced `fittedQuestionSize` to drop a point, and the two did
+            // not cancel. Measured at `ipadmini-landscape` on *"How many durians
+            // are shown for Monday and Friday altogether?"* - a 60-character
+            // stem with a bar chart - a 166x114 figure grown to 180x123 took the
+            // board 8 pt OFF THE GLASS. Growing to 166x149 costs nothing,
+            // because the stem beside it is 204 pt tall either way.
+            let column = g.stemWidth - g.figureW - 20
+            guard column > 40 else { return }
+            let perLine = max(1, (column / (base * 0.52)).rounded(.down))
+            let used = max(1, Int((CGFloat(max(stemLength, 1)) / perLine).rounded(.up)))
+            // Baloo 2 sets at 1.636 em (MQAnswerTile.lineHeight, measured); 1.5
+            // is the conservative direction here, because under-estimating the
+            // stem's height under-grows the figure.
+            let stemH = CGFloat(used) * base * 1.5
+            g.figureH = min(max(g.figureH, stemH), hCap)
+            return
+        }
+
+        // Stacked: spare LINES become figure height.
+        let perLine = max(1, (g.stemWidth / (base * 0.52)).rounded(.down))
+        let used = max(1, Int((CGFloat(max(stemLength, 1)) / perLine).rounded(.up)))
+        let spare = max(0, g.stemLineBudget - used)
+        guard spare > 0 else { return }
+        let target = min(g.figureH + CGFloat(spare) * base * 0.55, hCap)
+        guard target > g.figureH else { return }
+        let factor = target / g.figureH
+        g.figureH = target
+        g.figureW = min(g.figureW * factor, wCap)
     }
 
     /// The question's type size. On the typed branch it comes down, because the
@@ -501,9 +643,16 @@ public struct QBattleView: View, MQTapAudited {
         }
     }
 
+    /// The tile is told its own box, so `MQAnswerTile.fit` can size the option
+    /// to it rather than truncating at `lineLimit(1)` - which is what put
+    /// `the angle written in…` on the glass at Naming Narrows (BLOCKER 3b, dress
+    /// rehearsal 2026-09-07). `TileFitTests` asserts on the same `fit`.
     private func answerTile(_ i: Int, _ text: String) -> some View {
         hitButton(Hit.answer(i), action: { [model] in await model.choose(i) }) {
-            MQAnswerTile(p, text, tilt: MQAnswerTile.tilts[i % 4], fontSize: type.tile)
+            MQAnswerTile(p, text, tilt: MQAnswerTile.tilts[i % 4], fontSize: type.tile,
+                         box: CGSize(width: g.tileW, height: g.tileH),
+                         typeFloor: m.isRegular ? MQFigures.iPadTypeFloor
+                                                : MQFigures.phoneTypeFloor)
                 .frame(height: g.tileH)
         }
     }

@@ -44,6 +44,17 @@ public final class PatchwerkSession: ObservableObject {
     @Published public private(set) var elapsedMs: Int = 0
     @Published public private(set) var runState: PatchwerkRunState?
     @Published public private(set) var question: Question?
+    /// What the child has typed on a TYPED item, and which unit chip they turned
+    /// over. Reset whenever a question arrives.
+    ///
+    /// The Phase 1 dress rehearsal drove one real 150-item run: **50 items were
+    /// typed and reached a screen with no keypad at all** - four blank planks -
+    /// so all 50 scored wrong, each cost a 1.5 s stun and each reset the stack
+    /// multiplier. Best stacks reached 4 against a cap of 10: the stack mechanic,
+    /// which IS the mode, could not function. The model is `MQDesign`'s, shared
+    /// with the Quest battle, so there is exactly one submission-string builder
+    /// in this tree.
+    @Published public private(set) var entry = MQTypedEntry()
     /// One short line, only when the run has something to say. Never a rebuke.
     @Published public private(set) var flash: String?
     @Published public private(set) var record: PatchwerkRecord?
@@ -130,9 +141,29 @@ public final class PatchwerkSession: ObservableObject {
         s.freezeTotal = config.freezeMaxHeld
         s.bossHP = run?.bossFraction ?? 1
         s.question = question?.stemText ?? ""
-        s.figure = .none
-        s.answers = question.map { Array($0.choiceTexts.prefix(4)) } ?? []
-        while s.answers.count < 4 { s.answers.append("") }
+        // The engine's own eight-kind spec, straight through. This was
+        // `s.figure = .none` unconditionally: 35 of the 150 items in the measured
+        // run carried a figure (13 pie, 10 table, 6 line, 4 rect, 2 lshape) and
+        // NONE was drawn, on a screen whose signboard has a figure slot in it.
+        s.spec = question?.figure
+        s.figureFallback = question?.extraText ?? ""
+
+        if let q = question, q.isTyped {
+            // The web's arrangement: `js/app.js`'s one `nextQuestion()` gives a
+            // typed question the typed input and everything else the choice
+            // buttons. Filtering the feed to choice items was the rejected
+            // alternative - see MQPatchwerkScreen's header.
+            s.typed = entry
+            s.keypad = MQKeypadPolicy.forTopic(q.topic)
+            s.chips = MQUnits.chips(q)
+            s.answers = []
+        } else {
+            s.typed = nil
+            s.keypad = .digitsOnly
+            s.chips = []
+            s.answers = question.map { Array($0.choiceTexts.prefix(4)) } ?? []
+            while s.answers.count < 4 { s.answers.append("") }
+        }
         s.enraged = isEnraged
         s.flash = flash
         return s
@@ -200,8 +231,61 @@ public final class PatchwerkSession: ObservableObject {
         }
     }
 
+    // MARK: The typed item
+    //
+    // One item in three that this feed serves is typed. Everything below exists
+    // because the rehearsal measured all 50 of them scoring wrong against a
+    // screen that had no way to answer them.
+
+    /// The keypad the CURRENT question's topic wants. Topic, never question - a
+    /// keypad that grew a `/` only on the items whose answer is a fraction would
+    /// leak the answer's shape (`MQKeypadPolicy`).
+    public var keypadPolicy: MQKeypadPolicy {
+        MQKeypadPolicy.forTopic(question?.topic ?? "")
+    }
+
+    /// The unit chips for the current question, or empty when it declares none.
+    public var chips: [String] { question.map { MQUnits.chips($0) } ?? [] }
+
+    /// One key. Silently ignored when the item is not typed or input is locked -
+    /// the same belt-and-braces the choice tiles get.
+    public func press(_ key: MQTypedEntry.Key) {
+        guard phase == .running, let q = question, q.isTyped, !inputLocked else { return }
+        entry.press(key, policy: MQKeypadPolicy.forTopic(q.topic))
+    }
+
+    /// One unit chip, turned face up or face down again. Blank is a legal answer
+    /// and is the default, so tapping the selected chip clears it.
+    public func toggleChip(_ chip: String) {
+        guard phase == .running, let q = question, q.isTyped, !inputLocked else { return }
+        entry.unit = (entry.unit == chip) ? nil : chip
+    }
+
+    /// `Check`. Refuses a half-written entry (`"3/"`, a bare `"-"`) the same way
+    /// the Quest board does, rather than handing the grader a dead end and
+    /// charging the child a stun for a key they had not finished pressing.
+    public func submitTyped() async {
+        guard entry.isSubmittable else { return }
+        await submit(entry.answer)
+    }
+
+    /// A typed answer, for a driver or a gate. Goes through
+    /// `MQTypedEntry.submission` - the one submission-string builder in this tree,
+    /// shared with the Quest battle - so `"60 cm²"` is spelled exactly the way the
+    /// parity corpus records it.
+    public func answer(typed digits: String, unit: String? = nil) async {
+        await submit(MQTypedEntry(digits: digits, unit: unit).answer)
+    }
+
     /// One tap on an answer tile.
     public func answer(choice index: Int) async {
+        await submit(.choice(index))
+    }
+
+    /// **The one scoring path.** Both inputs land here, so the damage arithmetic
+    /// has exactly one call site and a typed answer cannot score differently from
+    /// a tapped one.
+    private func submit(_ given: Answer) async {
         guard phase == .running, let run, let question, !isBusy else { return }
         // The run is the authority on whether this tap counts - not the view. The
         // view ALSO disables tiles during the stun, deliberately: belt and braces
@@ -214,7 +298,7 @@ public final class PatchwerkSession: ObservableObject {
 
         let verdict: Verdict
         do {
-            verdict = try await source.grade(question: question, answer: .choice(index))
+            verdict = try await source.grade(question: question, answer: given)
         } catch {
             failure = "The engine could not grade that answer."
             return
@@ -289,6 +373,9 @@ public final class PatchwerkSession: ObservableObject {
         do {
             let q = try await feed.next(stacks: run.state.stacks)
             question = q
+            // A fresh slot per question. Carrying digits over from the last item
+            // would submit the previous answer the moment a child hit Check.
+            entry = MQTypedEntry()
             questionShownAtMs = elapsedNow()
         } catch {
             failure = "The question engine ran dry."
@@ -304,6 +391,7 @@ public final class PatchwerkSession: ObservableObject {
         runState = run.state
         elapsedMs = run.tier.durationMs
         question = nil
+        entry = MQTypedEntry()
         flash = nil
         advanceAtMs = nil
         phase = .result
@@ -330,6 +418,7 @@ public final class PatchwerkSession: ObservableObject {
         run = nil
         runState = nil
         question = nil
+        entry = MQTypedEntry()
         flash = nil
         advanceAtMs = nil
         phase = .picker

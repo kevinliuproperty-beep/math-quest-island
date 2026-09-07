@@ -21,15 +21,30 @@ public struct QRoot: View {
     let metrics: MQMetrics
     let palette: MQPalette
 
-    public init(model: QQuestModel, metrics: MQMetrics, palette: MQPalette = .noon) {
+    /// **The Patchwerk arena, supplied by the composition root.**
+    ///
+    /// `MQQuest` does not import `MQPatchwerk` - one mode may not depend on
+    /// another. So the map raises a flag (`QQuestModel.showsPatchwerk`) and the
+    /// root that owns both modules hands the arena down as a view, exactly as it
+    /// hands the engine down as a `QuestionSource`. Nil means the plank is never
+    /// drawn; see `QQuestModel.patchwerkAvailable`.
+    let patchwerk: (@MainActor () -> AnyView)?
+
+    public init(model: QQuestModel, metrics: MQMetrics, palette: MQPalette = .noon,
+                patchwerk: (@MainActor () -> AnyView)? = nil) {
         self.model = model; self.metrics = metrics; self.palette = palette
+        self.patchwerk = patchwerk
     }
 
-    enum Route: Hashable { case map, battle, result }
+    enum Route: Hashable { case newExplorer, map, battle, result }
 
     var route: [Route] {
         switch model.phase {
         case .entrance, .failed: return []
+        // A push off the entrance, not a modal. This app has no chrome and no
+        // dimming layer; a `Back` plank standing in the world is what navigation
+        // looks like everywhere else in it.
+        case .newExplorer: return [.newExplorer]
         case .map: return [.map]
         case .asking, .feedback: return [.map, .battle]
         case .result: return [.map, .battle, .result]
@@ -47,11 +62,25 @@ public struct QRoot: View {
                         #endif
                 }
         }
+        .overlay { patchwerkArena }
         .overlay { failureNotice }
+    }
+
+    /// The arena, full-bleed over the map. Not a sheet: this app has no chrome
+    /// and no dimming layer, and the mode owns its own pause knob and its own
+    /// way back (`PatchwerkFlow`'s picker), so a card with a grabber over the
+    /// island would be the only iOS-shaped object in the whole game.
+    @ViewBuilder private var patchwerkArena: some View {
+        if model.showsPatchwerk, let patchwerk {
+            patchwerk()
+                .frame(width: metrics.size.width, height: metrics.size.height)
+        }
     }
 
     @ViewBuilder private func screen(_ r: Route) -> some View {
         switch r {
+        case .newExplorer:
+            QNewExplorerView(model: model, metrics: metrics, palette: palette)
         case .map:    QMapView(model: model, metrics: metrics, palette: palette)
         case .battle: QBattleView(model: model, metrics: metrics, palette: palette)
         case .result: QResultView(model: model, metrics: metrics, palette: palette)
@@ -95,6 +124,8 @@ public struct QScreenForPhase: View {
             switch model.phase {
             case .entrance, .failed:
                 QEntranceView(model: model, metrics: metrics, palette: palette)
+            case .newExplorer:
+                QNewExplorerView(model: model, metrics: metrics, palette: palette)
             case .map:
                 QMapView(model: model, metrics: metrics, palette: palette)
             case .asking, .feedback:

@@ -158,7 +158,7 @@ struct QSetFlowTests {
         let m = QQuestModel(source: ScriptedSource(questions), store: store,
                             random: QFixedRandom(rolls), setSize: setSize)
         await m.load()
-        await m.pick(m.profiles[0])
+        await m.pick(m.records[0])
         await m.open(m.island!.nodes[0])
         return (m, store)
     }
@@ -227,7 +227,7 @@ struct QSetFlowTests {
         let m = QQuestModel(source: source, store: store,
                             random: QFixedRandom([0]), setSize: 8)
         await m.load()
-        await m.pick(m.profiles[0])
+        await m.pick(m.records[0])
         await m.open(m.island!.nodes[0])
         for _ in 0..<4 { await Self.answer(m, correct: true) }
         let levels = await source.levelsRequested
@@ -263,12 +263,24 @@ struct QSetFlowTests {
         let m = QQuestModel(source: source, store: store,
                             random: QFixedRandom([0]), setSize: 3)
         await m.load()
-        await m.pick(m.profiles[0])
+        await m.pick(m.records[0])
         await m.open(m.island!.nodes[0])
         for _ in 0..<3 { await Self.answer(m, correct: true) }
         let ended = await source.endedSessions
         #expect(ended.count == 1)
-        #expect(ended[0].hasPrefix("quest-Charlotte-"))
+        // **The engine session is named by the STORE's id, not by the child.**
+        //
+        // This asserted `hasPrefix("quest-Charlotte-")`, and it was true only
+        // because `QQuestModel.pick` built the store key out of the display name -
+        // the one line behind "the app records nothing a child does" (Phase 1
+        // dress rehearsal, leg 8). The id is now
+        // `quest-<store id>-p4area-<unix>-<open count>`, and a test that wants a
+        // child's NAME in an engine session id is a test asking for the defect
+        // back. What is worth asserting is the topic and the open counter.
+        let id = m.records[0].id
+        #expect(ended[0].hasPrefix("quest-\(id.raw)-p4area-"),
+                "engine session was \(ended[0])")
+        #expect(ended[0].hasSuffix("-1"), "the open counter is missing: \(ended[0])")
     }
 
     /// **K6: the pause knob ends the run's sessions.**
@@ -289,7 +301,7 @@ struct QSetFlowTests {
         let m = QQuestModel(source: source, store: store,
                             random: QFixedRandom([0]), setSize: 6)
         await m.load()
-        await m.pick(m.profiles[0])
+        await m.pick(m.records[0])
         let node = m.island!.nodes.first { $0.playable }!
 
         for _ in 0..<64 {
@@ -320,7 +332,7 @@ struct QSetFlowTests {
         let m = QQuestModel(source: source, store: store,
                             random: QFixedRandom([0]), setSize: 2)
         await m.load()
-        await m.pick(m.profiles[0])
+        await m.pick(m.records[0])
         let node = m.island!.nodes.first { $0.playable }!
         for _ in 0..<5 { await m.open(node); await m.toMap() }
         let ended = await source.endedSessions

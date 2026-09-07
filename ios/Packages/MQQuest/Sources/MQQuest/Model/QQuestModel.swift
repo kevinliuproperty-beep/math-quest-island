@@ -4,6 +4,20 @@ import MQContent
 import MQDesign
 import MQProgress
 
+/// What the `+` token's sheet is holding before it becomes a profile.
+///
+/// A value, not three `@Published` fields, so the whole sheet is one piece of
+/// state a gate can set and render without walking the UI - the same reason
+/// `reviewPage` lives on the model.
+public struct QExplorerDraft: Equatable, Sendable {
+    public var cast: MQCast = .unicorn
+    public var level: String = "P4"
+
+    public init(cast: MQCast = .unicorn, level: String = "P4") {
+        self.cast = cast; self.level = level
+    }
+}
+
 /// One answered item, kept so the result screen and the transcript can both read
 /// it without asking the engine again.
 public struct QAnsweredItem: Sendable, Identifiable {
@@ -26,6 +40,8 @@ public struct QAnsweredItem: Sendable, Identifiable {
 /// other way round: a screen never decides what the run is doing.
 public enum QPhase: Equatable, Sendable {
     case entrance
+    /// The `+` token's sheet: pick a creature and a class level, then Start.
+    case newExplorer
     case map
     /// A question is on screen and the child may answer.
     case asking
@@ -57,17 +73,50 @@ public final class QQuestModel: ObservableObject {
     /// the chain falls or the hero does); the map implies one, and twelve is what
     /// the driver scripts and the content-quality gate use.
     public let setSize: Int
+    /// **Whether the composition root has actually wired Patchwerk.**
+    ///
+    /// The map draws its Patchwerk plank only when this is true. Patchwerk had no
+    /// entry point anywhere in the app - the rehearsal reached it by constructing
+    /// a `PatchwerkSession` by hand (leg 6) - and the fix is a control on the map;
+    /// but the fix for the entrance's dead `+` was to stop drawing controls that
+    /// do nothing, and it would be absurd to close one by opening another.
+    /// `mqhost` and `MQApp` set this; a bare `QQuestModel` does not.
+    ///
+    /// `MQQuest` does NOT import `MQPatchwerk`: one mode may not depend on
+    /// another. `QRoot` takes the arena as a view builder from the composition
+    /// root, which is where the engine is named too.
+    public let patchwerkAvailable: Bool
 
     public init(source: any QuestionSource, store: any ProgressStore,
-                random: QRandom = QSystemRandom(), setSize: Int = 12) {
+                random: QRandom = QSystemRandom(), setSize: Int = 12,
+                patchwerkAvailable: Bool = false) {
         self.source = source; self.store = store
         self.random = random; self.setSize = setSize
+        self.patchwerkAvailable = patchwerkAvailable
     }
 
     // MARK: Published state
 
     @Published public private(set) var phase: QPhase = .entrance
-    @Published public private(set) var profiles: [MQProfile] = []
+    /// **The profiles, WITH the store's own ids.**
+    ///
+    /// This used to be `[MQProfile]`, and `MQProfile.id` is the child's display
+    /// NAME. The entrance handed a name back, `pick` wrapped it in a `ProfileID`,
+    /// and `MQProgressStore.addProfile` mints a UUID - so every `Attempt` in the
+    /// app's life arrived keyed `"Charlotte"` against a store keyed
+    /// `AB1386B6-...`, `record()` took its "no profile" early return, and NOTHING
+    /// A CHILD DID WAS EVER RECORDED. The Phase 1 dress rehearsal played 34
+    /// correct answers into an on-disk store and read back `"skills":{}`,
+    /// `"sessions":[]`, `lifetimeCrystals: 0`; a second process, cold, drew every
+    /// node "Ready". The island could never change and "Cleared" could never
+    /// appear.
+    ///
+    /// So the picker carries `ProfileRecord` - the store's `(id, profile)` pair,
+    /// which exists for exactly this and whose own doc says so. **There is now no
+    /// `ProfileID` built from a display string anywhere in the app's sources**;
+    /// `grep -n "ProfileID(" ios/Packages/*/Sources` returns only `MQProgressStore`
+    /// minting and reading its own.
+    @Published public private(set) var records: [ProfileRecord] = []
     @Published public private(set) var profile: MQProfile?
     @Published public private(set) var island: QIsland?
     @Published public private(set) var node: QNode?
@@ -86,6 +135,10 @@ public final class QQuestModel: ObservableObject {
     /// it: `ImageRenderer` renders a view once, from the outside, and cannot
     /// press a button that lives in `@State`. Reset by `finish()`.
     @Published public private(set) var reviewPage: Int = 0
+    /// What the `+` sheet is holding. Reset by `beginNewExplorer`.
+    @Published public private(set) var draft = QExplorerDraft()
+    /// Whether the Patchwerk arena is up over the map. See `patchwerkAvailable`.
+    @Published public private(set) var showsPatchwerk = false
 
     private var catalogue: TopicCatalogue?
     private var profileID: ProfileID?
@@ -124,6 +177,14 @@ public final class QQuestModel: ObservableObject {
 
     public var wrongItems: [QAnsweredItem] { answered.filter { !$0.isCorrect } }
 
+    /// What the entrance DRAWS. Derived from `records`, never held beside them:
+    /// two lists of the same children is how the id and the name came apart.
+    public var profiles: [MQProfile] { records.map(\.profile) }
+
+    /// The id the run is recording against, for a gate or a composition root that
+    /// has to prove the app and the store agree. Nil off the entrance.
+    public var currentProfileID: ProfileID? { profileID }
+
     // MARK: - Entrance
 
     public func load() async {
@@ -131,29 +192,124 @@ public final class QQuestModel: ObservableObject {
             let cat = try await source.listTopics()
             catalogue = cat
             engineStamp = (try? await source.engineBuild().stamp) ?? ""
-            profiles = await store.profiles()
+            records = await store.profileRecords()
             phase = .entrance
         } catch {
             phase = .failed("The island could not be loaded. \(error)")
         }
     }
 
-    public func pick(_ chosen: MQProfile) async {
-        profile = chosen
-        profileID = ProfileID(chosen.name)
+    /// **Pick a child, by the STORE's id.**
+    ///
+    /// The signature is the fix: a caller cannot hand this a display name, so the
+    /// id the run records against is the id the store keys on, by construction
+    /// rather than by convention. See `records`.
+    public func pick(_ chosen: ProfileRecord) async {
+        profile = chosen.profile
+        profileID = chosen.id
         await refreshIsland()
         phase = .map
     }
 
-    public func addProfile(name: String, cast: MQCast, level: String) async {
-        _ = await store.addProfile(name: name, cast: cast, level: level)
-        profiles = await store.profiles()
+    /// Make a profile and return its id. The list is re-read from the STORE
+    /// afterwards rather than appended to locally, so a name the store made
+    /// unique ("Ben" -> "Ben 2") is the name on the beach.
+    @discardableResult
+    public func addProfile(name: String, cast: MQCast, level: String) async -> ProfileID {
+        let id = await store.addProfile(name: name, cast: cast, level: level)
+        records = await store.profileRecords()
+        return id
+    }
+
+    // MARK: - New explorer
+    //
+    // The `+` token on the entrance was `Button { guard let profile else { return } ... }`
+    // - the empty slot's action returned immediately and NOTHING in the app called
+    // `addProfile`. A parent on a fresh install landed on an entrance with one dead
+    // `+` and could not start (Phase 1 dress rehearsal, leg 1). The driver and the
+    // harness never met it because both inject profiles into the store directly.
+    //
+    // What the `+` opens is deliberately small: a creature, a class level, and a
+    // plank that says Start. There is no name field, because a keyboard on this
+    // screen is the one thing that would need an adult - the store names a new
+    // child "Explorer" and keeps display names unique, and `ProgressStore.rename`
+    // exists for the parent screen MQApp will draw. PHASE1.md section 4 lists
+    // "profile creation (MQApp)" as not-yet-drawn; this is the minimum that makes
+    // the entrance WORK, and MQApp may replace it.
+
+    public func beginNewExplorer() {
+        guard phase == .entrance else { return }
+        draft = QExplorerDraft(level: levelsOffered.first ?? "P4")
+        phase = .newExplorer
+    }
+
+    public func cancelNewExplorer() {
+        guard phase == .newExplorer else { return }
+        phase = .entrance
+    }
+
+    public func chooseCast(_ cast: MQCast) {
+        guard phase == .newExplorer, cast != .crab else { return }
+        draft.cast = cast
+    }
+
+    public func chooseLevel(_ level: String) {
+        guard phase == .newExplorer, levelsOffered.contains(level) else { return }
+        draft.level = level
+    }
+
+    /// Create the explorer AND pick them, so the `+` lands the child on their own
+    /// island rather than back on a beach with one more token. **This is the path
+    /// the end-to-end gate drives**: tap `+`, tap a creature, tap a level, tap
+    /// Start, play, and read the answers back off the disk.
+    public func createExplorer() async {
+        guard phase == .newExplorer else { return }
+        let id = await addProfile(name: QStrings.defaultExplorerName,
+                                  cast: draft.cast, level: draft.level)
+        guard let made = records.first(where: { $0.id == id }) else {
+            phase = .failed("That explorer could not be saved.")
+            return
+        }
+        await pick(made)
+    }
+
+    /// The class levels the engine actually has content for, in order. Read off
+    /// the catalogue rather than hard-coded, so a level with no live node can
+    /// never be offered - a child who picks P6 today gets three stops, two of
+    /// them locked, and that is content news, not a picker bug.
+    public var levelsOffered: [String] {
+        guard let catalogue else { return [] }
+        var seen = Set<String>()
+        for node in catalogue.nodes where node.playable {
+            for g in node.grades { seen.insert(g) }
+        }
+        return catalogue.grades.filter(seen.contains)
+    }
+
+    // MARK: - Patchwerk
+
+    /// Raise the arena over the map. Nothing about Quest's own state moves: the
+    /// island is still there underneath, and Patchwerk touches no teaching state
+    /// (PHASE1.md section 3 - play modes keep streaks, teaching scaffolds fade).
+    public func openPatchwerk() {
+        guard patchwerkAvailable, phase == .map, profileID != nil else { return }
+        showsPatchwerk = true
+    }
+
+    public func closePatchwerk() async {
+        showsPatchwerk = false
+        // A Patchwerk run recorded a session against the same profile, so the
+        // crystals on the map's name tag may have moved even though mastery
+        // cannot have. Re-read rather than assume.
+        await refreshIsland()
+        records = await store.profileRecords()
     }
 
     public func backToEntrance() async {
         if phase == .asking || phase == .feedback { await abandonRun() }
         await endSessions()
         profile = nil; profileID = nil; island = nil; node = nil
+        records = await store.profileRecords()
         phase = .entrance
     }
 

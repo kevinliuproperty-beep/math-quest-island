@@ -274,29 +274,143 @@ public struct MQAnswerTile: View {
     let text: String
     let tilt: Double
     let fontSize: CGFloat
+    /// The tile's own frame, when the caller knows it. Given one, the tile
+    /// computes the size and line count it will set with `MQAnswerTile.fit`
+    /// instead of relying on SwiftUI's scaling alone - which is what makes the
+    /// fit gate able to assert on the SAME arithmetic the pixels come from.
+    let box: CGSize?
+    let typeFloor: CGFloat
 
     public init(_ p: MQPalette = .noon, _ text: String,
-                tilt: Double = 0, fontSize: CGFloat = 34) {
+                tilt: Double = 0, fontSize: CGFloat = 34,
+                box: CGSize? = nil,
+                typeFloor: CGFloat = MQFigures.iPadTypeFloor) {
         self.p = p; self.text = text; self.tilt = tilt; self.fontSize = fontSize
+        self.box = box; self.typeFloor = typeFloor
     }
 
     /// Hand-placed, not machine-placed. Kept under 1.5 degrees so nothing can
     /// clip its neighbour or the safe area.
     public static let tilts: [Double] = [-1.1, 0.7, -0.5, 1.2]
 
+    nonisolated public static let padH: CGFloat = 10
+    nonisolated public static let padV: CGFloat = 3
+    /// The plank is drawn with its top FACE in `0 ..< H - lift` and the shadow
+    /// in the rest, so the text's usable height is the frame's less this. It was
+    /// not subtracted anywhere while the tile was one line - a single line
+    /// centred in the frame sits inside the face regardless - and it has to be
+    /// now, or the third line of a wrapped option is drawn on the sand.
+    nonisolated public static let faceLift: CGFloat = 9
+    /// Three. A fourth line at the floor does not fit the shortest tile in the
+    /// matrix, and an option needing four lines is a generator problem.
+    nonisolated public static let maxLines = 3
+    /// Baloo 2 ExtraBold's mean advance as a fraction of the point size, over
+    /// the option corpus the engine actually emits. MEASURED on this host, not
+    /// guessed - `TileFitTests.theAdvanceModelIsNotOptimistic` re-measures it
+    /// against `ctx.resolve(_:).measure(in:)` and fails if the model ever
+    /// under-estimates, because under-estimating is the direction that
+    /// truncates.
+    nonisolated public static let advance: CGFloat = 0.62
+    /// Baloo 2's line pitch, likewise MEASURED (1.6364 em on this host) rather
+    /// than assumed. The first draft used 1.25 and the tile overflowed by 29 pt
+    /// at `ipad13-landscape`, because the model promised three 28 pt lines in
+    /// 105 pt and SwiftUI laid them out in 134.
+    /// `TileFitTests.theLineHeightModelIsNotOptimistic` re-measures it.
+    nonisolated public static let lineHeight: CGFloat = 1.64
+
+    public struct Fit: Sendable, Equatable {
+        public var size: CGFloat
+        public var lines: Int
+        /// False when even the floor, at `maxLines`, does not fit the box.
+        public var fits: Bool
+    }
+
+    /// **The largest size at which this option is drawn WHOLE inside this tile.**
+    ///
+    /// Dress rehearsal, 2026-09-07: `p4angles` pool 3 emits
+    /// `the angle written in short as ∠b at the point B` - 47 characters - as
+    /// one of four options, and the tile was `lineLimit(1)` with
+    /// `minimumScaleFactor(0.6)`, so 34 pt could only fall to 20.4 pt and the
+    /// tile read **`the angle written in…`**. Three of twelve items in a Naming
+    /// Narrows session asked the child to judge an option they could not read.
+    ///
+    /// Same shape as `QBattleView.fittedQuestionSize`: arithmetic over the
+    /// string's own length, so a gate can compute the number the body draws.
+    nonisolated public static func fit(_ text: String, base: CGFloat, box: CGSize,
+                                       floor: CGFloat) -> Fit {
+        let innerW = max(box.width - padH * 2, 1)
+        let innerH = max(box.height - padV * 2 - faceLift, 1)
+        let count = max(text.count, 1)
+        func lines(at size: CGFloat) -> Int {
+            let perLine = max(1, Int((innerW / (size * advance)).rounded(.down)))
+            return max(1, Int((Double(count) / Double(perLine)).rounded(.up)))
+        }
+        var size = base
+        while size > floor {
+            let n = lines(at: size)
+            if n <= maxLines, CGFloat(n) * size * lineHeight <= innerH {
+                return Fit(size: size, lines: n, fits: true)
+            }
+            size -= 1
+        }
+        let n = lines(at: floor)
+        return Fit(size: floor, lines: min(n, maxLines),
+                   fits: n <= maxLines && CGFloat(n) * floor * lineHeight <= innerH)
+    }
+
+    /// **The tile HEIGHT this option needs at the type floor.**
+    ///
+    /// The other half of the fix, and the reason it lives here rather than in
+    /// the battle screen: an iPhone SE choice tile is 56 pt tall, its face is
+    /// 47 pt of that, and three lines of 10 pt Baloo 2 are 49.2 - so the SE tile
+    /// CANNOT draw the 47-character `p4angles` option whole, at any size, in the
+    /// box it had. Wrapping alone was not enough; the plank has to get taller,
+    /// the same way the figure had to get bigger.
+    ///
+    /// `QBattleView.geometry` calls this to size the answer row and
+    /// `MQDesignTests.TileFitTests` calls it to model the same box, so the two
+    /// cannot describe different tiles.
+    nonisolated public static func heightNeeded(_ text: String, width: CGFloat,
+                                                floor: CGFloat) -> CGFloat {
+        let innerW = max(width - padH * 2, 1)
+        let perLine = max(1, Int((innerW / (floor * advance)).rounded(.down)))
+        let n = min(maxLines,
+                    max(1, Int((Double(max(text.count, 1)) / Double(perLine)).rounded(.up))))
+        // Plus a point of cushion. Without it the iPhone SE lands on
+        // `49.2 <= 49.2` and whether `fit` reports success is decided by binary
+        // floating point, which is not a thing a child's answer plank should
+        // depend on.
+        return CGFloat(n) * floor * lineHeight + padV * 2 + faceLift + 1
+    }
+
+    private var resolved: Fit {
+        guard let box else {
+            return Fit(size: fontSize, lines: Self.maxLines, fits: true)
+        }
+        return Self.fit(text, base: fontSize, box: box, floor: typeFloor)
+    }
+
     public var body: some View {
-        // Unit-bound like every other numeral in the system: an answer tile is
-        // one line with `minimumScaleFactor`, so a break inside "46 cm" would
-        // not wrap - it would SHRINK the whole tile. Same rule, different
-        // failure mode.
+        // Unit-bound like every other numeral in the system, so a break inside
+        // "46 cm" cannot happen - a two-word answer stays one word wide and the
+        // tile shrinks instead. A 47-character SENTENCE is the other case, and
+        // that one wraps: three lines at a smaller size beats one line with the
+        // end of the option missing.
+        let f = resolved
         Text(MQTypeset.bindUnits(text))
-            .font(.mq(fontSize, .extrabold))
+            .font(.mq(f.size, .extrabold))
             .monospacedDigit()
             .foregroundStyle(p.carved)
-            .lineLimit(1)
-            .minimumScaleFactor(0.6)
+            .lineLimit(Self.maxLines)
+            .multilineTextAlignment(.center)
+            // The safety net under the arithmetic, floored at the same point
+            // size: whatever SwiftUI's real metrics do that the advance model
+            // did not predict, the tile shrinks rather than truncating, and it
+            // never sets type below 11 pt on an iPad or 10 on a phone.
+            .minimumScaleFactor(min(1, max(0.2, typeFloor / max(f.size, 1))))
             .shadow(color: p.woodDeep.opacity(0.75), radius: 0, x: 0, y: 2)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, Self.padH)
+            .padding(.vertical, Self.padV)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background { Canvas { ctx, size in draw(&ctx, size) } }
             .rotationEffect(.degrees(tilt))
@@ -749,13 +863,28 @@ public struct MQPlankButton: View {
         self.p = p; self.title = title; self.primary = primary; self.fontSize = fontSize
     }
 
+    /// The word never truncates and the padding travels with the type.
+    ///
+    /// `Check` was fixed for this once; `Play again` was not, and the dress
+    /// rehearsal caught it on the iPhone SE result screen - the PRIMARY button
+    /// of the whole screen reading **`Play a…`**
+    /// (`rehearsal-p1-E-p4area-se/99-result.png`, 2026-09-07). The cause is two
+    /// literals: `lineLimit(1)` with no scale floor, and 30 pt of horizontal
+    /// padding that does not come down when the type does, so at `fontSize: 16`
+    /// the chrome was 60 pt of a ~125 pt button.
+    ///
+    /// Padding is now a multiple of the type - at the authored `fontSize: 22`
+    /// these evaluate to 29.9 and 15.0, i.e. the same button the iPad has
+    /// always drawn - and the word may scale to the 11 pt floor before anything
+    /// is dropped.
     public var body: some View {
         Text(title)
             .font(.mq(fontSize, primary ? .extrabold : .bold))
             .foregroundStyle(primary ? p.underLight(Color(hex: 0x40270A)) : p.carved)
             .lineLimit(1)
-            .padding(.horizontal, primary ? 30 : 22)
-            .padding(.vertical, primary ? 15 : 12)
+            .minimumScaleFactor(min(1, max(0.34, MQFigures.iPadTypeFloor / max(fontSize, 1))))
+            .padding(.horizontal, max(fontSize * (primary ? 1.36 : 1.0), 14))
+            .padding(.vertical, max(fontSize * (primary ? 0.682 : 0.545), 9))
             .frame(minHeight: MQTap.min)
             .background {
                 Canvas { ctx, size in

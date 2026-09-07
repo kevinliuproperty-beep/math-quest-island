@@ -122,12 +122,18 @@ public struct MQResultScreen: View, MQTapAudited {
                 .font(.mq(compact ? 32 : 46, .extrabold))
                 .foregroundStyle(p.gold)
                 .shadow(color: p.woodDeep.opacity(0.9), radius: 0, x: 0, y: 3)
-            Text(scene.message)
-                .font(.mq(compact ? 14 : 20, .medium))
-                .foregroundStyle(p.carved)
-                .shadow(color: p.woodDeep.opacity(0.75), radius: 0, x: 0, y: 2)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
+            // On a plank. The subtitle was cream straight onto the world, which
+            // measures 1.05:1 on `parchment`, 1.30:1 on `sandFar` and 2.11:1 on
+            // `skyHigh` - the dress rehearsal's parent's-eye item 9, "white
+            // captions on pale sand". A drop shadow does not enter a contrast
+            // ratio, and it was the only thing making this line visible at all.
+            MQRail(p, padH: compact ? 12 : 18, padV: compact ? 3 : 5) {
+                Text(scene.message)
+                    .font(.mq(compact ? 14 : 20, .medium))
+                    .foregroundStyle(p.captionOnDark)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
@@ -169,7 +175,10 @@ public struct MQResultScreen: View, MQTapAudited {
                 .minimumScaleFactor(0.6)
             Text(s.caption)
                 .font(.mq(compact ? 11 : 15, .medium))
-                .foregroundStyle(p.underLight(Color(hex: 0x8A6A45)))
+                // Was `underLight(0x8A6A45)`, which measures 2.81:1 on the tag at
+                // noon and 1.67:1 at dusk. `captionOnLight` is the lightest brown
+                // that clears 4.5:1 on every pale ground in the system.
+                .foregroundStyle(p.captionOnLight)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }

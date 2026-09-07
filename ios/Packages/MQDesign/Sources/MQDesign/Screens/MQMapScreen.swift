@@ -1,4 +1,15 @@
 import SwiftUI
+import MQContent
+
+/// Copy this screen owns.
+///
+/// One word, and it lives here rather than in `MQMapScene` because it is not a
+/// property of a particular island - every island has the same beacon on it.
+/// `MQQuest.QStrings.patchwerkEntry` re-exports it so the fade-out guard test,
+/// which scans every string a child reads, sees it too. **One definition.**
+public enum MQMapCopy {
+    public static let patchwerk = "Patchwerk"
+}
 
 /// The island, with the quests standing on it.
 ///
@@ -41,12 +52,76 @@ public struct MQMapScreen: View, MQTapAudited {
 
     nonisolated static func knobSize(_ m: MQMetrics) -> CGFloat { m.isRegular ? 52 : 44 }
 
+    /// **The Patchwerk entry plank.**
+    ///
+    /// Patchwerk had no entry point at all: nothing in `MQQuest` or in the host
+    /// referenced `MQPatchwerk`, there was no mode row and no "Fight Patchwerk"
+    /// button anywhere, and the dress rehearsal could only reach the mode by
+    /// constructing a `PatchwerkSession` by hand (leg 6). The web has a Game Mode
+    /// selector; this island has a beacon on the shore, and the map is where a
+    /// child already is when they choose what to do.
+    ///
+    /// It sits in the header beside the name tag, so it costs the island itself
+    /// no space and it is measured by the same 12-size gate as the back knob.
+    nonisolated public static func patchwerkPlank(_ m: MQMetrics) -> CGSize {
+        CGSize(width: m.isRegular ? 168 : 120, height: knobSize(m))
+    }
+
     nonisolated public static func tapTargets(_ m: MQMetrics) -> [MQTapTarget] {
         let s = markerScale(m)
-        return [MQTapTarget("back", square: knobSize(m))]
+        return [MQTapTarget("back", square: knobSize(m)),
+                MQTapTarget("patchwerk", patchwerkPlank(m))]
             + MQMapScene.sample.nodes.map {
                 MQTapTarget("node: \($0.name)", MQMapMarker.hitBox(scale: s))
             }
+    }
+
+    // MARK: - The explorer's place on the island
+    //
+    // **CLIPPED AND HIDDEN, and nobody had seen it, because the hero only moves
+    // once progress exists** - and on the branch the rehearsal drove, progress
+    // never existed (leg 8). Forced into being, the "you are here" explorer had
+    // her hindquarters off the left edge of the glass and "Perimeter Palace"
+    // printed across her face: the position was `w * at.x - 74` with no clamp,
+    // and the creature was drawn BEFORE the markers, so the first stop's name
+    // plank covered her (leg 2, crop map-hero-clip-zoom.png).
+    //
+    // Two rules now, and they are declared here so `MQMapScreen` and `QMapView`
+    // draw the same explorer:
+    //
+    //  1. **The whole box stays on the glass.** Clamped in both axes.
+    //  2. **She stands BESIDE the post, never across it.** She is placed a clear
+    //     gap to the left of the marker, and if the clamp would push her back
+    //     under it she is placed to the RIGHT instead - so she is never behind a
+    //     name plank, and the plank never has to be drawn behind her either.
+
+    nonisolated public static func heroSize(_ m: MQMetrics, cast: MQCast) -> CGSize {
+        let w: CGFloat = m.isRegular ? 96 : 62
+        let box = MQCreature.box(cast)
+        return CGSize(width: w, height: w * box.height / box.width)
+    }
+
+    /// Where the explorer's CENTRE goes, given the marker's normalised place.
+    nonisolated public static func heroCentre(_ m: MQMetrics, cast: MQCast,
+                                              at: CGPoint) -> CGPoint {
+        let size = heroSize(m, cast: cast)
+        let w = m.size.width, h = m.size.height
+        let post = MQMapMarker.hitBox(scale: markerScale(m))
+        let edge: CGFloat = m.isRegular ? 12 : 8
+        let gap = post.width / 2 + size.width / 2 + edge
+        let loX = size.width / 2 + edge
+        let hiX = max(w - size.width / 2 - edge, loX)
+
+        // Left of the post by default; right of it when the left would clip.
+        var x = w * at.x - gap
+        if x < loX { x = min(w * at.x + gap, hiX) }
+        x = min(max(x, loX), hiX)
+
+        // Level with the post's foot rather than with the plank below it.
+        let loY = m.insets.top + size.height / 2 + edge
+        let hiY = max(h - m.insets.bottom - size.height / 2 - edge, loY)
+        let y = min(max(h * at.y + (m.isRegular ? 14 : 8), loY), hiY)
+        return CGPoint(x: x, y: y)
     }
 
     /// On a phone the island is read bottom to top, so the stops are laid out as
@@ -93,12 +168,23 @@ public struct MQMapScreen: View, MQTapAudited {
                     .minimumScaleFactor(0.7)
             }
             Spacer(minLength: 8)
+            Self.patchwerkButton(p, m, label: MQMapCopy.patchwerk)
             if !compact {
                 MQNameTag(p, name: scene.heroName, level: scene.level,
                           quest: "\(scene.crystals) crystals found")
             }
         }
         .frame(height: compact ? 56 : 62)
+    }
+
+    /// The Patchwerk plank. Static and public because `MQQuest.QMapView` wraps a
+    /// Button round this exact drawing - one drawing measured by the gate and
+    /// tapped by the child.
+    public static func patchwerkButton(_ p: MQPalette, _ m: MQMetrics,
+                                       label: String) -> some View {
+        let box = patchwerkPlank(m)
+        return MQPlankButton(p, label, fontSize: m.isRegular ? 19 : 15)
+            .frame(width: box.width, height: box.height)
     }
 
     private var map: some View {
@@ -117,14 +203,14 @@ public struct MQMapScreen: View, MQTapAudited {
                 .frame(width: w, height: h)
             // "You are here", drawn: the explorer is standing at the stop they
             // are part-way through. No arrow, no pulsing ring, no label.
+            // Placed by `heroCentre`, which keeps her whole box on the glass and
+            // clear of the post - see the comment on that function.
             if let here {
-                let at = place(here)
+                let box = Self.heroSize(m, cast: scene.heroCast)
+                let c = Self.heroCentre(m, cast: scene.heroCast, at: place(here))
                 MQCreature(scene.heroCast, p)
-                    .frame(width: compact ? 62 : 96,
-                           height: (compact ? 62 : 96)
-                                   * MQCreature.box(scene.heroCast).height
-                                   / MQCreature.box(scene.heroCast).width)
-                    .position(x: w * at.x - (compact ? 46 : 74), y: h * at.y + (compact ? 8 : 14))
+                    .frame(width: box.width, height: box.height)
+                    .position(x: c.x, y: c.y)
             }
             ForEach(Array(scene.nodes.enumerated()), id: \.element.id) { i, node in
                 let at = place(i)

@@ -125,6 +125,15 @@ let screens: [ScreenSpec] = [
     ScreenSpec(key: "entrance",
                make: { AnyView(MQEntranceScreen(metrics: $0)) },
                taps: MQEntranceScreen.tapTargets),
+    // The `+` token's sheet. New on the rehearsal fix pass: the token was drawn
+    // and did nothing, so a parent on a fresh install could not start at all -
+    // and no gate could see it, because the screen it should have opened did not
+    // exist to be measured (Phase 1 dress rehearsal, leg 1).
+    ScreenSpec(key: "new-explorer",
+               make: { AnyView(MQNewExplorerScreen(metrics: $0)) },
+               taps: MQNewExplorerScreen.tapTargets),
+    // The map now carries Patchwerk's entry plank, so this row audits it at all
+    // twelve sizes (leg 6: the mode had no entry point anywhere in the app).
     ScreenSpec(key: "map",
                make: { AnyView(MQMapScreen(metrics: $0)) },
                taps: MQMapScreen.tapTargets),
@@ -140,6 +149,15 @@ let screens: [ScreenSpec] = [
     ScreenSpec(key: "patchwerk-enrage",
                make: { AnyView(MQPatchwerkScreen(scene: .enraged, metrics: $0)) },
                taps: MQPatchwerkScreen.tapTargets),
+    // A TYPED Patchwerk item, with the keypad, the unit chips and a figure.
+    // One item in three this feed serves is typed, and until the rehearsal fix
+    // pass they reached a screen whose only input was `answer(choice:)`: 50 of
+    // 150 items in a real 2-minute run arrived as four blank planks, each one
+    // scored wrong, stunned for 1.5 s and reset the stack multiplier. This row
+    // is what stops that surface disappearing again without a red gate.
+    ScreenSpec(key: "patchwerk-typed",
+               make: { AnyView(MQPatchwerkScreen(scene: .typedItem, metrics: $0)) },
+               taps: { MQPatchwerkScreen.tapTargets($0, typed: true) }),
     ScreenSpec(key: "battle-dusk",
                make: { AnyView(MQBattleScreen(metrics: $0, palette: .dusk)) },
                taps: MQBattleScreen.tapTargets)
@@ -313,6 +331,8 @@ struct Snap {
     static func short(_ key: String) -> String {
         switch key {
         case "patchwerk-enrage": return "enrage"
+        case "patchwerk-typed":  return "pw-typed"
+        case "new-explorer":     return "new-expl"
         case "battle-dusk":      return "dusk"
         default:                 return key
         }

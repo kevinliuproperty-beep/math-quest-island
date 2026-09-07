@@ -164,7 +164,7 @@ struct QScreenFitTests {
         let m = QQuestModel(source: ScriptedSource([q, q, q]), store: store,
                             random: QFixedRandom([0]), setSize: 3)
         await m.load()
-        await m.pick(m.profiles[0])
+        await m.pick(m.records[0])
         await m.open(m.island!.nodes[0])
         return m
     }
@@ -238,7 +238,7 @@ struct QScreenFitTests {
         let m = QQuestModel(source: Self.engine, store: store,
                             random: QFixedRandom([0]), setSize: 6)
         await m.load()
-        await m.pick(try #require(m.profiles.first))
+        await m.pick(try #require(m.records.first))
         let node = try #require(m.island?.nodes.first { $0.topicID == "p4area" })
         await m.open(node)
 
@@ -283,7 +283,7 @@ struct QScreenFitTests {
         let m = QQuestModel(source: Self.engine, store: store,
                             random: QFixedRandom([0]), setSize: 6)
         await m.load()
-        await m.pick(try #require(m.profiles.first))
+        await m.pick(try #require(m.records.first))
         // p4pie is the topic with the biggest figure and the longest stems.
         let node = try #require(m.island?.nodes.first { $0.topicID == "p4pie" })
         await m.open(node)
@@ -369,7 +369,7 @@ struct QTypedMatrixFitTests {
         let m = QQuestModel(source: ScriptedSource(questions), store: store,
                             random: QFixedRandom([0]), setSize: max(questions.count, 1))
         await m.load()
-        await m.pick(m.profiles[0])
+        await m.pick(m.records[0])
         await m.open(m.island!.nodes[0])
         return m
     }

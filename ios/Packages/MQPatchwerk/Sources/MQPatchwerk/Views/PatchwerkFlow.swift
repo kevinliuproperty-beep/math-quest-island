@@ -40,7 +40,13 @@ public struct PatchwerkFlow: View {
                 PatchwerkRunView(
                     scene: session.scene, metrics: m, locked: session.inputLocked,
                     onAnswer: { i in Task { await session.answer(choice: i) } },
-                    onPause: { Task { await session.abandon() } })
+                    onPause: { Task { await session.abandon() } },
+                    // One item in three this feed serves is TYPED. Until the
+                    // rehearsal fix pass these three had nowhere to go and 50 of
+                    // 150 items were unanswerable.
+                    onKey: { k in session.press(k) },
+                    onChip: { c in session.toggleChip(c) },
+                    onSubmit: { await session.submitTyped() })
 
             case .result:
                 if let record = session.record {

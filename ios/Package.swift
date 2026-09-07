@@ -207,9 +207,16 @@ let package = Package(
         ),
         // macOS-only, and guarded internally by `#if os(macOS)` so an iOS build
         // of the package tree still compiles it rather than failing.
+        // THE COMPOSITION ROOT, and the only target that may name every module.
+        // MQPatchwerk and MQServices arrive here on the rehearsal fix pass: the
+        // mode had no entry point anywhere in the app, and wiring one is this
+        // file's job precisely because MQQuest must NOT depend on MQPatchwerk -
+        // one mode may not import another. `QRoot` takes the arena as a view
+        // builder, exactly as it takes the engine as a `QuestionSource`.
         .executableTarget(
             name: "mqhost",
-            dependencies: ["MQQuest", "MQEngineJS", "MQContent", "MQDesign", "MQProgress"],
+            dependencies: ["MQQuest", "MQEngineJS", "MQContent", "MQDesign",
+                           "MQProgress", "MQPatchwerk", "MQServices"],
             path: "Host"
         ),
         // -------------------------------------------------------- end lane/quest

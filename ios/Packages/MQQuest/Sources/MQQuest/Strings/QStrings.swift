@@ -1,4 +1,5 @@
 import Foundation
+import MQDesign
 
 /// **Every string a child or a parent reads in Quest mode.**
 ///
@@ -24,9 +25,31 @@ public enum QStrings {
         "No sign-in, no accounts. Everything stays on this iPad."
     public static let newExplorer = "New explorer"
 
+    // MARK: - New explorer
+    //
+    // The sheet the `+` token opens. No name field and no keyboard: the store
+    // names a new child "Explorer" and keeps display names unique, so a second
+    // one is "Explorer 2" and a parent renames them later on MQApp's parent
+    // screen. A child starts playing in four taps with no adult in the room,
+    // which is the point - the `+` was dead, and a parent on a fresh install
+    // could not start at all (Phase 1 dress rehearsal, leg 1).
+
+    public static let newExplorerTitle = "Who is playing?"
+    public static let newExplorerCastPrompt = "Pick your creature."
+    public static let newExplorerLevelPrompt = "Pick your class."
+    public static let newExplorerStart = "Start"
+    public static let newExplorerBack = "Back"
+    /// What a brand-new profile is called before anybody renames it.
+    public static let defaultExplorerName = "Explorer"
+
     // MARK: - Map
 
     public static let mapTitle = "Quest Island"
+    /// The Patchwerk plank in the map header. **Re-exported, not re-declared**:
+    /// `MQDesign.MQMapCopy.patchwerk` is the one definition, so the storybook
+    /// screen the 12-size matrix gate measures and the screen a child taps can
+    /// never carry different words.
+    public static let patchwerkEntry = MQMapCopy.patchwerk
     public static func mapSubtitle(level: String) -> String {
         "Quests for \(level). Where will you adventure today?"
     }
@@ -141,7 +164,9 @@ public enum QStrings {
     public static var allCopy: [String] {
         var out = [
             appTitle, entranceSubtitle, parentLine, newExplorer,
-            mapTitle, comingSoon, cleared, ready,
+            newExplorerTitle, newExplorerCastPrompt, newExplorerLevelPrompt,
+            newExplorerStart, newExplorerBack, defaultExplorerName,
+            mapTitle, patchwerkEntry, comingSoon, cleared, ready,
             typeYourAnswer, unitRowPrompt, unitOptional, submit, backspace, pause,
             nextQuestion, finishSet,
             resultTitleAllCorrect, resultTitleCleared, resultTitleGoodRun,

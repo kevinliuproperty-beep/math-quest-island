@@ -26,11 +26,23 @@ public struct PatchwerkRunView: View {
     let locked: Bool
     var onAnswer: (Int) -> Void
     var onPause: () -> Void
+    /// The typed surface's three actions. They go INTO the drawn screen rather
+    /// than onto this overlay: a keypad is seventeen controls, and re-deriving
+    /// seventeen rects out here is exactly the drift the pause knob's 5-8 pt miss
+    /// came from. The four choice planks keep the overlay, which is gated on the
+    /// pixels at twelve sizes.
+    var onKey: @MainActor @Sendable (MQTypedEntry.Key) -> Void = { _ in }
+    var onChip: @MainActor @Sendable (String) -> Void = { _ in }
+    var onSubmit: @MainActor @Sendable () async -> Void = {}
 
     public init(scene: MQPatchwerkScene, metrics: MQMetrics, locked: Bool,
-                onAnswer: @escaping (Int) -> Void, onPause: @escaping () -> Void) {
+                onAnswer: @escaping (Int) -> Void, onPause: @escaping () -> Void,
+                onKey: @escaping @MainActor @Sendable (MQTypedEntry.Key) -> Void = { _ in },
+                onChip: @escaping @MainActor @Sendable (String) -> Void = { _ in },
+                onSubmit: @escaping @MainActor @Sendable () async -> Void = {}) {
         self.scene = scene; self.m = metrics; self.locked = locked
         self.onAnswer = onAnswer; self.onPause = onPause
+        self.onKey = onKey; self.onChip = onChip; self.onSubmit = onSubmit
     }
 
     nonisolated static func pad(_ m: MQMetrics) -> CGFloat { m.isRegular ? 30 : 16 }
@@ -64,9 +76,13 @@ public struct PatchwerkRunView: View {
 
     public var body: some View {
         ZStack(alignment: .top) {
-            MQPatchwerkScreen(scene: scene, metrics: m)
+            MQPatchwerkScreen(scene: scene, metrics: m,
+                              onKey: onKey, onChip: onChip, onSubmit: onSubmit)
             pauseLayer
-            answerLayer
+            // A typed item draws no planks, so the four transparent buttons must
+            // not be laid over the keypad - they would eat every tap in the
+            // bottom third of the glass and score a wrong answer for each one.
+            if !scene.isTyped { answerLayer }
         }
     }
 

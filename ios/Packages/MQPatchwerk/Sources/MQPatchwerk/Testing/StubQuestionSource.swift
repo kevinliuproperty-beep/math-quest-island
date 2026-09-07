@@ -91,13 +91,19 @@ public actor StubQuestionSource: QuestionSource {
 public extension StubQuestionSource {
 
     /// One question, with everything a Patchwerk HUD reads filled in.
+    ///
+    /// `figureJSON` is the engine's own figure spec, verbatim - the rehearsal
+    /// measured 35 of 150 items in a real run carrying one, and none drawn, so a
+    /// stub that could not produce a figure could not have caught it.
     static func question(id: String, topic: String, pool: Int, stem: String,
                          choices: [String], correctIndex: Int,
-                         skill: String = "skill", extra: String = "") -> Question {
+                         skill: String = "skill", extra: String = "",
+                         figureJSON: String? = nil) -> Question {
         let json = """
         {"id":"\(id)","topic":"\(topic)","generator":null,"pool":\(pool),"level":\(pool),
          "skill":"\(skill)","kind":"choice","stem":"\(stem)","stemText":"\(stem)",
-         "extra":"\(extra)","extraText":"\(extra)","extraIsMarkup":false,"figure":null,
+         "extra":"\(extra)","extraText":"\(extra)","extraIsMarkup":false,
+         "figure":\(figureJSON ?? "null"),
          "choices":\(jsonArray(choices)),"choiceTexts":\(jsonArray(choices)),
          "correctIndex":\(correctIndex),"answerText":"\(choices[correctIndex])",
          "answerTextPlain":"\(choices[correctIndex])","explain":"","explainText":"",
@@ -106,6 +112,30 @@ public extension StubQuestionSource {
         // Decoding rather than a memberwise init: `Question`'s stored properties
         // are `let` with no public initialiser, and going through `Codable` also
         // means this stub cannot drift from the shape the engine really sends.
+        return try! JSONDecoder().decode(Question.self, from: Data(json.utf8))
+    }
+
+    /// **A TYPED question**, which is one item in three of what the real feed
+    /// serves and what the dress rehearsal proved this mode could not answer.
+    ///
+    /// `answerTextPlain` is the WHOLE submission, unit included, because that is
+    /// what `MQTypedEntry.submission` builds and hands the grader: `"60 cm²"`,
+    /// the parity corpus's own `with-unit` spelling.
+    static func typedQuestion(id: String, topic: String, pool: Int, stem: String,
+                              answer: String, unit: String = "",
+                              skill: String = "skill", extra: String = "",
+                              figureJSON: String? = nil) -> Question {
+        let whole = unit.isEmpty ? answer : "\(answer) \(unit)"
+        let units = unit.isEmpty ? "null" : jsonArray([unit])
+        let json = """
+        {"id":"\(id)","topic":"\(topic)","generator":null,"pool":\(pool),"level":\(pool),
+         "skill":"\(skill)","kind":"typed","stem":"\(stem)","stemText":"\(stem)",
+         "extra":"\(extra)","extraText":"\(extra)","extraIsMarkup":false,
+         "figure":\(figureJSON ?? "null"),
+         "choices":[],"choiceTexts":[],"correctIndex":-1,
+         "answerText":"\(whole)","answerTextPlain":"\(whole)",
+         "explain":"","explainText":"","unit":"\(unit)","units":\(units),"key":{}}
+        """
         return try! JSONDecoder().decode(Question.self, from: Data(json.utf8))
     }
 

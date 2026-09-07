@@ -245,12 +245,57 @@ public struct MQPatchwerkScene: Sendable, Equatable {
     public var bossHP: Double
 
     public var question: String
-    public var figure: MQFigure
+
+    /// **The engine's own figure spec, all eight kinds** - not the three-case
+    /// `MQFigure` projection this field used to be.
+    ///
+    /// The Phase 1 dress rehearsal drove one real 150-item Patchwerk run: **35
+    /// items carried a figure and not one was drawn**, because
+    /// `PatchwerkSession.scene` set `figure = .none` unconditionally and the
+    /// scene had nothing an eight-kind spec could arrive in. Thirteen of those
+    /// were pie charts, ten tables, six line graphs. The projection would have
+    /// dropped 29 of the 35 anyway (it draws `rect` and `fractionBar` and
+    /// nothing else), which is the same wound `StoredReview` took at W7.
+    ///
+    /// `MQFigures` - the seven-spec renderer the Quest battle uses - draws this
+    /// directly, so both modes draw a pie with the same pencil.
+    public var spec: Figure?
+    /// The engine's plain-text reduction of `extra`, shown when the spec is one
+    /// this build cannot draw. A question loses its PICTURE, never its words.
+    public var figureFallback: String
+
+    /// The four choice tiles. Empty on a typed item.
     public var answers: [String]
+
+    /// **Non-nil when the item is TYPED**: what the child has entered so far.
+    ///
+    /// The rehearsal measured **50 of 150 items arriving with zero answer
+    /// choices** - four blank planks under a word problem - because the arena
+    /// only ever drew `choiceTexts.prefix(4)` and `answer(choice:)` was the only
+    /// input path. Every one of the 50 scored wrong, each cost a 1.5 s stun and
+    /// each reset the stack multiplier: best stacks reached 4 against a cap of
+    /// 10, so the stack mechanic, which IS the mode, could not function.
+    ///
+    /// This mirrors the web rather than re-deciding it. `js/modes/patchwerk.js`
+    /// renders no question at all - it calls `ctx.nextQuestion()` - and
+    /// `js/app.js`'s `nextQuestion()` is the ONE question surface in the app:
+    /// `Q.typed` gets the typed input, everything else gets choice buttons.
+    /// Filtering the Patchwerk feed to choice items was the rejected
+    /// alternative: the web does not filter, and the feed's rotation over every
+    /// live class-level topic is the mode's whole variety mechanism (repeat rate
+    /// 0.021 against the main mode's 0.376).
+    public var typed: MQTypedEntry?
+    /// Which non-digit keys the topic's keypad shows. Ignored unless `typed`.
+    public var keypad: MQKeypadPolicy
+    /// The unit chips, or empty when the question declares no unit.
+    public var chips: [String]
 
     public var enraged: Bool
     /// One short line, only when the run has something to say.
     public var flash: String?
+
+    /// Whether this item wants the keypad rather than the four planks.
+    public var isTyped: Bool { typed != nil }
 
     public static let sample = MQPatchwerkScene(
         tierName: "Patchwerk",
@@ -267,8 +312,12 @@ public struct MQPatchwerkScene: Sendable, Equatable {
         freezeTotal: 2,
         bossHP: 0.62,
         question: "What is 3.6 x 100?",
-        figure: .none,
+        spec: nil,
+        figureFallback: "",
         answers: ["360", "36", "0.036", "3600"],
+        typed: nil,
+        keypad: .digitsOnly,
+        chips: [],
         enraged: false,
         flash: nil
     )
@@ -291,4 +340,36 @@ public struct MQPatchwerkScene: Sendable, Equatable {
         s.flash = "Damage x1.5 - finish strong."
         return s
     }()
+
+    /// **A typed Patchwerk item, carrying a figure.** One item in three is like
+    /// this, and until the rehearsal fix pass of 2026-09-07 the arena drew four
+    /// blank planks for it (50 of 150 items in the measured run) and dropped the
+    /// diagram (35 of 150). It is in the twelve-size matrix so a keypad, a chip
+    /// row and a drawn figure that do not fit an iPhone SE are a red gate rather
+    /// than a thing somebody notices on a device.
+    public static let typedItem: MQPatchwerkScene = {
+        var s = MQPatchwerkScene.sample
+        s.timer = "1:42"
+        s.sand = 102.0 / 180.0
+        s.damage = "806"
+        s.stacks = 4
+        s.multiplier = "1.40x"
+        s.question = "A rectangle is 12 cm long and 5 cm wide. What is its area?"
+        s.spec = MQPatchwerkScene.decodeSpec(
+            #"{"type":"rect","length":12,"breadth":5,"unit":"cm"}"#)
+        s.figureFallback = "A rectangle 12 cm by 5 cm."
+        s.answers = []
+        s.typed = MQTypedEntry(digits: "60", unit: "cm²")
+        s.keypad = .forTopic("p4area")
+        s.chips = MQUnits.chips(accepted: ["cm²"], questionID: "patchwerk-typed-sample")
+        s.flash = nil
+        return s
+    }()
+
+    /// `MQContent`'s figure payloads carry no public memberwise initialiser, so a
+    /// spec is spelled the one way that cannot drift from the contract: the
+    /// engine's own JSON, through the engine's own decoder.
+    public static func decodeSpec(_ json: String) -> Figure? {
+        try? JSONDecoder().decode(Figure.self, from: Data(json.utf8))
+    }
 }

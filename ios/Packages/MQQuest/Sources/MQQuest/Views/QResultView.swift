@@ -230,15 +230,24 @@ public struct QResultView: View, MQTapAudited {
                 .font(.mq(compact ? 32 : 46, .extrabold))
                 .foregroundStyle(p.gold)
                 .shadow(color: p.woodDeep.opacity(0.9), radius: 0, x: 0, y: 3)
-            Text(QStrings.resultMessage(hero: model.profile?.name ?? "",
-                                        node: model.node?.name ?? "",
-                                        correct: summary?.correct ?? 0,
-                                        total: summary?.total ?? 0))
-                .font(.mq(compact ? 14 : 20, .medium))
-                .foregroundStyle(p.carved)
-                .shadow(color: p.woodDeep.opacity(0.75), radius: 0, x: 0, y: 2)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
+            // **On a plank, not on the sand.** This subtitle - the line that says
+            // what the child just did - was cream straight onto the world, which
+            // measures 1.05:1 on `parchment`, 1.30:1 on `sandFar` and 2.11:1 on
+            // `skyHigh`. It is the parent's-eye item 9 of the Phase 1 dress
+            // rehearsal ("white captions on pale sand"), and a drop shadow does
+            // not enter a contrast ratio - the shadow was the only thing making
+            // the line visible at all. `MQResultScreen` took the same fix; this
+            // is the screen a child actually gets.
+            MQRail(p, padH: compact ? 12 : 18, padV: compact ? 1 : 3) {
+                Text(QStrings.resultMessage(hero: model.profile?.name ?? "",
+                                            node: model.node?.name ?? "",
+                                            correct: summary?.correct ?? 0,
+                                            total: summary?.total ?? 0))
+                    .font(.mq(compact ? 14 : 20, .medium))
+                    .foregroundStyle(p.captionOnDark)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
@@ -283,7 +292,10 @@ public struct QResultView: View, MQTapAudited {
                 .minimumScaleFactor(0.6)
             Text(s.caption)
                 .font(.mq(compact ? 11 : 15, .medium))
-                .foregroundStyle(p.underLight(Color(hex: 0x8A6A45)))
+                // Was `underLight(0x8A6A45)` - 2.81:1 on the tag at noon and
+                // 1.67:1 at dusk. `captionOnLight` is the lightest brown that
+                // clears 4.5:1 on every pale ground in the system.
+                .foregroundStyle(p.captionOnLight)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
@@ -316,13 +328,18 @@ public struct QResultView: View, MQTapAudited {
                     MQPlankButton(p, QStrings.reviewOlder, fontSize: m.isRegular ? 17 : 14)
                 }
                 .opacity(page == 0 ? 0.4 : 1)
-                Text(QStrings.reviewPageOf(first: first, last: last,
-                                           total: reviewItems.count))
-                    .font(.mq(m.isRegular ? 17 : 14, .bold))
-                    .monospacedDigit()
-                    .foregroundStyle(p.carved)
-                    .shadow(color: p.woodDeep.opacity(0.75), radius: 0, x: 0, y: 2)
-                    .lineLimit(1)
+                // The counter that says which of the wrong answers you are
+                // looking at, on a plank for the same reason as the subtitle:
+                // cream on open sand is 1.30:1 and the drop shadow that made it
+                // legible is not a contrast ratio.
+                MQRail(p, padH: m.isRegular ? 12 : 8, padV: m.isRegular ? 2 : 1) {
+                    Text(QStrings.reviewPageOf(first: first, last: last,
+                                               total: reviewItems.count))
+                        .font(.mq(m.isRegular ? 17 : 14, .bold))
+                        .monospacedDigit()
+                        .foregroundStyle(p.captionOnDark)
+                        .lineLimit(1)
+                }
                 hitButton(Hit.reviewMore, enabled: page < pageCount - 1,
                           action: { [model] in model.reviewPageForward(rows: rowsNow) }) {
                     MQPlankButton(p, QStrings.reviewNewer, fontSize: m.isRegular ? 17 : 14)

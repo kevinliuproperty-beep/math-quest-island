@@ -76,18 +76,41 @@ public struct QDriveScript: Codable, Sendable {
     /// Render scale. 1 by default: these are read by an agent and by a human at
     /// 100%, and @2x quadruples the bytes for no extra legibility.
     public var scale: CGFloat?
+    /// **Where the progress document lives, if it is to live at all.**
+    ///
+    /// The driver used to build `MQProgressStore.inMemory()` unconditionally, so
+    /// a driven run could never observe whether a single answer reached a disk -
+    /// and none of them did. `QQuestModel.pick` built its store key from the
+    /// child's NAME while `addProfile` minted a UUID, `record()` took its "no
+    /// profile" early return on every answer ever given, and the whole packet was
+    /// green (Phase 1 dress rehearsal, leg 8). A driven run can now be pointed at
+    /// a file, restarted against the same file, and read.
+    public var storePath: String?
+    /// Reopen `storePath` instead of creating a profile in it: the second half of
+    /// a persistence gate is a COLD process finding what the first one wrote.
+    public var reopenStore: Bool?
+    /// Make the profile through the `+` token's own sheet - tap `+`, tap a
+    /// creature, tap a class, tap Start - instead of injecting it into the store.
+    /// This is the only path that exercises what a parent on a fresh install does.
+    public var createProfile: Bool?
 
     public init(name: String, seed: UInt64, device: String, profile: QDriveProfile,
                 node: String, items: Int, strategy: QStrategy? = nil,
                 strategies: [QStrategy]? = nil, palette: String? = nil,
-                scale: CGFloat? = nil, viewPath: Bool? = nil) {
+                scale: CGFloat? = nil, viewPath: Bool? = nil,
+                storePath: String? = nil, reopenStore: Bool? = nil,
+                createProfile: Bool? = nil) {
         self.name = name; self.seed = seed; self.device = device
         self.profile = profile; self.node = node; self.items = items
         self.strategy = strategy; self.strategies = strategies
         self.palette = palette; self.scale = scale; self.viewPath = viewPath
+        self.storePath = storePath; self.reopenStore = reopenStore
+        self.createProfile = createProfile
     }
 
     public var drivesTheViewPath: Bool { viewPath ?? true }
+    public var reopensStore: Bool { reopenStore ?? false }
+    public var createsProfile: Bool { createProfile ?? false }
 
     /// The device matrix names `mqdesign-snap` uses, so a driven PNG can be laid
     /// beside a matrix PNG of the same screen at the same size.
@@ -189,7 +212,11 @@ public struct QTranscript: Codable, Sendable {
     /// reader can fail loudly instead of reading a stale shape.
     /// 2: `inputPath`, `tapMisses` and `unitsAccepted` per item; `tapMisses` and
     /// `inputPath` on the run.
-    public static let schemaVersion = 2
+    /// 3: `store` - what the PROGRESS DOCUMENT holds when the run is over. A
+    /// transcript that reports twelve correct answers and cannot say whether one
+    /// of them was written down is the transcript that passed the branch on
+    /// which nothing a child did was ever recorded.
+    public static let schemaVersion = 3
 
     public var schema: Int = QTranscript.schemaVersion
     public var name: String
@@ -219,6 +246,32 @@ public struct QTranscript: Codable, Sendable {
     public var tapMisses: [String] = []
     /// How many pages the review needed, and how many were rendered.
     public var reviewPages: Int = 1
+    /// **What the store holds when the run is over.** See `QStoreReadback`.
+    public var store: QStoreReadback?
+}
+
+/// The progress document, read back through the store's own API after the run.
+///
+/// This exists because of the single largest defect in the Phase 1 packet: the
+/// app recorded nothing a child did, and 402 green tests, twelve driven sessions
+/// and a matrix gate all passed anyway, because no gate ever asked the store what
+/// it held afterwards. Every number here is a number that was ZERO on the branch
+/// the rehearsal drove, against a run of 34 answers with 34 correct.
+public struct QStoreReadback: Codable, Sendable {
+    /// The id the run recorded against - the store's own, never a display name.
+    public var profileID: String
+    /// The document on disk, if there was one.
+    public var path: String?
+    /// Skill rows with any history at all.
+    public var skills: Int
+    /// Finished sessions the store is holding.
+    public var sessions: Int
+    /// Crystals over the profile's whole life.
+    public var lifetimeCrystals: Int
+    /// Nodes the island now draws as Cleared.
+    public var clearedNodes: Int
+    /// `skill -> mastery`, so a refuter can recompute `correct / attempts` by hand.
+    public var mastery: [String: Double]
 }
 
 // MARK: - The driver
@@ -249,10 +302,24 @@ public final class QDriver {
         _ = MQFonts.register()
         try FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
 
-        let store = MQProgressStore.inMemory()
-        _ = await store.addProfile(name: script.profile.name,
-                                   cast: script.profile.mqCast,
-                                   level: script.profile.level)
+        // **The store is a FILE when the script names one**, and the profile is
+        // made through the `+` token's own sheet when the script asks. Both are
+        // new on the rehearsal fix pass, and both exist because the old driver
+        // could not see the branch's largest defect: an in-memory store seeded by
+        // a direct `addProfile` call, never reopened, cannot show you that not one
+        // answer a child gives is ever written down.
+        let store: MQProgressStore
+        if let path = script.storePath {
+            store = try MQProgressStore.onDisk(url: URL(fileURLWithPath: path),
+                                               writes: .immediate)
+        } else {
+            store = MQProgressStore.inMemory()
+        }
+        if !script.reopensStore && !script.createsProfile {
+            _ = await store.addProfile(name: script.profile.name,
+                                       cast: script.profile.mqCast,
+                                       level: script.profile.level)
+        }
         let random = QSeededRandom(seed: script.seed)
         let model = QQuestModel(source: source, store: store, random: random,
                                 setSize: script.items)
@@ -265,11 +332,40 @@ public final class QDriver {
         await model.load()
         pngs.append(try shoot(model, metrics, palette, scale, "01-entrance"))
 
-        guard let profile = model.profiles.first(where: { $0.name == script.profile.name })
-                ?? model.profiles.first else {
-            throw QDriverError.noProfile
+        var misses: [String] = []
+
+        // **The `+` leg.** Tap the empty slot, tap a creature, tap a class, tap
+        // Start - every one of them a hit test against the DRAWN bounds, so a
+        // control that is not on the glass records a MISS rather than a green
+        // row. This is the path a parent on a fresh install takes, and it was
+        // dead: the empty slot's Button action returned immediately and nothing
+        // in the app called `addProfile` (Phase 1 dress rehearsal, leg 1).
+        if script.createsProfile {
+            await tap(model, metrics, palette, QEntranceView.Hit.newExplorer, &misses)
+            pngs.append(try shoot(model, metrics, palette, scale, "01b-new-explorer"))
+            await tap(model, metrics, palette,
+                      QNewExplorerView.Hit.cast(script.profile.mqCast), &misses)
+            await tap(model, metrics, palette,
+                      QNewExplorerView.Hit.level(script.profile.level), &misses)
+            pngs.append(try shoot(model, metrics, palette, scale, "01c-new-explorer-picked"))
+            await tap(model, metrics, palette, QNewExplorerView.Hit.start, &misses)
+            misses = misses.map { "new explorer: \($0)" }
+            guard model.currentProfileID != nil else { throw QDriverError.noProfile }
+        } else {
+            // Pick by the STORE's own record. A `first(where: { $0.name == ... })`
+            // over `[MQProfile]` is how the identity came apart in the first
+            // place; the driver is not allowed to reintroduce it.
+            guard let record = model.records.first(where: {
+                      $0.profile.name == script.profile.name })
+                    ?? model.records.first else {
+                throw QDriverError.noProfile
+            }
+            if script.drivesTheViewPath {
+                await tap(model, metrics, palette,
+                          QEntranceView.Hit.profile(record.id), &misses)
+            }
+            if model.phase == .entrance { await model.pick(record) }
         }
-        await model.pick(profile)
         pngs.append(try shoot(model, metrics, palette, scale, "02-map"))
 
         guard let node = model.island?.nodes.first(where: { $0.topicID == script.node }) else {
@@ -279,7 +375,6 @@ public final class QDriver {
         await model.open(node)
 
         var items: [QTranscriptItem] = []
-        var misses: [String] = []
         var index = 0
         while model.phase == .asking, index < script.items {
             guard let q = model.question else { break }
@@ -350,6 +445,30 @@ public final class QDriver {
         }
         if reviewPages > 1 { model.showReviewPage(0, rows: reviewRows) }
 
+        // **Read the store back.** Not the run's own counters - the STORE's, and
+        // through the store's own API, after `finish()` has ended the session.
+        // On the branch the rehearsal drove every one of these was 0 against 34
+        // correct answers, and nothing in the packet asked.
+        await store.flush()
+        var readback: QStoreReadback?
+        if let pid = model.currentProfileID {
+            let mastery = await store.mastery(profile: pid)
+            let sessions = await store.sessions(profile: pid)
+            let crystals = await store.profileRecords()
+                .first { $0.id == pid }?.profile.crystals ?? 0
+            readback = QStoreReadback(
+                profileID: pid.raw,
+                path: script.storePath,
+                skills: mastery.count,
+                sessions: sessions.count,
+                lifetimeCrystals: crystals,
+                clearedNodes: (model.island?.nodes ?? []).filter {
+                    if case .cleared = $0.state { return true } else { return false }
+                }.count,
+                mastery: Dictionary(uniqueKeysWithValues:
+                    mastery.map { ($0.key.raw, $0.value) }))
+        }
+
         let build = try? await source.engineBuild()
         let transcript = QTranscript(
             name: script.name,
@@ -375,7 +494,8 @@ public final class QDriver {
             inputPath: script.drivesTheViewPath ? "view" : "model",
             tapMisses: misses + items.flatMap { row in
                 (row.tapMisses ?? []).map { "item \(row.index + 1): \($0)" } },
-            reviewPages: reviewPages)
+            reviewPages: reviewPages,
+            store: readback)
 
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]

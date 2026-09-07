@@ -46,11 +46,22 @@ var MQI_API = (function () {
      figure topics still emit SVG in `extra` until the figure-spec lane lands. The
      bridge needs BOTH: the markup (a web renderer / a rich text view may want it)
      and a plain-text reduction SwiftUI can put in a Text() today. */
+  /* INLINE tags are removed; everything else becomes a space.
+     A browser renders `get <b>63</b>.` as "get 63." because <b> is inline and
+     joins its neighbours. Replacing EVERY tag with a space instead produced
+     "get 63 ." - a space before the full stop on every Puzzle Caves stem that
+     bolds a number (3 of 6 stems in a real session), and the same before every
+     comma. It is NOT web-visible: the page sets `$('qtext').innerHTML = Q.q` and
+     never calls this function - `plain()` and the whole of MQI_API exist only
+     inside engine.bundle.js, for the Swift bridge, so the defect reached only
+     the native build. (Phase 1 dress rehearsal, parent's list item 10.)
+     Block-level tags keep their space, so `<p>a</p><p>b</p>` is still "a b". */
+  var INLINE_TAG = /^<\/?(?:b|i|u|s|em|strong|span|sup|sub|small|code|abbr|mark|q|cite|var|samp|kbd|big|tt|font|a)\b[^>]*>$/i;
   function plain(html) {
     return String(html === undefined || html === null ? '' : html)
       .replace(/<span class="frac"><span class="n">(\d+)<\/span><span class="d">(\d+)<\/span><\/span>/g, '$1/$2')
       .replace(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g, '$1/$2')
-      .replace(/<[^>]*>/g, ' ')
+      .replace(/<[^>]*>/g, function (tag) { return INLINE_TAG.test(tag) ? '' : ' '; })
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
       .replace(/\s+/g, ' ')

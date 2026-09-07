@@ -14,6 +14,7 @@ import MQDesign
 /// nothing teaches a child the app is broken.
 public struct QMapView: View, MQTapAudited {
     @ObservedObject var model: QQuestModel
+    @Environment(\.qHitMap) private var hitMap
     let m: MQMetrics
     let p: MQPalette
 
@@ -31,8 +32,14 @@ public struct QMapView: View, MQTapAudited {
     nonisolated static func knobSize(_ m: MQMetrics) -> CGFloat { m.isRegular ? 52 : 44 }
 
     nonisolated public static func tapTargets(_ m: MQMetrics) -> [MQTapTarget] {
-        [MQTapTarget("back", square: knobSize(m)),
-         MQTapTarget("node", MQMapMarker.hitBox(scale: markerScale(m)))]
+        MQMapScreen.tapTargets(m)
+    }
+
+    /// The hit-map names the driver taps by.
+    public enum Hit {
+        public static let back = "map-back"
+        public static func node(_ topicID: String) -> String { "node-\(topicID)" }
+        public static let patchwerk = "map-patchwerk"
     }
 
     /// Phone frames read bottom to top, exactly as `MQMapScreen` lays them out.
@@ -52,14 +59,23 @@ public struct QMapView: View, MQTapAudited {
                 .padding(.top, m.insets.top + pad * 0.6)
         }
         .frame(width: m.size.width, height: m.size.height)
+        .coordinateSpace(name: QHitMap.space)
+    }
+
+    private func hitButton<L: View>(
+        _ name: String,
+        action: @escaping @MainActor @Sendable () async -> Void,
+        @ViewBuilder label: () -> L) -> some View {
+        Button { Task { await action() } } label: { label() }
+            .buttonStyle(.plain)
+            .qHit(hitMap, name, fire: action)
     }
 
     private var header: some View {
         HStack(alignment: .center, spacing: compact ? 10 : 16) {
-            Button { Task { await model.backToEntrance() } } label: {
+            hitButton(Hit.back, action: { [model] in await model.backToEntrance() }) {
                 MQKnob(p, .back, size: Self.knobSize(m))
             }
-            .buttonStyle(.plain)
             VStack(alignment: .leading, spacing: -2) {
                 Text(QStrings.mapTitle)
                     .font(.mq(compact ? 26 : 40, .extrabold))
@@ -72,6 +88,19 @@ public struct QMapView: View, MQTapAudited {
                     .minimumScaleFactor(0.7)
             }
             Spacer(minLength: 8)
+            // **Patchwerk's entry point.** The mode had none: nothing in MQQuest
+            // or in the host referenced MQPatchwerk, and the rehearsal could only
+            // reach it by constructing a `PatchwerkSession` by hand (leg 6). It
+            // is drawn only when the composition root has actually supplied the
+            // mode, because a plank that does nothing is the defect this pass
+            // closed on the entrance.
+            if model.patchwerkAvailable {
+                hitButton(Hit.patchwerk,
+                          action: { [model] in await MainActor.run {
+                              model.openPatchwerk() } }) {
+                    MQMapScreen.patchwerkButton(p, m, label: QStrings.patchwerkEntry)
+                }
+            }
             if !compact {
                 MQNameTag(p, name: model.profile?.name ?? "",
                           level: model.profile?.level ?? "",
@@ -95,15 +124,16 @@ public struct QMapView: View, MQTapAudited {
             MQIslandMap(p, landmarks: marks, route: route,
                         mistBelow: m.isWide ? 0.30 : 0.18)
                 .frame(width: w, height: h)
+            // Placed by `MQMapScreen.heroCentre`: her whole box stays on the
+            // glass and she stands clear of the post rather than under its name
+            // plank. See that function for what the rehearsal measured.
             if let here {
-                let at = place(here)
-                MQCreature(model.profile?.cast ?? .unicorn, p)
-                    .frame(width: compact ? 62 : 96,
-                           height: (compact ? 62 : 96)
-                               * MQCreature.box(model.profile?.cast ?? .unicorn).height
-                               / MQCreature.box(model.profile?.cast ?? .unicorn).width)
-                    .position(x: w * at.x - (compact ? 46 : 74),
-                              y: h * at.y + (compact ? 8 : 14))
+                let cast = model.profile?.cast ?? .unicorn
+                let box = MQMapScreen.heroSize(m, cast: cast)
+                let c = MQMapScreen.heroCentre(m, cast: cast, at: place(here))
+                MQCreature(cast, p)
+                    .frame(width: box.width, height: box.height)
+                    .position(x: c.x, y: c.y)
             }
             ForEach(Array(design.enumerated()), id: \.offset) { i, node in
                 let at = place(i)
@@ -117,13 +147,11 @@ public struct QMapView: View, MQTapAudited {
 
     @ViewBuilder private func marker(_ i: Int, _ node: MQMapNode) -> some View {
         let quest = nodes.indices.contains(i) ? nodes[i] : nil
-        if quest?.playable == true {
-            Button {
-                if let quest { Task { await model.open(quest) } }
-            } label: {
+        if let quest, quest.playable {
+            hitButton(Hit.node(quest.topicID),
+                      action: { [model] in await model.open(quest) }) {
                 MQMapMarker(p, node: node, scale: Self.markerScale(m))
             }
-            .buttonStyle(.plain)
         } else {
             MQMapMarker(p, node: node, scale: Self.markerScale(m))
                 .allowsHitTesting(false)

@@ -42,6 +42,12 @@ vm.createContext(ctx);
 
 const load = f => vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f });
 load('js/core.js');
+/* js/figures.js is the ONE renderer for every diagram in the game. It is pure
+   string building with no DOM, so it loads in this bare vm exactly as it loads in
+   the browser, and the harness draws each q.figure spec with the SAME code the app
+   uses. That is what keeps every oracle below independent: they parse the rendered
+   labels a child reads, never the generator's own return values. */
+load('js/figures.js');
 const topicFiles = fs.readdirSync(path.join(ROOT, 'js/topics')).filter(f => f.endsWith('.js')).sort();
 for (const f of topicFiles) load('js/topics/' + f);
 
@@ -103,6 +109,55 @@ function evalExpr(src) {
    vary only the choices, and buildSetFor's own dedup key is the raw HTML. */
 const qKey = q => strip(q.q) + '|' + String(q.extra || '') + '|' +
   (q.typed ? String(q.answer) : (q.choices || []).map(strip).join(','));
+
+/* ---------- the figure contract (iOS phase 0) ----------
+ * A generator emits its diagram as PURE DATA on `q.figure` ({type, ...fields},
+ * documented in js/topics/README.md) and NEVER as markup, so the same engine can
+ * feed a web renderer and a SwiftUI one. Two gates enforce it:
+ *
+ *   checkNoMarkup   fails any generator whose output carries figure markup - a
+ *                   '<svg' or '<div' anywhere in the stem, the extra, the
+ *                   explanation, the answer text or a choice, or ANY '<' inside
+ *                   the figure spec itself. (Inline text markup a stem is allowed
+ *                   to carry - <b>, <span class="frac"> - is untouched.)
+ *   drawFigure      renders q.figure through js/figures.js into q.extra BEFORE
+ *                   any oracle runs, so every answer key is still re-derived from
+ *                   the rendered labels and qKey still sees the whole picture.
+ */
+const FIG_MARKUP = /<\s*(svg|div)\b/i;
+const FIG_FIELDS = ['q', 'extra', 'explain', 'answerText'];
+function checkNoMarkup(q) {
+  if (!q) return null;
+  for (const k of FIG_FIELDS) {
+    if (FIG_MARKUP.test(String(q[k] === undefined ? '' : q[k]))) {
+      return `figure markup in generator output field "${k}" - emit a q.figure spec instead (js/topics/README.md)`;
+    }
+  }
+  for (const c of (q.choices || [])) {
+    if (FIG_MARKUP.test(String(c))) return 'figure markup in a choice - emit a q.figure spec instead';
+  }
+  if (q.figure !== undefined) {
+    if (!q.figure || typeof q.figure !== 'object' || typeof q.figure.type !== 'string') {
+      return 'q.figure must be an object carrying a string `type`';
+    }
+    let json;
+    try { json = JSON.stringify(q.figure); } catch (e) { return 'q.figure is not serialisable data: ' + e.message; }
+    if (json === undefined || json.indexOf('<') >= 0) {
+      return 'q.figure carries markup - a figure spec is data only';
+    }
+    if (!ctx.MQI.figureTypes.includes(q.figure.type)) {
+      return `unknown figure type "${q.figure.type}" - js/figures.js draws [${ctx.MQI.figureTypes.join(', ')}]`;
+    }
+  }
+  return null;
+}
+function drawFigure(q) {
+  if (!q || !q.figure) return null;
+  try { q.extra = ctx.MQI.renderFigure(q.figure); }
+  catch (e) { return 'renderFigure threw on this spec: ' + e.message; }
+  if (!q.extra || !q.extra.length) return 'renderFigure returned nothing for type ' + q.figure.type;
+  return null;
+}
 
 /* ---------- shape + integrity, applied to every sample ---------- */
 const BAD = /\b(NaN|undefined|null|Infinity)\b/;
@@ -1579,6 +1634,10 @@ for (const g of GENS) {
   for (let i = 0; i < N; i++) {
     let q;
     try { q = g.fn(); } catch (e) { err = 'threw: ' + e.message; break; }
+    const markup = checkNoMarkup(q);
+    if (markup) { err = markup; badQ = q; break; }
+    const drawn = drawFigure(q);
+    if (drawn) { err = drawn; badQ = q; break; }
     const shape = checkShape(q);
     if (shape) { err = shape; badQ = q; break; }
     distinct.add(qKey(q));
@@ -1605,6 +1664,12 @@ for (const tid of Object.keys(TOPICS)) {
   for (const lvl of [1, 2, 3]) {
     const set = MQI.buildSetFor(tid, 30);
     if (!set[lvl] || set[lvl].length < 30) { ok = false; note = `L${lvl} only ${set[lvl] ? set[lvl].length : 0}/30`; break; }
+    /* draw every figure spec before keying: a set's identity is the picture too */
+    for (const q of set[lvl]) {
+      const m = checkNoMarkup(q) || drawFigure(q);
+      if (m) { ok = false; note = `L${lvl} ${m}`; break; }
+    }
+    if (!ok) break;
     const keys = set[lvl].map(qKey);
     if (new Set(keys).size !== keys.length) { ok = false; note = `L${lvl} duplicate questions inside one set`; break; }
     for (const q of set[lvl]) { const e = checkShape(q); if (e) { ok = false; note = `L${lvl} ${e}`; break; } }
@@ -1656,6 +1721,17 @@ const manifestRows = [];
       failures++;
     }
   }
+  /* Same seam, one layer deeper: js/figures.js draws EVERY diagram in the game, so
+     if it drops out of the manifest the app renders empty figure slots and the
+     harness would still be green - it loads the renderer off disk. It must be
+     listed, and it must be listed AFTER js/core.js (core.js assigns window.MQI
+     wholesale, so a renderer loaded first would be thrown away). */
+  const iCore = html.indexOf('"js/core.js"'), iFig = html.indexOf('"js/figures.js"');
+  const figOk = iFig > 0 && iCore > 0 && iFig > iCore;
+  manifestRows.push({ rel: 'js/figures.js', ok: figOk, note: figOk ? ''
+    : (iFig < 0 ? 'NOT referenced by index.html - every figure would render blank'
+                : 'listed BEFORE js/core.js - core.js would overwrite MQI.renderFigure') });
+  if (!figOk) failures++;
 }
 
 /* ---------- report ---------- */
@@ -1677,7 +1753,7 @@ else console.log(`ok   pool skill coverage: every multi-skill topic exposes >= 2
 const badManifest = manifestRows.filter(r => !r.ok);
 console.log('');
 if (badManifest.length) for (const r of badManifest) console.log(`FAIL manifest  ${r.rel}  ${r.note}`);
-else console.log(`ok   index.html manifest: all ${manifestRows.length} topic files are loaded by the app`);
+else console.log(`ok   index.html manifest: all ${manifestRows.length} topic files + the figure renderer are loaded by the app`);
 
 const uncovered = rows.filter(r => r.cov === 0).map(r => r.topic + '.' + r.name);
 if (uncovered.length) console.log(`\nWARN no independent oracle matched (shape + integrity only): ${uncovered.join(', ')}`);

@@ -10,13 +10,18 @@
  * `geometry`); area of a triangle (P5); volume (P5).
  *
  * Composite figures are either DESCRIBED in words with every dimension stated, or
- * RENDERED as an inline-styled L-shape whose six sides ALL carry a printed number
- * label a child can read on screen. Nothing lives in a data-* attribute: the harness
- * oracle re-derives area and perimeter by parsing those same printed labels.
+ * emitted as PURE DATA on `q.figure` ({type:'lshape', W, H, a, b, unit}) and drawn
+ * by the shared renderer js/figures.js as an L-shape whose six sides ALL carry a
+ * printed number label a child can read on screen. Nothing lives in a data-*
+ * attribute: the harness oracle re-derives area and perimeter by parsing those
+ * same printed labels. Spec fields are documented in js/topics/README.md.
  */
 (function () {
   const G = MQI.gen;
   const ri = G.ri, pick = G.pick, finishNum = G.finishNum, finishTyped = G.finishTyped;
+
+  /* attach a figure spec to a finished question */
+  const fig = (q, figure) => (q.figure = figure, q);
 
   /* finishNum prepends its own space to the unit, so these carry none. */
   const CM2 = 'cm²', CM = 'cm';
@@ -129,65 +134,40 @@
 
   /* ---- composite L-shape, RENDERED with every side labelled (1.3) ---- */
 
-  const S = 11;   /* px per cm */
-
   /* An L-shape: a W x H rectangle with an a x b piece removed from the top-right.
      Sides clockwise from the top-left corner:
        top = W - a, cut down = b, cut across = a, right = H - b, bottom = W, left = H.
-     Every one of the six is printed on the figure. */
+     The renderer derives and prints every one of the six from W/H/a/b, so the spec
+     and the picture can never disagree. */
   function makeL() {
     const W = ri(7, 16), H = ri(6, 14);
     const a = ri(2, W - 3), b = ri(2, H - 3);
-    const lab = (cls, v, css) =>
-      '<span class="lf-' + cls + '" style="position:absolute;font-size:12px;font-weight:600;' +
-      'color:#0f172a;background:#fff;padding:0 2px;' + css + '">' + v + '</span>';
-
-    const w = W * S, h = H * S, aw = a * S, bh = b * S;
-    let html = '<div class="lfig" style="display:inline-block;background:#fff;padding:16px 22px;' +
-      'border-radius:8px;color:#0f172a">' +
-      '<div style="position:relative;width:' + w + 'px;height:' + h + 'px">' +
-      /* the L drawn as two solid blocks */
-      '<div style="position:absolute;left:0;top:0;width:' + (w - aw) + 'px;height:' + bh +
-      'px;background:#93c5fd;border:2px solid #1d4ed8;border-right:none;border-bottom:none;box-sizing:border-box"></div>' +
-      '<div style="position:absolute;left:0;top:' + bh + 'px;width:' + w + 'px;height:' + (h - bh) +
-      'px;background:#93c5fd;border:2px solid #1d4ed8;border-top:none;box-sizing:border-box"></div>' +
-      '<div style="position:absolute;left:0;top:' + bh + 'px;width:' + (w - aw) +
-      'px;height:2px;background:#93c5fd"></div>' +
-      /* the six printed side lengths */
-      lab('top', W - a, 'left:' + ((w - aw) / 2) + 'px;top:-9px;transform:translateX(-50%)') +
-      lab('cutdown', b, 'left:' + (w - aw) + 'px;top:' + (bh / 2) + 'px;transform:translate(-50%,-50%)') +
-      lab('cutacross', a, 'left:' + (w - aw / 2) + 'px;top:' + (bh - 9) + 'px;transform:translateX(-50%)') +
-      lab('right', H - b, 'left:' + w + 'px;top:' + (bh + (h - bh) / 2) + 'px;transform:translate(-50%,-50%)') +
-      lab('bottom', W, 'left:' + (w / 2) + 'px;top:' + (h - 9) + 'px;transform:translateX(-50%)') +
-      lab('left', H, 'left:0;top:' + (h / 2) + 'px;transform:translate(-50%,-50%)') +
-      '</div>' +
-      '<div style="margin-top:10px;font-size:.85em;color:#475569">All lengths are in cm. ' +
-      'Every side of the figure is labelled. The corners are all right angles.</div></div>';
-    return { html, W, H, a, b, area: W * H - a * b, per: 2 * (W + H) };
+    return { figure: { type: 'lshape', W, H, a, b, unit: 'cm' },
+             W, H, a, b, area: W * H - a * b, per: 2 * (W + H) };
   }
 
   /* pool 3: area of the rendered L-shape */
   function gLArea() {
     const g = makeL();
     const wrong = g.W * g.H;
-    return finishNum(
-      'What is the area of this figure?', g.html, g.area,
+    return fig(finishNum(
+      'What is the area of this figure?', '', g.area,
       [wrong, g.per, g.a * g.b, g.area + g.a, g.area + 1], CM2,
       'Take the whole ' + g.W + ' cm by ' + g.H + ' cm rectangle, ' + g.W + ' × ' + g.H +
       ' = ' + wrong + ' cm², then take away the ' + g.a + ' cm by ' + g.b +
       ' cm corner, ' + (g.a * g.b) + ' cm². ' + wrong + ' − ' + (g.a * g.b) +
-      ' = ' + g.area + ' cm².');
+      ' = ' + g.area + ' cm².'), g.figure);
   }
 
   /* pool 3: perimeter of the rendered L-shape */
   function gLPerimeter() {
     const g = makeL();
-    return finishNum(
-      'What is the perimeter of this figure?', g.html, g.per,
+    return fig(finishNum(
+      'What is the perimeter of this figure?', '', g.per,
       [g.area, g.W + g.H, g.per - g.a, g.per + g.a, g.per - 2 * g.b], CM,
       'Perimeter means all the way round, so add the six labelled sides: ' +
       (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W + ' + ' + g.H +
-      ' = ' + g.per + ' cm. Missing out the two short sides at the corner is the usual slip.');
+      ' = ' + g.per + ' cm. Missing out the two short sides at the corner is the usual slip.'), g.figure);
   }
 
   MQI.registerTopic({

@@ -90,42 +90,17 @@
     return hard;
   }
 
-  const CX = 112, CY = 112, R = 92, LR = 57;
-  const px = a => CX + R * Math.cos(a), py = a => CY + R * Math.sin(a);
-
-  /* makePie: `labels[i]` is the STRING printed inside sector i AND in the legend
-     beside cats[i] - a count, a fraction like "1/4", or "?" for a hidden sector. */
+  /* makePie: the PURE DATA spec for one pie chart. `labels[i]` is the STRING
+     printed inside sector i AND in the legend beside cats[i] - a count, a fraction
+     like "1/4", or "?" for a hidden sector. Sector i sweeps weights[i] / sum of
+     the circle; js/figures.js draws it and prints the legend. Spec fields are
+     documented in js/topics/README.md. */
   function makePie(set, cats, weights, labels, caption) {
-    const S = weights.reduce((a, b) => a + b, 0);
-    let a0 = -Math.PI / 2, svg = '', lab = '';
-    for (let i = 0; i < cats.length; i++) {
-      const sweep = weights[i] / S * Math.PI * 2, a1 = a0 + sweep;
-      svg += '<path class="pie-sec" d="M ' + CX + ' ' + CY + ' L ' + px(a0).toFixed(1) + ' ' +
-        py(a0).toFixed(1) + ' A ' + R + ' ' + R + ' 0 ' + (sweep > Math.PI ? 1 : 0) + ' 1 ' +
-        px(a1).toFixed(1) + ' ' + py(a1).toFixed(1) + ' Z" fill="' + FILL[i % FILL.length] +
-        '" stroke="#ffffff" stroke-width="2"/>';
-      const am = a0 + sweep / 2;
-      lab += '<text class="pie-lab" x="' + (CX + LR * Math.cos(am)).toFixed(1) + '" y="' +
-        (CY + LR * Math.sin(am) + 5).toFixed(1) + '" text-anchor="middle" font-size="15" ' +
-        'font-weight="700" fill="#0f172a">' + labels[i] + '</text>';
-      a0 = a1;
-    }
-    let legend = '<div class="pie-legend" style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px">';
-    for (let i = 0; i < cats.length; i++) {
-      legend += '<span class="pie-key" style="display:inline-flex;align-items:center;gap:6px;font-size:13px">' +
-        '<span style="width:13px;height:13px;border-radius:3px;background:' + FILL[i % FILL.length] +
-        ';border:1px solid #94a3b8;display:inline-block"></span>' +
-        '<span class="pie-cat" style="color:#0f172a">' + cats[i] + '</span>' +
-        '<b class="pie-val" style="color:#0f172a">' + labels[i] + '</b></span>';
-    }
-    legend += '</div>';
-    return '<div class="piechart" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
-      '<div style="font-weight:600;margin-bottom:6px">' + set.title + '</div>' +
-      '<svg width="230" height="230" viewBox="0 0 230 230" style="display:block;font-family:inherit">' +
-      svg + lab + '</svg>' + legend +
-      '<div style="margin-top:6px;font-size:.85em;color:#475569">' + caption + '</div></div>';
+    return { type: 'pie', title: set.title, cats, weights, labels, caption };
   }
+
+  /* attach a figure spec to a finished question */
+  const fig = (q, figure) => (q.figure = figure, q);
 
   /* A count pie: n sectors, each printing its own number. */
   function countPie(n, gap) {
@@ -135,7 +110,7 @@
     const m = pick([1, 1, 2, 5]);
     const vals = w.map(x => x * m);
     return { set, cats, vals, thing: set.thing,
-      html: makePie(set, cats, w, vals.map(String),
+      figure: makePie(set, cats, w, vals.map(String),
         'Number of ' + set.thing + '. Each sector is labelled with its number of ' + set.thing + '.'),
       val: c => vals[cats.indexOf(c)],
       total: vals.reduce((a, b) => a + b, 0) };
@@ -150,13 +125,13 @@
     const cats = shuffle(set.cats.slice()).slice(0, 3);
     const labels = w.map(x => fracText(x, 12));
     return { set, cats, w, labels, thing: set.thing,
-      html: makePie(set, cats, w, labels,
+      figure: makePie(set, cats, w, labels,
         'Each sector is labelled with its fraction of the whole circle.') };
   }
 
   /* Text-choice MC. finishNum only builds numeric options; these items answer with a
      category name or a whole sentence, so they need their own finisher. */
-  function finishText(qHtml, extraHtml, correct, distractors, explain) {
+  function finishText(qHtml, figure, correct, distractors, explain) {
     const opts = [correct];
     for (const d of shuffle(distractors.slice())) {
       if (opts.length >= 4) break;
@@ -164,7 +139,7 @@
     }
     if (opts.length < 4) return null;
     const order = shuffle(opts.map((_, i) => i));
-    return { q: qHtml, extra: extraHtml || '', choices: order.map(i => opts[i]),
+    return { q: qHtml, extra: '', figure, choices: order.map(i => opts[i]),
              correct: order.indexOf(0), explain, answerText: correct };
   }
 
@@ -174,10 +149,10 @@
     const p = countPie(pick([3, 4, 5]), false);
     const i = ri(0, p.cats.length - 1);
     const o = p.vals.filter((_, j) => j !== i);
-    return finishNum('On the pie chart, how many ' + p.thing + ' are shown for ' + p.cats[i] + '?',
-      p.html, p.vals[i], [o[0], o[1], o.length > 2 ? o[2] : p.total, p.vals[i] + 1], '',
+    return fig(finishNum('On the pie chart, how many ' + p.thing + ' are shown for ' + p.cats[i] + '?',
+      '', p.vals[i], [o[0], o[1], o.length > 2 ? o[2] : p.total, p.vals[i] + 1], '',
       'Find ' + p.cats[i] + ' in the key, then read the number printed inside that sector of the circle: ' +
-      p.vals[i] + '.');
+      p.vals[i] + '.'), p.figure);
   }
 
   function gPieWhichCat() {                                /* shape 2: value -> name */
@@ -187,17 +162,17 @@
     const i = ri(0, p.cats.length - 1);
     const others = p.cats.filter((_, j) => j !== i);
     return finishText('On the pie chart, one sector shows ' + p.vals[i] + ' ' + p.thing +
-      '. Which one is it?', p.html, p.cats[i], others,
+      '. Which one is it?', p.figure, p.cats[i], others,
       'Look along the key for the sector labelled ' + p.vals[i] + '. That is ' + p.cats[i] + '.');
   }
 
   function gPieTotal() {                                   /* shape 3: whole circle */
     const p = countPie(pick([3, 4]), false);
-    return finishNum('How many ' + p.thing + ' are shown on the whole pie chart altogether?',
-      p.html, p.total,
+    return fig(finishNum('How many ' + p.thing + ' are shown on the whole pie chart altogether?',
+      '', p.total,
       [p.total - p.vals[0], p.total + p.vals[0], p.total - 1, Math.max.apply(null, p.vals)], '',
       'The sectors together make the whole circle, so add every one: ' + p.vals.join(' + ') +
-      ' = ' + p.total + '.');
+      ' = ' + p.total + '.'), p.figure);
   }
 
   /* ---------------- skill: compare (3 stem shapes) ---------------- */
@@ -207,10 +182,10 @@
     const big = Math.max.apply(null, p.vals);
     const cat = p.cats[p.vals.indexOf(big)];
     const o = p.vals.filter(v => v !== big);
-    return finishNum('On the pie chart, one sector is bigger than all the others. How many ' +
-      p.thing + ' does that sector show?', p.html, big, [o[0], o[1], big + 1, p.total], '',
+    return fig(finishNum('On the pie chart, one sector is bigger than all the others. How many ' +
+      p.thing + ' does that sector show?', '', big, [o[0], o[1], big + 1, p.total], '',
       'The biggest sector takes up the most of the circle. It is ' + cat +
-      ', and the number printed inside it is ' + big + '.');
+      ', and the number printed inside it is ' + big + '.'), p.figure);
   }
 
   function gPieLeast() {                                   /* shape 2: smallest slice */
@@ -218,10 +193,10 @@
     const small = Math.min.apply(null, p.vals);
     const cat = p.cats[p.vals.indexOf(small)];
     const o = p.vals.filter(v => v !== small);
-    return finishNum('On the pie chart, one sector is smaller than all the others. How many ' +
-      p.thing + ' does that sector show?', p.html, small, [o[0], o[1], small + 1, p.total], '',
+    return fig(finishNum('On the pie chart, one sector is smaller than all the others. How many ' +
+      p.thing + ' does that sector show?', '', small, [o[0], o[1], small + 1, p.total], '',
       'The smallest sector takes up the least of the circle. It is ' + cat +
-      ', and the number printed inside it is ' + small + '.');
+      ', and the number printed inside it is ' + small + '.'), p.figure);
   }
 
   function gPieCountAbove() {                              /* shape 3: count sectors */
@@ -231,11 +206,11 @@
     const cut = sorted[p.vals.length - k] - 1;             /* strictly below the kth largest */
     const above = p.vals.filter(v => v > cut).length;
     const cands = [1, 2, 3, 4, 5].filter(v => v !== above);
-    return finishNum('How many sectors of the pie chart show more than ' + cut + ' ' + p.thing + '?',
-      p.html, above, cands, '',
+    return fig(finishNum('How many sectors of the pie chart show more than ' + cut + ' ' + p.thing + '?',
+      '', above, cands, '',
       'Read every sector, then count only the ones bigger than ' + cut + ': ' +
       p.vals.filter(v => v > cut).join(', ') + '. That is ' + above + ' sector' +
-      (above === 1 ? '' : 's') + '.');
+      (above === 1 ? '' : 's') + '.'), p.figure);
   }
 
   /* ---------------- skill: interpret (3 stem shapes) ---------------- */
@@ -244,11 +219,11 @@
     const p = countPie(pick([3, 4, 5]), false);
     const ord = shuffle(p.cats.map((_, i) => i));
     const a = ord[0], b = ord[1], s = p.vals[a] + p.vals[b];
-    return finishNum('On the pie chart, how many ' + p.thing + ' are shown for ' + p.cats[a] +
-      ' and ' + p.cats[b] + ' altogether?', p.html, s,
+    return fig(finishNum('On the pie chart, how many ' + p.thing + ' are shown for ' + p.cats[a] +
+      ' and ' + p.cats[b] + ' altogether?', '', s,
       [Math.abs(p.vals[a] - p.vals[b]), p.vals[a], p.vals[b], s + 1, p.total], '',
       'Read both sectors first: ' + p.cats[a] + ' shows ' + p.vals[a] + ' and ' + p.cats[b] +
-      ' shows ' + p.vals[b] + '. Then ' + p.vals[a] + ' + ' + p.vals[b] + ' = ' + s + '.');
+      ' shows ' + p.vals[b] + '. Then ' + p.vals[a] + ' + ' + p.vals[b] + ' = ' + s + '.'), p.figure);
   }
 
   function gPieDiff() {                                    /* shape 2: how many more */
@@ -257,11 +232,11 @@
     let a = ord[0], b = ord[1];
     if (p.vals[a] < p.vals[b]) { const t = a; a = b; b = t; }
     const d = p.vals[a] - p.vals[b];
-    return finishNum('On the pie chart, how many more ' + p.thing + ' are shown for ' + p.cats[a] +
-      ' than for ' + p.cats[b] + '?', p.html, d,
+    return fig(finishNum('On the pie chart, how many more ' + p.thing + ' are shown for ' + p.cats[a] +
+      ' than for ' + p.cats[b] + '?', '', d,
       [p.vals[a] + p.vals[b], p.vals[a], p.vals[b], d + 1], '',
       p.cats[a] + ' shows ' + p.vals[a] + ' and ' + p.cats[b] + ' shows ' + p.vals[b] + '. ' +
-      p.vals[a] + ' − ' + p.vals[b] + ' = ' + d + '. "How many more" is always a subtraction.');
+      p.vals[a] + ' − ' + p.vals[b] + ' = ' + d + '. "How many more" is always a subtraction.'), p.figure);
   }
 
   /* shape 3, POOL 3, TWO STEPS: add two sectors, then compare that total with a
@@ -273,12 +248,12 @@
       const a = ord[0], b = ord[1], c = ord[2];
       const s = p.vals[a] + p.vals[b], d = s - p.vals[c];
       if (d <= 0) continue;
-      return finishNum('On the pie chart, ' + p.cats[a] + ' and ' + p.cats[b] +
+      return fig(finishNum('On the pie chart, ' + p.cats[a] + ' and ' + p.cats[b] +
         ' are put together. How many more ' + p.thing + ' is that than ' + p.cats[c] + ' alone?',
-        p.html, d, [s, p.vals[c], s + p.vals[c], d + 1, p.vals[a]], '',
+        '', d, [s, p.vals[c], s + p.vals[c], d + 1, p.vals[a]], '',
         'First add the two sectors: ' + p.vals[a] + ' + ' + p.vals[b] + ' = ' + s + '. Then take ' +
         p.cats[c] + ' away: ' + s + ' − ' + p.vals[c] + ' = ' + d +
-        '. Two steps, and the first answer is not the final one.');
+        '. Two steps, and the first answer is not the final one.'), p.figure);
     }
     return gPieCombine();
   }
@@ -317,7 +292,7 @@
     const trues = shuffle([...new Set(T.filter(s => mask(s) !== wrongMask))]);
     if (trues.length < 3) return gPieWrongStatement();
     return finishText('One of these statements about the pie chart is WRONG. Which one is it?',
-      p.html, wrong, trues,
+      p.figure, wrong, trues,
       'Check each statement against the numbers printed on the chart (' +
       cats.map((c, i) => c + ' ' + vals[i]).join(', ') + '). Only one does not match: "' +
       wrong + '"');
@@ -356,7 +331,7 @@
     const falses = shuffle([...new Set(F.filter(s => mask(s) !== rightMask))]);
     if (falses.length < 3) return gPieTrueStatement();
     return finishText('Three of these statements about the pie chart are WRONG. Which one is TRUE?',
-      p.html, right, falses,
+      p.figure, right, falses,
       'Check each statement against the numbers printed on the chart (' +
       cats.map((c, i) => c + ' ' + vals[i]).join(', ') + '). Only one matches: "' +
       right + '"');
@@ -394,7 +369,7 @@
     }
     if (!wrong || trues.length !== 3) return gPieCompareStatement();
     return finishText('Each statement below compares two sectors of the pie chart. Which one is WRONG?',
-      p.html, wrong, trues,
+      p.figure, wrong, trues,
       'Work out each difference from the numbers printed on the chart (' +
       cats.map((c, i) => c + ' ' + vals[i]).join(', ') + '). Every statement checks out except "' +
       wrong + '"');
@@ -411,16 +386,16 @@
     const total = vals.reduce((a, b) => a + b, 0);
     const h = ri(0, n - 1);
     const labels = vals.map((v, i) => (i === h ? '?' : String(v)));
-    const html = makePie(set, cats, w, labels,
+    const figure = makePie(set, cats, w, labels,
       'Number of ' + set.thing + '. One sector is marked with a ?.');
     const known = vals.filter((_, i) => i !== h);
     const knownSum = known.reduce((a, b) => a + b, 0);
-    return finishNum('Altogether there are ' + total + ' ' + set.thing +
+    return fig(finishNum('Altogether there are ' + total + ' ' + set.thing +
       ' on the pie chart. How many ' + set.thing + ' are shown for ' + cats[h] + '?',
-      html, vals[h], [knownSum, total, vals[h] + 1, known[0], known[1]], '',
+      '', vals[h], [knownSum, total, vals[h] + 1, known[0], known[1]], '',
       'First add the sectors you can read: ' + known.join(' + ') + ' = ' + knownSum +
       '. The whole circle is ' + total + ', so the ? sector is ' + total + ' − ' + knownSum +
-      ' = ' + vals[h] + '.');
+      ' = ' + vals[h] + '.'), figure);
   }
 
   function gPieFracOfSet() {                               /* shape 2: fraction of a set */
@@ -428,12 +403,12 @@
     const m = ri(2, 8), total = 12 * m;
     const i = askIndex(p.w);
     const ans = p.w[i] * m;
-    return finishNum('The pie chart shows how all ' + total + ' ' + p.thing +
+    return fig(finishNum('The pie chart shows how all ' + total + ' ' + p.thing +
       ' are shared out. How many ' + p.thing + ' are shown for ' + p.cats[i] + '?',
-      p.html, ans, [p.w[(i + 1) % 3] * m, p.w[(i + 2) % 3] * m, total, ans + 1], '',
+      '', ans, [p.w[(i + 1) % 3] * m, p.w[(i + 2) % 3] * m, total, ans + 1], '',
       p.cats[i] + ' is ' + p.labels[i] + ' of the whole circle and the whole circle is ' + total +
       ' ' + p.thing + '. Split ' + total + ' into equal parts first, then take ' + p.labels[i] +
-      ' of them: ' + ans + '.');
+      ' of them: ' + ans + '.'), p.figure);
   }
 
   function gPieFindWhole() {                               /* shape 3: find the whole */
@@ -441,12 +416,12 @@
     const m = ri(2, 8), total = 12 * m;
     const i = askIndex(p.w);
     const part = p.w[i] * m;
-    return finishNum('On the pie chart, the ' + p.cats[i] + ' sector stands for ' + part + ' ' +
+    return fig(finishNum('On the pie chart, the ' + p.cats[i] + ' sector stands for ' + part + ' ' +
       p.thing + '. How many ' + p.thing + ' are there altogether?',
-      p.html, total, [part, p.w[(i + 1) % 3] * m, total - part, total + 1], '',
+      '', total, [part, p.w[(i + 1) % 3] * m, total - part, total + 1], '',
       p.cats[i] + ' is ' + p.labels[i] + ' of the whole circle, and that is ' + part + ' ' +
       p.thing + '. So one twelfth of the circle is ' + m + ', and the whole circle is 12 × ' +
-      m + ' = ' + total + '.');
+      m + ' = ' + total + '.'), p.figure);
   }
 
   MQI.registerTopic({

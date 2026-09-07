@@ -460,6 +460,9 @@
     var v = "?v=" + window.MQI_BUILD;
     var files = [
       "js/core.js",
+      /* the ONE renderer for every diagram (js/topics/README.md, "Figure specs").
+         Must load AFTER core.js, which assigns window.MQI wholesale. */
+      "js/figures.js",
       "js/topics/p2-number-beach.js",
       "js/topics/p3-whole-numbers.js",
       "js/topics/p3-times-tables.js",

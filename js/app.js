@@ -276,7 +276,7 @@ function pwResolve(right){
     floatDmg('-'+(ev.damage||0), ev.enraged?'#ffe66d':'#ff8f8f','right');
   } else {
     S.streak=0;
-    S.wrongs.push({q:q.q+(q.extra||''), a:q.answerText, ex:q.explain, skill:q.skill});
+    S.wrongs.push({q:q.q+figHtml(q), a:q.answerText, ex:q.explain, skill:q.skill});
     $('feedback').innerHTML=(ev.froze?'<span class="ok">🧊 Freeze! Your stacks are safe. </span>':'')+
       '<span class="no">'+(q.typed?('The answer is <b>'+q.answerText+'</b>. '):'')+(q.explain||'')+'</span>';
     S.stunUntil=Date.now()+mode.config.STUN_MS;   /* the mode's input lock, honoured */
@@ -373,11 +373,19 @@ function startQTimer(){
   },100);
 }
 
+/* The figure contract (js/topics/README.md): a generator emits its diagram as pure
+   data on q.figure and never as markup; js/figures.js is the only thing that draws
+   it. This is the shell's single call into the renderer. */
+function figHtml(q){
+  if(q && q.figure && MQI.renderFigure) return MQI.renderFigure(q.figure);
+  return (q && q.extra) || '';
+}
+
 function nextQuestion(){
   if(!S) return;
   Q=makeQuestion(S.level);
   $('qtext').innerHTML=Q.q;
-  $('qextra').innerHTML=Q.extra||'';
+  $('qextra').innerHTML=figHtml(Q);
   $('feedback').innerHTML='';
   const box=$('answers'); box.innerHTML='';
   if(Q.typed){
@@ -427,7 +435,7 @@ function markWrong(feedbackHtml){
   S.streak=0; S.wrongRow++; S.rightRow=0;
   if(S.wrongRow>=2 && S.level>1){ S.level--; S.wrongRow=0; }
   sfx.wrong();
-  S.wrongs.push({q:Q.q+(Q.extra||''), a:Q.answerText, ex:Q.explain, skill:Q.skill});
+  S.wrongs.push({q:Q.q+figHtml(Q), a:Q.answerText, ex:Q.explain, skill:Q.skill});
   $('feedback').innerHTML=feedbackHtml;
   updateStreak();
 }

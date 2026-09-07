@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260907-e9e19c4 */
-/* ENGINE_BUILD_META {"stamp":"20260907-e9e19c4","date":"2026-09-07","sha":"e9e19c4","dirty":false,"payloadHash":"ce24e9877da34185","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260907-e9e19c4","date":"2026-09-07","sha":"e9e19c4","dirty":false,"payloadHash":"ce24e9877da34185","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260907-06fc3e1 */
+/* ENGINE_BUILD_META {"stamp":"20260907-06fc3e1","date":"2026-09-07","sha":"06fc3e1","dirty":false,"payloadHash":"dc1c4e7d329f9049","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260907-06fc3e1","date":"2026-09-07","sha":"06fc3e1","dirty":false,"payloadHash":"dc1c4e7d329f9049","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -208,7 +208,14 @@ const TYPED_UNITS = [
   /* time */
   'minutes','minute','mins','min','hours','hour','hr','h','seconds','secs','sec','s',
   /* counts the wave-2 rate stems name */
-  'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads'
+  'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads',
+  /* money and the cube count. Quest Refutation K2 (2026-09-07): these are tokens
+     the STEMS write and the CHIP ROW offers, and the grader used to strip none of
+     them, so "12.50 cents" on a "$" question came back 'not a number' and the
+     teaching card fell back to "The answer is 12.5." with nothing said about the
+     unit. gen-sanity has scanned stems for them since the unit sweep; the grader
+     had not caught up. */
+  '$','cents','cent','dollars','dollar','cubes','cube'
 ].sort((a,b) => b.length - a.length);
 const UNIT_ALIAS = {
   'ℓ':'l', 'litre':'l', 'litres':'l',
@@ -217,8 +224,28 @@ const UNIT_ALIAS = {
   'minute':'min', 'minutes':'min', 'mins':'min',
   'hour':'h', 'hours':'h', 'hr':'h',
   'second':'s', 'seconds':'s', 'secs':'s', 'sec':'s',
-  'page':'pages', 'bun':'buns'
+  'page':'pages', 'bun':'buns',
+  'cent':'cents', 'dollar':'dollars', 'cube':'cubes'
 };
+/* Does `s` end with the unit token `u`, at a boundary a WORD could start on?
+ *
+ * Quest Refutation K2 (2026-09-07). The tail match used to be a bare suffix test,
+ * so a question declaring "m" ate one character off "8.5 cm", was left with
+ * "8.5 c", and reported `not a number` - a wrong UNIT reported as an unreadable
+ * answer, which is the one rejection the teaching card cannot lead. The child
+ * typed 8.5 and the card told them the answer is 8.5. Same shape for l+ml, g+kg.
+ *
+ * The rule: a token that STARTS with a letter may only match where a letter does
+ * not already run, so "m" does not match inside "cm" but does match after a space
+ * or after a digit ("8.5m"). Symbols ($ % °) start no word and need no boundary. */
+function endsWithUnit(s, u){
+  if (!u) return false;
+  const n = s.length, m = u.length;
+  if (n <= m) return false;
+  if (s.slice(n - m).toLowerCase() !== u.toLowerCase()) return false;
+  if (!/[A-Za-z]/.test(u.charAt(0))) return true;
+  return !/[A-Za-z]/.test(s.charAt(n - m - 1));
+}
 function normUnit(u){
   const s = String(u).trim().toLowerCase();
   return Object.prototype.hasOwnProperty.call(UNIT_ALIAS, s) ? UNIT_ALIAS[s] : s;
@@ -241,24 +268,20 @@ function parseTypedAnswer(raw, q){
   let s = String(raw).trim();
   if (s === '') return { ok:false, reason:'empty' };
   let unit = '';
-  /* 1. a unit the question itself declares, whatever it is */
-  const declared = unitList(q && (q.unit || q.units)).sort((a,b) => b.length - a.length);
-  for (let i=0;i<declared.length;i++){
-    const d = declared[i];
-    if (s.length > d.length && s.slice(-d.length).toLowerCase() === d.toLowerCase()){
-      unit = d; s = s.slice(0, s.length - d.length).trim(); break;
-    }
+  /* The LONGEST whole token that ends the answer, across the question's own
+     declared units and the broad shared list together - not the declared list
+     first and the shared list only if that missed. Longest-first is what stops a
+     one-letter declared unit ("m", "l", "g") from eating the tail of the longer
+     one the child actually typed ("cm", "ml", "kg"); the boundary test in
+     `endsWithUnit` is what stops it from eating a letter out of the middle.
+     Declared units are searched first so they win a tie, which keeps a lane free
+     to invent "crates" without touching the shared kit. */
+  const candidates = unitList(q && (q.unit || q.units)).concat(TYPED_UNITS);
+  for (let i=0;i<candidates.length;i++){
+    const c = candidates[i];
+    if (c.length > unit.length && endsWithUnit(s, c)) unit = c;
   }
-  /* 2. otherwise any unit on the broad shared list */
-  if (!unit){
-    const low = s.toLowerCase();
-    for (let i=0;i<TYPED_UNITS.length;i++){
-      const u = TYPED_UNITS[i];
-      if (low.length > u.length && low.slice(low.length-u.length) === u){
-        unit = u; s = s.slice(0, s.length-u.length).trim(); break;
-      }
-    }
-  }
+  if (unit) s = s.slice(0, s.length - unit.length).trim();
   s = s.replace(/^\$\s*/, '').replace(/,/g, '').trim();
   if (s === '') return { ok:false, reason:'empty' };
   /* mixed number: "1 1/2" */
@@ -5717,6 +5740,7 @@ var MQI_API = (function () {
   function serialize(q, meta) {
     var typed = !!q.typed;
     var choices = typed ? [] : (q.choices || []).map(String);
+    var unitsAccepted = MQI.unitList(q.unit || q.units).map(String);
     seq += 1;
     return {
       id: 'q' + seq,
@@ -5748,10 +5772,14 @@ var MQI_API = (function () {
       /* The CANONICAL unit, for a keypad to print beside the field: the first member
          when the question declares a set of equivalents. Grading reads key.unit,
          which carries the whole set. */
-      unit: (function () {
-        var list = MQI.unitList(q.unit || q.units);
-        return list.length ? String(list[0]) : '';
-      })(),
+      unit: unitsAccepted.length ? unitsAccepted[0] : '',
+      /* EVERY unit this question accepts, canonical first. Quest Refutation K3/K7
+         (2026-09-07): a unit chip row built from the canonical member alone offers
+         "ml" as a wrong-unit distractor on a cm³ question that grades "ml" CORRECT,
+         so the app teaches a falsehood its own p5volume stem contradicts. A client
+         cannot derive the set from `unit`, and `key` is opaque to it, so the set is
+         published here. */
+      units: unitsAccepted,
       key: keyOf(q)
     };
   }
@@ -6075,4 +6103,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260907-e9e19c4 */
+/* ENGINE_BUILD_END 20260907-06fc3e1 */

@@ -43,74 +43,165 @@
    * { type:'bar', title, cats:[String], units:[Number], scale, maxUnit, unitLabel }
    * Bar i is `units[i]` units long and prints `units[i] * scale`; the value axis
    * carries one tick per unit from 0 to maxUnit, labelled `k * scale`. */
-  const BAR_LBL = 156, BAR_PLOTW = 240;   /* px: category column, plot area */
-  const BAR_GUT = 30, BAR_ROW = 24, BAR_BARH = 15;  /* right gutter for the last tick number, row pitch, bar thickness */
+  const BAR_ROW = 24, BAR_BARH = 15;        /* px: row pitch, bar thickness - FIXED, never scaled */
+  const BAR_GUT = 30;                       /* px: right gutter - room for the last tick number and the longest value */
+  /* px: the plot's floor and its natural (desktop) width. The floor is 140 and not 150
+     because at 320 px a 150 px floor put a five-bar graph 2 px over its card and made
+     the whole thing scroll for the sake of those 2 px - reintroducing, behind a cue,
+     exactly the "the tallest bar's value is off the glass" defect this figure was
+     redrawn for. 140 px of plot leaves ~12 px of slack at 320 with ordinary category
+     names; longer ones still scroll, which is the sanctioned last resort. */
+  const BAR_PLOT_MIN = 140, BAR_PLOT_NAT = 240;
+  const BAR_CATPAD = 8;                     /* px: gap between the category column and the plot */
+  const BAR_AXISH = 22;                     /* px: the axis strip under the last row */
 
-  /* PHONE-WIDTH FIX (Phone Width Lane, 2026-09-07), and it is a REDRAW, not a wrapper.
-     The bar graph used to be an absolutely-positioned HTML box model with a HARD
-     450 px intrinsic width (12 + 156 + 240 + 30 + 12). `max-width:100%` cannot shrink
-     that - a block whose children are placed in px keeps its own geometry and simply
-     spills - so at a 390 px viewport the card ran from x = -30 to x = 420, the page
-     gained a sideways scroll, and 100% of bar graphs lost the tallest bar's printed
-     value off the right edge (Figure Spec Refutation wound 4: identical on main, so
-     never a regression, but never fixed either, and the max-width added by the
-     figure-spec lane was inert for exactly this reason).
+  /* PHONE-WIDTH FIX, SECOND PASS (Phone Width Refutation K4, 2026-09-07).
+     ---------------------------------------------------------------------------
+     History, because both previous shapes were wrong in instructive ways:
 
-     The bar is now ONE SVG with a viewBox, so it scales as a single drawing at any
-     width instead of being clipped: same 156 px category column, same 240 px plot,
-     same 24 px row pitch, same gridline and tick positions, drawn at its natural
-     426 px on a desktop and proportionally smaller on a phone. `height:auto` keeps
-     the aspect. Nothing is width-conditional: one drawing, one geometry to port.
+     (1) Until 2026-09-07 the bar was an absolutely-positioned HTML box model with a
+         HARD 450 px intrinsic width (12 + 156 + 240 + 30 + 12). `max-width:100%`
+         cannot shrink a block whose children are placed in px - it spills - so at a
+         390 px viewport the card ran from x = -30 to x = 420, the page gained a
+         sideways scroll, and 100% of bar graphs lost the tallest bar's printed value
+         off the right edge.
+     (2) The first phone-width pass redrew it as ONE viewBox-scaled svg. That fixed
+         the width and broke the READING: a viewBox scales EVERYTHING, text included,
+         so the 13 px category names and 11 px tick numbers came out at 7.13 px (360),
+         7.51 (375), 7.90 (390) - the smallest text in the app, under Apple's 11 pt
+         floor, on numbers a child must read to answer 52.5% of bar items. A drawing
+         whose labels shrink below reading size has lost the value just as surely as
+         one that pushes it off the screen.
 
-     Geometry, in viewBox units (js/topics/README.md carries the same numbers, and a
-     native MQFigures reproduces them):
-       W = 156 + 240 + 30 = 426          H = 24 * rows + 28
-       row i occupies y = 4 + 24i .. +20; its two texts sit on baseline y = +14.5
-       gridline k at x = 156 + round(k / maxUnit * 240), from y = 4 to y = 24 * rows
-       bar i is 15 px thick at y = row top + 2.5, its right corners rounded r = 2
-       the value axis rule is at y = 24 * rows + 5; ticks drop 5 px below it; tick
-       numbers are centred on their own gridline with the baseline at axis + 17
-     Title and caption stay HTML ABOVE and BELOW the svg on purpose: they are prose,
-     so on a phone they must WRAP at reading size rather than shrink with the drawing. */
-  function barPath(x0, y0, w, h) {
-    const r = Math.min(2, w / 2);        /* the old CSS was border-radius:0 2px 2px 0 - right corners only */
-    return 'M' + x0 + ' ' + y0 + 'H' + (x0 + w - r) + 'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r +
-      'V' + (y0 + h - r) + 'a' + r + ' ' + r + ' 0 0 1 ' + (-r) + ' ' + r + 'H' + x0 + 'Z';
+     (3) THE RULE NOW: the picture scales, the words never do.
+
+         The bar is an HTML/CSS box model again - but placed in PERCENTAGES of the
+         plot instead of pixels, so it is fully responsive - and every label is real
+         HTML text at a fixed size: category 13 px, value 13 px, tick number 11 px, at
+         EVERY viewport width. What absorbs a narrow screen is the PLOT: the plot
+         column is `minmax(150px, 240px)`, so it gives up bar length (and the category
+         column wraps its names) before anything gives up legibility. Only if even the
+         150 px floor plus the category column's own min-content width will not fit
+         does the card scroll horizontally IN PLACE, in the same visibly-cued
+         `.fig-scroll` box the table uses - never the page.
+
+     Geometry (js/topics/README.md carries the same numbers; a native MQFigures
+     reproduces them, and percentages port to SwiftUI unchanged):
+       two grid columns: [category: min-content..max-content, 8 px right pad]
+                         [plot cell: 150..240 px of plot + a 30 px right gutter]
+       row i is 24 px tall (taller if its category name wraps); the bar is 15 px
+         thick, vertically centred, and runs from the plot's left edge to
+         `units[i] / maxUnit * 100%` of the plot, right corners rounded r = 2
+       gridline k sits at `k / maxUnit * 100%` of the plot, full height of the rows;
+         k = 0 is #64748b, the rest #e2e8f0
+       the axis rule is a 2 px #475569 border across the whole plot cell (plot +
+         gutter); each tick drops 5 px from it at its own gridline
+       the value label starts 6 px past its bar's right edge, on the bar's own centre
+         line; the tick number is centred on its own gridline, 11 px
+     Title and caption stay prose OUTSIDE the drawing so they wrap at reading size. */
+
+  /* VERTICAL FIT (Phone Width Refutation wound 3, 2026-09-07).
+     -------------------------------------------------------------------------------
+     iOS Safari's visible area on a 390 x 844 iPhone is ~664 px with the URL bar
+     showing, and that is the state the phone is in for the first scroll of every
+     session. At 390 x 664 the pie drew 25 px ABOVE its card and 97 px BELOW it,
+     painting over both HP numbers and 55 px into the answer buttons; `line` was
+     34.3 px past its card and `lshape` 41.5 px. Nothing in the app measured height.
+
+     The rule now, and `npm run test:layout` gates it at 390x664, 375x548, 360x640,
+     320x568 and the tall viewports: a figure NEVER paints over the fighters or the
+     answer buttons. Three halves, in order of preference:
+       1. A SCALING drawing shrinks. `pie` and `line` carry `data-fit="1"`, which
+          declares "my picture may be scaled down to fit the height available; my
+          words may not". `width` and `height` are `auto` so the browser's
+          replaced-element sizing keeps the aspect ratio exactly, and syncFigures()
+          in js/app.js hands the element the height that is left once the card's own
+          prose (title, legend, caption, padding) has been measured - measured, not
+          guessed, because a guessed constant made a 1024 px desktop shrink a pie that
+          had room to spare.
+       2. Otherwise the drawing SCROLLS inside the card (#qextra), with the "⌄ more"
+          cue - the vertical twin of the table's rule. A five-row bar graph on a
+          375 x 548 SE has nowhere else to go.
+       3. It never paints over the play surface, and the page never scrolls.
+     A native MQFigures reads rule 1 as: fit the plot into (available card height -
+     the card's own text), aspect preserved, floor 72 px. */
+  const FIG_FIT = 'width:auto;height:auto;max-width:100%';
+
+  /* The ONE scroll allowance in the figure contract, shared by `table` and by `bar`
+     when even the plot's 150 px floor will not fit. Three parts:
+       - `.fig-scroll` is the box that scrolls, and the only class in the app allowed
+         to scroll sideways (tools/layout-gate.mjs whitelists exactly this class);
+       - the four-layer scroll shadow (two white covers attached `local`, two grey
+         edge shadows attached `scroll`) shades an edge only when there is more
+         content off it and draws NOTHING when the content fits, so a desktop figure
+         is pixel-unchanged;
+       - `.fig-more` is the cue a CHILD can see: a white fade and a chevron drawn
+         OUTSIDE the scroller, as a later sibling inside `.fig-frame`, so the table's
+         own opaque header row cannot paint over it (Phone Width Refutation wound 2 -
+         the shadow was previously drawn on the value row only). The shell toggles
+         `[data-more]` on the frame from `scrollWidth > clientWidth`; see FIGURE_CSS
+         at the foot of this file for the two rules, which live in index.html because
+         a cue that must appear only when there IS more cannot be an inline value. */
+  function scrollBox(cls, inner) {
+    return '<div class="fig-frame" style="position:relative;max-width:100%">' +
+      '<div class="fig-scroll ' + cls + '" style="max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;' +
+      'background:linear-gradient(to right,#fff 60%,rgba(255,255,255,0)) left/34px 100% no-repeat local,' +
+      'linear-gradient(to left,#fff 60%,rgba(255,255,255,0)) right/34px 100% no-repeat local,' +
+      'radial-gradient(farthest-side at 0 50%,rgba(15,23,42,.28),rgba(15,23,42,0)) left/12px 100% no-repeat scroll,' +
+      'radial-gradient(farthest-side at 100% 50%,rgba(15,23,42,.28),rgba(15,23,42,0)) right/12px 100% no-repeat scroll">' +
+      inner + '</div><div class="fig-more" aria-hidden="true">›</div></div>';
   }
 
   function bar(f) {
     const cats = f.cats, units = f.units, scale = f.scale;
     const maxU = f.maxUnit, n = cats.length;
-    const x = k => Math.round(k / maxU * BAR_PLOTW);
-    const W = BAR_LBL + BAR_PLOTW + BAR_GUT, axisY = n * BAR_ROW + 5, H = n * BAR_ROW + 28;
+    const pct = k => (k / maxU * 100).toFixed(3) + '%';
+    /* every layer measures against the PLOT, which is the cell minus its right gutter */
+    const PLOT = 'position:absolute;left:0;right:' + BAR_GUT + 'px;top:0;bottom:0';
 
-    let s = '<div class="bargraph" style="text-align:left;font-size:13px;line-height:1.3;' +
-      'color:#0f172a;background:#fff;padding:10px 12px 6px;border-radius:8px;display:inline-block;' +
+    /* the gridlines are ONE layer spanning every bar row, emitted first so bars and
+       value labels paint over them */
+    let s = '<div class="bg-lines" style="grid-column:2;grid-row:1/span ' + n +
+      ';position:relative"><div style="' + PLOT + '">';
+    for (let k = 0; k <= maxU; k++) {
+      s += '<div style="position:absolute;left:' + pct(k) + ';top:0;bottom:0;width:1px;background:' +
+        (k === 0 ? '#64748b' : '#e2e8f0') + (k === maxU ? ';margin-left:-1px' : '') + '"></div>';
+    }
+    s += '</div></div>';
+
+    for (let i = 0; i < n; i++) {
+      s += '<div class="bg-cat" style="grid-column:1;grid-row:' + (i + 1) +
+        ';align-self:center;text-align:right;padding-right:' + BAR_CATPAD +
+        'px;font-size:13px;color:#0f172a;overflow-wrap:break-word">' + cats[i] + '</div>' +
+        '<div style="grid-column:2;grid-row:' + (i + 1) + ';position:relative;min-height:' +
+        BAR_ROW + 'px"><div style="' + PLOT + '">' +
+        '<div class="bg-bar" style="position:absolute;left:0;top:50%;transform:translateY(-50%);height:' +
+        BAR_BARH + 'px;width:' + pct(units[i]) + ';background:#4c8bf5;border-radius:0 2px 2px 0"></div>' +
+        '<span class="bg-val" style="position:absolute;left:' + pct(units[i]) +
+        ';top:50%;transform:translateY(-50%);margin-left:6px;font-size:13px;font-weight:600;' +
+        'color:#0f172a;white-space:nowrap">' + (units[i] * scale) + '</span></div></div>';
+    }
+
+    s += '<div class="bg-axis" style="grid-column:2;grid-row:' + (n + 1) + ';position:relative;height:' +
+      BAR_AXISH + 'px;border-top:2px solid #475569"><div style="' + PLOT + '">';
+    for (let k = 0; k <= maxU; k++) {
+      s += '<div style="position:absolute;left:' + pct(k) + ';top:0;height:5px;width:1px;background:#475569' +
+        (k === maxU ? ';margin-left:-1px' : '') + '"></div>' +
+        '<span class="bg-tick" style="position:absolute;left:' + pct(k) +
+        ';top:6px;transform:translateX(-50%);font-size:11px;color:#475569;white-space:nowrap">' +
+        (k * scale) + '</span>';
+    }
+    s += '</div></div>';
+
+    return '<div class="bargraph" style="text-align:left;font-size:13px;line-height:1.3;' +
+      /* the card's own side padding tightens on a phone, exactly as the table's cell
+         padding does, and is exactly the old 12 px at any viewport >= 400 px */
+      'color:#0f172a;background:#fff;padding:10px clamp(6px,3vw,12px) 6px;border-radius:8px;display:inline-block;' +
       'max-width:100%">' +
       '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>' +
-      '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H +
-      '" style="display:block;margin:0 auto;max-width:100%;height:auto;font-family:inherit">';
-    for (let k = 0; k <= maxU; k++) {
-      s += '<line x1="' + (BAR_LBL + x(k)) + '" y1="4" x2="' + (BAR_LBL + x(k)) + '" y2="' + (n * BAR_ROW) +
-        '" stroke="' + (k === 0 ? '#64748b' : '#e2e8f0') + '" stroke-width="1"/>';
-    }
-    for (let i = 0; i < n; i++) {
-      const top = 4 + i * BAR_ROW, w = x(units[i]);
-      s += '<text class="bg-cat" x="' + (BAR_LBL - 8) + '" y="' + (top + 14.5) +
-        '" text-anchor="end" font-size="13" fill="#0f172a">' + cats[i] + '</text>' +
-        '<path class="bg-bar" d="' + barPath(BAR_LBL, top + 2.5, w, BAR_BARH) + '" fill="#4c8bf5"/>' +
-        '<text class="bg-val" x="' + (BAR_LBL + w + 6) + '" y="' + (top + 14.5) +
-        '" text-anchor="start" font-size="13" font-weight="600" fill="#0f172a">' + (units[i] * scale) + '</text>';
-    }
-    s += '<line x1="' + BAR_LBL + '" y1="' + axisY + '" x2="' + W + '" y2="' + axisY +
-      '" stroke="#475569" stroke-width="2"/>';
-    for (let k = 0; k <= maxU; k++) {
-      s += '<line x1="' + (BAR_LBL + x(k)) + '" y1="' + (axisY + 1) + '" x2="' + (BAR_LBL + x(k)) +
-        '" y2="' + (axisY + 6) + '" stroke="#475569" stroke-width="1"/>' +
-        '<text class="bg-tick" x="' + (BAR_LBL + x(k)) + '" y="' + (axisY + 17) +
-        '" text-anchor="middle" font-size="11" fill="#475569">' + (k * scale) + '</text>';
-    }
-    return s + '</svg>' +
+      scrollBox('bg-scroll', '<div class="bg-grid" style="display:grid;grid-template-columns:' +
+        'minmax(min-content,max-content) minmax(' + (BAR_PLOT_MIN + BAR_GUT) + 'px,' +
+        (BAR_PLOT_NAT + BAR_GUT) + 'px)">' + s + '</div>') +
       '<div style="margin-top:2px;font-size:.85em;color:#475569">Each unit along the bottom of the graph stands for ' +
       f.scale + ' ' + f.unitLabel + '.</div></div>';
   }
@@ -162,15 +253,23 @@
   function rect(f) {
     const L = f.length, B = f.breadth, unit = f.unit || 'cm';
     const s = Math.min(RECT_PXU, RECT_MAXW / L, RECT_MAXH / B);
-    const w = +(L * s).toFixed(1), h = +(B * s).toFixed(1);
-    return '<div style="display:inline-block;padding:0 56px 0 8px">' +
-      '<div class="rectBox" style="width:' + w + 'px;height:' + h + 'px;box-sizing:border-box;' +
+    const w = +(L * s).toFixed(1);   /* the height is L:B of it, drawn by aspect-ratio below */
+    /* PHONE WIDTH, 320 px (Phone Width Refutation - 320 is one of the gate's viewports
+       now). The widest box is 240 px and the label gutter is another 64, which is
+       304 px: inside a 390 px card, as the README says, and OUTSIDE a 320 px one
+       (268 px), where it made #qextra scroll sideways. `max-width:100%` plus
+       `aspect-ratio` is the isotropic answer - the box shrinks to the card and the
+       drawn aspect stays exactly length : breadth, which is the whole rect contract.
+       `width` is still the natural px size, so nothing moves where there is room. */
+    return '<div style="display:inline-block;max-width:100%;padding:0 56px 0 8px">' +
+      '<div class="rectBox" style="width:' + w + 'px;max-width:100%;aspect-ratio:' + L + '/' + B +
+      ';box-sizing:border-box;' +
       'border:3px solid #6ee7f9;border-radius:6px;background:rgba(110,231,249,.12);' +
       'display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;' +
       'font-size:13px;color:#9ef0ff;font-weight:700">' +
       '<span class="rectLabelB" style="position:absolute;right:-4px;top:50%;' +
       'transform:translate(100%,-50%);padding-left:6px">' + B + ' ' + unit + '</span></div>' +
-      '<div class="rectLabelL" style="width:' + w + 'px;text-align:center;color:#9ef0ff;' +
+      '<div class="rectLabelL" style="width:' + w + 'px;max-width:100%;text-align:center;color:#9ef0ff;' +
       'font-weight:700;font-size:13px;margin-top:4px">' + L + ' ' + unit + '</div></div>';
   }
 
@@ -249,11 +348,14 @@
    *      figure's `max-width:100%` finally resolves against the CARD.
    *   2. Only the TABLE scrolls, not the whole card: the title and caption stay put
    *      while `.dt-scroll` takes the overflow.
-   *   3. The scroll is VISIBLE. `.dt-scroll` carries the four-layer scroll-shadow
-   *      (two white cover gradients attached `local`, two grey edge shadows attached
-   *      `scroll`): when there is more table off an edge, that edge is shaded; when
-   *      the table fits, both covers sit over both shadows and NOTHING is drawn. So a
-   *      desktop table is pixel-unchanged and a phone table says "there is more here".
+   *   3. The scroll is VISIBLE - and, since Phone Width Refutation wound 2, visible
+   *      WHERE A CHILD LOOKS. The four-layer scroll shadow is a background of the
+   *      scroll box, so `th { background:#f1f5f9 }` painted over its top half and the
+   *      cue only ever showed on the value row. `.fig-more` (see scrollBox above) is
+   *      now drawn OUTSIDE the scroller as a later sibling - a full-height white fade
+   *      with a chevron, over the header row as well - and the shell shows it exactly
+   *      when there is more table to the right. The `?` column may still start
+   *      off-screen (that is the scroll's whole point) but the child is now told.
    *   4. Cell padding is `clamp(5px, 2.4vw, 12px)` horizontally, which is exactly the
    *      old 12 px at any viewport >= 500 px (desktop untouched) and tightens to
    *      ~9 px on a phone, so most 5-column tables now fit outright and only the
@@ -263,23 +365,20 @@
     const pad = 'padding:5px clamp(5px,2.4vw,12px)';
     let html = '<div class="dtable" style="display:inline-block;background:#fff;color:#0f172a;' +
       'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
-      '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>' +
-      '<div class="dt-scroll" style="max-width:100%;overflow-x:auto;' +
-      'background:linear-gradient(to right,#fff 60%,rgba(255,255,255,0)) left/34px 100% no-repeat local,' +
-      'linear-gradient(to left,#fff 60%,rgba(255,255,255,0)) right/34px 100% no-repeat local,' +
-      'radial-gradient(farthest-side at 0 50%,rgba(15,23,42,.28),rgba(15,23,42,0)) left/12px 100% no-repeat scroll,' +
-      'radial-gradient(farthest-side at 100% 50%,rgba(15,23,42,.28),rgba(15,23,42,0)) right/12px 100% no-repeat scroll">' +
-      '<table style="border-collapse:collapse"><tr>';
+      '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>';
+    let rows = '<table style="border-collapse:collapse"><tr>';
     for (let i = 0; i < cats.length; i++) {
-      html += '<th class="dt-cat" style="border:1px solid #94a3b8;' + pad + ';background:#f1f5f9;color:#0f172a;' +
+      rows += '<th class="dt-cat" style="border:1px solid #94a3b8;' + pad + ';background:#f1f5f9;color:#0f172a;' +
         'font-weight:600;white-space:nowrap">' + cats[i] + '</th>';
     }
-    html += '</tr><tr>';
+    rows += '</tr><tr>';
     for (let i = 0; i < cats.length; i++) {
-      html += '<td class="dt-val" style="border:1px solid #94a3b8;' + pad + ';text-align:center;color:#0f172a">' +
+      rows += '<td class="dt-val" style="border:1px solid #94a3b8;' + pad + ';text-align:center;color:#0f172a">' +
         (i === hidden ? '?' : values[i]) + '</td>';
     }
-    html += '</tr></table></div><div style="margin-top:6px;font-size:.85em;color:#475569">Number of ' +
+    rows += '</tr></table>';
+    html += scrollBox('dt-scroll', rows) +
+      '<div style="margin-top:6px;font-size:.85em;color:#475569">Number of ' +
       f.unitLabel + '.</div></div>';
     return html;
   }
@@ -313,7 +412,7 @@
          1024 px and up to 70 px on the pie, which is the "figures sit off-centre"
          item on the dress rehearsal's parent-visible list. Centring the drawing
          moves pixels at DESKTOP width; it changes no geometry inside the viewBox. */
-      '" style="display:block;margin:0 auto;font-family:inherit;max-width:100%;height:auto">';
+      '" data-fit="1" style="display:block;margin:0 auto;font-family:inherit;' + FIG_FIT + '">';
     for (let k = 0; k <= maxU; k++) {
       s += '<line x1="' + LG_PADL + '" y1="' + y(k) + '" x2="' + (LG_PADL + LG_PW) + '" y2="' + y(k) +
         '" stroke="' + (k === 0 ? '#475569' : '#e2e8f0') + '" stroke-width="' + (k === 0 ? 2 : 1) + '"/>' +
@@ -397,8 +496,8 @@
          caption, so it drew 73 px left of the card's centre at 1024 px - the
          "pie 73 px left" line on the rehearsal's parent-visible list. Desktop pixels
          move; the sweep arithmetic does not. */
-      '<svg width="230" height="230" viewBox="0 0 230 230" style="display:block;margin:0 auto;' +
-      'max-width:100%;height:auto;font-family:inherit">' +
+      '<svg data-fit="1" width="230" height="230" viewBox="0 0 230 230" style="display:block;margin:0 auto;' +
+      FIG_FIT + ';font-family:inherit">' +
       svg + lab + '</svg>' + legend +
       '<div style="margin-top:6px;font-size:.85em;color:#475569">' + f.caption + '</div></div>';
   }
@@ -420,7 +519,12 @@
   const FIGURE_CSS = {
     '.barModel': 'display:flex; gap:3px; justify-content:center;',
     '.barModel .seg': 'width:clamp(28px,6vw,46px); height:34px; border:2.5px solid #fff; border-radius:6px; background:rgba(255,255,255,.06);',
-    '.barModel .seg.fill': 'background:linear-gradient(180deg,#6ee7f9,#3aa7ff);'
+    '.barModel .seg.fill': 'background:linear-gradient(180deg,#6ee7f9,#3aa7ff);',
+    /* The scroll cue (wound 2). It is hidden by default and shown only when the shell
+       has measured more content off the right edge, which no inline value can express;
+       a native renderer draws the same 30 px fade + chevron under the same condition. */
+    '.fig-more': 'position:absolute; top:0; bottom:0; right:0; width:30px; display:none; align-items:center; justify-content:flex-end; padding-right:3px; pointer-events:none; font-size:17px; font-weight:800; line-height:1; color:#0f172a; background:linear-gradient(to left,#fff 34%,rgba(255,255,255,.92) 70%,rgba(255,255,255,0));',
+    '.fig-frame[data-more="1"] .fig-more': 'display:flex;'
   };
 
   /* ---------------- the registry ---------------- */

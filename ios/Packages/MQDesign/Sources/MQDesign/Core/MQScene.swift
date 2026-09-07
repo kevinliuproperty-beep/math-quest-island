@@ -1,4 +1,5 @@
 import SwiftUI
+import MQContent
 
 // The data every screen renders. Kept as plain values with no engine, no
 // networking and no persistence anywhere near them, so a screen is a pure
@@ -23,41 +24,22 @@ public struct MQInsets: Sendable, Equatable {
     public static let none = MQInsets(top: 0, bottom: 0)
 }
 
-// MARK: - The cast
+// MARK: - The shared value types, now owned by MQContent
 
-/// Who a child can be, and who they fight. One drawing per member, authored at
-/// one size in `MQFigureCanvas`, used everywhere from a 44pt token to a 340pt
-/// arena figure -- so a creature can never drift between screens the way six
-/// separately-tuned emoji sizes did.
-public enum MQCast: String, Sendable, CaseIterable {
-    case unicorn, turtle, octopus
-    /// The monster. Never selectable as a hero.
-    case crab
-
-    public var species: String {
-        switch self {
-        case .unicorn: return "Unicorn"
-        case .turtle:  return "Turtle"
-        case .octopus: return "Octopus"
-        case .crab:    return "Crab"
-        }
-    }
-}
-
-// MARK: - Figures
-
-/// The figure contract, as data. A generator says "a 14 by 9 rectangle"; the
-/// design decides what that looks like on a parchment sheet at 140pt and on a
-/// review row at 54pt. `none` is a first-class case: the angles topics have no
-/// diagram BY DESIGN, and a dashed placeholder box in their place was the
-/// clearest "unfinished template" signal the rejected sample had in it.
-public enum MQFigure: Sendable, Equatable {
-    case none
-    /// A rectangle drawn to scale with both dimensions tagged.
-    case rect(long: String, wide: String, ratio: CGFloat)
-    /// A bar of `parts` equal pieces with `filled` of them shaded.
-    case fractionBar(parts: Int, filled: Int)
-}
+// `MQCast`, `MQFigure`, `MQProfile` and `MQReviewItem` were declared HERE until the
+// progress fix pass of 2026-09-07. They moved to `MQContent` because MQProgress - a
+// persistence layer that draws nothing - had to import this package (SwiftUI plus a
+// bundled font resource) just to name them, which inverts the brief's architecture
+// rule that a logic package never imports a UI package.
+//
+// Re-exported as typealiases rather than deleted: every `import MQDesign` call site in
+// the app, the screens below and the other lanes' packages compiles unchanged, and the
+// design still owns the RENDERING of all four (`MQFigureView`, `MQHeroToken`,
+// `MQCreature`, the review row) - only the value declaration moved.
+public typealias MQCast = MQContent.MQCast
+public typealias MQFigure = MQContent.MQFigure
+public typealias MQProfile = MQContent.MQProfile
+public typealias MQReviewItem = MQContent.MQReviewItem
 
 // MARK: - Battle
 
@@ -102,23 +84,6 @@ public struct MQBattleScene: Sendable, Equatable {
 
 // MARK: - Entrance
 
-/// One saved explorer. There are no accounts anywhere in this app: a profile is
-/// a name, a creature and a class level held on this iPad, so two siblings can
-/// share one device without either of them signing in to anything.
-public struct MQProfile: Sendable, Equatable, Identifiable {
-    public var id: String { name }
-    public var name: String
-    public var cast: MQCast
-    public var level: String
-    /// Shown as crystals on the token. Never a nag: this is where you got to,
-    /// not how long since you last played.
-    public var crystals: Int
-
-    public init(name: String, cast: MQCast, level: String, crystals: Int) {
-        self.name = name; self.cast = cast; self.level = level; self.crystals = crystals
-    }
-}
-
 public struct MQEntranceScene: Sendable, Equatable {
     public var title: String
     public var subtitle: String
@@ -142,36 +107,12 @@ public struct MQEntranceScene: Sendable, Equatable {
 
 // MARK: - Map
 
-public struct MQMapNode: Sendable, Equatable, Identifiable {
-    public enum State: Sendable, Equatable {
-        /// Every crystal collected.
-        case cleared
-        /// Where the child is now, with mastery part-way.
-        case inProgress(collected: Int, total: Int)
-        /// Unlocked, never played.
-        case open
-        /// Not built yet. Says so, plainly.
-        case comingSoon
-    }
-
-    public var id: String { name }
-    public var name: String
-    public var state: State
-    /// Where the node sits on the island, in unit coordinates of the map canvas.
-    public var at: CGPoint
-    /// Which landmark the island draws under the marker.
-    public var landmark: MQLandmark
-
-    public init(_ name: String, _ state: State, at: CGPoint, landmark: MQLandmark) {
-        self.name = name; self.state = state; self.at = at; self.landmark = landmark
-    }
-}
-
-/// The island's own geography. A node is a PLACE, not an icon in a list -- which
-/// is the whole difference between a map and the web app's zig-zag of emoji.
-public enum MQLandmark: Sendable, Equatable {
-    case palace, reef, bay, jetty, cove, lagoon, peak, atoll
-}
+// `MQMapNode` and `MQLandmark` moved to MQContent with the rest of the shared value
+// types: MQProgress derives a node's state and must not import a UI package to name the
+// four cases it is deriving. The island still owns every pixel of what a `.reef` looks
+// like (`MQIslandMap`, `MQMapMarker`).
+public typealias MQMapNode = MQContent.MQMapNode
+public typealias MQLandmark = MQContent.MQLandmark
 
 public struct MQMapScene: Sendable, Equatable {
     public var title: String
@@ -215,21 +156,6 @@ public struct MQMapScene: Sendable, Equatable {
 }
 
 // MARK: - End of set
-
-public struct MQReviewItem: Sendable, Equatable, Identifiable {
-    public var id: String { question }
-    public var question: String
-    public var figure: MQFigure
-    public var answer: String
-    /// The generator's own one-line explanation. Static, authored per generator
-    /// in the engine -- there is no oracle and no model in this loop.
-    public var explanation: String
-
-    public init(question: String, figure: MQFigure, answer: String, explanation: String) {
-        self.question = question; self.figure = figure
-        self.answer = answer; self.explanation = explanation
-    }
-}
 
 /// One number and what it counts. A tuple would not carry `Sendable` cleanly
 /// through a value type, and a stat is a thing the design lays out anyway.

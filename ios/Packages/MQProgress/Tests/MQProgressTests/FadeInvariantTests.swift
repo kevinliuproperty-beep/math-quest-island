@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-import MQDesign
+import MQContent
 @testable import MQProgress
 
 /// THE LAW. `full -> partial -> hint -> none`, one way, for the lifetime of a profile.
@@ -94,8 +94,9 @@ struct FadeInvariantTests {
         let p = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let s = await store.beginSession(profile: p, mode: .quest)
 
-        // Climb to the cap and master the skill: the scaffold should be gone.
-        for _ in 0..<12 { await store.answer(s, p, "perimeter", correct: true) }
+        // Three ladder steps: 3 x 7 straight correct answers and every piece of help is
+        // gone. (It used to be six answers full stop - see MQRule.fadeAfterConsecutiveCorrect.)
+        for _ in 0..<21 { await store.answer(s, p, "perimeter", correct: true) }
         #expect(await store.scaffold(profile: p, skill: SkillID("perimeter")) == .none)
 
         // Now fall apart. The pool drops back; the help does not come back.
@@ -109,9 +110,9 @@ struct FadeInvariantTests {
         let store = MQProgressStore.inMemory()
         let p = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         var s = await store.beginSession(profile: p, mode: .quest)
-        for _ in 0..<6 { await store.answer(s, p, "area", correct: true) }
+        for _ in 0..<7 { await store.answer(s, p, "area", correct: true) }
         let mid = await store.scaffold(profile: p, skill: SkillID("area"))
-        #expect(mid < .full)
+        #expect(mid == .partial)          // one ladder step, and only one
         _ = await store.endSession(s)
         s = await store.beginSession(profile: p, mode: .quest)
         #expect(await store.scaffold(profile: p, skill: SkillID("area")) == mid)
@@ -123,7 +124,7 @@ struct FadeInvariantTests {
         let store = MQProgressStore.inMemory()
         let p = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let s = await store.beginSession(profile: p, mode: .quest)
-        for _ in 0..<12 { await store.answer(s, p, "area", correct: true) }
+        for _ in 0..<21 { await store.answer(s, p, "area", correct: true) }
         _ = await store.endSession(s)
         #expect(await store.sessions(profile: p).count == 1)
         await store.resetHistory(profile: p)

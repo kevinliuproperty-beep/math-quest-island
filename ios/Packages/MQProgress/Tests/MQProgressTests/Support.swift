@@ -58,11 +58,50 @@ enum Fixtures {
                 typedRaw: "  ")
     }
 
-    static func review(_ n: Int) -> ReviewSnapshot {
+    /// A figure spec built by DECODING the engine's own JSON, the way `MQI_API` hands one
+    /// over - `Figure`'s payload memberwise inits are internal to MQContent, and a test
+    /// that went round them would be asserting on a shape the engine cannot produce.
+    /// (Same argument as `NodeStateTests.topic`.)
+    static func figure(_ json: String) -> Figure {
+        // force_try on purpose: a malformed literal here is a broken TEST and should stop
+        // the suite rather than become a soft `.unsupported` that passes.
+        try! JSONDecoder().decode(Figure.self, from: Data(json.utf8))
+    }
+
+    static let rectFigure = figure(#"{"type":"rect","length":14,"breadth":9,"unit":"cm"}"#)
+
+    static func review(_ n: Int, figure: Figure? = Fixtures.rectFigure) -> ReviewSnapshot {
         ReviewSnapshot(question: "Question \(n)?",
-                       figure: .rect(long: "14 cm", wide: "9 cm", ratio: 14.0 / 9.0),
+                       figure: figure,
                        answer: "\(n) cm",
                        explanation: "Because \(n).")
+    }
+
+    /// One of EVERY kind the engine emits, plus one it does not. A review row has to
+    /// survive all eight on the way to disk and back: the three-case `MQFigure` that
+    /// `StoredReview` used to persist flattened 180 of 216 real figure-bearing rows to
+    /// `.none` (Progress Refutation W7, 2026-09-07).
+    static let everyFigureKind: [Figure] = [
+        figure(#"{"type":"bar","title":"Fruit sold","cats":["Apples","Pears","Plums"],"units":[3,5,2],"scale":10,"maxUnit":6,"unitLabel":"kg"}"#),
+        rectFigure,
+        figure(#"{"type":"fractionBar","parts":5,"filled":3}"#),
+        figure(#"{"type":"lshape","W":12,"H":8,"a":4,"b":3,"unit":"cm"}"#),
+        figure(#"{"type":"table","title":"Books read","cats":["Mon","Tue","Wed"],"values":[4,7,2],"hidden":1,"unitLabel":"books"}"#),
+        figure(#"{"type":"line","title":"Temperature","cats":["9am","noon","3pm"],"units":[2,6,4],"step":5,"maxUnit":8,"unitLabel":"C"}"#),
+        figure(#"{"type":"pie","title":"How we travel","cats":["Bus","Walk","Car"],"weights":[3,4,1],"labels":["3/8","1/2","?"],"caption":"32 pupils"}"#),
+        // A kind invented after this build shipped. It must survive too, payload intact.
+        figure(#"{"type":"hologram","spin":3}"#)
+    ]
+
+    /// A typed verdict carrying the post-`feat/unit-sweep` split reason, so the store's
+    /// mapping off `Verdict.reasonKind` is exercised by the shape the engine WILL emit
+    /// as well as by the one it emits today.
+    static func typedSplit(_ raw: String, unit: String, expected: String,
+                           value: Double?, reason: Verdict.Reason) -> Verdict {
+        Verdict(correct: false, kind: .typed, questionId: nil, expectedIndex: -1,
+                expectedText: expected, chosenIndex: -1, reason: reason.rawValue,
+                parsed: Verdict.Parsed(ok: true, value: value, unit: unit, frac: nil, reason: nil),
+                typedRaw: raw)
     }
 
     /// A scratch directory that cleans itself up.
@@ -89,10 +128,12 @@ extension MQProgressStore {
     func answer(_ session: SessionID, _ profile: ProfileID, _ skill: String,
                 correct: Bool, shown: ScaffoldLevel = .full, elapsed: TimeInterval = 1,
                 timedOut: Bool = false, item: ReviewSnapshot? = nil,
-                verdict: Verdict? = nil) async -> ProgressDelta {
+                verdict: Verdict? = nil, crystals: Int = 0,
+                mode: PlayMode? = nil, topic: String? = nil) async -> ProgressDelta {
         await record(Attempt(session: session, profile: profile, skill: SkillID(skill),
                              verdict: verdict ?? (correct ? Fixtures.right() : Fixtures.wrongOption()),
                              elapsed: elapsed, scaffoldShown: shown,
-                             timedOut: timedOut, item: item))
+                             timedOut: timedOut, item: item, topic: topic,
+                             crystalsReported: crystals, mode: mode))
     }
 }

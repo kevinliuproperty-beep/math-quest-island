@@ -1,7 +1,6 @@
 import Testing
 import Foundation
 import MQContent
-import MQDesign
 @testable import MQProgress
 
 /// Cleared / Ready / Coming soon are DERIVED, never stored - so there is no way for a
@@ -61,9 +60,11 @@ struct NodeStateTests {
         #expect(node.attempts == 6)
     }
 
-    @Test("Cleared needs every skill over the web's own bands")
+    @Test("Under .mastery, Cleared needs every skill over the web's own bands")
     func clearedNeedsEverySkill() async {
-        let store = MQProgressStore.inMemory()
+        // Policy named explicitly: the DEFAULT is .webVictory (Kevin's Q87 ruling), and a
+        // test about mastery must say which question it is asking.
+        let store = MQProgressStore.inMemory(cleared: .mastery)
         let p = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let s = await store.beginSession(profile: p, mode: .quest)
         let topic = Self.topic("geometry", skills: ["peri", "area"])
@@ -76,7 +77,7 @@ struct NodeStateTests {
 
     @Test("Four attempts at 75% is not cleared: the band is the web's 80%")
     func bandIsEighty() async {
-        let store = MQProgressStore.inMemory()
+        let store = MQProgressStore.inMemory(cleared: .mastery)
         let p = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let s = await store.beginSession(profile: p, mode: .quest)
         let topic = Self.topic("geometry", skills: ["peri"])
@@ -94,6 +95,7 @@ struct NodeStateTests {
         let p = await store.addProfile(name: "Charlotte", cast: .unicorn, level: "P4")
         let node = await store.node(profile: p, topicID: "algebra", skills: [], isLive: true)
         #expect(node.state == .comingSoon)
+        #expect(!node.mastered)
     }
 
     @Test("Node mastery is the mean over the node's skills, unplayed ones counted as zero")

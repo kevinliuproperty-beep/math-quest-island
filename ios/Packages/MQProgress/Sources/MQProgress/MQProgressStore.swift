@@ -1,6 +1,5 @@
 import Foundation
 import MQContent
-import MQDesign
 
 /// The store. One actor, one copy of the rules.
 ///
@@ -15,7 +14,36 @@ import MQDesign
 ///     let store = try MQProgressStore.onDisk()                // the app
 public actor MQProgressStore: ProgressStore {
 
+    /// When the document reaches the disk.
+    ///
+    /// The refuter measured the reason this exists: `record()` encoded and `fsync`ed the
+    /// WHOLE document on every attempt, on the child's tap-to-feedback path, because
+    /// `MQQuest` awaits the returned `ProgressDelta` to start the animation. At a
+    /// realistic 584 KB (3 profiles x 60 sessions x 18 items) that cost **9.5 ms on an
+    /// M-series SSD**; Charlotte's iPad 6 is an A10 with materially slower NAND
+    /// (Progress Refutation W12, 2026-09-07).
+    public enum WritePolicy: Sendable, Equatable {
+        /// Every mutation writes before it returns. What the suites use, so a test can
+        /// look at the bytes the line after the call that produced them.
+        case immediate
+        /// Mutations mark the document dirty and one write happens after this many
+        /// seconds of quiet. **Atomicity is unchanged** - a write is still
+        /// temp -> fsync -> `rename(2)`; there are just fewer of them.
+        ///
+        /// Everything structural still writes THROUGH it: `endSession`, `addProfile`,
+        /// `removeProfile`, `rename`, `setLevel`, `resetHistory`, `recordPatchwerkRun`
+        /// and `flush()`. What is coalesced is the per-answer write and nothing else.
+        ///
+        /// The exposure is bounded and stated: a kill inside the window loses at most
+        /// the attempts made inside it. `flush()` on backgrounding closes the ordinary
+        /// case, and a session end closes the rest.
+        case coalesced(seconds: TimeInterval)
+    }
+
     private let persistence: ProgressPersistence
+    /// What makes an island read Cleared. Fixed at construction: see `NodeClearedPolicy`.
+    public let clearedPolicy: NodeClearedPolicy
+    private let writePolicy: WritePolicy
     private var state: ProgressState
     private var live: [String: LiveSession] = [:]
     /// Ended sessions, so `endSession` can be idempotent without walking the history.
@@ -25,29 +53,62 @@ public actor MQProgressStore: ProgressStore {
     /// attempt writes the whole document again).
     public private(set) var lastWriteError: ProgressStoreError?
 
+    /// State the coalescing window is holding.
+    private var dirty = false
+    private var writerAwake = false
+
     // MARK: Construction
 
-    public init(persistence: ProgressPersistence) throws {
+    /// - Parameters:
+    ///   - cleared: what makes a node read Cleared. Defaults to `.webVictory`, which is
+    ///     the web's own answer and Kevin's Q87 ruling of 2026-09-07 ("match web").
+    ///   - writes: when the document reaches the disk. Defaults to `.immediate`, which is
+    ///     what every suite wants; `onDisk()` opts into coalescing for the app.
+    public init(persistence: ProgressPersistence,
+                cleared: NodeClearedPolicy = .webVictory,
+                writes: WritePolicy = .immediate) throws {
         self.persistence = persistence
-        self.state = try persistence.load().state
+        self.clearedPolicy = cleared
+        self.writePolicy = writes
+        // The fade law is enforced on LOAD as well as on the mutator. A restored backup
+        // or a v1 file may claim more help than the record of attempts allows; clamping
+        // can only lower a level, so it cannot break the law it is enforcing.
+        // (Progress Refutation W10.)
+        var loaded = try persistence.load().state
+        for p in loaded.profiles.indices {
+            for (key, var skill) in loaded.profiles[p].skills {
+                skill.fade(to: skill.scaffoldCeiling)
+                loaded.profiles[p].skills[key] = skill
+            }
+        }
+        self.state = loaded
     }
 
     /// For tests and previews. Nothing survives the process.
-    public static func inMemory(seed: Data? = nil) -> MQProgressStore {
+    public static func inMemory(seed: Data? = nil,
+                                cleared: NodeClearedPolicy = .webVictory,
+                                writes: WritePolicy = .immediate) -> MQProgressStore {
         // InMemoryPersistence.load cannot fail for a nil seed, and a seed a test hands in
         // is a test's own problem; a throwing factory here would put a `try` in every
         // preview for no reachable error.
-        (try? MQProgressStore(persistence: InMemoryPersistence(seed: seed)))
-            ?? (try! MQProgressStore(persistence: InMemoryPersistence()))
+        (try? MQProgressStore(persistence: InMemoryPersistence(seed: seed),
+                              cleared: cleared, writes: writes))
+            ?? (try! MQProgressStore(persistence: InMemoryPersistence(),
+                                     cleared: cleared, writes: writes))
     }
 
-    /// The app's store: JSON under Application Support.
-    public static func onDisk(url: URL? = nil) throws -> MQProgressStore {
+    /// The app's store: JSON under Application Support, coalesced writes.
+    public static func onDisk(url: URL? = nil,
+                              cleared: NodeClearedPolicy = .webVictory,
+                              writes: WritePolicy = .coalesced(seconds: 0.4)) throws -> MQProgressStore {
         let target = try url ?? FilePersistence.defaultURL()
-        return try MQProgressStore(persistence: FilePersistence(url: target))
+        return try MQProgressStore(persistence: FilePersistence(url: target),
+                                   cleared: cleared, writes: writes)
     }
 
+    /// Write NOW, whatever the policy says. Everything structural goes through this.
     private func persist() {
+        dirty = false
         do {
             try persistence.save(ProgressStateBox(state))
             lastWriteError = nil
@@ -57,6 +118,42 @@ public actor MQProgressStore: ProgressStore {
             lastWriteError = .writeFailed(String(describing: error))
         }
     }
+
+    /// Write soon. The tap path calls this and only this.
+    private func persistSoon() {
+        switch writePolicy {
+        case .immediate:
+            persist()
+        case .coalesced(let window):
+            dirty = true
+            // One sleeper at a time. It wakes, writes whatever is dirty, and stands
+            // down; the next mutation starts a fresh one. No cancellation, so there is
+            // no window in which a cancelled sleeper and a new one both think they own
+            // the write.
+            guard !writerAwake else { return }
+            writerAwake = true
+            Task { [window] in
+                try? await Task.sleep(nanoseconds: UInt64(max(0, window) * 1_000_000_000))
+                // The Task inherits this actor's isolation, so the callback is already
+                // on it - no hop, and no window between waking and writing.
+                self.writerWoke()
+            }
+        }
+    }
+
+    private func writerWoke() {
+        writerAwake = false
+        if dirty { persist() }
+    }
+
+    /// The backgrounding hook. See the protocol comment.
+    public func flush() async {
+        if dirty { persist() }
+    }
+
+    /// Whether a write is still pending. For gates and for an app that wants to know
+    /// before it tears the process down.
+    public var hasPendingWrite: Bool { dirty }
 
     // MARK: - Mastery
 
@@ -98,27 +195,51 @@ public actor MQProgressStore: ProgressStore {
 
     @discardableResult
     public func record(_ attempt: Attempt) async -> ProgressDelta {
+        let reason = WrongReason.of(attempt.verdict, timedOut: attempt.timedOut)
         guard let p = state.index(attempt.profile) else {
             // No profile, no progress. Returning a zero delta rather than trapping: an
             // answer arriving for a profile that was just deleted is a race, not a bug in
             // the child's arithmetic.
             return ProgressDelta(masteryBefore: 0, masteryAfter: 0, streak: 0,
-                                 scaffold: .full, crystalsEarned: 0,
+                                 scaffold: .full, crystalsAwarded: 0,
                                  poolBefore: MQRule.minPool, poolAfter: MQRule.minPool,
-                                 wrongReason: WrongReason.of(attempt.verdict, timedOut: attempt.timedOut))
+                                 wrongReason: reason, touchedTeachingState: false)
         }
+
+        // WHICH MODE. The attempt may say; otherwise the live session says; a session
+        // this store has never seen is Quest, because losing a child's learning to a
+        // mode that forgot to open a session is the worse failure.
+        let mode = attempt.mode ?? live[attempt.session.raw]?.mode ?? .quest
+        // **THE W3 FENCE.** A Patchwerk answer is a PLAY answer. It buys no mastery, it
+        // climbs no teaching pool and it fades no scaffold - Kevin's ruling, and until
+        // the fix pass of 2026-09-07 the module claimed it in bold in two places while
+        // doing the opposite: 12 answers on a `.patchwerk` session took mastery to 1.0,
+        // the pool from 1 to 3 and the scaffold from full to NONE. The test named after
+        // the claim called `recordPatchwerkRun`, which touches no skill state on any
+        // code path, so it could not have failed (Progress Refutation W3).
+        //
+        // Note this DIVERGES from `ios/PHASE1.md` §3 ("MQPatchwerk ... may not read or
+        // write mastery differently from Quest"). The contract sentence and the module's
+        // own headline claim cannot both hold; this fix pass keeps the claim, because a
+        // mode whose pool is drawn from `pwPoolWeights(stacks)` - a random 1/2/3 weighted
+        // by a SCORING number - must not then write the child's teaching pool.
+        let teaches = (mode == .quest)
 
         var skill = state.profiles[p].skills[attempt.skill.raw] ?? SkillState()
         let masteryBefore = skill.mastery
         let poolBefore = skill.pool
         let wasCorrect = attempt.verdict.correct && !attempt.timedOut
-        let reason = WrongReason.of(attempt.verdict, timedOut: attempt.timedOut)
 
-        skill.applyClimb(correct: wasCorrect)
-        // The fade is applied HERE, from the record of attempts, and only ever downward.
-        // A mode never asks for it; a mode that wanted to could not raise it anyway.
-        skill.fade(to: skill.scaffoldTarget)
-        state.profiles[p].skills[attempt.skill.raw] = skill
+        if teaches {
+            skill.applyClimb(correct: wasCorrect)
+            // The ladder is applied HERE, from the record of attempts, and only ever
+            // downward. A mode never asks for it; a mode that wanted to could not raise
+            // it anyway - `fade(to:)` is the only writer.
+            skill.applyFadeLadder(correct: wasCorrect)
+            // Only a teaching answer creates a skill row. A Patchwerk-only child has no
+            // teaching record at all, which is the honest shape and what the suite reads.
+            state.profiles[p].skills[attempt.skill.raw] = skill
+        }
 
         // ---- session side ----------------------------------------------------------
         var crystals = 0
@@ -132,7 +253,8 @@ public actor MQProgressStore: ProgressStore {
                 session.correct += 1
                 session.streak += 1
                 session.bestStreak = max(session.bestStreak, session.streak)
-                crystals = session.crystalForCurrentStreak()
+                // The battle reports; the store bounds. See `LiveSession.award`.
+                crystals = session.award(reported: attempt.crystalsReported, correct: true)
                 tally.right += 1
             } else {
                 session.streak = 0
@@ -147,11 +269,13 @@ public actor MQProgressStore: ProgressStore {
             live[attempt.session.raw] = session
         }
 
-        persist()
+        // The tap path, and the ONLY caller of the coalescing write.
+        persistSoon()
 
         return ProgressDelta(masteryBefore: masteryBefore, masteryAfter: skill.mastery,
-                             streak: streak, scaffold: skill.scaffold, crystalsEarned: crystals,
-                             poolBefore: poolBefore, poolAfter: skill.pool, wrongReason: reason)
+                             streak: streak, scaffold: skill.scaffold, crystalsAwarded: crystals,
+                             poolBefore: poolBefore, poolAfter: skill.pool, wrongReason: reason,
+                             touchedTeachingState: teaches)
     }
 
     // MARK: - Streak
@@ -216,8 +340,11 @@ public actor MQProgressStore: ProgressStore {
                     state.profiles[p].sessions.count - MQRule.sessionsKept)
             }
             state.profiles[p].lifetimeCrystals += s.crystals
-            persist()
         }
+        // A session end always writes through, whatever the coalescing window is
+        // holding: it is the natural flush point and the one the web itself uses
+        // (`saveData()` runs at `endGame`).
+        persist()
         return stored.summary
     }
 
@@ -265,6 +392,21 @@ public actor MQProgressStore: ProgressStore {
         persist()
     }
 
+    @discardableResult
+    public func rename(_ name: String, profile: ProfileID) async -> String? {
+        guard let p = state.index(profile) else { return nil }
+        // Uniqued against everyone ELSE. Renaming a child to the name they already have
+        // must not turn "Ben" into "Ben 2".
+        let stored = state.uniqueName(name, excluding: profile.raw)
+        state.profiles[p].name = stored
+        // Nothing else moves. The row is keyed by `id`, sessions and Patchwerk runs hang
+        // off the row, skills hang off the row, and any in-flight `LiveSession` names the
+        // profile by `id` too - so the rename is genuinely a one-field write and every
+        // test that says so is testing that fact rather than a proxy for it.
+        persist()
+        return stored
+    }
+
     public func resetHistory(profile: ProfileID) async {
         guard let p = state.index(profile) else { return }
         state.profiles[p].sessions.removeAll()
@@ -285,6 +427,8 @@ public actor MQProgressStore: ProgressStore {
     public func node(profile: ProfileID, topicID: String,
                      skills: [SkillID], isLive: Bool) async -> NodeProgress {
         guard isLive, !skills.isEmpty else {
+            // The zero-skill trap: an island with nothing registered in it yet is
+            // *Coming soon*, never vacuously *cleared*.
             return NodeProgress(topic: topicID, skillsTotal: skills.count, skillsMastered: 0,
                                 attempts: 0, mastery: 0, state: .comingSoon)
         }
@@ -299,8 +443,24 @@ public actor MQProgressStore: ProgressStore {
             if s.isMastered { mastered += 1 }
         }
         let mean = masterySum / Double(skills.count)
+        let allMastered = mastered == skills.count
+        // The web's own answer: a finished session ON THIS NODE that filled the
+        // six-crystal rope. `endGame(true)` in js/app.js is `S.mi >= MONSTERS.length`,
+        // and `S.mi` is what the session row stores as `crystals`.
+        let wonARun = p.map { i in
+            state.profiles[i].sessions.contains {
+                $0.topic == topicID && $0.crystals >= MQRule.crystalsPerSession
+            }
+        } ?? false
+
+        let clearedNow: Bool
+        switch clearedPolicy {
+        case .mastery:               clearedNow = allMastered
+        case .webVictory, .both:     clearedNow = wonARun
+        }
+
         let derived: NodeProgress.State
-        if mastered == skills.count {
+        if clearedNow {
             derived = .cleared
         } else if attempts == 0 {
             derived = .open
@@ -308,7 +468,8 @@ public actor MQProgressStore: ProgressStore {
             derived = .inProgress(collected: mastered, total: skills.count)
         }
         return NodeProgress(topic: topicID, skillsTotal: skills.count, skillsMastered: mastered,
-                            attempts: attempts, mastery: mean, state: derived)
+                            attempts: attempts, mastery: mean, state: derived,
+                            mastered: allMastered, wonARun: wonARun)
     }
 
     // MARK: - Patchwerk (play state, kept apart)

@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-import MQDesign
+import MQContent
 @testable import MQProgress
 
 /// Two or three heroes on one iPad, no login anywhere. The property that matters most
@@ -16,7 +16,7 @@ struct ProfileTests {
         let ben = await store.addProfile(name: "Ben", cast: .turtle, level: "P2")
 
         let s = await store.beginSession(profile: charlotte, mode: .quest)
-        for _ in 0..<12 { await store.answer(s, charlotte, "peri", correct: true) }
+        for _ in 0..<21 { await store.answer(s, charlotte, "peri", correct: true) }
         _ = await store.fadeScaffold(profile: charlotte, skill: SkillID("area"), to: .hint)
 
         #expect(await store.scaffold(profile: charlotte, skill: SkillID("peri")) == .none)
@@ -36,8 +36,10 @@ struct ProfileTests {
 
         let sa = await store.beginSession(profile: a, mode: .quest)
         let sb = await store.beginSession(profile: b, mode: .quest)
-        for _ in 0..<9 { await store.answer(sa, a, "peri", correct: true) }
-        for _ in 0..<4 { await store.answer(sb, b, "peri", correct: false) }
+        // Three crystals for Charlotte, reported by the battle; none for Ben, who got
+        // every item wrong and never felled a monster.
+        for i in 0..<9 { await store.answer(sa, a, "peri", correct: true, crystals: i % 3 == 2 ? 1 : 0) }
+        for _ in 0..<4 { await store.answer(sb, b, "peri", correct: false, crystals: 1) }
         _ = await store.endSession(sa)
         _ = await store.endSession(sb)
 
@@ -85,14 +87,57 @@ struct ProfileTests {
 
     @Test("A ProfileID survives a rename; MQProfile's own id does not")
     func idIsStableAcrossARename() async {
+        // THIS TEST USED TO RENAME NOTHING. Its body called `setLevel` - a class-level
+        // change - and there was no rename API in the module at all, so the suite carried
+        // a test named after a capability that did not exist (Progress Refutation W4,
+        // 2026-09-07). It now actually renames, and asserts what a rename must not move.
         let store = MQProgressStore.inMemory()
         let id = await store.addProfile(name: "Ben", cast: .turtle, level: "P2")
+        let s = await store.beginSession(profile: id, mode: .quest, topic: "geometry")
+        for _ in 0..<9 { await store.answer(s, id, "tables", correct: true, crystals: 1) }
+        _ = await store.endSession(s)
+
+        #expect(await store.profileRecords().first?.profile.id == "Ben")  // display identity IS the name
+
+        let stored = await store.rename("Benjamin", profile: id)
+        #expect(stored == "Benjamin")
+
+        // The ID did not move, so everything hanging off it did not move either.
         let record = await store.profileRecords().first
-        #expect(record?.id == id)
-        #expect(record?.profile.id == "Ben")     // MQDesign's identity is the display name
-        await store.setLevel("P3", profile: id)
-        #expect(await store.profileRecords().first?.profile.level == "P3")
-        #expect(await store.profileRecords().first?.id == id)
+        #expect(record?.id == id)                                 // the stable identity
+        #expect(record?.profile.name == "Benjamin")               // the display one changed
+        #expect(record?.profile.id == "Benjamin")                 // and so did MQProfile's
+        #expect(await store.profileID(named: "Benjamin") == id)
+        #expect(await store.profileID(named: "Ben") == nil)
+        #expect(await store.mastery(profile: id, skill: SkillID("tables")) == 1)
+        #expect(await store.poolLevel(profile: id, skill: SkillID("tables")) == 3)
+        #expect(await store.sessions(profile: id).count == 1)
+        #expect(await store.sessions(profile: id).first?.summary.topic == "geometry")
+        #expect(await store.profiles().first?.crystals == 6)
+        #expect(await store.profiles().first?.level == "P2")      // the class level is untouched
+    }
+
+    @Test("A rename survives the disk, and keeps display names unique")
+    func renameIsPersistedAndUniqued() async throws {
+        let backing = InMemoryPersistence()
+        let store = try MQProgressStore(persistence: backing)
+        let ben = await store.addProfile(name: "Ben", cast: .turtle, level: "P2")
+        let mira = await store.addProfile(name: "Mira", cast: .octopus, level: "P5")
+
+        // Renaming a child to a name already on the beach uniques it, exactly as
+        // addProfile does - two tokens reading "Ben" is a design failure before it is a
+        // lookup one.
+        #expect(await store.rename("Ben", profile: mira) == "Ben 2")
+        // Renaming a child to the name they ALREADY have is a no-op, not a promotion.
+        #expect(await store.rename("Ben", profile: ben) == "Ben")
+        // A blank name still leaves a token a child can tap.
+        #expect(await store.rename("   ", profile: mira) == "Explorer")
+        // An unknown profile is a nil, not a trap.
+        #expect(await store.rename("Ghost", profile: ProfileID("nobody")) == nil)
+
+        let reopened = try MQProgressStore(persistence: InMemoryPersistence(seed: backing.raw))
+        #expect(await reopened.profiles().map(\.name) == ["Ben", "Explorer"])
+        #expect(await reopened.profileID(named: "Explorer") == mira)
     }
 
     @Test("Removing a profile removes everything of theirs and nothing of anyone else's")

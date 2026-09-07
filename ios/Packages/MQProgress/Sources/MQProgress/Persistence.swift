@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // Persistence. JSON on disk under the app container, written temp-then-rename; and an
 // in-memory backend for tests and previews. Both sit behind `ProgressPersistence`, so
@@ -13,15 +16,20 @@ import Foundation
 
 public enum ProgressSchema {
     /// What this build writes.
-    public static let current = 2
+    public static let current = 3
 
-    /// v0 - no file at all, or an empty one. An empty start, never an error.
+    /// v0 - no file at all, or an empty one. An empty start, never an error. An
+    ///      unstamped document that HAS profiles in it is read as v1, not erased
+    ///      (Progress Refutation W11).
     /// v1 - the first shape: `scaffold` written as its NAME ("hint"), no `patchwerk`
     ///      array, no `lifetimeCrystals`. Shipped to nobody; kept because the migration
     ///      hook has to be exercised by something real, and a hook first used in
     ///      anger three versions later is a hook nobody has ever run.
-    /// v2 - current: `scaffold` as its Int rawValue, `patchwerk` and `lifetimeCrystals`
-    ///      present.
+    /// v2 - `scaffold` as its Int rawValue, `patchwerk` and `lifetimeCrystals` present.
+    /// v3 - current, from the fix pass of 2026-09-07: `fadeRun` on every skill (the
+    ///      scaffold ladder's run counter), and `StoredReview` carries the engine's own
+    ///      `figure` spec instead of six flattened columns modelling MQDesign's
+    ///      three-case `MQFigure`.
     public static let oldest = 1
 }
 
@@ -65,8 +73,16 @@ public struct ProgressStateBox: Sendable {
 public final class InMemoryPersistence: ProgressPersistence, @unchecked Sendable {
     private let lock = NSLock()
     private var bytes: Data?
+    private var saves = 0
 
     public init(seed: Data? = nil) { self.bytes = seed }
+
+    /// How many times the store has actually written. The witness the coalescing test
+    /// needs: "fewer writes" is only a claim until something counts them.
+    public var saveCount: Int {
+        lock.lock(); defer { lock.unlock() }
+        return saves
+    }
 
     public func load() throws -> ProgressStateBox {
         lock.lock(); defer { lock.unlock() }
@@ -78,6 +94,7 @@ public final class InMemoryPersistence: ProgressPersistence, @unchecked Sendable
         let data = try ProgressCodec.encode(state.state)
         lock.lock(); defer { lock.unlock() }
         bytes = data
+        saves += 1
     }
 
     /// What is "on disk", for a test that wants to look.
@@ -163,11 +180,50 @@ public final class FilePersistence: ProgressPersistence, @unchecked Sendable {
                 }
             }
             guard ok else { throw ProgressStoreError.writeFailed("rename failed, errno \(errno)") }
+            // The child's name and their whole learning history are in this file. Marked
+            // AFTER the rename, on the live file, and on every write - a resource value
+            // is a property of the inode, and `rename(2)` puts a new inode in place.
+            Self.protect(url)
         } catch {
             try? FileManager.default.removeItem(at: temp)
             throw error is ProgressStoreError ? error
                 : ProgressStoreError.writeFailed(String(describing: error))
         }
+    }
+
+    /// **"No accounts, no server, no child data anywhere but this iPad."** That sentence
+    /// is printed three times in this module and it was FALSE as written: the file landed
+    /// at mode 0644 with `isExcludedFromBackup == false` and no `NSFileProtection`
+    /// attribute, so a child's name and their whole learning history rode into iCloud and
+    /// iTunes backups (Progress Refutation W6, 2026-09-07). Two properties fix it:
+    ///
+    /// * **excluded from backup** - `URLResourceValues.isExcludedFromBackup`, available
+    ///   on both platforms, so the claim is true on the device AND checkable on the Kai
+    ///   gate. This is a deliberate product choice, not just a privacy one: a restored
+    ///   backup would hand a child back training wheels and a pool they had climbed past,
+    ///   which is the same wound as W10 arriving by a different road.
+    /// * **complete file protection** - `FileAttributeKey.protectionKey`, which exists
+    ///   ONLY where UIKit does. On macOS there is no equivalent (FileVault is a volume
+    ///   property, not a per-file one), so the Kai gate can assert the exclusion and
+    ///   nothing else, and this method says so rather than pretending.
+    ///
+    /// Best-effort by design: a store that refused to save because it could not set an
+    /// attribute would lose the child's answer to protect it.
+    static func protect(_ url: URL) {
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        var target = url
+        try? target.setResourceValues(values)
+
+        #if canImport(UIKit)
+        // `.completeFileProtection`: unreadable while the device is locked. The app never
+        // reads this file in the background - there is no background mode in it at all -
+        // so the strictest class is the right one.
+        try? FileManager.default.setAttributes(
+            [.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
+        #else
+        // macOS: no per-file protection class exists. Nothing to set, nothing claimed.
+        #endif
     }
 
     /// Temp files from a write that died are litter, never state. Cleared on load so a
@@ -224,11 +280,25 @@ enum ProgressCodec {
         var doc = input
         var v = version
 
-        // v0 -> v1. There is no v0 document; a missing or empty file is handled before
-        // this is reached, and anything else claiming v0 is an unstamped write, which is
-        // treated as an empty start rather than guessed at.
+        // v0 -> v1. A missing or empty file is handled before this is reached.
+        //
+        // An UNSTAMPED but otherwise valid document used to be replaced wholesale with
+        // `{"schema":1,"profiles":[]}`: the store came up with zero profiles and the
+        // next `record()` wrote that over the child's history. A file from the FUTURE
+        // was refused loudly; a file with a missing stamp was erased quietly, and it was
+        // the one path in the module where data was lost rather than refused (Progress
+        // Refutation W11, 2026-09-07).
+        //
+        // A document carrying profiles is now read as v1 - the oldest shape this build
+        // knows - and migrated forward like any other. Only a document with nothing in
+        // it is an empty start.
         if v == 0 {
-            doc = ["schema": 1, "profiles": []]
+            let profiles = (doc["profiles"] as? [[String: Any]]) ?? []
+            if profiles.isEmpty {
+                doc = ["schema": 1, "profiles": []]
+            } else {
+                doc["schema"] = 1
+            }
             v = 1
         }
 
@@ -259,6 +329,49 @@ enum ProgressCodec {
             doc["profiles"] = profiles
             doc["schema"] = 2
             v = 2
+        }
+
+        // v2 -> v3. The scaffold ladder gained its run counter, and a review row now
+        // carries the engine's own `figure` spec.
+        if v == 2 {
+            var profiles = (doc["profiles"] as? [[String: Any]]) ?? []
+            for i in profiles.indices {
+                if var skills = profiles[i]["skills"] as? [String: [String: Any]] {
+                    for (key, var skill) in skills {
+                        // A skill mid-ladder in a v2 file has no run recorded, so it
+                        // starts the next run from zero. That is the SAFE direction: it
+                        // delays the next fade, and a fade is the thing that cannot be
+                        // undone.
+                        if skill["fadeRun"] == nil { skill["fadeRun"] = 0 }
+                        skills[key] = skill
+                    }
+                    profiles[i]["skills"] = skills
+                }
+                // The old flattened figure columns (`figureKind` / `figureLong` /
+                // `figureWide` / `figureRatio` / `figureParts` / `figureFilled`) are
+                // DROPPED rather than reconstructed. `figureLong` was the rendered string
+                // "14 cm", and turning that back into an engine spec means parsing a
+                // label - guessing. `figure` is optional, so a v2 review row simply comes
+                // back without a diagram, which is exactly what a v2 row was worth: the
+                // shape it modelled could only hold two of the engine's eight kinds. v2
+                // shipped to nobody.
+                if var sessions = profiles[i]["sessions"] as? [[String: Any]] {
+                    for j in sessions.indices {
+                        guard var reviews = sessions[j]["reviews"] as? [[String: Any]] else { continue }
+                        for k in reviews.indices {
+                            for dead in ["figureKind", "figureLong", "figureWide",
+                                         "figureRatio", "figureParts", "figureFilled"] {
+                                reviews[k].removeValue(forKey: dead)
+                            }
+                        }
+                        sessions[j]["reviews"] = reviews
+                    }
+                    profiles[i]["sessions"] = sessions
+                }
+            }
+            doc["profiles"] = profiles
+            doc["schema"] = 3
+            v = 3
         }
 
         return doc

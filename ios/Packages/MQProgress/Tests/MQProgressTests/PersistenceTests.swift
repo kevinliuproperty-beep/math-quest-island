@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import MQContent
 @testable import MQProgress
 
 /// Persistence, and the one property that matters on a child's iPad: **a torn write must
@@ -42,7 +43,10 @@ struct PersistenceTests {
         #expect(progress.attempts == 8)
         #expect(progress.correct == 7)
         #expect(progress.pool == 3)
-        #expect(progress.scaffold == .none)
+        // 7 straight correct answers is exactly one ladder step (MQRule.fadeAfterConsecutiveCorrect
+        // is 7); the wrong answer that follows resets the run. It used to be `.none` here,
+        // which was the whole of Progress Refutation W9.
+        #expect(progress.scaffold == .partial)
 
         let sessions = await reopened.sessions(profile: profileID)
         #expect(sessions.count == 1)

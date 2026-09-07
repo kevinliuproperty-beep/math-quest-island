@@ -162,14 +162,77 @@ struct MasteryClimbTests {
         #expect(progress.isMastered)
     }
 
-    @Test("The scaffold target tracks the pool and only lets go at mastery")
-    func scaffoldTargetLadder() {
+    @Test("The LOAD-TIME ceiling is the fewest ladder steps the record can force")
+    func scaffoldCeilingIsTheMinimumForced() {
+        // On an UNBROKEN run the ceiling is exactly the live ladder - a clean history
+        // round-trips through a save/load untouched.
         var skill = SkillState()
-        #expect(skill.scaffoldTarget == .full)
-        for _ in 0..<3 { skill.applyClimb(correct: true) }        // pool 2
-        #expect(skill.scaffoldTarget == .partial)
-        for _ in 0..<3 { skill.applyClimb(correct: true) }        // pool 3, 6/6
-        #expect(skill.isMastered)
-        #expect(skill.scaffoldTarget == .none)
+        #expect(skill.scaffoldCeiling == .full)
+        for _ in 0..<6 { skill.applyClimb(correct: true) }
+        #expect(skill.scaffoldCeiling == .full)                 // six is not yet a step
+        skill.applyClimb(correct: true)
+        #expect(skill.scaffoldCeiling == .partial)              // seven is
+        for _ in 0..<14 { skill.applyClimb(correct: true) }     // 21 straight
+        #expect(skill.scaffoldCeiling == .none)
+
+        // With wrong answers in it the ceiling is CONSERVATIVE: it asks how few steps
+        // this history could possibly have produced, never how many it probably did.
+        // 9 right and 1 wrong could be 4 then 5 - no step at all - so it clamps nothing.
+        var mixed = SkillState()
+        for _ in 0..<9 { mixed.applyClimb(correct: true) }
+        mixed.applyClimb(correct: false)
+        #expect(mixed.scaffoldCeiling == .full)
+        #expect(mixed.isMastered)                               // and mastery is irrelevant to it
+    }
+
+    @Test("The ceiling never fades faster than the ladder actually did", arguments: [
+        "ccccccc", "ccccccccccccccccccccc", "ccccwccccwcccc", "wwwwwwww",
+        "cccccccwcccccccwccccccc", "cccccccccccccccccccccccccccccc"
+    ])
+    func ceilingNeverOverFades(_ events: String) {
+        // The property that makes it safe to apply on EVERY open: if the ceiling could
+        // out-fade the live ladder, every save/load cycle would quietly re-impose the
+        // old fast fade this pass exists to remove.
+        var skill = SkillState()
+        for e in events {
+            skill.applyClimb(correct: e == "c")
+            skill.applyFadeLadder(correct: e == "c")
+        }
+        #expect(skill.scaffoldCeiling >= skill.scaffold,
+                "ceiling \(skill.scaffoldCeiling) < held \(skill.scaffold) for \(events)")
+    }
+
+    @Test("The ladder is one step per 7 straight, never up, and a wrong answer resets it")
+    func fadeLadder() {
+        var skill = SkillState()
+        for _ in 0..<6 { skill.applyFadeLadder(correct: true) }
+        #expect(skill.scaffold == .full)
+        #expect(skill.applyFadeLadder(correct: true) == .partial)   // 7
+        for _ in 0..<6 { skill.applyFadeLadder(correct: true) }     // 13
+        #expect(skill.scaffold == .partial)
+        skill.applyFadeLadder(correct: false)                       // the run resets at 6
+        for _ in 0..<6 { skill.applyFadeLadder(correct: true) }
+        #expect(skill.scaffold == .partial, "a wrong answer must reset the run")
+        skill.applyFadeLadder(correct: true)
+        #expect(skill.scaffold == .hint)
+        for _ in 0..<7 { skill.applyFadeLadder(correct: true) }
+        #expect(skill.scaffold == .none)
+        // And it stops there. Nothing below `none`, and 700 more correct answers change
+        // nothing at all.
+        for _ in 0..<700 { skill.applyFadeLadder(correct: true) }
+        #expect(skill.scaffold == .none)
+    }
+
+    @Test("The ladder is documented at the number it was chosen at")
+    func ladderParameter() {
+        // MARKED FOR KEVIN'S EYE. Simulated over 400 children a band of 17-item sessions,
+        // `none` first arrives at a median session of 14 / 6 / 3 / 2 / 2 at 60 / 70 / 80
+        // / 90 / 100% accuracy, and ZERO of 400 reach it in their first sitting at any
+        // accuracy. The old rule reached `none` in the first session 293 times out of 400
+        // at 80% (Progress Refutation W9).
+        #expect(MQRule.fadeAfterConsecutiveCorrect == 7)
+        // Three steps, and a session is 17 items: even a child who never misses cannot
+        // take all three in one sitting.
+        #expect(MQRule.fadeAfterConsecutiveCorrect * 3 > 17)
     }
 }

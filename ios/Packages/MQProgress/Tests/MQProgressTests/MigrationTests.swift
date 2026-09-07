@@ -69,14 +69,51 @@ struct MigrationTests {
         #expect(await store.lastWriteError == nil)
     }
 
-    @Test("v0 - an unstamped document - migrates to an empty start rather than guessing")
+    @Test("v0 - an unstamped document KEEPS its profiles and migrates forward")
     func fromV0Unstamped() throws {
-        // Steps CHAIN: v0 -> v1 -> v2, so a v0 document comes out at the current schema
-        // and not one step short of it.
-        let doc = try JSONSerialization.jsonObject(with: Data(#"{"profiles":[{"junk":1}]}"#.utf8))
+        // It used to be replaced wholesale with an empty document, which was the one path
+        // in the module where data was LOST rather than refused (Progress Refutation
+        // W11). It is now read as v1 - the oldest shape this build knows.
+        //
+        // Steps CHAIN: v0 -> v1 -> v2 -> v3, so a v0 document comes out at the current
+        // schema and not one step short of it.
+        let doc = try JSONSerialization.jsonObject(with: Data(
+            #"{"profiles":[{"id":"p","name":"Ben","cast":"turtle","level":"P2","createdAt":1,"skills":{"s":{"attempts":1,"correct":1,"pool":1,"rightRow":1,"wrongRow":0,"scaffold":"hint"}},"sessions":[]}]}"#.utf8))
         let migrated = try ProgressCodec.migrate(doc as! [String: Any], from: 0)
         #expect(migrated["schema"] as? Int == ProgressSchema.current)
-        #expect((migrated["profiles"] as? [Any])?.isEmpty == true)
+        let profiles = try #require(migrated["profiles"] as? [[String: Any]])
+        #expect(profiles.count == 1)
+        #expect(profiles[0]["name"] as? String == "Ben")
+        // and it really did chain through every step
+        let skills = try #require(profiles[0]["skills"] as? [String: [String: Any]])
+        #expect(skills["s"]?["scaffold"] as? Int == ScaffoldLevel.hint.rawValue)   // v1 -> v2
+        #expect(skills["s"]?["fadeRun"] as? Int == 0)                              // v2 -> v3
+        #expect(profiles[0]["patchwerk"] as? [Any] != nil)
+    }
+
+    @Test("v2 - a review row's flattened figure columns are dropped, not guessed at")
+    func v2ReviewFigureColumnsAreDropped() throws {
+        // v2's six columns modelled MQDesign's THREE-case MQFigure and could hold two of
+        // the engine's eight kinds; `figureLong` was the rendered string "14 cm", so
+        // reconstructing a spec from one means parsing a label. v2 shipped to nobody.
+        let doc = try JSONSerialization.jsonObject(with: Data("""
+        {"schema":2,"profiles":[{"id":"x","name":"X","cast":"turtle","level":"P3",
+          "createdAt":1750000000,"patchwerk":[],"lifetimeCrystals":0,"skills":{},
+          "sessions":[{"id":"s","mode":"quest","topic":null,"startedAt":1,"endedAt":2,
+            "total":1,"correct":0,"bestStreak":0,"crystals":0,"timeOnItems":1,"maxPool":1,
+            "wrongCounts":{},"skills":{},
+            "reviews":[{"question":"Q","answer":"a","explanation":"e","figureKind":"rect",
+                        "figureLong":"14 cm","figureWide":"9 cm","figureRatio":1.5,
+                        "figureParts":0,"figureFilled":0}]}]}]}
+        """.utf8)) as! [String: Any]
+        let migrated = try ProgressCodec.migrate(doc, from: 2)
+        let profiles = migrated["profiles"] as! [[String: Any]]
+        let sessions = profiles[0]["sessions"] as! [[String: Any]]
+        let review = (sessions[0]["reviews"] as! [[String: Any]])[0]
+        #expect(review["figureKind"] == nil)
+        #expect(review["figureLong"] == nil)
+        #expect(review["question"] as? String == "Q")     // the words survive
+        #expect(review["explanation"] as? String == "e")
     }
 
     @Test("v1 loads, and the scaffold names become levels")
@@ -155,7 +192,9 @@ struct MigrationTests {
 
     @Test("The current schema is the one the module says it is")
     func schemaConstants() {
-        #expect(ProgressSchema.current == 2)
+        // v3 since the fix pass of 2026-09-07: `fadeRun` on every skill, and a review
+        // row carrying the engine's own `figure` spec instead of six flattened columns.
+        #expect(ProgressSchema.current == 3)
         #expect(ProgressSchema.oldest == 1)
     }
 }

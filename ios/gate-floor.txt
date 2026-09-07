@@ -1,4 +1,4 @@
-136
+167
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing parsed; everything below is for humans.
@@ -61,3 +61,37 @@
 #       Measured per suite with `./test.command --filter MQProgressTests.<Suite>`; the
 #       runner's summary counts test FUNCTIONS, so a parameterised @Test counts once
 #       here even though it prints a line per case.
+#
+# 167 = those 136, plus 31 more from the FIX PASS on lane/progress, 2026-09-07 (the
+#       twelve wounds of the Progress Refutation). Net of the tests that were rewritten
+#       rather than added; the four suites that grew:
+#         Crystals and Cleared, 200 real web sessions   14  (a new suite: the corpus's
+#                                                            own shape; 200 sessions
+#                                                            replayed against the web's
+#                                                            crystal count; a mode that
+#                                                            cannot inflate it; and the
+#                                                            THREE NodeClearedPolicy
+#                                                            implementations counted at
+#                                                            2/3/4/7 skills)
+#         Review rows keep every figure                 12  (a new suite: 216 rows through
+#                                                            a real file, 0 lost, was 180;
+#                                                            all 8 engine kinds plus one
+#                                                            invented; the projection)
+#         Privacy on disk, and how often it is touched  12  (a new suite: backup exclusion
+#                                                            and its survival across the
+#                                                            rename(2); the unstamped
+#                                                            document; the load clamp;
+#                                                            coalesced writes, flush(),
+#                                                            6 structural write-throughs
+#                                                            and atomicity under them)
+#         The mastery climb matches the web             +8  (the load-time ceiling, 6
+#                                                            parameterised histories where
+#                                                            it must not out-fade the
+#                                                            ladder, the ladder itself and
+#                                                            its parameter)
+#         Sessions / Profiles / Schema migration        +7  (the Patchwerk fence driven
+#                                                            through record(); the split
+#                                                            reason; a REAL rename and its
+#                                                            persistence; v0-unstamped and
+#                                                            v2 review columns)
+#       Measured on Kai at the fix-pass commit: `./test.command` reported 167 executed.

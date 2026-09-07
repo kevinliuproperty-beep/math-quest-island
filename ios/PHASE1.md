@@ -7,6 +7,10 @@ Branch `feat/ios-phase1`. Gates: `swift build` at `ios/`, `ios/test.command` (ex
 floor in `ios/gate-floor.txt`), and `swift run mqdesign-snap` (the DEVICE MATRIX — every
 screen at every size, fails on an overflow or a tap target under 44 pt).
 
+**As of the phase 1 integration, 2026-09-07** the tree carries nine modules: `MQContent`,
+`MQEngineJS`, `MQCubeContent`, `MQCubeEngineJS`, `MQProgress`, `MQDesign`, `MQQuest`,
+`MQPatchwerk`, `MQServices`, plus the `mqdesign-snap` and `mqhost` executables.
+
 **iOS 16 is the floor, everywhere.** Charlotte's iPad is a 6th-generation 9.7" and tops
 out at iPadOS 17. No iOS 17+ API is used or guarded — `#available` islands in a design
 system produce a look that differs silently by device.
@@ -294,12 +298,30 @@ Screens not yet drawn and who owns them: pause sheet (MQQuest), profile creation
 
 ```
 cd ios
-swift build                 # builds MQContent, MQEngineJS, MQDesign and mqdesign-snap
-./test.command              # THE gate: 71 executed tests, floor in gate-floor.txt
+swift build                 # every module in the tree
+./test.command              # THE gate: 401 executed tests, floor in gate-floor.txt
 swift run mqdesign-snap     # DEVICE MATRIX: 12 sizes x 7 screens, PNGs + slack table
 ```
 
+At the repository root, and part of the same gate:
+
+```
+npm test                    # answer-parse, gen-sanity, feed-sim, engine-api, parity,
+                            # patchwerk + name corpora, and the whole cube battery
+npm run test:deep           # 226 generators x 50,000 samples
+npm run check:engine        # the committed engine bundle's own bytes vs js/
+npm run check:cube-engine   # the committed cube bundle's bytes vs cube/index.html
+```
+
+`test.command` runs the two bundle checks itself before it runs a test, and exports
+`MQ_GATE=1` on an unfiltered run so the sample-size knobs (`MQ_DRAWS`,
+`MQ_CUBE_PARITY_ROWS`, `MQ_CUBE_SOLVES`) are REFUSED rather than silently honoured.
+`--filter` narrows a run that never claimed to be the gate; `--skip` never lifts the
+floor.
+
 `mqdesign-snap` writes full-resolution PNGs for Charlotte's two orientations and the
-iPhone SE into `ios/snapshots/matrix/`, the two Kevin-approved sizes into
-`ios/snapshots/storybook/`, and 300 px thumbnails for everything into
-`ios/snapshots/matrix/thumbs/`.
+iPhone SE into `ios/snapshots/matrix/`, and 300 px thumbnails for everything else -
+including the two Kevin-approved sizes, in `ios/snapshots/storybook/` - into
+`ios/snapshots/matrix/thumbs/`. **Full resolution is three sizes only** (PM ruling,
+2026-09-07): the directory was 80 MB, 34 MB of it renders of an 11" iPad nobody in this
+house owns. Driven sessions (`swift run mqhost --drive ...`) write outside the checkout.

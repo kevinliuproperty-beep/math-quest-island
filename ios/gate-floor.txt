@@ -1,253 +1,96 @@
-160
+401
 # ^ The executed-test FLOOR for `ios/test.command` with no --filter.
 #
 # The first run of digits is the only thing test.command parses; the `key: value` lines
-# below are parsed by the SUITES (see GateFloor.swift, one copy in each test target).
-# Everything else is for humans.
+# at the bottom are parsed by the SUITES (see GateFloor.swift, one copy in each test
+# target). Everything else is for humans.
 #
 # WHY IT EXISTS. This gate was killed for reporting success with zero tests executed:
 # `./test.command --filter <anything that matches nothing>` printed
 # "Test run with 0 tests in 0 suites passed" and exited 0. Requiring a non-zero count
 # closes that. This file closes the other half - a suite that quietly stops being
 # DISCOVERED (a renamed file, a target dropped from Package.swift, a @Suite that no
-# longer compiles in) shrinks the count without failing anything.
+# longer compiles in) shrinks the count without failing anything, and the gate stays
+# green over a smaller and smaller surface.
 #
 # HOW TO CHANGE IT. Raise it in the same commit that adds tests. LOWER it only in the
 # same commit that removes them, so the reduction appears in the diff and somebody has
 # to justify it in a message. Never edit it to turn a red gate green.
 #
+# ===========================================================================
+# 401 = the PHASE 1 INTEGRATION, 2026-09-07: feat/ios-phase1 with lane/quest (which
+#       already carried feat/unit-sweep), lane/progress, lane/patchwerk and
+#       lane/cube-extract merged, plus the integrator's own reconciliation.
+#
+# MEASURED, NOT ADDED UP. Each lane raised this file independently against its own
+# branch, so the four lanes' numbers (160, 167, 166, 88) share the 42 + 29 that were
+# already here and cannot be summed. The floor is what `./test.command` actually
+# executed on the merged tree, and the per-target counts below were each read off
+# `./test.command --filter <target>`. They sum to exactly 401, which is the check that
+# nothing is being counted twice or not at all.
+#
+#   MQContentTests         21   the seam: models, Verdict.Reason, the eight-kind Figure
+#   MQEngineJSTests        21   the JavaScriptCore bridge, lifetime, grading parity
+#   MQDesignTests          31   tokens, metrics, typesetting, fonts, the device matrix,
+#                               + 2 NEW: a screen leaves no holes in its own background
+#   MQProgressTests        96   mastery, the one-way fade, persistence, migration,
+#                               profiles, the web-crystal corpus, the Patchwerk fence
+#   MQQuestTests           91   the flow, typed entry, unit chips, figures, the pixel
+#                               gate, the driver, + 2 NEW: the crystal end to end
+#   MQPatchwerkTests       68   scoring parity, the HUD in pixels, the clock, the ticker
+#   MQServicesTests        27   the on-device board, the name filter, the GC stub
+#   MQCubeContentTests     10   cube state, domain refusals
+#   MQCubeEngineJSTests    36   the cube bridge, the golden corpus, words, parity, solves
+#   ------------------------------------------------------------------------
+#                         401
+#
+# Counted by CASE where a @Test is parameterised, because that is what the runner's
+# summary line counts and the summary is what test.command parses.
+#
+# WHAT THE INTEGRATION ADDED (4, on top of the 397 the merge itself produced):
+#   MQDesignTests    "No screen leaves a transparent pixel on the 9.7 inch iPad" (2 cases)
+#                    and its negative control - MQWorld left an unpainted wedge along the
+#                    shoreline, which is what "the dark line right of the crab" actually
+#                    was: 261 px of near-zero alpha at y=784 on the 9.7" landscape battle.
+#   MQQuestTests     "QRunState fells a monster exactly where the web awarded a crystal"
+#                    and "Reported through Attempt.crystalsReported, every session lands
+#                    on the web's rope" - 200 real web sessions, battle to store.
+#
+# WHAT THE INTEGRATION DID NOT LOSE. Three MQQuestTests were REWRITTEN rather than
+# removed when the lanes' stand-in stores were deleted: they were asserting the deleted
+# stand-in's exponential mastery curve, which the real store does not have. Same three
+# tests, same names, now graded against MQProgressStore's actual rule. The count did not
+# drop, and this note is here so a future reader does not have to reconstruct why.
+#
+# ---------------------------------------------------------------------------
+# THE LANES' OWN LINEAGE, kept because each number is a claim somebody proved
+# ---------------------------------------------------------------------------
+#
 # 42 = MQEngineJS bridge (10) + MQContent models (8) + Figure spec decoding (14, incl.
 #      parameterised cases) + Grading parity corpus (4) + Engine lifetime and memory (6)
 #      as of the fix pass on lane/engine-bridge, 2026-09-07.
 #
-# 71 = those 42 + MQDesign's 29, wired into the root manifest on feat/ios-phase1,
-#      2026-09-07:
-#        Tokens resolve                       10  (type scale, space, motion, tap floor,
-#                                                  3 palettes x roles, times of day, theme)
-#        Metrics classify the matrix          14  (12 device sizes + 2 explicit cases)
-#        Typesetting: units never break        6
-#        Bundled fonts register and resolve    8  (5 weights + register + idempotent +
-#                                                  a negative control)
-#        Components render without overflow   12  (sign, 2 figures, 2 tiles, chrome,
-#                                                  4 creatures, 2 tokens, marker floor)
-#        Every screen fits every device       24  (12 sizes x overflow, 12 x tap floor)
-#        The cast never crosses the parchment  4  (the 4 landscape sizes)
-#      The parameterised suites are counted by CASE here because that is what the
-#      runner's summary counts; the 29 is the delta the runner reported (42 -> 71).
+# 71 = those 42 + MQDesign's 29, wired into the root manifest on feat/ios-phase1.
 #
-# 143 = those 71 + MQQuest's 72, added on lane/quest, 2026-09-07:
-#         HP and streak follow the web's own formulas   14  (6 damage cases +
-#                                                            crit, chain, two
-#                                                            ladder tests, streak,
-#                                                            monster down, heal cap,
-#                                                            per-monster damage)
-#         The set runs, ends and reviews                 7  (set completes, review is
-#                                                            exactly the wrong items,
-#                                                            empty review, feed level,
-#                                                            defeat, session retired,
-#                                                            locked node refused)
-#         The island is the catalogue + the store        3
-#         The store enforces the contract's laws         4  (mastery derived, scaffold
-#                                                            one-way, streak per
-#                                                            session, idempotent end)
-#         The keypad produces the web's string          17  (5 digits + 5 decimals
-#                                                            parameterised, fractions,
-#                                                            refusals, cap, undo,
-#                                                            submission, enablement)
-#         Unit chips graded by the real engine           5
-#         The chip row is deterministic                 20  (16 units parameterised +
-#                                                            ordering, area example,
-#                                                            equivalents, every unit
-#                                                            teaches)
-#         Fractions and decimals via the keypad          3
-#         Figures: all seven, from drawn questions      17  (7 fit + 7 ink + lshape
-#                                                            sides + unsupported +
-#                                                            (the two suites' shared
-#                                                            engine draw))
-#         Every Quest screen fits both devices           4  (battle choice/typed,
-#                                                            feedback, entrance +
-#                                                            result, tap floor)
-#         The driver and its transcript                  5
-#         The keypad policy is measured                  2
-#         The copy obeys the fade-out law                5
-#         The buttons are on the glass, in pixels        3  (review list fits its
-#                                                            plank, buttons on
-#                                                            glass, title on glass)
-#         (result + battle at real engine content)       2
-#       Counted by CASE, which is what the runner's summary counts; 72 is the delta
-#       the runner reported (71 -> 143).
+# 143 = those 71 + MQQuest's 72, added on lane/quest.
+# 160 = those 143 + MQQuest's 17 from the lane/quest FIX PASS (Quest Refutation K1-K7).
 #
-# 160 = those 143 + MQQuest's 17, added on lane/quest in the fix pass, 2026-09-07,
-#       against Quest Refutation - 2026-09-07:
-#         The typed battle fits every matrix size        3  (8 topics x 12 sizes x 20
-#                                                            REAL engine draws, all
-#                                                            counted as one case per
-#                                                            @Test; keypad keys drawn
-#                                                            whole and on the glass at
-#                                                            every size; every typed
-#                                                            topic is in the gate)  K1
-#         cm3/ml are never each other's distractors      2  (p5volume, p5decimals,
-#                                                            through the real bridge) K3/K7
-#         alias spellings are never distractors          1                            K3
-#         the chip bridge, per topic                     4  (p4area, p5decimals,
-#                                                            p5rate, p5volume, p3money
-#                                                            - was one hard-coded
-#                                                            p4area)                  K2
-#         64 pause presses leave zero sessions open      1                            K6
-#         two opens in one second are two sessions       1                            K6
-#         nine wrong items across the review's pages     1  (3 sizes, one case)        K4
-#         nine wrong items RENDERED across the pages     1  (9.7" portrait + SE)       K4
-#         figure labels inside the box, floor binds      2  (p4data + p4pie, pixels)   K5
-#         the driver drives the drawn views              2  (a session per matrix size
-#                                                            + the --model path)   K1/driver
-#         the keypad cap clears the engine's answerText  1                     wound 3
-#         a half-written fraction is not submittable     1                     wound "3/"
-#         the choice battle fits every matrix size    1  (4 figure topics x 12 sizes
-#                                                          x 20 real draws; found and
-#                                                          closed five pre-existing
-#                                                          overflows nothing measured)
-#       Counted by CASE, which is what the runner's summary counts; 17 is the delta
-#       the runner reported (143 -> 160).
-# 136 = those 71 + MQProgress's 65, added on lane/progress, 2026-09-07:
-#         The scaffold never rises              6  (10,000 seeded random events; an
-#                                                   up-request is a no-op; a failing run,
-#                                                   a new session and the parent-screen
-#                                                   reset all keep the fade)
-#         The mastery climb matches the web     9  (a 509-history corpus recorded from
-#                                                   js/app.js by tools/fixtures/
-#                                                   gen-pool-climb.mjs, named edges, and
-#                                                   the two counters that must NOT reset
-#                                                   at the pool boundaries)
-#         Node state derives from the record    9  (cleared / in progress / open / coming
-#                                                   soon, incl. the zero-skill trap that
-#                                                   would paint an unwritten island done)
-#         Sessions summarise what happened     14  (in-session streak only, idempotent
-#                                                   end, the crystal rule, the unit-vs-
-#                                                   value split, the review list, caps)
-#         JSON on disk, torn write loses none   8  (round trip, schema stamp, TWO injected
-#                                                   write faults, temp litter, empty file,
-#                                                   garbage, shared codec)
-#         Schema migration                      9  (v0 missing, v0 unstamped, a hand-
-#                                                   written v1 file, unknown scaffold
-#                                                   name, a refused future schema)
-#         Profiles are local and separate      10  (one child's fade never reaches
-#                                                   another's; unique names; removal)
-#       Measured per suite with `./test.command --filter MQProgressTests.<Suite>`; the
-#       runner's summary counts test FUNCTIONS, so a parameterised @Test counts once
-#       here even though it prints a line per case.
+# 136 = those 71 + MQProgress's 65, added on lane/progress.
+# 167 = those 136 + 31 from the lane/progress FIX PASS (the twelve Progress Refutation
+#       wounds: crystals, the Cleared policies, the review figures, privacy on disk).
 #
-# 167 = those 136, plus 31 more from the FIX PASS on lane/progress, 2026-09-07 (the
-#       twelve wounds of the Progress Refutation). Net of the tests that were rewritten
-#       rather than added; the four suites that grew:
-#         Crystals and Cleared, 200 real web sessions   14  (a new suite: the corpus's
-#                                                            own shape; 200 sessions
-#                                                            replayed against the web's
-#                                                            crystal count; a mode that
-#                                                            cannot inflate it; and the
-#                                                            THREE NodeClearedPolicy
-#                                                            implementations counted at
-#                                                            2/3/4/7 skills)
-#         Review rows keep every figure                 12  (a new suite: 216 rows through
-#                                                            a real file, 0 lost, was 180;
-#                                                            all 8 engine kinds plus one
-#                                                            invented; the projection)
-#         Privacy on disk, and how often it is touched  12  (a new suite: backup exclusion
-#                                                            and its survival across the
-#                                                            rename(2); the unstamped
-#                                                            document; the load clamp;
-#                                                            coalesced writes, flush(),
-#                                                            6 structural write-throughs
-#                                                            and atomicity under them)
-#         The mastery climb matches the web             +8  (the load-time ceiling, 6
-#                                                            parameterised histories where
-#                                                            it must not out-fade the
-#                                                            ladder, the ladder itself and
-#                                                            its parameter)
-#         Sessions / Profiles / Schema migration        +7  (the Patchwerk fence driven
-#                                                            through record(); the split
-#                                                            reason; a REAL rename and its
-#                                                            persistence; v0-unstamped and
-#                                                            v2 review columns)
-#       Measured on Kai at the fix-pass commit: `./test.command` reported 167 executed.
-
-# 143 = those 71 + 72 from lane/patchwerk (MQPatchwerk 55 + MQServices 17), 2026-09-07:
-#        Patchwerk scoring parity with the web    4  (corpus shape, the mirrored CONFIG,
-#                                                     300 recorded runs replayed as 300
-#                                                     parameterised cases, and the same
-#                                                     300 counted again in one test)
-#        The fight is the clock                   8  (a whole tier per case, the enrage
-#                                                     boundary per tier, expiry, the stun,
-#                                                     monotonic damage, the clock label,
-#                                                     the boss refill, the record shape)
-#        Stacks, freezes and the anti-quit rules   8
-#        The Patchwerk question feed               8  (topic filter, pool weights, harder
-#                                                     with stacks, the no-repeat ring,
-#                                                     bounded redraws, pool-not-feed draws)
-#        The mirrored PRNG                         4
-#        Stem shapes                               5
-#        A whole fight, picker to board            9
-#        Patchwerk screens fit the glass           7  (fit and tap floor across 4 devices x
-#                                                     5 screens, the overlay contract, the
-#                                                     hourglass floor across the 12-size
-#                                                     matrix, the trap's negative control,
-#                                                     and the PNG render)
-#        The device leaderboard                    9
-#        Leaderboard names                         6
-#        Game Center is a stub, and admits it      2
-#      NOTE the runner counts a parameterised @Test as ONE here, not once per case - the
-#      300-run parity replay is one line in this total, not 300. The MQDesign entry above
-#      counted cases because that is what the runner reported at the time; if the two ever
-#      have to be reconciled, the floor is whatever an unfiltered run prints, nothing more.
-
-# 166 = those 143 + 23 from the FIX PASS on lane/patchwerk answering the 2026-09-07
-#      refutation (SURVIVED-wounded, 7 wounds):
-#        Patchwerk scoring parity with the web    +1  (W1: the corpus's recorded
-#                                                      sourceSha256 against a sha-256
-#                                                      this suite computes from
-#                                                      js/modes/patchwerk.js on disk.
-#                                                      The node half of the same pin is
-#                                                      `node tools/make-patchwerk-parity.mjs
-#                                                      --check`, now inside `npm test`.)
-#        The Patchwerk HUD, measured on the pixels +16 (W2: 12 device sizes x 3 scenes x
-#                                                      5 controls, drawn frame vs overlay
-#                                                      frame out of two separate renders,
-#                                                      counted as 12 parameterised cases;
-#                                                      the probe's negative control; W3:
-#                                                      the sand at 0:21, the sand at four
-#                                                      moments of a fight, and the wire
-#                                                      from PatchwerkRun.sandFraction)
-#        The clock cannot be driven backwards,    +7  (W6: monotonicity over 200,000 reads,
-#        and the ticker is one per run                 real-time advance, a backwards clock
-#                                                      on all 3 tiers, the clamp at every
-#                                                      boundary, and the web-parity argument
-#                                                      as an assertion. W7: 100 view
-#                                                      re-inits make no timer, 100 starts
-#                                                      make one, and stop() really stops.)
-#        Leaderboard names agree with the web     +4  (W4: the corpus pinned to
-#                                                      api/leaderboard.js by sha, all 7,053
-#                                                      names, coverage of the decomposition
-#                                                      class, and the named cases)
-#        An unreadable board is kept, never       +5  (W5: quarantine, the schema case,
-#        clobbered                                     writes refused when the move aside
-#                                                      fails, a healthy board untouched,
-#                                                      and a missing file is not a
-#                                                      corruption)
-#      Minus nothing: no test was removed. The old `overlayMatchesTheDrawnScreen` was the
-#      tautology the refutation named; it is kept, renamed to what it actually checks
-#      (the wiring), with the real gate now beside it in HUDPixelTests.
-# 80 = the 42 above + the cube engine, added by lane/cube-extract on 2026-09-07:
-#      Cube content models (10) + Cube engine bridge (16) + Cube solve (3) +
-#      Cube guided script (2) + Cube validate refusals (4) + Cube parity corpus (3).
-#      Several of those are parameterised over both cube sizes; the runner counts a
-#      parameterised @Test once, so this floor is a floor on test FUNCTIONS discovered,
-#      not on cases executed - which is the thing that silently shrinks.
+# 143 -> 166 on lane/patchwerk: MQPatchwerk + MQServices, then the fix pass's 23 for the
+#       seven Patchwerk Refutation wounds (the pinned corpus, the pause knob's real rect,
+#       the hourglass sand, the unicode name filter, the corrupt board, the monotonic
+#       clock, the single ticker).
 #
-# 88 = the 80 above + the fix pass of 2026-09-07, answering the extract refutation:
-#      Cube API golden corpus (4, kill 1 - the value oracle for CUBE_API) +
-#      Cube state domain (3, wound 5 - permutation / range / fixed-width-integer refusals) +
-#      Cube words (1, the Swift side reading the SNAPSHOT's word surface, which is a
-#      different fixture from the golden and does not get re-recorded with it).
-#      Measured, not counted by hand: `./test.command` reports 88 executed.
+# 80 = the 42 above + the cube engine, added by lane/cube-extract off main.
+# 88 = the 80 above + the cube fix pass (the CUBE_API golden corpus, the state-domain
+#      refusals, the snapshot's word surface), answering the extract refutation's two
+#      kills.
+#
+# Each of those was measured on its own branch. On the merged tree the shared 71 is
+# counted once, which is why 401 and not 160+167+166+88.
 #
 # ---------------------------------------------------------------------------
 # SAMPLE-SIZE FLOORS  (wound 2 of the extract refutation)

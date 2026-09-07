@@ -13,8 +13,10 @@
  *   MQI_API.explain(argsJSON)       -> {ok, explanation}
  *   MQI_API.build()                 -> {ok, build}
  *
- * Plus two lifecycle helpers the five above imply:
- *   MQI_API.endSession(argsJSON)    -> {ok, ended}
+ * Plus three lifecycle helpers the five above imply:
+ *   MQI_API.endSession(argsJSON)    -> {ok, ended, open, cap, evicted}
+ *                                      {session:"id"} one · {all:true} every one
+ *   MQI_API.sessionStats()          -> {ok, open, cap, evicted}
  *   MQI_API.drainLogs()             -> {ok, logs[]}
  *
  * ENVELOPE. Every return is {"ok":true, ...} or
@@ -124,14 +126,43 @@ var MQI_API = (function () {
 
   /* ---------- feed sessions ----------
      MQI.createFeed holds the no-repeat rings (shape ring, last generator, last
-     skill) that make a session feel varied. One per named session id. */
+     skill) that make a session feel varied. One per named session id.
+
+     BOUNDED, and that is a fix not a nicety. The map used to hold every session for
+     the life of the JSContext and only an explicit endSession freed one: 20,000
+     un-ended sessions measured 189 MB resident, dead linear, no plateau. On a 2 GB
+     iPad that is the jetsam surface. It is now an LRU capped at MAX_SESSIONS - no
+     child has 64 feeds open at once, and a caller that forgets to end one loses a
+     no-repeat ring (it rebuilds on the next draw) instead of leaking. Evictions are
+     reported by endSession/sessionStats so a caller who really needs more than the
+     cap finds out rather than guessing. */
+  var MAX_SESSIONS = 64;
   var sessions = Object.create(null);
+  var sessionOrder = [];            /* least-recently-used first */
+  var evictedCount = 0;
+
+  function touchSession(id) {
+    var at = sessionOrder.indexOf(id);
+    if (at !== -1) sessionOrder.splice(at, 1);
+    sessionOrder.push(id);
+  }
+  function dropSession(id) {
+    if (!(id in sessions)) return false;
+    delete sessions[id];
+    var at = sessionOrder.indexOf(id);
+    if (at !== -1) sessionOrder.splice(at, 1);
+    return true;
+  }
   function feedFor(sessionId, topic) {
     var s = sessions[sessionId];
-    if (s && s.topic === topic) return s.feed;
-    var feed = MQI.createFeed(topic);
-    sessions[sessionId] = { topic: topic, feed: feed };
-    return feed;
+    if (s && s.topic === topic) { touchSession(sessionId); return s.feed; }
+    sessions[sessionId] = { topic: topic, feed: MQI.createFeed(topic) };
+    touchSession(sessionId);
+    while (sessionOrder.length > MAX_SESSIONS) {
+      dropSession(sessionOrder[0]);
+      evictedCount += 1;
+    }
+    return sessions[sessionId].feed;
   }
 
   /* ---------- envelope ---------- */
@@ -366,10 +397,28 @@ var MQI_API = (function () {
     try {
       var a = args(json, 'endSession');
       var ended = [];
-      if (a.session) { delete sessions[String(a.session)]; ended.push(String(a.session)); }
-      else if (a.all) { ended = Object.keys(sessions); sessions = Object.create(null); }
-      return ok({ ended: ended, open: Object.keys(sessions).length });
+      if (a.all) {
+        ended = sessionOrder.slice();
+        sessions = Object.create(null);
+        sessionOrder = [];
+      } else if (a.session) {
+        var id = String(a.session);
+        if (dropSession(id)) ended.push(id);
+      }
+      return ok({
+        ended: ended,
+        open: sessionOrder.length,
+        cap: MAX_SESSIONS,
+        evicted: evictedCount
+      });
     } catch (e) { return fail(e, 'endSession'); }
+  }
+  /* Read-only: what the session map is holding. The Swift side's memory-pressure hook
+     asserts on this after draining, and the gate asserts the cap actually binds. */
+  function sessionStats() {
+    try {
+      return ok({ open: sessionOrder.length, cap: MAX_SESSIONS, evicted: evictedCount });
+    } catch (e) { return fail(e, 'sessionStats'); }
   }
   function drainLogs() {
     try {
@@ -385,6 +434,7 @@ var MQI_API = (function () {
     explain: explain,
     build: build,
     endSession: endSession,
+    sessionStats: sessionStats,
     drainLogs: drainLogs
   };
 })();

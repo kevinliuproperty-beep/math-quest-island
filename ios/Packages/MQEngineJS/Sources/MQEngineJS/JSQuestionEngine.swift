@@ -28,6 +28,11 @@ public actor JSQuestionEngine: QuestionSource {
     private var context: JSContext?
     private var api: JSValue?
 
+    /// `MQI_API` calls since the last garbage collection. Drives `relieveMemoryPressure`.
+    private var callsSinceLastCollect = 0
+    /// How many times the context has been torn down and rebuilt. Diagnostics only.
+    private var resetCount = 0
+
     /// The bundle text, kept so a gate can assert the file's own `ENGINE_BUILD` line
     /// matches what `build()` reports at runtime.
     private var bundleSource: String?
@@ -87,18 +92,28 @@ public actor JSQuestionEngine: QuestionSource {
         guard let ctx = context else { throw EngineError.apiMissing("no JSContext") }
         ctx.exception = nil
 
-        let args: [Any] = argumentsJSON.map { [$0] } ?? []
-        let result = api.invokeMethod(method, withArguments: args)
+        // The pool is the memory fix, not decoration. Every call mints a JSValue for
+        // the argument, one for the result and one per exception probe; with no pool of
+        // its own they accumulate until the enclosing task's pool drains, which under a
+        // tight draw-and-grade loop is effectively never. A 200,000-draw soak in one
+        // context peaked at 814 MB resident - on a 2 GB iPad that is the jetsam
+        // surface, and Charlotte's device is the target.
+        let json: String = try autoreleasepool {
+            let args: [Any] = argumentsJSON.map { [$0] } ?? []
+            let result = api.invokeMethod(method, withArguments: args)
 
-        if let ex = ctx.exception {
-            ctx.exception = nil
-            throw EngineError.javaScriptException(method: method,
-                                                  message: ex.toString() ?? "unknown",
-                                                  stack: Self.stack(of: ex))
+            if let ex = ctx.exception {
+                ctx.exception = nil
+                throw EngineError.javaScriptException(method: method,
+                                                      message: ex.toString() ?? "unknown",
+                                                      stack: Self.stack(of: ex))
+            }
+            guard let result, result.isString, let text = result.toString() else {
+                throw EngineError.badReturn(method: method, detail: result.map { "\($0)" } ?? "nil")
+            }
+            return text
         }
-        guard let result, result.isString, let json = result.toString() else {
-            throw EngineError.badReturn(method: method, detail: result.map { "\($0)" } ?? "nil")
-        }
+        callsSinceLastCollect += 1
         return json
     }
 
@@ -248,9 +263,75 @@ public actor JSQuestionEngine: QuestionSource {
     }
 
     public func endSession(_ session: String) async throws {
-        struct Ended: Decodable { let ended: [String]; let open: Int }
-        _ = try call("endSession", try encodeArgs(SessionArgs(session: session), method: "endSession"), as: Ended.self)
+        _ = try call("endSession", try encodeArgs(SessionArgs(session: session), method: "endSession"),
+                     as: SessionState.self)
     }
+
+    // MARK: - Lifetime and memory
+
+    /// Retire EVERY open feed session in one crossing.
+    ///
+    /// `api.js` has always supported `{all:true}`; it simply was not reachable from
+    /// Swift, so the only way to free a session was to remember its id. The map is now
+    /// LRU-capped on the JS side as well, but a profile switch, a mode change or a
+    /// backgrounding should drop the rings explicitly rather than wait for eviction.
+    @discardableResult
+    public func endSession(all: Bool) async throws -> SessionState {
+        guard all else { return try sessionState() }
+        struct AllArgs: Encodable { let all: Bool }
+        return try call("endSession", try encodeArgs(AllArgs(all: true), method: "endSession"), as: SessionState.self)
+    }
+
+    /// What the engine's session map is holding right now.
+    public func sessionState() throws -> SessionState {
+        try call("sessionStats", nil, as: SessionState.self)
+    }
+
+    /// What the app calls from `didReceiveMemoryWarning` (or a
+    /// `.memoryPressure` dispatch source). Cheap and non-destructive: drop every feed
+    /// session's no-repeat rings, then run a full JavaScriptCore collection. Questions
+    /// already drawn are unaffected - grading is stateless, the key travels with the
+    /// question - so the only user-visible cost is that the next few items in an
+    /// in-flight feed may repeat a shape sooner than they would have.
+    ///
+    /// Returns the session state after the drain.
+    @discardableResult
+    public func relieveMemoryPressure() async throws -> SessionState {
+        let state = try await endSession(all: true)
+        collectGarbage()
+        return state
+    }
+
+    /// Force a JavaScriptCore collection. `JSGarbageCollect` is public C API on the
+    /// `JSGlobalContextRef` behind the `JSContext`.
+    public func collectGarbage() {
+        guard let ref = context?.jsGlobalContextRef else { return }
+        JSGarbageCollect(ref)
+        callsSinceLastCollect = 0
+    }
+
+    /// The nuclear option: throw the whole `JSContext` away and let the next call
+    /// build a fresh one from the same bundle.
+    ///
+    /// Costs one bundle evaluation (~40 ms measured on this box) and loses every feed
+    /// session. Everything else survives, because nothing about a question lives on
+    /// the JS side: a `Question` already in hand still grades after a reset, which the
+    /// gate asserts. This is the documented escape hatch for a context whose heap has
+    /// climbed and will not come back down - `relieveMemoryPressure()` first, this
+    /// only if that is not enough.
+    public func reset() {
+        api = nil
+        context = nil
+        bundleSource = nil
+        callsSinceLastCollect = 0
+        resetCount += 1
+    }
+
+    /// How many times `reset()` has rebuilt the context. Diagnostics for a rehearsal log.
+    public func timesReset() -> Int { resetCount }
+
+    /// True once a context exists. `reset()` drives it back to false.
+    public func isLoaded() -> Bool { api != nil }
 
     // MARK: - Diagnostics
 

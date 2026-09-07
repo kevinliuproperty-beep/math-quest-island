@@ -61,12 +61,18 @@ public struct Question: Codable, Hashable, Sendable, Identifiable {
 
     /// The answer that grades correct, for this question, without asking the engine.
     /// Used by gates and by bot/demo play - never on the child's path.
+    ///
+    /// `Int(someDouble)` is a TRAP in Swift, not an error: an unguarded one here on a
+    /// key answer of `1e21` killed the whole process (`Fatal error: Double value
+    /// cannot be converted to Int`, exit 133). No engine-supplied number is pushed
+    /// through a fixed-width integer anywhere in this module - `JSONValue.numberText`
+    /// formats it the way JavaScript prints it instead.
     public var selfAnswer: Answer {
         switch kind {
         case .choice: return .choice(correctIndex)
         case .typed:
             if let n = key["answer"]?.doubleValue {
-                return .typed(n.rounded() == n ? String(Int(n)) : String(n))
+                return .typed(JSONValue.numberText(n))
             }
             return .typed(answerTextPlain)
         }
@@ -99,14 +105,58 @@ public enum Answer: Codable, Hashable, Sendable {
 }
 
 /// The engine's ruling on one answer.
+///
+/// **This type is on the child's input path, so its decode must never throw.**
+///
+/// It used to. `Parsed.frac` was `[Int]?` while `reduceFrac` in `js/core.js` returns
+/// unbounded JavaScript numbers, so a child who typed `99999999999999999999/3` got a
+/// normal "wrong value or unit" verdict in node and a thrown `DecodingError` in Swift -
+/// an error the app has to handle on an answer submission. Per the brief's own rule
+/// ("any divergence between node and Swift is a bridge bug"), that was a kill.
+///
+/// The rule this type now enforces:
+///
+/// * every engine-supplied NUMBER decodes as `Double` (or `JSONValue`), never as a
+///   fixed-width Swift integer. `1e21`, a 20-digit numerator, `-0` and
+///   `9007199254740993` all land intact - they are the same doubles JavaScript holds.
+/// * every field is decoded LENIENTLY: a missing, null or unexpectedly-typed field
+///   falls back to a defined value rather than throwing. A malformed verdict must
+///   still be a verdict; the alternative is the app raising an error where node
+///   returned an answer, which is the exact divergence class this decode exists to
+///   prevent.
 public struct Verdict: Codable, Hashable, Sendable {
+
     public struct Parsed: Codable, Hashable, Sendable {
         public let ok: Bool
         public let value: Double?
         public let unit: String
         /// `[numerator, denominator]`, reduced, when the child typed a fraction.
-        public let frac: [Int]?
+        /// **`Double`, not `Int`:** `reduceFrac` returns JS numbers with no bound, and
+        /// a numerator past `Int64` is a perfectly ordinary wrong answer.
+        public let frac: [Double]?
         public let reason: String?
+
+        public init(ok: Bool, value: Double?, unit: String, frac: [Double]?, reason: String?) {
+            self.ok = ok; self.value = value; self.unit = unit; self.frac = frac; self.reason = reason
+        }
+
+        private enum CodingKeys: String, CodingKey { case ok, value, unit, frac, reason }
+
+        public init(from decoder: Decoder) throws {
+            guard let c = try? decoder.container(keyedBy: CodingKeys.self) else {
+                // A `parsed` that is not even an object still has to yield a Parsed:
+                // node returns a verdict here, so Swift must too.
+                self.ok = false; self.value = nil; self.unit = ""
+                self.frac = nil; self.reason = "undecodable"
+                return
+            }
+            self.ok = (try? c.decodeIfPresent(Bool.self, forKey: .ok)).flatMap { $0 } ?? false
+            self.value = JSONValue.leniently(c, .value)?.doubleValue
+            self.unit = JSONValue.leniently(c, .unit)?.stringValue ?? ""
+            let arr = JSONValue.leniently(c, .frac)?.arrayValue
+            self.frac = (arr?.isEmpty == false) ? arr!.map { $0.doubleValue ?? .nan } : nil
+            self.reason = JSONValue.leniently(c, .reason)?.stringValue
+        }
     }
 
     public let correct: Bool
@@ -122,6 +172,32 @@ public struct Verdict: Codable, Hashable, Sendable {
     /// Present for typed answers: how the JS grader read what the child typed.
     public let parsed: Parsed?
     public let typedRaw: String?
+
+    public init(correct: Bool, kind: Question.Kind, questionId: String?, expectedIndex: Int,
+                expectedText: String, chosenIndex: Int, reason: String?, parsed: Parsed?, typedRaw: String?) {
+        self.correct = correct; self.kind = kind; self.questionId = questionId
+        self.expectedIndex = expectedIndex; self.expectedText = expectedText; self.chosenIndex = chosenIndex
+        self.reason = reason; self.parsed = parsed; self.typedRaw = typedRaw
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case correct, kind, questionId, expectedIndex, expectedText, chosenIndex, reason, parsed, typedRaw
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.correct = (try? c.decodeIfPresent(Bool.self, forKey: .correct)).flatMap { $0 } ?? false
+        self.kind = (try? c.decodeIfPresent(Question.Kind.self, forKey: .kind)).flatMap { $0 } ?? .choice
+        self.questionId = JSONValue.leniently(c, .questionId)?.stringValue
+        // Indices are engine-controlled and small, but a fixed-width decode is still the
+        // trap: clamp rather than throw, and never on the child's path.
+        self.expectedIndex = JSONValue.leniently(c, .expectedIndex)?.clampedIntValue ?? -1
+        self.chosenIndex = JSONValue.leniently(c, .chosenIndex)?.clampedIntValue ?? -1
+        self.expectedText = JSONValue.leniently(c, .expectedText)?.stringValue ?? ""
+        self.reason = JSONValue.leniently(c, .reason)?.stringValue
+        self.parsed = try? c.decodeIfPresent(Parsed.self, forKey: .parsed)
+        self.typedRaw = JSONValue.leniently(c, .typedRaw)?.stringValue
+    }
 }
 
 /// What the child sees after getting it wrong, plus the parent tip for the skill.

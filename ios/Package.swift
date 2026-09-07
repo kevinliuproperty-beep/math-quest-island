@@ -13,13 +13,19 @@
 //               JavaScriptCore is a macOS framework, so this builds and tests here.
 //
 // RUNNING THE TESTS ON KAI
-//   ./test.command                (from ios/)
-//   or: swift test --toolset kai-toolset.json
-// Command Line Tools ships Testing.framework outside every default search path, so a
-// bare `swift test` compiles the suites but silently runs ZERO of them (SwiftPM's
-// generated runner is guarded by `#if canImport(Testing)`). kai-toolset.json supplies
-// the search path and rpaths; test.command applies it only when Xcode is absent.
-// On a box WITH Xcode, plain `swift test` works and the toolset is not used.
+//   ./test.command                (from ios/)   <- THE GATE. Use this.
+//   swift test --toolset kai-toolset.json       <- runs the suites; is NOT the gate
+// Command Line Tools ships Testing.framework outside every default search path and no
+// XCTest at all, so a bare `swift test` on Kai FAILS TO BUILD: the suites
+// `import Testing` unconditionally, giving `error: no such module 'Testing'` and exit 1.
+// (An earlier version of this comment said it compiled the suites and silently ran ZERO
+// of them. Measured at d060bb3, that is not what happens - it is loud.) kai-toolset.json
+// supplies the search path and rpaths; test.command applies it when the ACTIVE TOOLCHAIN
+// has no XCTest, not when /Applications/Xcode.app happens to be missing.
+//
+// `swift test` alone is not the gate even where it runs: the gate is test.command, which
+// also verifies the committed engine bundle's own bytes against js/ and FAILS when zero
+// tests execute - a --filter matching nothing used to exit 0. See ios/gate-floor.txt.
 // Deliberately no `unsafeFlags` in this manifest: they would follow the package into
 // every consumer, and this manifest is meant to be added to an Xcode project as-is.
 //

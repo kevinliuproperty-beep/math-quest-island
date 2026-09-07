@@ -4,7 +4,7 @@
   "private": true,
   "description": "Math Quest Island. Zero-build static app; this manifest carries the sanity harness and the engine-bundle build.",
   "scripts": {
-    "test": "node tools/answer-parse-test.mjs && node tools/gen-sanity.mjs && node tools/feed-sim.mjs && node tools/engine-api-test.mjs",
+    "test": "node tools/answer-parse-test.mjs && node tools/gen-sanity.mjs && node tools/feed-sim.mjs && node tools/engine-api-test.mjs && node tools/parity-test.mjs",
     "test:deep": "SAMPLES=50000 node tools/gen-sanity.mjs",
     "test:feed": "node tools/feed-sim.mjs",
     "serve": "python3 -m http.server 8765",
@@ -12,6 +12,8 @@
     "build:engine": "node tools/build-engine.mjs",
     "check:engine": "node tools/build-engine.mjs --check",
     "test:engine-api": "node tools/engine-api-test.mjs",
+    "test:parity": "node tools/parity-test.mjs",
+    "build:parity-corpus": "node tools/make-parity-corpus.mjs",
     "test:swift": "ios/test.command"
   }
 }

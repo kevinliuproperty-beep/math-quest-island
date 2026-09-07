@@ -56,9 +56,26 @@ public protocol QuestionSource: Sendable {
 
     /// Retire a feed session's no-repeat rings. Safe to call for an unknown id.
     func endSession(_ session: String) async throws
+
+    /// Retire EVERY open feed session in one crossing, and report what the session map
+    /// holds afterwards.
+    ///
+    /// That map is the engine's only unbounded state. `{all:true}` existed on the JS
+    /// side from the start but was unreachable from Swift, so the only way to free a
+    /// session was to have remembered its id - which is how 20,000 un-ended sessions
+    /// and 189 MB resident happen. A profile switch, a mode change or a backgrounding
+    /// should call this.
+    @discardableResult
+    func endSession(all: Bool) async throws -> SessionState
 }
 
 public extension QuestionSource {
+    /// A source with no session state has nothing to retire.
+    @discardableResult
+    func endSession(all: Bool) async throws -> SessionState {
+        SessionState(open: 0, cap: 0, evicted: 0)
+    }
+
     func nextQuestions(_ request: QuestionRequest, count: Int) async throws -> [Question] {
         var out: [Question] = []
         out.reserveCapacity(count)

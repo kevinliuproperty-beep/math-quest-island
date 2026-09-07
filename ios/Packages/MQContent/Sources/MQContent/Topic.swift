@@ -91,3 +91,36 @@ public struct EngineBuild: Codable, Hashable, Sendable {
     /// "javascriptcore" in the app, "node" under the parity harness.
     public let platform: String
 }
+
+/// What the engine's feed-session map is holding.
+///
+/// That map is the engine's only unbounded state: each named session owns a
+/// `createFeed` closure with its no-repeat rings, and before the cap existed 20,000
+/// un-ended sessions measured 189 MB resident, dead linear, with no plateau. It is now
+/// LRU-capped, and this is how a caller sees whether the cap is binding instead of
+/// guessing.
+public struct SessionState: Codable, Hashable, Sendable {
+    /// Sessions currently held.
+    public let open: Int
+    /// The LRU cap the engine enforces.
+    public let cap: Int
+    /// Sessions dropped by the LRU since this context was created. A non-zero count on
+    /// a real device means someone is minting session ids instead of reusing one.
+    public let evicted: Int
+    /// Session ids retired by the call that returned this (empty for a pure read).
+    public let ended: [String]
+
+    public init(open: Int, cap: Int, evicted: Int, ended: [String] = []) {
+        self.open = open; self.cap = cap; self.evicted = evicted; self.ended = ended
+    }
+
+    private enum CodingKeys: String, CodingKey { case open, cap, evicted, ended }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.open = (try? c.decodeIfPresent(Int.self, forKey: .open)).flatMap { $0 } ?? 0
+        self.cap = (try? c.decodeIfPresent(Int.self, forKey: .cap)).flatMap { $0 } ?? 0
+        self.evicted = (try? c.decodeIfPresent(Int.self, forKey: .evicted)).flatMap { $0 } ?? 0
+        self.ended = (try? c.decodeIfPresent([String].self, forKey: .ended)).flatMap { $0 } ?? []
+    }
+}

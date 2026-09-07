@@ -1125,14 +1125,21 @@ function oracle(q) {
     const cap = extra.match(/Each unit along the bottom of the graph stands for (\d+) /);
     if (!cap) return 'bar graph: no scale caption printed under the graph';
     const scale = Number(cap[1]);
-    const ticks = [...raw.matchAll(/<span class="bg-tick"[^>]*>(\d+)<\/span>/g)].map(t => Number(t[1]));
+    /* Phone Width Lane, 2026-09-07: `bar` is now ONE viewBox-scaled svg instead of an
+       absolutely-positioned HTML box model (it had a hard 450 px intrinsic width and
+       lost the tallest bar's value off a 390 px screen). The oracle still reads the
+       SAME four printed labels in the SAME order - .bg-cat, .bg-bar, .bg-val per row
+       and .bg-tick on the axis - only the elements carrying them changed from
+       <span>/<span> to <text>/<path>/<text>. Kept adjacency-strict on purpose: a row
+       that stops printing its category, its bar or its value still fails here. */
+    const ticks = [...raw.matchAll(/<text class="bg-tick"[^>]*>(\d+)<\/text>/g)].map(t => Number(t[1]));
     if (ticks.length < 3) return 'bar graph: value axis has fewer than 3 printed ticks';
     if (ticks[0] !== 0) return 'bar graph: axis does not start at 0, got ' + ticks[0];
     for (let i = 1; i < ticks.length; i++) {
       if (ticks[i] - ticks[i - 1] !== scale) return `bar graph: tick step ${ticks[i] - ticks[i - 1]} != scale ${scale}`;
     }
     const bars = {};
-    for (const b of raw.matchAll(/<span class="bg-cat"[^>]*>([^<]+)<\/span><span class="bg-bar"[^>]*><\/span><span class="bg-val"[^>]*>(\d+)<\/span>/g)) {
+    for (const b of raw.matchAll(/<text class="bg-cat"[^>]*>([^<]+)<\/text><path class="bg-bar"[^>]*\/><text class="bg-val"[^>]*>(\d+)<\/text>/g)) {
       bars[b[1]] = Number(b[2]);
     }
     const names = Object.keys(bars);

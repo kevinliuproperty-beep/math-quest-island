@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node tools/answer-parse-test.mjs && node tools/gen-sanity.mjs && node tools/feed-sim.mjs && node tools/engine-api-test.mjs && node tools/parity-test.mjs",
     "test:deep": "SAMPLES=50000 node tools/gen-sanity.mjs",
+    "test:layout": "node --experimental-websocket tools/layout-gate.mjs",
     "test:feed": "node tools/feed-sim.mjs",
     "serve": "python3 -m http.server 8765",
     "test:answers": "node tools/answer-parse-test.mjs",

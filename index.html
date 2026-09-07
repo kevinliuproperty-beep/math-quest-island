@@ -113,7 +113,17 @@
   #qcard { background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.18); border-radius:22px;
            padding:14px 18px 12px; text-align:center; margin:2px 0 10px; min-height:104px;
            display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
-  #qtext { font-size:clamp(20px,4.4vw,27px); font-weight:700; line-height:1.5; }
+  #qtext { font-size:clamp(20px,4.4vw,27px); font-weight:700; line-height:1.5; max-width:100%; }
+  /* PHONE-WIDTH LANE (2026-09-07). #qcard is a centred COLUMN flex container, so
+     #qextra was a shrink-to-fit flex item with the default min-width:auto: it took the
+     figure's intrinsic width even when that was wider than the card, and every
+     `max-width:100%` inside js/figures.js then resolved against a box that was ALREADY
+     off the screen. That is why the figure-spec lane's max-width on .bargraph was inert
+     and why the W3 "the table is capped and scrolls in place" claim was not true on the
+     glass (measured 421 px of table in a 364 px card at 390 px). Making #qextra a
+     full-width, min-width:0 block is the single line that gives every figure a real
+     card to cap against - and it centres the drawings inside it. */
+  #qextra { width:100%; max-width:100%; min-width:0; text-align:center; }
 
   #timerWrap { display:none; width:100%; max-width:420px; align-items:center; gap:8px; }
   #timerWrap.on { display:flex; }
@@ -171,9 +181,21 @@
   #feedback { min-height:32px; text-align:center; font-size:18px; font-weight:800; padding-bottom:4px; }
   #feedback .ok { color:#7dffb0; } #feedback .no { color:#ffc9c2; }
 
-  #banner { position:absolute; inset:0; display:none; align-items:center; justify-content:center; z-index:20; pointer-events:none; }
-  #banner .inner { font-size:clamp(28px,6vw,46px); font-weight:900; text-align:center;
-                   text-shadow:0 4px 0 rgba(0,0,0,.4); animation:bannerIn .8s; color:#ffe66d; padding:0 10px; }
+  /* PHONE-WIDTH LANE (2026-09-07): the banner no longer crosses the fighters.
+     It used to be `inset:0` inside #arena with `align-items:center`, so "CRITICAL HIT!"
+     was painted straight across both sprites and both NAME labels in normal mode - the
+     parent-visible complaint from the dress rehearsal, and the same defect the W3 lane
+     fixed for Patchwerk only. There is no free room INSIDE the arena at 390 px (the
+     fighter column is sprite + name + HP bar + HP text, bottom-aligned, ~125 px of a
+     134 px content box), so the banner is now hung from the arena's BOTTOM EDGE
+     (`top:100%`) and boxed: it floats over the top of the question card, which the
+     child is not reading at the moment they just answered, and every avatar, name, HP
+     bar and HP number stays visible. pointer-events stay off, so it cannot eat a tap. */
+  #banner { position:absolute; left:0; right:0; top:100%; display:none; align-items:flex-start;
+            justify-content:center; z-index:20; pointer-events:none; }
+  #banner .inner { font-size:clamp(22px,5vw,38px); font-weight:900; text-align:center;
+                   animation:bannerIn .8s; color:#ffe66d; padding:6px 16px; max-width:96%;
+                   background:rgba(15,23,42,.92); border:2px solid #ffe66d; border-radius:14px; }
   @keyframes bannerIn { 0%{transform:scale(.3); opacity:0} 45%{transform:scale(1.15)} 70%{transform:scale(1)} 100%{opacity:1} }
 
   /* ---------- END / PARENT / FAME ---------- */
@@ -265,18 +287,16 @@
   @keyframes pwFreezeAnim { 0%,100%{filter:none} 50%{filter:drop-shadow(0 0 10px #6ee7f9) brightness(1.3)} }
   @keyframes pwEnrageAnim { 0%,100%{filter:none} 50%{filter:drop-shadow(0 0 14px #ff5e62) brightness(1.35)} }
 
-  /* W3 cosmetic (Dress Rehearsal Wave 2, item 2): #banner is inset:0 and centres its
-     text over the whole play area, so the one-shot "ENRAGE!" line was drawn straight
-     across the hero + Patchwerk avatar row and half-covered both sprites. In this mode
-     the banner is pinned to the BOTTOM of the play area and boxed, so the avatars stay
-     visible for the whole fight. Patchwerk block only; every other mode is untouched. */
-  body[data-mode-theme^="mode-patchwerk"] #banner,
-  body[data-mode-theme="enrage"] #banner { align-items:flex-end; padding-bottom:0; }
+  /* W3 cosmetic (Dress Rehearsal Wave 2, item 2): the one-shot "ENRAGE!" line used to be
+     drawn straight across the hero + Patchwerk avatar row. The base #banner rule above
+     now hangs every banner below the arena, so this block only keeps Patchwerk's own
+     smaller type and red border. The `transform:translateY(52%)` that used to live here
+     is GONE: the W3 refutation flagged that it pushed roughly half the boxed banner
+     below the play area, where `body{overflow:hidden}` would clip it (Phone Width Lane,
+     2026-09-07 - the box now sits fully inside the page at every width). */
   body[data-mode-theme^="mode-patchwerk"] #banner .inner,
   body[data-mode-theme="enrage"] #banner .inner {
-    font-size:clamp(17px,3.2vw,25px); background:rgba(15,23,42,.9);
-    border:2px solid #ff5e62; border-radius:12px; padding:7px 14px; text-shadow:none;
-    transform:translateY(52%); }
+    font-size:clamp(17px,3.2vw,25px); border-color:#ff5e62; border-radius:12px; padding:7px 14px; }
 
   /* The dummy's health is the HUD bar (it refills). The arena HP bars carry a fail
      state Patchwerk does not have, so they are hidden for the duration. */
@@ -459,7 +479,7 @@
      document.write keeps the tags synchronous, so load order is byte-identical to
      the hand-written tags it replaces. -->
 <script>
-  window.MQI_BUILD = "20260907fig";
+  window.MQI_BUILD = "20260907phone";
   (function () {
     var v = "?v=" + window.MQI_BUILD;
     var files = [

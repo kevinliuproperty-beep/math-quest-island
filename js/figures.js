@@ -25,6 +25,14 @@
  *     the pie legend prints every sector's value a second time and sectors are
  *     drawn strictly proportional to their weights; rect uses one px-per-unit
  *     on both axes.
+ *   - RESPONSIVE, NOT WIDTH-CONDITIONAL (Phone Width Lane, 2026-09-07). Every
+ *     drawing is ONE drawing at every screen width: a viewBox that scales, never a
+ *     second layout below some breakpoint. `bar` was redrawn as an svg for exactly
+ *     this reason (its HTML box model had a hard 450 px width and spilled off a
+ *     390 px phone, taking the tallest bar's printed value with it); `table` is the
+ *     one figure that scrolls instead of scaling, because shrinking a table of
+ *     numbers stops a child reading it, and that scroll now carries a visible
+ *     edge shadow. Drawings are centred in their own card.
  *
  * Load order: AFTER js/core.js (core.js assigns `window.MQI` wholesale), before
  * js/app.js. In the harness: core.js, then js/figures.js, then js/topics/*.js.
@@ -36,52 +44,75 @@
    * Bar i is `units[i]` units long and prints `units[i] * scale`; the value axis
    * carries one tick per unit from 0 to maxUnit, labelled `k * scale`. */
   const BAR_LBL = 156, BAR_PLOTW = 240;   /* px: category column, plot area */
+  const BAR_GUT = 30, BAR_ROW = 24, BAR_BARH = 15;  /* right gutter for the last tick number, row pitch, bar thickness */
+
+  /* PHONE-WIDTH FIX (Phone Width Lane, 2026-09-07), and it is a REDRAW, not a wrapper.
+     The bar graph used to be an absolutely-positioned HTML box model with a HARD
+     450 px intrinsic width (12 + 156 + 240 + 30 + 12). `max-width:100%` cannot shrink
+     that - a block whose children are placed in px keeps its own geometry and simply
+     spills - so at a 390 px viewport the card ran from x = -30 to x = 420, the page
+     gained a sideways scroll, and 100% of bar graphs lost the tallest bar's printed
+     value off the right edge (Figure Spec Refutation wound 4: identical on main, so
+     never a regression, but never fixed either, and the max-width added by the
+     figure-spec lane was inert for exactly this reason).
+
+     The bar is now ONE SVG with a viewBox, so it scales as a single drawing at any
+     width instead of being clipped: same 156 px category column, same 240 px plot,
+     same 24 px row pitch, same gridline and tick positions, drawn at its natural
+     426 px on a desktop and proportionally smaller on a phone. `height:auto` keeps
+     the aspect. Nothing is width-conditional: one drawing, one geometry to port.
+
+     Geometry, in viewBox units (js/topics/README.md carries the same numbers, and a
+     native MQFigures reproduces them):
+       W = 156 + 240 + 30 = 426          H = 24 * rows + 28
+       row i occupies y = 4 + 24i .. +20; its two texts sit on baseline y = +14.5
+       gridline k at x = 156 + round(k / maxUnit * 240), from y = 4 to y = 24 * rows
+       bar i is 15 px thick at y = row top + 2.5, its right corners rounded r = 2
+       the value axis rule is at y = 24 * rows + 5; ticks drop 5 px below it; tick
+       numbers are centred on their own gridline with the baseline at axis + 17
+     Title and caption stay HTML ABOVE and BELOW the svg on purpose: they are prose,
+     so on a phone they must WRAP at reading size rather than shrink with the drawing. */
+  function barPath(x0, y0, w, h) {
+    const r = Math.min(2, w / 2);        /* the old CSS was border-radius:0 2px 2px 0 - right corners only */
+    return 'M' + x0 + ' ' + y0 + 'H' + (x0 + w - r) + 'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r +
+      'V' + (y0 + h - r) + 'a' + r + ' ' + r + ' 0 0 1 ' + (-r) + ' ' + r + 'H' + x0 + 'Z';
+  }
 
   function bar(f) {
     const cats = f.cats, units = f.units, scale = f.scale;
-    const maxU = f.maxUnit;
+    const maxU = f.maxUnit, n = cats.length;
     const x = k => Math.round(k / maxU * BAR_PLOTW);
+    const W = BAR_LBL + BAR_PLOTW + BAR_GUT, axisY = n * BAR_ROW + 5, H = n * BAR_ROW + 28;
 
-    /* WOUND 4 (Figure Spec Refutation, 2026-09-07): `.bargraph` was the only one of the
-       seven renderers with no max-width, so at a 390 px viewport its intrinsic ~450 px
-       ran past the card and 100% of bar graphs lost the tallest bar's printed value.
-       `line`, `table` and `pie` all already carried max-width:100%. NOTE: this is inert
-       on its own - the page itself still overflows at 390 px (avatar row, answer grid,
-       card), so max-width:100% resolves against a box that is already wider than the
-       screen. That page-level 390 px layout fix is ITS OWN packet and is deliberately
-       not chased here. */
-    let html = '<div class="bargraph" style="text-align:left;font-size:13px;line-height:1.3;' +
+    let s = '<div class="bargraph" style="text-align:left;font-size:13px;line-height:1.3;' +
       'color:#0f172a;background:#fff;padding:10px 12px 6px;border-radius:8px;display:inline-block;' +
-      'max-width:100%;overflow-x:auto">' +
+      'max-width:100%">' +
       '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>' +
-      '<div style="position:relative;padding-left:' + BAR_LBL + 'px">' +
-      '<div style="position:absolute;left:' + BAR_LBL + 'px;top:0;bottom:0;width:' + BAR_PLOTW + 'px">';
+      '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H +
+      '" style="display:block;margin:0 auto;max-width:100%;height:auto;font-family:inherit">';
     for (let k = 0; k <= maxU; k++) {
-      html += '<div style="position:absolute;left:' + x(k) + 'px;top:0;bottom:0;width:1px;background:' +
-        (k === 0 ? '#64748b' : '#e2e8f0') + '"></div>';
+      s += '<line x1="' + (BAR_LBL + x(k)) + '" y1="4" x2="' + (BAR_LBL + x(k)) + '" y2="' + (n * BAR_ROW) +
+        '" stroke="' + (k === 0 ? '#64748b' : '#e2e8f0') + '" stroke-width="1"/>';
     }
-    html += '</div>';
-    for (let i = 0; i < cats.length; i++) {
-      html += '<div class="bg-row" style="position:relative;display:flex;align-items:center;height:20px;margin:4px 0">' +
-        '<span class="bg-cat" style="position:absolute;left:-' + BAR_LBL + 'px;width:' + (BAR_LBL - 8) +
-        'px;text-align:right;white-space:nowrap">' + cats[i] + '</span>' +
-        '<span class="bg-bar" style="display:inline-block;height:15px;background:#4c8bf5;border-radius:0 2px 2px 0;width:' +
-        x(units[i]) + 'px"></span>' +
-        '<span class="bg-val" style="margin-left:6px;font-weight:600">' + (units[i] * scale) + '</span>' +
-        '</div>';
+    for (let i = 0; i < n; i++) {
+      const top = 4 + i * BAR_ROW, w = x(units[i]);
+      s += '<text class="bg-cat" x="' + (BAR_LBL - 8) + '" y="' + (top + 14.5) +
+        '" text-anchor="end" font-size="13" fill="#0f172a">' + cats[i] + '</text>' +
+        '<path class="bg-bar" d="' + barPath(BAR_LBL, top + 2.5, w, BAR_BARH) + '" fill="#4c8bf5"/>' +
+        '<text class="bg-val" x="' + (BAR_LBL + w + 6) + '" y="' + (top + 14.5) +
+        '" text-anchor="start" font-size="13" font-weight="600" fill="#0f172a">' + (units[i] * scale) + '</text>';
     }
-    html += '</div>' +
-      '<div style="position:relative;height:24px;margin-left:' + BAR_LBL + 'px;width:' + (BAR_PLOTW + 30) +
-      'px;border-top:2px solid #475569">';
+    s += '<line x1="' + BAR_LBL + '" y1="' + axisY + '" x2="' + W + '" y2="' + axisY +
+      '" stroke="#475569" stroke-width="2"/>';
     for (let k = 0; k <= maxU; k++) {
-      html += '<span style="position:absolute;left:' + x(k) + 'px;top:0;width:1px;height:5px;background:#475569"></span>' +
-        '<span class="bg-tick" style="position:absolute;left:' + x(k) +
-        'px;top:7px;transform:translateX(-50%);font-size:11px;color:#475569">' + (k * scale) + '</span>';
+      s += '<line x1="' + (BAR_LBL + x(k)) + '" y1="' + (axisY + 1) + '" x2="' + (BAR_LBL + x(k)) +
+        '" y2="' + (axisY + 6) + '" stroke="#475569" stroke-width="1"/>' +
+        '<text class="bg-tick" x="' + (BAR_LBL + x(k)) + '" y="' + (axisY + 17) +
+        '" text-anchor="middle" font-size="11" fill="#475569">' + (k * scale) + '</text>';
     }
-    html += '</div>' +
+    return s + '</svg>' +
       '<div style="margin-top:2px;font-size:.85em;color:#475569">Each unit along the bottom of the graph stands for ' +
       f.scale + ' ' + f.unitLabel + '.</div></div>';
-    return html;
   }
 
   /* ---------------- rect: a labelled rectangle (geometry, P3) ----------------
@@ -176,9 +207,14 @@
       'color:#0f172a;background:#fff;padding:0 2px;' + css + '">' + v + '</span>';
 
     const w = W * L_S, h = H * L_S, aw = a * L_S, bh = b * L_S;
+    /* PHONE-WIDTH LANE 2026-09-07: `max-width:100%` on the card and `margin:0 auto` on
+       the drawing. The L is at most 176 x 154 px but its caption is one long prose
+       line, so at 1024 px the card measured 612 px and the figure hugged its left
+       edge, ~196 px left of centre - the worst case of the rehearsal's "figures sit
+       off-centre in their cards". Desktop pixels move; the 11 px/unit scale does not. */
     return '<div class="lfig" style="display:inline-block;background:#fff;padding:16px 22px;' +
-      'border-radius:8px;color:#0f172a">' +
-      '<div style="position:relative;width:' + w + 'px;height:' + h + 'px">' +
+      'border-radius:8px;color:#0f172a;max-width:100%">' +
+      '<div style="position:relative;width:' + w + 'px;height:' + h + 'px;margin:0 auto">' +
       /* the L drawn as two solid blocks */
       '<div style="position:absolute;left:0;top:0;width:' + (w - aw) + 'px;height:' + bh +
       'px;background:#93c5fd;border:2px solid #1d4ed8;border-right:none;border-bottom:none;box-sizing:border-box"></div>' +
@@ -200,25 +236,50 @@
 
   /* ---------------- table: a one-row data table ----------------
    * { type:'table', title, cats, values, hidden, unitLabel }
-   * `hidden` is the index printed as '?' (-1 for none). W3 cosmetic: a 5-column
-   * table is wider than a 360px column, so the card is capped and scrolls in
-   * place rather than pushing the last column off the screen. */
+   * `hidden` is the index printed as '?' (-1 for none).
+   *
+   * PHONE-WIDTH FIX (Phone Width Lane, 2026-09-07). The W3 lane wrote "the card is
+   * capped and scrolls in place rather than pushing the last column off the screen"
+   * and gave `.dtable` `max-width:100%; overflow-x:auto` - but the cap resolved
+   * against `#qextra`, which was a shrink-to-fit flex item and therefore ALREADY
+   * wider than the screen, so nothing capped anything: measured at 390 px, a
+   * 5-column table drew 421 px from x = -15.6 to x = 405.6 and the last column (the
+   * `?` column in 20.2% of items) sat off the glass. Three parts to the fix:
+   *   1. `#qextra` is now a full-width, min-width:0 block (index.html), so every
+   *      figure's `max-width:100%` finally resolves against the CARD.
+   *   2. Only the TABLE scrolls, not the whole card: the title and caption stay put
+   *      while `.dt-scroll` takes the overflow.
+   *   3. The scroll is VISIBLE. `.dt-scroll` carries the four-layer scroll-shadow
+   *      (two white cover gradients attached `local`, two grey edge shadows attached
+   *      `scroll`): when there is more table off an edge, that edge is shaded; when
+   *      the table fits, both covers sit over both shadows and NOTHING is drawn. So a
+   *      desktop table is pixel-unchanged and a phone table says "there is more here".
+   *   4. Cell padding is `clamp(5px, 2.4vw, 12px)` horizontally, which is exactly the
+   *      old 12 px at any viewport >= 500 px (desktop untouched) and tightens to
+   *      ~9 px on a phone, so most 5-column tables now fit outright and only the
+   *      widest ones need the scroll at all. */
   function table(f) {
     const cats = f.cats, values = f.values, hidden = (typeof f.hidden === 'number' ? f.hidden : -1);
+    const pad = 'padding:5px clamp(5px,2.4vw,12px)';
     let html = '<div class="dtable" style="display:inline-block;background:#fff;color:#0f172a;' +
-      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%;overflow-x:auto">' +
+      'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
       '<div style="font-weight:600;margin-bottom:8px">' + f.title + '</div>' +
+      '<div class="dt-scroll" style="max-width:100%;overflow-x:auto;' +
+      'background:linear-gradient(to right,#fff 60%,rgba(255,255,255,0)) left/34px 100% no-repeat local,' +
+      'linear-gradient(to left,#fff 60%,rgba(255,255,255,0)) right/34px 100% no-repeat local,' +
+      'radial-gradient(farthest-side at 0 50%,rgba(15,23,42,.28),rgba(15,23,42,0)) left/12px 100% no-repeat scroll,' +
+      'radial-gradient(farthest-side at 100% 50%,rgba(15,23,42,.28),rgba(15,23,42,0)) right/12px 100% no-repeat scroll">' +
       '<table style="border-collapse:collapse"><tr>';
     for (let i = 0; i < cats.length; i++) {
-      html += '<th class="dt-cat" style="border:1px solid #94a3b8;padding:5px 12px;background:#f1f5f9;color:#0f172a;' +
+      html += '<th class="dt-cat" style="border:1px solid #94a3b8;' + pad + ';background:#f1f5f9;color:#0f172a;' +
         'font-weight:600;white-space:nowrap">' + cats[i] + '</th>';
     }
     html += '</tr><tr>';
     for (let i = 0; i < cats.length; i++) {
-      html += '<td class="dt-val" style="border:1px solid #94a3b8;padding:5px 12px;text-align:center;color:#0f172a">' +
+      html += '<td class="dt-val" style="border:1px solid #94a3b8;' + pad + ';text-align:center;color:#0f172a">' +
         (i === hidden ? '?' : values[i]) + '</td>';
     }
-    html += '</tr></table><div style="margin-top:6px;font-size:.85em;color:#475569">Number of ' +
+    html += '</tr></table></div><div style="margin-top:6px;font-size:.85em;color:#475569">Number of ' +
       f.unitLabel + '.</div></div>';
     return html;
   }
@@ -246,7 +307,13 @@
          its value label were cut off the screen entirely. The svg now scales to the
          card (max-width:100%, height:auto) and the card itself is capped, so every
          point stays inside the viewBox at any width. */
-      '" style="display:block;font-family:inherit;max-width:100%;height:auto">';
+      /* PHONE-WIDTH LANE 2026-09-07: `margin:0 auto`. The svg is 380 px wide inside a
+         card that is as wide as its longest prose line (the caption), so a
+         left-aligned drawing sat off-centre in its own card - measured 12 px at
+         1024 px and up to 70 px on the pie, which is the "figures sit off-centre"
+         item on the dress rehearsal's parent-visible list. Centring the drawing
+         moves pixels at DESKTOP width; it changes no geometry inside the viewBox. */
+      '" style="display:block;margin:0 auto;font-family:inherit;max-width:100%;height:auto">';
     for (let k = 0; k <= maxU; k++) {
       s += '<line x1="' + LG_PADL + '" y1="' + y(k) + '" x2="' + (LG_PADL + LG_PW) + '" y2="' + y(k) +
         '" stroke="' + (k === 0 ? '#475569' : '#e2e8f0') + '" stroke-width="' + (k === 0 ? 2 : 1) + '"/>' +
@@ -325,7 +392,13 @@
     return '<div class="piechart" style="display:inline-block;background:#fff;color:#0f172a;' +
       'padding:12px 14px;border-radius:8px;font-size:13px;text-align:left;max-width:100%">' +
       '<div style="font-weight:600;margin-bottom:6px">' + f.title + '</div>' +
-      '<svg width="230" height="230" viewBox="0 0 230 230" style="display:block;font-family:inherit">' +
+      /* PHONE-WIDTH LANE 2026-09-07: `margin:0 auto` + `max-width:100%;height:auto`.
+         The 230 px circle sat at the LEFT edge of a card whose width is set by the
+         caption, so it drew 73 px left of the card's centre at 1024 px - the
+         "pie 73 px left" line on the rehearsal's parent-visible list. Desktop pixels
+         move; the sweep arithmetic does not. */
+      '<svg width="230" height="230" viewBox="0 0 230 230" style="display:block;margin:0 auto;' +
+      'max-width:100%;height:auto;font-family:inherit">' +
       svg + lab + '</svg>' + legend +
       '<div style="margin-top:6px;font-size:.85em;color:#475569">' + f.caption + '</div></div>';
   }

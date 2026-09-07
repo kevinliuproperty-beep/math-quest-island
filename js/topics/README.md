@@ -119,11 +119,11 @@ Rules:
 
 | `type` | Fields | Drawn as |
 |---|---|---|
-| `bar` | `title`, `cats[]`, `units[]`, `scale`, `maxUnit`, `unitLabel` | Horizontal bar graph. Bar *i* is `units[i]` units long and prints `units[i] * scale` at its end; the value axis carries a gridline and a tick number for every unit `0..maxUnit`, labelled `k * scale`; the caption reads *"Each unit along the bottom of the graph stands for `scale` `unitLabel`."* (`unitLabel` is the generator's job to singularise: "1 pupil", "5 pupils"). |
+| `bar` | `title`, `cats[]`, `units[]`, `scale`, `maxUnit`, `unitLabel` | Horizontal bar graph, drawn as **one viewBox-scaled SVG** — see "Drawing `bar` to scale" below for the exact geometry. Bar *i* is `units[i]` units long and prints `units[i] * scale` at its end; the value axis carries a gridline and a tick number for every unit `0..maxUnit`, labelled `k * scale`; the caption reads *"Each unit along the bottom of the graph stands for `scale` `unitLabel`."* (`unitLabel` is the generator's job to singularise: "1 pupil", "5 pupils"). Title and caption are **prose beside the drawing, not inside it**: they wrap and keep their reading size on a phone while the drawing scales. |
 | `rect` | `length`, `breadth`, `unit` | A rectangle drawn **strictly to scale** — see "Drawing `rect` to scale" below for the exact px-per-unit rule, which a native renderer must reproduce. `breadth + " " + unit` printed just OUTSIDE the box at its right edge, vertically centred; `length + " " + unit` centred UNDERNEATH the box on the box's own width. |
 | `fractionBar` | `parts`, `filled` | A bar of `parts` equal segments, the FIRST `filled` shaded. The oracle counts shaded segments off the render. Geometry: segments in a centred row, 3 px apart, each 34 px tall and `clamp(28px, 6vw, 46px)` wide (the one responsive figure — a segment grows with the screen), 2.5 px white border, 6 px radius; unfilled is 6% white, filled is a vertical `#6ee7f9 -> #3aa7ff` gradient. Published as `MQI.figureCss` in `js/figures.js` and gated against `index.html`. |
 | `lshape` | `W`, `H`, `a`, `b`, `unit` | A `W x H` rectangle with an `a x b` piece removed from the **top-right**. **Strictly to scale, at a fixed 11 px per unit on both axes** (no caps: `W <= 16` and `H <= 14` by the generators' own range, so the largest figure is 176 x 154 px). The renderer derives and prints all six sides — top `W-a`, cut down `b`, cut across `a`, right `H-b`, bottom `W`, left `H` — so the spec and the picture can never disagree. Caption: *"All lengths are in `unit`. Every side of the figure is labelled. The corners are all right angles."* |
-| `table` | `title`, `cats[]`, `values[]`, `hidden`, `unitLabel` | One header row of `cats` and one value row. Column `hidden` prints `?` instead of its value (`-1` = none). **`values[hidden]` still carries the concealed number — it is the answer. A renderer must print `?` there and MUST NOT print, alt-text, tooltip or otherwise expose that value.** Caption *"Number of `unitLabel`."* The card is width-capped and scrolls in place rather than pushing its last column off a phone. |
+| `table` | `title`, `cats[]`, `values[]`, `hidden`, `unitLabel` | One header row of `cats` and one value row. Column `hidden` prints `?` instead of its value (`-1` = none). **`values[hidden]` still carries the concealed number — it is the answer. A renderer must print `?` there and MUST NOT print, alt-text, tooltip or otherwise expose that value.** Caption *"Number of `unitLabel`."* **The table is the one figure that does NOT scale down** — shrinking a grid of numbers stops a child reading it — so it is width-capped and scrolls **in place**, inside its own card, never pushing the page sideways. Two rules make that true and both are contractual: the scroll box must be the TABLE only (title and caption stay put), and **the scroll must be visible** — the web draws a shaded edge wherever there is more table off-screen and draws nothing at all when the table fits. Horizontal cell padding is `clamp(5px, 2.4vw, 12px)`: exactly 12 px at any viewport ≥ 500 px, tighter on a phone, so most 5-column tables fit outright. |
 | `line` | `title`, `cats[]`, `units[]`, `step`, `maxUnit`, `unitLabel` | Line graph. **A line spec always carries at least 2 points** (`cats.length >= 2`): the x step is `plotWidth / (cats.length - 1)`, which divides by zero at one point. Today every line spec has exactly 5. Point *i* sits `units[i]` units up and prints `units[i] * step`. Gridline + tick number for every unit `0..maxUnit`, labelled `k * step`; category under every point. **The value label sits at its point's own height, level with its own gridline** — the P4 Area+Graphs kill was a fixed 9px offset that put every label on the gridline one step above the value it named. The label sits to the RIGHT of its dot; the LAST point's label flips to the left so it never crowds the right edge. Caption *"Number of `unitLabel`. Each step up the side of the graph stands for `step`."* |
 | `pie` | `title`, `cats[]`, `weights[]`, `labels[]`, `caption` | Pie chart starting at 12 o'clock, clockwise. Sector *i* sweeps `weights[i] / sum(weights)` of the circle — strictly proportional, including a sector whose label is hidden (`"?"` is drawn at its true weight). `labels[i]` is the STRING printed inside sector *i* (a count, a fraction like `"1/4"`, or `"?"`) and printed a SECOND time in the legend beside `cats[i]`. Category names never sit on a slice. **The >= 1/6-of-the-circle floor is a GENERATOR invariant, not a renderer clamp** — a generator must not emit a weight below `sum/6` (so an in-sector label never crowds a boundary), and the renderer draws whatever it is given strictly proportionally. Never clamp a sweep: that would contradict "strictly proportional" and put a false picture in front of a child. Measured minimum sweep over 30,000 emitted specs is exactly 60.00 deg, so nothing violates it today — but nothing in the harness enforces it either, and a new pie generator is where it would break. `caption` is free text. |
 
@@ -165,6 +165,53 @@ h = breadth * s
 Only the two printed numbers are contractual *content*; the geometry above is contractual
 *picture*. Both are gated: `tools/gen-sanity.mjs` re-derives the answer from the printed
 labels, and the aspect rule is a two-line arithmetic check any lane can re-run.
+
+### Drawing `bar` to scale
+
+`bar` was **redrawn** on 2026-09-07 (Phone Width Lane). It used to be an absolutely
+positioned HTML box model with a hard 450 px intrinsic width, which `max-width` cannot
+shrink: at a 390 px viewport the card ran from x = -30 to x = 420, the page gained a
+sideways scroll, and **100% of bar graphs lost the tallest bar's printed value** off the
+right edge (52.5% of items named, in their stem, a category whose value was off-screen).
+It is now ONE SVG with a viewBox, so it scales as a single drawing at any width. There is
+no second layout and no breakpoint.
+
+```
+W = 156 + 240 + 30 = 426                 H = 24 * rows + 28
+x(k)      = 156 + round(k / maxUnit * 240)      the k-th unit's gridline
+row i     y = 4 + 24i, 20 px tall; both its texts sit on baseline y = 4 + 24i + 14.5
+bar i     x from 156, width x(units[i]) - 156, 15 px thick at y = row top + 2.5,
+          right corners rounded r = 2
+gridlines x(k), from y = 4 to y = 24 * rows; k = 0 is #64748b, the rest #e2e8f0
+axis rule y = 24 * rows + 5, 2 px, from x = 156 to x = 426
+ticks     5 px below the rule at x(k); the tick number is CENTRED on its own
+          gridline with its baseline at axis + 17, 11 px
+```
+
+- The **category name** is right-aligned at `x = 148`, 13 px; the **value** starts 6 px
+  past the end of its bar, 13 px, weight 600. Both are on the row's own baseline, so a
+  value always reads level with the bar it belongs to.
+- The 30 px right gutter exists so the LAST tick number, which is centred on the last
+  gridline at `x = 396`, is not cut off.
+- The drawing is centred in its card; the title and the caption are prose OUTSIDE the
+  svg, so they wrap at reading size on a phone instead of scaling down with the graph.
+
+### Figures are responsive, never width-conditional
+
+One drawing per figure, at every screen width. A renderer may scale (`viewBox` +
+`height:auto`), wrap (the pie legend), or scroll (`table`, and only `table`) — it may not
+have a second layout below some breakpoint, because a second layout is a second picture
+to port, to gate and to be wrong in. Concretely, and gated by `npm run test:layout`:
+
+- Every figure sits **inside its card** at 390 px and 360 px, and the page never scrolls
+  sideways on any screen.
+- Every drawing is **centred in its own card**. The card is as wide as its longest prose
+  line (usually the caption), so a left-aligned drawing reads as off-centre: the pie was
+  73 px left of centre and the L-shape up to 196 px at 1024 px before this rule.
+- `bar`, `line` and `pie` scale with their viewBox; `rect`, `lshape` and `fractionBar` are
+  already inside a phone card at their natural size (`rect`'s widest draw is 304 px
+  including its label gutter, `lshape`'s is 176 px, a `fractionBar` segment is `6vw`);
+  `table` scrolls, visibly.
 
 Reading a figure back: the harness renders `q.figure` through `js/figures.js` before any
 oracle runs, so oracles keep parsing the rendered labels (`.bg-val`, `.bg-tick`, `.lf-*`,
@@ -213,6 +260,32 @@ the place — and `core.js` is frozen, so that is its own packet.
 
 Gate for a content lane: `SAMPLES=50000 npm run test:deep` green, and 0% oracle coverage
 appearing nowhere in your topic's rows.
+
+### The layout gate — `npm run test:layout`
+
+`tools/layout-gate.mjs` is the **rendered** half of the figure contract, and it is
+deliberately **not** part of `npm test`: it needs a real Chrome and a real HTTP server,
+while `npm test` must stay a pure-node gate that runs anywhere. Run it after any change to
+`js/figures.js` or to the play surface in `index.html`.
+
+It starts its own `python3 -m http.server` on a free port and one headless Chrome (it
+records both pids and kills exactly those two — it never pattern-kills), then drives the
+LIVE app at **390 px** (iPhone 15 logical), **360 px** (small Android) and **1024 px**
+through the real `?shot=` routes, at least three items of every one of the seven figure
+types, plus home, map, battle, Patchwerk, the Hall of Fame and a lost run's review screen.
+It fails on:
+
+1. `document.documentElement.scrollWidth > window.innerWidth`, or **any** element drawn
+   outside the viewport. The second check is the one with teeth: `body { overflow:hidden }`
+   means an over-wide figure is silently **clipped** rather than made scrollable, so a page
+   can read `scrollWidth == innerWidth` and still have lost a bar's value off the screen.
+2. Any figure whose drawn extent escapes `#qcard` (and, on the review screen, its
+   review box).
+3. Any fighter name, HP bar or answer button cut off at the viewport edge, a battle with
+   other than four answer buttons, or any tap target under 44 px.
+
+Flags: `--widths=`, `--only=<screen ids>`, `--types=<figure types>`, `--report=<file.json>`
+(full geometry for every measured surface), `--shots=<dir>` (a PNG per surface).
 
 ## Self-containment rule
 

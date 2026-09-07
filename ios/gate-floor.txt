@@ -107,3 +107,64 @@
 #                                                          overflows nothing measured)
 #       Counted by CASE, which is what the runner's summary counts; 17 is the delta
 #       the runner reported (143 -> 160).
+# 136 = those 71 + MQProgress's 65, added on lane/progress, 2026-09-07:
+#         The scaffold never rises              6  (10,000 seeded random events; an
+#                                                   up-request is a no-op; a failing run,
+#                                                   a new session and the parent-screen
+#                                                   reset all keep the fade)
+#         The mastery climb matches the web     9  (a 509-history corpus recorded from
+#                                                   js/app.js by tools/fixtures/
+#                                                   gen-pool-climb.mjs, named edges, and
+#                                                   the two counters that must NOT reset
+#                                                   at the pool boundaries)
+#         Node state derives from the record    9  (cleared / in progress / open / coming
+#                                                   soon, incl. the zero-skill trap that
+#                                                   would paint an unwritten island done)
+#         Sessions summarise what happened     14  (in-session streak only, idempotent
+#                                                   end, the crystal rule, the unit-vs-
+#                                                   value split, the review list, caps)
+#         JSON on disk, torn write loses none   8  (round trip, schema stamp, TWO injected
+#                                                   write faults, temp litter, empty file,
+#                                                   garbage, shared codec)
+#         Schema migration                      9  (v0 missing, v0 unstamped, a hand-
+#                                                   written v1 file, unknown scaffold
+#                                                   name, a refused future schema)
+#         Profiles are local and separate      10  (one child's fade never reaches
+#                                                   another's; unique names; removal)
+#       Measured per suite with `./test.command --filter MQProgressTests.<Suite>`; the
+#       runner's summary counts test FUNCTIONS, so a parameterised @Test counts once
+#       here even though it prints a line per case.
+#
+# 167 = those 136, plus 31 more from the FIX PASS on lane/progress, 2026-09-07 (the
+#       twelve wounds of the Progress Refutation). Net of the tests that were rewritten
+#       rather than added; the four suites that grew:
+#         Crystals and Cleared, 200 real web sessions   14  (a new suite: the corpus's
+#                                                            own shape; 200 sessions
+#                                                            replayed against the web's
+#                                                            crystal count; a mode that
+#                                                            cannot inflate it; and the
+#                                                            THREE NodeClearedPolicy
+#                                                            implementations counted at
+#                                                            2/3/4/7 skills)
+#         Review rows keep every figure                 12  (a new suite: 216 rows through
+#                                                            a real file, 0 lost, was 180;
+#                                                            all 8 engine kinds plus one
+#                                                            invented; the projection)
+#         Privacy on disk, and how often it is touched  12  (a new suite: backup exclusion
+#                                                            and its survival across the
+#                                                            rename(2); the unstamped
+#                                                            document; the load clamp;
+#                                                            coalesced writes, flush(),
+#                                                            6 structural write-throughs
+#                                                            and atomicity under them)
+#         The mastery climb matches the web             +8  (the load-time ceiling, 6
+#                                                            parameterised histories where
+#                                                            it must not out-fade the
+#                                                            ladder, the ladder itself and
+#                                                            its parameter)
+#         Sessions / Profiles / Schema migration        +7  (the Patchwerk fence driven
+#                                                            through record(); the split
+#                                                            reason; a REAL rename and its
+#                                                            persistence; v0-unstamped and
+#                                                            v2 review columns)
+#       Measured on Kai at the fix-pass commit: `./test.command` reported 167 executed.

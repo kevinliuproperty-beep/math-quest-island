@@ -200,6 +200,15 @@ public struct Verdict: Codable, Hashable, Sendable {
     /// as `.other(raw)` and keeps its text; it is never an error, and `Verdict.reason`
     /// carries the raw string regardless. A verdict must survive an engine that
     /// learned a new word.
+    ///
+    /// ONE definition. `lane/progress` carried a byte-identical copy of this enum,
+    /// taken verbatim from `feat/unit-sweep` @ `ff487a3` precisely so this merge would
+    /// be a no-op; it was, and the copy's caveat ("the engine on this branch does not
+    /// emit `wrong-unit` yet") DIED HERE - `lane/quest` brought the unit sweep AND the
+    /// K2 grader, so the merged engine emits `wrong-unit` / `wrong-value` and
+    /// `MQProgress.WrongReason.wrongValueOrUnit` empties itself with no code change,
+    /// which is what that lane said would happen (Integration Phase 1, 2026-09-07).
+    /// Consumers must still never re-derive the split from `expectedText`.
     public enum Reason: Hashable, Sendable {
         /// The value is right; the unit is not.
         case wrongUnit

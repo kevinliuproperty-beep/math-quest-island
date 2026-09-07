@@ -70,6 +70,9 @@ let package = Package(
         .library(name: "MQContent", targets: ["MQContent"]),
         .library(name: "MQEngineJS", targets: ["MQEngineJS"]),
         .library(name: "MQDesign", targets: ["MQDesign"]),
+        // lane/progress
+        .library(name: "MQProgress", targets: ["MQProgress"]),
+        // end lane/progress
         // lane/quest
         .library(name: "MQQuest", targets: ["MQQuest"])
     ],
@@ -100,6 +103,11 @@ let package = Package(
         ),
         .target(
             name: "MQDesign",
+            // MQContent owns the shared VALUE types every layer names (MQProfile,
+            // MQCast, MQFigure, MQReviewItem); MQDesign re-exports them and keeps the
+            // rendering. The arrow points this way and never back - a logic package
+            // must not have to import a UI package to say a name.
+            dependencies: ["MQContent"],
             path: "Packages/MQDesign/Sources/MQDesign",
             resources: [
                 // The bundled OFL display face (Baloo 2). Registered at RUNTIME with
@@ -111,9 +119,28 @@ let package = Package(
         ),
         .testTarget(
             name: "MQDesignTests",
-            dependencies: ["MQDesign"],
+            dependencies: ["MQDesign", "MQContent"],
             path: "Packages/MQDesign/Tests/MQDesignTests"
         ),
+        // lane/progress
+        // Mastery, streaks, scaffold fading and local persistence. **MQContent ONLY.**
+        // It used to depend on MQDesign as well, for the four value types PHASE1.md
+        // named by hand (MQProfile, MQCast, MQReviewItem, MQFigure); those now live in
+        // MQContent, so a persistence layer no longer drags SwiftUI and a bundled font
+        // resource in behind it (Progress Refutation W8, 2026-09-07). This target must
+        // never gain a UI dependency: if it compiles without one, the architecture rule
+        // is enforced by the build rather than by a review note.
+        .target(
+            name: "MQProgress",
+            dependencies: ["MQContent"],
+            path: "Packages/MQProgress/Sources/MQProgress"
+        ),
+        .testTarget(
+            name: "MQProgressTests",
+            dependencies: ["MQProgress", "MQContent"],
+            path: "Packages/MQProgress/Tests/MQProgressTests"
+        ),
+        // end lane/progress
         // macOS-only. Guarded internally by `#if os(macOS)` so an iOS build of the
         // package tree still compiles it to a stub rather than failing.
         .executableTarget(

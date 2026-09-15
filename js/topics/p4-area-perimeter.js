@@ -80,6 +80,22 @@
      L is a thin unbuildable sliver. Applied to every corner cut in this file. */
   const capCut = n => Math.max(2, Math.min(n - 3, Math.floor(2 * n / 3)));
 
+  /* ---- WOUND 2 (v4 refutation, 2026-09-15): "A 18 cm by 14 cm tile" -----------
+     The article in front of a NUMBER follows the number's SPOKEN form, not its
+     first digit: an 8, an 11, an 18, an 80, but a 1, a 9, a 100. Three stems in
+     this file open on a drawn dimension and printed the wrong article whenever
+     that dimension was 8, 11 or 18 - measured at gLPerimDiff 27.0%, gLSkirting
+     26.5%, gLCornerInverse 19.2% of 1,000 draws. Every dimension this bank prints
+     is at most two digits, so 8 / 11 / 18 / 80-89 is the whole rule; the 800-899
+     arm is there so the helper stays correct if the ranges ever grow.
+     tools/gen-sanity.mjs gates the three pilot files against both mistakes. */
+  function anNum(n){
+    const s = String(n);
+    return /^(8|11|18)$/.test(s) || /^8\d$/.test(s) || /^8\d\d$/.test(s);
+  }
+  const artLc = n => (anNum(n) ? 'an ' : 'a ');
+  const artUc = n => (anNum(n) ? 'An ' : 'A ');
+
   /* ---- rectangles and squares: find the missing dimension (1.1, 1.2) ---- */
 
   const RECT_CTX = [
@@ -330,7 +346,7 @@
     if (!ok) { W = 12; H = 9; a = 4; b = 3; }
     const area = W * H - a * b;
     return mcNum(
-      'An L-shape is made from a ' + W + ' cm by ' + H + ' cm rectangle with a rectangular corner cut out. ' +
+      'An L-shape is made from ' + artLc(W) + W + ' cm by ' + H + ' cm rectangle with a rectangular corner cut out. ' +
       'The corner cut out is ' + a + ' cm wide. The area of the L-shape is ' + area +
       ' cm². <b>How tall is the corner that was cut out?</b>', '',
       b, [a, W * H - area, area - a], CM,
@@ -352,7 +368,7 @@
     if (!ok) { W = 10; H = 8; rate = 5; a = 3; b = 2; }
     const per = 2 * (W + H);
     return mcNum(
-      'An L-shaped kitchen floor is a ' + W + ' m by ' + H + ' m rectangle with a ' + a + ' m by ' + b +
+      'An L-shaped kitchen floor is ' + artLc(W) + W + ' m by ' + H + ' m rectangle with ' + artLc(a) + a + ' m by ' + b +
       ' m corner taken out for a store room. Skirting board is fitted right around the edge of the floor at $' +
       rate + ' per metre. <b>What does the skirting cost altogether, in dollars?</b>', '',
       per * rate, [(W * H - a * b) * rate, (per - a - b) * rate, per], '',
@@ -400,7 +416,7 @@
     }
     if (!ok) { W = 12; H = 9; a = 4; b = 3; }
     return mcText(
-      'A ' + W + ' cm by ' + H + ' cm rectangular tile has a corner piece ' + a + ' cm by ' + b +
+      artUc(W) + W + ' cm by ' + H + ' cm rectangular tile has a corner piece ' + a + ' cm by ' + b +
       ' cm cut away, leaving an L-shape with right angles at every corner. <b>How much longer is ' +
       'the perimeter of the whole rectangle than the perimeter of the L-shape?</b>', '',
       '0 cm',

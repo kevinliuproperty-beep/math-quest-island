@@ -196,6 +196,53 @@ for (const r of rows) {
   console.log(`${r.grade}    | ${f3(r.sameTemplate).padStart(13)} | ${f3(r.sameShape).padStart(10)} | ${f3(r.sameSkill).padStart(10)} | ${r.meanRun.toFixed(2).padStart(8)} | ${String(r.worstRun).padStart(9)} | ${String(r.worstSkillRun).padStart(15)} | ${r.pool.map(f3).join(' / ')}`);
 }
 
+/* ---------- LEVEL-3 POOL SOURCE (v4 refutation wound 1, 2026-09-15) ----------
+   The table above measures VARIETY. It cannot see DILUTION: core.js's level-3
+   borrow serves a pool-2 item when the climb asked for level 3, and every repeat
+   metric stays perfect while it does so. That is how the depth pilot lost half its
+   payload unnoticed - deleting gMissSide took `geometry` pool 3 from three skills
+   to two, thinL3 flipped true, and 48.8% of the climb's level-3 turns came out of
+   pool 2, halving the two pool-3-only formats the pilot was built for (20.3% ->
+   10.3% of a session).
+   THE RULE: a topic whose pool 3 carries 2 OR MORE distinct skills must serve
+   level 3 entirely from pool 3. At one skill the carousel genuinely cannot hide a
+   repeat, so the borrow is still allowed there and the share is reported only. */
+const L3_MIN_SKILLS = 2;
+const l3rows = [];
+if (HAS_FEED) {
+  const live = new Set();
+  for (const g of GRADES) for (const tid of liveTopics(g)) live.add(tid);
+  for (const tid of [...live].sort()) {
+    const mix = { 1: 0, 2: 0, 3: 0 };
+    let total = 0, want3 = 0, from2 = 0;
+    for (let s = 0; s < SEEDS; s++) {
+      setSeed(2000003 + s * 7919);
+      const feed = MQI.createFeed(tid);
+      let level = 1, rightRow = 0, wrongRow = 0;
+      for (let i = 0; i < LEN; i++) {
+        const want = level;
+        const q = feed.next(level);
+        const served = q.level || level;
+        mix[served] = (mix[served] || 0) + 1; total++;
+        if (want === 3) { want3++; if (served !== 3) from2++; }
+        if (rnd() < ACC) { rightRow++; wrongRow = 0; if (rightRow >= 3 && level < 3) { level++; rightRow = 0; } }
+        else { wrongRow++; rightRow = 0; if (wrongRow >= 2 && level > 1) { level--; wrongRow = 0; } }
+      }
+    }
+    const skills = new Set(TOPICS[tid].pools[3].map(pr => pr[1])).size;
+    l3rows.push({ tid, skills, want3, from2, share: want3 ? from2 / want3 : 0,
+                  pool: [mix[1] / total, mix[2] / total, mix[3] / total] });
+  }
+  console.log('\nLevel-3 pool source (the borrow) - a topic with >= ' + L3_MIN_SKILLS +
+              ' pool-3 skills must serve level 3 from pool 3');
+  console.log('Topic            | pool-3 skills | L3 turns from pool 2 | pools 1/2/3');
+  console.log('-----------------|---------------|----------------------|------------');
+  for (const r of l3rows)
+    console.log(`${r.tid.padEnd(16)} | ${String(r.skills).padStart(13)} | ${(r.from2 + '/' + r.want3).padStart(11)} (${(100 * r.share).toFixed(1).padStart(5)}%) | ${r.pool.map(f3).join(' / ')}`);
+} else {
+  console.log('\nLevel-3 pool source: skipped, core under test has no createFeed');
+}
+
 if (!GATE) process.exit(0);
 let bad = 0;
 console.log('');
@@ -212,5 +259,11 @@ for (const r of rows) {
   if (!okSR) { bad++; console.log(`FAIL ${r.grade}  worst same-skill run ${r.worstSkillRun} > ${MAX_SKILL_RUN}`); }
   if (okT && okR && okS && okSR) console.log(`ok   ${r.grade}  same template ${f3(r.sameTemplate)} <= ${th.sameTemplate}, worst run ${r.worstRun} <= ${MAX_RUN}, same skill ${f3(r.sameSkill)} <= ${th.sameSkill}, worst skill run ${r.worstSkillRun} <= ${MAX_SKILL_RUN}`);
 }
+let diluted = 0;
+for (const r of l3rows) {
+  if (r.skills < L3_MIN_SKILLS) { console.log(`note ${r.tid}  pool 3 has ${r.skills} skill, borrow allowed; ${(100 * r.share).toFixed(1)}% of level-3 turns from pool 2`); continue; }
+  if (r.from2) { bad++; diluted++; console.log(`FAIL ${r.tid}  level 3 diluted: ${r.from2}/${r.want3} (${(100 * r.share).toFixed(1)}%) of level-3 turns served from pool 2, but pool 3 carries ${r.skills} skills`); }
+}
+if (l3rows.length && !diluted) console.log(`ok   level-3 pool source  every topic with >= ${L3_MIN_SKILLS} pool-3 skills serves level 3 entirely from pool 3`);
 console.log(bad ? `\nfeed-sim FAILED (${bad})` : '\nfeed-sim OK');
 process.exit(bad ? 1 : 0);

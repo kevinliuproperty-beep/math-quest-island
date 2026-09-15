@@ -390,7 +390,20 @@ function typedRejectReason(raw, q){
 
   const FEED_RING = 3;        /* fix 2: how many stem shapes back we refuse to repeat */
   const FEED_RETRIES = 8;     /* attempts before we accept a repeat - a one-generator pool must never hang */
-  const FEED_MIN_L3_SKILLS = 3;
+  /* v4 REFUTATION WOUND 1 (2026-09-15), 3 -> 2. The level-3 borrow was written in
+     the Repetition + Demand Audit, BEFORE the wave-3 blocker added the lastGen and
+     lastSkill guards below. Those guards already do the whole job: measured over
+     200 seeds x 30 items at 80% accuracy with the borrow forced off, P(next item
+     repeats the previous generator) is 0.000, P(next item repeats the previous
+     skill) is 0.000 and the worst run is 1, on geometry, tables AND p4area. So at
+     exactly two skills the borrow buys nothing - and it costs: deleting gMissSide
+     took geometry's pool 3 from three skills to two, thinL3 flipped true, and 48.8%
+     of the climb's level-3 turns were served out of pool 2. The depth pilot's two
+     pool-3-only formats (gPeriError, gPeriFence) halved, 20.3% -> 10.3% of a
+     session, and the child met the single-step fluency anchor as the hard question.
+     At ONE skill the carousel really is too short to hide a repeat, so the borrow
+     stays for that case. tools/feed-sim.mjs gates the pool source at level 3. */
+  const FEED_MIN_L3_SKILLS = 2;
 
   /* A skill carousel over one pool: [gen, skill] pairs grouped by skill, cycled in
      a shuffled order that RESHUFFLES on every full cycle (so two sessions do not
@@ -419,14 +432,17 @@ function typedRejectReason(raw, q){
    *
    * LEVEL-3 ALTERNATION RULE. The mastery climb is untouched - still 3 right in a
    * row up, 2 wrong in a row down, capped at pool 3. But that climb pins ~58% of a
-   * session in pool 3, and where pool 3 carries FEWER THAN 3 distinct skills the
-   * carousel is too short to hide a repeat. In that case level 3 alternates a pool
-   * 3 draw with a pool 2 draw. This is deliberate: the audit's fix 3 (purify pool 3
-   * so it holds only generators absent from pools 1 and 2) does the OPPOSITE - it
-   * collapses pool 3 to one or two generators and RAISES the repeat rate to 0.49
-   * with a worst run of 24. Pool 3 cannot be purified until new pool-3 generators
-   * are written, so variety at level 3 is bought by borrowing pool 2, not by
-   * narrowing pool 3.
+   * session in pool 3, and where pool 3 carries FEWER THAN FEED_MIN_L3_SKILLS
+   * distinct skills the carousel is too short to hide a repeat. In that case level 3
+   * alternates a pool 3 draw with a pool 2 draw. This is deliberate: the audit's
+   * fix 3 (purify pool 3 so it holds only generators absent from pools 1 and 2) does
+   * the OPPOSITE - it collapses pool 3 to one or two generators and RAISES the
+   * repeat rate to 0.49 with a worst run of 24. Pool 3 cannot be purified until new
+   * pool-3 generators are written, so variety at level 3 is bought by borrowing pool
+   * 2, not by narrowing pool 3.
+   * The threshold is now 2, not 3 - see FEED_MIN_L3_SKILLS. At two skills the
+   * lastGen/lastSkill guards already hold the repeat rate at 0.000, so the borrow
+   * only diluted the level.
    */
   function createFeed(topic, opts){
     const def = TOPICS[topic];

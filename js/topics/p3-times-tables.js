@@ -19,6 +19,25 @@
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
 
+/* ---- WOUND 3 (v4 refutation, 2026-09-15): the authored-distractor contract ----
+   The v3 pass applied this guard to the two area/perimeter files only, so in THIS
+   file mcNum's padding branch still fired and the harness's distractor-identity
+   contract silently stopped binding: gDivError 25.6% of draws, gDivShare 15.5%,
+   gDoubling 14.0%, gGroups 3.4% (2,000 draws each) dropped a NAMED misconception
+   and shipped `key + 1` in its place. optsOk is the same guard the area/perimeter
+   files use: every named distractor must be a positive integer, distinct from the
+   key and from every other named distractor. A generator that redraws until
+   optsOk passes can never reach the padding branch, so q.authored is stamped on
+   every draw and tools/gen-sanity.mjs's padding gate binds. */
+function optsOk(correct, cands){
+  const s = new Set([correct]);
+  for (const c of cands){
+    if (!Number.isInteger(c) || c <= 0 || s.has(c)) return false;
+    s.add(c);
+  }
+  return true;
+}
+
 function mcNum(stem, extra, correct, cands, unit, explain){
   const seen = new Set([correct]); const d = [];
   for (const c of cands){
@@ -72,7 +91,14 @@ const GROUP_CTX = [
   ['The MRT platform has','benches','seats on each bench','seats']
 ];
 function gGroups(){
-  const c=pick(GROUP_CTX), a=pick(ALL_TABLES), b=ri(2,10), p=a*b;
+  const c=pick(GROUP_CTX);
+  /* wound 3: redraw until the three named distractors are clean (a+b can equal
+     the product, and a+b can equal p-a), so mcNum never pads. */
+  let a=6,b=3,ok=false;
+  for(let i=0;i<200&&!ok;i++){ a=pick(ALL_TABLES); b=ri(2,10);
+    ok=optsOk(a*b,[a+b, a*b-a, a*b+b]); }
+  if(!ok){ a=6; b=3; }
+  const p=a*b;
   return mcNum(c[0]+' '+a+' '+c[1]+', with '+b+' '+c[2]+'. <b>How many '+c[3]+' are there altogether?</b>','',
     p,[a+b, p-a, p+b],'',
     'Equal groups means multiply: '+a+' groups of '+b+' = '+a+' × '+b+' = '+p+' '+c[3]+
@@ -111,7 +137,12 @@ function gNotMultiple(){
 
 /* FORMAT 7 - doubling strategy: build a new fact from a known one (pool 3) */
 function gDoubling(){
-  const a=pick([3,4,6,7,8,9]), b=ri(3,9), p=a*b;
+  /* wound 3: p+a and p+b collide whenever a === b, which is 1 draw in 7. */
+  let a=3,b=4,ok=false;
+  for(let i=0;i<200&&!ok;i++){ a=pick([3,4,6,7,8,9]); b=ri(3,9);
+    ok=optsOk(2*a*b,[a*b+2, a*b+a, a*b+b]); }
+  if(!ok){ a=3; b=4; }
+  const p=a*b;
   return mcNum('You know that '+a+' × '+b+' = '+p+'. Use <b>doubling</b> to work out '+(2*a)+' × '+b+'.','',
     2*p,[p+2, p+a, p+b],'',
     'Doubling one factor doubles the product. '+(2*a)+' is double '+a+', so '+(2*a)+' × '+b+
@@ -126,8 +157,16 @@ const SHARE_CTX = [
 ];
 function gDivShare(){
   const c=pick(SHARE_CTX);
-  const g=pick(HARD_TABLES), each=ri(3,10), total=g*each;
-  let want=ri(2,g-1); if(want<2) want=2;
+  /* wound 3: "each" (stopping after the division) collides with want x each when
+     want is 1, and total-want collides with want x g on plenty of draws. */
+  let g=6,each=4,want=2,ok=false;
+  for(let i=0;i<200&&!ok;i++){
+    g=pick(HARD_TABLES); each=ri(3,10);
+    want=ri(2,g-1); if(want<2) want=2;
+    ok=optsOk(want*each,[each, g*each-want, want*g]);
+  }
+  if(!ok){ g=6; each=4; want=2; }
+  const total=g*each;
   return mcNum(c[0]+' '+total+' '+c[1]+' equally into '+g+' '+c[2]+'. <b>How many '+c[1]+' are in '+
     want+' '+c[3]+'?</b>','',
     want*each,[each, total-want, want*g],'',
@@ -138,8 +177,16 @@ function gDivShare(){
 
 /* FORMAT 9 - error spotting: check a division with multiplication (pool 3) */
 function gDivError(){
-  const a=pick(HARD_TABLES), b=ri(3,10), p=a*b;
-  const claim = Math.random()<0.5 ? b+1 : b-1;
+  /* wound 3: the divisor a collides with the key b, and with Ravi's claim b +- 1,
+     on a quarter of draws - the worst padding rate in the file. */
+  let a=6,b=4,claim=5,ok=false;
+  for(let i=0;i<200&&!ok;i++){
+    a=pick(HARD_TABLES); b=ri(3,10);
+    claim = Math.random()<0.5 ? b+1 : b-1;
+    ok=optsOk(b,[claim, a, a+b]);
+  }
+  if(!ok){ a=6; b=4; claim=5; }
+  const p=a*b;
   return mcNum('Ravi says '+p+' ÷ '+a+' = '+claim+'. He checked it by working out '+a+' × '+claim+
     ' = '+(a*claim)+'. <b>What should '+p+' ÷ '+a+' be?</b>','',
     b,[claim, a, a+b],'',

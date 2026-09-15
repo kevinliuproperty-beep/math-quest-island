@@ -2116,8 +2116,35 @@ function coincidence(q) {
    fine; what is banned is the single odd one out that points at the answer.
 
    RULE 2, "long" >= "wide": a stem that prints "X ... long and Y ... wide" must
-   print X >= Y. Was flipped in 1,710 of 8,000 draws across three generators. */
+   print X >= Y. Was flipped in 1,710 of 8,000 draws across three generators.
+
+   RULE 3 (v4 refutation wound 2, 2026-09-15), THE ARTICLE BEFORE A NUMBER: the
+   article follows the number's SPOKEN form - an 8, an 11, an 18, an 80, but a 1,
+   a 9, a 100. "A 18 cm by 14 cm rectangular tile" shipped in 27.0% of gLPerimDiff
+   draws, 26.5% of gLSkirting and 19.2% of gLCornerInverse. Checked on every
+   rendered surface a child reads: stem, extra, options and explanation, and in
+   both cases, because two of the three offenders opened "made from a 11 cm ...".
+
+   RULE 4 (v4 refutation wound 3, 2026-09-15), THE AUTHORED-DISTRACTOR CONTRACT:
+   every mcNum generator in the three pilot files must stamp q.authored on EVERY
+   draw. The generic q.authored check above only binds when the stamp is there, so
+   a generator whose named distractors collide falls out of the contract silently -
+   which is exactly what p3-times-tables.js did (gDivError 25.6% of draws, gDivShare
+   15.5%, gDoubling 14.0%, gGroups 3.4% shipped `key + 1` padding in place of a
+   named misconception). Naming the generators is deliberate: this asserts the LIST
+   of items that owe the contract, so deleting a redraw guard fails here rather than
+   quietly dropping the item out of the check. */
 const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area']);
+/* every mcNum call site in the three pilot files */
+const PILOT_MCNUM = new Set([
+  'geometry.gPeriCompare', 'geometry.gPeriFence',
+  'tables.gGroups', 'tables.gDoubling', 'tables.gDivShare', 'tables.gDivError',
+  'p4area.gLError', 'p4area.gLCompare', 'p4area.gLWords', 'p4area.gLCornerInverse',
+  'p4area.gLSkirting', 'p4area.gPeriFromArea', 'p4area.gNotchPerimeter'
+]);
+/* spoken form starts with a vowel: eight, eleven, eighteen, eighty-something */
+const anWord = s => /^(8|11|18)$/.test(s) || /^8\d$/.test(s) || /^8\d\d$/.test(s);
+const BAD_ARTICLE = /\b([Aa]n?) (\d+)\b/g;
 const optForm = s => {
   const t = strip(s);
   if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';
@@ -2125,8 +2152,13 @@ const optForm = s => {
   if (/^[\d\s+×x*÷/\-=().$]+$/.test(t)) return 'expression';
   return 'prose';
 };
-function pilotGates(q, topic) {
+function pilotGates(q, topic, name) {
   if (!PILOT_TOPICS.has(topic)) return null;
+  /* RULE 4: an mcNum item that lost its stamp shipped padding instead of a named
+     misconception. */
+  if (PILOT_MCNUM.has(topic + '.' + name) && !Array.isArray(q.authored))
+    return `authored-distractor contract off: ${name} shipped an MC with no q.authored stamp, ` +
+           `so mcNum padded (${(q.choices || []).map(strip).join(' | ')})`;
   const opts = q.choices || [];
   if (opts.length === 4) {
     const forms = opts.map(optForm);
@@ -2146,6 +2178,16 @@ function pilotGates(q, topic) {
   while ((mm = re.exec(all))) {
     if (Number(mm[1]) < Number(mm[3]))
       return `"long" prints shorter than "wide": ${mm[1]} ${mm[2]} long and ${mm[3]} ${mm[4]} wide`;
+  }
+  /* RULE 3: the article before a number, on every surface a child reads. */
+  const prose = all + ' ' + (q.choices || []).map(strip).join(' ') + ' ' + strip(q.explain || '');
+  BAD_ARTICLE.lastIndex = 0;
+  let am;
+  while ((am = BAD_ARTICLE.exec(prose))) {
+    const wantAn = anWord(am[2]);
+    const gotAn = am[1].toLowerCase() === 'an';
+    if (wantAn !== gotAn)
+      return `wrong article: "${am[0]}" should read "${(gotAn ? am[1][0] : am[1][0] + 'n')} ${am[2]}"`;
   }
   return null;
 }
@@ -2186,7 +2228,7 @@ for (const g of GENS) {
     if (unitErr) { err = unitErr; badQ = q; break; }
     const coin = coincidence(q);
     if (coin) { err = coin; badQ = q; break; }
-    const pilot = pilotGates(q, g.topic);
+    const pilot = pilotGates(q, g.topic, g.name);
     if (pilot) { err = pilot; badQ = q; break; }
     distinct.add(qKey(q));
     const o = oracle(q);

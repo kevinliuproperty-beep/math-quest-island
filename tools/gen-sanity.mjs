@@ -472,7 +472,14 @@ const DEC_PLACES = ['ones', 'tenths', 'hundredths', 'thousandths'];
 const DEC_PLACE_ONE = ['one', 'tenth', 'hundredth', 'thousandth'];
 const DECQTY = (n, place) => n + ' ' + (n === 1 ? DEC_PLACE_ONE[place] : DEC_PLACES[place]);
 const DEC_ROUND_TO = { 'the nearest whole number': 0, '1 decimal place': 1, '2 decimal places': 2 };
+const DEC_ROUND_PHRASE = ['the nearest whole number', '1 decimal place', '2 decimal places'];
 const decCountWhere = (q, pred) => decOpts(q).filter(v => v && pred(v)).length;
+/* the four ways a place miscount can go, re-derived here rather than imported, so
+   the generator and the oracle cannot drift into agreement by sharing a string */
+const DEC_MISCOUNT = k => 'counted ' + (Math.abs(k) === 1 ? 'one place' : 'two places') + ' too ' +
+  (k > 0 ? 'many' : 'few') + ' after the decimal point';
+/* every number token an option prints, as exact { n, dp } pairs */
+const decTokens = s => [...String(strip(s)).matchAll(/\d+(?:\.\d+)?/g)].map(x => DP(x[0])).filter(Boolean);
 
 function decimalsOracle(q) {
   const text = strip(q.q);
@@ -534,10 +541,25 @@ function decimalsOracle(q) {
     if (said === place) return `place error: the claimed place (${m[5]}) is the RIGHT one - the stem contradicts itself`;
     if (said > dec.length) return `place error: the claim names ${m[5]}, a place ${m[3]} does not have`;
     if (Number(m[4]) !== Number(m[2])) return 'place error: the claim is about a different digit';
-    const want = `The ${m[2]} is in the ${DEC_PLACES[place]} place, so it is worth ${DECQTY(Number(m[2]), place)}.`;
+    /* WOUND 3 (refutation 2026-09-15). The options used to be the four PLACE NAMES
+       written as sentences, so "find the place the digit is really in, pick the
+       option naming that place" answered the item on 20,000 of 20,000 draws with
+       the printed claim NEVER READ - the demand of the pool-1 lookup gDecNamePlace
+       with a story round it. They are now the four ways the MISCOUNT can go, and
+       the miscount exists only in the difference between the true place and the
+       claimed one, so neither half of the answer is in the stem alone. This branch
+       re-derives that difference and requires all four to be on offer exactly once,
+       so the set can never narrow by inspection either. */
+    const off = said - place;
+    if (off === 0 || Math.abs(off) > 2) return `place error: the miscount is ${off} places - only -2, -1, 1 and 2 are offered`;
+    const want = `${m[1]} ${DEC_MISCOUNT(off)}.`;
     const keyText = strip(q.choices[keyIdx]);
     if (keyText !== want) return `place error: expected key "${want}", got "${keyText}"`;
-    if (q.choices.filter(c => strip(c) === want).length !== 1) return 'place error: two options name the true place';
+    const offered = [-2, -1, 1, 2].map(k => `${m[1]} ${DEC_MISCOUNT(k)}.`);
+    for (const o of offered) {
+      const hits = q.choices.filter(c => strip(c) === o).length;
+      if (hits !== 1) return `place error: "${o}" is offered ${hits} times - all four miscounts must appear exactly once`;
+    }
     return null;
   }
 
@@ -576,6 +598,29 @@ function decimalsOracle(q) {
     if (!strip(q.choices[keyIdx]).endsWith(want)) return 'compare error: the key is not the option naming the true greater number';
     return null;
   }
+  /* WOUND 4: the second `compare` voice in pool 3. One list, exactly one adjacent
+     pair out of order, and the four options are the four adjacent pairs. */
+  if ((m = text.match(/^(.+?) puts these decimals in order from the smallest to the greatest and writes: ([\d.,\s]+)\. Which two numbers are the wrong way round\?$/))) {
+    const list = m[2].split(',').map(s => DP(s.trim()));
+    if (list.length !== 5 || list.some(v => !v)) return 'order error: the printed list is not five decimals';
+    for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+      if (DEQ(list[i], list[j])) return `order error: ${DTXT(list[i])} appears twice in the list`;
+    }
+    const down = [];
+    for (let i = 0; i < 4; i++) if (DCMP(list[i], list[i + 1]) > 0) down.push(i);
+    if (down.length !== 1) return `order error: ${down.length} adjacent pairs are out of order - there must be exactly one`;
+    const pair = i => `${DTXT(list[i])} and ${DTXT(list[i + 1])}`;
+    for (let i = 0; i < 4; i++) {
+      if (q.choices.filter(c => strip(c) === pair(i)).length !== 1) return `order error: the pair "${pair(i)}" is not offered exactly once`;
+    }
+    if (strip(q.choices[keyIdx]) !== pair(down[0])) return `order error: expected key "${pair(down[0])}", got "${strip(q.choices[keyIdx])}"`;
+    /* the item must be worth setting: reading the digits as whole numbers has to
+       give a different order from the true one, or there is no decimal work in it */
+    const byDigits = list.slice().sort((x, y) => x.n - y.n);
+    const byValue = list.slice().sort(DCMP);
+    if (byDigits.every((v, i) => DEQ(v, byValue[i]))) return 'order error: the digit-string order and the true order agree - the trap does not bite';
+    return null;
+  }
   if ((m = text.match(/^Between which two whole numbers does (\d+\.\d+) lie\?$/))) {
     const v = DP(m[1]);
     const w = Math.floor(v.n / TEN(v.dp));
@@ -610,10 +655,37 @@ function decimalsOracle(q) {
     const truth = DROUND(v, to);
     if (DEQ(said, truth)) return `round error: the printed claim ${m[4]} is CORRECT - the stem contradicts itself`;
     if (said.dp !== to) return `round error: the claim ${m[4]} is not even written to ${m[3]}`;
-    const want = `so the answer is ${DTXT(truth)}.`;
-    const hits = q.choices.filter(c => strip(c).endsWith(want)).length;
-    if (hits !== 1) return `round error: ${hits} options end with the true answer ${DTXT(truth)}`;
-    if (!strip(q.choices[keyIdx]).endsWith(want)) return 'round error: the key does not carry the true rounded value';
+    /* THE KILL, closed and gated (refutation 2026-09-15). This item used to be
+       settled by reading: exactly two options ended "so the answer is N" and one of
+       those two printed the number the stem had already declared wrong. No option
+       carries an answer at all now, so the branch re-derives the DIAGNOSIS instead. */
+    if (v.dp !== to + 2) return `round error: ${m[2]} carries ${v.dp} places - the draw must keep TWO past ${m[3]}`;
+    const base = Math.floor(v.n / 100), d1 = Math.floor((v.n % 100) / 10), d2 = v.n % 10, d0 = base % 10;
+    if (said.n !== base + (d1 < 5 ? 1 : 0)) {
+      return `round error: the claim ${m[4]} is not the wrong-way answer (${DTXT(DV(base + (d1 < 5 ? 1 : 0), to))})`;
+    }
+    /* the last digit and the rounding-place digit must both point the same way as
+       the next digit, or "used the last digit" / "used the <place> digit" would be
+       a SECOND defensible diagnosis of the very same printed answer */
+    if ((d1 >= 5) !== (d2 >= 5)) return `round error: the last digit ${d2} sits on the other side of 5 from ${d1} - two options then diagnose the same slip`;
+    if ((d1 >= 5) !== (d0 >= 5)) return `round error: the ${to === 0 ? 'ones' : DEC_PLACES[to]} digit ${d0} sits on the other side of 5 from ${d1}`;
+    if (new Set([d0, d1, d2]).size !== 3) return `round error: ${d0}/${d1}/${d2} - the three named digits must differ, or two options print the same numeral`;
+    const placeName = to === 0 ? 'ones' : DEC_PLACES[to];
+    const went = d1 < 5 ? 'up' : 'down', right = d1 < 5 ? 'down' : 'up';
+    const offered = [
+      `${m[1]} used the next digit, ${d1}, but rounded ${went} instead of ${right}.`,
+      `${m[1]} used the last digit, ${d2}, instead of the next one.`,
+      `${m[1]} used the ${placeName} digit itself, ${d0}, instead of the next one.`,
+      `${m[1]} rounded to ${DEC_ROUND_PHRASE[to + 1]} first and then rounded that answer again.`
+    ];
+    for (const o of offered) {
+      if (q.choices.filter(c => strip(c) === o).length !== 1) return `round error: "${o}" is not offered exactly once`;
+    }
+    if (strip(q.choices[keyIdx]) !== offered[0]) return `round error: expected key "${offered[0]}", got "${strip(q.choices[keyIdx])}"`;
+    /* and nothing may hand the child the number the stem declares wrong */
+    for (const c of q.choices) {
+      if (decTokens(c).some(t => DEQ(t, said))) return `round error: an option repeats ${m[4]}, the number the stem declares wrong ("${strip(c)}")`;
+    }
     return null;
   }
   if ((m = text.match(/weighing (\d+\.\d+) kg .* weighing (\d+\.\d+) kg\. Rounded to the nearest kilogram, what is the total mass/))) {
@@ -676,14 +748,50 @@ function decimalsOracle(q) {
     if (v.dp > 2) return `money decimal: ${m[2]} is finer than one cent`;
     const trueCents = v.n * TEN(2 - v.dp);
     if (trueCents === Number(m[3])) return `money decimal: the printed claim (${m[3]} cents) is CORRECT - the stem contradicts itself`;
-    const want = `which is ${trueCents} cents.`;
+    const want = `so ${m[2]} of a dollar is ${trueCents} cents.`;
     const hits = q.choices.filter(c => strip(c).endsWith(want)).length;
     if (hits !== 1) return `money decimal: ${hits} options end with the true value ${trueCents} cents`;
     if (!strip(q.choices[keyIdx]).endsWith(want)) return 'money decimal: the key does not carry the true value';
+    /* every option must close in the same frame, or the tail alone narrows the set */
+    for (const c of q.choices) {
+      if (!/, so \d+(?:\.\d+)? of a dollar is \d+ cents\.$/.test(strip(c))) {
+        return `money decimal: the option "${strip(c)}" does not close in the shared frame`;
+      }
+    }
     return null;
   }
 
   /* --- PRINCIPLE 4: operations in money and measures ------------------------ */
+  /* MOE P4 3.2 - a whole number divided by a whole number, quotient as a decimal.
+     The sub-strand the shipped bank covered with zero generators. Both formats are
+     verified by the same rule: the division is EXACT, the quotient is NOT a whole
+     number, the divisor is one of the five whose quotient terminates inside three
+     places, and nothing repeats. */
+  const decQuotient = (aStr, bStr, what) => {
+    const A = Number(aStr), B = Number(bStr);
+    if (![2, 4, 5, 8, 10].includes(B)) return `${what}: ${B} is not one of the MOE 3.2 divisors (2, 4, 5, 8, 10)`;
+    if (A % B === 0) return `${what}: ${A} / ${B} is a whole number - the sub-strand is the DECIMAL quotient`;
+    const wantN = A * (1000 / B);
+    if (wantN % 1 !== 0) return `${what}: ${A} / ${B} does not terminate inside three decimal places`;
+    if (!ans) return `${what}: the key is not a plain decimal`;
+    /* exact: ans === A / B  <=>  ans.n * B === A * 10^ans.dp */
+    if (ans.n * B !== A * TEN(ans.dp)) return `${what}: ${A} / ${B} is not ${strip(q.answerText)}`;
+    if (ans.dp === 0) return `${what}: the key ${strip(q.answerText)} carries no decimal part`;
+    if (decCountWhere(q, x => DEQ(x, ans)) !== 1) return `${what}: two options are the correct answer`;
+    /* The remainder written after the point is the slip this item exists to kill:
+       it may be offered, but it may never BE the answer - EXCEPT at a divisor of
+       10, where the remainder genuinely IS the tenths digit (13 / 10 = 1.3) and
+       the slip coincides with the truth. The generator offers no such distractor
+       on those draws, and this branch does not demand one. */
+    const rem = DV(Math.floor(A / B) * 10 + (A % B), 1);
+    if (B !== 10 && DEQ(rem, ans)) return `${what}: the key is what writing the remainder after the point gives`;
+    if (B !== 10 && decCountWhere(q, x => DEQ(x, rem)) !== 1) return `${what}: the remainder-after-the-point slip is missing or doubled`;
+    return null;
+  };
+  if ((m = text.match(/^(\d+) ÷ (\d+) = \?$/))) return decQuotient(m[1], m[2], 'whole / whole');
+  if ((m = text.match(/^At the provision shop .+ splits (\d+) kg of .+ equally into (\d+) \w+\. How much .+ is in each \w+\?$/))) {
+    return decQuotient(m[1], m[2], 'split evenly');
+  }
   if ((m = text.match(/^(\d+\.\d+) ([+−×÷]) (\d+(?:\.\d+)?) = \?$/))) {
     const a = DP(m[1]), b = DP(m[3]);
     let want;
@@ -715,16 +823,22 @@ function decimalsOracle(q) {
     const want = DV(hi.n - lo.n, 2);
     return ans && DEQ(ans, want) ? null : `money compare: ${m[3]} − ${m[5]} = ${DTXT(want)}, key says ${strip(q.answerText)}`;
   }
-  if ((m = text.match(/^(.+?) works out (\d+) \+ (\d+\.\d+)\. .+ writes the (\d) underneath the (\d) and gets (\d+\.\d+)\. What is the correct answer\?$/))) {
-    const w = DP(m[2]), b = DP(m[3]), claim = DP(m[6]);
-    if (m[5] !== m[2] || m[4] !== m[3].split('.')[1]) return 'align error: the digits named are not the digits of the two numbers';
-    const want = DV(w.n * TEN(b.dp) + b.n, b.dp);
+  if ((m = text.match(/^(.+?) works out (\d+(?:\.\d+)?) \+ (\d+(?:\.\d+)?)\. .+ writes the (\d) underneath the (\d) and gets (\d+\.\d+)\. What is the correct answer\?$/))) {
+    const a = DP(m[2]), b = DP(m[3]), claim = DP(m[6]);
+    if (!a || !b) return 'align error: an operand is not a decimal';
+    if (m[5] !== m[2].slice(-1) || m[4] !== m[3].slice(-1)) return 'align error: the digits named are not the LAST digits of the two numbers';
+    if (Math.abs(a.dp - b.dp) !== 1) return `align error: ${m[2]} and ${m[3]} are ${Math.abs(a.dp - b.dp)} columns apart - the slip slides by exactly one`;
+    if (m[4] === m[5]) return `align error: "writes the ${m[4]} underneath the ${m[5]}" names the same digit twice`;
+    const d = Math.max(a.dp, b.dp);
+    const want = DV(a.n * TEN(d - a.dp) + b.n * TEN(d - b.dp), d);
     /* the printed wrong answer must be EXACTLY what lining up the last digits gives */
-    const slip = DV(w.n + b.n, b.dp);
+    const slip = DV(a.n + b.n, d);
     if (!DEQ(claim, slip)) return `align error: the printed slip ${m[6]} is not what lining up the last digits gives (${DTXT(slip)})`;
     if (DEQ(claim, want)) return `align error: the printed "wrong" answer ${m[6]} is correct`;
     if (!ans || !DEQ(ans, want)) return `align error: ${m[2]} + ${m[3]} = ${DTXT(want)}, key says ${strip(q.answerText)}`;
     if (decCountWhere(q, x => DEQ(x, want)) !== 1) return 'align error: two options are the correct answer';
+    /* THE KILL's rule, here too: the number the stem declares wrong is not on offer */
+    if (decCountWhere(q, x => DEQ(x, claim)) !== 0) return `align error: ${m[6]} is offered as an option, and the stem has already declared it wrong`;
     return null;
   }
   if ((m = text.match(/buys (?:a|an) .+ for \$(\d+\.\d\d) and (?:a|an) .+ for \$(\d+\.\d\d), and pays with a \$(\d+) note\. How much change, in dollars\?$/))) {
@@ -789,10 +903,116 @@ function decimalsOracle(q) {
             asserts those three strings ARE the three non-key options: no padded
             distractor, and no named one colliding with the key. This is the
             string form of the shared q.authored contract, and it binds on the
-            money items, where parseFloat("$6.25") is NaN and q.authored cannot. */
+            money items, where parseFloat("$6.25") is NaN and q.authored cannot.
+
+   The four rules below are the refutation of 2026-09-15 turned into gates. Each
+   one is the rule that would have caught a finding the harness shipped green.
+
+   RULE D5  nothing may hand back the number the stem declares wrong. THE KILL:
+            gDecRoundError gave exactly two of four options a "..., so the answer
+            is N" tail, and one of those two printed the number the stem had
+            already called wrong, so the item was settled by reading on 20,000 of
+            20,000 draws. The rule is general - any decimals stem that declares a
+            wrong ANSWER ("and says the answer is N", "and gets N") may not then
+            offer that number back, as a plain option or inside a sentence.
+   RULE D6  prose format tell. pilotGates' RULE 1 is coarse by design: it counts
+            option FORMS, so four prose options tally 4-0 and nothing fires. This
+            is the same rule one level finer, on the TAIL PHRASE with every number
+            masked. It fails when a shared tail singles the key out - the key
+            alone against three that share a tail (the odd one out), or the key
+            plus exactly one partner against two that share nothing. A symmetric
+            2-2 split, where BOTH halves share a phrase, is a real distinction a
+            child has to earn and is left alone.
+   RULE D7  a fraction option set may not be padded either. buildFracChoices pads
+            with [correct[0] + n, correct[1] + n] when it runs out of candidates,
+            and that is how gDecMoneyFrac shipped 2/3 against a money key on
+            10.03% of draws. q.fracAuthored is the fraction half of D4.
+   RULE D8  no "1 parts". The lane's own scan tested three literal strings
+            ("1 tenths", "1 ones", "1 cents"); gDecBar printed "1 parts are
+            shaded" on 12.8% of its draws and went straight through. This is the
+            pattern, over the stem, the options AND the explanation. */
 const DEC_PURE = /^\$?\d+(\.\d+)?( (kg|km|cm|mm|m|g|ℓ|ml|l))?$/;
+/* the number a decimals stem declares wrong, when it declares one at all */
+function decDeclaredWrong(t) {
+  const mm = t.match(/ and says the answer is (\d+(?:\.\d+)?)\./) || t.match(/ and gets (\d+(?:\.\d+)?)\./);
+  return mm ? DP(mm[1]) : null;
+}
+/* the last k words of an option with every number masked, so "so the answer is
+   4.7." and "so the answer is 5." are recognised as the SAME tail phrase */
+function decTail(s, k) {
+  const w = strip(s).replace(/\d+(?:\.\d+)?/g, '#').toLowerCase().split(/\s+/).filter(Boolean);
+  return w.length < k ? null : w.slice(-k).join(' ');
+}
+/* RULE D8's pattern, with two narrowings that keep it honest rather than noisy.
+   (1) The "1" must be a COUNT, so it may not be preceded by a digit or a decimal
+       point - "3.1 rounds to 3" is not a plural error, it is a number.
+   (2) The word after it must be a noun. Everything on this list is a VERB or a
+       function word that happens to end in "s" ("step 1 gives...", "the 1 slides
+       one column"), and nothing on it is a thing the file counts. A new entry
+       here means somebody wrote a new verb straight after a numeral; a missing
+       one reds the build, which is the safe direction. */
+const DEC_NOT_PLURAL = new Set(['is', 'was', 'has', 'as', 'its', 'this', 'thus', 'us', 'yes',
+  'less', 'plus', 'minus', 'gets', 'goes', 'does', 'always', 'perhaps', 'across', 'unless',
+  'gives', 'rounds', 'slides', 'makes', 'means', 'shows', 'holds', 'costs', 'weighs', 'needs',
+  'takes', 'comes', 'puts', 'writes', 'reads', 'leaves', 'adds', 'says', 'runs', 'buys',
+  'spends', 'shares', 'splits', 'packs', 'pumps', 'pays', 'sits', 'lies', 'stays', 'keeps']);
+function decPluralSlip(s) {
+  const t = strip(s);
+  let mm; const re = /(?<![\d.])\b1 ([a-z]+)s\b/g;
+  while ((mm = re.exec(t))) if (!DEC_NOT_PLURAL.has(mm[1] + 's')) return `1 ${mm[1]}s`;
+  return null;
+}
 function decGates(q, topic) {
   if (topic !== 'decimals') return null;
+  /* RULE D8 - the stem, every option AND the explanation */
+  for (const part of [q.q, q.explain].concat(q.choices || [])) {
+    const slip = decPluralSlip(part);
+    if (slip) return `plural: "${slip}" is not English - count through the file's own pluraliser`;
+  }
+  /* RULE D5 */
+  const declared = decDeclaredWrong(strip(q.q));
+  if (declared) {
+    for (const c of (q.choices || [])) {
+      if (decTokens(c).some(t => DEQ(t, declared))) {
+        return `declared-wrong number offered back: the stem calls ${DTXT(declared)} wrong and an option repeats it ("${strip(c)}")`;
+      }
+    }
+  }
+  /* RULE D6 */
+  const opts4 = (q.choices || []).map(strip);
+  if (opts4.length === 4 && Number.isInteger(q.correct)) {
+    for (let k = 3; k <= 8; k++) {
+      const tails = opts4.map(c => decTail(c, k));
+      if (tails.some(t => t === null)) break;
+      const groups = new Map();
+      tails.forEach((t, i) => { if (!groups.has(t)) groups.set(t, []); groups.get(t).push(i); });
+      const mine = groups.get(tails[q.correct]);
+      const rest = [...groups.entries()].filter(([t]) => t !== tails[q.correct]);
+      if (mine.length === 1 && rest.length === 1 && rest[0][1].length === 3) {
+        return `prose format tell: the key is the only option NOT ending "...${rest[0][0]}" (${opts4.join(' | ')})`;
+      }
+      if (mine.length === 2 && !(rest.length === 1 && rest[0][1].length === 2)) {
+        return `prose format tell: the key and one other option share the tail "...${tails[q.correct]}" while the rest share nothing (${opts4.join(' | ')})`;
+      }
+    }
+  }
+  /* RULE D7 */
+  if (Array.isArray(q.fracAuthored)) {
+    const named = q.fracAuthored;
+    const keyFrac = parseFrac(q.choices[q.correct]);
+    if (!keyFrac) return 'fracAuthored declared but the key is not a fraction';
+    if (named.some(p => p[0] * keyFrac[1] === keyFrac[0] * p[1])) {
+      return `named fraction identical to the key (${keyFrac.join('/')})`;
+    }
+    for (let i = 0; i < q.choices.length; i++) {
+      if (i === q.correct) continue;
+      const f = parseFrac(q.choices[i]);
+      if (!f) return `fracAuthored declared but an option is not a fraction ("${strip(q.choices[i])}")`;
+      if (!named.some(p => p[0] * f[1] === f[0] * p[1])) {
+        return `padded fraction shipped (${f.join('/')}); named: ${named.map(p => p.join('/')).join(', ')}`;
+      }
+    }
+  }
   const stemMoney = String(strip(q.q)).match(/\$\d+\.\d+/g) || [];
   for (const mm of stemMoney) if (!/^\$\d+\.\d\d$/.test(mm)) return `money format: the stem writes "${mm}" - a money amount with a point shows two places`;
   const raw = (q.choices || []).map(strip);
@@ -2658,6 +2878,195 @@ for (const tid of Object.keys(TOPICS)) {
   }
 }
 
+/* ---------- MAGNITUDE-RANK GATE (refutation 2026-09-15, WOUND 1) ------------------
+   The lane's own cheap-strategy table measured LENGTH and DECIMAL PLACES - longest
+   4.7%, shortest 4.3%, most dp 2.3%, fewest dp 1.7% - and concluded the format-bank
+   contract worked. It never measured MAGNITUDE. "Always pick the second biggest
+   number" won 38.5% of the decimals bank against a 25% floor and 100% of SIX
+   generators outright, because each of those authored three named distractors that
+   bracketed the key the same way on every draw, for ever: two below and one above.
+   Session-weighted that is a +7-point edge for doing no decimals at all.
+
+   A per-item rule cannot see this: every individual item is fine. It is a property
+   of a GENERATOR across draws, so this is a second pass, and it is deliberately
+   written as a standalone helper - decRankOf() for one item, decRankScan() for a
+   list of { name, fn } - so the integrator lifts it into the shared harness without
+   touching the decimals-specific code around it.
+
+   EXEMPTION, declared not inferred: an item that stamps q.optionSet is offering the
+   numbers THEMSELVES for comparison (gDecCompare, gDecCmpMixed). "Pick the biggest"
+   is not a cheap strategy there, it is the question. Everything else is gated. --- */
+const RANK_LABELS = ['largest', '2nd largest', '3rd largest', 'smallest'];
+const RANK_DRAWS = Number(process.env.RANK_SAMPLES || 2000);
+const RANK_CEILING = 0.45;
+const RANK_FLOOR = 200;                 /* below this many measurable draws, no verdict */
+/* how many options are strictly bigger than the key: 0 = key largest, 3 = smallest.
+   -1 when the item is not rank-measurable (not four plain numbers, or a tie). */
+function decRankOf(q) {
+  const raw = (q.choices || []).map(strip);
+  if (raw.length !== 4 || !Number.isInteger(q.correct)) return -1;
+  /* a fraction strips to its two numbers run together - fr(3, 10) reads "310" and
+     DEC_PURE happily matches it. Magnitude rank is meaningless on a fraction set,
+     so they are dropped BEFORE the test rather than measured as nonsense. */
+  if ((q.choices || []).some(c => /class="frac"/.test(String(c)))) return -1;
+  if (!raw.every(c => DEC_PURE.test(c))) return -1;
+  const vals = raw.map(decOf);
+  if (vals.some(v => !v)) return -1;
+  for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) if (DEQ(vals[i], vals[j])) return -1;
+  const key = vals[q.correct];
+  let above = 0;
+  for (const v of vals) if (DCMP(v, key) > 0) above++;
+  return above;
+}
+function decRankScan(gens, draws) {
+  const out = [], bank = [0, 0, 0, 0], gatedTally = [0, 0, 0, 0];
+  for (const g of gens) {
+    const hist = [0, 0, 0, 0];
+    let n = 0, exempt = false, first = true;
+    for (let i = 0; i < draws; i++) {
+      let q;
+      try { q = g.fn(); } catch (e) { continue; }
+      if (first) { exempt = !!(q.optionSet || q.decCompare); first = false; }
+      const r = decRankOf(q);
+      if (r < 0) continue;
+      hist[r]++; n++; bank[r]++;
+      if (!exempt) gatedTally[r]++;
+    }
+    const top = n ? Math.max(...hist) : 0;
+    out.push({ name: g.name, n, hist, exempt, worst: n ? top / n : 0, rank: hist.indexOf(top) });
+  }
+  const best = arr => {
+    const t = arr.reduce((a, b) => a + b, 0);
+    return { share: t ? Math.max(...arr) / t : 0, rank: arr.indexOf(Math.max(...arr)), n: t };
+  };
+  return { rows: out, bank: best(bank), gated: best(gatedTally) };
+}
+
+const rankRows = [];
+let rankReport = null;
+{
+  const decGens = GENS.filter(g => g.topic === 'decimals').map(g => ({ name: g.name, fn: g.fn }));
+  rankReport = decRankScan(decGens, RANK_DRAWS);
+  for (const r of rankReport.rows) {
+    if (r.exempt || r.n < RANK_FLOOR) { rankRows.push({ ...r, ok: true }); continue; }
+    const ok = r.worst <= RANK_CEILING;
+    rankRows.push({ ...r, ok });
+    if (!ok) failures++;
+  }
+}
+
+/* ---------- NAMED-DISTRACTOR CONTRACT COVERAGE (refutation WOUND 2) ---------------
+   The lane's note claimed the contract bound on 29 of 32 generators. It bound on 27:
+   gDecCompare and gDecCmpMixed stamped nothing at all and were not in the exemption
+   list. There is no exemption list any more - every multiple-choice decimals
+   generator must stamp one of the four contracts on EVERY draw, and a typed item,
+   which has no options to contract over, is the only thing excused. --- */
+const contractRows = [];
+{
+  const STAMPS = ['decAuthored', 'authored', 'optionSet', 'fracAuthored'];
+  for (const g of GENS.filter(x => x.topic === 'decimals')) {
+    let stamped = 0, typed = 0, n = 0;
+    for (let i = 0; i < 400; i++) {
+      let q;
+      try { q = g.fn(); } catch (e) { continue; }
+      n++;
+      if (q.typed) { typed++; continue; }
+      if (STAMPS.some(s => q[s] !== undefined && q[s] !== null)) stamped++;
+    }
+    const ok = stamped + typed === n;
+    contractRows.push({ name: g.name, ok, typed: typed === n,
+      note: ok ? (typed === n ? 'typed - no option set to contract over' : 'stamped on 100% of draws')
+               : `${n - stamped - typed} of ${n} draws shipped an UNSTAMPED option set` });
+    if (!ok) failures++;
+  }
+}
+
+/* ---------- NEGATIVE CONTROLS for the new decimals gates -------------------------
+   A gate nobody has seen fail is a gate nobody has tested. Each control below is the
+   defect the rule was written for, rebuilt by hand, and the run fails if the rule
+   lets it through. The first is THE KILL exactly as it shipped. --- */
+const negRows = [];
+{
+  const ctl = (name, want, got) => {
+    const ok = typeof got === 'string' && got.length > 0;
+    negRows.push({ name, ok, note: ok ? got : `NOT CAUGHT (expected ${want})` });
+    if (!ok) failures++;
+  };
+  const fr = (n, d) => `<span class="frac"><span class="n">${n}</span><span class="d">${d}</span></span>`;
+  const decQ = (stem, choices, correct, explain) => ({
+    q: stem, extra: '', choices, correct, explain: explain || 'A negative control.',
+    answerText: choices[correct]
+  });
+
+  /* 1. THE KILL, verbatim: two of four options end "so the answer is N", and one of
+        those two prints the number the stem has already declared wrong. */
+  ctl('THE KILL - old gDecRoundError, declared-wrong number offered back', 'RULE D5',
+    decGates(decQ(
+      'Priya rounds <b>7.4</b> to <b>the nearest whole number</b> and says the answer is <b>8</b>. <b>What went wrong?</b>',
+      ['Priya rounded up. The next digit is 4, and 4 or less rounds down, so the answer is 7.',
+       'Priya rounded down. The next digit is 4, and 4 or more rounds up, so the answer is 8.',
+       'Priya rounded to the wrong place, and should have rounded to 1 decimal place instead.',
+       'Priya looked at every digit after the ones place instead of only the next one.'], 0), 'decimals'));
+
+  /* 2. the same shape with the repeated number scrubbed, so only the TAIL gives it
+        away - the rule that catches the kill's form rather than its arithmetic. */
+  ctl('THE KILL - the answer-bearing tail alone, on two of four options', 'RULE D6',
+    decGates(decQ(
+      'Priya rounds <b>7.4</b> to <b>the nearest whole number</b> and says the answer is <b>9</b>. <b>What went wrong?</b>',
+      ['Priya rounded up. The next digit is 4, and 4 or less rounds down, so the answer is 7.',
+       'Priya rounded down. The next digit is 4, and 4 or more rounds up, so the answer is 8.',
+       'Priya rounded to the wrong place, and should have rounded to 1 decimal place instead.',
+       'Priya looked at every digit after the ones place instead of only the next one.'], 0), 'decimals'));
+
+  /* 3. WOUND 5: the sentence gDecBar printed on 12.8% of its draws. */
+  ctl('WOUND 5 - "1 parts are shaded" in an explanation', 'RULE D8',
+    decGates({ q: 'What decimal does the shaded part show?', extra: '', choices: ['0.1', '0.9', '0.01', '1'],
+      correct: 0, answerText: '0.1',
+      explain: 'The whole is cut into 10 equal parts, so each part is one tenth. 1 parts are shaded, which is 1 tenth.' },
+      'decimals'));
+
+  /* 4. WOUND 2: the padded fraction gDecMoneyFrac shipped at 50 cents. */
+  ctl('WOUND 2 - buildFracChoices padding 2/3 into a money fraction', 'RULE D7',
+    decGates({ q: 'At the school bookshop an eraser costs <b>50 cents</b>, which is written <b>$0.50</b>. What fraction of one dollar is that?',
+      extra: '',
+      choices: [fr(1, 2), fr(1, 20), fr(11, 20), fr(2, 3)], correct: 0, answerText: fr(1, 2),
+      explain: 'A negative control.', fracAuthored: [[1, 20], [11, 20], [9, 20]] }, 'decimals'));
+
+  /* 5. WOUND 1: a generator whose key is the second biggest on 100% of its draws -
+        exactly the shape gDecHowMany, gDecStartAmount, gDecTrack, gDecRoundSum,
+        gDecAlignError and gDecShareMass all had. Every individual item is clean; it
+        is only visible across draws, which is what decRankScan is for. */
+  const secondBiggest = () => {
+    const k = 200 + Math.floor(Math.random() * 600);
+    const opts = [DTXT(DV(k, 2)), DTXT(DV(k - 100, 2)), DTXT(DV(k - 50, 2)), DTXT(DV(k + 100, 2))];
+    return { q: 'A negative control.', extra: '', choices: opts, correct: 0, answerText: opts[0],
+             explain: 'A negative control.' };
+  };
+  const scan = decRankScan([{ name: 'ctlSecondBiggest', fn: secondBiggest }], 2000);
+  const row = scan.rows[0];
+  ctl('WOUND 1 - a generator whose key is the 2nd biggest on 100% of draws', 'the magnitude-rank ceiling',
+    row.worst > RANK_CEILING
+      ? `key at "${RANK_LABELS[row.rank]}" on ${(row.worst * 100).toFixed(1)}% of ${row.n} draws, ceiling ${(RANK_CEILING * 100).toFixed(0)}%`
+      : null);
+
+  /* 6. and the control on the control: a generator that DOES spread its key's rank
+        must pass, or the ceiling is just failing everything. */
+  const spread = () => {
+    const k = 400, a = Math.floor(Math.random() * 4);
+    const others = [];
+    for (let i = 0; i < a; i++) others.push(k + 100 * (i + 1));
+    for (let i = others.length; i < 3; i++) others.push(k - 100 * (i + 1));
+    const opts = [DTXT(DV(k, 2))].concat(others.map(v => DTXT(DV(v, 2))));
+    return { q: 'A negative control.', extra: '', choices: opts, correct: 0, answerText: opts[0],
+             explain: 'A negative control.' };
+  };
+  const spreadRow = decRankScan([{ name: 'ctlSpread', fn: spread }], 2000).rows[0];
+  negRows.push({ name: 'WOUND 1 - a generator that DOES spread its rank passes the ceiling',
+    ok: spreadRow.worst <= RANK_CEILING,
+    note: `worst rank share ${(spreadRow.worst * 100).toFixed(1)}% over ${spreadRow.n} draws` });
+  if (spreadRow.worst > RANK_CEILING) failures++;
+}
+
 /* ---------- manifest gate (Wave 3, W3 Pie+Cosmetics Refutation KILL) --------------
    p4-pie-charts.js passed 200/200 here while being absent from index.html's script
    list, so the topic shipped dark: the harness reads js/topics/*.js off disk and never
@@ -2738,6 +3147,35 @@ const badManifest = manifestRows.filter(r => !r.ok);
 console.log('');
 if (badManifest.length) for (const r of badManifest) console.log(`FAIL manifest  ${r.rel}  ${r.note}`);
 else console.log(`ok   index.html manifest: all ${manifestRows.length} topic files + the figure renderer are loaded by the app`);
+
+/* ---------- decimals: magnitude rank, contract coverage, negative controls ---------- */
+if (rankReport) {
+  console.log('');
+  console.log(`MAGNITUDE-RANK  (${RANK_DRAWS} draws x ${rankReport.rows.length} decimals generators, ceiling ${(RANK_CEILING * 100).toFixed(0)}% per rank)`);
+  console.log(`  bank-wide best rank strategy : "always pick the ${RANK_LABELS[rankReport.bank.rank]}" wins ` +
+    `${(rankReport.bank.share * 100).toFixed(1)}%  (${rankReport.bank.n} numeric-option draws, floor 25.0%)`);
+  console.log(`  gated generators only        : "always pick the ${RANK_LABELS[rankReport.gated.rank]}" wins ` +
+    `${(rankReport.gated.share * 100).toFixed(1)}%  (${rankReport.gated.n} draws, q.optionSet items excluded)`);
+  const badRank = rankRows.filter(r => !r.ok);
+  if (badRank.length) {
+    for (const r of badRank) {
+      console.log(`FAIL rank  ${r.name}  key is the ${RANK_LABELS[r.rank]} on ${(r.worst * 100).toFixed(1)}% of ${r.n} draws ` +
+        `[${r.hist.map((h, i) => RANK_LABELS[i] + ' ' + (r.n ? (h / r.n * 100).toFixed(1) : '0.0') + '%').join(', ')}]`);
+    }
+  } else {
+    const gatedRows = rankRows.filter(r => !r.exempt && r.n >= RANK_FLOOR).sort((a, b) => b.worst - a.worst);
+    const w = gatedRows[0];
+    console.log(`  ok   no gated generator's key sits at one rank on more than ${(RANK_CEILING * 100).toFixed(0)}% of its draws` +
+      (w ? `  (worst: ${w.name} ${(w.worst * 100).toFixed(1)}% "${RANK_LABELS[w.rank]}")` : ''));
+  }
+}
+const badContract = contractRows.filter(r => !r.ok);
+console.log('');
+if (badContract.length) for (const r of badContract) console.log(`FAIL contract  ${r.name}  ${r.note}`);
+else console.log(`ok   named-distractor contract: ${contractRows.length} of ${contractRows.length} decimals generators stamp it on every draw ` +
+  `(${contractRows.filter(r => r.typed).length} typed item exempt)`);
+console.log('');
+for (const r of negRows) console.log(`${r.ok ? 'ok  ' : 'FAIL'} neg-control  ${r.name}  --  ${r.note}`);
 
 const uncovered = rows.filter(r => r.cov === 0).map(r => r.topic + '.' + r.name);
 if (uncovered.length) console.log(`\nWARN no independent oracle matched (shape + integrity only): ${uncovered.join(', ')}`);

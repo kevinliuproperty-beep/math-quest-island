@@ -76,6 +76,12 @@ const dcmp = (a, b) => { const m = Math.max(a.dp, b.dp); return a.n * P10[m - a.
 /* strip trailing zeros: D(40,2) -> D(4,1), so "how many hundredths in 0.4" can
    print 0.4 and not give its own answer away */
 function dnat(d) { let n = d.n, dp = d.dp; while (dp > 0 && n % 10 === 0) { n /= 10; dp--; } return D(n, dp); }
+/* The two point-placement slips every P4 paper carries: the right digits with the
+   decimal point one column out. pLeft reads BIGGER, pRight reads SMALLER, so a
+   generator that authors both has a named candidate on each side of its key.
+   pRight is only legal while the result stays inside the three-place ceiling. */
+const pLeft  = d => D(d.n, Math.max(0, d.dp - 1));
+const pRight = d => (d.dp < 3 ? D(d.n, d.dp + 1) : null);
 /* every distinct? (exact, not by string) */
 function dallDistinct(list) {
   for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) if (dsame(list[i], list[j])) return false;
@@ -86,6 +92,11 @@ const PLACE_WORD = ['ones', 'tenths', 'hundredths', 'thousandths'];
 const PLACE_ONE  = ['one', 'tenth', 'hundredth', 'thousandth'];
 /* "1 tenths" is not English and a parent reads the explanation out loud. */
 const qty = (n, place) => n + ' ' + (n === 1 ? PLACE_ONE[place] : PLACE_WORD[place]);
+/* WOUND 5 (refutation 2026-09-15): gDecBar wrote `filled + ' parts are shaded'` raw
+   and printed "1 parts are shaded" on 12.8% of its draws, in a file that already
+   carried qty() for exactly this. Nothing that counts anything in this file writes
+   its own plural any more: it goes through `many`, which agrees the verb too. */
+const many = (n, one, plural) => n + ' ' + (n === 1 ? one : plural);
 /* always written as "... to " + roundPhrase(to), so the article lives in one place */
 const roundPhrase = to => (to === 0 ? 'the nearest whole number' : (to === 1 ? '1 decimal place' : '2 decimal places'));
 /* round half up at `to` places, from a scaled integer. Integer arithmetic only. */
@@ -113,15 +124,71 @@ function assemble(keyStr, wrongStrs, stem, extra, explain) {
   return { q: stem, extra: extra || '', choices: opts, correct: opts.indexOf(keyStr),
            explain: explain, answerText: keyStr };
 }
+
+/* ===== MAGNITUDE-RANK DISCIPLINE (refutation 2026-09-15, WOUND 1) ============
+   The sweep's cheap-strategy table measured length and decimal places and found
+   nothing above 5%. It never measured MAGNITUDE. "Always pick the second biggest
+   number" won 38.5% of this bank and 100% of six generators, because each of
+   those generators' three named distractors always bracketed the key the same
+   way: two below and one above, on every draw, for ever.
+
+   The fix is not a padded distractor and not a redraw. It is a WIDER BANK of
+   named slips - every numeric generator now authors five or six, with at least
+   two on each side of the key - plus this picker, which draws the NUMBER OF
+   SHIPPED OPTIONS ABOVE THE KEY uniformly over whatever the pool can support.
+   The key's rank then spreads across the four positions instead of being pinned
+   to one, and no fixed rank rule beats chance by much.
+
+   `must(c)` marks a candidate that has to ship on every draw - the item's whole
+   point (gDecAlignError's printed slip, gDecShareMass's stop-after-dividing
+   answer, which its oracle requires).
+
+   rankPick is generic on purpose: `cmp` orders a candidate against the key and
+   `dpOf` reports its decimal places, so the same routine serves the decimal
+   finisher, the money finisher (integer cents) and the count finisher. That is
+   the shape the integrator lifts into the shared harness. */
+const must = c => (c ? { n: c.n, dp: c.dp, must: true } : c);
+/* the same discipline for a finishNum item, whose answers are plain counts */
+function rankInts(key, cands) {
+  const pool = [];
+  for (const c of cands) {
+    const v = (c && typeof c === 'object') ? c : { n: c };
+    if (!Number.isInteger(v.n) || v.n <= 0 || v.n === key || pool.some(k => k.n === v.n)) continue;
+    pool.push(v);
+  }
+  const sel = rankPick(pool, c => c.n - key, () => null, null) || pool.slice(0, 3);
+  return shuffle(sel).map(v => v.n);
+}
+function rankPick(pool, cmp, dpOf, keyDp) {
+  const musts = pool.filter(c => c.must), rest = pool.filter(c => !c.must);
+  if (musts.length > 3) return null;
+  const need = 3 - musts.length;
+  const above = rest.filter(c => cmp(c) > 0), below = rest.filter(c => cmp(c) < 0);
+  const hi = Math.min(need, above.length), lo = Math.max(0, need - below.length);
+  if (lo > hi) return null;
+  let fallback = null;
+  for (let t = 0; t < 30; t++) {
+    const a = ri(lo, hi);
+    const sel = musts.concat(shuffle(above).slice(0, a), shuffle(below).slice(0, need - a));
+    if (sel.length !== 3) continue;
+    if (!fallback) fallback = sel;
+    /* RULE D1 still binds: the key may not be the only option written to its own
+       number of decimal places, so a selection that shares it is preferred. */
+    if (keyDp == null || sel.some(c => dpOf(c) === keyDp)) return sel;
+  }
+  return fallback;
+}
+
 function mcDec(stem, extra, key, cands, unit, explain) {
   const u = unit ? (' ' + unit) : '';
-  const kept = [];
+  const pool = [];
   for (const c of cands) {
-    if (kept.length >= 3) break;
     if (!c || !Number.isFinite(c.n) || c.n < 0) continue;
-    if (dsame(c, key) || kept.some(k => dsame(k, c))) continue;
-    kept.push(c);
+    if (dsame(c, key) || pool.some(k => dsame(k, c))) continue;
+    pool.push(c);
   }
+  let kept = rankPick(pool, c => dcmp(c, key), c => c.dp, key.dp) || pool.slice(0, 3);
+  kept = shuffle(kept);
   const authored = kept.length === 3;
   let t = 1;
   while (kept.length < 3 && t < 90) {
@@ -141,12 +208,16 @@ function mcDec(stem, extra, key, cands, unit, explain) {
   return q;
 }
 function mcMoney(stem, extra, keyCents, candCents, explain) {
-  const kept = [];
+  /* cents are already integers, so the rank picker runs on { n } alone and the
+     decimal-place rule does not apply (every money option prints two places). */
+  const pool = [];
   for (const c of candCents) {
-    if (kept.length >= 3) break;
-    if (!Number.isInteger(c) || c <= 0 || c === keyCents || kept.indexOf(c) !== -1) continue;
-    kept.push(c);
+    const v = (c && typeof c === 'object') ? c : { n: c };
+    if (!Number.isInteger(v.n) || v.n <= 0 || v.n === keyCents || pool.some(k => k.n === v.n)) continue;
+    pool.push(v);
   }
+  let keptV = rankPick(pool, c => c.n - keyCents, () => null, null) || pool.slice(0, 3);
+  const kept = shuffle(keptV).map(v => v.n);
   const authored = kept.length === 3;
   let t = 5;
   while (kept.length < 3 && t < 400) {
@@ -244,8 +315,18 @@ function gDecBuild() {
     packedSwapped = D(w * 1000 + d2 * 100 + d1 * 10, 3);       /* in a row AND the wrong way round */
   } while (guard < 200 && !dallDistinct([key, packed, swapped, packedSwapped]));
   const parts = qty(w, 0) + ', ' + qty(d1, p1) + ' and ' + qty(d2, p2);
+  /* WOUND 1: `packed` always sits above the key and the two swaps sit wherever the
+     digits fall, so the key was the smallest of the four on 48% of draws. Two more
+     named slips, both below: the child who forgets to write the whole number at
+     all, and the child who writes the first part and the last part but drops the
+     middle one. */
+  const noWhole = D(key.n - w * 1000, 3);
+  const noMiddle = D(w * 1000 + d2, 3);
+  /* and one guaranteed ABOVE, so the two swaps falling below cannot pin the key
+     to the top: the child who ignores the decimal point altogether. */
+  const noPoint = D(w * 100 + d1 * 10 + d2, 0);
   return mcDec('Which number is made up of <b>' + parts + '</b>?', '',
-    key, [packed, swapped, packedSwapped], '',
+    key, [packed, swapped, packedSwapped, noWhole, noMiddle, noPoint], '',
     parts + ' is written ' + dtext(key) + '. There are no ' + PLACE_WORD[p1 === 1 ? 2 : 1] +
     ', so a zero holds that place open. Writing the digits in a row with no zero gives ' +
     dtext(packed) + ', which is a different number.');
@@ -268,12 +349,20 @@ function gDecHowMany() {
     digitsOnly = val.n - w * P10[dp];                          /* just the digits after the point */
   } while (guard < 200 && !(V > 0 && shallow > 0 && digitsOnly > 0 &&
            new Set([V, shallow, digitsOnly, V * 10]).size === 4));
+  /* WOUND 1: `shallow` and `digitsOnly` are always below V and `V x 10` always
+     above, so "second biggest" was the answer on 2,000 of 2,000 draws. Two more
+     named slips - one below (counted the whole ones and forgot the digits after
+     the point), one above (converted the digits after the point as if they were
+     whole ones too) - let the picker vary how many options sit above the key. */
+  const wholeOnly = w * P10[j];
+  const digitsAsWholes = (w + digitsOnly) * P10[j];
+  const wrongs = rankInts(V, [shallow, digitsOnly, wholeOnly, V * 10, digitsAsWholes]);
   const q = finishNum('How many <b>' + PLACE_WORD[j] + '</b> are there in <b>' + dtext(val) + '</b>?', '',
-    V, [shallow, digitsOnly, V * 10], '',
+    V, wrongs, '',
     'One whole is ' + qty(P10[j], j) + ', so ' + qty(w, 0) + ' is ' + qty(w * P10[j], j) +
     '. Adding the ' + PLACE_WORD[j] + ' already after the point gives ' + qty(V, j) + ' altogether.');
-  q.decAuthored = [shallow, digitsOnly, V * 10].map(String);
-  q.authored = [shallow, digitsOnly, V * 10];
+  q.decAuthored = wrongs.map(String);
+  q.authored = wrongs.slice();
   return q;
 }
 
@@ -296,34 +385,46 @@ function gDecExpand() {
 }
 
 /* FORMAT 1f - error spotting, the mistake NAMED (pool 3, diagnose).
-   Misconception: every digit after the point read as tenths. */
+   Misconception: the places after the point miscounted.
+
+   WOUND 3 (refutation 2026-09-15). The first cut offered the four PLACE NAMES as
+   sentences, so "find the place the digit is really in and pick the option naming
+   that place" answered it on 20,000 of 20,000 draws WITHOUT EVER READING THE
+   CLAIM - the demand of the pool-1 lookup gDecNamePlace with a story round it.
+   The options are now the four ways the miscount itself can go: one or two places
+   too many, one or two too few. Neither half of that answer exists in the stem
+   alone. The child has to find the true place AND read the claimed place AND
+   compare them, which is the two-step demand a pool-3 slot is for. */
+const MISCOUNT = k => (k > 0
+  ? (k === 1 ? 'counted one place too many after the decimal point' : 'counted two places too many after the decimal point')
+  : (k === -1 ? 'counted one place too few after the decimal point' : 'counted two places too few after the decimal point'));
 function gDecPlaceError() {
   const who = pick(NAMES);
-  /* ALWAYS three decimal places, so all four options (ones, tenths, hundredths,
-     thousandths) are the key exactly a quarter of the time. At dp = 2 the
-     thousandths option could never be right and "never pick the longest word"
-     became a small free edge. */
+  /* ALWAYS three decimal places, so every offset in [-2, -1, 1, 2] is reachable. */
   const dp = 3;
   const ds = distinctDigits(dp + 1);
   const whole = ds[0], dec = ds.slice(1);
   const numStr = whole + '.' + dec.join('');
-  const place = ri(0, dp);                    /* the ones digit is fair game too, so
-                                                 the key is not confined to two of
-                                                 the four options on every draw */
+  /* the OFFSET is drawn first and uniformly, so no single option is the answer
+     more often than any other and "always pick one place too many" is at chance */
+  const off = pick([-2, -1, 1, 2]);
+  /* the claimed place is always a place this number actually HAS (1..3), so the
+     mistake is a miscount and not a nonsense claim; the true place may be the ones */
+  const places = [0, 1, 2, 3].filter(p => p + off >= 1 && p + off <= dp);
+  const place = pick(places);
+  const sayIdx = place + off;
   const d = place === 0 ? whole : dec[place - 1];
-  /* the claimed place is always a place this number actually HAS, so the mistake is
-     a miscount and not a nonsense claim */
-  const sayIdx = pick([1, 2, 3].filter(p => p !== place && p <= dp));
-  const say = PLACE_WORD[sayIdx];
-  const line = p => 'The ' + d + ' is in the ' + PLACE_WORD[p] + ' place, so it is worth ' + qty(d, p) + '.';
+  const key = who + ' ' + MISCOUNT(off) + '.';
+  const wrongs = [-2, -1, 1, 2].filter(k => k !== off).map(k => who + ' ' + MISCOUNT(k) + '.');
   return mcText(who + ' says the digit <b>' + d + '</b> in <b>' + numStr + '</b> is worth <b>' + qty(d, sayIdx) +
-    '</b>. <b>What did ' + who + ' get wrong?</b>', '',
-    line(place), [0, 1, 2, 3].filter(p => p !== place).map(line),
+    '</b>. <b>What did ' + who + ' get wrong?</b>', '', key, wrongs,
     'Count the places one at a time: the ones are before the decimal point, then tenths, hundredths and thousandths after it. In ' +
     numStr + ' the digit ' + d + ' is ' +
     (place === 0 ? 'before the point, so it is worth ' : 'number ' + place + ' after the point, so it is worth ') +
-    qty(d, place) + ', which is ' + dtext(D(d, place)) + '. ' + qty(d, sayIdx) + ' would be ' +
-    dtext(D(d, sayIdx)) + ', a different amount altogether.');
+    qty(d, place) + ', which is ' + dtext(D(d, place)) + '. ' + who + ' named the ' + PLACE_WORD[sayIdx] +
+    ' place, which is ' + (Math.abs(off) === 1 ? 'one place' : 'two places') +
+    (off > 0 ? ' further after the decimal point' : ' nearer the decimal point') + ' than the right one, and ' +
+    qty(d, sayIdx) + ' is ' + dtext(D(d, sayIdx)) + ', a different amount altogether.');
 }
 
 /* =============================================================================
@@ -344,12 +445,21 @@ function gDecCompare() {
   let best = vals[0];
   for (const v of vals) if (wantMax ? dcmp(v, best) > 0 : dcmp(v, best) < 0) best = v;
   const opts = shuffle(vals).map(dtext);
-  return { q: 'Which decimal is the <b>' + (wantMax ? 'greatest' : 'smallest') + '</b>?', extra: '',
+  const q = { q: 'Which decimal is the <b>' + (wantMax ? 'greatest' : 'smallest') + '</b>?', extra: '',
     choices: opts, correct: opts.indexOf(dtext(best)),
     explain: 'All four start with ' + qty(whole, 0) + ', so line the decimal points up and compare the tenths next' +
       (dp > 1 ? ', and then the hundredths if the tenths tie' : '') + '. The ' +
       (wantMax ? 'greatest' : 'smallest') + ' is ' + dtext(best) + '.',
     answerText: dtext(best) };
+  /* WOUND 2: this generator and gDecCmpMixed stamped NOTHING - not decAuthored,
+     not authored, not optionSet - so the lane's "the contract is on, not quietly
+     off" was true of 27 of 32 generators, not 29. The right stamp is not a
+     distractor list: these four options ARE the numbers being compared, so there
+     is no such thing as a padded one. q.optionSet declares exactly that, and it
+     is also what exempts a compare item from the magnitude-rank gate - "pick the
+     biggest" is not a cheap strategy here, it is the question. */
+  q.optionSet = true;
+  return q;
 }
 
 /* FORMAT 2b - compare with DIFFERENT lengths: the "longer decimal is bigger"
@@ -396,6 +506,7 @@ function gDecCmpMixed() {
       '. A decimal with more digits after the point is not always the bigger one.',
     answerText: dtext(best) };
   q.decCompare = true;
+  q.optionSet = true;      /* WOUND 2: the options ARE the numbers being compared */
   return q;
 }
 
@@ -459,6 +570,64 @@ function gDecCmpError() {
     'Line the decimal points up and write both to the same length: ' + dtext(small) + ' and ' +
     dtext(D(t * 10, 2)) + '. Compare the tenths first. ' + qty(Math.floor(h / 10), 1) + ' is less than ' + qty(t, 1) +
     ', so ' + dtext(small) + ' is the smaller number. Counting digits does not tell you which decimal is bigger.');
+}
+
+/* FORMAT 2d2 - error spotting in a LIST (pool 3, diagnose + order).
+   WOUND 4 (refutation 2026-09-15): pool 3 held exactly ONE `compare` generator,
+   and buildCarousel round-robins SKILLS, so the whole sixth of pool 3 that belongs
+   to comparing landed on gDecCmpError - 2.66 items in a 30-item session, worst
+   session 5, the most-served item in the topic by a clear margin, and its two
+   masked shapes are one sentence counted twice for name arity. The lane's own
+   headline could not see it: same-shape 0.000 measures ADJACENT repeats only.
+   This is the second `compare` voice in pool 3. It is a different demand from
+   gDecOrder one pool below (there, four candidate lists; here, one list and the
+   child has to find the inversion) and a different demand from gDecCmpError
+   (there, one comparison diagnosed; here, four, and then a location). */
+function gDecOrderError() {
+  const who = pick(NAMES);
+  let vals = [D(34, 1), D(341, 2), D(38, 1), D(3405, 3), D(36, 1)], swapAt = 1, guard = 0, ok = false;
+  do {
+    guard++;
+    const whole = ri(1, 8);
+    const list = [];
+    let tries = 0;
+    while (list.length < 5 && tries++ < 80) {
+      const dp = pick([1, 2, 2, 3]);
+      const v = D(whole * P10[dp] + ri(1, P10[dp] - 1), dp);
+      if (v.n % 10 === 0) continue;                       /* no trailing zero gives its own dp away */
+      if (list.some(k => dsame(k, v))) continue;
+      list.push(v);
+    }
+    if (list.length < 5) continue;
+    if (new Set(list.map(v => v.dp)).size < 2) continue;  /* the mixed-length trap must be present */
+    const sorted = list.slice().sort(dcmp);
+    /* and the digit-string reading must put them in a DIFFERENT order, or the item
+       teaches nothing: "read it as a whole number" has to fail on this list. */
+    const byDigits = list.slice().sort((x, y) => x.n - y.n);
+    if (sorted.every((v, i) => dsame(v, byDigits[i]))) continue;
+    /* exactly one adjacent pair is swapped, and the spot is drawn uniformly over
+       all four, so "the pair whose second number is the longer" is at chance. */
+    swapAt = ri(0, 3);
+    vals = sorted.slice();
+    const t = vals[swapAt]; vals[swapAt] = vals[swapAt + 1]; vals[swapAt + 1] = t;
+    ok = true;
+    break;
+  } while (guard < 400);
+  /* the fallback is the sorted list with the first adjacent pair swapped, so it
+     carries exactly one inversion like every drawn one */
+  if (!ok) { vals = [D(3405, 3), D(34, 1), D(341, 2), D(36, 1), D(38, 1)]; swapAt = 0; }
+  const pairText = i => dtext(vals[i]) + ' and ' + dtext(vals[i + 1]);
+  const key = pairText(swapAt);
+  const wrongs = [0, 1, 2, 3].filter(i => i !== swapAt).map(pairText);
+  const pad = v => dtext(D(v.n * P10[3 - v.dp], 3));
+  const sortedNow = vals.slice().sort(dcmp);
+  return mcText(who + ' puts these decimals in order <b>from the smallest to the greatest</b> and writes: <b>' +
+    vals.map(dtext).join(', ') + '</b>. <b>Which two numbers are the wrong way round?</b>', '',
+    key, wrongs,
+    'Fill every number out to three places first: ' + sortedNow.map(pad).join(', ') +
+    '. Now compare the tenths, then the hundredths, then the thousandths. In order they are ' +
+    sortedNow.map(dtext).join(', ') + ', so ' + dtext(vals[swapAt]) + ' and ' + dtext(vals[swapAt + 1]) +
+    ' are the pair that have swapped places. A decimal with more digits after the point is not always the bigger one.');
 }
 
 /* FORMAT 2e - concept check: which two whole numbers is it between? (pool 1) */
@@ -534,11 +703,15 @@ function gDecRoundBack() {
     const lo = r * 10 - 5, hi = r * 10 + 5;        /* the half-open window [lo, hi) at dp `to`+1 */
     const inside = [];
     for (let h = lo + 1; h < hi; h++) if (h % 10 !== 0) inside.push(h);   /* never the exact half */
-    const outside = [hi, lo - 1, hi + ri(1, 4), lo - ri(2, 5)]
+    /* WOUND 1: the four candidates were two above the window and two below it, so
+       three of them shipped and the key could only ever be the second or third
+       biggest (62.3% third). Three on each side lets the picker put the key
+       anywhere. */
+    const outside = [hi, hi + ri(1, 4), hi + ri(5, 9), lo - 1, lo - ri(2, 5), lo - ri(6, 12)]
       .filter(h => h > 0 && h % 10 !== 0 && (h < lo || h >= hi));
-    if (!inside.length || outside.length < 3) continue;
+    if (!inside.length || outside.length < 6) continue;
     key = D(pick(inside), dp);
-    const picked = shuffle(outside).slice(0, 3).map(h => D(h, dp));
+    const picked = outside.map(h => D(h, dp));
     if (!dallDistinct([key].concat(picked))) continue;
     if (picked.some(p => dsame(dround(p, to), D(r, to)))) continue;     /* exactly one right answer */
     wrongs = picked;
@@ -556,38 +729,84 @@ function gDecRoundBack() {
 }
 
 /* FORMAT 2h - error spotting, the mistake NAMED (pool 3, diagnose).
-   Misconception: rounding UP on a 4 (or down on a 5). */
+   Misconception: rounding UP on a 4 (or down on a 5).
+
+   THE KILL (refutation 2026-09-15). The first cut gave exactly TWO of its four
+   options a "..., so the answer is N" tail - the key, and the direction
+   distractor, whose N was the very number the stem had already declared wrong.
+   The child's move was never rounding: it was "only two of these carry an
+   answer, and one of them is the answer the question just called wrong."
+   20,000 of 20,000 draws, structural, and the lane's own cheap-strategy scan
+   could not see it because it measured string length and decimal places. The
+   direction word in that distractor contradicted the stem on every draw as well
+   ("Priya rounded down" of a child who plainly rounded up), and the third
+   distractor described looking at "every digit after the ones place" of a number
+   that had exactly one.
+
+   ALL FOUR OPTIONS ARE NOW ONE FRAME - "<name> used <this digit> instead of
+   <that one>" - and NONE of them carries an answer at all. There is nothing to
+   match against the stem, nothing repeats the number the stem declares wrong,
+   and the only option whose direction word is derived from the draw is the key.
+   The four differ solely in WHICH DIGIT the rounding rule was applied to, which
+   is the rule itself.
+
+   The draw now keeps TWO digits past the rounding place and puts the last digit
+   AND the digit in the rounding place on the SAME side of 5 as the next digit,
+   so "used the last digit" and "used the <place> digit" would each have produced
+   the RIGHT answer and are therefore genuinely refuted by the stem - exactly one
+   option is defensible. "Rounded twice" is refuted for the same reason: under
+   that draw, rounding to one more place and then again lands on the truth too. */
 function gDecRoundError() {
   const who = pick(NAMES);
-  const to = ri(0, 1);
-  const upSlip = Math.random() < 0.7;                 /* mostly the "4 rounds up" slip */
-  const nextDigit = upSlip ? ri(1, 4) : ri(5, 9);
-  const base = ri(P10[to] + 1, 9 * P10[to]);          /* the truncated value, at dp `to` */
-  const val = D(base * 10 + nextDigit, to + 1);
-  const truth = dround(val, to);                      /* base when nextDigit < 5, base + 1 otherwise */
-  const said = upSlip ? D(base + 1, to) : D(base, to);
+  let to = 0, val = D(746, 2), truth = D(7, 0), said = D(8, 0), guard = 0, ok = false;
+  let d0 = 7, d1 = 4, d2 = 6, upSlip = true;
+  do {
+    guard++;
+    to = ri(0, 1);
+    upSlip = Math.random() < 0.5;                       /* the way the child ACTUALLY went */
+    const lo = upSlip ? 1 : 5, hi = upSlip ? 4 : 9;     /* one side of 5, for all three digits */
+    d1 = ri(lo, hi);                                    /* the next digit - the only one that counts */
+    d2 = ri(lo, hi);                                    /* the last digit */
+    d0 = ri(lo, hi);                                    /* the digit in the rounding place itself */
+    /* three DIFFERENT digits, so the three "which digit did you use" options never
+       print the same numeral as each other */
+    if (new Set([d0, d1, d2]).size !== 3) continue;
+    const base = to === 0 ? d0 : ri(1, 9) * 10 + d0;    /* the value truncated at place `to` */
+    val = D(base * 100 + d1 * 10 + d2, to + 2);
+    truth = dround(val, to);                            /* = base + (d1 >= 5) */
+    said = D(base + (upSlip ? 1 : 0), to);              /* the wrong-way answer the child gives */
+    if (dsame(said, truth) || said.n <= 0 || truth.n <= 0) continue;
+    /* NOTHING an option prints may be the number the stem declares wrong. The
+       options carry d1, d2, d0 and the "1"/"2" of roundPhrase, and at to = 0 the
+       claim is a bare digit, so those four are the whole exposure. */
+    if (to === 0 && [d1, d2, d0, 1, 2].indexOf(said.n) !== -1) continue;
+    ok = true;
+    break;
+  } while (guard < 400);
+  /* the fallback obeys every rule the draw does: three distinct digits, all on the
+     4-or-less side, and a claim (5) that no option prints */
+  if (!ok) { to = 0; val = D(423, 2); truth = D(4, 0); said = D(5, 0); d0 = 4; d1 = 2; d2 = 3; upSlip = true; }
   const placeName = to === 0 ? 'ones' : PLACE_WORD[to];
-  const key = upSlip
-    ? who + ' rounded up. The next digit is ' + nextDigit + ', and 4 or less rounds down, so the answer is ' + dtext(truth) + '.'
-    : who + ' rounded down. The next digit is ' + nextDigit + ', and 5 or more rounds up, so the answer is ' + dtext(truth) + '.';
+  const went = upSlip ? 'up' : 'down', right = upSlip ? 'down' : 'up';
+  const key = who + ' used the next digit, ' + d1 + ', but rounded ' + went + ' instead of ' + right + '.';
   const wrongs = [
-    who + (upSlip ? ' rounded down. The next digit is ' + nextDigit + ', and 4 or more rounds up, so the answer is ' + dtext(said) + '.'
-                                : ' rounded up. The next digit is ' + nextDigit + ', and 5 or less rounds down, so the answer is ' + dtext(said) + '.'),
-    who + ' rounded to the wrong place, and should have rounded to ' + roundPhrase(to === 0 ? 1 : 0) + ' instead.',
-    who + ' looked at every digit after the ' + placeName + ' place instead of only the next one.'
+    who + ' used the last digit, ' + d2 + ', instead of the next one.',
+    who + ' used the ' + placeName + ' digit itself, ' + d0 + ', instead of the next one.',
+    who + ' rounded to ' + roundPhrase(to + 1) + ' first and then rounded that answer again.'
   ];
   return mcText(who + ' rounds <b>' + dtext(val) + '</b> to <b>' + roundPhrase(to) + '</b> and says the answer is <b>' +
     dtext(said) + '</b>. <b>What went wrong?</b>', '', key, wrongs,
-    'Rounding looks at one digit only: the very next one after the ' + placeName + ' place. Here that digit is ' +
-    nextDigit + ', so ' + dtext(val) + ' rounds ' + (upSlip ? 'down' : 'up') + ' to ' + dtext(truth) + ', not ' +
-    dtext(said) + '. The rule is 5 or more rounds up, and 4 or less rounds down.');
+    'Rounding looks at one digit only: the very next one after the ' + placeName + ' place. In ' + dtext(val) +
+    ' that digit is ' + d1 + ', and ' + (d1 >= 5 ? '5 or more rounds up' : '4 or less rounds down') + ', so ' +
+    dtext(val) + ' rounds ' + right + ' to ' + dtext(truth) + ', not ' + dtext(said) + '. The last digit is ' + d2 +
+    ', which points the same way, so looking further along would not have changed the answer either.');
 }
 
 /* FORMAT 2i - two-step word problem, SG wet market (pool 3): add, THEN round. */
 function gDecRoundSum() {
   const who = pick(NAMES);
   let a = D(267, 2), b = D(18, 1), total = D(447, 2), key = 4, guard = 0, ok = false;
-  let doubleRound = 5, chopped = 3, subtracted = 1;
+  let doubleRound = 5, chopped = 3, subtracted = 1, twiceA = 5, twiceB = 4, twiceBoth = 9;
   do {
     guard++;
     a = D(ri(110, 480), 2);
@@ -602,24 +821,33 @@ function gDecRoundSum() {
     doubleRound = key + 1;                                  /* 4.47 -> 4.5 -> 5 */
     chopped = Math.floor(a.n / 100) + Math.floor(b.n / 10); /* dropped both remainders before adding */
     subtracted = dround(D(Math.abs(a.n - b.n * 10), 2), 0).n;
-    if (new Set([key, doubleRound, chopped, subtracted]).size !== 4) continue;
-    if (key < 2 || chopped < 1 || subtracted < 1) continue;
+    /* WOUND 1: chopped and subtracted are always below the key and doubleRound is
+       always one above it, so "second biggest" answered this on every draw. The two
+       "weighed one of them twice" slips STRADDLE the key - whichever fruit is the
+       heavier, doubling it overshoots and doubling the other undershoots - so the
+       picker always has at least two named candidates on each side. */
+    twiceA = dround(D(a.n * 2, 2), 0).n;
+    twiceB = dround(D(b.n * 20, 2), 0).n;
+    twiceBoth = dround(D(total.n * 2, 2), 0).n;             /* weighed the pair twice */
+    if (new Set([key, doubleRound, chopped, subtracted, twiceA, twiceB, twiceBoth]).size !== 7) continue;
+    if (key < 2 || chopped < 1 || subtracted < 1 || twiceA < 1 || twiceB < 1) continue;
     ok = true;
     break;
   } while (guard < 400);
-  if (!ok) { a = D(267, 2); b = D(18, 1); total = D(447, 2); key = 4; doubleRound = 5; chopped = 3; subtracted = 1; }
+  if (!ok) { a = D(267, 2); b = D(18, 1); total = D(447, 2); key = 4; doubleRound = 5; chopped = 3; subtracted = 1; twiceA = 5; twiceB = 4; twiceBoth = 9; }
   const fruit = pick([['papaya', 'pineapple'], ['bag of rice', 'bag of onions'], ['bunch of bananas', 'watermelon']]);
+  const wrongs = rankInts(key, [doubleRound, chopped, subtracted, twiceA, twiceB, twiceBoth]);
   const q = finishNum('At the wet market ' + who + ' buys a ' + fruit[0] + ' weighing <b>' + dtext(a) +
     ' kg</b> and a ' + fruit[1] + ' weighing <b>' + dtext(b) + ' kg</b>. <b>Rounded to the nearest kilogram</b>, ' +
     'what is the total mass of the two together?', '',
-    key, [doubleRound, chopped, subtracted], 'kg',
+    key, wrongs, 'kg',
     'Step 1: add the two masses. ' + dtext(a) + ' + ' + dtext(b) + ' = ' + dtext(total) +
     ' kg. Step 2: round ' + dtext(total) + ' to the nearest whole number. The digit just after the ones place is ' +
     Math.floor((total.n % 100) / 10) + ', which is 4 or less, so it rounds down to ' + key +
     ' kg. Add first and round ONCE: rounding ' + dtext(total) + ' to 1 decimal place first and then again gives ' +
     doubleRound + ' kg, which is not the same thing.');
-  q.decAuthored = [doubleRound, chopped, subtracted].map(v => v + ' kg');
-  q.authored = [doubleRound, chopped, subtracted];
+  q.decAuthored = wrongs.map(v => v + ' kg');
+  q.authored = wrongs.slice();
   return q;
 }
 
@@ -634,7 +862,10 @@ function gFracToDec() {
   do {
     guard++;
     dp = ri(1, 3); den = P10[dp];
-    n = ri(1, den - 1);
+    /* WOUND 1: at three places the numerator now always has three digits, so the
+       "dropped a digit" slips below the key exist on every draw. 7/1000 was a fair
+       item but it left the key with nothing named beneath it. */
+    n = ri(dp === 3 ? 101 : 1, den - 1);
     key = D(n, dp);
     shallow = dnat(D(n * 10, dp));                 /* read hundredths as tenths */
     complement = D(den - n, dp);                   /* took it away from the whole */
@@ -642,8 +873,16 @@ function gFracToDec() {
     /* n must not end in 0, or the key prints a trailing zero ("0.540" for 540/1000)
        and so does every distractor built from it. */
   } while (guard < 300 && !(n % 10 !== 0 && dallDistinct([key, shallow, complement, tacked])));
+  /* WOUND 1: shallow and tacked are above the key on every draw and complement is
+     usually above it too, so the key was the smallest or the third biggest and
+     never anything else. The point-one-column-out slips and the dropped digits are
+     the named candidates underneath it. */
+  const deeper1 = pRight(key);
+  const deeper2 = dp + 2 <= 3 ? D(n, dp + 2) : null;
+  const dropLast = n >= 10 ? D(Math.floor(n / 10), dp) : null;
+  const dropFirst = dp === 3 && n % 100 !== 0 ? D(n % 100, dp) : null;
   return mcDec('Write ' + fr(n, den) + ' as a decimal.', '',
-    key, [shallow, complement, tacked], '',
+    key, [shallow, complement, tacked, deeper1, deeper2, dropLast, dropFirst], '',
     n + ' out of ' + den + ' means ' + qty(n, dp) + '. The ' + PLACE_WORD[dp] +
     ' place is number ' + dp + ' after the decimal point, so ' + qty(n, dp) +
     ' is written ' + dtext(key) + '.');
@@ -658,14 +897,17 @@ function gDecBar() {
      padded distractor instead of a named one. */
   const filled = pick([1, 2, 3, 4, 6, 7, 8, 9]);
   const key = D(filled, 1);
-  const rest = D(parts - filled, 1);
-  const tooDeep = D(filled, 2);
-  const noPoint = D(filled, 0);
+  const rest = D(parts - filled, 1);          /* counted the unshaded parts */
+  const tooDeep = pRight(key);                /* the point one column too far right */
+  const deeper = D(filled, 3);                /* and two columns, "thousandths of one" */
+  const noPoint = pLeft(key);                 /* no point at all */
+  const restNoPoint = D(parts - filled, 0);   /* both slips at once */
   const q = mcDec('Each strip below is <b>one whole</b> cut into <b>10 equal parts</b>. ' +
     '<b>What decimal does the shaded part show?</b>', '',
-    key, [rest, tooDeep, noPoint], '',
-    'The whole is cut into 10 equal parts, so each part is one tenth. ' + filled +
-    ' parts are shaded, which is ' + qty(filled, 1) + ', and ' + qty(filled, 1) + ' is written ' + dtext(key) + '.');
+    key, [rest, tooDeep, noPoint, restNoPoint, deeper], '',
+    /* WOUND 5: this sentence printed "1 parts are shaded" on 12.8% of draws. */
+    'The whole is cut into 10 equal parts, so each part is one tenth. ' + many(filled, 'part is', 'parts are') +
+    ' shaded, which is ' + qty(filled, 1) + ', and ' + qty(filled, 1) + ' is written ' + dtext(key) + '.');
   return fig(q, { type: 'fractionBar', parts: parts, filled: filled });
 }
 
@@ -684,11 +926,15 @@ function gDecToFrac() {
   const val = D(n, dp);
   const revDigits = Number(String(n).split('').reverse().join(''));
   const cands = [[n, den * 10], [den - n, den], dp === 1 ? [n, den + 1] : [revDigits, den]];
-  return finishFrac('Write <b>' + dtext(val) + '</b> as a fraction in its <b>simplest form</b>.', '',
+  const q = finishFrac('Write <b>' + dtext(val) + '</b> as a fraction in its <b>simplest form</b>.', '',
     [n, den], cands,
     dtext(val) + ' is ' + qty(n, dp) + ', and ' + PLACE_WORD[dp] + ' go over ' + den +
     '. So ' + dtext(val) + ' is ' + n + ' over ' + den + ', and because ' + n + ' and ' + den +
     ' share no common factor that is already the simplest form.', 4);
+  /* the fraction half of the named-distractor contract (WOUND 2): every shipped
+     option must be one of these three, so buildFracChoices can never pad here. */
+  q.fracAuthored = cands;
+  return q;
 }
 
 /* FORMAT 3d - simple equivalents: a denominator that divides into 10 or 100 (pool 2) */
@@ -719,16 +965,27 @@ function gFracEquivDec() {
 function gDecFracError() {
   const who = pick(NAMES);
   const tenthsShape = Math.random() < 0.6;
-  const d = ri(2, 9);                          /* 1 would read "1 cents" in the claim */
+  /* 1 would read "1 cents" in the claim; 5 is dropped on the tenths shape because
+     50 cents is then both the true value AND the rest of the dollar. */
+  const d = pick(tenthsShape ? [2, 3, 4, 6, 7, 8, 9] : [2, 3, 4, 5, 6, 7, 8, 9]);
   const val = tenthsShape ? D(d, 1) : D(d, 2);
   const truePlace = tenthsShape ? 1 : 2, wrongPlace = tenthsShape ? 2 : 1;
   const trueCents = tenthsShape ? d * 10 : d;
   const claimCents = tenthsShape ? d : d * 10;
-  const key = dtext(val) + ' of a dollar is ' + qty(d, truePlace) + ' of a dollar, which is ' + trueCents + ' cents.';
+  /* RULE D6, found by the new prose format-tell gate (refutation 2026-09-15). The
+     first cut split 2-2 on the tail: the key and ONE distractor ended "..., which
+     is N cents." while the other two ended on nothing in common, so a child who
+     read no further than the last four words was down to a coin flip - the KILL's
+     pattern in a milder key. All four options end in the same frame now, with four
+     different amounts, and the "Nothing is wrong" option (free to delete, since
+     the stem has already said something is) is gone. */
+  const tail = n => ', so ' + dtext(val) + ' of a dollar is ' + n + ' cents.';
+  const worth = p => 'A ' + PLACE_ONE[p] + ' of a dollar is ' + (p === 1 ? '10 cents' : '1 cent');
+  const key = worth(truePlace) + tail(trueCents);
   const wrongs = [
-    'Nothing is wrong. ' + dtext(val) + ' of a dollar really is ' + claimCents + ' cents.',
-    dtext(val) + ' of a dollar is ' + qty(d, wrongPlace) + ' of a dollar, which is ' + claimCents + ' cents.',
-    dtext(val) + ' of a dollar is ' + d + ' dollars, because the ' + d + ' is the only digit that counts.'
+    worth(wrongPlace) + tail(claimCents),
+    'One whole dollar is 100 cents' + tail(d * 100),
+    'A dollar is 100 cents and this is the part that is left' + tail(100 - trueCents)
   ];
   return mcText(who + ' says that <b>' + dtext(val) + ' of a dollar</b> is <b>' + claimCents +
     ' cents</b>. <b>What is wrong with that?</b>', '', key, wrongs,
@@ -744,17 +1001,38 @@ function gDecMoneyFrac() {
   const cents = pick(CENT_PRICES);
   const g = gcd(cents, 100);
   const n = cents / g, den = 100 / g;
-  const item = pick(['a packet of sweets', 'an eraser', 'a rubber band ball', 'a sticker sheet', 'a paper clip box']);
+  const item = pick(['a packet of sweets', 'an eraser', 'a pencil sharpener', 'a sticker sheet', 'a paper clip box']);
   const red = (a, b) => { const g2 = gcd(a, b); return [a / g2, b / g2]; };
-  const cands = [red(100 - cents, 100),      /* the rest of the dollar */
-                 red(cents, 1000),           /* one place too far */
-                 red(cents + 5, 100)];       /* misread the price by five cents */
-  return finishFrac('At the school bookshop ' + item + ' costs <b>' + cents + ' cents</b>, which is written <b>' +
+  /* WOUND 2 (refutation 2026-09-15). At 50 cents - one of the ten CENT_PRICES, so
+     10.03% of draws - the first candidate `red(100 - cents, 100)` IS the key:
+     50/100 and 50/100 both reduce to 1/2. buildFracChoices dropped it as a
+     duplicate, ran out of candidates and PADDED with [correct[0] + n,
+     correct[1] + n] = 2/3, a denominator that cannot divide 100 and a slip no
+     child makes. Nothing caught it: this generator stamped no contract at all,
+     so decGates rule D4 never ran, and the shared q.authored check cannot read
+     fractions. There are now five named candidates, any that collide with the key
+     are dropped HERE rather than inside the shared kit, and q.fracAuthored
+     asserts to the harness that every shipped option is one of them. */
+  const raw = [red(100 - cents, 100),                    /* the rest of the dollar */
+               red(cents, 1000),                         /* one place too far */
+               red(cents + 5, 100),                      /* misread the price by five cents */
+               red(Math.max(cents - 5, 1), 100),         /* and the other way */
+               red(cents, 200)];                         /* halved the whole instead of the part */
+  const cands = [];
+  for (const c of raw) {
+    if (c[0] <= 0 || c[1] <= 0 || c[0] > c[1]) continue;
+    if (eq(c[0], c[1], n, den)) continue;                /* never the key wearing another face */
+    if (cands.some(k => eq(k[0], k[1], c[0], c[1]))) continue;
+    cands.push(c);
+  }
+  const q = finishFrac('At the school bookshop ' + item + ' costs <b>' + cents + ' cents</b>, which is written <b>' +
     money(cents) + '</b>. <b>What fraction of one dollar is that, in its simplest form?</b>', '',
     [n, den], cands,
     'Step 1: one dollar is 100 cents, so ' + cents + ' cents is ' + cents + ' out of 100, or ' + cents +
     ' over 100 - the same as the two hundredths digits in ' + money(cents) + '. Step 2: ' + cents + ' and 100 both divide by ' +
     g + ', so ' + cents + ' over 100 simplifies to ' + n + ' over ' + den + '.', 4);
+  q.fracAuthored = cands;
+  return q;
 }
 
 /* =============================================================================
@@ -784,13 +1062,17 @@ function gDecAddSub() {
       other = a + b;                               /* added instead */
       overCarry = key + scale;
     }
-  } while (guard < 300 && !(key % 10 !== 0 && key > 0 && noCarry > 0 && other > 0 &&
+  } while (guard < 300 && !(key % 10 !== 0 && key > scale && noCarry > 0 && other > 0 &&
            a % 10 !== 0 && b % 10 !== 0 &&
-           new Set([key, noCarry, other, overCarry]).size === 4));
+           new Set([key, noCarry, other, overCarry, key - scale]).size === 5));
   const A = D(a, dp), B = D(b, dp), K = D(key, dp);
   const sign = addMode ? '+' : '−';
+  /* WOUND 1: on an ADD draw both named slips but one sat below the key and on a
+     SUBTRACT draw all three sat above it, so the key was pinned to the second
+     biggest or the smallest. The point-one-column-out pair and "took one too many
+     out of the next column" give the picker candidates on both sides either way. */
   return mcDec('<b>' + dtext(A) + ' ' + sign + ' ' + dtext(B) + ' = ?</b>', '',
-    K, [D(noCarry, dp), D(other, dp), D(overCarry, dp)], '',
+    K, [D(noCarry, dp), D(other, dp), D(overCarry, dp), D(key - scale, dp), pLeft(K), pRight(K)], '',
     'Write them one under the other with the decimal points in line, then ' + (addMode ? 'add' : 'subtract') +
     ' column by column starting from the right: ' + dtext(A) + ' ' + sign + ' ' + dtext(B) + ' = ' + dtext(K) +
     '. The decimal point in the answer goes straight under the other two.');
@@ -819,12 +1101,18 @@ function gDecStartAmount() {
     subtracted = Math.abs(left - spent);                  /* subtracted instead of adding */
     noCarry = key - 100;                                  /* lost the carry out of the cents */
     dropped = key + 100;                                  /* carried where there was nothing to carry */
-  } while (guard < 300 && !(key % 100 !== 0 && subtracted > 0 &&
+  } while (guard < 300 && !(key % 100 !== 0 && subtracted > 0 && spent !== left &&
            spent % 100 !== 0 && left % 100 !== 0 &&          /* "$2.00" teaches no decimals */
-           new Set([key, subtracted, noCarry, dropped]).size === 4));
+           new Set([key, subtracted, noCarry, dropped, 2 * spent, 2 * left]).size === 6));
+  /* WOUND 1: subtracted and noCarry sit below the key and dropped sits above it on
+     every draw, so "second biggest" answered this 2,000 times out of 2,000. The
+     two "used one amount twice" slips STRADDLE the key by construction - whichever
+     of the two amounts is the larger, doubling it overshoots and doubling the other
+     undershoots - so the picker always has at least two named candidates on each
+     side and the key's rank moves. */
   return mcMoney(who + ' spends <b>' + money(spent) + '</b> at ' + pick(SHOPS) + ' and has <b>' + money(left) +
     '</b> left. <b>How much money did ' + who + ' have at first?</b>', '',
-    key, [subtracted, noCarry, dropped],
+    key, [subtracted, noCarry, dropped, 2 * spent, 2 * left],
     'Work backwards: the money at the start is the money spent plus the money left over. Line the decimal points up and add: ' +
     money(spent) + ' + ' + money(left) + ' = ' + money(key) + '. Taking one amount from the other answers a different question.');
 }
@@ -834,44 +1122,93 @@ function gDecMoneyMore() {
   const [who] = pickNames(1);
   const goods = pick([['a carton of milk', 'a loaf of bread'], ['a packet of rice', 'a bottle of oil'],
                       ['a tray of eggs', 'a bag of onions'], ['a tub of yoghurt', 'a packet of biscuits']]);
-  let hi = 345, lo = 280, key = 65, guard = 0;
-  let total = 625, noBorrow = 135, wholeOnly = 100;
+  let hi = 345, lo = 180, key = 165, guard = 0;
+  let total = 525, noBorrow = 245, wholeOnly = 200, centsOnly = 65, oneDollarOut = 65;
   do {
     guard++;
-    hi = ri(150, 890); lo = ri(105, hi - 20);
+    hi = ri(260, 890); lo = ri(105, hi - 160);
     key = hi - lo;
     total = hi + lo;                                       /* added instead of comparing */
     noBorrow = digitwiseDiff(hi, lo, 2);                   /* smaller digit from larger in every column */
     wholeOnly = (Math.floor(hi / 100) - Math.floor(lo / 100)) * 100;   /* ignored the cents */
-  } while (guard < 300 && !(key % 100 !== 0 && wholeOnly > 0 && noBorrow > 0 &&
+    centsOnly = Math.abs(hi % 100 - lo % 100);             /* compared the cents only */
+    oneDollarOut = key - 100;                              /* exchanged a dollar that was already there */
+  } while (guard < 300 && !(key % 100 !== 0 && wholeOnly > 0 && noBorrow > 0 && centsOnly > 0 && oneDollarOut > 0 &&
            hi % 100 !== 0 && lo % 100 !== 0 &&               /* "$2.00" teaches no decimals */
-           new Set([key, total, noBorrow, wholeOnly]).size === 4));
+           new Set([key, total, noBorrow, wholeOnly, centsOnly, oneDollarOut]).size === 6));
+  /* WOUND 1: total, noBorrow and wholeOnly are all normally ABOVE the difference,
+     so "always pick the smallest" won 74.2% of this generator. centsOnly and
+     oneDollarOut are named slips that both land BELOW it, and the draw now
+     guarantees a difference of at least $1.60 so the second of them stays positive. */
   return mcMoney('At NTUC ' + goods[0] + ' costs <b>' + money(hi) + '</b> and ' + goods[1] + ' costs <b>' +
     money(lo) + '</b>. <b>How much more does ' + goods[0].replace(/^an? /, 'the ') + ' cost?</b>', '',
-    key, [total, noBorrow, wholeOnly],
+    key, [total, noBorrow, wholeOnly, centsOnly, oneDollarOut],
     'Step 1: line the decimal points up. Step 2: subtract, exchanging a dollar for 100 cents when the cents will not go: ' +
     money(hi) + ' − ' + money(lo) + ' = ' + money(key) + '. Adding the two prices tells you what both cost together, which is a different question.');
 }
 
 /* FORMAT 4d - error spotting, the mistake NAMED (pool 3, CORRECT the mistake).
-   Misconception: lining up the last digits instead of the decimal points. */
+   Misconception: lining up the last digits instead of the decimal points.
+
+   WOUND 3 (refutation 2026-09-15). The first cut always asked `w + 0.d` - a whole
+   number plus a tenth - which needs a CARRY in 0 of 20,000 draws, while the pool-1
+   addition anchor it sits two levels above needs one in 81.0%. The pool-3 wrapper
+   was making the arithmetic EASIER than the pool-1 item. The dominant draw now
+   adds two numbers that both carry digits after the point, one place apart
+   (3.75 + 4.6), whose fractional parts are forced to add past one whole: the carry
+   rate is the 85% of draws that take that shape. The classic `w + 0.d` shape is
+   kept for the other 15% because it is the purest picture of the slip.
+
+   THE KILL's rule, applied here too: the number the stem declares wrong is no
+   longer offered as an option. A child could delete it on sight - the question
+   has just said it is wrong - so it was one of three distractors doing no work. */
 function gDecAlignError() {
   const who = pick(NAMES);
-  let w = 7, d = 4, guard = 0;
-  do { w = ri(1, 9); d = ri(1, 9); guard++; }
-  while (guard < 200 && !dallDistinct([D(w * 10 + d, 1), D(w + d, 1), D(w + d, 0), D(w * 100 + d, 2)]));
-  const key = D(w * 10 + d, 1);                /* 7 + 0.4 = 7.4 */
-  const claim = D(w + d, 1);                   /* 0.7 + 0.4 = 1.1, what lining up the last digits gives */
-  const noPoint = D(w + d, 0);                 /* 7 + 4 = 11 */
-  const tooDeep = D(w * 100 + d, 2);           /* put the 4 in the hundredths place */
-  return mcDec(who + ' works out <b>' + w + ' + ' + dtext(D(d, 1)) + '</b>. ' + who +
-    ' writes the ' + d + ' underneath the ' + w + ' and gets <b>' + dtext(claim) +
+  let a = D(375, 2), b = D(46, 1), guard = 0, ok = false;
+  /* the shape is drawn ONCE, outside the redraw loop. Drawn inside it, the rejected
+     carry-less shape-B draws would have been re-rolled into shape A and the carry
+     rate would have come out at 72%, not at the coin it was written to be. */
+  const twoSided = Math.random() < 0.88;
+  do {
+    guard++;
+    if (twoSided) {
+      const A = ri(101, 899), B = ri(11, 89);
+      if (A % 10 === 0 || B % 10 === 0) continue;             /* the last digits must be real digits */
+      if ((A % 100) + (B % 10) * 10 < 100) continue;          /* the fractions must carry into the ones */
+      a = D(A, 2); b = D(B, 1);
+    } else {
+      a = D(ri(1, 9), 0); b = D(ri(1, 9), 1);
+    }
+    const m0 = Math.max(a.dp, b.dp);
+    const t0 = a.n * P10[m0 - a.dp] + b.n * P10[m0 - b.dp];
+    const df = Math.abs(a.n * P10[m0 - a.dp] - b.n * P10[m0 - b.dp]);
+    if (t0 - P10[m0] <= 0 || df <= 0) continue;
+    /* "writes the 9 underneath the 9" reads as a riddle; the two last digits differ */
+    if (a.n % 10 === b.n % 10) continue;
+    if (!dallDistinct([D(t0, m0), D(a.n + b.n, m0), D(a.n + b.n, 0), D(t0 + P10[m0], m0),
+                       D(df, m0), D(t0 - P10[m0], m0), D(t0, m0 + 1), D(t0, m0 - 1)])) continue;
+    ok = true;
+    break;
+  } while (guard < 400);
+  if (!ok) { a = D(375, 2); b = D(46, 1); }
+  const m = Math.max(a.dp, b.dp);
+  const trueN = a.n * P10[m - a.dp] + b.n * P10[m - b.dp];
+  const key = D(trueN, m);                           /* 3.75 + 4.6 = 8.35 */
+  const claim = D(a.n + b.n, m);                     /* what lining up the LAST DIGITS gives: 4.21 */
+  const lastA = a.n % 10, lastB = b.n % 10;
+  const noPoint = D(a.n + b.n, 0);                   /* ignored the point altogether */
+  const diff = D(Math.abs(a.n * P10[m - a.dp] - b.n * P10[m - b.dp]), m);   /* subtracted instead */
+  const overCarry = D(trueN + P10[m], m);            /* carried where there was nothing to carry */
+  const lostCarry = D(trueN - P10[m], m);            /* wrote the carried ten down and lost it */
+  return mcDec(who + ' works out <b>' + dtext(a) + ' + ' + dtext(b) + '</b>. ' + who +
+    ' writes the ' + lastB + ' underneath the ' + lastA + ' and gets <b>' + dtext(claim) +
     '</b>. <b>What is the correct answer?</b>', '',
-    key, [claim, noPoint, tooDeep], '',
-    'Line up the decimal POINTS, not the last digits. ' + w + ' is ' + qty(w, 0) + ' and ' + dtext(D(d, 1)) +
-    ' is ' + qty(d, 1) + ', so together they make ' + qty(w, 0) + ' and ' + qty(d, 1) + ', which is ' + dtext(key) +
-    '. Writing the ' + d + ' under the ' + w + ' adds ' + qty(d, 1) + ' to ' + qty(w, 1) + ' instead, and that is where ' +
-    dtext(claim) + ' comes from.');
+    key, [noPoint, diff, overCarry, lostCarry, pLeft(key), pRight(key)], '',
+    'Line up the decimal POINTS, not the last digits. Write ' + dtext(a) + ' and ' + dtext(b) +
+    ' one under the other with the points in a column, filling the short one out with a zero: ' +
+    dtext(D(a.n * P10[m - a.dp], m)) + ' + ' + dtext(D(b.n * P10[m - b.dp], m)) + ' = ' + dtext(key) +
+    '. Writing the ' + lastB + ' under the ' + lastA + ' slides ' + dtext(b) +
+    ' one whole column to the right, and that is where ' + dtext(claim) + ' comes from.');
 }
 
 /* FORMAT 4e - TYPED two-step word problem, SG money (pool 3): total, then change.
@@ -915,12 +1252,17 @@ function gDecMulConcept() {
 /* FORMAT 4g - direct compute: a decimal times a 1-digit whole number (pool 2) */
 function gDecMulWhole() {
   let dp = 1, a = 36, n = 4, guard = 0;
-  do { dp = ri(1, 2); a = ri(P10[dp] + 1, 9 * P10[dp]); n = ri(2, 9); guard++; }
+  do { dp = ri(1, 2); a = ri(P10[dp] + 1, 9 * P10[dp]); n = ri(3, 9); guard++; }
   while (guard < 300 && !((a * n) % 10 !== 0 && a % 10 !== 0 &&
-         dallDistinct([D(a * n, dp), D(a + n * P10[dp], dp), D(a * n, dp + 1), D(a * n, dp - 1)])));
+         dallDistinct([D(a * n, dp), D(a + n * P10[dp], dp), D(a * n, dp + 1), D(a * n, dp - 1),
+                       D(a * (n - 1), dp), D(a * (n + 1), dp)])));
   const A = D(a, dp), key = D(a * n, dp);
+  /* WOUND 1 (96.0% "second biggest"): the added slip and the point-one-right slip
+     were both below the key and the point-one-left slip was above it, every draw.
+     One group too few and one group too many bracket it at the same magnitude. */
   return mcDec('<b>' + dtext(A) + ' × ' + n + ' = ?</b>', '',
-    key, [D(a + n * P10[dp], dp), D(a * n, dp + 1), D(a * n, dp - 1)], '',
+    key, [D(a + n * P10[dp], dp), pRight(key), pLeft(key),
+          D(a * (n - 1), dp), D(a * (n + 1), dp)], '',
     'Multiply as if there were no decimal point: ' + a + ' × ' + n + ' = ' + (a * n) + '. ' + dtext(A) +
     ' has ' + dp + ' digit' + (dp > 1 ? 's' : '') + ' after the point, so the answer has ' + dp +
     ' too: ' + dtext(key) + '. Adding instead of multiplying answers a different question.');
@@ -928,31 +1270,110 @@ function gDecMulWhole() {
 
 /* FORMAT 4h - direct compute: a decimal shared by a 1-digit whole number (pool 2) */
 function gDecDivWhole() {
-  let dp = 1, key = 24, n = 3, guard = 0;
-  do { dp = ri(1, 2); key = ri(P10[dp] + 1, 4 * P10[dp]); n = ri(2, 9); guard++; }
-  while (guard < 300 && !(key % 10 !== 0 && (key * n) % 10 !== 0 && key * n !== n * P10[dp] &&
-         dallDistinct([D(key, dp), D(key, dp + 1), D(key, dp - 1), D(Math.abs(key * n - n * P10[dp]), dp)])));
+  let dp = 1, key = 24, n = 3, guard = 0, wholeOnly = 20;
+  do {
+    guard++;
+    dp = ri(1, 2); key = ri(P10[dp] + 1, 4 * P10[dp]); n = ri(2, 9);
+    /* divided the whole ones and threw the digits after the point away */
+    wholeOnly = Math.floor(Math.floor(key * n / P10[dp]) / n) * P10[dp];
+  } while (guard < 300 && !(key % 10 !== 0 && (key * n) % 10 !== 0 && key * n !== n * P10[dp] && wholeOnly > 0 &&
+         dallDistinct([D(key, dp), D(key, dp + 1), D(key, dp - 1), D(Math.abs(key * n - n * P10[dp]), dp),
+                       D(key * n, dp), D(wholeOnly, dp)])));
   const total = key * n;
   const T = D(total, dp), K = D(key, dp);
+  /* WOUND 1 (89.0% "second smallest"): the point-one-right slip was the only
+     candidate below the key. "Divided the whole ones only" is the second one, and
+     "did not divide at all" is a second candidate above it. */
   return mcDec('<b>' + dtext(T) + ' ÷ ' + n + ' = ?</b>', '',
-    K, [D(key, dp + 1), D(key, dp - 1), D(Math.abs(total - n * P10[dp]), dp)], '',
+    K, [pRight(K), pLeft(K), D(Math.abs(total - n * P10[dp]), dp), D(total, dp), dnat(D(wholeOnly, dp))], '',
     'Divide as if there were no decimal point: ' + total + ' ÷ ' + n + ' = ' + key + '. ' + dtext(T) +
     ' has ' + dp + ' digit' + (dp > 1 ? 's' : '') + ' after the point, so the answer keeps the point in the same column: ' +
     dtext(K) + '. Check it by multiplying back: ' + dtext(K) + ' × ' + n + ' = ' + dtext(T) + '.');
+}
+
+/* ===== MOE P4 3.2 - dividing a WHOLE number by a WHOLE number with the quotient
+   as a decimal. SCOPE (refutation 2026-09-15 section 5): the shipped bank had
+   zero generators for this sub-strand - "3 divided by 4 is 0.75" appeared nowhere
+   in 640,000 draws - and the lane's own scope note did not mention it. Divisors
+   are 2, 4, 5, 8 and 10 only, which are exactly the one-digit divisors whose
+   quotients terminate inside the three-place ceiling (halves, quarters, fifths,
+   eighths, tenths), and the draw rejects anything that divides exactly, so the
+   answer is always a decimal and never a repeating one. --------------------- */
+const QUOT_DENS = [2, 4, 5, 8, 10];
+/* a / b as an exact scaled integer: 1/8 is 125 thousandths, and dnat strips the
+   zeros so 3 / 5 prints "0.6" and not "0.600". */
+const quot = (a, b) => dnat(D(a * (1000 / b), 3));
+/* the named slips shared by both 3.2 formats, five of them, at least two on each
+   side of the key (refutation WOUND 1 - every numeric generator authors a bank
+   wide enough for the rank picker to move the answer around). */
+function quotCands(a, b, key) {
+  const floor = Math.floor(a / b), unit = P10[key.dp];
+  return [
+    /* the slip the whole sub-strand exists to kill, so it ships on every draw - bar
+       the divisor of 10, where writing the remainder after the point is CORRECT */
+    b === 10 ? null : must(D(floor * 10 + (a % b), 1)),
+    floor > 0 ? D(key.n - floor * unit, key.dp) : null,  /* dropped the whole ones */
+    D(key.n + unit, key.dp),                        /* a whole one that is not there */
+    a > 1 ? quot(1, b) : null,                      /* shared ONE whole and stopped */
+    D(a * b, 0),                                    /* multiplied instead of dividing */
+    pRight(key), pLeft(key)                         /* the point one column out, each way */
+  ];
+}
+function gDecQuotient() {
+  let a = 3, b = 4, guard = 0;
+  do { b = pick(QUOT_DENS); a = ri(2, 6 * b - 1); guard++; }   /* 1 divided by b explains itself */
+  while (guard < 300 && !(a % b !== 0 &&
+         dallDistinct([quot(a, b)].concat(quotCands(a, b, quot(a, b)).filter(Boolean)))));
+  const key = quot(a, b);
+  const remAfterPoint = D(Math.floor(a / b) * 10 + (a % b), 1);   /* wrote the remainder after the point */
+  return mcDec('<b>' + a + ' ÷ ' + b + ' = ?</b>', '',
+    key, quotCands(a, b, key), '',
+    b + ' does not go into ' + a + ' a whole number of times, so the answer carries on after the decimal point. ' +
+    'One whole shared into ' + b + ' is ' + dtext(quot(1, b)) + ', so ' + many(a, 'whole', 'wholes') +
+    ' shared into ' + b + ' is ' +
+    a + ' × ' + dtext(quot(1, b)) + ' = ' + dtext(key) + '. Check it by multiplying back: ' + dtext(key) + ' × ' + b +
+    ' = ' + a + '.' + (b === 10 ? '' : ' The remainder is not written after the point: ' + a + ' ÷ ' + b +
+    ' is not ' + dtext(remAfterPoint) + '.'));
+}
+
+/* the same sub-strand as a measures word problem (pool 2) */
+function gDecQuotientWord() {
+  const who = pick(NAMES);
+  let a = 3, b = 4, guard = 0;
+  do { b = pick(QUOT_DENS); a = ri(b + 1, 6 * b - 1); guard++; }
+  while (guard < 300 && !(a % b !== 0 &&
+         dallDistinct([quot(a, b)].concat(quotCands(a, b, quot(a, b)).filter(Boolean)))));
+  const key = quot(a, b);
+  const goods = pick([['flour', 'bags'], ['rice', 'packets'], ['sugar', 'tins'], ['dried shrimp', 'tubs']]);
+  return mcDec('At the provision shop ' + who + ' splits <b>' + a + ' kg</b> of ' + goods[0] +
+    ' equally into <b>' + b + '</b> ' + goods[1] + '. <b>How much ' + goods[0] + ' is in each ' +
+    goods[1].replace(/e?s$/, '') + '?</b>', '',
+    key, quotCands(a, b, key), 'kg',
+    'Share the ' + a + ' kg into ' + b + ' equal ' + goods[1] + ': one kilogram shared into ' + b + ' is ' +
+    dtext(quot(1, b)) + ' kg, so ' + many(a, 'kilogram', 'kilograms') + ' shared into ' + b + ' is ' + a + ' × ' + dtext(quot(1, b)) +
+    ' = ' + dtext(key) + ' kg. Check it by multiplying back: ' + dtext(key) + ' × ' + b + ' = ' + a +
+    '. A remainder is not written after the decimal point.');
 }
 
 /* FORMAT 4i - word problem, SG running track (pool 2, measures) */
 function gDecTrack() {
   const who = pick(NAMES);
   let lap = 4, laps = 6, guard = 0;
-  do { lap = ri(2, 9); laps = ri(3, 9); guard++; }
+  do { lap = ri(2, 9); laps = ri(4, 9); guard++; }
   while (guard < 200 && !(lap !== laps && (lap * laps) % 10 !== 0 &&
-         dallDistinct([D(lap * laps, 1), D(lap + laps * 10, 1), D(lap * laps, 2), D(lap * laps, 0)])));
+         (lap * (laps - 1)) % 10 !== 0 && (lap * (laps + 1)) % 10 !== 0 &&   /* no "3.0 km" option */
+         dallDistinct([D(lap * laps, 1), D(lap + laps * 10, 1), D(lap * laps, 2), D(lap * laps, 0),
+                       D(lap * (laps - 1), 1), D(lap * (laps + 1), 1)])));
   const L = D(lap, 1), key = D(lap * laps, 1);
   const where = pick(['the stadium', 'the school field', 'the sports hall', 'the park connector loop']);
+  /* WOUND 1: the two named slips were exactly key / 10 and key x 10 and the third
+     sat above both, so the key was the SECOND SMALLEST on 2,000 of 2,000 draws.
+     The two off-by-one-lap slips are the counting mistake this item is really
+     about, and they bracket the key at comparable magnitude on every draw. */
   return mcDec('One lap of the running track at ' + where + ' is <b>' + dtext(L) + ' km</b>. ' + who +
     ' runs <b>' + laps + '</b> laps. <b>How far does ' + who + ' run altogether?</b>', '',
-    key, [D(lap + laps * 10, 1), D(lap * laps, 2), D(lap * laps, 0)], 'km',
+    key, [D(lap + laps * 10, 1), pRight(key), pLeft(key),
+          D(lap * (laps - 1), 1), D(lap * (laps + 1), 1)], 'km',
     laps + ' laps of ' + dtext(L) + ' km means ' + laps + ' equal groups, so multiply: ' + lap + ' × ' + laps +
     ' = ' + (lap * laps) + ' tenths of a kilometre, which is ' + dtext(key) + ' km. Adding the lap length to the number of laps answers nothing.');
 }
@@ -961,11 +1382,15 @@ function gDecTrack() {
    take away from the note. */
 function gDecPetrol() {
   const who = pick(NAMES);
-  let rate = 235, litres = 8, note = 20, guard = 0, ok = false;
-  let key = 120, stopped = 1880, ratePaid = 1765, noBorrow = 280;
+  let rate = 275, litres = 5, note = 20, guard = 0, ok = false;
+  let key = 625, stopped = 1375, ratePaid = 1725, noBorrow = 1635;
+  let oneLitreOut = 350, oneDollarOut = 525, centsOnly = 25;
   do {
     guard++;
-    rate = ri(165, 285); litres = ri(4, 9); note = pick([20, 50]);
+    /* Singapore pump prices in 2026 run about $2.60-$3.30 a litre; the first cut
+       drew $1.65-$2.85, which is 2016 and reads wrong to a Singapore parent
+       (refutation 2026-09-15, section 6). */
+    rate = ri(255, 330); litres = ri(4, 9); note = pick([20, 50]);
     if (rate % 100 === 0) continue;                           /* "$2.00" teaches no decimals */
     const cost = rate * litres;
     if (cost >= note * 100 || cost % 100 === 0) continue;
@@ -973,16 +1398,24 @@ function gDecPetrol() {
     stopped = cost;                                     /* stopped after step 1 */
     ratePaid = note * 100 - rate;                       /* took away one litre's price, not the whole cost */
     noBorrow = digitwiseDiff(note * 100, cost, 2);      /* smaller digit from larger in every column */
+    /* WOUND 1: all three of those sit ABOVE the change on nearly every draw, so the
+       key was the smallest or the third biggest and nothing else. These three are
+       named slips that land below it. */
+    oneLitreOut = key - rate;                           /* paid for one litre too many */
+    oneDollarOut = key - 100;                           /* a dollar lost in the exchange */
+    centsOnly = key % 100;                              /* counted the cents and stopped */
     if (key <= 0 || key % 100 === 0) continue;
-    if (new Set([key, stopped, ratePaid, noBorrow]).size !== 4) continue;
+    if (oneLitreOut <= 0 || oneDollarOut <= 0 || centsOnly <= 0) continue;
+    if (new Set([key, stopped, ratePaid, noBorrow, oneLitreOut, oneDollarOut, centsOnly]).size !== 7) continue;
     if (noBorrow <= 0) continue;
     ok = true;
     break;
   } while (guard < 400);
-  if (!ok) { rate = 235; litres = 8; note = 20; key = 120; stopped = 1880; ratePaid = 1765; noBorrow = 280; }
+  if (!ok) { rate = 275; litres = 5; note = 20; key = 625; stopped = 1375; ratePaid = 1725; noBorrow = 1635;
+             oneLitreOut = 350; oneDollarOut = 525; centsOnly = 25; }
   return mcMoney('At the petrol kiosk ' + who + ' pumps <b>' + litres + ' litres</b> of petrol at <b>' +
     money(rate) + ' per litre</b> and pays with a <b>$' + note + '</b> note. <b>How much change is there?</b>', '',
-    key, [stopped, ratePaid, noBorrow],
+    key, [stopped, ratePaid, noBorrow, oneLitreOut, oneDollarOut, centsOnly],
     'Step 1: ' + litres + ' litres at ' + money(rate) + ' each costs ' + money(rate) + ' × ' + litres + ' = ' +
     money(rate * litres) + '. Step 2: $' + note + ' − ' + money(rate * litres) + ' = ' + money(key) +
     '. Stopping after step 1 gives the cost of the petrol, not the change.');
@@ -998,14 +1431,21 @@ function gDecShareMass() {
     trays = ri(3, 6); want = ri(2, trays - 1);
     per = ri(11, 39);
     total = per * trays;
-  } while (guard < 300 && !(total % 10 !== 0 && (per * want) % 10 !== 0 &&
-           dallDistinct([D(per * want, 1), D(per, 1), D(total * want, 1), D(total - per, 1)])));
+  } while (guard < 300 && !(total % 10 !== 0 && (per * want) % 10 !== 0 && (per + want) % 10 !== 0 &&
+           per % 10 !== 0 &&                                    /* no "2.0 kg" option */
+           dallDistinct([D(per * want, 1), D(per, 1), D(total * want, 1), D(total - per, 1),
+                         D(per * want, 2), D(per * want, 0), D(per + want, 1)])));
   const key = per * want;
   const goods = pick([['prawns', 'trays'], ['fishballs', 'packets'], ['chicken wings', 'boxes'], ['kang kong', 'bundles']]);
+  /* WOUND 1 (100% "second smallest"): per < key < total - per < total x want on every
+     draw. The stop-after-dividing answer STILL ships on every draw - the oracle
+     requires it, so it is marked must() - but it is now the only fixture, and the
+     picker varies how many of the other three sit above the key. */
   return mcDec('A stall at the wet market packs <b>' + dtext(D(total, 1)) + ' kg</b> of ' + goods[0] +
     ' equally into <b>' + trays + '</b> ' + goods[1] + '. <b>How much do ' + want + ' of the ' + goods[1] +
     ' hold altogether?</b>', '',
-    D(key, 1), [D(per, 1), D(total * want, 1), D(total - per, 1)], 'kg',
+    D(key, 1), [must(D(per, 1)), D(total * want, 1), D(total - per, 1),
+                D(per * want, 2), D(per * want, 0), D(per + want, 1)], 'kg',
     'Step 1: share the ' + dtext(D(total, 1)) + ' kg into ' + trays + ' equal ' + goods[1] + ': ' + total +
     ' ÷ ' + trays + ' = ' + per + ' tenths, so one ' + goods[1].replace(/e?s$/, '') + ' holds ' + dtext(D(per, 1)) +
     ' kg. Step 2: ' + want + ' of them hold ' + dtext(D(per, 1)) + ' × ' + want + ' = ' + dtext(D(key, 1)) +
@@ -1015,10 +1455,20 @@ function gDecShareMass() {
 
   MQI.registerTopic({
     id: 'decimals', level: 'P4', strand: 'Number and Algebra',
+    /* The three qualifiers the first cut dropped are back, VERBATIM from the MOE
+       Oct 2025 P4 sub-strand list as audited in the vault's Expansion Brief
+       (refutation 2026-09-15, section 6): "when the denominator is a factor of 10
+       or 100" on 1.4, "(up to 2 dp)" on 2.1 and again on 3.1. The generators were
+       always inside all three - this was a string that over-claimed, not a scope
+       leak - and 3.2 joins the list now that gDecQuotient and gDecQuotientWord
+       exist to cover it. */
     moeSubTopic: 'Decimals: notation, representations and place values (tenths, hundredths, thousandths); ' +
-      'comparing and ordering decimals; expressing decimals as fractions and fractions as decimals; ' +
+      'comparing and ordering decimals; expressing decimals as fractions; ' +
+      'expressing fractions as decimals when the denominator is a factor of 10 or 100; ' +
       'rounding decimals to the nearest whole number, 1 decimal place and 2 decimal places; ' +
-      'adding and subtracting decimals; multiplying and dividing decimals by a 1-digit whole number',
+      'adding and subtracting decimals (up to 2 dp); ' +
+      'multiplying and dividing decimals (up to 2 dp) by a 1-digit whole number; ' +
+      'dividing a whole number by a whole number with quotient as a decimal',
     label: 'Decimal Bay', short: 'Decimals', e: '\u{1F30A}',
     skills: {
       place:   { label: 'Place value of decimals',      tip: 'Name each place after the point out loud: tenths, hundredths, thousandths. An empty place still needs a zero to hold it open.' },
@@ -1035,12 +1485,17 @@ function gDecShareMass() {
     pools: {
       1: [[gDecDigitValue, 'place'], [gDecNamePlace, 'place'], [gDecCompare, 'compare'],
           [gDecBetween, 'round'], [gFracToDec, 'convert'], [gDecBar, 'convert'],
-          [gDecAddSub, 'addsub'], [gDecMulConcept, 'muldiv']],
+          [gDecAddSub, 'addsub'], [gDecMulConcept, 'muldiv'], [gDecQuotient, 'muldiv']],
       2: [[gDecBuild, 'place'], [gDecHowMany, 'place'], [gDecCmpMixed, 'compare'], [gDecOrder, 'compare'],
           [gDecRound, 'round'], [gDecToFrac, 'convert'], [gFracEquivDec, 'convert'],
           [gDecStartAmount, 'addsub'], [gDecMoneyMore, 'addsub'],
-          [gDecMulWhole, 'muldiv'], [gDecDivWhole, 'muldiv'], [gDecTrack, 'muldiv']],
-      3: [[gDecExpand, 'place'], [gDecPlaceError, 'place'], [gDecCmpError, 'compare'],
+          [gDecMulWhole, 'muldiv'], [gDecDivWhole, 'muldiv'], [gDecTrack, 'muldiv'],
+          [gDecQuotientWord, 'muldiv']],
+      /* WOUND 4: `compare` owned exactly one pool-3 slot, and buildCarousel
+         round-robins skills, so that whole sixth of the pool landed on
+         gDecCmpError - 2.66 items a session. gDecOrderError is the second voice. */
+      3: [[gDecExpand, 'place'], [gDecPlaceError, 'place'],
+          [gDecCmpError, 'compare'], [gDecOrderError, 'compare'],
           [gDecRoundBack, 'round'], [gDecRoundError, 'round'], [gDecRoundSum, 'round'],
           [gDecFracError, 'convert'], [gDecMoneyFrac, 'convert'],
           [gDecAlignError, 'addsub'], [gDecMoneyChange, 'addsub'],

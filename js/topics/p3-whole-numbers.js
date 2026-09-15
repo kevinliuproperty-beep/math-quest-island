@@ -69,8 +69,15 @@
  * options ARE the data and "the greatest is the largest one" is the mathematics.
  * gBetween used to ride the same exemption on a stem-word regex, and "pick the
  * third smallest" answered it on 100.00% of draws while the gate printed it as
- * impossible (third pass, KILL). Its stem carries both bounds on 100% of draws;
- * it is gated like everything else now.
+ * impossible (third pass, KILL). It now carries a THIRD, narrower exemption,
+ * allowlisted by name and re-measured on every draw (fourth pass, W1, PM ruling):
+ * its three wrong answers STRADDLE the range, one below and one above on 100% of
+ * draws, so neither single bound settles the item - and the price of that
+ * straddle is that the key is the 2nd or 3rd of the four printed numbers by
+ * construction (0.00 / 49.9 / 50.1 / 0.00). That ~50% is the declared structural
+ * floor of a four-option between-item, not a defect of this one. "Pick the
+ * smallest" and "pick the largest" are still gated and both measure 0.00%; the
+ * premise re-check fails the gate the moment the key is ever an extreme.
  *
  * SCOPE (MOE Oct 2025, P3 p.35). Numbers up to 10 000: 1.1 counting in hundreds
  * and thousands, 1.2 number notation / representations / place values,
@@ -683,14 +690,35 @@ function gSmallest(){
    b41111e; what was new at c099275 was the gate line certifying the class as
    impossible here.
 
-   The fix is the one the rest of this file already uses. Three out-of-range
-   distractors are drawn on BOTH sides of the range - a near miss and two further
-   out on each side - and how many of them land below the range is drawn
-   uniformly from 0 to 3, so the key's rank among the four printed numbers is
-   flat by construction (25% at each position, gated at 45%/12% like every other
-   numeric bank in the topic). Whichever side is used, its NEAR miss is always
-   offered, so the item still cannot be settled by one glance at one bound: a
-   distractor sits just outside the range it is asked about.
+   W1 (Sweep p3numbers Refutation, FOURTH pass, 2026-09-15), and the PM's ruling
+   on it. The v4 fix drew `r = ri(0, 3)` wrong answers below the range, which
+   made the key's rank flat - and put all three wrong answers on ONE side of the
+   range on 49.91% of draws, where a child who checks a single bound is finished.
+   The explanation printed "they are not all on the same side of it" on 100% of
+   draws, which was FALSE on exactly those 49.91%. The flat rank and the
+   two-bound demand are incompatible here by construction: the key is inside the
+   range and every distractor outside it, so the key's rank IS the number of
+   distractors below it, and you cannot populate all four ranks and also
+   guarantee one wrong answer on each side.
+
+   THE TWO-BOUND DEMAND WINS. `r = ri(1, 2)` - one or two of the three wrong
+   answers below the range, so there is always at least one below AND at least
+   one above, and the near miss on each side is always the one offered. The item
+   genuinely needs both ends: checking "is it below hi?" alone leaves a wrong
+   answer standing, and so does checking "is it above lo?" alone.
+
+   The price is stated rather than hidden. The key's rank among the four printed
+   numbers is then 2nd or 3rd by construction - measured 0.00 / 49.9 / 50.1 /
+   0.00 over 20,000 draws - so "pick the second or third smallest" is worth ~50%
+   against 25% chance. That is the DECLARED STRUCTURAL FLOOR of any four-option
+   between-item with a straddling distractor set, not a defect of this one, and
+   it is bought with the elimination it removes: neither single bound settles the
+   item on any draw. tools/gen-sanity.mjs exempts p3numbers.gBetween from the
+   flat-rank ceiling and floor BY NAME with that measurement written down, and
+   re-checks the premise of the exemption on every draw - if the key is ever the
+   smallest or the largest of the four, the straddle has broken and the exemption
+   is void. "Pick the smallest" and "pick the largest" stay gated, and both
+   measure 0.00%.
 
    `lo` also starts at 1900 rather than 1200 so that the furthest-below distractor
    (lo - 900) is still a 4-digit number. It used to print a 3-digit option on
@@ -707,7 +735,9 @@ function gBetween(){
        spread across the line rather than bunching on one side of the range. */
     const belows = [lo - ri(5, 150), lo - ri(160, 400), lo - ri(410, 900)];
     const aboves = [hi + ri(5, 150), hi + ri(160, 400), hi + ri(410, 900)];
-    const r = ri(0, 3);                        /* how many distractors land BELOW the range */
+    const r = ri(1, 2);                        /* how many distractors land BELOW the range:
+                                                  never 0 and never 3, so the four printed
+                                                  numbers STRADDLE the range on every draw */
     cands = belows.slice(0, r).concat(aboves.slice(0, 3 - r));
     g++;
   } while (g < 200 && !(hi - lo > 30 && key > lo && key < hi &&
@@ -716,8 +746,9 @@ function gBetween(){
   return mcSet('Which number is <b>between</b> ' + lo + ' and ' + hi + '?', '', key, cands,
     lo + ' is smaller than ' + key + ' and ' + key + ' is smaller than ' + hi + ', so ' + key +
     ' sits between them. Put the two end numbers on a line in your head and check the new number ' +
-    'against BOTH of them - one check is never enough. Every wrong answer sits outside the range, ' +
-    'they are not all on the same side of it, and one of them misses by only a little.');
+    'against BOTH of them - one check is never enough. Every wrong answer sits outside the range: ' +
+    'at least one of them is below ' + lo + ' and at least one is above ' + hi +
+    ', and on each side the nearest one misses by only a little.');
 }
 
 /* FORMAT 5 - order four numbers (pool 3, 2 steps) */
@@ -1036,7 +1067,38 @@ function gPatternOdd(){
   const upper = terms.filter((v, i) => i !== bi && v > odd);
   const rLo = Math.max(0, 3 - upper.length), rHi = Math.min(3, lower.length);
   const nBelow = ri(rLo, rHi);
-  const rest = shuffle(lower).slice(0, nBelow).concat(shuffle(upper).slice(0, 3 - nBelow));
+  /* W4, FOURTH pass - the free elimination on an axis the rank floor does not
+     look along. The run counts in 150s or 250s, so the printed terms alternate
+     between exactly TWO tens digits, and the +-50 break flips the odd term out of
+     its own class and into the other one. That leaves 2 terms in the minority
+     class and 4 (the odd term among them) in the majority. Draw three distractors
+     blind and you get exactly ONE minority-class term on 65.02% of draws - an
+     option visibly alone in its tens column, which is NEVER the answer (0.00% of
+     20,000 draws). Crossing it out takes a guesser from 25% to 33.3% with no
+     arithmetic, which is the same argument the rank floor is built on, one axis
+     over.
+
+     So the tens class is now chosen as deliberately as the side is. Of the ten
+     three-from-five distractor sets, only those with the drawn `nBelow` are
+     eligible - that keeps the magnitude rank exactly where the third pass put it
+     - and among those, sets in which no option stands alone in its tens class are
+     preferred. Two break positions out of eight leave no such set (the sides and
+     the classes disagree there), and on those the blind draw stands; the rate
+     falls 65.02% -> ~16.7% rather than to zero, which is the honest cost of
+     keeping the rank flat. The odd term's own tens class is shared with at least
+     one distractor on 100% of draws either way. */
+  const sideOk = t => t.filter(v => v < odd).length === nBelow;
+  const noLoner = t => {
+    const four = t.concat([odd]).map(v => Math.floor(v / 10) % 10);
+    return four.every(c => four.filter(x => x === c).length > 1);
+  };
+  const pool = terms.filter((v, i) => i !== bi);
+  const sets = [];
+  for (let i = 0; i < pool.length; i++) for (let j = i + 1; j < pool.length; j++)
+    for (let k = j + 1; k < pool.length; k++) sets.push([pool[i], pool[j], pool[k]]);
+  const bySide = sets.filter(sideOk);
+  const clean = bySide.filter(noLoner);
+  const rest = shuffle(pick(clean.length ? clean : bySide));
   /* the worked pair must be two terms that BOTH sit on the pattern and are next
      to each other on the page */
   const j = bi <= 1 ? 2 : 0;
@@ -1079,18 +1141,44 @@ function gAddConcept(){
      away from being readable, and deterministic.
 
      `keep` is always one digit and `s` always two, so these four lengths are
-     fixed on every draw: 47, 48, 47, 48. The key ties a distractor at the
-     minimum, so it is never the uniquely shortest option and never the uniquely
-     longest one, and the spread is one character. tools/gen-sanity.mjs now
-     measures both directions across the bank and fails a key that is uniquely
-     shortest (or uniquely longest) on 90% of draws, with the old option set as
-     its negative control. */
-  const key = 'Write ' + keep + ', then carry 1 ten into the tens column.';
+     fixed on every draw. The key ties one distractor at the minimum, so it is
+     never the uniquely shortest option and never the uniquely longest one.
+     tools/gen-sanity.mjs measures both directions across the bank and fails a
+     key that is uniquely shortest (or uniquely longest) on 90% of draws, with
+     the old option set as its negative control - and since the FOURTH pass it
+     also PRINTS the tied share, because "uniquely" is what that ruler counts and
+     a key tied at the minimum is worth double chance to a child who picks one of
+     the shortest options. On this bank that share is 100%: a declared residual,
+     at a margin the whole bank shares, and now a printed number rather than a
+     0.0% the gate could not see.
+
+     KILL (Sweep p3numbers Refutation, FOURTH pass, 2026-09-15). The v4 option
+     set hit its fixed 47/48/47/48 lengths by writing "carry 1 ten TO the
+     hundreds column" in the one distractor that carries the place-value idea,
+     and that dropped preposition made "ten into" a phrase the KEY alone
+     contained, on 20,000 / 20,000 draws. "Pick the option that says 'ten into'"
+     answered the pool-1 flagship of this topic 100.00% of the time, with no
+     arithmetic and no idea what a carry is. Every ruler in the harness counted
+     characters or numbers; nothing read the words.
+
+     So the four options are now built the other way round: the wording is fixed
+     first and the lengths fall where they fall. Every content phrase in the key
+     appears in at least two options - "carry 1", "1 ten", "ten into" and "into
+     the" are shared with the hundreds distractor, "the tens" and "tens column"
+     with the write-the-carry distractor, "write" and "column" with all three -
+     so no token and no two-word phrase singles the key out, in either direction.
+     The four lengths are 42 / 42 / 46 / 46 on every draw: that spends the old
+     two-character spread to buy the four characters "hundreds column" needs over
+     "tens column", which is the squeeze that forced the preposition change in
+     the first place. tools/gen-sanity.mjs now carries the TOKEN RULER that
+     measures this over every four-option prose bank in the topic, at a 60%
+     ceiling, with the v4 option set as its negative control. */
+  const key = 'Write ' + keep + ', carry 1 ten into the tens column.';
   return mcText('When you add ' + a + ' + ' + b + ', the ones column makes ' + s +
     '. <b>What happens next?</b>', '', key, shuffle([
-      'Write ' + s + ' in the ones column, then carry nothing.',
-      'Write ' + keep + ' and carry 1 ten to the hundreds column.',
-      'Write 1, then carry ' + keep + ' tens into the tens column.'
+      'Write ' + s + ' in the ones column, carry no ten.',
+      'Write ' + keep + ', carry 1 ten into the hundreds column.',
+      'Write 1 and carry ' + keep + ' tens into the tens column.'
     ]),
     s + ' is ' + keep + ' ones and 1 ten. The ones column only has room for ones, so the ' + keep +
     ' stays there and the ten moves one place to the LEFT, into the tens column. That move is what ' +
@@ -1194,8 +1282,19 @@ function gMentalMake(){
        which is +8.3 points to a guesser on every draw. (gTwoStepWord's mirror of
        this was declared and argued in the file; this one was not mentioned
        anywhere.) `b - 10` is the third slip below the key: a child who moves a
-       whole ten across instead of the `mv` the round-up actually needs. */
-    cands = slipSet(key, [b, b + mv, b + 2*mv, mv, b - 2*mv, b - 10]);
+       whole ten across instead of the `mv` the round-up actually needs.
+
+       W3, FOURTH pass. That new `b - 10` slip reopened, one bank along and in the
+       same commit, the class the third pass had just closed on the two counting
+       banks: the key is `b - mv`, so `b - 10` sits EXACTLY ONE away from it
+       whenever `mv` is 9, and a distractor one away from the key was offered on
+       16.05% of draws against 10.57% at c099275. The counting banks take
+       `minGap` for exactly this - no slip may sit closer to the key than the
+       smallest place value the item tests - and this bank tests ONES, so its
+       floor is 2. It costs `b - 10` on the `mv = 9` branch and `b`, `b - 2*mv` on
+       the `mv = 1` branch; both sides still carry at least two usable slips on
+       every draw, so the key's rank stays inside the gate's 12-45% band. */
+    cands = slipSet(key, [b, b + mv, b + 2*mv, mv, b - 2*mv, b - 10], { minGap: 2 });
     g++;
   } while (g < 200 && !(a % 10 !== 0 && key >= 2 && (round - a) !== key &&
            cands && optsOk(key, cands) && sameWidth(key, cands)));

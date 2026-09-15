@@ -1263,18 +1263,34 @@ function oracle(q) {
     const a = Number(m[1]), b = Number(m[2]), s = Number(m[3]);
     if (a % 10 + b % 10 !== s) return `p3 add-concept: ${a} and ${b} give ${a % 10 + b % 10} in the ones column, not ${s}`;
     if (s < 10) return `p3 add-concept: ${s} does not regroup, so there is nothing to carry`;
-    const want = `Write ${s % 10}, then carry 1 ten into the tens column.`;
+    const want = `Write ${s % 10}, carry 1 ten into the tens column.`;
     const key = strip(q.answerText);
     if (key !== want) return `p3 add-concept: expected "${want}", got "${key}"`;
     /* W4, third pass: the key used to be the uniquely SHORTEST of the four
        options on 100% of draws. The four strings are fixed-width by construction
        (the ones total is always two digits and what stays in the column always
        one), so the property is asserted here per draw as well as measured across
-       the bank by the LENGTH RANK gate below. */
+       the bank by the LENGTH RANK gate below.
+
+       FOURTH pass, KILL. The v4 wording bought its two-character span by writing
+       "carry 1 ten TO the hundreds column" in the one distractor that carries the
+       place-value idea, and that made "ten into" a phrase the KEY alone contained
+       on every draw. "hundreds column" is four characters wider than "tens
+       column" and the bank ceiling is 48, so a two-character span and a shared
+       preposition cannot both be had. The span assertion is 4, and the property it
+       was standing in for is asserted directly instead: on this draw the key is
+       neither the uniquely shortest nor the uniquely longest option. The TOKEN
+       RULER below carries the other half - no token or two-word phrase may single
+       the key out - with the v4 option set as its negative control. */
     const lens = (q.choices || []).map(c => strip(c).length);
-    if (Math.max.apply(null, lens) - Math.min.apply(null, lens) > 2) {
-      return `p3 add-concept: the four options span ${Math.min.apply(null, lens)}-${Math.max.apply(null, lens)} characters, so length separates them`;
+    const lo = Math.min.apply(null, lens), hi = Math.max.apply(null, lens);
+    if (hi - lo > 4) {
+      return `p3 add-concept: the four options span ${lo}-${hi} characters, so length separates them`;
     }
+    if (lens[q.correct] === lo && lens.filter(x => x === lo).length === 1)
+      return `p3 add-concept: the key is the uniquely shortest option (${lens.join('/')})`;
+    if (lens[q.correct] === hi && lens.filter(x => x === hi).length === 1)
+      return `p3 add-concept: the key is the uniquely longest option (${lens.join('/')})`;
     return null;
   }
 
@@ -2724,6 +2740,41 @@ for (const g of GENS) {
    numeric bank whose stem merely contained the word: "the difference between 4021
    and 1278" is one sentence away.
 
+   FLAT-RANK EXEMPT, and it is a different exemption from the one above (fourth
+   pass, W1, and the PM's ruling on it). MAGNITUDE_EXEMPT above says "the four
+   options ARE the data"; its premise is that the stem prints no number. gBetween
+   cannot claim that and does not. What it claims is narrower and is measured:
+
+     p3numbers.gBetween - "Which number is between LO and HI?" The three wrong
+       answers STRADDLE the range, at least one below LO and at least one above
+       HI on 20,000 / 20,000 draws, so neither single bound settles the item -
+       the demand the FORMAT comment declares ("2 steps: check both ends") is the
+       demand the item makes. The key is inside the range and every distractor
+       outside it, so the key's rank IS the count of distractors below it: a
+       straddle forces rank 1 or 2 and forbids rank 0 and rank 3. Measured
+       0.00 / 49.9 / 50.1 / 0.00 over 20,000 draws, so "pick the second or third
+       smallest" is worth ~50% against 25% chance. That is the STRUCTURAL FLOOR
+       of any four-option between-item whose distractors straddle, not a property
+       of this one, and it is bought with the elimination it removes. v4 took the
+       other branch - flat rank, all three wrong answers on one side of the range
+       on 49.91% of draws - and shipped an explanation that was false on exactly
+       those draws.
+
+   The premise is re-checked on every draw, and it is checked in BOTH directions,
+   because "rank 1 or 2 only" is not on its own a claim worth exempting - v3's
+   killed option set satisfied it too (far < below < key < above: two wrong
+   answers below, one above, key rank 2 on 100.00% of draws, "pick the third
+   smallest" deterministic). A flat-rank-exempt bank must therefore show BOTH:
+
+     1. the key is NEVER the smallest and NEVER the largest of the four - the
+        straddle actually holds, so neither single bound settles the item; and
+     2. the two ranks that remain are SHARED, each at 35% or more of draws - so
+        the ~50% is a two-way guess and not the v3 kill wearing an exemption.
+
+   Fail either and the topic goes red. The v3 gBetween negative control below is
+   run through the UNEXEMPTED ruler and fails the 45% ceiling there; run through
+   this one it would fail clause 2, which is the point of writing clause 2 down.
+
    The gate carries two negative controls: the v2 gSubError option set and the
    v3 gBetween option set, each rebuilt here from its own arithmetic so neither
    control depends on the topic file still containing the defect. Both must come
@@ -2731,6 +2782,7 @@ for (const g of GENS) {
 const RANK_N = 2000;
 const RANK_CAP = 0.45, EXTREME_CAP = 0.40, RANK_FLOOR = 0.12;
 const MAGNITUDE_EXEMPT = new Set(['p3numbers.gGreatest', 'p3numbers.gSmallest']);
+const FLAT_RANK_EXEMPT = new Set(['p3numbers.gBetween']);
 const rankRows = [];
 function rankOf(q) {
   const opts = (q.choices || []).map(strip);
@@ -2773,13 +2825,26 @@ function exemptVerdict(row) {
   if (!row.withNumber) return null;
   return `exempt but its stem prints a number on ${(100 * row.withNumber / row.seen).toFixed(1)}% of draws - the options are not the whole of the data, so the ordering is NOT the question`;
 }
+/* The flat-rank exemption's premise, re-measured on every draw. Both clauses, in
+   the order the header states them. */
+const STRADDLE_SHARE = 0.35;
+function flatExemptVerdict(row) {
+  if (!row.seen) return null;
+  const f = row.tally.map(t => t / row.seen);
+  if (f[0] > 0 || f[3] > 0)
+    return `flat-rank exempt on a STRADDLE premise, but the key is the smallest of the four on ${(100 * f[0]).toFixed(1)}% of draws and the largest on ${(100 * f[3]).toFixed(1)}% - the three wrong answers do not straddle, so one bound settles the item and the exemption is not being paid for`;
+  if (Math.min(f[1], f[2]) < STRADDLE_SHARE)
+    return `flat-rank exempt, but its two live ranks run ${(100 * f[1]).toFixed(1)}% / ${(100 * f[2]).toFixed(1)}% - the key's rank is all but fixed, which is the third pass's KILL ("pick the third smallest", 100.00%) and not the two-way guess the exemption declares`;
+  return null;
+}
 for (const g of GENS) {
   if (g.topic !== 'p3numbers') continue;
   const row = rankBank(g.fn);
   if (!row.seen) continue;                       /* not a numeric four-option bank */
   row.name = g.name; row.lvl = g.level;
   row.exempt = MAGNITUDE_EXEMPT.has(g.topic + '.' + g.name);
-  row.err = row.exempt ? exemptVerdict(row) : rankVerdict(row);
+  row.flat = FLAT_RANK_EXEMPT.has(g.topic + '.' + g.name);
+  row.err = row.exempt ? exemptVerdict(row) : row.flat ? flatExemptVerdict(row) : rankVerdict(row);
   rankRows.push(row);
   if (row.err) failures++;
 }
@@ -2851,25 +2916,45 @@ let betweenControl = 'the v3 gBetween option set was not rejected by the rank ga
    fails the topic. Below that it is reported, because a bank drifting towards it
    is worth seeing before it arrives.
 
+   THE TIED KEY, AND WHY THE PRINTED NUMBER WAS NOT HONEST (fourth pass, W2).
+   The ruler counts a draw only when the key is UNIQUELY at the extreme, so a key
+   tied with one other option at the minimum reads as 0.0% - and "pick one of the
+   shortest options" is worth 50% on every such draw, against 25% chance. Three
+   banks live there: gAddConcept and gCompareError are tied at the minimum on
+   100% of draws, gExpanded tied at the maximum on 100%, and gAddError is
+   UNIQUELY shortest on ~50% and is the only one of the four any pass has named.
+
+   The thresholds do not move: a one-character margin is not readable, which is
+   the standard this bank has been held to throughout, and every margin in this
+   topic is one character. What moves is the printed number. Two more columns are
+   measured and printed - PICK-SHORT and PICK-LONG, the value of "pick one of the
+   shortest (longest) options" summed as 1/k over the k options tied at that
+   extreme - so a bank whose key is tied at the minimum prints 50.0%, not 0.0%,
+   and a bank whose four options are all the same length prints 25.0%, which is
+   chance and is the honest number for it too.
+
    Negative control: the v2 gAddConcept option set, rebuilt here from its own
    strings so the control does not depend on the topic file still containing the
    defect. It must come out RED. --- */
 const LEN_N = 2000, LEN_CAP = 0.90;
 const lenRows = [];
 function lenBank(draw) {
-  let n = 0, uShort = 0, uLong = 0;
+  let n = 0, uShort = 0, uLong = 0, pShort = 0, pLong = 0;
   for (let i = 0; i < LEN_N; i++) {
     let q;
-    try { q = draw(); } catch (e) { return { n, uShort, uLong, threw: e.message }; }
+    try { q = draw(); } catch (e) { return { n, uShort, uLong, pShort, pLong, threw: e.message }; }
     const opts = (q.choices || []).map(strip);
     if (opts.length !== 4 || !(q.correct >= 0)) continue;
     const L = opts.map(o => o.length);
     const lo = Math.min.apply(null, L), hi = Math.max.apply(null, L);
-    if (L.filter(x => x === lo).length === 1 && L[q.correct] === lo) uShort++;
-    if (L.filter(x => x === hi).length === 1 && L[q.correct] === hi) uLong++;
+    const nLo = L.filter(x => x === lo).length, nHi = L.filter(x => x === hi).length;
+    if (nLo === 1 && L[q.correct] === lo) uShort++;
+    if (nHi === 1 && L[q.correct] === hi) uLong++;
+    if (L[q.correct] === lo) pShort += 1 / nLo;
+    if (L[q.correct] === hi) pLong += 1 / nHi;
     n++;
   }
-  return { n, uShort, uLong };
+  return { n, uShort, uLong, pShort, pLong };
 }
 function lenVerdict(row) {
   if (!row.n) return null;
@@ -2902,6 +2987,115 @@ let lenControl = 'the v2 gAddConcept option set was not rejected by the length g
   const ctl = lenBank(v2AddConcept);
   const verdict = lenVerdict(ctl);
   if (verdict) lenControl = `the v2 gAddConcept option set goes red - ${verdict}`;
+  else failures++;
+}
+
+/* ---------- TOKEN RULER (fourth-pass KILL, 2026-09-15) ----------------------
+   NOTHING IN THIS HARNESS HAS EVER READ THE WORDS. RULE C and RULE D count
+   characters; the LENGTH RANK gate counts characters in the other direction; the
+   MAGNITUDE RANK gate counts numbers. The options are sentences, and every one of
+   the four kills in this topic's history arrived on the axis the newest gate was
+   not built to measure - magnitude after form, character length after magnitude,
+   and now a WORD after character length.
+
+   The fourth pass's kill: gAddConcept's v4 rewrite hit its fixed 47/48/47/48
+   lengths by writing "carry 1 ten TO the hundreds column" in the one distractor
+   that carries the place-value idea, which left "ten into" a phrase the KEY alone
+   contained. "Pick the option that says 'ten into'" answered the pool-1 flagship
+   of this topic on 20,000 / 20,000 draws - 100.00%, no arithmetic, no place
+   value, no idea what a carry is - against 0.00% for the same rule at c099275.
+
+   THE RULER. For every four-option bank in the topic whose options are not all
+   bare numbers, draw 2,000 items. Strip the markup, lowercase, and cut each
+   option into tokens (runs of letters and digits) plus every adjacent PAIR of
+   tokens. For each draw, tally
+     (a) every feature present in the KEY and in none of the three distractors;
+     (b) every feature present in all THREE distractors and absent from the key.
+   A bank fails when any single feature clears 60% of its draws in either
+   direction. (a) is a child picking the key out by a word; (b) is a child
+   crossing three options out by one. 60% is well clear of the honest structural
+   halves this bank has: gCompareError's two flavours put "only" in the key and
+   nowhere else on 50.2% of draws, gAddError's "forgot" on 50.1%, gStandsError's
+   "not" on 42.6% - each is the item's own two- or three-way design showing
+   through, not a shortcut past it, and each is reported rather than failed.
+
+   Numbers dilute themselves: the digits change from draw to draw, so a feature
+   like "8 then" is only ever drawn on the draws where `keep` is 8 and cannot
+   reach the ceiling. That is deliberate - a token ruler is for WORDS - but it is
+   also this ruler's blind spot, and it is written down here rather than left to
+   be found. gAddConcept's new option set is clean under a digit-normalised ruler
+   too, checked by hand at every value of `keep`.
+
+   Negative control: the v4 gAddConcept option set, rebuilt here from its own
+   strings so the control does not depend on the topic file still containing the
+   defect. It must come out RED, naming "ten into". --- */
+const TOK_N = 2000, TOK_CAP = 0.60;
+const tokRows = [];
+const tokFeats = s => {
+  const t = strip(s).toLowerCase().match(/[a-z0-9]+/g) || [];
+  const out = new Set(t);
+  for (let i = 0; i + 1 < t.length; i++) out.add(t[i] + ' ' + t[i + 1]);
+  return out;
+};
+function tokBank(draw) {
+  const keyOnly = new Map(), wrongOnly = new Map();
+  let n = 0, sample = null;
+  for (let i = 0; i < TOK_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return { n, keyOnly, wrongOnly, sample, threw: e.message }; }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !(q.correct >= 0)) continue;
+    if (opts.every(o => /^\d+$/.test(o))) continue;      /* bare-number banks: the magnitude ruler owns those */
+    const F = opts.map(tokFeats);
+    const k = q.correct, w = [0, 1, 2, 3].filter(j => j !== k);
+    for (const f of F[k]) if (w.every(j => !F[j].has(f))) {
+      keyOnly.set(f, (keyOnly.get(f) || 0) + 1);
+      if (!sample) sample = opts.slice();
+    }
+    for (const f of F[w[0]]) if (F[w[1]].has(f) && F[w[2]].has(f) && !F[k].has(f)) {
+      wrongOnly.set(f, (wrongOnly.get(f) || 0) + 1);
+      if (!sample) sample = opts.slice();
+    }
+    n++;
+  }
+  return { n, keyOnly, wrongOnly, sample };
+}
+const tokTop = m => [...m.entries()].reduce((a, e) => e[1] > a[1] ? e : a, ['-', 0]);
+function tokVerdict(row) {
+  if (!row.n) return null;
+  const k = tokTop(row.keyOnly), w = tokTop(row.wrongOnly);
+  const opts = row.sample ? `  (${row.sample.join(' | ')})` : '';
+  if (k[1] / row.n >= TOK_CAP)
+    return `"${k[0]}" is in the KEY and in no distractor on ${k[1]} of ${row.n} draws (${(100 * k[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child picks the key out by that phrase alone${opts}`;
+  if (w[1] / row.n >= TOK_CAP)
+    return `"${w[0]}" is in ALL THREE distractors and not in the key on ${w[1]} of ${row.n} draws (${(100 * w[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child crosses three options out by that phrase alone${opts}`;
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = tokBank(g.fn);
+  if (!row.n) continue;
+  row.name = g.name; row.lvl = g.level;
+  row.err = tokVerdict(row);
+  tokRows.push(row);
+  if (row.err) failures++;
+}
+let tokControl = 'the v4 gAddConcept option set was not rejected by the token ruler';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v4AddConcept = () => {
+    const s = rnd(12, 18), keep = s % 10;
+    const opts = [
+      'Write ' + keep + ', then carry 1 ten into the tens column.',
+      'Write ' + s + ' in the ones column, then carry nothing.',
+      'Write ' + keep + ' and carry 1 ten to the hundreds column.',
+      'Write 1, then carry ' + keep + ' tens into the tens column.'
+    ];
+    return { q: 'v4 gAddConcept control', choices: opts, answerText: opts[0], correct: 0 };
+  };
+  const ctl = tokBank(v4AddConcept);
+  const verdict = tokVerdict(ctl);
+  if (verdict) tokControl = `the v4 gAddConcept option set goes red - ${verdict}`;
   else failures++;
 }
 
@@ -3023,26 +3217,48 @@ if (rankRows.length) {
   for (const r of rankRows) {
     const f = r.tally.map(t => (100 * t / r.seen).toFixed(1) + '%');
     console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.seen, 7) + pad(f[0], 10) + pad(f[1], 8) + pad(f[2], 8) + pad(f[3], 9) +
-      (r.err ? 'FAIL  ' + r.err : (r.exempt ? 'exempt (allowlisted by name): no number in the stem on any of ' + r.seen + ' draws, so the options ARE the data' : 'pass')));
+      (r.err ? 'FAIL  ' + r.err
+             : r.exempt ? 'exempt (allowlisted by name): no number in the stem on any of ' + r.seen + ' draws, so the options ARE the data'
+             : r.flat ? 'flat-rank exempt (allowlisted by name): the wrong answers STRADDLE the range on all ' + r.seen + ' draws, so neither bound settles it and the key is 2nd or 3rd by construction'
+             : 'pass'));
   }
-  const gated = rankRows.filter(r => !r.exempt).length;
+  const gated = rankRows.filter(r => !r.exempt && !r.flat).length;
   console.log('');
-  if (rankRows.every(r => !r.err)) console.log(`ok   magnitude rank: ${gated} numeric banks inside ${Math.round(RANK_FLOOR * 100)}-${Math.round(RANK_CAP * 100)}% / ${Math.round(EXTREME_CAP * 100)}%, ${rankRows.length - gated} comparison anchors exempt by name and re-checked`);
+  if (rankRows.every(r => !r.err)) console.log(`ok   magnitude rank: ${gated} numeric banks inside ${Math.round(RANK_FLOOR * 100)}-${Math.round(RANK_CAP * 100)}% / ${Math.round(EXTREME_CAP * 100)}%, ${rankRows.filter(r => r.exempt).length} comparison anchors and ${rankRows.filter(r => r.flat).length} straddle bank exempt by name, every premise re-checked`);
   console.log(`${/goes red/.test(rankControl) ? 'ok  ' : 'FAIL'} magnitude negative control: ${rankControl}`);
   console.log(`${/goes red/.test(betweenControl) ? 'ok  ' : 'FAIL'} magnitude negative control: ${betweenControl}`);
 }
 if (lenRows.length) {
   console.log(`\nLENGTH RANK  p3numbers, ${LEN_N} draws per bank  (the key uniquely shortest OR uniquely longest on < ${Math.round(LEN_CAP * 100)}% of draws)\n`);
-  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('uSHORTEST', 12) + pad('uLONGEST', 11) + 'RESULT');
-  console.log('-'.repeat(84));
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('uSHORTEST', 12) + pad('uLONGEST', 11) +
+    pad('PICK-SHORT', 12) + pad('PICK-LONG', 11) + 'RESULT');
+  console.log('-'.repeat(100));
   for (const r of lenRows) {
     console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) +
       pad((100 * r.uShort / r.n).toFixed(1) + '%', 12) + pad((100 * r.uLong / r.n).toFixed(1) + '%', 11) +
+      pad((100 * r.pShort / r.n).toFixed(1) + '%', 12) + pad((100 * r.pLong / r.n).toFixed(1) + '%', 11) +
       (r.err ? 'FAIL  ' + r.err : 'pass'));
   }
   console.log('');
+  console.log(`     PICK-SHORT / PICK-LONG are the value of "pick one of the shortest (longest) options", counted 1/k over the k options tied at that extreme.`);
+  console.log(`     They are REPORTED, not gated: every margin in this topic is one character. 25.0% is chance. A key tied with one other option reads 50.0% here and 0.0% under "uniquely".`);
   if (lenRows.every(r => !r.err)) console.log(`ok   length rank: ${lenRows.length} banks, no key uniquely shortest or uniquely longest on ${Math.round(LEN_CAP * 100)}% of draws`);
   console.log(`${/goes red/.test(lenControl) ? 'ok  ' : 'FAIL'} length negative control: ${lenControl}`);
+}
+if (tokRows.length) {
+  console.log(`\nTOKEN RULER  p3numbers, ${TOK_N} draws per prose bank  (no token or two-word phrase in the key alone - or in all three distractors alone - on >= ${Math.round(100 * TOK_CAP)}% of draws)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('KEY-ONLY PHRASE', 24) + pad('RATE', 9) + pad('ALL-WRONG PHRASE', 20) + pad('RATE', 9) + 'RESULT');
+  console.log('-'.repeat(110));
+  for (const r of tokRows) {
+    const k = tokTop(r.keyOnly), w = tokTop(r.wrongOnly);
+    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) +
+      pad('"' + k[0] + '"', 24) + pad((100 * k[1] / r.n).toFixed(1) + '%', 9) +
+      pad('"' + w[0] + '"', 20) + pad((100 * w[1] / r.n).toFixed(1) + '%', 9) +
+      (r.err ? 'FAIL  ' + r.err : 'pass'));
+  }
+  console.log('');
+  if (tokRows.every(r => !r.err)) console.log(`ok   token ruler: ${tokRows.length} prose banks, no key-only and no all-distractor phrase at or over ${Math.round(100 * TOK_CAP)}% of draws`);
+  console.log(`${/goes red/.test(tokControl) ? 'ok  ' : 'FAIL'} token negative control: ${tokControl}`);
 }
 
 console.log('');

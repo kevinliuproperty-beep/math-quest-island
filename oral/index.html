@@ -32,7 +32,7 @@ h1,h2,h3,.display{font-family:ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic 
 button{font-family:inherit;font-size:inherit;cursor:pointer;min-height:44px}
 html{-webkit-text-size-adjust:100%}
 /* iPad: one tap is one tap, never the double-tap zoom wobble */
-button,.tab,.chip,.check,.quest,.sitelinks a,summary{touch-action:manipulation;-webkit-tap-highlight-color:rgba(31,169,160,.28)}
+button,.tab,.chip,.quest,.sitelinks a,summary{touch-action:manipulation;-webkit-tap-highlight-color:rgba(31,169,160,.28)}
 .chip{min-height:44px;display:inline-flex;align-items:center}
 .sitelinks{display:flex;gap:10px;flex-wrap:wrap;padding-top:12px}
 .sitelinks a{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 14px;border-radius:999px;border:2px solid var(--line);background:var(--paper);color:var(--ink-soft);text-decoration:none;font-weight:800;font-size:.8rem;letter-spacing:.06em}
@@ -51,7 +51,6 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--teal);outl
 .tab[aria-selected="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
 .tab:active{transform:translateY(3px);box-shadow:none}
 .tab .dot{width:12px;height:12px;border-radius:50%;background:var(--teal);flex:none}
-.tab[data-m="warm"] .dot{background:var(--rose)}
 .tab[data-m="read"] .dot{background:var(--teal)}
 .tab[data-m="talk"] .dot{background:var(--gold)}
 /* stage */
@@ -92,14 +91,6 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--teal);outl
 .label{font-weight:800;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.9rem;color:var(--ink-soft);margin-top:8px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
-/* rubric */
-.rubric{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
-.check{border:2px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--ground);text-align:left;font-family:inherit;color:var(--ink);display:flex;gap:10px;align-items:flex-start;transition:border-color .12s}
-.check .box{width:24px;height:24px;border-radius:8px;border:2px solid var(--ink-soft);flex:none;display:grid;place-items:center;margin-top:2px}
-.check[aria-pressed="true"]{border-color:var(--teal);background:var(--teal-soft)}
-.check[aria-pressed="true"] .box{background:var(--teal);border-color:var(--teal);color:#fff}
-.check b{display:block;font-family:ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic ProN",system-ui,sans-serif;font-weight:500;font-size:1.05rem}
-.check small{color:var(--ink-soft);font-size:.85rem;line-height:1.35;display:block}
 /* stimulus */
 .stim{border:2px solid var(--line);border-radius:18px;overflow:hidden;background:var(--ground);margin:12px 0}
 .stim svg{display:block;width:100%;height:auto;max-width:100%}
@@ -112,30 +103,16 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--teal);outl
 .steps i{flex:1;height:8px;border-radius:99px;background:var(--line)}
 .steps i.on{background:var(--gold)}
 .steps i.done{background:var(--teal)}
-/* warm-up */
-.dice{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
-.die{border:2px solid var(--line);border-radius:18px;padding:18px;background:var(--ground);text-align:center;min-height:120px;display:flex;flex-direction:column;justify-content:center;gap:6px}
-.die .display{font-size:1.4rem}
-.die.feel{background:var(--plum-soft)}
-.twister{font-family:ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic ProN",system-ui,sans-serif;font-weight:500;font-size:1.5rem;line-height:1.4;padding:16px 20px;background:var(--ground);border:2px solid var(--line);border-radius:18px;margin:12px 0}
-.twister small{display:block;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
-/* stars reward */
-.stars{display:flex;gap:6px;margin:10px 0}
-.stars button{background:none;border:0;padding:4px}
-.stars svg{width:46px;height:46px;fill:var(--line);stroke:var(--ink-soft);stroke-width:1.2;transition:transform .15s,fill .15s}
-.stars button[aria-pressed="true"] svg{fill:var(--gold);stroke:#B8860B;transform:scale(1.12)}
+/* done button caption */
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--ground);padding:12px 22px;border-radius:999px;font-family:ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic ProN",system-ui,sans-serif;font-weight:600;font-size:1.15rem;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-weight:800;font-size:.85rem;border:2px solid var(--line);color:var(--ink-soft)}
-.badge.won{border-color:var(--gold);background:var(--gold-soft);color:var(--ink)}
 details.parent{margin-top:16px;border:2px solid var(--line);border-radius:14px;padding:10px 14px;background:var(--ground)}
-details.parent summary{cursor:pointer;font-weight:800;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+details.parent summary{cursor:pointer;font-weight:800;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);min-height:44px;display:flex;align-items:center;gap:6px}
 details.parent ul{margin:8px 0 0;padding-left:20px;color:var(--ink-soft);font-size:.95rem}
 .pop{animation:pop .35s ease}
 @keyframes pop{0%{transform:scale(.9);opacity:.4}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-@media (max-width:480px){.stage{padding:18px 16px}.passage{font-size:1.3rem;padding:14px 16px}.dice{grid-template-columns:1fr}.brand h1{font-size:1.3rem}}
+@media (max-width:480px){.stage{padding:18px 16px}.passage{font-size:1.3rem;padding:14px 16px}.brand h1{font-size:1.3rem}}
 </style>
 </head>
 <body>
@@ -152,7 +129,6 @@ details.parent ul{margin:8px 0 0;padding-left:20px;color:var(--ink-soft);font-si
   </div>
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" data-m="home" aria-selected="true">Home</button>
-    <button class="tab" role="tab" data-m="warm"><span class="dot"></span>Warm-up</button>
     <button class="tab" role="tab" data-m="read"><span class="dot"></span>Reading Aloud</button>
     <button class="tab" role="tab" data-m="talk"><span class="dot"></span>Picture Talk</button>
   </div>
@@ -186,14 +162,55 @@ const PASSAGES = [
 {title:"The Broken Robot", text:[
 "Ethan's little brother, Jayden, had borrowed his favourite toy robot without asking. Now the robot's arm was broken. Ethan was furious.",
 "\"Why did you touch my things?\" he shouted. Jayden's eyes filled with tears. \"I'm sorry,\" he sobbed. \"I only wanted to play with you.\"",
-"Ethan took a deep breath. He remembered how lonely he had felt when he was five. Slowly, he picked up the robot. \"Let's fix it together,\" he said. They found some glue in the drawer. An hour later, the robot's arm was as good as new, and the two brothers were laughing again."]}
-];
-
-const READ_RUBRIC = [
- {k:"clear", t:"Clear words", s:"Every word said fully, ending sounds too (walked, cats)."},
- {k:"pause", t:"Punctuation pauses", s:"Short pause at commas, longer stop at full stops."},
- {k:"express", t:"Expression", s:"Voice changes for ? ! and for characters speaking."},
- {k:"pace", t:"Steady pace", s:"Not too fast, not too slow, no rushing at the end."}
+"Ethan took a deep breath. He remembered how lonely he had felt when he was five. Slowly, he picked up the robot. \"Let's fix it together,\" he said. They found some glue in the drawer. An hour later, the robot's arm was as good as new, and the two brothers were laughing again."]},
+{title:"The Void Deck Wedding", text:[
+"On Sunday morning, Priya heard drums booming under her block. She ran to the lift and pressed the button seven times.",
+"\"Aunty, what is happening downstairs?\" she asked her neighbour, Mdm Salmah.\n\"There is a wedding at the void deck,\" Mdm Salmah laughed. \"Come and see!\"",
+"The void deck was covered with red cloth and yellow flowers. A photographer climbed onto a plastic chair, waving his arms. Priya watched the bride walk slowly past the bicycle racks, her dress glistening in the sunlight. Someone handed Priya a small box of cake. She ate it on the stairs, grinning, with the drums still booming in her ears."]},
+{title:"Lost on the MRT", text:[
+"The train doors closed before Daniel could step out. He pressed his palms against the glass and watched his mother grow smaller on the platform.",
+"\"Get off at the next station and wait there,\" a voice called. It was Uncle Raju, his neighbour, holding a bag of vegetables.\n\"But what if she cannot find me?\" Daniel whispered.",
+"\"She will. Mothers always do.\" At Bishan, Daniel stood beside the station control room and counted to one hundred. Before he reached eighty, his mother came running down the escalator. \"Daniel!\" she cried, and hugged him so tightly that he squeaked."]},
+{title:"The Chicken Rice Queue", text:[
+"The queue at the hawker centre stretched past three stalls. Marcus groaned and shifted from foot to foot.",
+"\"Must we wait so long?\" he asked. \"I am starving!\"\n\"Good food is worth waiting for, boy,\" his grandfather said.",
+"A cat wandered under the tables, hunting for scraps. The uncle at the stall chopped chicken so quickly that his cleaver blurred. When their plates finally arrived, the rice was warm and fragrant and the cucumber was cold. Marcus took one bite and forgot every minute of the wait. His grandfather watched him and laughed quietly, saying nothing at all."]},
+{title:"The CCA Audition", text:[
+"Nadia clutched her recorder outside the music room. Inside, the teacher was listening to another girl play.",
+"\"Your hands are shaking,\" said her friend Jun Kai.\n\"I know!\" Nadia whispered. \"What if I forget the notes?\"\n\"Then play slowly. Slow sounds confident.\"",
+"Her name was called. Nadia walked in reluctantly, sat down and lifted the recorder to her lips. The first note wobbled. The second was clear, and the third was clearer still. When she finished, Mrs Fernandez wrote something on her clipboard and smiled. Nadia never found out what it said, but on Friday her name was on the band list."]},
+{title:"The Wet Market Fish", text:[
+"Ice glistened on the trays at the wet market. Aisyah held her mother's hand and stared at one silver fish with a very round eye.",
+"\"Is it looking at me?\" she asked.\n\"Fish cannot see once they are on ice,\" her mother laughed. \"Choose one for dinner!\"",
+"Aisyah pointed at the smallest fish on the tray. The fishmonger wrapped it in newspaper and handed it over with a wink. On the way home, the heavy plastic bag bumped against Aisyah's knee at every step. That night, she ate two bowls of rice and told her father the whole story, twice."]},
+{title:"The Night Before NDP", text:[
+"Fireworks practice began at eight o'clock. Ryan dragged a chair onto the corridor and climbed up to see over the parapet.",
+"\"Careful!\" his sister Elise shouted. \"You will fall.\"\n\"Just one more minute,\" he said. \"Can you see the red one?\"",
+"The sky cracked open in gold and green. Below, the whole block seemed to be outside, and somebody on the fifth floor cheered every time a rocket burst. Elise stopped scolding and climbed onto the chair beside him. They watched until the last spark faded and the neighbourhood went quiet again, smelling faintly of smoke."]},
+{title:"The Library Card", text:[
+"Jerome had lost his library card twice already. When he lost it a third time, he did not tell anybody.",
+"\"Where is your card?\" asked the librarian, Miss Chan.\n\"I think it is at home,\" Jerome mumbled, staring hard at the counter.\n\"Then we shall make a new one!\" she said. \"But this time, keep it inside your wallet.\"",
+"Jerome nodded so hard that his fringe bounced. He wrote his name on the fresh card carefully, letter by letter, and pushed it deep into the pocket of his wallet. That was in January, and he has not lost it since."]},
+{title:"The School Bus Song", text:[
+"Every morning, the school bus turned three corners before it reached Hafiz's block. On Wednesday, the bus was very late.",
+"\"Uncle, why so slow today?\" Hafiz asked the driver.\n\"Traffic jam near the expressway,\" the driver sighed. \"Sit down first.\"\n\"We will be late!\" groaned Hafiz.",
+"Somebody at the back began to sing an old National Day song, and soon half the bus had joined in. Hafiz sang too, though he only knew the chorus. When they finally reached school they were eleven minutes late, and nobody, not even the discipline master, seemed able to stay cross with them."]},
+{title:"Reunion Dinner", text:[
+"The table was so crowded that Grandma had to put the soup on a stool. Cousins squeezed onto the benches, elbow to elbow.",
+"\"Where is the yu sheng?\" shouted Uncle Terence from the kitchen.\n\"Coming, coming!\" Grandma called back.",
+"When the plate arrived, everybody stood up with chopsticks raised. They tossed the shredded vegetables high, shouting good wishes, and strips of carrot landed on the floor and in Zara's hair. Grandma laughed until she had to wipe her eyes. Later, Zara found a piece of pomelo behind her ear and decided it was the best dinner of the year."]},
+{title:"Hari Raya Visiting", text:[
+"Green packets bulged in Farah's pocket by the third house. Her feet ached, but the rendang at Aunty Zaitun's flat was worth the long walk.",
+"\"Can we go home soon?\" her little brother whispered. \"I am so full!\"\n\"One more house,\" Farah replied. \"Then we go home, I promise.\"",
+"At the last flat, an old uncle asked the two of them to sing. Farah's brother hid behind her legs and refused, so Farah sang alone, off key and much too fast. Everybody clapped anyway. Walking home, her brother held her hand the whole way and did not complain once."]},
+{title:"The Sentosa Cable Car", text:[
+"The cable car swung gently as it left the tower. Far below, the sea glittered and the ships looked like toys.",
+"\"Do not lean on the door!\" gasped Mrs Devi, gripping the seat. \"Are you trying to frighten me?\"\n\"It is locked, Ma,\" said Arun, though he sat back anyway.",
+"A seagull drifted past the window, so close that Arun could see its yellow eye. Halfway across, the cabin stopped for a moment and swayed, and even Arun held his breath. Then it moved again. When they stepped out at Sentosa, Mrs Devi announced that she would be taking the bus home, and she meant it."]},
+{title:"The Recess Bell", text:[
+"Somebody had drawn a hopscotch grid in chalk beside the canteen. By the time Shermaine arrived, eight children were already queueing to play.",
+"\"Can I join?\" she asked.\n\"You are last,\" said a boy called Amirul. \"But you can join.\"",
+"Shermaine waited, hopping on the spot. When her turn came at last, she threw her eraser onto the fourth square and hopped the whole way without wobbling once. \"Not bad!\" said Amirul, and the others cheered. Then the bell rang, loud and rude, and everybody groaned and trudged back to class."]}
 ];
 
 const STIMULI = [
@@ -216,30 +233,25 @@ const STIMULI = [
 {title:"Healthy Eating Poster", svg:posterFruit, qs:[
  {q:"What is this poster about? What kinds of food can you see?", h:["This poster is about…","I can see… and…","These foods are healthy because…"]},
  {q:"What do you usually eat for breakfast? Is it healthy?", h:["For breakfast, I usually eat…","I think it is / is not healthy because…","Sometimes I also…"]},
- {q:"Why do you think some children prefer fast food? What would you tell them?", h:["Some children prefer fast food because…","But too much fast food can…","I would tell them to…"]}]}
-];
-
-const TALK_RUBRIC = [
- {k:"full", t:"Full sentences", s:"Answered in complete sentences, not one word."},
- {k:"detail", t:"Gave details", s:"Said what, then WHY or gave an example."},
- {k:"eye", t:"Looked up", s:"Eye contact with the examiner, sat up, spoke clearly."},
- {k:"loud", t:"Loud & clear", s:"Could be heard easily, no mumbling."}
-];
-
-const FEELINGS = ["happy","surprised","scared","sleepy","angry","excited","sad","whispering a secret"];
-const LINES = ["The bus is coming!","I cannot find my water bottle.","Look at that enormous dog.","Is it time for recess yet?","My grandmother baked a cake.","The door slowly creaked open.","We are going to the beach tomorrow.","Please pass me the blue crayon."];
-const TWISTERS = [
- {sound:"th sound", t:"Three thin thieves thought a thousand thoughts."},
- {sound:"th sound", t:"This, that, these and those are the things I chose."},
- {sound:"ending sounds", t:"The cats jumped, the dogs barked, and the birds flapped."},
- {sound:"l and r", t:"Red lorry, yellow lorry, red lorry, yellow lorry."},
- {sound:"s sound", t:"She sells seashells by the seashore."},
- {sound:"v and w", t:"Victor waved a very wet violet vest."},
- {sound:"ending sounds", t:"Six sticky sweets stuck to the shiny spoons."},
- {sound:"ch and sh", t:"Chocolate chips and cheese chunks chill on the shelf."}
+ {q:"Why do you think some children prefer fast food? What would you tell them?", h:["Some children prefer fast food because…","But too much fast food can…","I would tell them to…"]}]},
+{title:"On the MRT", svg:sceneMrt, qs:[
+ {q:"Look at the picture. What is happening on the train?", h:["In this picture, I can see…","The boy is… because…","The lady is…"]},
+ {q:"Have you ever given up your seat to somebody? Tell me about it.", h:["Yes, once I…","The person was…","I felt… afterwards."]},
+ {q:"Why do you think some people do not give up their seats? What should they do?", h:["Some people do not because…","I think they should…","If everybody did that, …"]}]},
+{title:"At the Hawker Centre", svg:sceneHawker, qs:[
+ {q:"Tell me what you can see in this picture.", h:["In this picture, there is…","On the left, I can see… while…","The boy is carrying…"]},
+ {q:"What do you like to eat at a hawker centre? Who do you go with?", h:["I like to eat…","I usually go with…","My favourite stall is… because…"]},
+ {q:"Why is it important to return your tray? What would you say to somebody who does not?", h:["It is important because…","The cleaners have to…","I would tell them to…"]}]},
+{title:"Take Care of Our Books", svg:posterBooks, qs:[
+ {q:"What is this poster about? What rules can you see?", h:["This poster is about…","One rule says…","Another rule is…"]},
+ {q:"Tell me about a book you borrowed from the library.", h:["I once borrowed…","It was about…","I liked it because…"]},
+ {q:"What might happen if nobody took care of the library books?", h:["If nobody took care of them, …","The pages might…","Then other children would…"]}]}
 ];
 
 /* ---------- SVG STIMULI ---------- */
+function sceneMrt(){return "<svg viewBox=\"0 0 640 400\" role=\"img\" aria-label=\"Inside an MRT train: a boy stands up and points to the empty priority seat, offering it to an elderly woman who is holding a walking stick\"><rect width=\"640\" height=\"400\" fill=\"#DCE9F2\"/><rect x=\"0\" y=\"0\" width=\"640\" height=\"46\" fill=\"#5C7A8C\"/><rect x=\"0\" y=\"306\" width=\"640\" height=\"8\" fill=\"#6E8899\"/><rect x=\"0\" y=\"314\" width=\"640\" height=\"86\" fill=\"#8FA6B4\"/><rect x=\"30\" y=\"72\" width=\"150\" height=\"92\" rx=\"10\" fill=\"#BFE3FF\" stroke=\"#5C7A8C\" stroke-width=\"5\"/><rect x=\"452\" y=\"72\" width=\"150\" height=\"92\" rx=\"10\" fill=\"#BFE3FF\" stroke=\"#5C7A8C\" stroke-width=\"5\"/><rect x=\"208\" y=\"60\" width=\"170\" height=\"82\" rx=\"12\" fill=\"#FFFFFF\" stroke=\"#1FA9A0\" stroke-width=\"5\"/><circle cx=\"240\" cy=\"86\" r=\"10\" fill=\"#1FA9A0\"/><path d=\"M228 102 q12 -12 24 0 l3 26 h-30z\" fill=\"#1FA9A0\"/><text x=\"314\" y=\"92\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"18\" font-weight=\"800\" fill=\"#1D6E6A\">PRIORITY</text><text x=\"314\" y=\"120\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"18\" font-weight=\"800\" fill=\"#1D6E6A\">SEAT</text><rect x=\"56\" y=\"180\" width=\"274\" height=\"16\" rx=\"6\" fill=\"#2B7A78\" opacity=\".5\"/><rect x=\"56\" y=\"248\" width=\"274\" height=\"24\" rx=\"8\" fill=\"#2B7A78\"/><rect x=\"56\" y=\"272\" width=\"274\" height=\"34\" fill=\"#1D6E6A\"/><rect x=\"176\" y=\"248\" width=\"6\" height=\"24\" fill=\"#1D6E6A\" opacity=\".6\"/><rect x=\"392\" y=\"46\" width=\"9\" height=\"268\" fill=\"#B0BEC5\"/><rect x=\"594\" y=\"46\" width=\"9\" height=\"268\" fill=\"#B0BEC5\"/><ellipse cx=\"412\" cy=\"308\" rx=\"36\" ry=\"8\" fill=\"#6E8899\" opacity=\".45\"/><ellipse cx=\"528\" cy=\"314\" rx=\"36\" ry=\"8\" fill=\"#6E8899\" opacity=\".45\"/><g transform=\"translate(412,170)\"><circle cx=\"0\" cy=\"0\" r=\"22\" fill=\"#F7C8A0\"/><path d=\"M-22 -6 q22 -28 44 0 v-8 q-22 -22 -44 0z\" fill=\"#3B2A20\"/><circle cx=\"-8\" cy=\"2\" r=\"3\" fill=\"#2B2540\"/><circle cx=\"8\" cy=\"2\" r=\"3\" fill=\"#2B2540\"/><path d=\"M-8 12 q8 8 16 0\" stroke=\"#2B2540\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><rect x=\"-20\" y=\"24\" width=\"40\" height=\"58\" rx=\"12\" fill=\"#F4622E\"/><rect x=\"-18\" y=\"82\" width=\"15\" height=\"52\" rx=\"7\" fill=\"#37474F\"/><rect x=\"5\" y=\"82\" width=\"15\" height=\"52\" rx=\"7\" fill=\"#37474F\"/><path d=\"M-20 38 q-38 -2 -56 18\" stroke=\"#F7C8A0\" stroke-width=\"11\" stroke-linecap=\"round\" fill=\"none\"/><rect x=\"17\" y=\"30\" width=\"15\" height=\"44\" rx=\"7\" fill=\"#F7C8A0\"/></g><g transform=\"translate(528,176)\"><circle cx=\"0\" cy=\"0\" r=\"22\" fill=\"#EFCBA8\"/><path d=\"M-22 -4 q22 -26 44 0 q-8 -15 -22 -15 q-14 0 -22 15z\" fill=\"#CFD8DC\"/><circle cx=\"-8\" cy=\"2\" r=\"3\" fill=\"#2B2540\"/><circle cx=\"8\" cy=\"2\" r=\"3\" fill=\"#2B2540\"/><path d=\"M-7 13 q7 6 14 0\" stroke=\"#2B2540\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><rect x=\"-22\" y=\"24\" width=\"44\" height=\"58\" rx=\"12\" fill=\"#7E57C2\"/><rect x=\"-18\" y=\"82\" width=\"15\" height=\"50\" rx=\"7\" fill=\"#455A64\"/><rect x=\"5\" y=\"82\" width=\"15\" height=\"50\" rx=\"7\" fill=\"#455A64\"/><path d=\"M26 40 v92\" stroke=\"#8B5E34\" stroke-width=\"7\" stroke-linecap=\"round\"/><path d=\"M26 40 q12 -3 12 9\" stroke=\"#8B5E34\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\"/><rect x=\"-46\" y=\"58\" width=\"26\" height=\"34\" rx=\"6\" fill=\"#E85D75\"/><path d=\"M-22 36 q-14 10 -12 22\" stroke=\"#EFCBA8\" stroke-width=\"10\" stroke-linecap=\"round\" fill=\"none\"/></g><rect x=\"40\" y=\"348\" width=\"560\" height=\"40\" rx=\"20\" fill=\"#1D6E6A\"/><text x=\"320\" y=\"375\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"19\" font-weight=\"800\" fill=\"#FFFFFF\">Offer your seat to somebody who needs it more</text></svg>"}
+function sceneHawker(){return "<svg viewBox=\"0 0 640 400\" role=\"img\" aria-label=\"A hawker centre: a mother and child eating at a table while a boy carries his tray to the tray return rack\"><rect width=\"640\" height=\"400\" fill=\"#FFF3E0\"/><rect x=\"0\" y=\"0\" width=\"640\" height=\"160\" fill=\"#FFE0B2\"/><rect x=\"0\" y=\"160\" width=\"640\" height=\"240\" fill=\"#F1E3C6\"/><rect x=\"30\" y=\"28\" width=\"250\" height=\"124\" rx=\"8\" fill=\"#FFFFFF\" stroke=\"#8B5E34\" stroke-width=\"4\"/><rect x=\"30\" y=\"28\" width=\"250\" height=\"36\" rx=\"6\" fill=\"#F4622E\"/><text x=\"155\" y=\"54\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"19\" font-weight=\"800\" fill=\"#FFFFFF\">NOODLES</text><rect x=\"52\" y=\"82\" width=\"126\" height=\"9\" rx=\"4\" fill=\"#EADFC4\"/><rect x=\"52\" y=\"100\" width=\"150\" height=\"9\" rx=\"4\" fill=\"#EADFC4\"/><rect x=\"52\" y=\"118\" width=\"100\" height=\"9\" rx=\"4\" fill=\"#EADFC4\"/><ellipse cx=\"238\" cy=\"132\" rx=\"30\" ry=\"12\" fill=\"#B0BEC5\"/><path d=\"M228 112 q6 -14 0 -26 M248 112 q6 -14 0 -26\" stroke=\"#CFD8DC\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><rect x=\"310\" y=\"28\" width=\"230\" height=\"124\" rx=\"8\" fill=\"#FFFFFF\" stroke=\"#8B5E34\" stroke-width=\"4\"/><rect x=\"310\" y=\"28\" width=\"230\" height=\"36\" rx=\"6\" fill=\"#1FA9A0\"/><text x=\"425\" y=\"54\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"19\" font-weight=\"800\" fill=\"#FFFFFF\">DRINKS</text><rect x=\"336\" y=\"84\" width=\"26\" height=\"46\" rx=\"4\" fill=\"#FFC53D\"/><rect x=\"376\" y=\"84\" width=\"26\" height=\"46\" rx=\"4\" fill=\"#E85D75\"/><rect x=\"416\" y=\"84\" width=\"26\" height=\"46\" rx=\"4\" fill=\"#66BB6A\"/><rect x=\"60\" y=\"256\" width=\"230\" height=\"18\" rx=\"6\" fill=\"#8B5E34\"/><rect x=\"80\" y=\"274\" width=\"14\" height=\"72\" fill=\"#8B5E34\"/><rect x=\"256\" y=\"274\" width=\"14\" height=\"72\" fill=\"#8B5E34\"/><rect x=\"96\" y=\"292\" width=\"214\" height=\"14\" rx=\"4\" fill=\"#A1703F\"/><rect x=\"108\" y=\"306\" width=\"11\" height=\"32\" fill=\"#A1703F\"/><rect x=\"288\" y=\"306\" width=\"11\" height=\"32\" fill=\"#A1703F\"/><rect x=\"104\" y=\"236\" width=\"60\" height=\"20\" rx=\"5\" fill=\"#B0BEC5\"/><g transform=\"translate(150,168)\"><circle cx=\"0\" cy=\"0\" r=\"20\" fill=\"#F7C8A0\"/><path d=\"M-20 -6 q20 -24 40 0 l4 22 h-48z\" fill=\"#3B2A20\"/><circle cx=\"-7\" cy=\"2\" r=\"2.6\" fill=\"#2B2540\"/><circle cx=\"7\" cy=\"2\" r=\"2.6\" fill=\"#2B2540\"/><path d=\"M-7 11 q7 6 14 0\" stroke=\"#2B2540\" stroke-width=\"2.6\" fill=\"none\" stroke-linecap=\"round\"/><rect x=\"-19\" y=\"22\" width=\"38\" height=\"56\" rx=\"11\" fill=\"#1FA9A0\"/><rect x=\"-17\" y=\"78\" width=\"14\" height=\"46\" rx=\"6\" fill=\"#37474F\"/><rect x=\"4\" y=\"78\" width=\"14\" height=\"46\" rx=\"6\" fill=\"#37474F\"/><path d=\"M19 34 q26 4 30 20\" stroke=\"#F7C8A0\" stroke-width=\"10\" stroke-linecap=\"round\" fill=\"none\"/></g><g transform=\"translate(212,204)\"><circle cx=\"0\" cy=\"0\" r=\"15\" fill=\"#C68642\"/><path d=\"M-15 -5 q15 -18 30 0 l2 16 h-34z\" fill=\"#111111\"/><circle cx=\"-5\" cy=\"2\" r=\"2\" fill=\"#2B2540\"/><circle cx=\"5\" cy=\"2\" r=\"2\" fill=\"#2B2540\"/><path d=\"M-5 9 q5 5 10 0\" stroke=\"#2B2540\" stroke-width=\"2\" fill=\"none\" stroke-linecap=\"round\"/><rect x=\"-14\" y=\"17\" width=\"28\" height=\"42\" rx=\"9\" fill=\"#FFC53D\"/><rect x=\"-12\" y=\"59\" width=\"11\" height=\"32\" rx=\"5\" fill=\"#455A64\"/><rect x=\"2\" y=\"59\" width=\"11\" height=\"32\" rx=\"5\" fill=\"#455A64\"/><path d=\"M-14 26 q-18 6 -20 18\" stroke=\"#C68642\" stroke-width=\"8\" stroke-linecap=\"round\" fill=\"none\"/></g><g transform=\"translate(470,208)\"><rect x=\"-6\" y=\"-34\" width=\"132\" height=\"30\" rx=\"7\" fill=\"#1FA9A0\"/><text x=\"60\" y=\"-13\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"15\" font-weight=\"800\" fill=\"#FFFFFF\">TRAY RETURN</text><rect x=\"0\" y=\"0\" width=\"120\" height=\"142\" rx=\"8\" fill=\"#546E7A\"/><rect x=\"10\" y=\"26\" width=\"100\" height=\"9\" rx=\"3\" fill=\"#90A4AE\"/><rect x=\"10\" y=\"68\" width=\"100\" height=\"9\" rx=\"3\" fill=\"#90A4AE\"/><rect x=\"10\" y=\"110\" width=\"100\" height=\"9\" rx=\"3\" fill=\"#90A4AE\"/><rect x=\"18\" y=\"12\" width=\"84\" height=\"14\" rx=\"4\" fill=\"#CFD8DC\"/></g><g transform=\"translate(392,246)\"><circle cx=\"0\" cy=\"0\" r=\"17\" fill=\"#F7C8A0\"/><path d=\"M-17 -5 q17 -20 34 0 v-6 q-17 -16 -34 0z\" fill=\"#5D4037\"/><circle cx=\"-6\" cy=\"2\" r=\"2.2\" fill=\"#2B2540\"/><circle cx=\"6\" cy=\"2\" r=\"2.2\" fill=\"#2B2540\"/><path d=\"M-6 10 q6 6 12 0\" stroke=\"#2B2540\" stroke-width=\"2.2\" fill=\"none\" stroke-linecap=\"round\"/><rect x=\"-16\" y=\"19\" width=\"32\" height=\"46\" rx=\"10\" fill=\"#7E57C2\"/><rect x=\"-14\" y=\"65\" width=\"12\" height=\"36\" rx=\"6\" fill=\"#37474F\"/><rect x=\"3\" y=\"65\" width=\"12\" height=\"36\" rx=\"6\" fill=\"#37474F\"/><rect x=\"-30\" y=\"32\" width=\"60\" height=\"16\" rx=\"4\" fill=\"#B0BEC5\"/><ellipse cx=\"-12\" cy=\"34\" rx=\"12\" ry=\"5\" fill=\"#FFFFFF\"/></g><text x=\"320\" y=\"386\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"17\" font-weight=\"700\" fill=\"#6B6480\">Order · Eat · Return your tray</text></svg>"}
+function posterBooks(){return "<svg viewBox=\"0 0 640 400\" role=\"img\" aria-label=\"Library corner poster: Take care of our books, with clean hands, no folded pages and no food or drink\"><rect width=\"640\" height=\"400\" fill=\"#F3EEFF\"/><rect x=\"0\" y=\"0\" width=\"640\" height=\"94\" fill=\"#7E57C2\"/><text x=\"320\" y=\"60\" text-anchor=\"middle\" font-family='ui-rounded, \"SF Pro Rounded\", \"Hiragino Maru Gothic ProN\", system-ui, sans-serif' font-size=\"38\" font-weight=\"600\" fill=\"#FFFFFF\">TAKE CARE OF OUR BOOKS</text><text x=\"320\" y=\"130\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"21\" font-weight=\"700\" fill=\"#2B2540\">Our reading corner belongs to everybody</text><g transform=\"translate(40,156)\"><rect x=\"0\" y=\"0\" width=\"170\" height=\"182\" rx=\"14\" fill=\"#FFFFFF\" stroke=\"#7E57C2\" stroke-width=\"3\"/><path d=\"M40 62 q14 -30 28 0 q14 -30 28 0 l-14 34 h-28z\" fill=\"#64B5F6\"/><rect x=\"36\" y=\"96\" width=\"98\" height=\"14\" rx=\"4\" fill=\"#90CAF9\"/><rect x=\"48\" y=\"110\" width=\"74\" height=\"24\" rx=\"4\" fill=\"#F7C8A0\"/><circle cx=\"135\" cy=\"36\" r=\"20\" fill=\"#1FA9A0\"/><path d=\"M126 36 l7 8 l14 -16\" stroke=\"#FFFFFF\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><text x=\"85\" y=\"160\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"16\" font-weight=\"800\" fill=\"#2B2540\">Wash your hands</text></g><g transform=\"translate(235,156)\"><rect x=\"0\" y=\"0\" width=\"170\" height=\"182\" rx=\"14\" fill=\"#FFFFFF\" stroke=\"#7E57C2\" stroke-width=\"3\"/><rect x=\"34\" y=\"70\" width=\"102\" height=\"66\" rx=\"5\" fill=\"#FFF0C2\" stroke=\"#8B5E34\" stroke-width=\"3\"/><path d=\"M85 70 v66\" stroke=\"#8B5E34\" stroke-width=\"3\"/><path d=\"M136 70 l-26 22 l26 4z\" fill=\"#EADFC4\" stroke=\"#8B5E34\" stroke-width=\"3\" stroke-linejoin=\"round\"/><circle cx=\"135\" cy=\"36\" r=\"20\" fill=\"#E85D75\"/><path d=\"M127 28 l16 16 M143 28 l-16 16\" stroke=\"#FFFFFF\" stroke-width=\"5\" stroke-linecap=\"round\"/><text x=\"85\" y=\"160\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"16\" font-weight=\"800\" fill=\"#2B2540\">Do not fold pages</text></g><g transform=\"translate(430,156)\"><rect x=\"0\" y=\"0\" width=\"170\" height=\"182\" rx=\"14\" fill=\"#FFFFFF\" stroke=\"#7E57C2\" stroke-width=\"3\"/><rect x=\"30\" y=\"86\" width=\"72\" height=\"50\" rx=\"5\" fill=\"#B39DDB\" stroke=\"#5E35B1\" stroke-width=\"3\"/><path d=\"M66 86 v50\" stroke=\"#5E35B1\" stroke-width=\"3\"/><path d=\"M112 96 h26 l-5 40 h-16z\" fill=\"#F4622E\"/><rect x=\"108\" y=\"88\" width=\"34\" height=\"9\" rx=\"3\" fill=\"#E64A19\"/><path d=\"M122 88 v-14\" stroke=\"#E64A19\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"135\" cy=\"36\" r=\"20\" fill=\"#E85D75\"/><path d=\"M127 28 l16 16 M143 28 l-16 16\" stroke=\"#FFFFFF\" stroke-width=\"5\" stroke-linecap=\"round\"/><text x=\"85\" y=\"160\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"16\" font-weight=\"800\" fill=\"#2B2540\">No food or drink</text></g><text x=\"320\" y=\"376\" text-anchor=\"middle\" font-family='system-ui, -apple-system, \"Segoe UI\", sans-serif' font-size=\"17\" font-weight=\"700\" fill=\"#6B6480\">A borrowed book comes back the way it left</text></svg>"}
 function posterReading(){return `<svg viewBox="0 0 640 400" role="img" aria-label="Reading Week poster: Read a book, win a prize"><rect width="640" height="400" fill="#FFF3D6"/><rect x="0" y="0" width="640" height="90" fill="#2B7A78"/><text x="320" y="58" text-anchor="middle" font-family='ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif' font-size="40" font-weight="600" fill="#FFFFFF">READING WEEK</text><text x="320" y="130" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="24" font-weight="700" fill="#2B2540">Read 5 books. Win a prize!</text><text x="320" y="160" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="18" fill="#6B6480">14 – 18 September · School Library</text><g transform="translate(120,190)"><rect x="0" y="40" width="90" height="120" rx="6" fill="#F4622E"/><rect x="100" y="20" width="90" height="140" rx="6" fill="#1FA9A0"/><rect x="200" y="60" width="90" height="100" rx="6" fill="#FFC53D"/><rect x="10" y="50" width="70" height="8" fill="#fff" opacity=".8"/><rect x="110" y="30" width="70" height="8" fill="#fff" opacity=".8"/><rect x="210" y="70" width="70" height="8" fill="#fff" opacity=".8"/><rect x="-10" y="160" width="310" height="12" rx="4" fill="#8B5E34"/></g><g transform="translate(470,180)"><circle cx="50" cy="40" r="32" fill="#F7C8A0"/><path d="M18 30 q32 -40 64 0 v-8 q-32 -30 -64 0z" fill="#3B2A20"/><circle cx="40" cy="42" r="3" fill="#2B2540"/><circle cx="60" cy="42" r="3" fill="#2B2540"/><path d="M40 56 q10 8 20 0" stroke="#2B2540" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="15" y="75" width="70" height="80" rx="14" fill="#E85D75"/><rect x="0" y="120" width="100" height="60" rx="6" fill="#2B7A78"/><path d="M50 120 v60" stroke="#fff" stroke-width="3"/><rect x="8" y="128" width="34" height="4" fill="#fff" opacity=".7"/><rect x="58" y="128" width="34" height="4" fill="#fff" opacity=".7"/><rect x="8" y="140" width="34" height="4" fill="#fff" opacity=".7"/><rect x="58" y="140" width="34" height="4" fill="#fff" opacity=".7"/></g><rect x="40" y="330" width="560" height="44" rx="22" fill="#FFC53D"/><text x="320" y="359" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="20" font-weight="800" fill="#2B2540">Collect a stamp for every book you finish!</text></svg>`}
 function posterTray(){return `<svg viewBox="0 0 640 400" role="img" aria-label="Return your tray poster"><rect width="640" height="400" fill="#E8F6F5"/><text x="320" y="62" text-anchor="middle" font-family='ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif' font-size="42" font-weight="600" fill="#1D6E6A">RETURN YOUR TRAY</text><text x="320" y="98" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="20" font-weight="700" fill="#2B2540">A clean table for the next person</text><g transform="translate(60,130)"><rect x="0" y="120" width="230" height="16" rx="4" fill="#8B5E34"/><rect x="20" y="136" width="14" height="60" fill="#8B5E34"/><rect x="196" y="136" width="14" height="60" fill="#8B5E34"/><rect x="30" y="80" width="170" height="40" rx="6" fill="#B0BEC5"/><ellipse cx="80" cy="82" rx="30" ry="12" fill="#fff"/><ellipse cx="80" cy="80" rx="18" ry="7" fill="#F4622E"/><rect x="130" y="50" width="22" height="34" rx="4" fill="#FFC53D"/><path d="M160 60 l10 -20" stroke="#607D8B" stroke-width="4"/><circle cx="90" cy="150" r="10" fill="#F4622E" opacity=".7"/><rect x="150" y="150" width="30" height="14" rx="4" fill="#fff" stroke="#B0BEC5"/><text x="115" y="230" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="34" font-weight="800" fill="#E85D75">✗</text></g><g transform="translate(350,130)"><rect x="0" y="120" width="230" height="16" rx="4" fill="#8B5E34"/><rect x="20" y="136" width="14" height="60" fill="#8B5E34"/><rect x="196" y="136" width="14" height="60" fill="#8B5E34"/><g transform="translate(120,0)"><circle cx="50" cy="20" r="24" fill="#F7C8A0"/><path d="M26 12 q24 -30 48 0 v-6 q-24 -22 -48 0z" fill="#3B2A20"/><circle cx="42" cy="22" r="2.5" fill="#2B2540"/><circle cx="58" cy="22" r="2.5" fill="#2B2540"/><path d="M42 32 q8 6 16 0" stroke="#2B2540" stroke-width="2.5" fill="none" stroke-linecap="round"/><rect x="25" y="46" width="50" height="60" rx="10" fill="#1FA9A0"/><rect x="0" y="60" width="90" height="22" rx="5" fill="#B0BEC5"/><ellipse cx="30" cy="62" rx="16" ry="6" fill="#fff"/><path d="M0 70 l-20 40 M90 70 l20 40" stroke="#F7C8A0" stroke-width="10" stroke-linecap="round"/></g><rect x="-40" y="40" width="70" height="90" rx="6" fill="#455A64"/><text x="-5" y="95" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="12" font-weight="800" fill="#fff">TRAY RETURN</text><text x="115" y="230" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="34" font-weight="800" fill="#1FA9A0">✓</text></g><text x="320" y="385" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="17" font-weight="700" fill="#6B6480">Trays · Bowls · Cutlery · Tissue · all go to the return point</text></svg>`}
 function scenePlayground(){return `<svg viewBox="0 0 640 400" role="img" aria-label="A playground scene with children playing and one girl sitting alone on a bench"><rect width="640" height="400" fill="#CDEBFF"/><circle cx="560" cy="60" r="34" fill="#FFC53D"/><ellipse cx="120" cy="80" rx="60" ry="22" fill="#fff"/><ellipse cx="160" cy="70" rx="40" ry="18" fill="#fff"/><rect x="0" y="260" width="640" height="140" fill="#8BC96B"/><path d="M0 262 Q320 240 640 262 V270 H0z" fill="#7BB85C"/><g transform="translate(60,120)"><path d="M0 140 L60 0 L120 140" fill="none" stroke="#E85D75" stroke-width="8"/><rect x="55" y="0" width="140" height="10" fill="#E85D75"/><path d="M190 140 L250 0" fill="none" stroke="#E85D75" stroke-width="8"/><line x1="100" y1="10" x2="100" y2="90" stroke="#607D8B" stroke-width="3"/><line x1="130" y1="10" x2="130" y2="90" stroke="#607D8B" stroke-width="3"/><rect x="95" y="90" width="40" height="8" rx="3" fill="#8B5E34"/><g transform="translate(115,60)"><circle cx="0" cy="0" r="13" fill="#F7C8A0"/><path d="M-13 -4 q13 -18 26 0z" fill="#3B2A20"/><rect x="-11" y="12" width="22" height="30" rx="6" fill="#1FA9A0"/><circle cx="-4" cy="-1" r="1.8" fill="#2B2540"/><circle cx="4" cy="-1" r="1.8" fill="#2B2540"/><path d="M-4 5 q4 4 8 0" stroke="#2B2540" stroke-width="2" fill="none"/></g></g><g transform="translate(330,110)"><path d="M0 150 L20 0 L60 0 L60 150" fill="none" stroke="#607D8B" stroke-width="6"/><path d="M60 40 L200 150" stroke="#FFC53D" stroke-width="26" stroke-linecap="round"/><rect x="0" y="0" width="70" height="40" rx="4" fill="#607D8B"/><g transform="translate(130,70)"><circle cx="0" cy="0" r="13" fill="#F7C8A0"/><path d="M-13 -3 q13 -16 26 0z" fill="#111"/><rect x="-11" y="12" width="22" height="26" rx="6" fill="#F4622E"/><circle cx="-4" cy="-1" r="1.8" fill="#2B2540"/><circle cx="4" cy="-1" r="1.8" fill="#2B2540"/><path d="M-5 5 q5 6 10 0" stroke="#2B2540" stroke-width="2" fill="none"/><path d="M-11 18 l-16 -14 M11 18 l16 -14" stroke="#F7C8A0" stroke-width="6" stroke-linecap="round"/></g><g transform="translate(200,180)"><circle cx="0" cy="-10" r="13" fill="#C68642"/><path d="M-13 -13 q13 -16 26 0z" fill="#111"/><rect x="-11" y="2" width="22" height="26" rx="6" fill="#7E57C2"/><circle cx="-4" cy="-11" r="1.8" fill="#2B2540"/><circle cx="4" cy="-11" r="1.8" fill="#2B2540"/><path d="M-5 -5 q5 6 10 0" stroke="#2B2540" stroke-width="2" fill="none"/></g></g><g transform="translate(470,250)"><rect x="0" y="40" width="150" height="14" rx="4" fill="#8B5E34"/><rect x="10" y="54" width="10" height="40" fill="#8B5E34"/><rect x="130" y="54" width="10" height="40" fill="#8B5E34"/><rect x="0" y="10" width="150" height="10" rx="3" fill="#8B5E34"/><g transform="translate(75,10)"><circle cx="0" cy="-16" r="14" fill="#F7C8A0"/><path d="M-14 -20 q14 -18 28 0 l4 24 h-36z" fill="#3B2A20"/><rect x="-12" y="0" width="24" height="34" rx="6" fill="#E85D75"/><circle cx="-5" cy="-16" r="1.8" fill="#2B2540"/><circle cx="5" cy="-16" r="1.8" fill="#2B2540"/><path d="M-5 -8 q5 -4 10 0" stroke="#2B2540" stroke-width="2" fill="none"/><path d="M-12 8 q-14 10 -6 26 M12 8 q14 10 6 26" stroke="#F7C8A0" stroke-width="6" stroke-linecap="round" fill="none"/></g></g><g transform="translate(40,300)"><rect x="0" y="0" width="60" height="70" rx="6" fill="#FF7E93"/><rect x="8" y="10" width="44" height="30" rx="3" fill="#fff"/><text x="30" y="30" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="12" font-weight="800" fill="#2B2540">BIN</text></g><circle cx="600" cy="330" r="16" fill="#F4622E"/><path d="M584 330 a16 16 0 0 1 32 0" fill="#fff" opacity=".4"/></svg>`}
@@ -248,48 +260,40 @@ function posterFruit(){return `<svg viewBox="0 0 640 400" role="img" aria-label=
 
 /* ---------- STATE ---------- */
 const KEY="oralquest-v1";
-let S = {stars:0, readDone:{}, talkDone:{}, warmDone:0, mode:"home", idx:0, qi:0, phase:"prep", prepRunning:false, rubric:{}, pick:0, twist:0};
+let S = {stars:0, readDone:{}, talkDone:{}, mode:"home", readIdx:0, talkIdx:0, qi:0, phase:"prep", prepRunning:false};
 let saved=null; try{saved=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
-function persist(){ try{localStorage.setItem(KEY,JSON.stringify({stars:S.stars,readDone:S.readDone,talkDone:S.talkDone,warmDone:S.warmDone}))}catch(e){} }
+function persist(){ try{localStorage.setItem(KEY,JSON.stringify({stars:S.stars,readDone:S.readDone,talkDone:S.talkDone}))}catch(e){} }
 
 const stage=document.getElementById("stage");
 const toastEl=document.getElementById("toast");
 let tInt=null, tStart=0, tLeft=60;
 
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
-function starSvg(){return `<svg viewBox="0 0 24 24"><path d="M12 2l3 6.6 7 .8-5.2 4.8 1.4 7L12 17.7 5.8 21.2l1.4-7L2 9.4l7-.8z"/></svg>`}
 function toast(msg){toastEl.textContent=msg;toastEl.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>toastEl.classList.remove("show"),1800)}
 function addStars(n){ if(!n)return; S.stars+=n; persist(); document.getElementById("starcount").textContent=S.stars; const b=document.getElementById("starbank"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); toast(n===1?"⭐ 1 star!":`⭐ ${n} stars!`); }
 function stopTimer(){clearInterval(tInt);tInt=null}
 function fmt(sec){const m=Math.floor(sec/60),s=sec%60;return `${m}:${String(s).padStart(2,"0")}`}
 
-function setMode(m){ stopTimer(); S.prepRunning=false; S.mode=m; S.phase="prep"; S.rubric={}; S.qi=0; document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.m===m)); render(); window.scrollTo({top:0}); }
+function setMode(m){ stopTimer(); S.prepRunning=false; S.mode=m; S.phase="prep"; S.qi=0; document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.m===m)); render(); window.scrollTo({top:0}); }
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>setMode(t.dataset.m)));
 
 /* ---------- RENDERERS ---------- */
 function render(){
   stage.classList.remove("pop"); void stage.offsetWidth; stage.classList.add("pop");
-  if(S.mode==="home") renderHome();
-  else if(S.mode==="warm") renderWarm();
-  else if(S.mode==="read") renderRead();
-  else renderTalk();
+  if(S.mode==="read") renderRead();
+  else if(S.mode==="talk") renderTalk();
+  else { S.mode="home"; renderHome(); }
 }
 
 function renderHome(){
   const rd=Object.keys(S.readDone).length, td=Object.keys(S.talkDone).length;
-  const badges=[[5,"First Five"],[15,"Bright Speaker"],[30,"Star Reader"],[50,"Oral Champion"]];
   stage.innerHTML=`
    <p class="eyebrow">Monday's exam · two parts</p>
    <h2>Ready, hero?</h2>
-   <p class="lead">Pick a quest. A grown-up is your examiner and taps the stars. Do a little every day, not everything at once.</p>
+   <p class="lead">Pick a quest. A grown-up is your examiner and taps the star. Do a little every day, not everything at once.</p>
    <div class="home-grid">
-     <button class="quest" data-go="warm"><span class="display">Warm-up</span><p>Wake up your mouth: tongue twisters and feeling voices. 2 minutes.</p><span class="prog">${S.warmDone} rounds done</span></button>
      <button class="quest" data-go="read"><span class="display">Reading Aloud</span><p>Read a story clearly with pauses and expression, just like the exam.</p><span class="prog">${rd} of ${PASSAGES.length} stories done</span></button>
      <button class="quest" data-go="talk"><span class="display">Picture Talk</span><p>Look at a poster, answer the examiner's three questions in full sentences.</p><span class="prog">${td} of ${STIMULI.length} pictures done</span></button>
-   </div>
-   <div class="tips">
-     <h3>Badges</h3>
-     <div class="badges">${badges.map(([n,t])=>`<span class="badge ${S.stars>=n?"won":""}">${S.stars>=n?"🏅":"🔒"} ${t} · ${n}★</span>`).join("")}</div>
    </div>
    <div class="tips">
      <h3>Exam-day secrets</h3>
@@ -303,30 +307,6 @@ function renderHome(){
   stage.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.go)));
 }
 
-/* Warm-up */
-function renderWarm(){
-  const tw=TWISTERS[S.twist%TWISTERS.length];
-  const line=LINES[S.pick%LINES.length], feel=FEELINGS[(S.pick*3+1)%FEELINGS.length];
-  stage.innerHTML=`
-   <p class="eyebrow">Warm-up · 2 minutes</p>
-   <h2>Wake up your voice</h2>
-   <p class="lead">Say the tongue twister three times, slowly then faster. Then read the line the way the feeling says.</p>
-   <div class="twister"><small>Tongue twister · ${tw.sound}</small>${esc(tw.t)}</div>
-   <div class="row"><button class="btn ghost small" id="nextTw">Another twister</button></div>
-   <div class="dice">
-     <div class="die"><span class="label">Say this line</span><span class="display">"${esc(line)}"</span></div>
-     <div class="die feel"><span class="label">Sound…</span><span class="display">${feel}</span></div>
-   </div>
-   <div class="row">
-     <button class="btn ghost" id="roll">Roll again</button>
-     <button class="btn teal" id="doneWarm">I did it! +1 star</button>
-   </div>
-   <details class="parent"><summary>For the examiner</summary><ul><li>Listen for the <b>ending</b> of each word: "jump<b>ed</b>", "cat<b>s</b>", "though<b>t</b>".</li><li>"Three" should not sound like "tree". Tongue between the teeth.</li><li>Feeling voices train expression for Reading Aloud. Exaggerate. Be silly.</li></ul></details>`;
-  stage.querySelector("#nextTw").onclick=()=>{S.twist++;renderWarm()};
-  stage.querySelector("#roll").onclick=()=>{S.pick=Math.floor(Math.random()*64);renderWarm()};
-  stage.querySelector("#doneWarm").onclick=()=>{S.warmDone++;S.pick=Math.floor(Math.random()*64);S.twist++;addStars(1);persist();renderWarm()};
-}
-
 /* Reading Aloud */
 function markup(text){
   return text.split("\n").map(p=>{
@@ -338,19 +318,19 @@ function markup(text){
       if(ch==='?'||ch==='!'){ out+=`<span class="q">${ch}</span><span class="stop"></span>`; continue; }
       out+=esc(ch);
     }
-    out=out.replace(/\b(GO|shouted|whispered|sobbed|furious|groaned|cheered|Delicious|enormous|Careful)\b/g,'<span class="big">$1</span>');
+    out=out.replace(/\b(GO|shouted|exclaimed|gasped|giggled|whispered|sobbed|groaned|cheered|yelled|cried|laughed|sighed|wailed|mumbled|furious|Delicious|enormous|Careful)\b/g,'<span class="big">$1</span>');
     return `<p>${out}</p>`;
   }).join("");
 }
 function renderRead(){
   stopTimer();
-  const p=PASSAGES[S.idx%PASSAGES.length];
+  const p=PASSAGES[S.readIdx%PASSAGES.length];
   const hints=S.hints!==false;
   const body=p.text.join("\n");
   stage.innerHTML=`
-   <p class="eyebrow">Reading Aloud · story ${S.idx%PASSAGES.length+1} of ${PASSAGES.length} ${S.readDone[S.idx%PASSAGES.length]?"· ✓ done":""}</p>
+   <p class="eyebrow">Reading Aloud · story ${S.readIdx%PASSAGES.length+1} of ${PASSAGES.length} ${S.readDone[S.readIdx%PASSAGES.length]?"· ✓ done":""}</p>
    <h2>${esc(p.title)}</h2>
-   <p class="lead" id="readLead">${S.phase==="prep"?"Get ready: read it silently. Find the full stops, the questions and who is talking. Then press Start.":S.phase==="go"?"Read aloud now. Slow, clear, with feeling.":"Examiner: tap what was done well. Each tick is a star."}</p>
+   <p class="lead" id="readLead">${S.phase==="prep"?"Get ready: read it silently. Find the full stops, the questions and who is talking. Then press Start.":S.phase==="go"?"Read aloud now. Slow, clear, with feeling.":"Nice reading. Tap the star button to save it and go to the next story."}</p>
    <div class="ring">
      <div class="timer" id="timer">${S.phase==="prep"?fmt(60):S.phase==="go"?"0:00":fmt(S.elapsed||0)}</div>
      <div>
@@ -367,16 +347,16 @@ function renderRead(){
      <button class="btn ghost small" id="hintBtn">${hints?"Hide reading hints":"Show reading hints"}</button>
      <div class="legend" ${hints?"":"hidden"}><span><i class="pause" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--teal)"></i> tiny pause</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--accent)"></i> stop &amp; breathe</span><span><i style="display:inline-block;width:14px;height:12px;border-radius:3px;background:var(--plum-soft)"></i> someone talking</span></div>
    </div>
-   ${S.phase==="rate"?rubricHtml(READ_RUBRIC):""}
+   ${S.phase==="rate"?`<div class="row" id="doneRow" style="margin-top:14px"><button class="btn" id="doneRead">Done! Next ⭐</button><span class="label">One story, one star</span></div>`:""}
    <div class="row" style="margin-top:12px">
      <button class="btn ghost" id="prevP">◀ Story</button>
      <button class="btn ghost" id="nextP">Story ▶</button>
    </div>
-   <details class="parent"><summary>For the examiner</summary><ul><li>Real exam: about 1 minute to prepare, then read the whole passage. Examiner may say "Please begin."</li><li>Common slips: dropped word endings, no pause at commas, flat voice on "?" and "!", speeding up in the last two lines.</li><li>Praise one thing first, then one thing to fix. Then read it again.</li></ul></details>`;
+   <details class="parent"><summary>For the examiner</summary><ul><li>Real exam: about 1 minute to prepare, then read the whole passage. Examiner may say "Please begin."</li><li>Common slips: dropped word endings, no pause at commas, flat voice on "?" and "!", speeding up in the last two lines.</li></ul></details>`;
   const timer=stage.querySelector("#timer");
   const hb=stage.querySelector("#hintBtn"); hb.onclick=()=>{S.hints=!hints;renderRead()};
-  stage.querySelector("#prevP").onclick=()=>{stopTimer();S.prepRunning=false;S.idx=(S.idx-1+PASSAGES.length)%PASSAGES.length;S.phase="prep";S.rubric={};renderRead()};
-  stage.querySelector("#nextP").onclick=()=>{stopTimer();S.prepRunning=false;S.idx=(S.idx+1)%PASSAGES.length;S.phase="prep";S.rubric={};renderRead()};
+  stage.querySelector("#prevP").onclick=()=>{stopTimer();S.prepRunning=false;S.readIdx=(S.readIdx-1+PASSAGES.length)%PASSAGES.length;S.phase="prep";renderRead()};
+  stage.querySelector("#nextP").onclick=()=>{stopTimer();S.prepRunning=false;S.readIdx=(S.readIdx+1)%PASSAGES.length;S.phase="prep";renderRead()};
   if(S.phase==="prep"){
     const pb=stage.querySelector("#prepBtn");
     const runPrep=()=>{ stopTimer(); pb.disabled=true; timer.textContent=fmt(Math.max(tLeft,0)); if(tLeft<=10)timer.classList.add("warn");
@@ -387,35 +367,27 @@ function renderRead(){
   }
   if(S.phase==="go"){
     tInt=setInterval(()=>{timer.textContent=fmt(Math.floor((Date.now()-tStart)/1000))},250);
-    stage.querySelector("#stopBtn").onclick=()=>{stopTimer();S.elapsed=Math.floor((Date.now()-tStart)/1000);S.phase="rate";S.rubric={};renderRead();stage.querySelector(".rubric")?.scrollIntoView({behavior:"smooth",block:"center"})};
+    stage.querySelector("#stopBtn").onclick=()=>{stopTimer();S.elapsed=Math.floor((Date.now()-tStart)/1000);S.phase="rate";renderRead();stage.querySelector("#doneRow")?.scrollIntoView({behavior:"smooth",block:"center"})};
   }
   if(S.phase==="rate"){
-    stage.querySelector("#againBtn").onclick=()=>{S.prepRunning=false;S.phase="prep";S.rubric={};renderRead()};
-    wireRubric(()=>{ const n=Object.values(S.rubric).filter(Boolean).length; S.readDone[S.idx%PASSAGES.length]=true; addStars(n); S.phase="prep"; S.rubric={}; S.idx=(S.idx+1)%PASSAGES.length; renderRead(); });
+    stage.querySelector("#againBtn").onclick=()=>{S.prepRunning=false;S.phase="prep";renderRead()};
+    stage.querySelector("#doneRead").onclick=()=>{ S.readDone[S.readIdx%PASSAGES.length]=true; addStars(1); S.prepRunning=false; S.phase="prep"; S.readIdx=(S.readIdx+1)%PASSAGES.length; renderRead(); window.scrollTo({top:0,behavior:"smooth"}); };
   }
-}
-function rubricHtml(R){
-  return `<div class="rubric">${R.map(r=>`<button class="check" data-k="${r.k}" aria-pressed="${!!S.rubric[r.k]}"><span class="box">${S.rubric[r.k]?"✓":""}</span><span><b>${r.t}</b><small>${r.s}</small></span></button>`).join("")}</div>
-  <div class="row"><button class="btn" id="award">Give stars &amp; next</button><span class="label" id="awardN">${Object.values(S.rubric).filter(Boolean).length} of ${R.length} ticked</span></div>`;
-}
-function wireRubric(onAward){
-  stage.querySelectorAll(".check").forEach(c=>c.onclick=()=>{ const k=c.dataset.k; S.rubric[k]=!S.rubric[k]; c.setAttribute("aria-pressed",S.rubric[k]); c.querySelector(".box").textContent=S.rubric[k]?"✓":""; stage.querySelector("#awardN").textContent=`${Object.values(S.rubric).filter(Boolean).length} of ${stage.querySelectorAll(".check").length} ticked`; });
-  stage.querySelector("#award").onclick=onAward;
 }
 
 /* Picture Talk */
 function renderTalk(){
-  const st=STIMULI[S.idx%STIMULI.length];
+  const st=STIMULI[S.talkIdx%STIMULI.length];
   const qn=Math.min(S.qi,st.qs.length);
   const rating=qn>=st.qs.length;
   const q=st.qs[Math.min(qn,st.qs.length-1)];
   stage.innerHTML=`
-   <p class="eyebrow">Picture Talk · picture ${S.idx%STIMULI.length+1} of ${STIMULI.length} ${S.talkDone[S.idx%STIMULI.length]?"· ✓ done":""}</p>
+   <p class="eyebrow">Picture Talk · picture ${S.talkIdx%STIMULI.length+1} of ${STIMULI.length} ${S.talkDone[S.talkIdx%STIMULI.length]?"· ✓ done":""}</p>
    <h2>${esc(st.title)}</h2>
-   <p class="lead">${rating?"Examiner: tap what was done well. Each tick is a star.":"Look carefully for 30 seconds. The examiner reads each question aloud. Answer in full sentences."}</p>
+   <p class="lead">${rating?"Great talking. Tap the star button to save it and go to the next picture.":"Look carefully for 30 seconds. The examiner reads each question aloud. Answer in full sentences."}</p>
    <div class="stim">${st.svg()}</div>
    <div class="steps">${st.qs.map((_,i)=>`<i class="${i<qn?"done":i===qn?"on":""}"></i>`).join("")}</div>
-   ${rating?rubricHtml(TALK_RUBRIC):`
+   ${rating?`<div class="row" id="doneRow" style="margin-top:14px"><button class="btn" id="doneTalk">Done! Next ⭐</button><span class="label">One picture, one star</span></div>`:`
    <div class="qcard"><div class="who">Examiner asks · question ${qn+1} of ${st.qs.length}</div><div class="qtext">${esc(q.q)}</div></div>
    <span class="label">Sentence helpers</span>
    <div class="helpers">${q.h.map(h=>`<span class="chip">${esc(h)}</span>`).join("")}</div>
@@ -427,14 +399,14 @@ function renderTalk(){
      <button class="btn ghost small" id="prevS">◀ Picture</button>
      <button class="btn ghost small" id="nextS">Picture ▶</button>
    </div>
-   <details class="parent"><summary>For the examiner</summary><ul><li>Real exam: the same picture is shown during Reading Aloud, then the teacher asks 2 to 3 questions that move from the picture to the child's own life to their opinion.</li><li>If the answer is one word, prompt: <i>"Tell me more."</i> or <i>"Why do you say that?"</i></li><li>Goal answer shape: <b>Answer → because → example</b>. Three sentences.</li><li>Do not correct mid-answer. Note it, praise first, then fix one thing.</li></ul></details>`;
-  stage.querySelector("#prevS").onclick=()=>{S.idx=(S.idx-1+STIMULI.length)%STIMULI.length;S.qi=0;S.rubric={};renderTalk()};
-  stage.querySelector("#nextS").onclick=()=>{S.idx=(S.idx+1)%STIMULI.length;S.qi=0;S.rubric={};renderTalk()};
+   <details class="parent"><summary>For the examiner</summary><ul><li>Real exam: the same picture is shown during Reading Aloud, then the teacher asks 2 to 3 questions that move from the picture to the child's own life to their opinion.</li><li>Goal answer shape: <b>Answer → because → example</b>. Three sentences.</li></ul></details>`;
+  stage.querySelector("#prevS").onclick=()=>{S.talkIdx=(S.talkIdx-1+STIMULI.length)%STIMULI.length;S.qi=0;renderTalk()};
+  stage.querySelector("#nextS").onclick=()=>{S.talkIdx=(S.talkIdx+1)%STIMULI.length;S.qi=0;renderTalk()};
   if(!rating){
-    stage.querySelector("#nextQ").onclick=()=>{S.qi++;renderTalk();if(S.qi<st.qs.length)stage.querySelector(".qcard").scrollIntoView({behavior:"smooth",block:"center"});else stage.querySelector(".rubric").scrollIntoView({behavior:"smooth",block:"center"})};
+    stage.querySelector("#nextQ").onclick=()=>{S.qi++;renderTalk();(S.qi<st.qs.length?stage.querySelector(".qcard"):stage.querySelector("#doneRow"))?.scrollIntoView({behavior:"smooth",block:"center"})};
     const b=stage.querySelector("#backQ"); if(b)b.onclick=()=>{S.qi--;renderTalk()};
   } else {
-    wireRubric(()=>{ const n=Object.values(S.rubric).filter(Boolean).length; S.talkDone[S.idx%STIMULI.length]=true; addStars(n); S.qi=0; S.rubric={}; S.idx=(S.idx+1)%STIMULI.length; renderTalk(); window.scrollTo({top:0,behavior:"smooth"}); });
+    stage.querySelector("#doneTalk").onclick=()=>{ S.talkDone[S.talkIdx%STIMULI.length]=true; addStars(1); S.qi=0; S.talkIdx=(S.talkIdx+1)%STIMULI.length; renderTalk(); window.scrollTo({top:0,behavior:"smooth"}); };
   }
 }
 

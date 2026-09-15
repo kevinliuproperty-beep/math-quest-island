@@ -1076,20 +1076,43 @@ function oracle(q) {
      one-step form of this item ("what number should he have written?") is gone,
      so the old oracle branch is gone with it - a stem in that shape now matches
      nothing here and would be reported as uncovered. */
-  if ((m = text.match(/^(\S+(?: \S+)?) writes (\d) thousands?, 0 hundreds, (\d) tens? and (\d) ones? as (\d+)\. (\S+(?: \S+)?)'s number is (\d+) (more|less) than the number \1 meant to write\. What is \6's number\?$/))) {
+  if ((m = text.match(/^(\S+(?: \S+)?) writes (\d) thousands?, 0 hundreds, (\d) tens? and (\d) ones? as (\d+)\. What is (\d+) (more|less) than the correct number\?$/))) {
     const th = Number(m[2]), t = Number(m[3]), o = Number(m[4]), printed = Number(m[5]);
-    const step = Number(m[7]), sg = m[8] === 'more' ? 1 : -1;
-    if (m[1] === m[6]) return 'p3 zero-fix: both numbers belong to the same child';
+    const step = Number(m[6]), sg = m[7] === 'more' ? 1 : -1;
     if (th === 1 && /1 thousands/.test(text)) return 'p3 zero-fix: "1 thousands" in the stem';
     const squashed = th * 100 + t * 10 + o;
     if (printed !== squashed) return `p3 zero-fix: the stem prints ${printed}, but dropping the zero gives ${squashed}`;
     const meant = th * 1000 + t * 10 + o;
     if (![10, 100, 1000].includes(step)) return `p3 zero-fix: ${step} is not a tens/hundreds/thousands step`;
     const e = meant + sg * step;
-    if (e < 1 || e > 9999) return `p3 zero-fix: the answer ${e} is outside 1..9999`;
+    /* W3, second pass: 2.28% of keys were 3-digit numbers, in the one item whose
+       whole lesson is that the zero stops the number shrinking. */
+    if (e < 1000 || e > 9999) return `p3 zero-fix: the answer ${e} is not a 4-digit number`;
     /* the item is two-step only if the number it asks for is NOT the rebuilt one */
     if (e === meant) return 'p3 zero-fix: the second number equals the rebuilt number, so the item is one step';
+    if (strip(q.q).split(/\s+/).length > 22) return `p3 zero-fix: the stem runs to ${strip(q.q).split(/\s+/).length} words`;
     return near(e, ansNum) ? null : `p3 zero-fix: expected ${e}, got ${ansNum}`;
+  }
+
+  /* COMPARE - which comparison statement is true. Every option is evaluated: one
+     and only one may be a true statement, it must be the key, and the printed
+     signs must split two and two so the sign itself is never the odd one out. */
+  if (/^Which of these is true\?$/.test(text) && (q.choices || []).every(c => /^\d+ [<>] \d+$/.test(strip(c)))) {
+    const st = p3opts(q).map(o => {
+      const p = o.split(' ');
+      return { text: o, l: Number(p[0]), sign: p[1], r: Number(p[2]) };
+    });
+    if (st.length !== 4) return 'p3 compare-true: expected four statements';
+    if (st.some(x => x.l !== st[0].l)) return 'p3 compare-true: the statements are not all about the same number';
+    if (st.some(x => x.l === x.r)) return 'p3 compare-true: a statement compares a number with itself';
+    if (st.some(x => x.l < 1000 || x.l > 9999 || x.r < 1 || x.r > 9999)) return 'p3 compare-true: a printed number is outside scope';
+    const isTrue = x => x.sign === '>' ? x.l > x.r : x.l < x.r;
+    const hits = st.filter(isTrue);
+    if (hits.length !== 1) return `p3 compare-true: ${hits.length} of the four statements are true`;
+    if (hits[0].text !== strip(q.answerText)) return `p3 compare-true: the true statement is "${hits[0].text}" but the key reads "${strip(q.answerText)}"`;
+    const gt = st.filter(x => x.sign === '>').length;
+    if (gt !== 2) return `p3 compare-true: ${gt} of the four statements print ">", so the sign is a tell`;
+    return null;
   }
 
   /* COMPARE - between two numbers. Exactly one option may lie strictly between. */
@@ -1299,21 +1322,19 @@ function oracle(q) {
     return null;
   }
 
-  /* ADD/SUB - error spotting, CORRECT the mistake and MEASURE it. The stem NAMES
-     the slip, so the oracle checks the printed wrong answer really is what that
-     slip produces, and then re-derives the GAP between it and the true answer.
-     W4, 2026-09-15: the old one-step form ("what is the correct answer?") is gone
-     and its oracle branch with it - a − b is now a distractor, and the oracle
-     fails if the key is that stop-after-step-1 number. */
-  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) [−-] (\d+)\. In every column (?:he|she) takes the smaller digit away from the bigger one, and gets (\d+)\. How much bigger is (?:his|her) answer than the correct one\?$/))) {
+  /* ADD/SUB - error spotting, CORRECT the mistake. The stem NAMES the slip, so the
+     oracle checks the printed wrong answer really is what that slip produces.
+     Second pass, 2026-09-15: the v2 "how much bigger is her answer" form and its
+     oracle branch are both gone - that rebuild was answered on 97.67% of draws by
+     picking the smallest option. A stem in the v2 shape now matches nothing here
+     and would be reported as uncovered. The magnitude-rank gate below is what
+     keeps this form honest instead. */
+  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) [−-] (\d+)\. In every column (?:he|she) takes the smaller digit away from the bigger one, and gets (\d+)\. What is the correct answer\?$/))) {
     const a = Number(m[1]), b = Number(m[2]), claim = Number(m[3]), e = a - b;
     if (p3smallFromBig(a, b) !== claim) return `p3 sub-error: the stem says small-from-big and prints ${claim}, but that slip gives ${p3smallFromBig(a, b)}`;
     if (claim === e) return `p3 sub-error: the "wrong" answer ${claim} is the correct one, so the item contradicts itself`;
     if (e < 1) return `p3 sub-error: ${a} − ${b} is not a positive whole number`;
-    if (claim < e) return `p3 sub-error: the slip's ${claim} is smaller than the correct ${e}, so "how much bigger" has no answer`;
-    const gapv = claim - e;
-    if (near(e, ansNum)) return `p3 sub-error: the key is ${e}, which is only the subtraction - the item asks how much bigger ${claim} is`;
-    return near(gapv, ansNum) ? null : `p3 sub-error: expected ${gapv}, got ${ansNum}`;
+    return near(e, ansNum) ? null : `p3 sub-error: expected ${e}, got ${ansNum}`;
   }
 
   /* ADD/SUB - two-step word problem */
@@ -2644,6 +2665,100 @@ for (const g of GENS) {
   }
 }
 
+/* ---------- MAGNITUDE-RANK GATE (second-pass KILL, 2026-09-15) --------------
+   The v2 gSubError rebuild shipped a question that "pick the smallest number on
+   the screen" answered on 48,835 of 50,000 draws. Nothing here could see it:
+   RULE 1 measures option FORM, RULE C measures the key's LENGTH against the
+   longest distractor, RULE D caps option length - all three count characters,
+   and every option in that item was four characters or fewer. The tell was
+   MAGNITUDE, and the harness had no ruler for it.
+
+   This is the ruler. For every numeric four-option MC bank in the topic it draws
+   2,000 items and tallies where the key sits among the four printed numbers by
+   SIZE. A bank fails if any one rank takes more than 45% of its draws (chance is
+   25%), or if "pick the smallest" or "pick the largest" clears 40%.
+
+   EXEMPT, and the exemption is named in the printed table: a stem that asks for
+   the greatest, the smallest, or the number between two others. There the four
+   options ARE the data and their ordering IS the question - "the greatest is the
+   largest one" is the mathematics, not a shortcut past it. Nothing else is
+   exempt, including the other optionSet banks.
+
+   The gate carries its own negative control: the v2 gSubError option set is
+   rebuilt here from its own arithmetic and run through the same ruler, and the
+   harness fails if that does NOT come out red. --- */
+const RANK_N = 2000;
+const RANK_CAP = 0.45, EXTREME_CAP = 0.40;
+const MAGNITUDE_EXEMPT = /\b(greatest|smallest|between)\b/;
+const rankRows = [];
+function rankOf(q) {
+  const opts = (q.choices || []).map(strip);
+  if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o))) return null;
+  const key = Number(strip(q.answerText));
+  if (!Number.isFinite(key)) return null;
+  const sorted = opts.map(Number).sort((a, b) => a - b);
+  const r = sorted.indexOf(key);
+  return r < 0 ? null : r;
+}
+function rankBank(draw) {
+  const tally = [0, 0, 0, 0];
+  let seen = 0, stem = '';
+  for (let i = 0; i < RANK_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return { tally, seen, stem, threw: e.message }; }
+    const r = rankOf(q);
+    if (r === null) continue;
+    if (!stem) stem = strip(q.q);
+    tally[r]++; seen++;
+  }
+  return { tally, seen, stem };
+}
+function rankVerdict(row) {
+  if (!row.seen) return null;
+  const f = row.tally.map(t => t / row.seen);
+  if (f[0] > EXTREME_CAP) return `"pick the smallest" answers it on ${(100 * f[0]).toFixed(1)}% of draws`;
+  if (f[3] > EXTREME_CAP) return `"pick the largest" answers it on ${(100 * f[3]).toFixed(1)}% of draws`;
+  for (let r = 0; r < 4; r++) if (f[r] > RANK_CAP) return `the key is rank ${r} of 4 by size on ${(100 * f[r]).toFixed(1)}% of draws`;
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = rankBank(g.fn);
+  if (!row.seen) continue;                       /* not a numeric four-option bank */
+  row.name = g.name; row.lvl = g.level;
+  row.exempt = MAGNITUDE_EXEMPT.test(row.stem);
+  row.err = row.exempt ? null : rankVerdict(row);
+  rankRows.push(row);
+  if (row.err) failures++;
+}
+/* the negative control: the v2 gSubError option set, rebuilt from its own
+   arithmetic so the control does not depend on the topic file still containing
+   the defect. It must come out RED. */
+let rankControl = 'the v2 gSubError option set was not rejected by the rank gate';
+{
+  const PW = [1000, 100, 10, 1];
+  const dg = n => [0, 1, 2, 3].map(i => Math.floor(n / PW[i]) % 10);
+  const sfb = (a, b) => { const A = dg(a), B = dg(b); let o = 0; for (let i = 0; i < 4; i++) o += Math.abs(A[i] - B[i]) * PW[i]; return o; };
+  const bcols = (a, b) => { const A = dg(a), B = dg(b), o = []; let br = 0; for (let i = 3; i >= 0; i--) { const t = A[i] - br; if (t < B[i]) { o.push(i); br = 1; } else br = 0; } return o; };
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v2SubError = () => {
+    for (let g = 0; g < 400; g++) {
+      const a = rnd(2000, 9999), b = rnd(1000, a - 1000);
+      const key = a - b, claim = sfb(a, b), cols = bcols(a, b);
+      if (!cols.length || claim <= key) continue;
+      const gap = claim - key, far = gap + PW[cols[0]] * 10;
+      const opts = [gap, key, claim, far];
+      if (new Set(opts).size !== 4 || opts.some(v => v < 1 || v > 9999)) continue;
+      return { q: 'v2 gSubError control', choices: opts.map(String), answerText: String(gap), correct: 0 };
+    }
+    return { q: 'v2 gSubError control', choices: ['1', '2', '3', '4'], answerText: '2', correct: 0 };
+  };
+  const ctl = rankBank(v2SubError);
+  const verdict = rankVerdict(ctl);
+  if (verdict) rankControl = `the v2 gSubError rebuild goes red - ${verdict}`;
+  else failures++;
+}
+
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
 const setRows = [];
 for (const tid of Object.keys(TOPICS)) {
@@ -2755,6 +2870,21 @@ console.log('-'.repeat(84));
 for (const r of rows) {
   console.log(pad(r.topic, 12) + pad(r.name, 18) + pad(r.skill, 12) + pad(r.n, 7) + pad(r.distinct, 10) + pad(r.cov + '%', 9) + (r.err ? 'FAIL  ' + r.err : 'pass'));
 }
+if (rankRows.length) {
+  console.log(`\nMAGNITUDE RANK  p3numbers, ${RANK_N} draws per numeric bank  (any rank <= ${Math.round(RANK_CAP * 100)}%, smallest/largest < ${Math.round(EXTREME_CAP * 100)}%)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('SMALLEST', 10) + pad('2nd', 8) + pad('3rd', 8) + pad('LARGEST', 9) + 'RESULT');
+  console.log('-'.repeat(84));
+  for (const r of rankRows) {
+    const f = r.tally.map(t => (100 * t / r.seen).toFixed(1) + '%');
+    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.seen, 7) + pad(f[0], 10) + pad(f[1], 8) + pad(f[2], 8) + pad(f[3], 9) +
+      (r.err ? 'FAIL  ' + r.err : (r.exempt ? 'exempt: the ordering of the options IS the question' : 'pass')));
+  }
+  const gated = rankRows.filter(r => !r.exempt).length;
+  console.log('');
+  if (rankRows.every(r => !r.err)) console.log(`ok   magnitude rank: ${gated} numeric banks inside ${Math.round(RANK_CAP * 100)}% / ${Math.round(EXTREME_CAP * 100)}%, ${rankRows.length - gated} comparison anchors exempt`);
+  console.log(`${/goes red/.test(rankControl) ? 'ok  ' : 'FAIL'} magnitude negative control: ${rankControl}`);
+}
+
 console.log('');
 for (const s of setRows) console.log(`${s.ok ? 'ok  ' : 'FAIL'} buildSetFor(${s.tid})  30 x 3 levels${s.note ? '  ' + s.note : ''}`);
 

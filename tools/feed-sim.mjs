@@ -133,7 +133,8 @@ const liveTopics = grade => (MQI.levelNodes[grade] || [])
   .filter(id => MQI.mapNodes.some(n => n.id === id && n.status === 'live') && TOPICS[id]);
 
 /* ---------- one session, through the real selection code ---------- */
-function session(tid) {
+function session(tid, acc) {
+  const hit = acc === undefined ? ACC : acc;
   const feed = HAS_FEED ? MQI.createFeed(tid) : null;
   const qset = HAS_FEED ? null : MQI.buildSetFor(tid, LEN);   /* the shipped-baseline path */
   const out = [];
@@ -144,7 +145,7 @@ function session(tid) {
     else q = (qset[level] && qset[level].length) ? qset[level].shift() : MQI.makeQuestionFor(tid, level);
     out.push({ gen: q.__gen, skill: q.skill, shape: SHAPE(q), pool: q.level || level });
     /* the app's mastery climb, verbatim: 3 right in a row up, 2 wrong in a row down */
-    if (rnd() < ACC) { rightRow++; wrongRow = 0; if (rightRow >= 3 && level < 3) { level++; rightRow = 0; } }
+    if (rnd() < hit) { rightRow++; wrongRow = 0; if (rightRow >= 3 && level < 3) { level++; rightRow = 0; } }
     else { wrongRow++; rightRow = 0; if (wrongRow >= 2 && level > 1) { level--; wrongRow = 0; } }
   }
   return out;
@@ -194,6 +195,64 @@ console.log('------|---------------|------------|------------|----------|-------
 const rows = GRADES.map(measure);
 for (const r of rows) {
   console.log(`${r.grade}    | ${f3(r.sameTemplate).padStart(13)} | ${f3(r.sameShape).padStart(10)} | ${f3(r.sameSkill).padStart(10)} | ${r.meanRun.toFixed(2).padStart(8)} | ${String(r.worstRun).padStart(9)} | ${String(r.worstSkillRun).padStart(15)} | ${r.pool.map(f3).join(' / ')}`);
+}
+
+/* ---------- the struggling child, per topic. REPORT ONLY ----------------------
+   Sweep p3numbers Refutation (second pass, 2026-09-15), W2: the table above is a
+   GRADE aggregate at one accuracy. measure() picks a random live topic per seed,
+   so a per-topic number never appears; and 0.8 accuracy keeps the simulated child
+   near the top of the climb, so pool 1 is barely sampled. The child who is
+   struggling lives somewhere else entirely: at 0.45 accuracy the climb sends him
+   DOWN, p3numbers served pool 1 for 79.5% of a session, and the single generator
+   on pool 1's `compare` peg came round 5.25 times in 30 items, worst 8 - with one
+   masked shape, and invisible to every line above, which measures only ADJACENT
+   repeats.
+
+   So this section runs every live topic on its own at 0.45 and prints the busiest
+   generator in a session. It gates nothing: the thresholds above were set against
+   measured behaviour at 0.8 and are not re-argued here. It is the ruler that was
+   missing, and a topic whose busiest pool-1 generator comes round five times a
+   session is a topic to look at, not a failure to stop the build. --- */
+{
+  const LOW = 0.45;
+  console.log(`\nstruggling-child pass  accuracy ${LOW}, ${SEEDS} seeds x ${LEN}, per topic  (REPORT ONLY, nothing here gates)\n`);
+  console.log('TOPIC           | pools 1/2/3         | same template | worst run | busiest generator per session');
+  console.log('----------------|---------------------|---------------|-----------|------------------------------');
+  const done = new Set();
+  for (const grade of GRADES) {
+    for (const tid of liveTopics(grade)) {
+      if (done.has(tid)) continue;              /* a node can hang off two grades */
+      done.add(tid);
+      let pairs = 0, sameGen = 0, total = 0, worstRun = 1;
+      const pool = { 1: 0, 2: 0, 3: 0 };
+      const counts = new Map();                   /* gen id -> per-session counts */
+      for (let s = 0; s < SEEDS; s++) {
+        setSeed(4000037 + s * 7919);
+        const items = session(tid, LOW);
+        const seen = new Map();
+        let run = 1;
+        for (let i = 0; i < items.length; i++) {
+          const q = items[i];
+          pool[q.pool] = (pool[q.pool] || 0) + 1; total++;
+          seen.set(q.gen, (seen.get(q.gen) || 0) + 1);
+          if (i === 0) continue;
+          pairs++;
+          if (items[i - 1].gen === q.gen) { sameGen++; run++; } else { worstRun = Math.max(worstRun, run); run = 1; }
+        }
+        worstRun = Math.max(worstRun, run);
+        for (const [id, c] of seen) {
+          if (!counts.has(id)) counts.set(id, { n: 0, worst: 0 });
+          const r = counts.get(id); r.n += c; r.worst = Math.max(r.worst, c);
+        }
+      }
+      let top = null;
+      for (const [id, r] of counts) if (!top || r.n > top.r.n) top = { id, r };
+      const name = top ? ((GEN_OF.get(top.id) || {}).name || top.id) : '-';
+      console.log(`${tid.padEnd(15)} | ${[pool[1], pool[2], pool[3]].map(v => f3(v / total)).join(' / ')} | ` +
+        `${f3(sameGen / pairs).padStart(13)} | ${String(worstRun).padStart(9)} | ` +
+        `${name} ${(top ? top.r.n / SEEDS : 0).toFixed(2)}, worst ${top ? top.r.worst : 0}`);
+    }
+  }
 }
 
 if (!GATE) process.exit(0);

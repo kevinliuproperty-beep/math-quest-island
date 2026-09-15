@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260915-e6bca5a */
-/* ENGINE_BUILD_META {"stamp":"20260915-e6bca5a","date":"2026-09-15","sha":"e6bca5a","dirty":false,"payloadHash":"775ab9fdd888e02f","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260915-e6bca5a","date":"2026-09-15","sha":"e6bca5a","dirty":false,"payloadHash":"775ab9fdd888e02f","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260915-b2d1275 */
+/* ENGINE_BUILD_META {"stamp":"20260915-b2d1275","date":"2026-09-15","sha":"b2d1275","dirty":false,"payloadHash":"412822f28d42fbc4","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260915-b2d1275","date":"2026-09-15","sha":"b2d1275","dirty":false,"payloadHash":"412822f28d42fbc4","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -1215,8 +1215,22 @@ var buildSetFor = MQI.buildSetFor;
  * NAMED misconceptions, and the draw is rejected (optsOk) unless all three are
  * positive, whole and distinct from the key and from each other - so q.authored
  * is stamped on every draw and finishNum's padding branch never fires.
+ * Every WORD-ANSWER item goes through mcText, which stamps q.optionSet with the
+ * four option strings the generator authored; the harness fails any draw that
+ * ships an option outside that set (refutation fix 2026-09-15, WOUND 2 - the
+ * nine word-answer banks used to declare nothing at all, so 20,000 of 60,000
+ * draws sat outside the contract, and two of them padded arithmetically).
+ * All 30 generators now declare their options, q.authored or q.optionSet, and
+ * the p2 gate in tools/gen-sanity.mjs asserts that there is no thirty-first way.
  * Every stem is re-derived from its RENDERED text by an oracle in
  * tools/gen-sanity.mjs; nothing is trusted from the generator's own answerText.
+ *
+ * SCOPE IS NOW ASSERTED, NOT SCANNED (refutation 2026-09-15, KILLS 1 and 2).
+ * p2Gates() in tools/gen-sanity.mjs reads every multiplication and division
+ * printed in a stem, an option or an explanation and fails the build unless one
+ * factor is a 2/3/4/5/10 table and the other is 1-10, and fails any number above
+ * 1000 anywhere. Two generators used to leave the five tables - gDivShareP2 in
+ * 5.6% of draws and gDivCheckP2 in 10.7% - and nothing caught them.
  */
 (function () {
   const G = MQI.gen;
@@ -1262,13 +1276,29 @@ function mcNum(stem, extra, correct, cands, unit, explain){
 }
 /* Word-answer MC (concept checks, error diagnosis, fact families). Every option
    is written in the SAME coarse shape so the key is never the odd one out -
-   the format-tell rule the depth pilot's second refuter added. */
+   the format-tell rule the depth pilot's second refuter added.
+
+   REFUTATION FIX (2026-09-15, WOUND 2): the nine word-answer banks shipped with
+   no distractor-identity declaration at all, so 20,000 of 60,000 draws sat
+   outside the contract the numeric banks meet through q.authored. Every draw now
+   stamps q.optionSet - the four option strings the generator AUTHORED - and
+   tools/gen-sanity.mjs fails any draw that ships an option outside that set, or
+   a set with a duplicate in it. Nothing here pads: every caller hands over three
+   named, distinct wrong options and the draw is rejected otherwise. */
 function mcText(stem, extra, correctText, wrongs, explain){
-  const opts = shuffle([correctText].concat(wrongs.slice(0, 3)));
+  const set = [correctText].concat(wrongs.slice(0, 3));
+  const opts = shuffle(set.slice());
   return { q: stem, extra: extra || '', choices: opts, correct: opts.indexOf(correctText),
-           explain: explain, answerText: correctText };
+           explain: explain, answerText: correctText, optionSet: set };
 }
 const uniq4 = arr => new Set(arr).size === 4;
+/* The five P2 times tables (MOE Oct 2025 P2, PDF p.35). A multiplication is in
+   scope when ONE factor is one of these and the other is 1-10; a division is in
+   scope when it is that multiplication read backwards. Asserted on every printed
+   fact by the p2 scope gate in tools/gen-sanity.mjs (refutation 2026-09-15). */
+const P2_TABLES = new Set([2, 3, 4, 5, 10]);
+const inTables = (x, y) => (P2_TABLES.has(x) && y >= 1 && y <= 10) ||
+                           (P2_TABLES.has(y) && x >= 1 && x <= 10);
 /* Prose helpers. A parent reads the explanation ALOUD to a seven-year-old, so
    "the 3th count" and "1 tens" are defects, not cosmetics. */
 const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th'
@@ -1394,11 +1424,21 @@ function gBondError(){
            claim !== T - a && claim !== a && optsOk(T - a, cands)));
   const k = kid();
   const key = T - a;
+  /* REFUTATION FIX (2026-09-15, WOUND 5): the explanation named a slip that
+     cannot have happened in 39.2% of draws. Every making-20 draw has a
+     SINGLE-DIGIT a (a larger one is rejected because the claim would collide
+     with a distractor), and 1 has no tens to take away - what actually happened
+     is that a was added instead of subtracted. The sentence is now phrased from
+     the digits of the draw, the way gBonds already branches its own slip line. */
+  const slip = a >= 10
+    ? k[0] + ' took the tens away and then ADDED the ' + r + ' back instead of taking it away too.'
+    : k[0] + ' ADDED the ' + a + ' instead of taking it away, which is why the check overshoots by ' +
+      (2 * a) + '.';
   return mcNum(k[0] + ' says ' + T + ' − ' + a + ' = ' + claim + '. ' + k[1] + ' checked it by working out ' +
     a + ' + ' + claim + ' = ' + (a + claim) + '. <b>What should ' + T + ' − ' + a + ' be?</b>', '',
     key, cands, '',
     'The check is what shows the mistake: ' + a + ' + ' + claim + ' = ' + (a + claim) + ', not ' + T +
-    '. ' + k[0] + ' took the tens away and then ADDED the ' + r + ' back instead of taking it away too. ' +
+    '. ' + slip + ' ' +
     T + ' − ' + a + ' = ' + key + ', and the check works: ' + a + ' + ' + key + ' = ' + T + '.');
 }
 
@@ -1434,7 +1474,16 @@ function gBondWord(){
    Word answers, all four written to the same pattern so the key is never the
    odd one out. The child must add first and only then judge. */
 function gBondDiagnose(){
-  let T = 100, A = 30, B = 80, off = 10, g = 0;
+  /* REFUTATION FIX (2026-09-15, WOUND 2): this bank used to fall through to an
+     arithmetic padding loop (S ± 1, S ± 2, …) whenever the named alternates did
+     not survive the 1000 ceiling, which is exactly the unauthored distractor the
+     numeric banks are forbidden from shipping. The wrong options are now three
+     NAMED slips - never added at all, dropped a carry, measured the gap from the
+     wrong end - and a draw that cannot field three of them is thrown away. */
+  const word = dd => dd > 0 ? 'too many' : 'too few';
+  const lineFor = (sum, whole) =>
+    'They make ' + sum + ', which is ' + Math.abs(sum - whole) + ' ' + word(sum - whole) + '.';
+  let T = 100, A = 30, B = 80, off = 10, wrongs = [], g = 0;
   do {
     T = pick([100, 1000]);
     const step = T === 1000 ? 50 : 5;
@@ -1448,24 +1497,22 @@ function gBondDiagnose(){
     if (T === 1000) off = -off;
     A = step * ri(1, Math.floor((T * 0.7) / step));
     B = T + off - A;
-    g++;
-  } while (g < 400 && !(A > 0 && B > 0 && off !== 0 && A + B === T + off && A <= 1000 && B <= 1000));
-  const S = A + B;
-  const word = d => d > 0 ? 'too many' : 'too few';
-  const line = (sum) => 'They make ' + sum + ', which is ' + Math.abs(sum - T) + ' ' + word(sum - T) + '.';
-  const key = line(S);
-  const d0 = Math.abs(off);
-  const alt = [S - d0, S - 2 * d0, S + d0, S + 2 * d0]
-    .filter(v => v > 0 && v !== S && v !== T && v <= 1000);
-  const wrongs = ['They make ' + T + ', so nothing is wrong.'];
-  for (const v of alt){ if (wrongs.length < 3 && wrongs.indexOf(line(v)) < 0) wrongs.push(line(v)); }
-  let pad = 1;
-  while (wrongs.length < 3 && pad < 60){
-    for (const v of [S - pad, S + pad]){
-      if (wrongs.length < 3 && v > 0 && v !== T && v !== S && v <= 1000 && wrongs.indexOf(line(v)) < 0) wrongs.push(line(v));
+    wrongs = [];
+    if (A > 0 && B > 0 && off !== 0 && A + B === T + off && A <= 1000 && B <= 1000){
+      const S0 = A + B, d0 = Math.abs(off), carry = T === 1000 ? 100 : 10;
+      const seen = new Set([S0, T]);
+      const named = [S0 - carry, S0 + carry, S0 - d0, S0 + d0, S0 - 2 * d0, S0 + 2 * d0];
+      wrongs = ['They make ' + T + ', so nothing is wrong.'];
+      for (const v of named){
+        if (wrongs.length >= 3) break;
+        if (v > 0 && v <= 1000 && !seen.has(v)) { seen.add(v); wrongs.push(lineFor(v, T)); }
+      }
+      if (wrongs.length !== 3) wrongs = [];
     }
-    pad++;
-  }
+    g++;
+  } while (g < 400 && wrongs.length !== 3);
+  const S = A + B;
+  const key = lineFor(S, T);
   const k = kid();
   return mcText(k[0] + ' says ' + A + ' + ' + B + ' = ' + T + '. <b>What is wrong?</b>', '',
     key, wrongs,
@@ -1597,11 +1644,20 @@ function gAddSubInverse(){
     'sense check a seven-year-old can make on their own.');
 }
 
-/* FORMAT 2.7 - error spotting, correct the mistake (pool 3, 2 steps).
+/* FORMAT 2.7 - error spotting, DIAGNOSE AND CORRECT (pool 3, 2 steps).
    The named misconception is the commonest column-subtraction bug in P2: taking
    the SMALLER digit from the LARGER in each column instead of renaming.
    The oracle re-derives the printed claim from that rule and fails if the claim
-   is not actually what that mistake produces. */
+   is not actually what that mistake produces.
+
+   REFUTATION FIX (2026-09-15, WOUND 3): the question used to be "What is a − b?"
+   - a bare subtraction in 2,000 of 2,000 draws, so a child who ignored the story
+   got the key in one operation and the slot counted as ONE step, not two. Each
+   option now carries BOTH halves - the slip that was made and the result it
+   gives - so the item cannot be answered without doing the diagnosis as well as
+   the arithmetic, the way gPeriError earned its two steps in the depth pilot.
+   optsOk still binds: the four printed results are distinct positive whole
+   numbers, so no two options can print the same answer. */
 function gAddSubError(){
   let a = 52, b = 27, claim = 35, cands = [], g = 0;
   do {
@@ -1612,9 +1668,14 @@ function gAddSubError(){
   } while (g < 400 && !((b % 10) > (a % 10) && Math.floor(a / 10) > Math.floor(b / 10) &&
            claim !== a - b && optsOk(a - b, cands)));
   const k = kid();
-  return mcNum(k[0] + ' works out ' + a + ' − ' + b + ' in columns and gets ' + claim +
-    '. <b>What is ' + a + ' − ' + b + '?</b>', '',
-    a - b, cands, '',
+  const tensOnly = (Math.floor(a / 10) - Math.floor(b / 10)) * 10;
+  const say = (slip, n) => slip + ' ' + a + ' − ' + b + ' = ' + n + '.';
+  return mcText(k[0] + ' works out ' + a + ' − ' + b + ' in columns and gets ' + claim +
+    '. <b>What went wrong, and what is ' + a + ' − ' + b + '?</b>', '',
+    say('The ones were subtracted the wrong way round.', a - b),
+    [say('Nothing went wrong; the working is correct.', claim),
+     say('A ten was renamed when none was needed.', a - b - 10),
+     say('The ones column was skipped altogether.', tensOnly)],
     'In the ones column ' + (a % 10) + ' − ' + (b % 10) + ' will not go, so ' + k[0] +
     ' turned it round and did ' + (b % 10) + ' − ' + (a % 10) + ' instead. That is the mistake. Rename ' +
     'one ten instead: ' + (a % 10) + ' becomes ' + ((a % 10) + 10) + ' ones, ' + ((a % 10) + 10) + ' − ' +
@@ -1736,11 +1797,16 @@ function gMulRepeatAdd(){
     'are worth knowing by heart.');
 }
 
-/* FORMAT 3.6 - error spotting, correct the mistake (pool 3, 2 steps).
+/* FORMAT 3.6 - error spotting, DIAGNOSE AND CORRECT (pool 3, 2 steps).
    The named misconception: skip counting for the answer but saying one number
    too many. The stem PRINTS the count, and the oracle checks the printed count
    really is a, 2a, ... (b+1)a and really does end on the claim - so the item can
-   never contradict itself the way the pilot's gLError once did. */
+   never contradict itself the way the pilot's gLError once did.
+
+   REFUTATION FIX (2026-09-15, WOUND 3): the question used to be "What is a × b?"
+   - a bare table fact in 2,000 of 2,000 draws, answerable without reading the
+   story at all, so the slot was ONE step. Each option now names the slip AND
+   gives the result it produces, so both halves are forced. */
 function gMulError(){
   let a = 4, b = 3, cands = [], g = 0;
   do {
@@ -1751,9 +1817,14 @@ function gMulError(){
   const seq = Array.from({ length: b + 1 }, (_, i) => a * (i + 1));
   const claim = seq[seq.length - 1];
   const k = kid();
-  return mcNum(k[0] + ' works out ' + a + ' × ' + b + ' by counting in ' + a + 's: ' + seq.join(', ') +
-    '. ' + k[1] + ' says ' + a + ' × ' + b + ' = ' + claim + '. <b>What is ' + a + ' × ' + b + '?</b>', '',
-    a * b, cands, '',
+  const say = (slip, n) => slip + ' ' + a + ' × ' + b + ' = ' + n + '.';
+  return mcText(k[0] + ' works out ' + a + ' × ' + b + ' by counting in ' + a + 's: ' + seq.join(', ') +
+    '. ' + k[1] + ' says ' + a + ' × ' + b + ' = ' + claim +
+    '. <b>What went wrong, and what is ' + a + ' × ' + b + '?</b>', '',
+    say('One count too many was said.', a * b),
+    [say('Nothing went wrong; the count is right.', claim),
+     say('One count too few was said.', a * (b - 1)),
+     say('The two numbers were added, not counted.', a + b)],
     'Count the numbers ' + k[0] + ' said, not the size of them: there are ' + (b + 1) + ' of them, but ' +
     a + ' × ' + b + ' needs only ' + b + ' of them. Stop at the ' + ord(b) + ': ' + a + ' × ' + b + ' = ' +
     (a * b) + '. Touching a finger for each count is the fix - one finger per group.');
@@ -1824,12 +1895,20 @@ function gDivFamilyP2(){
 const SHARE_CTX = [['stickers', 'children'], ['curry puffs', 'plates'],
                    ['shells', 'jars'], ['name tags', 'tables']];
 function gDivShareP2(){
+  /* SCOPE (refutation 2026-09-15, KILL 1): step 1 is always a table fact, but
+     step 2 is want x each, and with gN = 10 that put BOTH factors outside the
+     five P2 tables in 5.6% of draws - "9 x 7 = 63" was printed in the
+     explanation and 63 was the answer key. The draw is now rejected unless one
+     of the two factors is itself a P2 table (the other is 1-10 by construction),
+     so the whole item stays inside the 2/3/4/5/10 tables end to end. Asserted by
+     the p2 scope gate in tools/gen-sanity.mjs, not just scanned. */
   let gN = 5, each = 4, want = 2, cands = [], g = 0;
   do {
     gN = pick([3, 4, 5, 10]); each = ri(2, 10); want = ri(2, gN - 1);
     cands = [each, gN * each - want, want * gN];
     g++;
-  } while (g < 400 && !(gN > 2 && want < gN && optsOk(want * each, cands)));
+  } while (g < 400 && !(gN > 2 && want < gN && inTables(want, each) &&
+           optsOk(want * each, cands)));
   const c = pick(SHARE_CTX), k = kid();
   const total = gN * each, key = want * each;
   return mcNum(k[0] + ' shares ' + total + ' ' + c[0] + ' equally among ' + gN + ' ' + c[1] +
@@ -1867,30 +1946,66 @@ function gDivGroupWord(){
    (pool 3, 2 steps). Word answers, all four the same shape: a verdict plus a
    quotient. Only one is true, and the child has to do both halves. */
 function gDivCheckP2(){
-  let d = 4, quot = 6, claim = 8, g = 0;
+  /* REFUTATION FIX (2026-09-15) - KILL 2 and WOUND 1, three defects in one bank:
+     - SCOPE. claim was bounded only by claim <= 12, so the stem printed a TRUE
+       multiplication outside the five P2 tables in 10.7% of draws ("4 × 11 = 44",
+       "10 × 12 = 120") and handed a seven-year-old a division answer of 11 or 12.
+       The claim is now 2-10 and the divisor is a P2 table, so the printed check
+       is always a table fact and so is every quotient on screen.
+     - "The answer is correct." was the key in 0 of 2,000 draws, because the draw
+       forced claim !== quot. It is now the key in about ONE DRAW IN FOUR, and
+       when it is, the printed check really does land on the total.
+     - the two spare distractors were counted up from 1, so they printed a
+       quotient of 3 or less in 2,000 of 2,000 draws and the key was the only
+       plausible number in 80.9% of them - the gLPerimDiff class in a value
+       pattern the coarse format-tell rule cannot see. The wrong quotients are now
+       drawn from the same 2-10 band as the key and forced to STRADDLE it, and
+       every option states the verdict its own quotient implies, so no option can
+       be picked out by its value or by its wording. The oracle asserts both. */
+  const rightKey = Math.random() < 0.25;
+  let d = 4, quot = 6, claim = 6, others = [], g = 0;
   do {
-    d = pick([2, 3, 4, 5, 10]); quot = ri(2, 10);
-    const off = pick([1, 2, 3]);
-    claim = Math.random() < 0.5 ? quot + off : quot - off;
+    d = pick([2, 3, 4, 5, 10]);
+    quot = ri(3, 9);                  /* leaves room for a wrong quotient on BOTH sides */
+    claim = rightKey ? quot : quot + pick([1, 2, 3]) * (Math.random() < 0.5 ? 1 : -1);
+    others = [];
+    if (claim >= 2 && claim <= 10){
+      const pool = [];
+      for (let n = 2; n <= 10; n++) if (n !== quot && n !== claim) pool.push(n);
+      for (let t = 0; t < 40 && others.length !== 3; t++){
+        const s = shuffle(pool.slice()).slice(0, rightKey ? 3 : 2);
+        const cand = rightKey ? s : [claim].concat(s);
+        const all = cand.concat([quot]);
+        /* (a) the key's quotient is never the only plausible number - a wrong
+           quotient sits above it and another below it; (b) both direction words
+           appear, so the wording alone cannot settle it either. */
+        if (cand.length === 3 &&
+            Math.min.apply(null, cand) < quot && Math.max.apply(null, cand) > quot &&
+            Math.min.apply(null, all) < claim && Math.max.apply(null, all) > claim) others = cand;
+      }
+    }
     g++;
-  } while (g < 400 && !(claim > 0 && claim !== quot && claim <= 12));
+  } while (g < 400 && others.length !== 3);
+  if (others.length !== 3){ d = 5; quot = 6; claim = rightKey ? 6 : 8; others = rightKey ? [4, 7, 9] : [8, 4, 9]; }
   const T = d * quot;
-  const dir = claim > quot ? 'too big' : 'too small';
-  const other = claim > quot ? 'too small' : 'too big';
-  const line = (verdict, n) => 'The answer is ' + verdict + '. ' + T + ' ÷ ' + d + ' = ' + n + '.';
-  const key = line(dir, quot);
-  const spare = [];
-  for (let n = 1; n <= 14 && spare.length < 2; n++){ if (n !== quot && n !== claim) spare.push(n); }
+  /* every option is internally coherent: it asserts a quotient and the verdict
+     that quotient implies about the claim. Exactly one asserts the true one, and
+     exactly one (the n = claim option) reads "correct" - the key in the
+     rightKey draws and a distractor in the others. */
+  const verdict = n => claim > n ? 'too big' : (claim < n ? 'too small' : 'correct');
+  const line = n => 'The answer is ' + verdict(n) + '. ' + T + ' ÷ ' + d + ' = ' + n + '.';
+  const key = line(quot);
   const k = kid();
   return mcText(k[0] + ' works out ' + T + ' ÷ ' + d + ' and gets ' + claim + '. ' + k[1] + ' checks: ' +
     d + ' × ' + claim + ' = ' + (d * claim) + '. <b>What does the check tell ' +
     (k[1] === 'He' ? 'him' : 'her') + '?</b>', '',
-    key,
-    [line('correct', claim), line(other, spare[0]), line(dir, spare[1])],
+    key, others.map(line),
     'The check is the proof: ' + d + ' × ' + claim + ' = ' + (d * claim) + ', and we needed ' + T +
-    '. So ' + claim + ' is ' + dir + '. The fact that fits is ' + d + ' × ' + quot + ' = ' + T +
-    ', so ' + T + ' ÷ ' + d + ' = ' + quot + '. Multiplying the answer back is how a child checks ' +
-    'a division without asking anyone.');
+    (claim === quot
+      ? ' - it lands exactly on it, so ' + claim + ' is correct. ' + T + ' ÷ ' + d + ' = ' + quot + '.'
+      : '. So ' + claim + ' is ' + verdict(quot) + '. The fact that fits is ' + d + ' × ' + quot + ' = ' +
+        T + ', so ' + T + ' ÷ ' + d + ' = ' + quot + '.') +
+    ' Multiplying the answer back is how a child checks a division without asking anyone.');
 }
 
 /* =====================================================================
@@ -1903,6 +2018,17 @@ function gDivCheckP2(){
    least two numbers share a hundreds digit, so the answer is not always settled
    by the first digit alone. */
 function gCompareNum(){
+  /* REFUTATION FIX (2026-09-15, WOUND 4). The explanation used to assert, on
+     every draw, that "two of these share a hundreds digit on purpose, so the
+     tens have to be read too". It was wrong three ways: the extremum was settled
+     by its hundreds digit ALONE in 55.9% of draws (so the tens did not have to
+     be read), three or four numbers shared a hundreds digit in 21.4% (so "two"
+     was wrong), and in 0.45% the two seeded numbers collided in the Set and no
+     two shared at all (so the sentence was flatly false). The draw now really
+     does guarantee a shared hundreds digit somewhere, and the sentence is
+     branched on whether the ANSWER's own hundreds digit is shared - the only
+     case in which the tens have to be read. Asserted by the p2 gate in
+     tools/gen-sanity.mjs, both directions. */
   let arr = [], g = 0;
   do {
     const h = ri(1, 9);
@@ -1910,17 +2036,22 @@ function gCompareNum(){
     while (ns.size < 4) ns.add(ri(100, 999));
     arr = [...ns];
     g++;
-  } while (g < 400 && arr.length !== 4);
+  } while (g < 400 && !(arr.length === 4 &&
+           new Set(arr.map(n => Math.floor(n / 100))).size < 4));
   const wantMax = Math.random() < 0.5;
   const best = wantMax ? Math.max(...arr) : Math.min(...arr);
   const shown = shuffle(arr);
+  const bestH = Math.floor(best / 100);
+  const tie = shown.filter(n => Math.floor(n / 100) === bestH).length > 1;
   return { q: 'Which number is the <b>' + (wantMax ? 'greatest' : 'smallest') + '</b>?', extra: '',
     choices: shown.map(String), correct: shown.indexOf(best),
     explain: 'Compare the hundreds first, then the tens, then the ones. ' +
       shown.map(n => Math.floor(n / 100)).join(', ') + ' are the hundreds digits, and the ' +
-      (wantMax ? 'greatest' : 'smallest') + ' number is ' + best + '. Two of these share a hundreds ' +
-      'digit on purpose, so the tens have to be read too.',
-    answerText: String(best) };
+      (wantMax ? 'greatest' : 'smallest') + ' number is ' + best + '. ' +
+      (tie
+        ? 'Another number starts with ' + bestH + ' too, so the tens have to be read to settle it.'
+        : 'No other number starts with ' + bestH + ', so the hundreds digit settles it on its own.'),
+    answerText: String(best), optionSet: shown.map(String) };
 }
 
 /* FORMAT 4.2 - place value in expanded form (pool 1, 1 step). */
@@ -7662,4 +7793,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260915-e6bca5a */
+/* ENGINE_BUILD_END 20260915-b2d1275 */

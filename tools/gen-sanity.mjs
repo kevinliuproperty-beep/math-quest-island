@@ -920,12 +920,41 @@ function oracle(q) {
       return out;
     };
 
+    /* THE WORD-ANSWER DISTRACTOR CONTRACT, ASSERTED (refutation second pass
+       2026-09-15, WOUND 1). q.optionSet was structurally incapable of failing:
+       mcText builds the declaration out of the very array it ships, so "declared
+       set === shipped set in 20,000 of 20,000 draws" only ever measured that
+       mcText was called. checkShape still compares the declaration against the
+       RENDERED options - that catches anything that mutates the option list after
+       the generator built it - but the real contract is here: every word-answer
+       bank's option set is REBUILT from the rendered stem, out of this file's own
+       arithmetic, and compared against what shipped. Nine of the ten banks are
+       fully determined by the stem and are checked by exact set equality; the two
+       whose distractors are themselves drawn (gBondPair's near-miss pairs,
+       gDivCheckP2's wrong quotients, gOrderP2's permutations) are checked against
+       the named FORM, which is the strongest statement that is true of them. */
+    const sameSet = (want, got) =>
+      want.length === got.length &&
+      want.slice().sort().join(' ‖ ') === got.slice().sort().join(' ‖ ');
+
     /* --- PRINCIPLE 1: number bonds --- */
     if ((m = text.match(/^Which pair of numbers makes (\d+)\?$/))) {
       const T = Number(m[1]);
       const hits = opts.filter(o => { const n = nums(o); return n.length === 2 && n[0] + n[1] === T; });
       if (hits.length !== 1) return `p2 bond pair: ${hits.length} of the four pairs make ${T} (${opts.join(' | ')})`;
-      return hits[0] === keyTxt ? null : `p2 bond pair: key "${keyTxt}" but "${hits[0]}" is the pair that makes ${T}`;
+      if (hits[0] !== keyTxt) return `p2 bond pair: key "${keyTxt}" but "${hits[0]}" is the pair that makes ${T}`;
+      for (const o of opts) {
+        if (o === keyTxt) continue;
+        const p = o.match(/^(\d+) and (\d+)$/);
+        if (!p) return `p2 bond pair: an option is not a pair of numbers ("${o}")`;
+        const x = Number(p[1]), y = Number(p[2]), miss = y - (T - x);
+        /* the three NAMED near misses: one ten too many, one ten too few, and the
+           ones not quite meeting. Nothing else may ship as a distractor. */
+        if (miss !== 10 && miss !== -10 && miss !== 1) {
+          return `p2 bond pair: "${o}" is not one of the three named near misses (it is ${miss > 0 ? miss + ' over' : -miss + ' under'} ${T})`;
+        }
+      }
+      return null;
     }
     if ((m = text.match(/^You know that (\d+) \+ (\d+) = (\d+)\. Which subtraction fact belongs to the same number bond\?$/))) {
       const b = Number(m[1]), a = Number(m[2]), T = Number(m[3]);
@@ -935,7 +964,13 @@ function oracle(q) {
         return p && Number(p[1]) - Number(p[2]) === Number(p[3]);
       });
       if (hits.length !== 1) return `p2 bond family: ${hits.length} of the four statements are true (${opts.join(' | ')})`;
-      return hits[0] === keyTxt ? null : `p2 bond family: key "${keyTxt}" is not the true statement "${hits[0]}"`;
+      if (hits[0] !== keyTxt) return `p2 bond family: key "${keyTxt}" is not the true statement "${hits[0]}"`;
+      const wantFam = [`${T} − ${b} = ${a}`, `${T} − ${b} = ${a + 10}`,
+                       `${a} − ${b} = ${T}`, `${T} − ${a} = ${b + 10}`];
+      if (!sameSet(wantFam, opts)) {
+        return `p2 bond family: option set is not the four named statements - want [${wantFam.join(' | ')}], got [${opts.join(' | ')}]`;
+      }
+      return null;
     }
     if ((m = text.match(/^[A-Za-z ]+ says (\d+) − (\d+) = (\d+)\. (?:He|She) checked it by working out (\d+) \+ (\d+) = (\d+)\. What should (\d+) − (\d+) be\?$/))) {
       const T = Number(m[1]), a = Number(m[2]), claim = Number(m[3]);
@@ -943,6 +978,29 @@ function oracle(q) {
       if (Number(m[6]) !== a + claim) return `p2 bond error: the printed check ${a} + ${claim} = ${m[6]} is not that sum`;
       if (Number(m[7]) !== T || Number(m[8]) !== a) return 'p2 bond error: the question re-asks a different subtraction';
       if (a + claim === T) return `p2 bond error: the "wrong" answer ${claim} is actually correct`;
+      /* W5, ASSERTED (refutation second pass 2026-09-15, WOUND 2). The fixed
+         explanation used to name a slip that cannot have happened in 39.2% of
+         draws - "took the tens away and then ADDED the 1 back", when 1 has no
+         tens. The sentence is branched on the digits of the draw now, and the
+         file said that branch was "asserted by the p2 gate, both directions". It
+         was not. It is here, both directions, re-derived from the rendered stem. */
+      {
+        const ex = strip(q.explain || '');
+        const r = a % 10;
+        const tensLine = `took the tens away and then ADDED the ${r} back instead of taking it away too.`;
+        const onesLine = `ADDED the ${a} instead of taking it away, which is why the check overshoots by ${2 * a}.`;
+        if (a >= 10) {
+          if (ex.indexOf(tensLine) < 0) return `p2 bond error: ${a} has tens, but the explanation never names the slip "${tensLine}"`;
+          if (ex.indexOf('instead of taking it away, which is why') >= 0) {
+            return `p2 bond error: the explanation names the single-digit slip on a draw where ${a} does have tens`;
+          }
+        } else {
+          if (ex.indexOf('took the tens away') >= 0) {
+            return `p2 bond error: the explanation says the tens were taken away, but ${a} has no tens`;
+          }
+          if (ex.indexOf(onesLine) < 0) return `p2 bond error: ${a} is a single digit, but the explanation never names the slip "${onesLine}"`;
+        }
+      }
       const e = T - a;
       return near(e, ansNum) ? null : `p2 bond error: expected ${e}, got ${ansNum}`;
     }
@@ -952,16 +1010,33 @@ function oracle(q) {
       if (e <= 0) return `p2 bond word: ${A} + ${B} already makes ${A + B} of ${T}, so nothing is still needed`;
       return near(e, ansNum) ? null : `p2 bond word: expected ${e}, got ${ansNum}`;
     }
+    /* REFUTATION FIX 2026-09-15, SECOND PASS (WOUND 4). This bank used to give
+       two of its four options away: "They make T, so nothing is wrong." was on
+       screen in 20,000 of 20,000 draws and the key in 0, and the key's sum was
+       never the smallest of the three numeric options - 50% with no arithmetic.
+       The option set is now FOUR readings of the same addition, and the contract
+       is asserted here rather than declared by the generator: every option must
+       be the one sentence, must state a sum whose stated gap from the whole is
+       arithmetically right, must be distinct, and must fall on the SAME side of
+       the whole as the truth does, so the direction word cannot settle it. */
     if ((m = text.match(/^[A-Za-z ]+ says (\d+) \+ (\d+) = (\d+)\. What is wrong\?$/))) {
       const A = Number(m[1]), B = Number(m[2]), T = Number(m[3]), S = A + B;
       if (S === T) return `p2 bond diagnose: ${A} + ${B} really is ${T}, so nothing is wrong`;
-      const want = `They make ${S}, which is ${Math.abs(S - T)} ${S > T ? 'too many' : 'too few'}.`;
-      if (keyTxt !== want) return `p2 bond diagnose: key "${keyTxt}" should be "${want}"`;
+      const line = v => `They make ${v}, which is ${Math.abs(v - T)} ${v > T ? 'too many' : 'too few'}.`;
+      if (keyTxt !== line(S)) return `p2 bond diagnose: key "${keyTxt}" should be "${line(S)}"`;
+      const sums = [];
       for (const o of opts) {
-        if (o === keyTxt) continue;
-        const n = nums(o);
-        if (n.length && n[0] === S) return `p2 bond diagnose: a distractor also states the true sum ${S}`;
+        const p = o.match(/^They make (\d+), which is (\d+) too (many|few)\.$/);
+        if (!p) return `p2 bond diagnose: an option is not a reading of the addition ("${o}")`;
+        const v = Number(p[1]);
+        if (o !== line(v)) return `p2 bond diagnose: "${o}" does not state its own gap from ${T} correctly`;
+        if (o !== keyTxt && v === S) return `p2 bond diagnose: a distractor also states the true sum ${S}`;
+        if ((v > T) !== (S > T)) {
+          return `p2 bond diagnose: "${o}" falls on the other side of ${T} from the truth, so the direction word gives the item away`;
+        }
+        sums.push(v);
       }
+      if (new Set(sums).size !== 4) return `p2 bond diagnose: two options state the same sum (${sums.join(', ')})`;
       return null;
     }
 
@@ -969,8 +1044,16 @@ function oracle(q) {
     if ((m = text.match(/^[A-Za-z ]+ adds (\d+) \+ (\d+) in columns\. What happens in the ones column\?$/))) {
       const a = Number(m[1]), b = Number(m[2]), s = (a % 10) + (b % 10);
       if (s < 10) return `p2 regroup concept: ${a % 10} + ${b % 10} = ${s} does not regroup, so nothing is carried`;
-      const want = `${a % 10} + ${b % 10} = ${s}, so write ${s % 10} and carry 1 ten.`;
-      return keyTxt === want ? null : `p2 regroup concept: key "${keyTxt}" should be "${want}"`;
+      const head = `${a % 10} + ${b % 10} = ${s}, so `;
+      const want = head + `write ${s % 10} and carry 1 ten.`;
+      if (keyTxt !== want) return `p2 regroup concept: key "${keyTxt}" should be "${want}"`;
+      const wantSet = [want, head + `write ${s} in the ones column.`,
+                       head + `write 1 and carry ${s % 10} tens.`,
+                       head + `write ${s % 10} and carry 1 hundred.`];
+      if (!sameSet(wantSet, opts)) {
+        return `p2 regroup concept: option set is not the four named readings - want [${wantSet.join(' | ')}], got [${opts.join(' | ')}]`;
+      }
+      return null;
     }
     if ((m = text.match(/^[A-Za-z ]+ works out (\d+) \+ (\d+) by adding (\d+) and then taking some away\. What is (\d+) \+ (\d+)\?$/))) {
       const a = Number(m[1]), b = Number(m[2]), r = Number(m[3]);
@@ -984,24 +1067,22 @@ function oracle(q) {
       if (W <= P) return `p2 inverse: the answer ${W} is not bigger than ${P}, so nothing was added`;
       return near(W - P, ansNum) ? null : `p2 inverse: expected ${W - P}, got ${ansNum}`;
     }
-    /* REFUTATION FIX 2026-09-15 (WOUND 3): gAddSubError now asks for the slip AND
-       the result, so the key is a sentence, not a number. The premise checks are
-       unchanged; what is added is that the key sentence must be the one the named
-       mistake implies, and that no distractor may also print the true answer. */
-    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) − (\d+) in columns and gets (\d+)\. What went wrong, and what is (\d+) − (\d+)\?$/))) {
+    /* REFUTATION FIX 2026-09-15, SECOND PASS (KILL B): the v2 stem asked "What
+       went wrong, and what is a − b?" and every option carried the slip and the
+       result. Because the stem prints ONE fixed misconception, the true diagnosis
+       was one fixed English clause in 20,000 of 20,000 draws and the item was
+       answerable with no arithmetic at all. The stem is back to the bare
+       subtraction, and this branch back to the premise checks that made it
+       strong: the "mistake" may not be accidentally correct, the ones column must
+       actually need renaming, and the printed claim must be exactly what the
+       named bug produces. */
+    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) − (\d+) in columns and gets (\d+)\. What is (\d+) − (\d+)\?$/))) {
       const a = Number(m[1]), b = Number(m[2]), claim = Number(m[3]);
       if (Number(m[4]) !== a || Number(m[5]) !== b) return 'p2 column error: the question re-asks a different subtraction';
       if (claim === a - b) return `p2 column error: the "mistake" ${claim} is actually correct`;
       if ((b % 10) <= (a % 10)) return 'p2 column error: the ones column needs no renaming, so the named mistake cannot arise';
       if (claim !== sfl(a, b)) return `p2 column error: the printed claim ${claim} is not what the named mistake gives (${sfl(a, b)})`;
-      const want = `The ones were subtracted the wrong way round. ${a} − ${b} = ${a - b}.`;
-      if (keyTxt !== want) return `p2 column error: key "${keyTxt}" should be "${want}"`;
-      for (const o of opts) {
-        if (o === keyTxt) continue;
-        const p = o.match(/= (\d+)\.$/);
-        if (p && Number(p[1]) === a - b) return `p2 column error: a distractor also prints the true answer ${a - b}`;
-      }
-      return null;
+      return near(a - b, ansNum) ? null : `p2 column error: expected ${a - b}, got ${ansNum}`;
     }
     if ((m = text.match(/^[A-Za-z ]+ had (\d+) ([a-z]+) and bought (\d+) more\. (?:He|She) then gave away (\d+) ([a-z]+) at [a-z ]+\. How many ([a-z]+) are left\?$/))) {
       const A = Number(m[1]), B = Number(m[3]), C = Number(m[4]);
@@ -1048,12 +1129,23 @@ function oracle(q) {
       if (Number(kp[1]) !== addends.length || Number(kp[2]) !== addends[0]) {
         return `p2 repeated addition: key ${keyTxt} does not read as ${addends.length} groups of ${addends[0]}`;
       }
+      {
+        const n = addends.length, v = addends[0];
+        const wantSet = [`${n} × ${v}`, `${v} × ${v}`, `${n} + ${v}`, `${n} × ${n}`];
+        if (!sameSet(wantSet, opts)) {
+          return `p2 repeated addition: option set is not the four named readings - want [${wantSet.join(' | ')}], got [${opts.join(' | ')}]`;
+        }
+      }
       return null;
     }
-    /* REFUTATION FIX 2026-09-15 (WOUND 3): gMulError now asks for the slip AND the
-       product. Every premise check below is the one that made this the strongest
-       item in the bank; the key-sentence and rival-answer checks are new. */
-    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) × (\d+) by counting in (\d+)s: ([\d, ]+)\. (?:He|She) says (\d+) × (\d+) = (\d+)\. What went wrong, and what is (\d+) × (\d+)\?$/))) {
+    /* REFUTATION FIX 2026-09-15, SECOND PASS (KILL B): same story as the column
+       error above - the v2 "What went wrong, and what is a × b?" stem made the
+       key one fixed clause on every draw the generator can produce, so the stem
+       is back to the bare table fact. The premise checks below are the ones that
+       make this the strongest item in the file and they are untouched: the
+       printed count really is the a times table, really has b+1 entries, and
+       really ends on the claim. */
+    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) × (\d+) by counting in (\d+)s: ([\d, ]+)\. (?:He|She) says (\d+) × (\d+) = (\d+)\. What is (\d+) × (\d+)\?$/))) {
       const a = Number(m[1]), b = Number(m[2]), claim = Number(m[7]);
       if (Number(m[3]) !== a) return 'p2 mul error: the count is not in the first factor';
       if (Number(m[5]) !== a || Number(m[6]) !== b || Number(m[8]) !== a || Number(m[9]) !== b) {
@@ -1064,14 +1156,7 @@ function oracle(q) {
       if (seq.length !== b + 1) return `p2 mul error: the printed count has ${seq.length} numbers, the named slip needs ${b + 1}`;
       if (seq[seq.length - 1] !== claim) return `p2 mul error: the count ends on ${seq[seq.length - 1]} but the claim is ${claim}`;
       if (claim === a * b) return `p2 mul error: the "wrong" answer ${claim} is actually correct`;
-      const wantMul = `One count too many was said. ${a} × ${b} = ${a * b}.`;
-      if (keyTxt !== wantMul) return `p2 mul error: key "${keyTxt}" should be "${wantMul}"`;
-      for (const o of opts) {
-        if (o === keyTxt) continue;
-        const p = o.match(/= (\d+)\.$/);
-        if (p && Number(p[1]) === a * b) return `p2 mul error: a distractor also prints the true product ${a * b}`;
-      }
-      return null;
+      return near(a * b, ansNum) ? null : `p2 mul error: expected ${a * b}, got ${ansNum}`;
     }
     if ((m = text.match(/^[A-Za-z ]+ buys (\d+) ([a-z]+) of ([a-z ]+)\. Each ([a-z]+) holds (\d+) ([a-z ]+)\. (?:He|She) gives away (\d+) ([a-z ]+)\. How many ([a-z ]+) are left\?$/))) {
       const a = Number(m[1]), b = Number(m[5]), c = Number(m[7]);
@@ -1089,7 +1174,13 @@ function oracle(q) {
         return t && Number(t[2]) !== 0 && Number(t[1]) / Number(t[2]) === Number(t[3]);
       });
       if (hits.length !== 1) return `p2 div family: ${hits.length} of the four statements are true (${opts.join(' | ')})`;
-      return hits[0] === keyTxt ? null : `p2 div family: key "${keyTxt}" is not the true statement "${hits[0]}"`;
+      if (hits[0] !== keyTxt) return `p2 div family: key "${keyTxt}" is not the true statement "${hits[0]}"`;
+      const wantDiv = [`${p} ÷ ${a} = ${b}`, `${p} ÷ ${b} = ${a + 1}`,
+                       `${a} ÷ ${b} = ${p}`, `${p} ÷ ${b + 1} = ${a}`];
+      if (!sameSet(wantDiv, opts)) {
+        return `p2 div family: option set is not the four named statements - want [${wantDiv.join(' | ')}], got [${opts.join(' | ')}]`;
+      }
+      return null;
     }
     if ((m = text.match(/^[A-Za-z ]+ shares (\d+) ([a-z ]+) equally among (\d+) ([a-z]+)\. How many ([a-z ]+) do (\d+) ([a-z]+) get altogether\?$/))) {
       const T = Number(m[1]), gN = Number(m[3]), want = Number(m[6]);
@@ -1119,25 +1210,44 @@ function oracle(q) {
       /* REFUTATION FIX 2026-09-15 (KILL 2 + WOUND 1). claim === quot is no longer
          a defect - it is the 1-in-4 draw in which "The answer is correct." really
          IS the key, which is what stops that option from being a free elimination.
-         What IS asserted now: the claim stays inside the P2 quotient range, the
-         key sentence is the one the arithmetic implies, no distractor prints the
-         true quotient, and - the tell the coarse format rule cannot see - the
-         key's number is not the only plausible one on screen. */
+
+         REFUTATION FIX, SECOND PASS (KILL A): the branch used to REQUIRE the three
+         wrong quotients to straddle the key, and that requirement WAS the value
+         tell - the key was never the smallest and never the largest of the four,
+         in 20,000 of 20,000 draws, so "discard the extremes, take the one of the
+         two left that does not read correct" found the key 75.2% of the time with
+         no division done. The straddle is gone from here and from the draw. What
+         the key's value rank may NOT be is degenerate, and that is asserted by
+         sampling across a whole bank in the rank gate below, not per draw - a
+         single draw cannot carry the evidence for a distribution claim.
+
+         What this branch still asserts per draw: the claim is inside the P2
+         quotient range, the key sentence is the one the arithmetic implies, every
+         option states a quotient and the verdict that quotient implies about the
+         claim, the four quotients are distinct, no distractor prints the true
+         quotient, and exactly one option reads "correct" - the one whose quotient
+         is the claim - so the wording cannot settle it either. */
       if (!(claim >= 1 && claim <= 10)) {
         return `p2 div check: the claim ${claim} is outside the P2 quotient range 1-10`;
       }
-      const want = `The answer is ${claim > quot ? 'too big' : claim < quot ? 'too small' : 'correct'}. ${T} ÷ ${d} = ${quot}.`;
+      const verdict = n => claim > n ? 'too big' : (claim < n ? 'too small' : 'correct');
+      const want = `The answer is ${verdict(quot)}. ${T} ÷ ${d} = ${quot}.`;
       if (keyTxt !== want) return `p2 div check: key "${keyTxt}" should be "${want}"`;
-      const dis = [];
+      const seenQ = [];
       for (const o of opts) {
-        if (o === keyTxt) continue;
-        const p = o.match(/= (\d+)\.$/);
-        if (!p) return `p2 div check: a distractor does not state a quotient ("${o}")`;
-        if (Number(p[1]) === quot) return `p2 div check: a distractor also prints the true quotient ${quot}`;
-        dis.push(Number(p[1]));
+        const p = o.match(/^The answer is (?:too big|too small|correct)\. (\d+) ÷ (\d+) = (\d+)\.$/);
+        if (!p) return `p2 div check: an option is not a verdict plus a quotient ("${o}")`;
+        if (Number(p[1]) !== T || Number(p[2]) !== d) return `p2 div check: "${o}" re-states a different division`;
+        const n = Number(p[3]);
+        if (o !== `The answer is ${verdict(n)}. ${T} ÷ ${d} = ${n}.`) {
+          return `p2 div check: "${o}" does not state the verdict its own quotient implies about ${claim}`;
+        }
+        if (o !== keyTxt && n === quot) return `p2 div check: a distractor also prints the true quotient ${quot}`;
+        seenQ.push(n);
       }
-      if (quot < Math.min(...dis) || quot > Math.max(...dis)) {
-        return `p2 div check: value tell - the key prints ${quot} while every distractor prints ${dis.join(', ')}, so the key is the only option in its range`;
+      if (new Set(seenQ).size !== 4) return `p2 div check: two options print the same quotient (${seenQ.join(', ')})`;
+      if (seenQ.filter(n => n === claim).length !== 1) {
+        return `p2 div check: the claim ${claim} is not on screen, so no option reads "correct" and the wording is a free elimination (${seenQ.join(', ')})`;
       }
       return null;
     }
@@ -1160,7 +1270,16 @@ function oracle(q) {
       };
       const hits = opts.filter(ordered);
       if (hits.length !== 1) return `p2 ordering: ${hits.length} of the four lists run ${m[1]} (${opts.join(' | ')})`;
-      return hits[0] === keyTxt ? null : `p2 ordering: key "${keyTxt}" is not the ordered list "${hits[0]}"`;
+      if (hits[0] !== keyTxt) return `p2 ordering: key "${keyTxt}" is not the ordered list "${hits[0]}"`;
+      {
+        const sig = s => nums(s).slice().sort((x, y) => x - y).join(',');
+        const want = sig(keyTxt);
+        for (const o of opts) {
+          if (nums(o).length !== 3) return `p2 ordering: an option is not a list of three numbers ("${o}")`;
+          if (sig(o) !== want) return `p2 ordering: "${o}" is not a re-ordering of the same three numbers (${want})`;
+        }
+      }
+      return null;
     }
     if ((m = text.match(/^[A-Za-z ]+ says (\d+) is greater than (\d+), because (\d+) is more than (\d+)\. What went wrong\?$/))) {
       const a = Number(m[1]), b = Number(m[2]);
@@ -1175,6 +1294,14 @@ function oracle(q) {
       if (keyTxt !== want) return `p2 compare error: key "${keyTxt}" should be "${want}"`;
       const rival = opts.filter(o => o !== keyTxt && o.indexOf(`so ${b} is greater`) >= 0);
       if (rival.length) return 'p2 compare error: a distractor also names the genuinely greater number';
+      const ta = Math.floor(a / 10) % 10, tb = Math.floor(b / 10) % 10;
+      const wantCmp = [want,
+        `Start with the ones: ${a % 10} is more than ${b % 10}, so ${a} is greater.`,
+        `Start with the tens: ${ta} is more than ${tb}, so ${a} is greater.`,
+        `Start with the hundreds: ${ha} is less than ${hb}, so ${a} is greater.`];
+      if (!sameSet(wantCmp, opts)) {
+        return `p2 compare error: option set is not the four named readings - want [${wantCmp.join(' | ')}], got [${opts.join(' | ')}]`;
+      }
       return null;
     }
   }
@@ -2523,6 +2650,86 @@ function p2Gates(q, topic) {
   if (!Array.isArray(q.authored) && !Array.isArray(q.optionSet)) {
     return 'p2 distractor contract: the draw declares neither q.authored nor q.optionSet, so nothing binds its distractors';
   }
+  /* RULE 4, W4 ASSERTED (refutation second pass 2026-09-15, WOUND 2).
+     gCompareNum's explanation used to claim on every draw that "two of these
+     share a hundreds digit on purpose, so the tens have to be read too": false in
+     55.9% of draws, "two" wrong in 21.4%, and flatly false in 0.45%. The sentence
+     is branched now - and the source comment claimed the branch was "asserted by
+     the p2 gate in tools/gen-sanity.mjs, both directions" when nothing anywhere
+     matched the words. This is that assertion. It lives in p2Gates rather than in
+     an oracle branch because "Which number is the greatest?" is also a
+     p3-whole-numbers stem, and only this gate knows the topic. */
+  {
+    const st = strip(q.q);
+    const cm = st.match(/^Which number is the (greatest|smallest)\?$/);
+    const ch = (q.choices || []).map(strip);
+    if (cm && ch.length === 4 && ch.every(c => /^\d+$/.test(c))) {
+      const ns = ch.map(Number);
+      const best = cm[1] === 'greatest' ? Math.max(...ns) : Math.min(...ns);
+      if (String(best) !== strip(q.answerText)) {
+        return `p2 compare: the ${cm[1]} of ${ns.join(', ')} is ${best}, but the key is ${strip(q.answerText)}`;
+      }
+      const bh = Math.floor(best / 100);
+      const tie = ns.filter(n => Math.floor(n / 100) === bh).length > 1;
+      const ex = strip(q.explain || '');
+      if (tie) {
+        if (ex.indexOf(`Another number starts with ${bh} too, so the tens have to be read to settle it.`) < 0) {
+          return `p2 compare: ${best} shares its hundreds digit with another option (${ns.join(', ')}), but the explanation does not say the tens have to be read`;
+        }
+        if (/settles it on its own/.test(ex)) {
+          return `p2 compare: the explanation says the hundreds digit settles it on its own, but another number also starts with ${bh} (${ns.join(', ')})`;
+        }
+      } else {
+        if (ex.indexOf(`No other number starts with ${bh}, so the hundreds digit settles it on its own.`) < 0) {
+          return `p2 compare: no other number starts with ${bh} (${ns.join(', ')}), but the explanation does not say the hundreds digit settles it`;
+        }
+        if (/the tens have to be read/.test(ex)) {
+          return `p2 compare: the explanation says the tens have to be read, but ${best} is settled by its hundreds digit alone (${ns.join(', ')})`;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/* ---------- p2 KEY VALUE RANK GATE (refutation second pass 2026-09-15, WOUND 3)
+   Three NAMED misconceptions arranged around one key is the contract the whole
+   sweep is built on, and it has a cost nothing used to look at: if all three
+   named slips land above the key (or all three below it), the key sits at the
+   same position in the sorted option list on EVERY draw. "Sort the four numbers
+   and take the third" then beats the mathematics. The refuter measured a single
+   fixed rank on eight numeric banks - 20,000 of 20,000 draws each - and two of
+   four ranks on nine more.
+
+   This gate is a DISTRIBUTION claim, so unlike every other rule here it is not a
+   per-draw check: it tallies the key's rank across a whole generator's sample and
+   fails the generator if any one rank holds more than 45% of the draws it could
+   rank. At the default 200 samples a genuinely uniform bank sits six standard
+   deviations inside that ceiling, so the gate does not flap.
+
+   EXEMPTION, declared and reasoned: gCompareNum asks "Which number is the
+   greatest?". Its key is the extremum BY DEFINITION, so rank 0 or rank 3 in 100%
+   of draws is the question being asked, not a tell a child can exploit. It is the
+   only exemption, and a generator added to this set needs the same argument. */
+const P2_RANK_EXEMPT = new Set(['gCompareNum']);
+const P2_RANK_CEILING = 0.45;
+const P2_RANK_NAME = ['smallest', 'second smallest', 'second largest', 'largest'];
+/* the four NUMERIC READINGS of an option set - four bare numbers, four options
+   that each end on "= n." (the verdict-plus-quotient bank), or four that each open
+   "They make n," (the bond-diagnose bank). Anything else has no numeric reading
+   and cannot be ranked. */
+function p2Readings(q) {
+  const opts = (q.choices || []).map(strip);
+  if (opts.length !== 4) return null;
+  const forms = [
+    o => (/^\d+$/.test(o) ? Number(o) : null),
+    o => { const mm = o.match(/= (\d+)\.$/); return mm ? Number(mm[1]) : null; },
+    o => { const mm = o.match(/^They make (\d+),/); return mm ? Number(mm[1]) : null; }
+  ];
+  for (const f of forms) {
+    const v = opts.map(f);
+    if (v.every(x => x !== null) && new Set(v).size === 4) return v;
+  }
   return null;
 }
 
@@ -2549,6 +2756,8 @@ const rows = [];
 for (const g of GENS) {
   let err = null, badQ = null, matched = 0;
   const distinct = new Set();
+  const rankN = [0, 0, 0, 0];
+  let ranked = 0;
   for (let i = 0; i < N; i++) {
     let q;
     try { q = g.fn(); } catch (e) { err = 'threw: ' + e.message; break; }
@@ -2566,6 +2775,13 @@ for (const g of GENS) {
     if (pilot) { err = pilot; badQ = q; break; }
     const scope = p2Gates(q, g.topic);
     if (scope) { err = scope; badQ = q; break; }
+    if (g.topic === 'p2' && !P2_RANK_EXEMPT.has(g.name)) {
+      const vals = p2Readings(q);
+      if (vals) {
+        const kv = vals[q.correct];
+        if (Number.isFinite(kv)) { rankN[vals.filter(v => v < kv).length]++; ranked++; }
+      }
+    }
     distinct.add(qKey(q));
     const o = oracle(q);
     if (o === false) continue;
@@ -2574,6 +2790,16 @@ for (const g of GENS) {
   }
   if (!err && distinct.size < DISTINCT_FLOOR) {
     err = `sample space collapsed: only ${distinct.size} distinct questions in ${N} draws`;
+  }
+  if (!err && ranked >= 50) {
+    const worst = Math.max(...rankN), at = rankN.indexOf(worst);
+    if (worst / ranked > P2_RANK_CEILING) {
+      err = `p2 key value rank: the key is the ${P2_RANK_NAME[at]} of the four printed numbers in ` +
+            `${worst} of ${ranked} draws (${(100 * worst / ranked).toFixed(1)}%), over the ` +
+            `${(100 * P2_RANK_CEILING).toFixed(0)}% ceiling - named slips all on one side of the key let ` +
+            `a child sort four numbers instead of doing the mathematics ` +
+            `[${rankN.map(n => (100 * n / ranked).toFixed(0) + '%').join(' / ')}]`;
+    }
   }
   const cov = Math.round((matched / N) * 100);
   rows.push({ topic: g.topic, name: g.name, skill: g.skill, n: N, distinct: distinct.size, cov, err });

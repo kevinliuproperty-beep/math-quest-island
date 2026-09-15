@@ -1502,7 +1502,11 @@ function oracle(q, topic) {
       if (/^What fraction of the bar is not blue\?$/.test(text)) {
         if (!keyF) return 'bar complement: the key is not a rendered fraction';
         if (keyF[1] !== total) return `bar complement: key ${show(keyF)} is not written in ${total}ths`;
-        if (!fOpts.some((o, i) => i !== q.correct && o && o[0] === on && o[1] === total))
+        /* WOUND 4 (refutation 2026-09-15): when the bar is HALF shaded the shaded
+           fraction is worth the key, so it cannot be offered - which is exactly why
+           the generator used to refuse every half-shaded draw. The requirement now
+           binds only where it can be met. */
+        if (2 * on !== total && !fOpts.some((o, i) => i !== q.correct && o && o[0] === on && o[1] === total))
           return 'bar complement: the shaded fraction itself is not offered as a distractor';
         return near((total - on) / total, fVal(keyF)) ? null
           : `bar complement: ${total - on}/${total} is not blue but the key is ${show(keyF)}`;
@@ -1512,8 +1516,15 @@ function oracle(q, topic) {
         if (p !== total || b !== on) return `bar equivalence: the stem says ${b} of ${p} but the picture shows ${on} of ${total}`;
         if (!keyF) return 'bar equivalence: the key is not a rendered fraction';
         if (!near(on / total, fVal(keyF))) return `bar equivalence: key ${show(keyF)} is not worth ${on}/${total}`;
-        if (gcd(keyF[0], keyF[1]) !== 1) return `bar equivalence: key ${show(keyF)} is not itself in simplest form`;
-        if (keyF[1] >= total) return `bar equivalence: key ${show(keyF)} does not regroup ${on}/${total} into bigger parts`;
+        /* WOUND 4 (refutation 2026-09-15): the generator used to draw the scaled-UP
+           bar every time and key the reduced form every time, so the key was the
+           unique smallest bottom number on 20,000 of 20,000 draws. It now runs both
+           ways, so the oracle asserts the invariant that holds in both: the key
+           names the same amount in a DIFFERENT number of parts, and when it is the
+           regrouped one it has gone as far as it will go. */
+        if (keyF[1] === total) return `bar equivalence: key ${show(keyF)} is written over the same ${total} parts the picture shows, so nothing was regrouped`;
+        if (keyF[1] > 12) return `bar equivalence: key denominator ${keyF[1]} exceeds the P3 limit of 12`;
+        if (keyF[1] < total && gcd(keyF[0], keyF[1]) !== 1) return `bar equivalence: regrouped key ${show(keyF)} is not itself in simplest form`;
         for (let i = 0; i < fOpts.length; i++)
           if (i !== q.correct && fEq(fOpts[i], keyF)) return 'bar equivalence: a distractor is also equivalent';
         return null;
@@ -1586,21 +1597,86 @@ function oracle(q, topic) {
       return strip(q.answerText) === who ? null : `who ate most: expected ${who}, got ${strip(q.answerText)}`;
     }
 
-    /* --- error spotting 1 of 3: DIAGNOSE the backwards denominator rule ------ */
-    if ((m = text.match(/^(.+?) says .+ is greater than .+, because (\d+) is greater than (\d+)\. What did (?:she|he) do wrong\?$/))) {
-      const name = m[1], d1 = Number(m[2]), d2 = Number(m[3]);
+    /* --- error spotting 1 of 3: DIAGNOSE a comparing belief ------------------
+       THE KILL, Sweep fractions Refutation 2026-09-15. The old item printed one
+       belief and one fixed key sentence, and the key was the only option not
+       written "X should have ..." and the longest option, on 2,000 of 2,000
+       draws. Three beliefs are authored now and the key rotates between them, so
+       the oracle can no longer check a constant: it re-derives WHICH belief the
+       stem printed and then demands the matching sentence.
+
+       gAddError fingerprints its belief by the claim's VALUE. A comparison claim
+       carries no such number - "A is greater than B" is the same sentence
+       whichever wrong rule produced it - so the fingerprint is the child's stated
+       REASON, and this oracle fails the build unless that reason matches exactly
+       one of the three authored forms, is arithmetically true of the two printed
+       fractions, and runs the same way round as the claim it is given for.
+
+       It must stay ABOVE the add error-spot branch: the `sum` belief's reason
+       prints "1 + 6 = 7 and 1 + 4 = 5", which that branch's regex would claim. */
+    if ((m = text.match(/^(.+?) says .+ is (greater|smaller) than .+, because (.+)\. What did (?:she|he) do wrong\?$/))) {
+      const name = m[1], rel = m[2], reason = m[3];
       const fs = allFracs(q.q);
       if (fs.length !== 2) return `compare error-spot: ${fs.length} fractions in the stem, expected 2`;
       const A = fs[0], B = fs[1];
-      if (A[1] !== d1 || B[1] !== d2) return `compare error-spot: the printed reason names ${d1} and ${d2}, the fractions are ${show(A)} and ${show(B)}`;
-      if (A[0] !== B[0]) return 'compare error-spot: the two fractions do not share a top number, so the named rule does not apply';
-      if (!(d1 > d2)) return 'compare error-spot: the stated reason is not the bigger-denominator belief';
-      if (A[1] > 12 || B[1] > 12) return 'compare error-spot: a denominator exceeds 12';
-      if (A[0] * B[1] >= B[0] * A[1]) return `compare error-spot: the claim ${show(A)} > ${show(B)} is actually TRUE`;
-      const want = name + ' forgot that the bigger the bottom number, the smaller each piece.';
+      if (A[0] >= A[1] || B[0] >= B[1] || A[1] > 12 || B[1] > 12)
+        return `compare error-spot: ${show(A)} or ${show(B)} is not a proper fraction with a denominator to 12`;
+      if (A[0] * B[1] === B[0] * A[1]) return `compare error-spot: ${show(A)} and ${show(B)} are worth the same amount`;
+      const aBigger = A[0] * B[1] > B[0] * A[1];
+      if (rel === 'greater' ? aBigger : !aBigger)
+        return `compare error-spot: the claim ${show(A)} is ${rel} than ${show(B)} is actually TRUE`;
+      const hits = [];
+      let r;
+      if ((r = reason.match(/^(\d+) is a (bigger|smaller) bottom number than (\d+)$/))) {
+        if (Number(r[1]) !== A[1] || Number(r[3]) !== B[1])
+          return `compare error-spot: the reason names bottom numbers ${r[1]} and ${r[3]}, the fractions carry ${A[1]} and ${B[1]}`;
+        if (A[0] !== B[0]) return 'compare error-spot: the two fractions do not share a top number, so the bottom-number rule does not apply';
+        if ((A[1] > B[1] ? 'bigger' : 'smaller') !== r[2])
+          return `compare error-spot: the reason calls ${r[1]} the ${r[2]} bottom number and it is not`;
+        if ((r[2] === 'bigger') !== (rel === 'greater'))
+          return 'compare error-spot: the stated reason and the stated claim do not run the same way round';
+        hits.push('bottom');
+      }
+      if ((r = reason.match(/^(\d+) is a (bigger|smaller) top number than (\d+)$/))) {
+        if (Number(r[1]) !== A[0] || Number(r[3]) !== B[0])
+          return `compare error-spot: the reason names top numbers ${r[1]} and ${r[3]}, the fractions carry ${A[0]} and ${B[0]}`;
+        if (A[1] !== B[1]) return 'compare error-spot: the two fractions do not share a bottom number, so the top-number reading does not apply';
+        if ((A[0] > B[0] ? 'bigger' : 'smaller') !== r[2])
+          return `compare error-spot: the reason calls ${r[1]} the ${r[2]} top number and it is not`;
+        /* the belief is the bottom-number rule used on the tops, so the claim must
+           run the OPPOSITE way from the adjective */
+        if ((r[2] === 'bigger') !== (rel === 'smaller'))
+          return 'compare error-spot: the top-number reason does not produce the claim it is given for';
+        hits.push('top');
+      }
+      if ((r = reason.match(/^(\d+) \+ (\d+) = (\d+) and (\d+) \+ (\d+) = (\d+)$/))) {
+        const nums = r.slice(1).map(Number);
+        if (nums[0] !== A[0] || nums[1] !== A[1] || nums[3] !== B[0] || nums[4] !== B[1])
+          return `compare error-spot: the reason adds ${nums[0]} + ${nums[1]} and ${nums[3]} + ${nums[4]}, the fractions are ${show(A)} and ${show(B)}`;
+        if (nums[0] + nums[1] !== nums[2] || nums[3] + nums[4] !== nums[5])
+          return 'compare error-spot: the reason prints a sum that is arithmetically wrong';
+        if (A[0] !== B[0]) return 'compare error-spot: the two fractions do not share a top number, so no P3 comparing rule applies';
+        if ((nums[2] > nums[5]) !== (rel === 'greater'))
+          return 'compare error-spot: the two totals do not run the same way round as the claim';
+        hits.push('sum');
+      }
+      if (hits.length !== 1)
+        return `compare error-spot: the stated reason "${reason}" matches ${hits.length} named beliefs, expected exactly 1`;
+      const SAY = {
+        bottom: ' thought a bigger bottom number makes a bigger fraction.',
+        sum:    ' compared the totals of the two numbers in each fraction.',
+        top:    ' thought a smaller top number makes a bigger fraction.'
+      };
+      const want = name + SAY[hits[0]];
       if (strip(q.answerText) !== want) return `compare error-spot: expected "${want}", got "${strip(q.answerText)}"`;
-      if (q.choices.filter(c => strip(c).indexOf(name) === 0).length !== 4)
+      const opts = q.choices.map(strip);
+      if (opts.filter(c => c.indexOf(name) === 0).length !== 4)
         return 'compare error-spot: not every option opens with the name, so the key is the odd one out';
+      for (const id of Object.keys(SAY))
+        if (id !== hits[0] && !opts.includes(name + SAY[id]))
+          return `compare error-spot: the "${id}" belief is not on the option list, so the key has fewer than two named rivals`;
+      if (opts.filter(c => Object.keys(SAY).some(id => c === name + SAY[id])).length !== 3)
+        return 'compare error-spot: the option set is not the three named beliefs plus exactly one never-true diagnosis';
       return null;
     }
 
@@ -1623,6 +1699,29 @@ function oracle(q, topic) {
       if (right !== 1) return `ordering: ${right} of the four options are in the right order`;
       if (seq(q.q) === wantSeq) return 'ordering: the stem already lists the fractions in the answer order';
       return seq(q.answerText) === wantSeq ? null : `ordering: expected ${wantSeq}, got ${seq(q.answerText)}`;
+    }
+
+    /* --- the gap in an already-ordered row (WOUND 1's second `order` format) ---
+       The row must really be in the direction it declares, the four options must
+       share a top or a bottom number with it so a P3 rule applies, and EXACTLY one
+       option may sit between the two printed neighbours. */
+    if ((m = text.match(/^These fractions are in order, from the (smallest to the greatest|greatest to the smallest): .+\. Which fraction belongs in the gap\?$/))) {
+      const asc = m[1] === 'smallest to the greatest';
+      const shown = allFracs(q.q);
+      if (shown.length !== 2) return `ordered gap: ${shown.length} fractions printed in the row, expected 2`;
+      if (shown.some(f => f[0] >= f[1] || f[1] > 12)) return 'ordered gap: a fraction in the row is not proper with a denominator to 12';
+      const lo = asc ? shown[0] : shown[1], hi = asc ? shown[1] : shown[0];
+      if (!(lo[0] * hi[1] < hi[0] * lo[1]))
+        return `ordered gap: the row prints ${show(shown[0])} then ${show(shown[1])} but declares ${m[1]}`;
+      if (fOpts.length !== 4 || fOpts.some(o => !o)) return 'ordered gap: an option is not a rendered fraction';
+      if (fOpts.some(o => o[0] >= o[1] || o[1] > 12)) return 'ordered gap: an option is not proper with a denominator to 12';
+      const sameD = lo[1] === hi[1] && fOpts.every(o => o[1] === lo[1]);
+      const sameN = lo[0] === hi[0] && fOpts.every(o => o[0] === lo[0]);
+      if (!sameD && !sameN) return 'ordered gap: the row and the options share neither the top nor the bottom number, so no P3 ordering rule applies';
+      if (fOpts.some(o => fEq(o, lo) || fEq(o, hi))) return 'ordered gap: an option repeats a fraction already printed in the row';
+      const between = fOpts.filter(o => lo[0] * o[1] < o[0] * lo[1] && o[0] * hi[1] < hi[0] * o[1]);
+      if (between.length !== 1) return `ordered gap: ${between.length} of the four options sit between ${show(lo)} and ${show(hi)}`;
+      return fEq(between[0], keyF) ? null : `ordered gap: expected ${show(between[0])}, key is ${show(keyF)}`;
     }
 
     /* --- equivalence: the two inverses, then recognition -------------------- */
@@ -1657,10 +1756,18 @@ function oracle(q, topic) {
     if (/^Which fraction is equivalent to /.test(text)) {
       const f = parseFrac(q.q);
       if (!f || !keyF) return 'equivalent: the stem or the key has no rendered fraction';
-      if (gcd(f[0], f[1]) !== 1) return `equivalent: the given fraction ${show(f)} is not in its simplest form`;
+      if (f[0] >= f[1] || f[1] > 12) return `equivalent: the given fraction ${show(f)} is not proper with a denominator to 12`;
       if (!fEq(f, keyF)) return `equivalent: ${show(keyF)} is not equivalent to ${show(f)}`;
       if (keyF[1] > 12) return `equivalent: key denominator ${keyF[1]} exceeds 12`;
-      if (keyF[1] <= f[1]) return `equivalent: the key ${show(keyF)} does not scale ${show(f)} UP`;
+      /* WOUND 2 (refutation 2026-09-15): the stem used to print the simplest-form
+         fraction on every draw, which is why the generator had ELEVEN distinct
+         stems. It now runs both ways, so the direction-specific assertion splits:
+         scaling UP must start from a fraction already in its simplest form, and
+         regrouping DOWN must land on one. Either way the key may not be written
+         over the same bottom number as the fraction it is equivalent to. */
+      if (keyF[1] === f[1]) return `equivalent: the key ${show(keyF)} is written over the same bottom number as ${show(f)}`;
+      if (keyF[1] > f[1] && gcd(f[0], f[1]) !== 1) return `equivalent: scaling up from ${show(f)}, which is not itself in its simplest form`;
+      if (keyF[1] < f[1] && gcd(keyF[0], keyF[1]) !== 1) return `equivalent: the regrouped key ${show(keyF)} is not itself in its simplest form`;
       for (let i = 0; i < fOpts.length; i++)
         if (i !== q.correct && fEq(fOpts[i], f)) return 'equivalent: a distractor is also equivalent';
       return null;
@@ -1686,6 +1793,15 @@ function oracle(q, topic) {
       if (simp.length !== 1) return `already simplest: ${simp.length} of the four options are already in simplest form`;
       if (!keyF || keyF[0] !== simp[0][0] || keyF[1] !== simp[0][1])
         return `already simplest: expected ${show(simp[0])}, got ${show(keyF)}`;
+      /* WOUND 4 (refutation 2026-09-15): `why` was built from the slips array, i.e.
+         the order BEFORE finishFrac shuffles, so the teaching card walked the three
+         distractors in a different order from the screen in 83.3% of draws and a P3
+         child had to hunt for each line. Gated, not just fixed. */
+      const walk = [...String(q.explain || '').matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]
+        .map(x => x[1] + '/' + x[2]).slice(0, 3).join(' ');
+      const screen = fOpts.map((o, i) => i === q.correct ? null : o).filter(Boolean).map(o => o[0] + '/' + o[1]).join(' ');
+      if (walk !== screen)
+        return `already simplest: the card walks ${walk} but the screen shows ${screen} - the explanation is out of step with the options`;
       return null;
     }
     if ((m = text.match(/^(.+?) says .+ in its simplest form is .+, because (?:she|he) took (\d+) away from the top and (\d+) away from the bottom\. What is .+ in its simplest form\?$/))) {
@@ -1734,10 +1850,31 @@ function oracle(q, topic) {
       if (A[0] >= A[1] || A[1] > 12) return `one minus: ${show(A)} is not a proper fraction with a denominator to 12`;
       if (!keyF) return 'one minus: the key is not a rendered fraction';
       const top = A[1] - A[0];
-      if (!fOpts.some((o, i) => i !== q.correct && o && o[0] === A[0] && o[1] === A[1]))
+      /* WOUND 4: when d === 2a the part taken away IS the answer, so it cannot be
+         offered - which is why this format could never key one half. */
+      if (2 * A[0] !== A[1] && !fOpts.some((o, i) => i !== q.correct && o && o[0] === A[0] && o[1] === A[1]))
         return 'one minus: the part taken away is not offered as a distractor';
       return (keyF[0] === top && keyF[1] === A[1]) ? null
         : `one minus: expected ${top}/${A[1]}, got ${show(keyF)}`;
+    }
+    /* --- making one whole, answered in SMALLER pieces (WOUND 1's second `wholes`
+       format). Two steps, so the oracle checks both: the answer completes the
+       whole, AND it is written over the bottom number the stem asks for, which
+       must be a genuine multiple of the stem's own. --- */
+    if ((m = text.match(/\+ \? = 1 What is the missing fraction, written in (\d+)ths\?$/))) {
+      const D = Number(m[1]);
+      const fs = allFracs(q.q);
+      if (fs.length !== 1) return `make one in parts: ${fs.length} fractions rendered, expected 1`;
+      const A = fs[0];
+      if (A[0] >= A[1] || A[1] > 12) return `make one in parts: ${show(A)} is not a proper fraction with a denominator to 12`;
+      if (D > 12) return `make one in parts: the answer is asked for in ${D}ths, past the P3 denominator limit of 12`;
+      if (D % A[1] !== 0) return `make one in parts: ${D} is not a whole number of ${A[1]}s, so the two are not RELATED fractions`;
+      if (D / A[1] < 2) return 'make one in parts: the answer is asked for in the same pieces the stem prints, so there is no second step';
+      if (!keyF) return 'make one in parts: the key is not a rendered fraction';
+      const top = D - (D / A[1]) * A[0];
+      if (!near(A[0] / A[1] + fVal(keyF), 1)) return `make one in parts: ${show(A)} + ${show(keyF)} != 1`;
+      return (keyF[0] === top && keyF[1] === D) ? null
+        : `make one in parts: expected ${top}/${D}, got ${show(keyF)}`;
     }
     if (/\+ \? = 1 What is the missing fraction\?$/.test(text)) {
       const fs = allFracs(q.q);
@@ -1779,6 +1916,12 @@ function oracle(q, topic) {
       const trueTop = A[0] + B[0];
       if (trueTop >= A[1]) return 'add error-spot: the true sum is not within one whole';
       if (claim[0] * A[1] === trueTop * claim[1]) return `add error-spot: the "wrong" claim ${show(claim)} is worth the true answer`;
+      /* WOUND 3 (refutation 2026-09-15): with b === 1 the multiply claim a x 1 = a
+         IS one of the addends, so 31.8% of draws printed "Siti says 5/12 + 1/12 =
+         5/12" - the named belief invisible and the reading a child actually has
+         ("she forgot the second one") not on the option list. */
+      if (claim[0] * A[1] === A[0] * claim[1] || claim[0] * B[1] === B[0] * claim[1])
+        return `add error-spot: the "wrong" claim ${show(claim)} is worth one of the two addends, so the named belief leaves no trace`;
       const SLIPS = [
         [[A[0] + B[0], 2 * A[1]], name + ' added the bottom numbers as well.'],
         [[A[0] - B[0], A[1]], name + ' subtracted the top numbers instead of adding them.'],
@@ -2548,8 +2691,51 @@ function coincidence(q) {
    may not carry a denominator past 12. A named misconception is allowed a bigger
    bottom number up to 24 - adding the denominators really does give 5/14, and
    refusing to print it would take the mistake off the table - but nothing a child
-   is asked to produce may leave the syllabus. */
+   is asked to produce may leave the syllabus.
+
+   SWEEP FRACTIONS REFUTATION 2026-09-15 adds the two rules that RULE 1 was too
+   coarse to see. gCompareError shipped four options that were all prose, all four
+   opening with the same child's name - so RULE 1's four-way form tally was 4-0
+   and said nothing - while three of them read "X should have ..." and the key
+   alone read "X forgot that ...", and the key was also the longest option, on
+   2,000 of 2,000 draws. Form is not the only thing that can single an option out;
+   the SENTENCE FRAME and the LENGTH are the other two, and both are now gated.
+
+   RULE 5, SENTENCE FRAME (per draw, in pilotGates). When all four options are
+   prose of two words or more, strip the words every option shares at the front
+   (the child's name, "The", and so on) and take the next two words of each. If
+   exactly one option's opening differs and the other three share one, that is the
+   gLPerimDiff tell in prose clothing and the build fails. A 2-2 split, or three
+   or four distinct openings, is fine - what is banned is the single odd one out.
+
+   RULE 6, LENGTH (per GENERATOR, in the run loop below, because no single draw
+   can show it). If the key is the unique longest of four prose options in 100% of
+   a generator's draws, the item can be answered with a ruler. One exemption is
+   declared: p4area.gLConcept, whose fixed option set keys "It stays the same."
+   against "It gets smaller." / "It gets bigger." / "It is halved." - a real
+   instance of this defect, two characters wide, in a file outside this lane's
+   fence. It is named here rather than hidden so the next lane inherits it as a
+   debt and not as a silent pass. */
 const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'fractions']);
+/* RULE 6's one declared exemption - see the block comment above. */
+const LENGTH_TELL_EXEMPT = new Set(['p4area.gLConcept']);
+const optWords = s2 => strip(s2).split(' ').filter(Boolean);
+/* all four options are sentences a child reads, not bare numbers or fraction rows */
+const allProse = opts => opts.length === 4 &&
+  opts.every(o => /[A-Za-z]{3}/.test(strip(o)) && optWords(o).length >= 2);
+/* the two words that open each option once the shared opening is stripped off */
+function frameOpenings(opts) {
+  const ws = opts.map(optWords);
+  const min = Math.min(...ws.map(w => w.length));
+  let c = 0;
+  while (c < min && ws.every(w => w[c].toLowerCase() === ws[0][c].toLowerCase())) c++;
+  return ws.map(w => w.slice(c, c + 2).join(' ').toLowerCase());
+}
+/* the key is the unique longest of the four */
+const keyIsLongest = (opts, correct) => {
+  const lens = opts.map(o => strip(o).length), mx = Math.max(...lens);
+  return lens[correct] === mx && lens.filter(l => l === mx).length === 1;
+};
 const optForm = s => {
   const t = strip(s);
   if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';
@@ -2569,6 +2755,19 @@ function pilotGates(q, topic) {
       if (odd) {
         const bulk = [...tally.entries()].find(([, c]) => c === 3);
         return `format tell: one option is ${odd[0]} while the other three are ${bulk[0]} (${opts.map(strip).join(' | ')})`;
+      }
+    }
+    /* RULE 5: the same tell one layer in, on the sentence frame. */
+    if (allProse(opts)) {
+      const open = frameOpenings(opts);
+      const t2 = new Map();
+      for (const o of open) t2.set(o, (t2.get(o) || 0) + 1);
+      if (t2.size === 2) {
+        const odd2 = [...t2.entries()].find(([, c]) => c === 1);
+        if (odd2) {
+          const bulk2 = [...t2.entries()].find(([, c]) => c === 3);
+          return `sentence-frame tell: one option opens "${odd2[0]} ..." while the other three open "${bulk2[0]} ..." (${opts.map(strip).join(' | ')})`;
+        }
       }
     }
   }
@@ -2628,6 +2827,8 @@ const rows = [];
 
 for (const g of GENS) {
   let err = null, badQ = null, matched = 0;
+  /* RULE 6 tallies: no single draw can show a length tell, only the whole run can. */
+  let proseDraws = 0, keyLongest = 0, lastProse = null;
   const distinct = new Set();
   for (let i = 0; i < N; i++) {
     let q;
@@ -2644,6 +2845,10 @@ for (const g of GENS) {
     if (coin) { err = coin; badQ = q; break; }
     const pilot = pilotGates(q, g.topic);
     if (pilot) { err = pilot; badQ = q; break; }
+    if (PILOT_TOPICS.has(g.topic) && allProse(q.choices || [])) {
+      proseDraws++;
+      if (keyIsLongest(q.choices, q.correct)) { keyLongest++; lastProse = q; }
+    }
     distinct.add(qKey(q));
     const o = oracle(q, g.topic);
     if (o === false) continue;
@@ -2652,6 +2857,11 @@ for (const g of GENS) {
   }
   if (!err && distinct.size < DISTINCT_FLOOR) {
     err = `sample space collapsed: only ${distinct.size} distinct questions in ${N} draws`;
+  }
+  /* RULE 6, the length tell (Sweep fractions Refutation 2026-09-15, THE KILL). */
+  if (!err && proseDraws >= 20 && keyLongest === proseDraws && !LENGTH_TELL_EXEMPT.has(g.topic + '.' + g.name)) {
+    err = `length tell: the key is the unique longest of the four sentences in ${keyLongest} of ${proseDraws} draws - the item can be answered with a ruler`;
+    badQ = lastProse;
   }
   const cov = Math.round((matched / N) * 100);
   rows.push({ topic: g.topic, name: g.name, skill: g.skill, n: N, distinct: distinct.size, cov, err });

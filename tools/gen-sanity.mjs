@@ -430,9 +430,412 @@ function checkShape(q) {
   return null;
 }
 
+/* ===== SWEEP 2026-09-15: P4 DECIMALS ========================================
+ * The decimals bank is dispatched on the TOPIC ID, before every other branch,
+ * and decimalsOracle() never returns `false`: a decimals stem that matches no
+ * branch is a build FAILURE, not the usual "no oracle matched" warning. That is
+ * the strongest reading of the depth-pilot contract's "oracle in the same commit
+ * as the generator", and it means the file cannot grow a generator whose key is
+ * never re-derived.
+ *
+ * Every re-derivation here is done in SCALED INTEGERS. "0.1 + 0.2 === 0.3" is
+ * false in floating point, and a harness that re-derives a decimal key with
+ * Number arithmetic is re-deriving it with the same class of error it is meant
+ * to catch. `DP` parses a printed decimal into { n, dp }; nothing below divides.
+ */
+const DP = s => {
+  const m = /^(-?)(\d+)(?:\.(\d+))?$/.exec(String(s).trim());
+  if (!m) return null;
+  const f = m[3] || '';
+  return { n: (m[1] === '-' ? -1 : 1) * Number(m[2] + f), dp: f.length };
+};
+const TEN = k => Math.pow(10, k);
+const DCMP = (a, b) => { const m = Math.max(a.dp, b.dp); return a.n * TEN(m - a.dp) - b.n * TEN(m - b.dp); };
+const DEQ = (a, b) => DCMP(a, b) === 0;
+const DV = (n, dp) => ({ n, dp });
+function DROUND(d, to) {
+  if (d.dp <= to) return DV(d.n * TEN(to - d.dp), to);
+  const cut = TEN(d.dp - to), base = Math.floor(d.n / cut), rem = d.n - base * cut;
+  return DV(rem * 2 >= cut ? base + 1 : base, to);
+}
+function DTXT(d) {
+  if (d.dp === 0) return String(d.n);
+  const p = TEN(d.dp), w = Math.floor(Math.abs(d.n) / p);
+  let f = String(Math.abs(d.n) - w * p);
+  while (f.length < d.dp) f = '0' + f;
+  return (d.n < 0 ? '-' : '') + w + '.' + f;
+}
+const DEC_UNIT = /\s*(kg|km|cm|mm|m|g|ℓ|ml|l)$/i;
+const decOf = s => DP(String(s).replace(/^\$/, '').replace(DEC_UNIT, '').trim());
+const decOpts = q => (q.choices || []).map(c => decOf(strip(c)));
+const DEC_PLACES = ['ones', 'tenths', 'hundredths', 'thousandths'];
+const DEC_PLACE_ONE = ['one', 'tenth', 'hundredth', 'thousandth'];
+const DECQTY = (n, place) => n + ' ' + (n === 1 ? DEC_PLACE_ONE[place] : DEC_PLACES[place]);
+const DEC_ROUND_TO = { 'the nearest whole number': 0, '1 decimal place': 1, '2 decimal places': 2 };
+const decCountWhere = (q, pred) => decOpts(q).filter(v => v && pred(v)).length;
+
+function decimalsOracle(q) {
+  const text = strip(q.q);
+  const ans = decOf(strip(q.answerText));
+  const opts = decOpts(q);
+  const keyIdx = q.correct;
+  let m;
+
+  /* --- PRINCIPLE 1: place value ------------------------------------------- */
+  if ((m = text.match(/^What is the value of the digit (\d) in (\d+\.\d+)\?$/))) {
+    const dec = m[2].split('.')[1];
+    const hits = [...dec].filter(c => c === m[1]).length;
+    if (hits !== 1) return `digit value: "${m[1]}" appears ${hits} times in ${m[2]} - the question has no single answer`;
+    const place = dec.indexOf(m[1]) + 1;
+    const want = DV(Number(m[1]), place);
+    return ans && DEQ(ans, want) ? null : `digit value: ${m[1]} in ${m[2]} is ${DTXT(want)}, key says ${strip(q.answerText)}`;
+  }
+  if ((m = text.match(/^In (\d+\.\d+), which place is the digit (\d) in\?$/))) {
+    const [w, dec] = m[1].split('.');
+    const all = w + dec;
+    if ([...all].filter(c => c === m[2]).length !== 1) return `name place: digit ${m[2]} is not unique in ${m[1]}`;
+    const want = w.indexOf(m[2]) >= 0 ? 'ones' : DEC_PLACES[dec.indexOf(m[2]) + 1];
+    const keyText = strip(q.choices[keyIdx]);
+    if (keyText !== want) return `name place: ${m[2]} in ${m[1]} is ${want}, key says "${keyText}"`;
+    if (q.choices.filter(c => strip(c) === want).length !== 1) return 'name place: the true place is offered twice';
+    return null;
+  }
+  if ((m = text.match(/^Which number is made up of (.+)\?$/))) {
+    let n = 0, seen = 0;
+    for (const part of m[1].split(/,| and /)) {
+      const pm = part.trim().match(/^(\d+) (ones?|tenths?|hundredths?|thousandths?)$/);
+      if (!pm) return `build: cannot read the part "${part.trim()}"`;
+      const place = DEC_PLACES.findIndex(p => p.startsWith(pm[2].replace(/s$/, '')));
+      n += Number(pm[1]) * TEN(3 - place); seen++;
+    }
+    if (seen < 3) return 'build: fewer than three place-value parts named';
+    const want = DV(n, 3);
+    return ans && DEQ(ans, want) ? null : `build: parts make ${DTXT(want)}, key says ${strip(q.answerText)}`;
+  }
+  if ((m = text.match(/^How many (tenths|hundredths|thousandths) are there in (\d+\.\d+)\?$/))) {
+    const j = DEC_PLACES.indexOf(m[1]), v = DP(m[2]);
+    if (!v || v.dp > j) return `how many: ${m[2]} is finer than ${m[1]}`;
+    const want = v.n * TEN(j - v.dp);
+    return ans && ans.dp === 0 && ans.n === want ? null : `how many ${m[1]} in ${m[2]}: expected ${want}, key says ${strip(q.answerText)}`;
+  }
+  if ((m = text.match(/^Which of these shows (\d+\.\d+) written as the sum of its place values\?$/))) {
+    const [w, dec] = m[1].split('.');
+    const want = [w].concat([...dec].map((d, i) => DTXT(DV(Number(d), i + 1)))).join(' + ');
+    const keyText = strip(q.choices[keyIdx]);
+    if (keyText !== want) return `expanded form: ${m[1]} is "${want}", key says "${keyText}"`;
+    if (q.choices.filter(c => strip(c) === want).length !== 1) return 'expanded form: the true sum is offered twice';
+    return null;
+  }
+  if ((m = text.match(/^(.+?) says the digit (\d) in (\d+\.\d+) is worth (\d) (tenths?|hundredths?|thousandths?)\. What did .+ get wrong\?$/))) {
+    const [wh, dec] = m[3].split('.');
+    if ([...(wh + dec)].filter(c => c === m[2]).length !== 1) return `place error: digit ${m[2]} is not unique in ${m[3]}`;
+    const place = wh.indexOf(m[2]) >= 0 ? 0 : dec.indexOf(m[2]) + 1;
+    const said = DEC_PLACES.findIndex(p => p.startsWith(m[5].replace(/s$/, '')));
+    if (said === place) return `place error: the claimed place (${m[5]}) is the RIGHT one - the stem contradicts itself`;
+    if (said > dec.length) return `place error: the claim names ${m[5]}, a place ${m[3]} does not have`;
+    if (Number(m[4]) !== Number(m[2])) return 'place error: the claim is about a different digit';
+    const want = `The ${m[2]} is in the ${DEC_PLACES[place]} place, so it is worth ${DECQTY(Number(m[2]), place)}.`;
+    const keyText = strip(q.choices[keyIdx]);
+    if (keyText !== want) return `place error: expected key "${want}", got "${keyText}"`;
+    if (q.choices.filter(c => strip(c) === want).length !== 1) return 'place error: two options name the true place';
+    return null;
+  }
+
+  /* --- PRINCIPLE 2: comparing, ordering, rounding -------------------------- */
+  if ((m = text.match(/^Which decimal is the (greatest|smallest)\?$/))) {
+    if (opts.some(v => !v)) return 'compare: an option is not a plain decimal';
+    let best = opts[0];
+    for (const v of opts) if (m[1] === 'greatest' ? DCMP(v, best) > 0 : DCMP(v, best) < 0) best = v;
+    if (opts.filter(v => DEQ(v, best)).length !== 1) return 'compare: two options are the same number';
+    return DEQ(opts[keyIdx], best) ? null
+      : `compare: flagged ${strip(q.answerText)} as the ${m[1]}, but it is ${DTXT(best)}`;
+  }
+  if ((m = text.match(/^Which list is in order from the (smallest to the greatest|greatest to the smallest)\?$/))) {
+    const asc = m[1].startsWith('smallest');
+    const lists = q.choices.map(c => strip(c).split(',').map(s => DP(s.trim())));
+    if (lists.some(l => l.length < 3 || l.some(v => !v))) return 'order: an option is not a list of decimals';
+    const sortedCount = lists.filter(l => {
+      for (let i = 1; i < l.length; i++) { const d = DCMP(l[i], l[i - 1]); if (asc ? d <= 0 : d >= 0) return false; }
+      return true;
+    }).length;
+    if (sortedCount !== 1) return `order: ${sortedCount} of the four lists are in order - there must be exactly one`;
+    const k = lists[keyIdx];
+    for (let i = 1; i < k.length; i++) { const d = DCMP(k[i], k[i - 1]); if (asc ? d <= 0 : d >= 0) return `order: the key list is not in order (${strip(q.choices[keyIdx])})`; }
+    return null;
+  }
+  if ((m = text.match(/^(.+?) says (\d+\.\d+) is greater than (\d+\.\d+), because (\d+) is greater than (\d+)\. What is wrong with that\?$/))) {
+    const small = DP(m[2]), big = DP(m[3]);
+    if (DCMP(small, big) >= 0) return `compare error: the stem's "wrong" claim is TRUE - ${m[2]} is not less than ${m[3]}`;
+    if (m[2].replace('.', '').replace(/^0/, '') !== m[4] || m[3].replace('.', '').replace(/^0/, '') !== m[5]) {
+      return `compare error: the printed digit strings (${m[4]}, ${m[5]}) are not the digits of ${m[2]} and ${m[3]}`;
+    }
+    if (Number(m[4]) <= Number(m[5])) return 'compare error: the misconception does not even hold on the digits';
+    const want = `${m[3]} is the greater one.`;
+    const hits = q.choices.filter(c => strip(c).endsWith(want)).length;
+    if (hits !== 1) return `compare error: ${hits} options end by naming ${m[3]} as the greater - there must be exactly one`;
+    if (!strip(q.choices[keyIdx]).endsWith(want)) return 'compare error: the key is not the option naming the true greater number';
+    return null;
+  }
+  if ((m = text.match(/^Between which two whole numbers does (\d+\.\d+) lie\?$/))) {
+    const v = DP(m[1]);
+    const w = Math.floor(v.n / TEN(v.dp));
+    if (v.n % TEN(v.dp) === 0) return `between: ${m[1]} is a whole number, so it lies between nothing`;
+    const want = `${w} and ${w + 1}`;
+    const hits = q.choices.map(strip).filter(t => {
+      const pm = t.match(/^(\d+) and (\d+)$/);
+      return pm && Number(pm[1]) * TEN(v.dp) <= v.n && v.n <= Number(pm[2]) * TEN(v.dp);
+    }).length;
+    if (hits !== 1) return `between: ${hits} of the options actually bracket ${m[1]}`;
+    return strip(q.choices[keyIdx]) === want ? null : `between: expected "${want}", key says "${strip(q.choices[keyIdx])}"`;
+  }
+  if ((m = text.match(/^Round (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places)\.$/))) {
+    const v = DP(m[1]), to = DEC_ROUND_TO[m[2]];
+    if (v.dp > 3) return `round: ${m[1]} carries ${v.dp} decimal places - MOE P4 stops at 3`;
+    if (v.dp <= to) return `round: ${m[1]} is already at ${m[2]}`;
+    const want = DROUND(v, to);
+    if (!ans || !DEQ(ans, want)) return `round(${m[1]} -> ${m[2]}): expected ${DTXT(want)}, key says ${strip(q.answerText)}`;
+    if (decCountWhere(q, x => DEQ(x, want)) !== 1) return 'round: two options are the correct answer';
+    return null;
+  }
+  if ((m = text.match(/^(.+?) rounds a number to (the nearest whole number|1 decimal place|2 decimal places) and gets (\d+(?:\.\d+)?)\. Which of these could the number have been\?$/))) {
+    const to = DEC_ROUND_TO[m[2]], target = DP(m[3]);
+    if (target.dp !== to) return `round back: the target ${m[3]} is not written to ${m[2]}`;
+    const hits = decCountWhere(q, v => DEQ(DROUND(v, to), target));
+    if (hits !== 1) return `round back: ${hits} of the options round to ${m[3]} - there must be exactly one`;
+    if (!opts[keyIdx] || !DEQ(DROUND(opts[keyIdx], to), target)) return 'round back: the key does not round to the target';
+    return null;
+  }
+  if ((m = text.match(/^(.+?) rounds (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places) and says the answer is (\d+(?:\.\d+)?)\. What went wrong\?$/))) {
+    const v = DP(m[2]), to = DEC_ROUND_TO[m[3]], said = DP(m[4]);
+    const truth = DROUND(v, to);
+    if (DEQ(said, truth)) return `round error: the printed claim ${m[4]} is CORRECT - the stem contradicts itself`;
+    if (said.dp !== to) return `round error: the claim ${m[4]} is not even written to ${m[3]}`;
+    const want = `so the answer is ${DTXT(truth)}.`;
+    const hits = q.choices.filter(c => strip(c).endsWith(want)).length;
+    if (hits !== 1) return `round error: ${hits} options end with the true answer ${DTXT(truth)}`;
+    if (!strip(q.choices[keyIdx]).endsWith(want)) return 'round error: the key does not carry the true rounded value';
+    return null;
+  }
+  if ((m = text.match(/weighing (\d+\.\d+) kg .* weighing (\d+\.\d+) kg\. Rounded to the nearest kilogram, what is the total mass/))) {
+    const a = DP(m[1]), b = DP(m[2]);
+    const d = Math.max(a.dp, b.dp);
+    const total = DV(a.n * TEN(d - a.dp) + b.n * TEN(d - b.dp), d);
+    const want = DROUND(total, 0);
+    if (!ans || !DEQ(ans, want)) return `round sum: ${m[1]} + ${m[2]} = ${DTXT(total)} -> ${DTXT(want)}, key says ${strip(q.answerText)}`;
+    if (decCountWhere(q, x => DEQ(x, want)) !== 1) return 'round sum: two options are the correct answer';
+    return null;
+  }
+
+  /* --- PRINCIPLE 3: decimals and fractions --------------------------------- */
+  if (/^Write .* as a decimal\.$/.test(text)) {
+    const f = parseFrac(q.q);
+    if (!f) return 'frac -> dec: the stem does not render a fraction';
+    if (!ans) return 'frac -> dec: the key is not a plain decimal';
+    /* exact: n/den === ans.n / 10^ans.dp  <=>  n * 10^dp === ans.n * den */
+    return f[0] * TEN(ans.dp) === ans.n * f[1] ? null
+      : `frac -> dec: ${f[0]}/${f[1]} is not ${strip(q.answerText)}`;
+  }
+  if (/What decimal does the shaded part show\?$/.test(text)) {
+    const on = (String(q.extra).match(/class="seg fill"/g) || []).length;
+    const total = (String(q.extra).match(/class="seg[ "]/g) || []).length;
+    if (!total) return 'shaded bar: the figure rendered no segments';
+    if (!ans) return 'shaded bar: the key is not a plain decimal';
+    if (!/cut into <b>10 equal parts<\/b>/.test(q.q) || total !== 10) return `shaded bar: the stem says 10 parts but the figure drew ${total}`;
+    return on * TEN(ans.dp) === ans.n * total ? null
+      : `shaded bar: ${on}/${total} shaded but the key is ${strip(q.answerText)}`;
+  }
+  if ((m = text.match(/^Write (\d+\.\d+) as a fraction in its simplest form\.$/))) {
+    const v = DP(m[1]), f = parseFrac(q.answerText);
+    if (!f) return 'dec -> frac: the key is not a fraction';
+    if (f[0] * TEN(v.dp) !== v.n * f[1]) return `dec -> frac: ${f[0]}/${f[1]} is not ${m[1]}`;
+    if (gcd(f[0], f[1]) !== 1) return `dec -> frac: ${f[0]}/${f[1]} is not in its simplest form`;
+    const all = q.choices.map(parseFrac);
+    if (all.some(x => !x)) return 'dec -> frac: an option is not a fraction';
+    for (const of of all) if (gcd(of[0], of[1]) !== 1) return `dec -> frac: the option ${of[0]}/${of[1]} is not in its simplest form, but the stem asks for one`;
+    for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
+      if (all[i][0] * all[j][1] === all[j][0] * all[i][1]) return `dec -> frac: two options are the same fraction (${all[i].join('/')} and ${all[j].join('/')})`;
+    }
+    return null;
+  }
+  if ((m = text.match(/costs (\d+) cents, which is written \$(\d+\.\d\d)\. What fraction of one dollar is that, in its simplest form\?$/))) {
+    const c = Number(m[1]), printed = DP(m[2]);
+    if (printed.n !== c) return `money fraction: the stem prints $${m[2]} against ${c} cents`;
+    const f = parseFrac(q.answerText);
+    if (!f) return 'money fraction: the key is not a fraction';
+    if (f[0] * 100 !== c * f[1]) return `money fraction: ${f[0]}/${f[1]} is not ${c}/100`;
+    if (gcd(f[0], f[1]) !== 1) return `money fraction: ${f[0]}/${f[1]} is not in its simplest form`;
+    for (const o of q.choices) {
+      const of = parseFrac(o);
+      if (!of) return 'money fraction: an option is not a fraction';
+      if (gcd(of[0], of[1]) !== 1) return `money fraction: the option ${of[0]}/${of[1]} is not in its simplest form, but the stem asks for one`;
+    }
+    return null;
+  }
+  if ((m = text.match(/^(.+?) says that (\d+\.\d+) of a dollar is (\d+) cents\. What is wrong with that\?$/))) {
+    const v = DP(m[2]);
+    if (v.dp > 2) return `money decimal: ${m[2]} is finer than one cent`;
+    const trueCents = v.n * TEN(2 - v.dp);
+    if (trueCents === Number(m[3])) return `money decimal: the printed claim (${m[3]} cents) is CORRECT - the stem contradicts itself`;
+    const want = `which is ${trueCents} cents.`;
+    const hits = q.choices.filter(c => strip(c).endsWith(want)).length;
+    if (hits !== 1) return `money decimal: ${hits} options end with the true value ${trueCents} cents`;
+    if (!strip(q.choices[keyIdx]).endsWith(want)) return 'money decimal: the key does not carry the true value';
+    return null;
+  }
+
+  /* --- PRINCIPLE 4: operations in money and measures ------------------------ */
+  if ((m = text.match(/^(\d+\.\d+) ([+−×÷]) (\d+(?:\.\d+)?) = \?$/))) {
+    const a = DP(m[1]), b = DP(m[3]);
+    let want;
+    if (m[2] === '+' || m[2] === '−') {
+      const d = Math.max(a.dp, b.dp);
+      const x = a.n * TEN(d - a.dp), y = b.n * TEN(d - b.dp);
+      want = DV(m[2] === '+' ? x + y : x - y, d);
+      if (want.n < 0) return `${m[2]}: the stem asks for a negative answer`;
+    } else if (m[2] === '×') {
+      if (b.dp !== 0) return '×: P4 multiplies a decimal by a WHOLE number only';
+      want = DV(a.n * b.n, a.dp);
+    } else {
+      if (b.dp !== 0) return '÷: P4 divides a decimal by a WHOLE number only';
+      if (a.n % b.n !== 0) return `÷: ${m[1]} does not divide exactly by ${m[3]}`;
+      want = DV(a.n / b.n, a.dp);
+    }
+    if (!ans || !DEQ(ans, want)) return `${m[1]} ${m[2]} ${m[3]}: expected ${DTXT(want)}, key says ${strip(q.answerText)}`;
+    if (decCountWhere(q, x => DEQ(x, want)) !== 1) return 'arithmetic: two options are the correct answer';
+    return null;
+  }
+  if ((m = text.match(/spends \$(\d+\.\d\d) at .* and has \$(\d+\.\d\d) left\. How much money did .* have at first\?$/))) {
+    const want = DV(DP(m[1]).n + DP(m[2]).n, 2);
+    return ans && DEQ(ans, want) ? null : `start amount: ${m[1]} + ${m[2]} = ${DTXT(want)}, key says ${strip(q.answerText)}`;
+  }
+  if ((m = text.match(/^At NTUC (a|an) (.+?) costs \$(\d+\.\d\d) and (?:a|an) (.+?) costs \$(\d+\.\d\d)\. How much more does the (.+?) cost\?$/))) {
+    if (m[6] !== m[2]) return `money compare: the stem prices "${m[2]}" but asks about "${m[6]}"`;
+    const hi = DP(m[3]), lo = DP(m[5]);
+    if (hi.n <= lo.n) return `money compare: the item asked about ($${m[3]}) is not the dearer one`;
+    const want = DV(hi.n - lo.n, 2);
+    return ans && DEQ(ans, want) ? null : `money compare: ${m[3]} − ${m[5]} = ${DTXT(want)}, key says ${strip(q.answerText)}`;
+  }
+  if ((m = text.match(/^(.+?) works out (\d+) \+ (\d+\.\d+)\. .+ writes the (\d) underneath the (\d) and gets (\d+\.\d+)\. What is the correct answer\?$/))) {
+    const w = DP(m[2]), b = DP(m[3]), claim = DP(m[6]);
+    if (m[5] !== m[2] || m[4] !== m[3].split('.')[1]) return 'align error: the digits named are not the digits of the two numbers';
+    const want = DV(w.n * TEN(b.dp) + b.n, b.dp);
+    /* the printed wrong answer must be EXACTLY what lining up the last digits gives */
+    const slip = DV(w.n + b.n, b.dp);
+    if (!DEQ(claim, slip)) return `align error: the printed slip ${m[6]} is not what lining up the last digits gives (${DTXT(slip)})`;
+    if (DEQ(claim, want)) return `align error: the printed "wrong" answer ${m[6]} is correct`;
+    if (!ans || !DEQ(ans, want)) return `align error: ${m[2]} + ${m[3]} = ${DTXT(want)}, key says ${strip(q.answerText)}`;
+    if (decCountWhere(q, x => DEQ(x, want)) !== 1) return 'align error: two options are the correct answer';
+    return null;
+  }
+  if ((m = text.match(/buys (?:a|an) .+ for \$(\d+\.\d\d) and (?:a|an) .+ for \$(\d+\.\d\d), and pays with a \$(\d+) note\. How much change, in dollars\?$/))) {
+    const want = Number(m[3]) * 100 - DP(m[1]).n - DP(m[2]).n;
+    if (want <= 0) return `change: the note $${m[3]} does not cover the basket`;
+    if (!q.typed) return 'change: this item is meant to be typed';
+    if (Math.round(q.answer * 100) !== want) return `change: expected ${DTXT(DV(want, 2))}, key says ${q.answer}`;
+    if (strip(q.answerText) !== '$' + DTXT(DV(want, 2))) return `change: answerText "${strip(q.answerText)}" is not the money form`;
+    return null;
+  }
+  if ((m = text.match(/^At the school bookshop (?:a|an) .+ costs \$(\d+\.\d\d)\. Which calculation gives the cost of (\d+) of them\?$/))) {
+    const want = `${m[2]} × $${m[1]}`;
+    if (strip(q.choices[keyIdx]) !== want) return `which calculation: expected "${want}", key says "${strip(q.choices[keyIdx])}"`;
+    if (q.choices.filter(c => strip(c) === want).length !== 1) return 'which calculation: the true calculation is offered twice';
+    return null;
+  }
+  if ((m = text.match(/^One lap of the running track at .+ is (\d+\.\d+) km\. .+ runs (\d+) laps\./))) {
+    const lap = DP(m[1]);
+    const want = DV(lap.n * Number(m[2]), lap.dp);
+    if (!ans || !DEQ(ans, want)) return `track: ${m[1]} × ${m[2]} = ${DTXT(want)}, key says ${strip(q.answerText)}`;
+    if (decCountWhere(q, x => DEQ(x, want)) !== 1) return 'track: two options are the correct answer';
+    return null;
+  }
+  if ((m = text.match(/pumps (\d+) litres of petrol at \$(\d+\.\d\d) per litre and pays with a \$(\d+) note\. How much change is there\?$/))) {
+    const cost = Number(m[1]) * DP(m[2]).n;
+    const want = DV(Number(m[3]) * 100 - cost, 2);
+    if (want.n <= 0) return `petrol: the note $${m[3]} does not cover ${m[1]} litres at $${m[2]}`;
+    if (!ans || !DEQ(ans, want)) return `petrol: change is ${DTXT(want)}, key says ${strip(q.answerText)}`;
+    if (decCountWhere(q, x => DEQ(x, want)) !== 1) return 'petrol: two options are the correct answer';
+    return null;
+  }
+  if ((m = text.match(/^A stall at the wet market packs (\d+\.\d+) kg of .+ equally into (\d+) (\w+)\. How much do (\d+) of the \3 hold altogether\?$/))) {
+    const total = DP(m[1]), trays = Number(m[2]), want = Number(m[4]);
+    if (want >= trays) return `share: asked for ${want} of ${trays} - that is the whole lot`;
+    if (total.n % trays !== 0) return `share: ${m[1]} kg does not share equally into ${trays}`;
+    const per = total.n / trays;
+    const key = DV(per * want, total.dp);
+    if (!ans || !DEQ(ans, key)) return `share: ${m[1]} ÷ ${trays} × ${want} = ${DTXT(key)}, key says ${strip(q.answerText)}`;
+    if (decCountWhere(q, x => DEQ(x, key)) !== 1) return 'share: two options are the correct answer';
+    if (decCountWhere(q, x => DEQ(x, DV(per, total.dp))) !== 1) return 'share: the stop-after-dividing distractor is missing or doubled';
+    return null;
+  }
+
+  return 'decimals: no oracle matched this stem - every generator in js/topics/p4-decimals.js ' +
+    'must ship its oracle in the same commit (js/topics/README.md)';
+}
+
+/* ---------- DECIMALS GATES: the coincidence / format-tell / wording rules,
+   extended for a topic whose answers are decimals (sweep 2026-09-15) ---------
+   RULE D1  matching decimal places. In an MC whose options are all plain
+            decimals, the KEY's number of decimal places must be shared by at
+            least one distractor. "0.5" against "0.45 / 0.62 / 0.38" points at
+            itself as loudly as gLPerimDiff's prose key did.
+   RULE D2  the digit-count trap must bite. A generator that declares
+            q.decCompare is offering the numbers themselves for comparison, so
+            D1 does not apply; instead the key may not be the ONLY option with
+            the most decimal places (asking for the greatest) or the fewest
+            (asking for the smallest) - otherwise "count the digits" wins.
+   RULE D3  money is written like money. Any $ amount carrying a decimal point,
+            in the stem or in an option, must show exactly two places.
+   RULE D4  named distractors only. A generator that stamps q.decAuthored
+            asserts those three strings ARE the three non-key options: no padded
+            distractor, and no named one colliding with the key. This is the
+            string form of the shared q.authored contract, and it binds on the
+            money items, where parseFloat("$6.25") is NaN and q.authored cannot. */
+const DEC_PURE = /^\$?\d+(\.\d+)?( (kg|km|cm|mm|m|g|ℓ|ml|l))?$/;
+function decGates(q, topic) {
+  if (topic !== 'decimals') return null;
+  const stemMoney = String(strip(q.q)).match(/\$\d+\.\d+/g) || [];
+  for (const mm of stemMoney) if (!/^\$\d+\.\d\d$/.test(mm)) return `money format: the stem writes "${mm}" - a money amount with a point shows two places`;
+  const raw = (q.choices || []).map(strip);
+  for (const c of raw) {
+    const om = c.match(/\$\d+\.\d+/g) || [];
+    for (const mm of om) if (!/^\$\d+\.\d\d$/.test(mm)) return `money format: an option writes "${mm}" - a money amount with a point shows two places`;
+  }
+  if (Array.isArray(q.decAuthored)) {
+    const named = new Set(q.decAuthored);
+    if (named.has(raw[q.correct])) return `named distractor identical to the key (${raw[q.correct]})`;
+    for (let i = 0; i < raw.length; i++) {
+      if (i === q.correct) continue;
+      if (!named.has(raw[i])) return `padded distractor shipped ("${raw[i]}"); named: ${q.decAuthored.join(', ')}`;
+    }
+  }
+  if (raw.length !== 4 || !raw.every(c => DEC_PURE.test(c))) return null;
+  const dps = raw.map(c => { const v = decOf(c); return v ? v.dp : -1; });
+  if (dps.some(d => d < 0)) return null;
+  const keyDp = dps[q.correct];
+  if (q.decCompare) {
+    if (new Set(dps).size < 2) return 'decCompare declared but every option has the same number of decimal places';
+    const maxDp = Math.max(...dps), minDp = Math.min(...dps);
+    const wantMax = /greatest/i.test(strip(q.q));
+    if (wantMax && keyDp === maxDp && dps.filter(d => d === maxDp).length === 1) {
+      return `digit-count tell: the greatest is the ONLY option with ${maxDp} decimal places (${raw.join(' | ')})`;
+    }
+    if (!wantMax && keyDp === minDp && dps.filter(d => d === minDp).length === 1) {
+      return `digit-count tell: the smallest is the ONLY option with ${minDp} decimal places (${raw.join(' | ')})`;
+    }
+    return null;
+  }
+  if (dps.filter(d => d === keyDp).length === 1) {
+    return `decimal-place tell: the key is the only option written to ${keyDp} decimal place(s) (${raw.join(' | ')})`;
+  }
+  return null;
+}
+
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
 /* Return: null = verified, string = failure, false = no oracle matched. */
-function oracle(q) {
+function oracle(q, topic) {
+  /* SWEEP 2026-09-15: the decimals bank is dispatched first and exhaustively, so
+     no looser branch below can claim one of its stems and no stem can escape. */
+  if (topic === 'decimals') return decimalsOracle(q);
   const text = strip(q.q);
   const extra = strip(q.extra || '');
   const ansNum = parseFloat(strip(q.answerText));
@@ -2052,10 +2455,13 @@ function coincidence(q) {
   /* Only a plain number (optionally with one unit word) counts as numeric here.
      A calculation option ("6 + 3 + 6 + 3") or a rendered mixed number would
      otherwise parseFloat down to its first digit and collide spuriously. */
-  const PURE = /^\d+(\.\d+)?( (cm²|cm|m²|m|km|kg|g|ℓ|ml|min|s|°|%))?$/;
+  /* SWEEP 2026-09-15: a leading "$" is part of how a money option is WRITTEN, not
+     a reason to stop checking it. Without this the duplicate-option half of this
+     gate skipped every money MC in the game. */
+  const PURE = /^\$?\d+(\.\d+)?( (cm²|cm|m²|m|km|kg|g|ℓ|ml|min|s|°|%))?$/;
   const rawOpts = (q.choices || []).map(strip);
   const numeric = rawOpts.length > 0 && rawOpts.every(c => PURE.test(c));
-  const opts = rawOpts.map(parseFloat);
+  const opts = rawOpts.map(c => parseFloat(String(c).replace(/^\$/, '')));
   let m, L = null, B = null, where = '';
   const sq = s => { L = s; B = s; };
 
@@ -2117,7 +2523,9 @@ function coincidence(q) {
 
    RULE 2, "long" >= "wide": a stem that prints "X ... long and Y ... wide" must
    print X >= Y. Was flipped in 1,710 of 8,000 draws across three generators. */
-const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area']);
+/* SWEEP 2026-09-15: `decimals` joins the pilot files - the format-tell rule and
+   the "long" >= "wide" rule are contract rules, not geometry rules. */
+const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'decimals']);
 const optForm = s => {
   const t = strip(s);
   if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';
@@ -2188,8 +2596,10 @@ for (const g of GENS) {
     if (coin) { err = coin; badQ = q; break; }
     const pilot = pilotGates(q, g.topic);
     if (pilot) { err = pilot; badQ = q; break; }
+    const dec = decGates(q, g.topic);
+    if (dec) { err = dec; badQ = q; break; }
     distinct.add(qKey(q));
-    const o = oracle(q);
+    const o = oracle(q, g.topic);
     if (o === false) continue;
     matched++;
     if (o) { err = o; badQ = q; break; }

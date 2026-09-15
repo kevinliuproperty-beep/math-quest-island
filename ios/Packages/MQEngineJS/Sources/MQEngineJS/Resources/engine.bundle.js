@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260916-a1a4367 */
-/* ENGINE_BUILD_META {"stamp":"20260916-a1a4367","date":"2026-09-16","sha":"a1a4367","dirty":false,"payloadHash":"6261e6c4fdb61eef","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260916-a1a4367","date":"2026-09-16","sha":"a1a4367","dirty":false,"payloadHash":"6261e6c4fdb61eef","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260916-744e14f */
+/* ENGINE_BUILD_META {"stamp":"20260916-744e14f","date":"2026-09-16","sha":"744e14f","dirty":false,"payloadHash":"1024e094c9807f4b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260916-744e14f","date":"2026-09-16","sha":"744e14f","dirty":false,"payloadHash":"1024e094c9807f4b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -1259,6 +1259,23 @@ var buildSetFor = MQI.buildSetFor;
  * factor is a 2/3/4/5/10 table and the other is 1-10, and fails any number above
  * 1000 anywhere. Two generators used to leave the five tables - gDivShareP2 in
  * 5.6% of draws and gDivCheckP2 in 10.7% - and nothing caught them.
+ *
+ * NO OPTION MAY CARRY AN ODD TOKEN (2026-09-16, fourth-pass WOUND 1). A numeral
+ * or a word that appears in exactly ONE of the four options singles that option
+ * out, and a child who bins it or picks it has done no mathematics. v4's
+ * gMulRepeatAdd shipped n × v, w × v, n × n and v × v: w was used once, and
+ * "bin the odd numeral, then take the remaining unlike product" was the key in
+ * 20,000 of 20,000 draws. The p2 TOKEN RULER in tools/gen-sanity.mjs fails any
+ * p2 bank where an odd token hands the key over in 60% of a sample, with that
+ * option set as its negative control.
+ *
+ * gCompareError: THE DECIDING PLACE VARIES (2026-09-16, fourth-pass WOUND 2).
+ * Fixing the hundreds as the deciding place on every draw left "start with the
+ * hundreds" AND "name the other number" together finding the key in 100% of
+ * draws with no digit compared, on the most-served generator in the topic. The
+ * hundreds decide in a third of draws, the tens in a third (the hundreds tie)
+ * and the ones in a third (the hundreds and the tens tie), so the taught rule is
+ * necessary and never sufficient. Measured floors are in the lane note.
  */
 (function () {
   const G = MQI.gen;
@@ -1940,25 +1957,41 @@ function gSkipCount(){
    gate exists to stop, one bank over. Asserted by the p2 option-feature gate in
    tools/gen-sanity.mjs, which treats "+ vs ×" and "same-number vs
    different-number product" as features and fails any p2 bank whose key is the
-   only option carrying one. */
+   only option carrying one.
+
+   REFUTATION FIX (fourth pass 2026-09-16, WOUND 1). That option set was n × v,
+   w × v, n × n and v × v - built from THREE numerals, and w appeared in exactly
+   ONE of the four options. So "find the numeral that is used once, bin that
+   option, then take the one of the three left that multiplies two different
+   numbers" was the key in 20,000 of 20,000 draws on two seeds, with no addend
+   counted: the 100% floor did not move, only the rule that reaches it. The
+   option-feature gate cannot see it - numeral frequency across the option list
+   is not one of the three features it reads.
+
+   v × v is now w × n: the miscount multiplied by the wrong pair, which is a real
+   slip and uses the numerals the other options already use. Every numeral now
+   appears in at least two options, so no option can be singled out by an odd
+   token, and THREE of the four multiply unlike numbers, so the one-rule "take
+   the unlike product" route is 1 in 3. Asserted by the p2 TOKEN RULER in
+   tools/gen-sanity.mjs (the v4 option set is its negative control). */
 function gMulRepeatAdd(){
   let n = 4, v = 6, w = 5, g = 0;
   do {
     v = pick([2, 3, 4, 5, 10]); n = ri(2, 5); w = n + pick([1, -1]);
     g++;
   } while (g < 400 && !(n !== v && w >= 1 && w !== v &&
-           uniq4([n + ' × ' + v, w + ' × ' + v, n + ' × ' + n, v + ' × ' + v]) &&
-           uniq4([n * v, w * v, n * n, v * v])));
+           uniq4([n + ' × ' + v, w + ' × ' + v, n + ' × ' + n, w + ' × ' + n]) &&
+           uniq4([n * v, w * v, n * n, w * n])));
   const addends = Array.from({ length: n }, () => v).join(' + ');
   const many = w > n;
   return mcText('Which multiplication has the same answer as <b>' + addends + '</b>?', '',
     n + ' × ' + v,
-    [w + ' × ' + v, n + ' × ' + n, v + ' × ' + v],
+    [w + ' × ' + v, n + ' × ' + n, w + ' × ' + n],
     'Count the ' + v + 's: there are ' + n + ' of them, so this is ' + n + ' groups of ' + v +
     ', which is ' + n + ' × ' + v + ' = ' + (n * v) + '. Counting one group too ' +
     (many ? 'many' : 'few') + ' gives ' + w + ' × ' + v + ', which is ' + v + ' too ' +
     (many ? 'much' : 'little') + ', and multiplying the wrong pair gives ' + n + ' × ' + n +
-    ' or ' + v + ' × ' + v + '. Multiplication is a short way of writing the same number added ' +
+    ' or ' + w + ' × ' + n + '. Multiplication is a short way of writing the same number added ' +
     'over and over - that is the whole idea, and it is why the times tables are worth knowing ' +
     'by heart.');
 }
@@ -2328,63 +2361,106 @@ function gOrderP2(){
     'from ' + (up ? 'smallest to greatest' : 'greatest to smallest') + ' they are ' + key + '.');
 }
 
-/* FORMAT 4.4 - error spotting, diagnose (pool 3, 2 steps). Drawn so the ones AND
-   the tens both point the wrong way, and only the hundreds rule gets it right -
-   so the item cannot be answered by reading any single digit.
+/* FORMAT 4.4 - error spotting, diagnose (pool 3, 2 steps). The child has to find
+   the place that DECIDES and then read it the right way round; neither half is
+   enough on its own.
 
    REFUTATION FIX (third pass 2026-09-15, KILL 1). The option set used to be the
    key plus three readings that all ended on the number the CHARACTER named, so
-   exactly one option on the screen disagreed with the character and it was
-   always the key: "the question says something went wrong, so it must be the
-   other number" scored 100% in 20,000 of 20,000 draws, on the most-served
-   generator in the topic (10.9% of every session), with no hundreds compared at
-   all. One of the three was worse than useless - it stated the CORRECT hundreds
-   comparison and then drew the opposite conclusion, which is not a mistake any
-   child makes.
+   exactly one option on the screen disagreed with her and it was always the key:
+   "the question says something went wrong, so it must be the other number"
+   scored 100% in 20,000 of 20,000 draws, on the most-served generator in the
+   topic (10.9% of every session), with no hundreds compared at all.
 
-   The four options are now written to one sentence in which the stated
-   comparison always implies the number it names (a's digit first, b's second, so
-   "less than" always ends on b and "more than" always ends on a). What varies is
-   the REASON:
-     - the hundreds, read correctly     -> b   (the key: right place, right reading)
-     - the hundreds, read the wrong way -> a   (right place, slipped comparison)
-     - the tens, read correctly         -> a   (wrong place, right reading)
-     - the ones, read the wrong way     -> b   (wrong place, slipped comparison)
-   Two options name each number as the greater one and two state a true digit
-   comparison, so neither the conclusion nor the reading settles the item on its
-   own: only "the hundreds, read the right way round" does, and that is the whole
-   lesson. Asserted in tools/gen-sanity.mjs - the oracle re-derives every printed
-   digit from the stem, fails any option whose comparison contradicts its own
-   conclusion, and fails a draw where fewer than two options name either number. */
+   REFUTATION FIX (fourth pass 2026-09-16, WOUND 2 - the DECIDING-PLACE
+   REDESIGN). The v4 rebuild fixed the hundreds as the deciding place on every
+   draw, so "start with the hundreds" AND "name the other number" together were
+   still the key in 100% of draws with no digit compared - and it printed the
+   stem's own reason with "more" flipped to "less", which a child bins for free.
+   The v4 note named the redesign and this is it: the DECIDING PLACE now varies,
+   one third each.
+
+     hundreds decide  the three places all differ; the tens and the ones both
+                      point at the wrong number, and the character quotes the
+                      ones ("because 8 is more than 5"). The classic trap: a big
+                      ones digit never wins on its own.
+     tens decide      the hundreds tie and the ones tie, so the character says
+                      the two numbers are the SAME. Skip the tied places.
+     ones decide      the hundreds and the tens tie, same claim. Do not stop
+                      early: the last digit still settles it.
+
+   So "start with the hundreds" is necessary and never sufficient, and the key is
+   whichever option names the place that really decides AND reads it correctly.
+   Two option templates, one coarse shape ("The <place> ..."):
+     THE <place> DECIDE   a's digit first, b's second, so "less" always ends on b
+                          and "more" always ends on a - no option can state a
+                          comparison and then contradict it.
+     THE <place> ARE THE SAME  ... so a and b are the same size: the character's
+                          own stopped-too-early conclusion, which is false, so it
+                          is never a defensible answer and it names BOTH numbers,
+                          which keeps the conclusion from singling the key out.
+   Every numeral in the option list appears in at least two options, so no option
+   can be picked out by an odd token. Asserted in tools/gen-sanity.mjs: the
+   oracle re-derives the deciding place and every printed digit from the stem,
+   rejects any option whose comparison contradicts its own conclusion, rejects a
+   ones-comparison on a draw whose stem quotes the ones, and requires exactly one
+   option that states a TRUE comparison at the place that really decides. */
 function gCompareError(){
+  const PLACES = ['hundreds', 'tens', 'ones'];
+  const decide = pick(PLACES);
   let ha = 1, hb = 2, ta = 8, tb = 0, oa = 9, ob = 5, g = 0;
   do {
-    ha = ri(1, 8); hb = ri(ha + 1, 9);
-    ta = ri(5, 9); tb = ri(0, ta - 1);
-    oa = ri(5, 9); ob = ri(0, oa - 1);
+    if (decide === 'hundreds') {
+      /* every place differs, and the two places to the RIGHT of the hundreds
+         both point at a - the number the character wrongly picks. */
+      ha = ri(1, 8); hb = ri(ha + 1, 9);
+      ta = ri(5, 9); tb = ri(0, ta - 1);
+      oa = ri(5, 9); ob = ri(0, oa - 1);
+    } else if (decide === 'tens') {
+      ha = hb = ri(1, 9); oa = ob = ri(0, 9);
+      ta = ri(0, 9); tb = ri(0, 9);
+    } else {
+      ha = hb = ri(1, 9); ta = tb = ri(0, 9);
+      oa = ri(0, 9); ob = ri(0, 9);
+    }
     g++;
-  } while (g < 400 && !(hb > ha && ta > tb && oa > ob));
+  } while (g < 400 && !(decide === 'hundreds' ? (hb > ha && ta > tb && oa > ob)
+                      : decide === 'tens' ? ta !== tb : oa !== ob));
   const a = ha * 100 + ta * 10 + oa, b = hb * 100 + tb * 10 + ob;
+  const dig = { hundreds: [ha, hb], tens: [ta, tb], ones: [oa, ob] };
   /* x is always a's digit and y is always b's, so "less" names b and "more"
      names a: no option can state a comparison and then contradict it. */
-  const line = (place, x, word, y) =>
-    'Start with the ' + place + ': ' + x + ' is ' + word + ' than ' + y + ', so ' +
-    (word === 'less' ? b : a) + ' is greater.';
-  const key = line('hundreds', ha, 'less', hb);
+  const cmp = (place, word) =>
+    'The ' + place + ' decide: ' + dig[place][0] + ' is ' + word + ' than ' + dig[place][1] +
+    ', so ' + (word === 'less' ? b : a) + ' is greater.';
+  const tie = place => 'The ' + place + ' are the same, so ' + a + ' and ' + b + ' are the same size.';
+  const right = dig[decide][0] > dig[decide][1] ? 'more' : 'less';
+  const wrong = right === 'more' ? 'less' : 'more';
+  const win = right === 'less' ? b : a, lose = win === a ? b : a;
+  const key = cmp(decide, right);
   const k = kid();
-  return mcText(k[0] + ' says ' + a + ' is greater than ' + b + ', because ' + oa + ' is more than ' + ob +
-    '. <b>What went wrong?</b>', '',
+  const tail = ' Start on the LEFT and keep moving right until you reach a place where the two digits ' +
+    'are DIFFERENT. That place decides, and nothing to the right of it can change the answer.';
+  if (decide === 'hundreds') {
+    return mcText(k[0] + ' says ' + a + ' is greater than ' + b + ', because ' + oa + ' is more than ' + ob +
+      '. <b>What went wrong?</b>', '',
+      key,
+      [cmp('hundreds', wrong), cmp('tens', 'more'), cmp('tens', 'less')],
+      'The ones digit does not decide anything on its own. ' + a + ' has ' + plural(ha, 'hundred', 'hundreds') +
+      ' and ' + b + ' has ' + plural(hb, 'hundred', 'hundreds') + ', and ' + ha + ' is less than ' + hb +
+      ', so ' + b + ' is the greater number. The tens are the wrong place to look first, and ' + ha +
+      ' is not more than ' + hb + '.' + tail);
+  }
+  const tied = decide === 'tens' ? 'ones' : 'tens';
+  return mcText(k[0] + ' says ' + a + ' and ' + b + ' are the same, because the hundreds and the ' + tied +
+    ' are the same. <b>What went wrong?</b>', '',
     key,
-    [line('hundreds', ha, 'more', hb),
-     line('tens', ta, 'more', tb),
-     line('ones', oa, 'less', ob)],
-    'The ones digit does not decide anything on its own. ' + a + ' has ' + plural(ha, 'hundred', 'hundreds') +
-    ' and ' + b + ' has ' + hb + ', and ' + plural(ha, 'hundred', 'hundreds') + ' is less than ' +
-    plural(hb, 'hundred', 'hundreds') + ', so ' + b + ' is the ' +
-    'greater number. Always start on the LEFT, at the biggest place, and only move right when two ' +
-    'digits are the same. Two of the other answers start in the wrong place, and two read a comparison ' +
-    'backwards: ' + ha + ' is not more than ' + hb + ', and ' + oa + ' is not less than ' + ob +
-    '. Check the PLACE first, then check which digit is really the bigger one.');
+    [cmp(decide, wrong), tie('hundreds'), tie(tied)],
+    'Two places matching does not make two numbers the same. Both have ' +
+    plural(ha, 'hundred', 'hundreds') + ' and both have the same ' + tied +
+    ' digit, so neither of those settles it - the ' + decide.toUpperCase() + ' do. ' +
+    dig[decide][0] + ' is ' + right + ' than ' + dig[decide][1] + ', so ' + win + ' is greater and ' +
+    lose + ' is smaller.' + tail);
 }
 
 
@@ -8051,4 +8127,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260916-a1a4367 */
+/* ENGINE_BUILD_END 20260916-744e14f */

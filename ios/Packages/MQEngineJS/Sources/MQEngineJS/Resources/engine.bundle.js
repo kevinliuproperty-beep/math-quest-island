@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260907-6c174ec */
-/* ENGINE_BUILD_META {"stamp":"20260907-6c174ec","date":"2026-09-07","sha":"6c174ec","dirty":false,"payloadHash":"e807863dc45088a1","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260907-6c174ec","date":"2026-09-07","sha":"6c174ec","dirty":false,"payloadHash":"e807863dc45088a1","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260915-e010bde */
+/* ENGINE_BUILD_META {"stamp":"20260915-e010bde","date":"2026-09-15","sha":"e010bde","dirty":false,"payloadHash":"19ebf839b550939b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260915-e010bde","date":"2026-09-15","sha":"e010bde","dirty":false,"payloadHash":"19ebf839b550939b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -1342,6 +1342,15 @@ function gCompareNum(){
 /* Math Quest Island topic: tables (P3). Self-contained.
  * Authoring rules + registration shape: js/topics/README.md
  * Loads after js/core.js. Touches no other file.
+ *
+ * DEPTH PILOT 2026-09-05 (Kevin 23:02).
+ * PRINCIPLE: multiplication and division are the same fact seen from two ends -
+ * equal groups. A child who knows 6 x 7 = 42 already knows 42 / 6 and 42 / 7.
+ * FORMAT BANK: direct fact (gMulEasy/gMulHard/gMulMixed), division fact
+ * (gDivFact), missing factor (gMissFactor), equal groups in words (gGroups),
+ * fact family (gFactFamily), which is NOT a multiple (gNotMultiple),
+ * doubling strategy (gDoubling), two-step word problem (gDivShare),
+ * error spotting (gDivError).
  */
 (function () {
   const G = MQI.gen;
@@ -1350,19 +1359,134 @@ function gCompareNum(){
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
 
+function mcNum(stem, extra, correct, cands, unit, explain){
+  const seen = new Set([correct]); const d = [];
+  for (const c of cands){
+    if (d.length >= 3) break;
+    if (!Number.isInteger(c) || c <= 0 || seen.has(c)) continue;
+    seen.add(c); d.push(c);
+  }
+  const authored = d.length === 3;
+  let t = 1;
+  while (d.length < 3 && t < 80){
+    if (!seen.has(correct + t)) { seen.add(correct + t); d.push(correct + t); }
+    else if (correct - t > 0 && !seen.has(correct - t)) { seen.add(correct - t); d.push(correct - t); }
+    t++;
+  }
+  const q = finishNum(stem, extra, correct, d, unit, explain);
+  if (authored) q.authored = d;
+  return q;
+}
+function mcText(stem, extra, correctText, wrongs, explain){
+  const opts = shuffle([correctText].concat(wrongs.slice(0, 3)));
+  return { q: stem, extra: extra || '', choices: opts, correct: opts.indexOf(correctText),
+           explain: explain, answerText: correctText };
+}
+
+const ALL_TABLES = EASY_TABLES.concat(HARD_TABLES);
+
+/* FORMAT 1 - direct fact recall (pools 1, 2) */
 function gMulEasy(){ return gMul(EASY_TABLES); }
 function gMulHard(){ return gMul(HARD_TABLES); }
+function gMulMixed(){ return Math.random()<0.5 ? gMulHard() : gMul([3,4,6,7,8,9]); }
+
+/* FORMAT 2 - the same fact from the division end (pool 1) */
 function gDivFact(){
-  const a=pick(EASY_TABLES.concat(HARD_TABLES)), b=ri(2,10), p=a*b;
+  const a=pick(ALL_TABLES), b=ri(2,10), p=a*b;
   return finishNum(p+' ÷ '+a+' = ?','',b,[b+1,b-1,a,b+2],'',
     'Think multiplication: '+a+' × <b>'+b+'</b> = '+p+', so '+p+' ÷ '+a+' = '+b+'.');
 }
+
+/* FORMAT 3 - missing factor (pool 2) */
 function gMissFactor(){
-  const a=pick(EASY_TABLES.concat(HARD_TABLES)), b=ri(2,10), p=a*b;
+  const a=pick(ALL_TABLES), b=ri(2,10), p=a*b;
   return finishNum(a+' × ? = '+p,'',b,[b+1,b-1,a,b+2],'',
     a+' × <b>'+b+'</b> = '+p+'. You can also work it out as '+p+' ÷ '+a+' = '+b+'.');
 }
-function gMulMixed(){ return Math.random()<0.5 ? gMulHard() : gMul([3,4,6,7,8,9]); }
+
+/* FORMAT 4 - equal groups described in words (pool 1) */
+const GROUP_CTX = [
+  ['The hawker centre has','tables','chairs at each table','chairs'],
+  ['The school hall has','rows of chairs','chairs in each row','chairs'],
+  ['Siti packs','boxes of kaya toast','slices in each box','slices'],
+  ['The MRT platform has','benches','seats on each bench','seats']
+];
+function gGroups(){
+  const c=pick(GROUP_CTX), a=pick(ALL_TABLES), b=ri(2,10), p=a*b;
+  return mcNum(c[0]+' '+a+' '+c[1]+', with '+b+' '+c[2]+'. <b>How many '+c[3]+' are there altogether?</b>','',
+    p,[a+b, p-a, p+b],'',
+    'Equal groups means multiply: '+a+' groups of '+b+' = '+a+' × '+b+' = '+p+' '+c[3]+
+    '. Adding the two numbers counts the groups, not what is inside them.');
+}
+
+/* FORMAT 5 - fact family: write the matching division (pool 2) */
+function gFactFamily(){
+  const a=pick(HARD_TABLES); let b=ri(2,10); while(b===a) b=ri(2,10);
+  const p=a*b;
+  return mcText('You know that '+a+' × '+b+' = '+p+'. <b>Which division fact belongs to the same fact family?</b>','',
+    p+' ÷ '+a+' = '+b,
+    [p+' ÷ '+b+' = '+(a+1), a+' ÷ '+b+' = '+p, p+' ÷ '+(b+1)+' = '+a],
+    'A fact family shares the same three numbers: '+a+', '+b+' and '+p+'. From '+a+' × '+b+' = '+p+
+    ' you get '+p+' ÷ '+a+' = '+b+' and '+p+' ÷ '+b+' = '+a+'. Division starts from the largest number, the product.');
+}
+
+/* FORMAT 6 - which is NOT a multiple (pool 2) */
+function gNotMultiple(){
+  const a=pick(HARD_TABLES);
+  const ms=shuffle([2,3,4,5,6,7,8,9,10]).slice(0,3).map(k=>a*k);
+  let bad=pick(ms)+pick([1,2,3].filter(k=>k<a));
+  let guard=0;
+  while ((bad%a===0 || ms.indexOf(bad)>=0) && guard<40){ bad=pick(ms)+ri(1,a-1); guard++; }
+  const opts=shuffle(ms.concat([bad]));
+  /* WOUND 2 (refutation 2026-09-05): "multiple" is P4 Factors and Multiples
+     vocabulary (this repo has p4-factors-multiples.js for it). The mathematics
+     is P3 3.1; only the word was out of year, so the word is what changed. */
+  return { q:'Which of these numbers is <b>NOT</b> in the '+a+' times table?', extra:'',
+    choices:opts.map(String), correct:opts.indexOf(bad),
+    explain:'Count in '+a+'s: '+a+', '+(2*a)+', '+(3*a)+', '+(4*a)+'… A number in the '+a+
+      ' times table divides by '+a+' with nothing left over. '+bad+' ÷ '+a+' leaves a remainder of '+(bad%a)+
+      ', so '+bad+' is not in the '+a+' times table.',
+    answerText:String(bad) };
+}
+
+/* FORMAT 7 - doubling strategy: build a new fact from a known one (pool 3) */
+function gDoubling(){
+  const a=pick([3,4,6,7,8,9]), b=ri(3,9), p=a*b;
+  return mcNum('You know that '+a+' × '+b+' = '+p+'. Use <b>doubling</b> to work out '+(2*a)+' × '+b+'.','',
+    2*p,[p+2, p+a, p+b],'',
+    'Doubling one factor doubles the product. '+(2*a)+' is double '+a+', so '+(2*a)+' × '+b+
+    ' = double '+p+' = '+(2*p)+'. Adding 2 to the answer doubles nothing: it is the factor that doubled, not the product by 2 units.');
+}
+
+/* FORMAT 8 - two-step word problem, division then multiplication (pool 3) */
+const SHARE_CTX = [
+  ['Ah Huat packs','curry puffs','boxes','boxes'],
+  ['Mrs Lim packs','stickers','packets','packets'],
+  ['The canteen packs','buns','trays','trays']
+];
+function gDivShare(){
+  const c=pick(SHARE_CTX);
+  const g=pick(HARD_TABLES), each=ri(3,10), total=g*each;
+  let want=ri(2,g-1); if(want<2) want=2;
+  return mcNum(c[0]+' '+total+' '+c[1]+' equally into '+g+' '+c[2]+'. <b>How many '+c[1]+' are in '+
+    want+' '+c[3]+'?</b>','',
+    want*each,[each, total-want, want*g],'',
+    'Step 1: one '+c[2].replace(/s$/,'')+' gets '+total+' ÷ '+g+' = '+each+' '+c[1]+
+    '. Step 2: '+want+' × '+each+' = '+(want*each)+'. Stopping after the division answers only one '+
+    c[2].replace(/s$/,'')+', which is the usual slip.');
+}
+
+/* FORMAT 9 - error spotting: check a division with multiplication (pool 3) */
+function gDivError(){
+  const a=pick(HARD_TABLES), b=ri(3,10), p=a*b;
+  const claim = Math.random()<0.5 ? b+1 : b-1;
+  return mcNum('Ravi says '+p+' ÷ '+a+' = '+claim+'. He checked it by working out '+a+' × '+claim+
+    ' = '+(a*claim)+'. <b>What should '+p+' ÷ '+a+' be?</b>','',
+    b,[claim, a, a+b],'',
+    'The check itself shows the mistake: '+a+' × '+claim+' = '+(a*claim)+', not '+p+
+    '. The fact that fits is '+a+' × '+b+' = '+p+', so '+p+' ÷ '+a+' = '+b+
+    '. A division answer is right only when multiplying it back gives the number you started with.');
+}
 
 
   MQI.registerTopic({
@@ -1375,9 +1499,9 @@ function gMulMixed(){ return Math.random()<0.5 ? gMulHard() : gMul([3,4,6,7,8,9]
       missing:{label:'Missing number facts',  tip:'Cover up game: write 7 × ▢ = 42 on paper and race to fill the box.'}
     },
     pools:{
-      1:[[gMulEasy,'mult'],[gMulEasy,'mult'],[gDivFact,'div']],
-      2:[[gMulHard,'mult'],[gDivFact,'div'],[gMissFactor,'missing']],
-      3:[[gMulMixed,'mult'],[gMissFactor,'missing'],[gDivFact,'div']]
+      1:[[gMulEasy,'mult'],[gGroups,'mult'],[gDivFact,'div']],
+      2:[[gMulHard,'mult'],[gMissFactor,'missing'],[gFactFamily,'div'],[gNotMultiple,'mult'],[gMulMixed,'mult']],
+      3:[[gDoubling,'mult'],[gDivShare,'div'],[gDivError,'div'],[gMissFactor,'missing']]
     }
   });
 })();
@@ -1967,6 +2091,30 @@ function gSimplest(){
 /* Math Quest Island topic: geometry (P3). Self-contained.
  * Authoring rules + registration shape: js/topics/README.md
  * Loads after js/core.js. Touches no other file.
+ *
+ * DEPTH PILOT 2026-09-05 (Kevin 23:02 "think like a teacher asking questions in
+ * different formats, variety while testing the principles").
+ * PRINCIPLE: perimeter is the total distance all the way around a flat shape;
+ * area is the space inside it, and the two are not the same measurement.
+ * FORMAT BANK (one principle, many stems a teacher would rotate through):
+ *   direct compute (gPeri), concept check (gPeriConcept),
+ *   compare two figures (gPeriCompare), error spotting (gPeriError),
+ *   two-step word problem (gPeriFence), area (gAreaRect, gSquareArea).
+ *   (gSquarePA was split into gSquarePeri/gSquareArea by main's wave-3 blocker
+ *   fix and integrated here on 2026-09-15; the pilot's redraws ride on both.)
+ *
+ * DEPTH PILOT v2, 2026-09-05 (refutation kills 2 + 3, wound 1):
+ *  - SCOPE. gPeriInverse and gPeriDouble are gone: perimeter-in / side-out is
+ *    MOE P4 1.1 and 1.2, and `p4area` already carries both as
+ *    gRectSideFromPerimeter and gSquareSideFromPerimeter. gPeriFromArea moved
+ *    verbatim into p4-area-perimeter.js (P4 1.1, skill `missing`, pool 2).
+ *    The legacy gMissSide stays put pending its own scope pass.
+ *  - COINCIDENCE BAN. No rectangle in this file may print the same number for
+ *    its perimeter and its area, and no named distractor may collide with the
+ *    key or with another distractor. Enforced by redraw here and asserted
+ *    independently in tools/gen-sanity.mjs.
+ * Every stem is re-derived from its rendered text by an oracle in
+ * tools/gen-sanity.mjs; nothing is trusted from the generator's own answerText.
  */
 (function () {
   const G = MQI.gen;
@@ -1975,40 +2123,181 @@ function gSimplest(){
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
 
-/* The rectangle leaves this file as PURE DATA; js/figures.js draws it.
-   Spec: { type:'rect', length, breadth, unit } - see js/topics/README.md. */
+/* ---- COINCIDENCE BAN (refutation kill 3, 2026-09-05) ----------------------
+   paOk: the figure's perimeter and its area must not print the same number.
+   "A square has sides of 4 cm" (perimeter 16, area 16) is the item Kevin stops
+   on, and in a which-calculation stem the coincidence makes two options
+   defensible outright (6 by 3: 6 + 3 + 6 + 3 = 18 AND 6 x 3 = 18).
+   optsOk: every NAMED distractor must be a positive integer, distinct from the
+   key and from every other named distractor. finishNum shuffles the candidate
+   list, so a collision anywhere in it can surface; requiring the whole list to
+   be clean also means the padding branch never fires and the authored-
+   distractor contract binds on every draw. */
+function paOk(L,B){ return 2*(L+B) !== L*B; }
+function optsOk(correct, cands){
+  const s = new Set([correct]);
+  for (const c of cands){
+    if (!Number.isInteger(c) || c <= 0 || s.has(c)) return false;
+    s.add(c);
+  }
+  return true;
+}
+
+/* Numeric MC whose distractors are all AUTHORED misconceptions: the helper only
+   stamps q.authored when three named wrong answers survived (distinct, positive,
+   never equal to the key), so the harness's distractor-identity contract binds. */
+function mcNum(stem, extra, correct, cands, unit, explain){
+  const seen = new Set([correct]); const d = [];
+  for (const c of cands){
+    if (d.length >= 3) break;
+    if (!Number.isInteger(c) || c <= 0 || seen.has(c)) continue;
+    seen.add(c); d.push(c);
+  }
+  const authored = d.length === 3;
+  let t = 1;
+  while (d.length < 3 && t < 80){
+    if (!seen.has(correct + t)) { seen.add(correct + t); d.push(correct + t); }
+    else if (correct - t > 0 && !seen.has(correct - t)) { seen.add(correct - t); d.push(correct - t); }
+    t++;
+  }
+  const q = finishNum(stem, extra, correct, d, unit, explain);
+  if (authored) q.authored = d;
+  return q;
+}
+/* Word-answer MC (concept checks, error diagnosis). Distractors are hand-written
+   misconceptions, so they are distinct by authoring, not by arithmetic. */
+function mcText(stem, extra, correctText, wrongs, explain){
+  const opts = shuffle([correctText].concat(wrongs.slice(0, 3)));
+  return { q: stem, extra: extra || '', choices: opts, correct: opts.indexOf(correctText),
+           explain: explain, answerText: correctText };
+}
+
+/* INTEGRATION 2026-09-15 (depth pilot x web 2). The rectangle leaves this file as
+   PURE DATA; js/figures.js draws it, and gen-sanity's checkNoMarkup now REFUSES a
+   picture built as markup in q.extra. Spec: { type:'rect', length, breadth, unit }
+   - see js/topics/README.md. The pilot's redraw constraints are unchanged; only
+   where the picture comes from has moved. */
 function rectFig(L,B){ return { type:'rect', length:L, breadth:B, unit:'cm' }; }
 const fig = (q, figure) => (q.figure = figure, q);
 
+/* FORMAT 1 - direct compute, on a labelled figure (pool 1) */
 function gPeri(){
-  const L=ri(3,12), B=ri(2,L); const p=2*(L+B);
+  let L=6,B=4,g=0;
+  do { L=ri(3,12); B=ri(2,L); g++; }
+  while (g<200 && !(paOk(L,B) && optsOk(2*(L+B),[L+B,L*B,2*L+B,2*(L+B)+2])));
+  const p=2*(L+B);
   return fig(finishNum('What is the <b>perimeter</b> of this rectangle?','',p,[L+B,L*B,2*L+B,p+2],'cm',
     'Perimeter = go all the way around: '+L+' + '+B+' + '+L+' + '+B+' = '+p+' cm.'), rectFig(L,B));
 }
 function gAreaRect(){
-  const L=ri(3,12), B=ri(2,Math.min(L,9)); const a=L*B;
+  let L=6,B=4,g=0;
+  do { L=ri(3,12); B=ri(2,Math.min(L,9)); g++; }
+  while (g<200 && !(paOk(L,B) && optsOk(L*B,[2*(L+B),L+B,L*B+L,L*B-B])));
+  const a=L*B;
   return fig(finishNum('What is the <b>area</b> of this rectangle?','',a,[2*(L+B),L+B,a+L,a-B],'cm²',
     'Area = length × breadth = '+L+' × '+B+' = '+a+' cm².'), rectFig(L,B));
 }
-/* Wave-3 blocker fix: gSquarePA rendered BOTH an area face and a perimeter face
- * from one generator, so a pool entry tagged 'peri' could still show an area stem
- * (and vice versa). Split into two deterministic generators so the skill tag on a
- * pool entry is the skill the child actually meets. Same content, no new items. */
+/* Wave-3 blocker fix (main): gSquarePA rendered BOTH an area face and a perimeter
+ * face from one generator, so a pool entry tagged 'peri' could still show an area
+ * stem (and vice versa). Split into two deterministic generators so the skill tag
+ * on a pool entry is the skill the child actually meets. Same content, no new items.
+ * INTEGRATION 2026-09-15: the pilot's coincidence redraw is carried onto BOTH
+ * halves - side 4 is the perimeter-16 / area-16 draw Kevin stops on, and side 2
+ * collides 4 x s with s x s in the option list. */
 function gSquarePeri(){
-  const s=ri(2,12); const p=4*s;
+  let s=5,g=0;
+  do { s=ri(2,12); g++; }
+  while (g<200 && !(4*s !== s*s && optsOk(4*s,[s*s,2*s,4*s+s,4*s-2])));
+  const p=4*s;
   return finishNum('A square has sides of '+s+' cm. What is its <b>perimeter</b>?','',p,[s*s,2*s,p+s,p-2],'cm',
     'A square has 4 equal sides: 4 × '+s+' = '+p+' cm.');
 }
 function gSquareArea(){
-  const s=ri(2,12); const a=s*s;
+  let s=5,g=0;
+  do { s=ri(2,12); g++; }
+  while (g<200 && !(4*s !== s*s && optsOk(s*s,[4*s,2*s,s*s+s,s*s-s])));
+  const a=s*s;
   return finishNum('A square has sides of '+s+' cm. What is its <b>area</b>?','',a,[4*s,2*s,a+s,a-s],'cm²',
     'Area of a square = side × side = '+s+' × '+s+' = '+a+' cm².');
 }
-function gMissSide(){
-  const B=ri(2,9), L=ri(B,12), a=L*B;
-  return finishNum('A rectangle has an <b>area of '+a+' cm²</b>. Its breadth is '+B+' cm. What is its <b>length</b>?','',
-    L,[a-B,B,L+1,L-1],'cm',
-    'Area = length × breadth, so length = '+a+' ÷ '+B+' = '+L+' cm.');
+/* gMissSide DELETED (v3, second-refutation wound 1). "Area and one dimension in,
+   the other dimension out" is MOE P4 1.1 word for word, and p4area ALREADY carries
+   the equivalent as gRectSideFromArea (area + length -> breadth, typed answer). It
+   is deleted rather than moved: moving it would duplicate an objective p4area
+   already tests. With it goes the P3 `missing` skill, which existed only to host it,
+   so this file is now exactly MOE P3 (concepts of area/perimeter; area of a
+   rectangle/square) with no inverse work at all. */
+
+/* FORMAT 2 - concept check: which calculation is the perimeter? (pool 1)
+   KILL 2 (refutation): when L x B = 2(L + B) - 6 by 3, 4 by 4 - the AREA option
+   evaluates to the perimeter and the item has two defensible answers. Redrawn. */
+function gPeriConcept(){
+  let L=7,B=3,g=0;
+  /* WOUND 2 (v3): "long" must print longer than "wide". */
+  do { L=ri(4,12); B=ri(2,11); g++; }
+  while (g<200 && !(L>B && paOk(L,B) && 2*L*B !== 2*(L+B)));
+  if (L<=B){ L=7; B=3; }
+  return mcText('A rectangle is '+L+' cm long and '+B+' cm wide. Which calculation gives its <b>perimeter</b>?','',
+    L+' + '+B+' + '+L+' + '+B,
+    [L+' × '+B, L+' + '+B, L+' × '+B+' × 2'],
+    'Perimeter is the distance all the way around, so every one of the four sides is added: '+
+    L+' + '+B+' + '+L+' + '+B+' = '+(2*(L+B))+' cm. '+L+' × '+B+' is the area, and '+L+' + '+B+
+    ' is only half the way around.');
+}
+
+/* FORMAT 4 - compare two figures, and by how much (pool 2, two steps) */
+function gPeriCompare(){
+  let a=10,b=8,c=5,d=4,pa=36,pb=18,guard=0;
+  do { a=ri(4,14); b=ri(2,12); c=ri(3,13); d=ri(2,11); pa=2*(a+b); pb=2*(c+d); guard++; }
+  while (guard<200 && !(pa>pb && paOk(a,b) && paOk(c,d) &&
+         optsOk(pa-pb,[(a+b)-(c+d), pa, a*b-c*d])));
+  if (pa<=pb){ a=10; b=8; c=5; d=4; pa=36; pb=18; }
+  return mcNum('Rectangle A is '+a+' cm by '+b+' cm. Rectangle B is '+c+' cm by '+d+
+    ' cm. How much <b>longer</b> is the perimeter of A than the perimeter of B?','',
+    pa-pb,[(a+b)-(c+d), pa, a*b-c*d],'cm',
+    'Perimeter of A = 2 × ('+a+' + '+b+') = '+pa+' cm. Perimeter of B = 2 × ('+c+' + '+d+') = '+pb+
+    ' cm. A is longer by '+pa+' − '+pb+' = '+(pa-pb)+' cm. Comparing only one length and one breadth halves the difference.');
+}
+
+/* FORMAT 5 - error spotting, the mistake named as a misconception (pool 3) */
+const PERI_SLIPS = [
+  { key:'half',  say:(L,B)=>L+B,     text:'She added only two sides.' },
+  { key:'area',  say:(L,B)=>L*B,     text:'She worked out the area instead.' },
+  { key:'three', say:(L,B)=>2*L+B,   text:'She left out one side.' }
+];
+function gPeriError(){
+  let L=9,B=7,guard=0;
+  do { L=ri(5,12); B=ri(2,9); guard++; }
+  while (guard<200 && !(L!==B && paOk(L,B) && L+B!==2*L+B &&
+         new Set(PERI_SLIPS.map(s=>s.say(L,B)).concat([2*(L+B)])).size === 4));
+  const slip = pick(PERI_SLIPS), claim = slip.say(L,B), p = 2*(L+B);
+  const wrongs = PERI_SLIPS.filter(s=>s.key!==slip.key).map(s=>s.text).concat(['She counted the four corners as well.']);
+  return mcText('Mei Ling says the perimeter of a rectangle '+L+' cm by '+B+' cm is '+claim+
+    ' cm. <b>What did she do wrong?</b>','', slip.text, wrongs,
+    'The perimeter is '+L+' + '+B+' + '+L+' + '+B+' = '+p+' cm, not '+claim+' cm. '+slip.text+
+    ' Perimeter is the whole walk around the outside, so all four sides must be added.');
+}
+
+/* FORMAT 6 - two-step word problem, Singapore context (pool 3) */
+const FENCE_CTX = [
+  ['Mr Tan','a rectangular vegetable plot at the community garden','fencing'],
+  ['Siti','a rectangular chicken run at the school farm','wire netting'],
+  ['Kumar','a rectangular sandpit at the void deck playground','edging strip']
+];
+function gPeriFence(){
+  const c = pick(FENCE_CTX);
+  let L=7,B=10,rate=5,g=0;
+  /* WOUND 2 (v3): "long" must print longer than "wide" (was flipped in 27% of draws). */
+  do { L=ri(5,15); B=ri(3,12); rate=ri(2,9); g++; }
+  while (g<200 && !(L>=B && paOk(L,B) &&
+         optsOk(2*(L+B)*rate,[L*B*rate,(L+B)*rate,2*(L+B)])));
+  if (L<B){ L=12; B=7; rate=5; }
+  const p=2*(L+B), cost=p*rate;
+  return mcNum(c[0]+' puts '+c[2]+' right around '+c[1]+' that is '+L+' m long and '+B+
+    ' m wide. The '+c[2]+' costs $'+rate+' per metre. <b>How much does it cost altogether, in dollars?</b>','',
+    cost,[L*B*rate, (L+B)*rate, p],'',
+    'Step 1: the distance around is 2 × ('+L+' + '+B+') = '+p+' m. Step 2: '+p+' × $'+rate+' = $'+cost+
+    '. Multiplying the area by the rate answers a different question: fencing goes around the edge, not over the ground.');
 }
 
 
@@ -2018,13 +2307,18 @@ function gMissSide(){
     label:'Perimeter Palace', short:'Area & perimeter', e:'🏰',
     skills:{
       peri:   {label:'Perimeter',              tip:'Perimeter = the walk around the outside. Trace the shape with a finger while adding the sides.'},
-      area:   {label:'Area',                   tip:'Area = length × breadth (count the squares inside). Watch the unit: cm² not cm!'},
-      missing:{label:'Finding a missing side', tip:'Work backwards: if area = length × breadth, then length = area ÷ breadth.'}
+      area:   {label:'Area',                   tip:'Area = length × breadth (count the squares inside). Watch the unit: cm² not cm!'}
     },
     pools:{
-      1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gSquareArea,'area']],
-      2:[[gPeri,'peri'],[gAreaRect,'area'],[gSquareArea,'area']],
-      3:[[gMissSide,'missing'],[gAreaRect,'area'],[gPeri,'peri']]
+      /* INTEGRATION 2026-09-15: the pilot's pools, with main's gSquarePA split
+         applied - every former [gSquarePA,'peri'] is now gSquarePeri and every
+         [gSquarePA,'area'] is gSquareArea, so the skill tag is the skill the child
+         meets. gSquareArea joins pool 1 (as on main) because pool 1's old
+         [gSquarePA,'peri'] entry already showed an area stem on half its draws;
+         without it the split would silently delete area from level 1. */
+      1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area']],
+      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri']],
+      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area']]
     }
   });
 })();
@@ -3363,6 +3657,60 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
 
   /* finishNum prepends its own space to the unit, so these carry none. */
   const CM2 = 'cm²', CM = 'cm';
+  const shuffle = G.shuffle;
+
+  /* DEPTH PILOT 2026-09-05 (Kevin 23:02). PRINCIPLE for the L-shape bank: the
+     perimeter of a composite figure is still the whole walk around the outside,
+     and cutting a rectangular corner out of a rectangle leaves that walk exactly
+     as long as it was. FORMAT BANK: direct compute on the rendered figure
+     (gLPerimeter, gLArea), described in words (gLWords), concept check
+     (gLConcept), error spotting (gLError), compare with a square (gLCompare),
+     inverse from area (gLCornerInverse), two-step word problem (gLSkirting). */
+  function mcNum(stem, extra, correct, cands, unit, explain){
+    const seen = new Set([correct]); const d = [];
+    for (const c of cands){
+      if (d.length >= 3) break;
+      if (!Number.isInteger(c) || c <= 0 || seen.has(c)) continue;
+      seen.add(c); d.push(c);
+    }
+    const authored = d.length === 3;
+    let t = 1;
+    while (d.length < 3 && t < 80){
+      if (!seen.has(correct + t)) { seen.add(correct + t); d.push(correct + t); }
+      else if (correct - t > 0 && !seen.has(correct - t)) { seen.add(correct - t); d.push(correct - t); }
+      t++;
+    }
+    const q = finishNum(stem, extra, correct, d, unit, explain);
+    if (authored) q.authored = d;
+    return q;
+  }
+  function mcText(stem, extra, correctText, wrongs, explain){
+    const opts = shuffle([correctText].concat(wrongs.slice(0, 3)));
+    return { q: stem, extra: extra || '', choices: opts, correct: opts.indexOf(correctText),
+             explain: explain, answerText: correctText };
+  }
+
+  /* ---- COINCIDENCE BAN (refutation kill 3, 2026-09-05) --------------------
+     paOk: no figure in this file may print the same number for its perimeter
+     and its area. optsOk: every NAMED distractor is a positive integer,
+     distinct from the key and from every other named distractor - finishNum
+     shuffles the candidate list, so the whole list has to be clean, and a
+     clean list also means the padding branch never fires and the authored-
+     distractor contract binds on every draw.
+     (gCompositeWordsSub is exempt from paOk: a card with a hole in the middle
+     has no single perimeter to coincide with, and it is never asked for one.) */
+  function paOk(per, area){ return per !== area; }
+  function optsOk(correct, cands){
+    const s = new Set([correct]);
+    for (const c of cands){
+      if (!Number.isInteger(c) || c <= 0 || s.has(c)) return false;
+      s.add(c);
+    }
+    return true;
+  }
+  /* WOUND 3 (refutation): the cut may never exceed two thirds of a side, or the
+     L is a thin unbuildable sliver. Applied to every corner cut in this file. */
+  const capCut = n => Math.max(2, Math.min(n - 3, Math.floor(2 * n / 3)));
 
   /* ---- rectangles and squares: find the missing dimension (1.1, 1.2) ---- */
 
@@ -3383,9 +3731,9 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
   /* pool 1: rectangle, area and one side given, find the other side */
   function gRectSideFromArea() {
     const c = pick(RECT_CTX);
-    const l = ri(4, 15);
-    let w = ri(3, 12);
-    while (w === l) w = ri(3, 12);   /* a rectangle called a rectangle: never a square */
+    let l = 7, w = 4;
+    /* never a square, and never a coincidence draw (perimeter = area) */
+    do { l = ri(4, 15); w = ri(3, 12); } while (w === l || 2 * (l + w) === l * w);
     const area = w * l;
     return finishTyped(
       'Mei Ling has ' + c[0] + '. The ' + c[1] + ' has an area of ' + area +
@@ -3399,7 +3747,8 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
   /* pool 1: square, perimeter given, find one side */
   function gSquareSideFromPerimeter() {
     const c = pick(SQ_CTX);
-    const s = ri(3, 20);
+    let s = 5;
+    do { s = ri(3, 20); } while (4 * s === s * s);   /* side 4: perimeter 16, area 16 */
     return finishTyped(
       'Ravi has ' + c[0] + '. The perimeter of the ' + c[1] + ' is ' + (4 * s) +
       ' cm. What is the length of one side, in cm?',
@@ -3412,9 +3761,8 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
   /* pool 2: rectangle, perimeter and one side given, find the other side */
   function gRectSideFromPerimeter() {
     const c = pick(RECT_CTX);
-    const l = ri(4, 18);
-    let w = ri(3, 14);
-    while (w === l) w = ri(3, 14);
+    let l = 8, w = 5;
+    do { l = ri(4, 18); w = ri(3, 14); } while (w === l || 2 * (l + w) === l * w);
     const per = 2 * (w + l);
     return finishTyped(
       'Siti has ' + c[0] + '. The perimeter of the ' + c[1] + ' is ' + per +
@@ -3429,7 +3777,8 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
   /* pool 2: square, area given, find one side (perfect squares only) */
   function gSquareSideFromArea() {
     const c = pick(SQ_CTX);
-    const s = ri(2, 15);
+    let s = 5;
+    do { s = ri(2, 15); } while (4 * s === s * s);   /* side 4: perimeter 16, area 16 */
     return finishTyped(
       'Kumar has ' + c[0] + '. The ' + c[1] + ' has an area of ' + (s * s) +
       ' cm². What is the length of one side, in cm?',
@@ -3476,17 +3825,30 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
      Sides clockwise from the top-left corner:
        top = W - a, cut down = b, cut across = a, right = H - b, bottom = W, left = H.
      The renderer derives and prints every one of the six from W/H/a/b, so the spec
-     and the picture can never disagree. */
-  function makeL() {
-    const W = ri(7, 16), H = ri(6, 14);
-    const a = ri(2, W - 3), b = ri(2, H - 3);
+     and the picture can never disagree.
+     INTEGRATION 2026-09-15: the figure is now PURE DATA drawn by js/figures.js
+     (main's phase-0 figure contract - gen-sanity's checkNoMarkup refuses a picture
+     built as markup in q.extra), and the pilot's constrained draw is kept intact
+     on top of it: the `extra` predicate, the coincidence ban and the 2/3 cut cap
+     all still choose W/H/a/b before the spec is emitted. js/figures.js emits the
+     same class="lfig" / lf-* labels the old inline builder did, so every oracle
+     that reads the six printed sides keeps binding. */
+  function makeL(extra) {
+    let W = 13, H = 11, a = 4, b = 3, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(7, 16); H = ri(6, 14);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));
+      const per = 2 * (W + H), area = W * H - a * b;
+      ok = paOk(per, area) && (!extra || extra({ W, H, a, b, per, area }));
+    }
+    if (!ok) { W = 13; H = 11; a = 4; b = 3; }
     return { figure: { type: 'lshape', W, H, a, b, unit: 'cm' },
              W, H, a, b, area: W * H - a * b, per: 2 * (W + H) };
   }
 
   /* pool 3: area of the rendered L-shape */
   function gLArea() {
-    const g = makeL();
+    const g = makeL(x => optsOk(x.area, [x.W * x.H, x.per, x.a * x.b, x.area + x.a, x.area + 1]));
     const wrong = g.W * g.H;
     return fig(finishNum(
       'What is the area of this figure?', '', g.area,
@@ -3499,13 +3861,228 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
 
   /* pool 3: perimeter of the rendered L-shape */
   function gLPerimeter() {
-    const g = makeL();
+    const g = makeL(x => optsOk(x.per, [x.area, x.W + x.H, x.per - x.a, x.per + x.a, x.per - 2 * x.b]));
     return fig(finishNum(
       'What is the perimeter of this figure?', '', g.per,
       [g.area, g.W + g.H, g.per - g.a, g.per + g.a, g.per - 2 * g.b], CM,
       'Perimeter means all the way round, so add the six labelled sides: ' +
       (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W + ' + ' + g.H +
-      ' = ' + g.per + ' cm. Missing out the two short sides at the corner is the usual slip.'), g.figure);
+      ' = ' + g.per + ' cm. Missing out the two sides at the notch is the usual slip.'), g.figure);
+  }
+
+  /* pool 3: error spotting on the rendered figure, misconception named */
+  /* KILL 1 (refutation, 67% of draws): the stem said Ravi adds "the four longest
+     sides" while the two he omits - the notch sides a and b - were regularly NOT
+     the two shortest, so a child who did exactly what the stem describes got a
+     third number that was neither the key nor the printed claim. The premise is
+     now made TRUE of the figure by construction: the draw is rejected unless both
+     notch sides are strictly shorter than all four of the others, so "the four
+     longest sides" names exactly the four Ravi added and the printed claim IS
+     their sum. gen-sanity.mjs re-checks this from the six printed labels. */
+  function gLError() {
+    /* WOUND 4 (v3): a 1 cm gap between the 4th and 5th longest sides made "the four
+       longest" a sorting exercise off six near-equal labels. The gap is now >= 2 cm,
+       so which four Ravi added is VISIBLE, not provable. */
+    const g = makeL(x =>
+      Math.max(x.a, x.b) + 2 <= Math.min(x.W - x.a, x.H - x.b, x.W, x.H) &&
+      optsOk(x.per, [x.per - x.a - x.b, x.area, x.W + x.H]));
+    const claim = g.per - g.a - g.b;      /* the four longest sides, summed */
+    return fig(mcNum(
+      'Ravi walks around this figure and adds up only the four longest sides. He says the perimeter is ' +
+      claim + ' cm. <b>What is the correct perimeter of this figure?</b>', '',
+      g.per, [claim, g.area, g.W + g.H], CM,
+      'The four longest sides are ' + (g.W - g.a) + ' cm, ' + (g.H - g.b) + ' cm, ' + g.W +
+      ' cm and ' + g.H + ' cm, and they add to ' + claim + ' cm. Ravi left out the two shortest sides, ' +
+      'the ' + g.a + ' cm and the ' + g.b + ' cm at the notch. Every side of an L-shape is part of the ' +
+      'walk around: ' + (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W +
+      ' + ' + g.H + ' = ' + g.per + ' cm.'), g.figure);
+  }
+
+  /* pool 3: compare the figure with a square, and by how much */
+  function gLCompare() {
+    const g = makeL();
+    let s = ri(3, 20), sOk = false;
+    for (let i = 0; i < 200 && !sOk; i++) {
+      s = ri(3, 20);
+      sOk = 4 * s !== g.per && optsOk(Math.abs(g.per - 4 * s), [g.per, 4 * s, g.area]);
+    }
+    while (4 * s === g.per) s = ri(3, 20);
+    const diff = Math.abs(g.per - 4 * s);
+    const bigger = g.per > 4 * s ? 'the figure' : 'the square';
+    return fig(mcNum(
+      'A square of side ' + s + ' cm sits beside this figure. <b>How much longer is the perimeter of ' +
+      bigger + ' than the perimeter of the other shape?</b>', '',
+      diff, [g.per, 4 * s, g.area], CM,
+      'The figure: add the six labelled sides, ' + (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' +
+      (g.H - g.b) + ' + ' + g.W + ' + ' + g.H + ' = ' + g.per + ' cm. The square: 4 × ' + s + ' = ' +
+      (4 * s) + ' cm. The difference is ' + diff + ' cm. Comparing areas answers a different question.'), g.figure);
+  }
+
+  /* pool 2: the same figure DESCRIBED in words, every dimension stated */
+  function gLWords() {
+    let W = 12, H = 9, a = 4, b = 3, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(8, 18); H = ri(6, 15);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));
+      /* WOUND 2 (v3): "long" must print longer than "wide". */
+      ok = W >= H && paOk(2 * (W + H), W * H - a * b) &&
+           optsOk(2 * (W + H), [2 * (W + H) - a - b, 2 * (W + H) - 2 * a - 2 * b, W * H - a * b]);
+    }
+    if (!ok) { W = 12; H = 9; a = 4; b = 3; }
+    return mcNum(
+      'A rectangular sheet of card is ' + W + ' cm long and ' + H + ' cm wide. A corner piece ' + a +
+      ' cm by ' + b + ' cm is cut away, leaving an L-shape with right angles at every corner. ' +
+      '<b>What is the perimeter of the L-shape?</b>', '',
+      2 * (W + H), [2 * (W + H) - a - b, 2 * (W + H) - 2 * a - 2 * b, W * H - a * b], CM,
+      'Slide the two cut sides back out to the corner: the ' + a + ' cm across and the ' + b +
+      ' cm down replace exactly the pieces they removed. So the walk around is still 2 × (' + W +
+      ' + ' + H + ') = ' + (2 * (W + H)) + ' cm. Cutting a rectangular corner changes the area, not the perimeter.');
+  }
+
+  /* pool 2: concept check on what the cut does */
+  function gLConcept() {
+    return mcText(
+      'A rectangular corner is cut out of a rectangle to make an L-shape with right angles at every corner. ' +
+      '<b>What happens to the perimeter?</b>', '',
+      'It stays the same.',
+      ['It gets smaller.', 'It gets bigger.', 'It is halved.'],
+      'The two new sides at the notch are exactly as long as the two pieces removed from the old sides, ' +
+      'so the total walk around is unchanged. The AREA does get smaller: that is the measurement the cut takes away.');
+  }
+
+  /* pool 3: inverse - the area is given, find the missing corner dimension */
+  function gLCornerInverse() {
+    let W = 12, H = 9, a = 4, b = 3, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(8, 16); H = ri(6, 14);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));   /* wound 3: cut <= 2/3 of the side */
+      ok = paOk(2 * (W + H), W * H - a * b) &&
+           optsOk(b, [a, a * b, W * H - a * b - a]);
+    }
+    if (!ok) { W = 12; H = 9; a = 4; b = 3; }
+    const area = W * H - a * b;
+    return mcNum(
+      'An L-shape is made from a ' + W + ' cm by ' + H + ' cm rectangle with a rectangular corner cut out. ' +
+      'The corner cut out is ' + a + ' cm wide. The area of the L-shape is ' + area +
+      ' cm². <b>How tall is the corner that was cut out?</b>', '',
+      b, [a, W * H - area, area - a], CM,
+      'Step 1: the whole rectangle is ' + W + ' × ' + H + ' = ' + (W * H) + ' cm², so the missing corner is ' +
+      (W * H) + ' − ' + area + ' = ' + (a * b) + ' cm². Step 2: ' + (a * b) + ' ÷ ' + a + ' = ' + b +
+      ' cm. Working backwards from the area is the whole move here.');
+  }
+
+  /* pool 3: two-step word problem in a Singapore context */
+  function gLSkirting() {
+    let W = 10, H = 8, rate = 5, a = 3, b = 2, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(6, 14); H = ri(5, 12); rate = ri(2, 9);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));
+      const p = 2 * (W + H);
+      ok = paOk(p, W * H - a * b) &&
+           optsOk(p * rate, [(W * H - a * b) * rate, (p - a - b) * rate, p]);
+    }
+    if (!ok) { W = 10; H = 8; rate = 5; a = 3; b = 2; }
+    const per = 2 * (W + H);
+    return mcNum(
+      'An L-shaped kitchen floor is a ' + W + ' m by ' + H + ' m rectangle with a ' + a + ' m by ' + b +
+      ' m corner taken out for a store room. Skirting board is fitted right around the edge of the floor at $' +
+      rate + ' per metre. <b>What does the skirting cost altogether, in dollars?</b>', '',
+      per * rate, [(W * H - a * b) * rate, (per - a - b) * rate, per], '',
+      'Step 1: the edge of an L-shape cut from a rectangle is still 2 × (' + W + ' + ' + H + ') = ' + per +
+      ' m, because the two cut sides replace the pieces they removed. Step 2: ' + per + ' × $' + rate +
+      ' = $' + (per * rate) + '. Costing the floor area would buy tiles, not skirting.');
+  }
+
+  /* pool 2: MOVED HERE from the P3 `geometry` topic (refutation wound 1). Area in,
+     perimeter out is MOE P4 1.1 - one dimension of a rectangle from the other and
+     its area - and there is no inverse work at P3 at all. Stem unchanged so the
+     existing gen-sanity oracle keeps binding. */
+  function gPeriFromArea() {
+    let B = 4, L = 7;
+    do { B = ri(2, 9); L = ri(3, 12); }
+    while (L === B || 2 * (L + B) === L * B ||
+           !optsOk(2 * (L + B), [L * B, L + B, 2 * L + B]));
+    const a = L * B, p = 2 * (L + B);
+    return mcNum('A rectangular photo frame has an <b>area of ' + a + ' cm²</b> and a length of ' + L +
+      ' cm. What is its <b>perimeter</b>?', '',
+      p, [a, L + B, 2 * L + B], CM,
+      'Step 1: breadth = area ÷ length = ' + a + ' ÷ ' + L + ' = ' + B + ' cm. Step 2: perimeter = 2 × (' +
+      L + ' + ' + B + ') = ' + p + ' cm. Area and perimeter are different measurements: cm² for the ' +
+      'space inside, cm for the walk around.');
+  }
+
+  /* pool 2: the cut, asked as a DIFFERENCE rather than as a perimeter (refutation
+     wound 4). The answer is 0, and that is the entire point: five of the L formats
+     all evaluated 2(W + H), so this one asks the child to compare two perimeters
+     and discover the cut changed nothing. Not a 2(W + H) computation.
+     KILL (second refutation, 2026-09-05): the key used to read "0 cm, the
+     perimeters are the same." while the three distractors read "12 cm" etc, so in
+     2,000/2,000 draws the key was the only prose option and the only one longer
+     than four characters - a format tell a child settles without any geometry.
+     All four options are now numeric-with-unit and the "same perimeter" idea has
+     moved into the explanation, where it belongs. gen-sanity.mjs now refuses any
+     MC in the three pilot files with exactly one odd-formed option. */
+  function gLPerimDiff() {
+    let W = 12, H = 9, a = 4, b = 3, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(8, 18); H = ri(6, 15);
+      a = ri(2, capCut(W)); b = ri(2, capCut(H));
+      ok = new Set([a + b, 2 * (a + b), a * b]).size === 3 &&
+           paOk(2 * (W + H), W * H - a * b);
+    }
+    if (!ok) { W = 12; H = 9; a = 4; b = 3; }
+    return mcText(
+      'A ' + W + ' cm by ' + H + ' cm rectangular tile has a corner piece ' + a + ' cm by ' + b +
+      ' cm cut away, leaving an L-shape with right angles at every corner. <b>How much longer is ' +
+      'the perimeter of the whole rectangle than the perimeter of the L-shape?</b>', '',
+      '0 cm',
+      [(a + b) + ' cm', (2 * (a + b)) + ' cm', (a * b) + ' cm'],
+      'The answer is 0 cm: the two perimeters are exactly the same. ' +
+      'The cut removes ' + a + ' cm from one side and ' + b + ' cm from the other, but it adds two ' +
+      'brand new sides of exactly ' + a + ' cm and ' + b + ' cm at the notch. What is taken off the walk ' +
+      'is put straight back on, so both perimeters are 2 × (' + W + ' + ' + H + ') = ' + (2 * (W + H)) +
+      ' cm. It is the AREA that drops, by ' + (a * b) + ' cm².');
+  }
+
+  /* pool 3: a composite whose perimeter is NOT the bounding rectangle's. A notch
+     cut out of the MIDDLE of a side (not a corner) adds two new sides and takes
+     none away, so the walk around grows by twice the depth. Six-plus sides,
+     genuinely not 2(W + H) - the counterweight to the corner-cut family. */
+  /* WOUND 3 (v3, second refutation): the depth was uncapped, so 511/2,000 draws cut
+     more than half way through the banner and rendered a U rather than a notched
+     banner. The notch is now capped BOTH ways - width < W/2 and depth strictly less
+     than the shortest side adjacent to it (the two spans of edge either side of the
+     notch, and the H - d of banner left below it) - and the stem now DESCRIBES THE
+     FIGURE FULLY: both spans are printed, so the eight sides are all stated in words
+     and the oracle re-derives the perimeter from the printed numbers alone. */
+  function gNotchPerimeter() {
+    let W = 16, H = 8, n = 5, d = 3, s1 = 5, s2 = 6, ok = false;
+    for (let i = 0; i < 400 && !ok; i++) {
+      W = ri(12, 20); H = ri(6, 10);   /* the notched side is the LONG side */
+      n = ri(3, Math.ceil(W / 2) - 1);           /* notch width strictly under half the long side */
+      s1 = ri(3, W - n - 3); s2 = W - n - s1;    /* the two spans of edge either side */
+      d = ri(2, Math.min(Math.floor((H - 1) / 2), s1 - 1, s2 - 1));
+      ok = 2 * n < W && 2 * d < H && d < Math.min(s1, s2) &&
+           optsOk(2 * (W + H) + 2 * d,
+                  [2 * (W + H), 2 * (W + H) + 2 * n, 2 * (W + H) - 2 * d, W * H - n * d]);
+    }
+    if (!ok) { W = 16; H = 8; n = 6; s1 = 5; s2 = 5; d = 3; }
+    const per = 2 * (W + H) + 2 * d;
+    return mcNum(
+      'A rectangular banner is ' + W + ' cm long and ' + H + ' cm wide. A notch ' + n +
+      ' cm wide and ' + d + ' cm deep is cut out of the middle of one long side, so the notch does not ' +
+      'reach either end. Along that side there is ' + s1 + ' cm of edge before the notch and ' + s2 +
+      ' cm after it, and the banner is still ' + (H - d) +
+      ' cm wide behind the notch. Every corner is a right angle. ' +
+      '<b>What is the perimeter of the banner now?</b>', '',
+      per, [2 * (W + H), 2 * (W + H) + 2 * n, 2 * (W + H) - 2 * d, W * H - n * d], CM,
+      'Walk the eight sides: ' + s1 + ' + ' + d + ' + ' + n + ' + ' + d + ' + ' + s2 + ' + ' + H +
+      ' + ' + W + ' + ' + H + ' = ' + per + ' cm. ' +
+      'Careful: this notch is in the middle of a side, not at a corner. The ' + n +
+      ' cm taken out of the top edge is replaced by the ' + n + ' cm along the bottom of the notch, so ' +
+      'that part of the walk is unchanged. But the two sides of the notch, ' + d + ' cm down and ' + d +
+      ' cm back up, are brand new. Perimeter = 2 × (' + W + ' + ' + H + ') + 2 × ' + d + ' = ' + per +
+      ' cm. A corner cut leaves the perimeter alone; a middle notch makes it longer.');
   }
 
   MQI.registerTopic({
@@ -3515,12 +4092,19 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     skills: {
       missing: { label: 'Finding a missing side', tip: 'Say the formula out loud first, then work it backwards. Area ÷ length = breadth; perimeter ÷ 4 = one side of a square.' },
       compose: { label: 'Composite figures', tip: 'Cut the shape into rectangles with a pencil line, work out each piece, then add. For a hole, take the hole away from the whole.' },
-      around: { label: 'Perimeter of an L-shape', tip: 'Walk a finger right around the outside and count every labelled side. The two short sides at the notch are the ones children forget.' }
+      around: { label: 'Perimeter of an L-shape', tip: 'Walk a finger right around the outside and count every labelled side. The two sides at the notch are the ones children forget — and a corner cut never changes the perimeter, only the area.' }
     },
     pools: {
-      1: [[gRectSideFromArea, 'missing'], [gSquareSideFromPerimeter, 'missing'], [gCompositeWordsAdd, 'compose']],
-      2: [[gRectSideFromPerimeter, 'missing'], [gSquareSideFromArea, 'missing'], [gCompositeWordsAdd, 'compose']],
-      3: [[gCompositeWordsSub, 'compose'], [gLArea, 'compose'], [gLPerimeter, 'around']]
+      /* INTEGRATION 2026-09-15: the pilot's pools, plus main's addition of
+         gCompositeWordsAdd to pool 1 (both sides only ADDED entries here, so the
+         union is the resolution - nothing either lane put in level 1 is dropped). */
+      1: [[gRectSideFromArea, 'missing'], [gSquareSideFromPerimeter, 'missing'], [gLConcept, 'around'],
+          [gCompositeWordsAdd, 'compose']],
+      2: [[gRectSideFromPerimeter, 'missing'], [gSquareSideFromArea, 'missing'], [gCompositeWordsAdd, 'compose'],
+          [gLWords, 'around'], [gPeriFromArea, 'missing'], [gLPerimDiff, 'around']],
+      3: [[gCompositeWordsSub, 'compose'], [gLArea, 'compose'], [gLPerimeter, 'around'],
+          [gLError, 'around'], [gLCompare, 'around'], [gLCornerInverse, 'compose'], [gLSkirting, 'around'],
+          [gNotchPerimeter, 'around']]
     }
   });
 })();
@@ -6280,4 +6864,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260907-6c174ec */
+/* ENGINE_BUILD_END 20260915-e010bde */

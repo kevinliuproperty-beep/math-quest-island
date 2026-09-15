@@ -972,6 +972,292 @@ function oracle(q) {
     return near(e, ansNum) ? null : `more/less: expected ${e}, got ${ansNum}`;
   }
 
+  /* ===== SWEEP 2026-09-15 lane: p3numbers (Thousand Isles) ==================
+     One oracle per FORMAT in the rebuilt bank, each re-deriving the key from the
+     RENDERED stem and never from the generator's own answerText. Several also
+     refute the item's own PREMISE: the error-spotting oracles fail if the printed
+     wrong answer is actually right, or if it maps to two named misconceptions, or
+     if a distractor option ALSO explains it. Anchored stems, above the loose
+     "a + b = ?" / "which number is the greatest" branches further down.
+     The column arithmetic here is written out independently; it is not imported
+     from the topic file. ------------------------------------------------------- */
+  const P3_PLACES = ['thousands', 'hundreds', 'tens', 'ones'];
+  const P3_POW = [1000, 100, 10, 1];
+  const p3dig = n => [0, 1, 2, 3].map(i => Math.floor(n / P3_POW[i]) % 10);
+  const p3add = (a, b, suppressAt) => {
+    const A = p3dig(a), B = p3dig(b); let carry = 0, out = 0;
+    for (let i = 3; i >= 0; i--) { const s = A[i] + B[i] + carry; out += (s % 10) * P3_POW[i]; carry = (s >= 10 && i !== suppressAt) ? 1 : 0; }
+    return out + carry * 10000;
+  };
+  const p3carryCols = (a, b) => {
+    const A = p3dig(a), B = p3dig(b), out = []; let c = 0;
+    for (let i = 3; i >= 0; i--) { const s = A[i] + B[i] + c; if (s >= 10) { out.push(i); c = 1; } else c = 0; }
+    return out;
+  };
+  const p3noCarry = (a, b) => { const A = p3dig(a), B = p3dig(b); let o = 0; for (let i = 0; i < 4; i++) o += ((A[i] + B[i]) % 10) * P3_POW[i]; return o; };
+  const p3smallFromBig = (a, b) => { const A = p3dig(a), B = p3dig(b); let o = 0; for (let i = 0; i < 4; i++) o += Math.abs(A[i] - B[i]) * P3_POW[i]; return o; };
+  const p3digitSum = n => p3dig(n).reduce((s, d) => s + d, 0);
+  const p3opts = qq => (qq.choices || []).map(strip);
+
+  /* PLACE VALUE - compare two digit values inside one number (was gStandsHard) */
+  if ((m = text.match(/^In (\d+), how much more does the digit (\d) stand for than the digit (\d)\?$/))) {
+    const s = m[1], di = m[2], dj = m[3];
+    if (s.length !== 4) return 'p3 stands-compare: expected a 4-digit number, got ' + s;
+    if (s.split(di).length !== 2 || s.split(dj).length !== 2) return 'p3 stands-compare: a named digit is not unique in ' + s;
+    const i = s.indexOf(di), j = s.indexOf(dj);
+    if (i >= j) return 'p3 stands-compare: the first digit named must sit further left, got ' + s + ' ' + di + '/' + dj;
+    const e = Number(di) * Math.pow(10, 3 - i) - Number(dj) * Math.pow(10, 3 - j);
+    if (e <= 0) return 'p3 stands-compare: the difference is not positive';
+    return near(e, ansNum) ? null : `p3 stands-compare: expected ${e}, got ${ansNum}`;
+  }
+
+  /* PLACE VALUE - expanded form. Every option is evaluated; exactly one may sum
+     to the number in the stem, and it must be the key. */
+  if ((m = text.match(/^Which of these shows (\d+) in expanded form\?$/))) {
+    const n = Number(m[1]);
+    const sums = p3opts(q).map(o => {
+      const parts = o.split('+').map(t => t.trim());
+      if (!parts.length || parts.some(t => !/^\d+$/.test(t))) return NaN;
+      return parts.reduce((s, t) => s + Number(t), 0);
+    });
+    if (sums.some(Number.isNaN)) return 'p3 expanded: an option is not a sum of whole numbers: ' + p3opts(q).join(' | ');
+    const hits = sums.filter(v => v === n).length;
+    if (hits !== 1) return `p3 expanded: ${hits} of the four options add up to ${n}`;
+    if (sums[q.correct] !== n) return `p3 expanded: the flagged option adds to ${sums[q.correct]}, not ${n}`;
+    return null;
+  }
+
+  /* PLACE VALUE - error spotting, DIAGNOSE. Re-derives which named misconception
+     produced the printed claim, fails if it is none, two, or the true value, and
+     fails if a distractor option would also explain the claim. */
+  if ((m = text.match(/^In (\d+), (\S+(?: \S+)?) says the digit (\d) stands for (\d+)\. What did (he|she) do wrong\?$/))) {
+    const s = m[1], dig = Number(m[3]), claim = Number(m[4]);
+    if (s.length !== 4) return 'p3 stands-error: expected a 4-digit number, got ' + s;
+    if (s.split(m[3]).length !== 2) return 'p3 stands-error: the digit is not unique in ' + s;
+    const p = s.indexOf(m[3]), val = dig * Math.pow(10, 3 - p);
+    if (claim === val) return `p3 stands-error: the "wrong" claim ${claim} is the correct value`;
+    const slipText = {
+      digit: ' wrote the digit itself instead of what it is worth.',
+      right: ' used the place one column to the right of it.',
+      left: ' used the place one column to the left of it.'
+    };
+    const claimOf = k => k === 'digit' ? dig
+      : k === 'right' ? (p < 3 ? dig * Math.pow(10, 3 - p - 1) : null)
+      : (p > 0 ? dig * Math.pow(10, 3 - p + 1) : null);
+    const fired = Object.keys(slipText).filter(k => claimOf(k) === claim);
+    if (fired.length !== 1) return `p3 stands-error: ${fired.length} named misconceptions produce ${claim}`;
+    const want = slipText[fired[0]];
+    const key = strip(q.answerText);
+    if (!key.endsWith(want)) return `p3 stands-error: claim ${claim} is the "${fired[0]}" slip but the key reads "${key}"`;
+    for (const o of p3opts(q)) {
+      if (o === key) continue;
+      for (const k of Object.keys(slipText)) {
+        if (o.endsWith(slipText[k]) && claimOf(k) === claim) return `p3 stands-error: a distractor also explains ${claim}: "${o}"`;
+      }
+    }
+    return null;
+  }
+
+  /* PLACE VALUE - error spotting, CORRECT the mistake. The stem's own premise
+     (the number written with the empty hundreds place left out) is re-derived. */
+  if ((m = text.match(/^\S+(?: \S+)? writes (\d) thousands, 0 hundreds, (\d) tens and (\d) ones as (\d+)\. What number should (?:he|she) have written\?$/))) {
+    const th = Number(m[1]), t = Number(m[2]), o = Number(m[3]), printed = Number(m[4]);
+    const squashed = th * 100 + t * 10 + o;
+    if (printed !== squashed) return `p3 zero-fix: the stem prints ${printed}, but dropping the zero gives ${squashed}`;
+    const e = th * 1000 + t * 10 + o;
+    return near(e, ansNum) ? null : `p3 zero-fix: expected ${e}, got ${ansNum}`;
+  }
+
+  /* COMPARE - between two numbers. Exactly one option may lie strictly between. */
+  if ((m = text.match(/^Which number is between (\d+) and (\d+)\?$/))) {
+    const lo = Number(m[1]), hi = Number(m[2]);
+    if (!(hi > lo)) return `p3 between: the stem prints ${lo} and ${hi}, which are not in order`;
+    const vals = p3opts(q).map(Number);
+    if (vals.some(v => !Number.isFinite(v))) return 'p3 between: an option is not a number';
+    const hits = vals.filter(v => v > lo && v < hi);
+    if (hits.length !== 1) return `p3 between: ${hits.length} of the four options lie between ${lo} and ${hi}`;
+    return near(hits[0], ansNum) ? null : `p3 between: expected ${hits[0]}, got ${ansNum}`;
+  }
+
+  /* COMPARE - order four numbers. Every option must be the SAME four numbers in
+     some order, and exactly one of them may be ascending. */
+  if (/^Which list is in order from the smallest to the greatest\?$/.test(text)) {
+    const lists = p3opts(q).map(o => o.split(',').map(t => Number(t.trim())));
+    if (lists.some(l => l.length !== 4 || l.some(v => !Number.isFinite(v)))) return 'p3 order: an option is not four numbers';
+    const sig = l => l.slice().sort((x, y) => x - y).join(',');
+    if (new Set(lists.map(sig)).size !== 1) return 'p3 order: the options are not all the same four numbers';
+    const asc = l => l.every((v, i) => i === 0 || v > l[i - 1]);
+    const hits = lists.filter(asc).length;
+    if (hits !== 1) return `p3 order: ${hits} of the four options are in ascending order`;
+    if (!asc(lists[q.correct])) return 'p3 order: the flagged option is not in ascending order';
+    return null;
+  }
+
+  /* COMPARE - error spotting on a comparison. The claim must be genuinely false,
+     the named slip must be the one the numbers exhibit, and NEITHER filler option
+     may also produce the claim on this draw. */
+  if ((m = text.match(/^\S+(?: \S+)? says (\d+) is greater than (\d+)\. What did (he|she) do wrong\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]);
+    if (!(b > a)) return `p3 compare-error: the claim "${a} is greater than ${b}" is true, so there is no mistake`;
+    const FIRST = ' only compared the first digit of each number.';
+    const RIGHT = ' compared them from the right, not from the left.';
+    const ODD = ' counted the odd digits in each number instead.';
+    const SUM = ' added the digits up and compared the totals.';
+    const lead = n => Number(String(n)[0]);
+    const oddC = n => String(n).split('').filter(d => Number(d) % 2 === 1).length;
+    const dSum = n => String(n).split('').reduce((s, d) => s + Number(d), 0);
+    const fires = { [FIRST]: lead(a) > lead(b), [RIGHT]: a % 10 > b % 10, [ODD]: oddC(a) > oddC(b), [SUM]: dSum(a) > dSum(b) };
+    const firing = Object.keys(fires).filter(k => fires[k]);
+    if (firing.length !== 1) return `p3 compare-error: ${firing.length} of the four offered explanations produce "${a} > ${b}"`;
+    const key = strip(q.answerText);
+    if (!key.endsWith(firing[0])) return `p3 compare-error: the slip that fires is "${firing[0].trim()}" but the key reads "${key}"`;
+    if (!p3opts(q).some(o => o === key)) return 'p3 compare-error: the key is not among the options';
+    return null;
+  }
+
+  /* PATTERN - name the jump */
+  if ((m = text.match(/^In this number pattern, what is the jump from one number to the next\? ([\d, ]+)$/))) {
+    const t = m[1].split(',').map(x => Number(x.trim()));
+    if (t.length < 3 || t.some(v => !Number.isFinite(v))) return 'p3 jump: could not read the sequence';
+    const d = t[1] - t[0];
+    if (!t.every((v, i) => i === 0 || v - t[i - 1] === d)) return 'p3 jump: the printed terms are not an arithmetic sequence: ' + t.join(',');
+    if (t.some(v => v < 1000 || v > 9999)) return 'p3 jump: a term is outside 1000..9999: ' + t.join(',');
+    return near(d, ansNum) ? null : `p3 jump: expected ${d}, got ${ansNum}`;
+  }
+
+  /* PATTERN - counting on/back in tens, hundreds, thousands. The stem NAMES the
+     unit, so the oracle checks the printed terms really move by that unit in that
+     direction before it derives the next one. */
+  if ((m = text.match(/^Count (on|back) in (tens|hundreds|thousands)\. What number comes next\? ([\d, ]+), \?$/))) {
+    const unit = { tens: 10, hundreds: 100, thousands: 1000 }[m[2]];
+    const sgn = m[1] === 'on' ? 1 : -1;
+    const t = m[3].split(',').map(x => Number(x.trim()));
+    if (t.length !== 5 || t.some(v => !Number.isFinite(v))) return 'p3 count: expected five printed terms';
+    if (!t.every((v, i) => i === 0 || v - t[i - 1] === sgn * unit)) return `p3 count: the terms do not move ${sgn * unit} each time: ` + t.join(',');
+    if (t.some(v => v < 1000 || v > 9999)) return 'p3 count: a term is outside 1000..9999: ' + t.join(',');
+    const e = t[4] + sgn * unit;
+    if (e < 1 || e > 9999) return `p3 count: the answer ${e} is outside 1..9999`;
+    return near(e, ansNum) ? null : `p3 count: expected ${e}, got ${ansNum}`;
+  }
+
+  /* PATTERN - missing middle term, jump NOT given. The oracle derives the jump
+     from the printed neighbours and refuses a stem whose knowns disagree. */
+  if ((m = text.match(/^What is the missing number in this pattern\? ([\d,? ]+)$/))) {
+    const raw = m[1].split(',').map(x => x.trim());
+    if (raw.length !== 5) return 'p3 missing: expected five slots';
+    const gapAt = raw.indexOf('?');
+    if (gapAt < 0 || raw.filter(x => x === '?').length !== 1) return 'p3 missing: expected exactly one ?';
+    if (gapAt === 0 || gapAt === 4) return 'p3 missing: the gap must be inside the sequence, not at an end';
+    const known = raw.map((x, i) => (i === gapAt ? null : Number(x)));
+    if (known.some((v, i) => i !== gapAt && !Number.isFinite(v))) return 'p3 missing: a printed term is not a number';
+    let d = null;
+    for (let i = 1; i < 5; i++) {
+      if (i === gapAt || i - 1 === gapAt) continue;
+      const step = known[i] - known[i - 1];
+      if (d === null) d = step;
+      else if (d !== step) return `p3 missing: the printed terms are not one arithmetic sequence (${d} then ${step})`;
+    }
+    if (d === null || d === 0) return 'p3 missing: could not derive the jump from the printed terms';
+    const e = known[gapAt - 1] + d;
+    if (e !== known[gapAt + 1] - d) return 'p3 missing: the two sides of the gap disagree';
+    if (e < 1 || e > 9999) return `p3 missing: the answer ${e} is outside 1..9999`;
+    return near(e, ansNum) ? null : `p3 missing: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - concept check on regrouping. The column total the stem prints must
+     really be the sum of the two ones digits, and the key must say what happens. */
+  if ((m = text.match(/^When you add (\d+) \+ (\d+), the ones column makes (\d+)\. What happens next\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), s = Number(m[3]);
+    if (a % 10 + b % 10 !== s) return `p3 add-concept: ${a} and ${b} give ${a % 10 + b % 10} in the ones column, not ${s}`;
+    if (s < 10) return `p3 add-concept: ${s} does not regroup, so there is nothing to carry`;
+    const want = `Write ${s % 10} in the ones column and carry 1 ten into the tens column.`;
+    const key = strip(q.answerText);
+    if (key !== want) return `p3 add-concept: expected "${want}", got "${key}"`;
+    return null;
+  }
+
+  /* ADD/SUB - direct compute. Also asserts the item is genuinely a REGROUPING
+     item, which is the principle this whole skill exists to teach. */
+  if ((m = text.match(/^What is (\d+) \+ (\d+)\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), e = a + b;
+    if (e > 9999) return `p3 add: ${a} + ${b} = ${e} is past the 10 000 ceiling`;
+    if (p3carryCols(a, b).length < 2) return `p3 add: ${a} + ${b} regroups in fewer than two columns, so it is not a regrouping item`;
+    return near(e, ansNum) ? null : `p3 add: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^What is (\d+) [−-] (\d+)\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), e = a - b;
+    if (e < 1) return `p3 sub: ${a} − ${b} = ${e} is not a positive whole number`;
+    if (p3smallFromBig(a, b) === e) return `p3 sub: ${a} − ${b} needs no regrouping, so it is not a regrouping item`;
+    return near(e, ansNum) ? null : `p3 sub: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - mental strategy: make the next ten, then adjust */
+  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) \+ (\d+) in (?:his|her) head\. (?:He|She) makes (\d+) first\. (\d+) \+ (\d+) = (\d+) \+ \?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), r = Number(m[3]);
+    if (Number(m[4]) !== a || Number(m[5]) !== b || Number(m[6]) !== r) return 'p3 mental: the stem restates different numbers on its second line';
+    if (a < 10 || a > 99 || b < 10 || b > 99) return `p3 mental: MOE 2.2 is two 2-digit numbers, got ${a} and ${b}`;
+    if (r % 10 !== 0 || r <= a || r - a >= 10) return `p3 mental: ${r} is not the next ten up from ${a}`;
+    const e = a + b - r;
+    if (e < 1) return `p3 mental: the adjusted part ${e} is not positive`;
+    return near(e, ansNum) ? null : `p3 mental: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - error spotting, DIAGNOSE. The printed wrong total must be produced
+     by exactly one named misconception, and the two filler options must not
+     produce it either. */
+  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) \+ (\d+) and gets (\d+)\. What did (he|she) do wrong\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), claim = Number(m[3]), e = a + b;
+    if (claim === e) return `p3 add-error: the "wrong" total ${claim} is the correct answer`;
+    const cols = p3carryCols(a, b);
+    if (!cols.length) return `p3 add-error: ${a} + ${b} regroups in no column, so there is no carry to forget`;
+    const key = strip(q.answerText);
+    const NOCARRY = ' did not carry any tens into the next column.';
+    const oneOf = c => ` forgot to carry the ten out of the ${P3_PLACES[c]} column.`;
+    const byAll = p3noCarry(a, b) === claim;
+    const byOne = cols.filter(c => p3add(a, b, c) === claim);
+    if (byAll && byOne.length) return `p3 add-error: ${claim} is produced by two different named slips`;
+    if (!byAll && byOne.length !== 1) return `p3 add-error: ${byOne.length} single-carry slips produce ${claim}`;
+    const want = byAll ? NOCARRY : oneOf(byOne[0]);
+    if (!key.endsWith(want)) return `p3 add-error: ${claim} is the "${want.trim()}" slip but the key reads "${key}"`;
+    if (a - b === claim) return `p3 add-error: "subtracted instead of adding" also gives ${claim}`;
+    if (p3digitSum(a) + p3digitSum(b) === claim) return `p3 add-error: "added all the digits together" also gives ${claim}`;
+    for (const o of p3opts(q)) {
+      if (o === key) continue;
+      if (o.endsWith(NOCARRY) && byAll) return 'p3 add-error: a distractor repeats the key';
+      for (const c of cols) if (o.endsWith(oneOf(c)) && p3add(a, b, c) === claim) return `p3 add-error: a distractor also explains ${claim}: "${o}"`;
+    }
+    return null;
+  }
+
+  /* ADD/SUB - error spotting, CORRECT. The stem NAMES the slip, so the oracle
+     checks the printed wrong answer really is what that slip produces. */
+  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) [−-] (\d+)\. In every column (?:he|she) takes the smaller digit away from the bigger one, and gets (\d+)\. What is the correct answer\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), claim = Number(m[3]), e = a - b;
+    if (p3smallFromBig(a, b) !== claim) return `p3 sub-error: the stem says small-from-big and prints ${claim}, but that slip gives ${p3smallFromBig(a, b)}`;
+    if (claim === e) return `p3 sub-error: the "wrong" answer ${claim} is the correct one, so the item contradicts itself`;
+    if (e < 1) return `p3 sub-error: ${a} − ${b} is not a positive whole number`;
+    return near(e, ansNum) ? null : `p3 sub-error: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - two-step word problem */
+  if ((m = text.match(/^The (.+) sold (\d+) (.+) last month\. This month it sold (\d+) more (.+) than last month\. How many (.+) altogether in the two months\?$/))) {
+    if (m[3] !== m[5] || m[3] !== m[6]) return 'p3 two-step: the stem changes what it is counting part-way through';
+    const first = Number(m[2]), more = Number(m[4]), e = first + (first + more);
+    if (e > 9999) return `p3 two-step: the total ${e} is past the 10 000 ceiling`;
+    return near(e, ansNum) ? null : `p3 two-step: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - working backwards */
+  if ((m = text.match(/^\S+(?: \S+)? had some (.+)\. (?:He|She) gave away (\d+) of them, then bought (\d+) more\. Now (?:he|she) has (\d+)\. How many (.+) did (?:he|she) have at first\?$/))) {
+    if (m[1] !== m[5]) return 'p3 backwards: the stem changes what it is counting part-way through';
+    const gave = Number(m[2]), got = Number(m[3]), now = Number(m[4]);
+    const e = now + gave - got;
+    if (e < 1 || e > 9999) return `p3 backwards: the starting amount ${e} is outside 1..9999`;
+    if (e - gave < 0) return `p3 backwards: ${e} cannot give away ${gave}`;
+    return near(e, ansNum) ? null : `p3 backwards: expected ${e}, got ${ansNum}`;
+  }
+  /* ===== end SWEEP p3numbers block ======================================== */
+
   /* --- P3 pilot: compound units (km/m, m/cm, kg/g, litre/ml) --- */
   const UF = { km: 1000, m: 100, kg: 1000, 'ℓ': 1000 };
   if ((m = text.match(/^(\d+) (km|m|kg|ℓ) (\d+) (m|cm|g|ml) = \?$/))) {
@@ -2117,7 +2403,9 @@ function coincidence(q) {
 
    RULE 2, "long" >= "wide": a stem that prints "X ... long and Y ... wide" must
    print X >= Y. Was flipped in 1,710 of 8,000 draws across three generators. */
-const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area']);
+/* SWEEP 2026-09-15: p3numbers joins the pilot files, so the format-tell rule and
+   the "long" >= "wide" rule now bind Thousand Isles too. */
+const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'p3numbers']);
 const optForm = s => {
   const t = strip(s);
   if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';
@@ -2146,6 +2434,54 @@ function pilotGates(q, topic) {
   while ((mm = re.exec(all))) {
     if (Number(mm[1]) < Number(mm[3]))
       return `"long" prints shorter than "wide": ${mm[1]} ${mm[2]} long and ${mm[3]} ${mm[4]} wide`;
+  }
+  return null;
+}
+
+/* ---------- SWEEP 2026-09-15 gates: p3numbers (Thousand Isles) only ---------
+   RULE A, SCOPE CEILING. The topic is "Numbers up to 10 000". No whole number
+   printed in a stem, an extra or an option may exceed 9999 - the P3 Pilot
+   Refutation caught exactly this leak (gMoreLess offering 17342 as an option on
+   a 1000-more item), and a tolerance downstream is not a fix.
+
+   RULE B, THE DISTRACTOR CONTRACT, BINDING ON EVERY DRAW. The 2026-09-05
+   refutation's §6 finding was that q.authored only stamped on 2,569 of 7,200
+   draws, so the distractor-identity gate was quietly off most of the time. Here
+   every four-option question whose options are all plain numbers must declare
+   which kind it is: `q.authored` (all three distractors are named
+   misconceptions, and nothing was padded in by finishNum) or `q.optionSet` (the
+   four options ARE the data the child compares - greatest, smallest, between,
+   which list is in order). A question that declares neither fails. */
+function sweepGates(q, topic) {
+  if (topic !== 'p3numbers') return null;
+  const fields = [strip(q.q), strip(q.extra || '')].concat((q.choices || []).map(strip));
+  for (const f of fields) {
+    for (const tok of (f.match(/\d+/g) || [])) {
+      if (Number(tok) > 9999) return `scope: ${tok} is past the 10 000 ceiling, in "${f}"`;
+    }
+  }
+  const opts = (q.choices || []).map(strip);
+  /* RULE C, THE FORMAT TELL BY LENGTH. pilotGates already bans an option whose
+     coarse FORM is the odd one out. The second refutation's actual kill was
+     subtler: gLPerimDiff's key was the only option over four characters, so the
+     tell was LENGTH, not form. On a word-answer item every option must therefore
+     be in the same size bracket - a key more than 1.4x the longest distractor is
+     a question a child can win without the mathematics. (Candidate for promotion
+     into pilotGates once the other three pilot files have been measured.) */
+  if (opts.length === 4 && q.correct >= 0) {
+    const key = opts[q.correct].length;
+    const other = Math.max.apply(null, opts.filter((_, i) => i !== q.correct).map(o => o.length));
+    if (key > other * 1.4) {
+      return `format tell by length: the key is ${key} characters against a longest distractor of ${other} (${opts.join(' | ')})`;
+    }
+  }
+  if (opts.length === 4 && opts.every(o => /^\d+$/.test(o))) {
+    if (!Array.isArray(q.authored) && q.optionSet !== true) {
+      return `distractor contract: a numeric MC declared neither q.authored nor q.optionSet (${opts.join(' | ')})`;
+    }
+    if (Array.isArray(q.authored) && q.optionSet === true) {
+      return 'distractor contract: a question declared both q.authored and q.optionSet';
+    }
   }
   return null;
 }
@@ -2188,6 +2524,8 @@ for (const g of GENS) {
     if (coin) { err = coin; badQ = q; break; }
     const pilot = pilotGates(q, g.topic);
     if (pilot) { err = pilot; badQ = q; break; }
+    const sweep = sweepGates(q, g.topic);
+    if (sweep) { err = sweep; badQ = q; break; }
     distinct.add(qKey(q));
     const o = oracle(q);
     if (o === false) continue;

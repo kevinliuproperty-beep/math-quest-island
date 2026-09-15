@@ -1521,7 +1521,10 @@ function oracle(q, topic) {
         if (!keyF) return 'bar identify: the key is not a rendered fraction';
         if (keyF[1] !== total) return `bar identify: key ${show(keyF)} is not written in ${total}ths`;
         const badI = fromList('bar identify', [
-          [total-on, total], [on, total-1], [on+1, total], [on-1, total], [on, total+1]
+          [total-on, total], [on, total-1], [on+1, total], [on-1, total], [on, total+1],
+          /* THIRD PASS 2026-09-16, W5: the two "a blue piece AND a part miscounted"
+             entries, added so all four value-rank seatings are reachable. */
+          [on+1, total-1], [on-1, total-1]
         ]);
         if (badI) return badI;
         /* SECOND PASS, W2: on a half-shaded bar the complement IS the key, and the
@@ -1542,7 +1545,13 @@ function oracle(q, topic) {
         const badU = fromList('bar complement', [
           [on, total], [total-on+1, total], [total-on-1, total],
           [total-on, total-1], [total-on, total+1],
-          [total-on+1, total-1], [total-on-1, total-1]
+          [total-on+1, total-1], [total-on-1, total-1],
+          /* THIRD PASS 2026-09-16, W5(a): the misread only a PICTURE affords -
+             the blue count and the white count written the wrong way round. It is
+             named here and in no other `wholes` format, which is half of what
+             separates this generator's answer space from gSubFromOne's and
+             gMakeOne's (Jaccard 100.0% -> 31.2% / 19.1%). */
+          [on, total-on], [total-on, on]
         ]);
         if (badU) return badU;
         /* SECOND PASS, W2: the card may not name the key and then call it the other
@@ -1570,14 +1579,37 @@ function oracle(q, topic) {
           if (i !== q.correct && fEq(fOpts[i], keyF)) return 'bar equivalence: a distractor is also equivalent';
         return null;
       }
-      if ((m = text.match(/^The bar below shows one fraction shaded blue\. Which of these fractions is (greater|less) than the blue fraction\?$/))) {
-        const wantGreater = m[1] === 'greater';
+      /* THIRD PASS 2026-09-16, W1. The v3 stem was "Which of these fractions is
+         greater/less than the blue fraction?" with exactly one option on the named
+         side, which makes the key the strict maximum or the strict minimum BY
+         CONSTRUCTION: "read the direction word, take that extreme of the option
+         row, never look at the bar" scored 100.00% of 20,000 draws in the one
+         format written for pictorial support, and RANK_EXEMPT excused it under a
+         printed reason ("the stem asks for an extreme") that was true of the four
+         comparison formats beside it and false of this one.
+
+         The stem now names TWO conditions and the second one can only be got by
+         counting the bar: the bottom number (or, on a coin flip, the top number)
+         the picture itself carries. Two options satisfy the direction and only one
+         of those carries the counted number. This oracle re-derives both from the
+         DRAWN bar: exactly one option may satisfy both, every option must share a
+         top or a bottom number with the blue fraction so that every comparison is
+         a P3 rule, and the row must be split 2-2 between the two conditions so it
+         cannot degenerate back into a single-threshold question. */
+      if ((m = text.match(/^The bar below shows one fraction shaded blue\. Which of these fractions has the same (bottom|top) number as the bar AND is (greater|less) than the blue fraction\?$/))) {
+        const byBottom = m[1] === 'bottom', wantGreater = m[2] === 'greater';
         if (fOpts.length !== 4 || fOpts.some(o => !o)) return 'bar compare: an option is not a rendered fraction';
-        const hits = fOpts.filter(o => wantGreater ? o[0] * total > on * o[1] : o[0] * total < on * o[1]);
-        if (hits.length !== 1) return `bar compare: ${hits.length} of the four options are ${m[1]} than ${on}/${total}`;
-        const sameD = fOpts.every(o => o[1] === total), sameN = fOpts.every(o => o[0] === on);
-        if (!sameD && !sameN) return 'bar compare: the options share neither the top nor the bottom number, so no P3 comparing rule applies';
         if (fOpts.some(o => o[0] === on && o[1] === total)) return 'bar compare: the shaded fraction itself is one of the options';
+        if (fOpts.some(o => o[1] !== total && o[0] !== on))
+          return 'bar compare: an option shares neither the top nor the bottom number with the blue fraction, so no P3 comparing rule applies';
+        const named = fOpts.filter(o => byBottom ? o[1] === total : o[0] === on);
+        if (named.length !== 2)
+          return `bar compare: ${named.length} of the four options carry the ${m[1]} number the stem asks for, expected 2`;
+        const dirOK = o => wantGreater ? o[0] * total > on * o[1] : o[0] * total < on * o[1];
+        if (fOpts.filter(dirOK).length !== 2)
+          return `bar compare: ${fOpts.filter(dirOK).length} of the four options are ${m[2]} than ${on}/${total}, expected 2`;
+        const hits = named.filter(dirOK);
+        if (hits.length !== 1) return `bar compare: ${hits.length} options meet both conditions, expected exactly 1`;
         return fEq(hits[0], keyF) ? null : `bar compare: expected ${show(hits[0])}, key is ${show(keyF)}`;
       }
       return 'bar model: rendered a bar model but no oracle matched the stem';
@@ -1589,10 +1621,18 @@ function oracle(q, topic) {
       const f = parseFrac(q.q);
       if (!f || f[0] !== 1 || f[1] !== d) return `equal parts: the stem prints ${show(f)} for 1 of ${d} pieces`;
       if (d > 12) return `equal parts: ${d} pieces exceeds the P3 denominator limit of 12`;
-      const want = 'The pieces are not all the same size, so 1 piece is not 1 out of ' + d + ' equal parts.';
+      /* THIRD PASS 2026-09-16, THE KILL. The v3 key restated the stem's own second
+         clause word for word and was the only option on the row containing "equal",
+         "same", "size" or "all", so the item was answered by matching a sentence on
+         100.00% of 20,000 draws. The key is reworded and every content word in it
+         is now printed by at least one distractor; RULE 8 below gates that over the
+         whole generator, and the v3 option set is its negative control. */
+      const want = 'A fraction counts parts that are of equal size, and these ' + d + ' pieces are different sizes.';
       if (strip(q.answerText) !== want) return `equal parts: expected "${want}", got "${strip(q.answerText)}"`;
       if (q.choices.filter(c => /^Nothing is wrong/.test(strip(c))).length !== 1)
         return 'equal parts: the "any 1 of N pieces is 1/N" misconception is not offered exactly once';
+      if (strip(q.answerText).indexOf('not all the same size') >= 0)
+        return 'equal parts: the key repeats the stem\'s own clause, so the item is answered by matching words';
       return null;
     }
 
@@ -1898,7 +1938,13 @@ function oracle(q, topic) {
          two of the three slips below the key on every draw. */
       return fromList('simplest error-spot', [
         [F[0]-t2, F[1]-t2], [F[0]+t2, F[1]+t2], [F[0]+1, F[1]], [e[0], F[1]], [F[0]-t2, F[1]],
-        [e[0], e[1]-1], [e[0]-1, e[1]-1], [e[0]+1, e[1]], [e[0]+1, e[1]+1]
+        [e[0], e[1]-1], [e[0]-1, e[1]-1], [e[0]+1, e[1]], [e[0]+1, e[1]+1],
+        /* THIRD PASS 2026-09-16, W5: [N+t, D+t] is the only candidate the named
+           beliefs put ABOVE the key and the 12 cap takes it off most draws, so
+           three-above - the key as the smallest of four - sat at 13.7%, inside the
+           new rank floor's noise. These five are its mirrors and its miscounts. */
+        [F[0]+t2, F[1]], [F[0]+2, F[1]], [F[0]+1, F[1]-1], [F[0]+2, F[1]-1],
+        [e[0]-1, e[1]], [e[0]+1, e[1]-1], [e[0], e[1]-2], [e[0], e[1]+1]
       ]);
     }
 
@@ -2013,7 +2059,7 @@ function oracle(q, topic) {
       if (claim[0] * A[1] === A[0] * claim[1] || claim[0] * B[1] === B[0] * claim[1])
         return `add error-spot: the "wrong" claim ${show(claim)} is worth one of the two addends, so the named belief leaves no trace`;
       const SLIPS = [
-        [[A[0] + B[0], 2 * A[1]], name + ' added the bottom numbers as well.'],
+        [[A[0] + B[0], 2 * A[1]], name + ' added both bottom numbers as well as the top ones.'],
         [[A[0] - B[0], A[1]], name + ' subtracted the top numbers instead of adding them.'],
         [[A[0] * B[0], A[1]], name + ' multiplied the top numbers instead of adding them.']
       ];
@@ -2022,6 +2068,19 @@ function oracle(q, topic) {
       if (strip(q.answerText) !== hits[0][1]) return `add error-spot: expected "${hits[0][1]}", got "${strip(q.answerText)}"`;
       if (q.choices.filter(c => strip(c).indexOf(name) === 0).length !== 4)
         return 'add error-spot: not every option opens with the name, so the key is the odd one out';
+      /* THIRD PASS 2026-09-16, W3. All three belief sentences must be on the row -
+         an unused belief is a distractor, not a missing one - and the three of them
+         must be written to ONE length, so that neither the longest-option reader
+         nor the shortest-option reader has anything to read. v3's key was the
+         uniquely shortest option on exactly the 53.6% of draws where it was the
+         answer. RULE 6 below now measures both directions across the run; this is
+         the per-draw half of the same rule. */
+      for (const s of SLIPS)
+        if (!q.choices.some(c => strip(c) === s[1]))
+          return `add error-spot: the belief "${s[1]}" is not on the option list, so the key has fewer than two named rivals`;
+      const beliefLens = SLIPS.map(s => s[1].length);
+      if (Math.max(...beliefLens) - Math.min(...beliefLens) > 2)
+        return `add error-spot: the three belief sentences run ${Math.min(...beliefLens)}-${Math.max(...beliefLens)} characters, so the key can be picked with a ruler`;
       return null;
     }
 
@@ -2041,8 +2100,13 @@ function oracle(q, topic) {
          "subtracted only one share", held the key at the bottom of the row on 56.8%
          of draws. */
       const badC = fromList('cake left', [
-        [eaten, A[1]], [A[1]-A[0], A[1]], [A[1]-B[0], A[1]], [eaten, 2*A[1]],
-        [top-1, A[1]], [top, A[1]+1]
+        [eaten, A[1]], [A[1]-A[0], A[1]], [A[1]-B[0], A[1]],
+        /* THIRD PASS 2026-09-16, W4: [eaten, 2*A[1]] - "added the bottom numbers as
+           well" - printed a bottom number past 12 on 39.6% of this item's option
+           rows and is out with the cap. Its place below the key is taken by the
+           second-order miscounts the rest of the file already names. */
+        [top-1, A[1]], [top, A[1]+1], [top-1, A[1]-1], [top, A[1]+2],
+        [top+1, A[1]], [top, A[1]-1]
       ]);
       if (badC) return badC;
       return (keyF[0] === top && keyF[1] === A[1]) ? null
@@ -2812,10 +2876,56 @@ function coincidence(q) {
    against "It gets smaller." / "It gets bigger." / "It is halved." - a real
    instance of this defect, two characters wide, in a file outside this lane's
    fence. It is named here rather than hidden so the next lane inherits it as a
-   debt and not as a silent pass. */
+   debt and not as a silent pass.
+
+   THIRD PASS 2026-09-16, W3. RULE 6 looked only UPWARDS and only at 100%, and a
+   ruler reads both ways: p3-fractions.js gAddError keyed the uniquely SHORTEST of
+   its four sentences on 53.6% of 20,000 draws - the same 53.6% on which its key
+   had stopped rotating - and nothing in this file could see it. The rule is now
+   two-directional and the bar is 90% rather than 100%, matching the length-rank
+   gate the p3numbers lane landed for the same defect class, and both rates are
+   printed on every run so a bank drifting towards the line is visible before it
+   arrives. The one declared exemption covers both directions.
+
+   RULE 8, THE STEM ECHO (per GENERATOR, same loop; the gate that would have
+   caught this pass's kill). RULE 8 was written for gCompareError in the second
+   pass and SCOPED TO IT BY NAME inside its own oracle branch, so it never looked
+   at gEqualParts twenty lines away - whose key restated the stem's own clause
+   word for word and was the only option on the row containing "equal", "same",
+   "size" or "all", on 100.00% of 20,000 draws out of eighteen option sets. Five
+   gates and none of them could see the one thing wrong with it: RULE 1 saw four
+   prose options, RULE 5 saw no odd opening, RULE 6 saw no length tell, RULE 7
+   skips a row of sentences.
+
+   So the rule is lifted out of one oracle branch and run over every prose bank in
+   the topic, in two halves:
+     - PER DRAW: at least two of the four options must name something the stem
+       names (share a content word with it). One option repeating the stem is a
+       word-matching item, not a mathematics item.
+     - PER GENERATOR: the draws on which the key carries a content word OF THE
+       STEM that no other option carries must stay under 60%. That is the
+       measurable form of "the child can be right by matching the sentence".
+   Scoped to `fractions`, like RULE 7 and for the same reason: the prose banks
+   outside this lane have never been measured this way and two of them
+   (geometry.gPeriError, p4area.gLConcept) go red on the per-draw half on the
+   first run. Widening it is one entry in STEM_ECHO_TOPICS plus whatever those
+   banks need, and it should go in before a fifth topic takes the depth-pilot
+   contract. */
 const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'fractions']);
-/* RULE 6's one declared exemption - see the block comment above. */
+/* RULE 6's one declared exemption - see the block comment above. Both directions. */
 const LENGTH_TELL_EXEMPT = new Set(['p4area.gLConcept']);
+const LENGTH_TELL_CAP = 0.90;
+/* RULE 8's fence - see the block comment above. */
+const STEM_ECHO_TOPICS = new Set(['fractions']);
+const STEM_ECHO_CAP = 0.60;
+/* Function words only: "same", "size", "all" and "equal" are exactly the words the
+   kill turned on, so none of them may be treated as noise. */
+const ECHO_STOP = new Set(('the a an and or but so of to in on at is are was were be been it its this that these ' +
+  'those for from with not no into out as by he she they you we his her their your my what which who why how when ' +
+  'where can could would should has have had do does did than then them there here').split(' '));
+const contentWords = s => strip(s).toLowerCase().replace(/[^a-z ]+/g, ' ').split(/\s+/).filter(Boolean)
+  .map(w => (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w))   /* one plural, one word */
+  .filter(w => w.length >= 3 && !ECHO_STOP.has(w));
 const optWords = s2 => strip(s2).split(' ').filter(Boolean);
 /* all four options are sentences a child reads, not bare numbers or fraction rows */
 const allProse = opts => opts.length === 4 &&
@@ -2833,6 +2943,21 @@ const keyIsLongest = (opts, correct) => {
   const lens = opts.map(o => strip(o).length), mx = Math.max(...lens);
   return lens[correct] === mx && lens.filter(l => l === mx).length === 1;
 };
+/* ... and the other direction (THIRD PASS 2026-09-16, W3) */
+const keyIsShortest = (opts, correct) => {
+  const lens = opts.map(o => strip(o).length), mn = Math.min(...lens);
+  return lens[correct] === mn && lens.filter(l => l === mn).length === 1;
+};
+/* RULE 8's two measurements, on one draw. `named` is how many options say
+   something the stem says; `echo` is true when the key alone carries a word of
+   the stem. */
+function stemEcho(stem, opts, correct) {
+  const S = new Set(contentWords(stem));
+  const W = opts.map(o => new Set(contentWords(o)));
+  const named = W.filter(w => [...w].some(x => S.has(x))).length;
+  const solo = [...W[correct]].filter(x => S.has(x) && W.every((w, j) => j === correct || !w.has(x)));
+  return { named, solo };
+}
 const optForm = s => {
   const t = strip(s);
   if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';
@@ -2892,18 +3017,25 @@ function pilotGates(q, topic) {
            teaches making one whole, and every explain in the `wholes` bank prints
            it. What is banned is n > d, which is a genuine improper fraction. */
         if (n > d) return `improper fraction ${n}/${d} rendered in ${where} - improper fractions and mixed numbers are MOE P4`;
-        if (d > 24) return `denominator ${d} rendered in ${where} is past the readability cap of 24`;
-        /* SECOND PASS 2026-09-15, W3(a)/W4. THIRTEEN is banned outright. MOE P3
-           stops at twelve, and no named misconception in this bank can produce a
-           13: adding the bottoms of a like pair gives 2d, of a related pair
-           d(1+k), subtracting them d(k-1), taking one away d-1 - none of which is
-           13. The only things that reached it were the "+1" second-order slips
-           (the half-substitute [n, d+1] at d = 12, gSubSame's [a-b, d+b],
-           gSimplestError's [N+t, D+t]), which put an off-P3-list bottom number in
-           front of a child - including in the declared pool-1 anchor - for no
-           teaching reason at all. 24 stays the cap for the beliefs that genuinely
-           overshoot; 13 is not one of them. */
-        if (d === 13) return `denominator 13 rendered in ${where} - no named misconception in this bank produces one, and MOE P3 stops at 12`;
+        /* SECOND PASS 2026-09-15, W3(a)/W4 banned THIRTEEN and kept a readability
+           cap of 24 for the named beliefs that genuinely overshoot.
+
+           THIRD PASS 2026-09-16, W4: the cap of 24 is gone and TWELVE is the whole
+           rule. "Thirteen is banned outright" read as a tightening while the
+           ceiling in fact ROSE, undeclared, in four formats - sided() reaches for
+           an overshoot candidate to break a one-sided value rank, and the overshoot
+           a subtraction bank has is [a-b, 2d] and [a-b, d+b]. Measured on v3:
+           gSubSame 39.8% of option rows past 12 (v2 declared 0.0%), gSubRelated
+           40.1% (0.0%), gAddRelated 53.8%, gSimplest and gSimplestError ~4.8% each,
+           ceilings 12 -> 24 and 12 -> 16. Rather than re-declare a moving ceiling a
+           fourth time, NOTHING a P3 fractions item renders - stem, option, teaching
+           card or figure - may carry a bottom number past 12. No named belief is
+           lost to it: each one that used to overshoot is either still reachable at
+           a smaller bottom number (gAddError draws the BELIEF first and then the
+           numbers that fit it) or is now named in WORDS on the card instead of
+           being printed as an off-syllabus fraction a child is asked to choose.
+           Negative control: DEFECTS below reintroduces [a+b, 2d]. */
+        if (d > 12) return `denominator ${d} rendered in ${where} is past the P3 limit of 12`;
       }
     }
     const kf = String(q.answerText).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
@@ -2932,11 +3064,15 @@ for (const [tid, t] of Object.entries(TOPICS)) {
 let failures = 0;
 const DISTINCT_FLOOR = Math.min(8, N);
 const rows = [];
+/* RULE 6 + RULE 8's table: printed on every run, because a bank drifting towards
+   either line is worth seeing before it arrives (THIRD PASS 2026-09-16). */
+const proseRows = [];
 
 for (const g of GENS) {
   let err = null, badQ = null, matched = 0;
-  /* RULE 6 tallies: no single draw can show a length tell, only the whole run can. */
-  let proseDraws = 0, keyLongest = 0, lastProse = null;
+  /* RULE 6 tallies: no single draw can show a length tell, only the whole run can.
+     RULE 8's per-generator half rides in the same tally (THIRD PASS 2026-09-16). */
+  let proseDraws = 0, keyLongest = 0, keyShortest = 0, keySolo = 0, lastProse = null;
   const distinct = new Set();
   for (let i = 0; i < N; i++) {
     let q;
@@ -2955,7 +3091,19 @@ for (const g of GENS) {
     if (pilot) { err = pilot; badQ = q; break; }
     if (PILOT_TOPICS.has(g.topic) && allProse(q.choices || [])) {
       proseDraws++;
-      if (keyIsLongest(q.choices, q.correct)) { keyLongest++; lastProse = q; }
+      lastProse = q;
+      if (keyIsLongest(q.choices, q.correct)) keyLongest++;
+      if (keyIsShortest(q.choices, q.correct)) keyShortest++;
+      if (STEM_ECHO_TOPICS.has(g.topic)) {
+        const e = stemEcho(q.q, q.choices, q.correct);
+        if (e.solo.length) keySolo++;
+        /* RULE 8, per draw. */
+        if (e.named < 2) {
+          err = `stem echo: only ${e.named} of the four options name anything the stem names, so the item is answered by matching the words (${(q.choices || []).map(strip).join(' | ')})`;
+          badQ = q;
+          break;
+        }
+      }
     }
     distinct.add(qKey(q));
     const o = oracle(q, g.topic);
@@ -2966,11 +3114,25 @@ for (const g of GENS) {
   if (!err && distinct.size < DISTINCT_FLOOR) {
     err = `sample space collapsed: only ${distinct.size} distinct questions in ${N} draws`;
   }
-  /* RULE 6, the length tell (Sweep fractions Refutation 2026-09-15, THE KILL). */
-  if (!err && proseDraws >= 20 && keyLongest === proseDraws && !LENGTH_TELL_EXEMPT.has(g.topic + '.' + g.name)) {
-    err = `length tell: the key is the unique longest of the four sentences in ${keyLongest} of ${proseDraws} draws - the item can be answered with a ruler`;
+  /* RULE 6, the length tell, BOTH WAYS (Sweep fractions Refutation, third pass). */
+  if (!err && proseDraws >= 20 && !LENGTH_TELL_EXEMPT.has(g.topic + '.' + g.name)) {
+    if (keyLongest / proseDraws >= LENGTH_TELL_CAP)
+      err = `length tell: the key is the uniquely LONGEST of the four sentences in ${keyLongest} of ${proseDraws} draws - the item can be answered with a ruler`;
+    else if (keyShortest / proseDraws >= LENGTH_TELL_CAP)
+      err = `length tell: the key is the uniquely SHORTEST of the four sentences in ${keyShortest} of ${proseDraws} draws - the item can be answered with a ruler`;
+    if (err) badQ = lastProse;
+  }
+  /* RULE 8, the stem echo, per generator (Sweep fractions Refutation, third pass). */
+  if (!err && proseDraws >= 20 && STEM_ECHO_TOPICS.has(g.topic) && keySolo / proseDraws >= STEM_ECHO_CAP) {
+    err = `stem echo: the key carries a word of the STEM that no other option carries in ${keySolo} of ${proseDraws} draws - "pick the option that repeats the sentence you just read" answers the item`;
     badQ = lastProse;
   }
+  if (proseDraws >= 20) proseRows.push({
+    name: g.topic + '.' + g.name, n: proseDraws,
+    uLong: keyLongest / proseDraws, uShort: keyShortest / proseDraws,
+    solo: STEM_ECHO_TOPICS.has(g.topic) ? keySolo / proseDraws : null,
+    exempt: LENGTH_TELL_EXEMPT.has(g.topic + '.' + g.name)
+  });
   const cov = Math.round((matched / N) * 100);
   rows.push({ topic: g.topic, name: g.name, skill: g.skill, n: N, distinct: distinct.size, cov, err });
   if (err) {
@@ -3002,14 +3164,26 @@ for (const g of GENS) {
    changed is CONCENTRATION: the baseline's worst pin was 83.4%, the lane's were
    100.00%. A 50% pin is not learnable. A 100% pin is permanent.
 
-   THE GATE. Over its OWN 2,000 draws - fixed, not SAMPLES, because a 33% rate
+   THE GATE. Over its OWN 4,000 draws - fixed, not SAMPLES, because a 33% rate
    cannot be told from a 45% one in 200 - every generator whose four options are all
    bare positive numbers or all single rendered fractions must keep:
      - the key's rank by value under 45% for each of the four ranks;
-     - "pick the smallest", "pick the largest" and "pick the second largest" each
-       under 40%;
+     - the key's rank by value at or OVER 12% for each of the four ranks;
+     - "pick the smallest", "pick the largest", "pick the second largest" and
+       "pick the second smallest" each under 40%;
      - "pick the smallest bottom number", scored as a policy (guess evenly among
        ties), under 40%.
+
+   THIRD PASS 2026-09-16, W5, adds the last two of those. A CAP with no FLOOR only
+   gates half the defect: a rank the key almost never takes is a rank a child can
+   eliminate, and three generators left one nearly empty - gAddRelated keyed the
+   smallest of four on 7.4%, gSubSame the largest on 8.4%, gEqMissing the largest on
+   11.0%, each worth 4-6 percentage points to a child who has noticed. And the 40%
+   policy cap covered smallest, largest and second largest but NOT second smallest,
+   which was therefore allowed up to 45%; gPicIdentify sat at 39.2% and
+   gEquivFromBar at 39.0% inside that gap. Both are closed, and the draw count is
+   raised from 2,000 to 4,000 so that a bank sitting a few points inside a line is
+   not failed or passed by sampling noise.
 
    FOR THE INTEGRATOR. The gate is scoped to `fractions` - the file this lane
    rewrote - and NOT to the rest of the bank, which has never been measured this way
@@ -3020,17 +3194,30 @@ for (const g of GENS) {
    before the depth-pilot contract is applied to a fourth topic, because the
    contract CAUSES the defect and nothing in the repo could see it.
 
-   EXEMPTIONS, declared not hidden. A stem that names the direction and asks for an
-   extreme ("which of these is the greatest?") keys the extreme BY CONSTRUCTION -
-   that is the skill, not a tell - so the five comparison formats are named here. */
+   EXEMPTIONS, declared not hidden. A stem that PRINTS the extreme it wants
+   ("which of these is the greatest?") keys the extreme BY CONSTRUCTION - that is
+   the skill, not a tell - so the comparison formats whose stems do that are named
+   here, and the exemption is checked against the stem rather than asserted: each
+   entry below prints "greatest", "smallest", "most" or "least".
+
+   THIRD PASS 2026-09-16, W1: gCompareBar is OUT of this set. It was the only one
+   of the five whose stem does not name an extreme - 0.0% of draws against 100.0%
+   for the other four - and it carried the exemption under a printed reason that
+   was false of it, while "read the direction word and take that extreme of the
+   row" answered it on 100.00% of 20,000 draws without the bar being read. The
+   format has been rebuilt (js/topics/p3-fractions.js FORMAT 3b) and is gated here
+   like everything else. gCompareWords stays listed and is separately vacuous - its
+   options are names, so the row is not rankable and RULE 7 skips it anyway - but a
+   dead entry that says what it is beats a silent one. */
 const RANK_TOPICS = new Set(['fractions']);
 const RANK_EXEMPT = new Set([
-  'fractions.gCompareUnit', 'fractions.gCompareBar', 'fractions.gCompareSameD',
+  'fractions.gCompareUnit', 'fractions.gCompareSameD',
   'fractions.gCompareWords', 'fractions.gGreatest4'
 ]);
-const RANK_DRAWS = 2000;
+const RANK_DRAWS = 4000;
 const RANK_CAP = 0.45;          /* no single rank may hold more than this */
-const RANK_POLICY_CAP = 0.40;   /* "pick smallest / largest / second largest / smallest bottom" */
+const RANK_FLOOR = 0.12;        /* ... and none may hold less: an empty rank is one a child eliminates */
+const RANK_POLICY_CAP = 0.40;   /* "pick smallest / 2nd smallest / 2nd largest / largest / smallest bottom" */
 /* The option row's four values, or null when it is not a rankable row: four bare
    positive integers, or four single rendered fractions. */
 function optionValues(q) {
@@ -3068,6 +3255,39 @@ function smallestDenPolicy(q) {
   const mn = Math.min(...ds), tied = ds.filter(d => d === mn).length;
   return ds[q.correct] === mn ? 1 / tied : 0;
 }
+/* The whole of RULE 7's verdict, in one place so the negative controls below run
+   the same code the gate does rather than a restatement of it. */
+const RANK_NAMES = ['smallest', 'second smallest', 'second largest', 'largest'];
+function rankVerdict(rate, ranked, den, denDraws) {
+  const over = rate.findIndex(x => x > RANK_CAP);
+  if (over >= 0)
+    return `value-rank tell: the key is the ${RANK_NAMES[over]} of the four options by value in ${(100 * rate[over]).toFixed(1)}% of ${ranked} draws - "pick the ${RANK_NAMES[over]}" answers the item without the mathematics`;
+  for (const i of [0, 3, 2, 1])
+    if (rate[i] >= RANK_POLICY_CAP)
+      return `value-rank tell: "pick the ${RANK_NAMES[i]}" is right in ${(100 * rate[i]).toFixed(1)}% of ${ranked} draws`;
+  /* THIRD PASS 2026-09-16, W5: the floor. A rank the key hardly ever takes is a
+     rank a child learns to cross off, which turns a 1-in-4 guess into a 1-in-3. */
+  const under = rate.findIndex(x => x < RANK_FLOOR);
+  if (under >= 0)
+    return `value-rank floor: the key is the ${RANK_NAMES[under]} of the four options by value in only ${(100 * rate[under]).toFixed(1)}% of ${ranked} draws - "the answer is never the ${RANK_NAMES[under]}" is worth ${(100 * (0.25 - rate[under]) / 3).toFixed(1)}pp to a child who has noticed`;
+  if (denDraws && den >= RANK_POLICY_CAP)
+    return `bottom-number tell: "pick the smallest bottom number" scores ${(100 * den).toFixed(1)}% over ${denDraws} draws`;
+  return null;
+}
+/* One bank's rank profile, measured the way the gate measures it. */
+function rankBank(draw, n) {
+  const r = [0, 0, 0, 0];
+  let ranked = 0, denDraws = 0, denScore = 0;
+  for (let i = 0; i < n; i++) {
+    let q;
+    try { q = draw(); } catch (e) { break; }
+    const rk = valueRank(q);
+    if (rk) { ranked++; r[rk - 1]++; }
+    const dp = smallestDenPolicy(q);
+    if (dp !== null) { denDraws++; denScore += dp; }
+  }
+  return { rate: r.map(x => x / (ranked || 1)), ranked, den: denDraws ? denScore / denDraws : 0, denDraws };
+}
 const rankRows = [];
 for (const g of GENS) {
   if (!RANK_TOPICS.has(g.topic)) continue;
@@ -3086,19 +3306,149 @@ for (const g of GENS) {
   const rate = r.map(x => x / ranked);
   const den = denDraws ? denScore / denDraws : 0;
   let err = null;
-  if (!RANK_EXEMPT.has(key)) {
-    const over = rate.findIndex(x => x > RANK_CAP);
-    const NAMES = ['smallest', 'second smallest', 'second largest', 'largest'];
-    if (over >= 0)
-      err = `value-rank tell: the key is the ${NAMES[over]} of the four options by value in ${(100 * rate[over]).toFixed(1)}% of ${ranked} draws - "pick the ${NAMES[over]}" answers the item without the mathematics`;
-    else for (const i of [0, 3, 2])
-      if (rate[i] >= RANK_POLICY_CAP) { err = `value-rank tell: "pick the ${NAMES[i]}" is right in ${(100 * rate[i]).toFixed(1)}% of ${ranked} draws`; break; }
-    if (!err && den >= RANK_POLICY_CAP)
-      err = `bottom-number tell: "pick the smallest bottom number" scores ${(100 * den).toFixed(1)}% over ${denDraws} draws`;
-  }
+  if (!RANK_EXEMPT.has(key)) err = rankVerdict(rate, ranked, den, denDraws);
   rankRows.push({ name: key, skill: g.skill, ranked, rate, den, exempt: RANK_EXEMPT.has(key), err });
   if (err) failures++;
 }
+
+/* ---------- NEGATIVE CONTROLS for the third pass's new gates -----------------
+   SWEEP FRACTIONS REFUTATION, THIRD PASS 2026-09-16. Four rules went in or were
+   widened this pass, and a rule that has never been shown to go red is a comment,
+   not a gate. Each control below rebuilds the ACTUAL v3 defect from its own
+   strings - so the control does not depend on the topic file still containing it -
+   runs the gate's own code over it, and fails the build if the gate stays quiet.
+   The controls measure; they do not register a generator, so nothing here can
+   reach the app. --- */
+const FR = (n, d) => '<span class="frac"><span class="n">' + n + '</span><span class="d">' + d + '</span></span>';
+const controlRows = [];
+function control(label, fn) {
+  let got = null, threw = null;
+  try { got = fn(); } catch (e) { threw = e.message; }
+  const ok = !!got && !threw;
+  controlRows.push({ label, ok, note: threw ? 'threw: ' + threw : (got || 'NOT REJECTED - the gate stayed quiet on a defect it is written to catch') });
+  if (!ok) failures++;
+}
+const CTL_N = 400;
+
+/* 1. RULE 4, the 12 cap: v3's "added the bottom numbers as well" option, 7/24, on
+      a gSubSame-shaped row. v3 allowed it to 24; 40% of that item's rows carried
+      one. */
+control('RULE 4 denominator cap - the v3 [a+b, 2d] option, 7/24', () => pilotGates({
+  q: FR(5, 12) + ' − ' + FR(2, 12) + ' = ?', extra: '',
+  choices: [FR(3, 12), FR(7, 24), FR(4, 12), FR(2, 12)], correct: 0,
+  answerText: FR(3, 12), explain: ''
+}, 'fractions'));
+
+/* 2. RULE 6, the direction it did not look: v3's gAddError sentence bank, whose
+      key was the uniquely SHORTEST option on every draw it was the answer. */
+control('RULE 6 two-direction - the v3 gAddError sentence bank (key uniquely shortest)', () => {
+  const NM = ['Siti', 'Kumar', 'Ravi'];
+  let uShort = 0, uLong = 0, n = 0;
+  for (let i = 0; i < CTL_N; i++) {
+    const nm = NM[Math.floor(Math.random() * NM.length)];
+    const key = nm + ' added the bottom numbers as well.';
+    const opts = [key,
+      nm + ' subtracted the top numbers instead of adding them.',
+      nm + ' multiplied the top numbers instead of adding them.',
+      nm + ' should have made the bottom numbers the same first.'];
+    if (!allProse(opts)) continue;
+    n++;
+    if (keyIsShortest(opts, 0)) uShort++;
+    if (keyIsLongest(opts, 0)) uLong++;
+  }
+  if (!n) return null;
+  if (uShort / n >= LENGTH_TELL_CAP)
+    return `the key is the uniquely SHORTEST of the four sentences on ${(100 * uShort / n).toFixed(1)}% of draws`;
+  if (uLong / n >= LENGTH_TELL_CAP) return 'uniquely longest';
+  return null;
+});
+
+/* 3. RULE 8, the stem echo: v3's gEqualParts option set. The key restates the
+      stem's clause and is the only option carrying "same", "size" or "all". */
+control('RULE 8 stem echo - the v3 gEqualParts option set', () => {
+  let solo = 0, n = 0, worstNamed = 4;
+  for (let i = 0; i < CTL_N; i++) {
+    const d = 4 + Math.floor(Math.random() * 9);
+    const key = 'The pieces are not all the same size, so 1 piece is not 1 out of ' + d + ' equal parts.';
+    const opts = [key,
+      'Nothing is wrong: 1 piece out of ' + d + ' pieces is always ' + FR(1, d) + ' of it.',
+      'The bottom number should be the number of pieces she did not take.',
+      'A fraction can only be written when the whole is cut into an even number of pieces.'];
+    const stem = 'Siti cuts a kueh lapis into ' + d + ' pieces, but the pieces are <b>not</b> all the same size. ' +
+      'She takes 1 piece. <b>Why can she not call that piece ' + FR(1, d) + ' of it?</b>';
+    if (!allProse(opts)) continue;
+    n++;
+    const e = stemEcho(stem, opts, 0);
+    if (e.solo.length) solo++;
+    worstNamed = Math.min(worstNamed, e.named);
+  }
+  if (!n) return null;
+  return solo / n >= STEM_ECHO_CAP
+    ? `the key carries a word of the stem that no other option carries on ${(100 * solo / n).toFixed(1)}% of draws (fewest options naming the stem: ${worstNamed})`
+    : null;
+});
+
+/* 4. RULE 7's new FLOOR, on its own: a row inside the 45% cap and inside the 40%
+      policy caps, with one rank nearly empty. Only the floor can catch it. */
+control('RULE 7 rank floor - a bank that keys the largest of four on 8% of draws', () => {
+  const NUM = x => String(x);
+  const draw = () => {
+    const r = Math.random();
+    const rank = r < 0.30 ? 1 : r < 0.62 ? 2 : r < 0.92 ? 3 : 4;   /* 30 / 32 / 30 / 8 */
+    const below = [7, 8, 9], above = [11, 12, 13];
+    const opts = [10].concat(below.slice(0, rank - 1)).concat(above.slice(0, 4 - rank));
+    const order = opts.map((_, i) => i).sort(() => Math.random() - 0.5);
+    return { q: 'floor control', extra: '', choices: order.map(i => NUM(opts[i])),
+             correct: order.indexOf(0), answerText: NUM(10) };
+  };
+  const row = rankBank(draw, 4000);
+  const v = rankVerdict(row.rate, row.ranked, row.den, row.denDraws);
+  return v && /rank floor/.test(v) ? v : null;
+});
+
+/* 5. RULE 7's new SECOND-SMALLEST policy cap, on its own: the rank that used to be
+      allowed up to 45% while its three neighbours were held to 40%. */
+control('RULE 7 second-smallest policy cap - a bank that keys it on 43% of draws', () => {
+  const draw = () => {
+    const r = Math.random();
+    const rank = r < 0.20 ? 1 : r < 0.63 ? 2 : r < 0.83 ? 3 : 4;   /* 20 / 43 / 20 / 17 */
+    const below = [7, 8, 9], above = [11, 12, 13];
+    const opts = [10].concat(below.slice(0, rank - 1)).concat(above.slice(0, 4 - rank));
+    const order = opts.map((_, i) => i).sort(() => Math.random() - 0.5);
+    return { q: 'policy control', extra: '', choices: order.map(i => String(opts[i])),
+             correct: order.indexOf(0), answerText: String(10) };
+  };
+  const row = rankBank(draw, 4000);
+  const v = rankVerdict(row.rate, row.ranked, row.den, row.denDraws);
+  return v && /second smallest/.test(v) ? v : null;
+});
+
+/* 6. The exemption that was carrying a tell: v3's gCompareBar row, one option on
+      the named side and three on the other, so the key is the strict extreme. It
+      passed only because RANK_EXEMPT named it; out of that set, it must go red. */
+control('RULE 7 without the gCompareBar exemption - the v3 one-sided bar row', () => {
+  const draw = () => {
+    let d = 8, n = 3, up = true, right = [], wrong = [], g = 0;
+    do {
+      d = 4 + Math.floor(Math.random() * 9); n = 1 + Math.floor(Math.random() * (d - 1));
+      up = Math.random() < 0.5;
+      const bank = [];
+      for (let x = 1; x <= d - 1; x++) if (x !== n) bank.push(x);
+      right = bank.filter(x => up ? x > n : x < n);
+      wrong = bank.filter(x => up ? x < n : x > n);
+      g++;
+    } while (g < 200 && (!right.length || wrong.length < 3));
+    const key = right[Math.floor(Math.random() * right.length)];
+    const three = wrong.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+    const opts = [key].concat(three);
+    const order = opts.map((_, i) => i).sort(() => Math.random() - 0.5);
+    return { q: 'The bar below shows one fraction shaded blue. Which of these fractions is <b>' +
+                (up ? 'greater' : 'less') + '</b> than the blue fraction?', extra: '',
+             choices: order.map(i => FR(opts[i], d)), correct: order.indexOf(0), answerText: FR(key, d) };
+  };
+  const row = rankBank(draw, 4000);
+  return rankVerdict(row.rate, row.ranked, row.den, row.denDraws);
+});
 
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
 const setRows = [];
@@ -3214,15 +3564,40 @@ for (const r of rows) {
 /* RULE 7, printed in full: the table IS the finding, so it is on the record of
    every run and not only when it goes red. */
 if (rankRows.length) {
-  console.log(`\nRULE 7  VALUE RANK OF THE KEY  (${RANK_DRAWS} draws each; cap ${(100*RANK_CAP).toFixed(0)}% per rank, ` +
-    `${(100*RANK_POLICY_CAP).toFixed(0)}% for smallest / largest / 2nd largest / smallest bottom number)\n`);
+  console.log(`\nRULE 7  VALUE RANK OF THE KEY  (${RANK_DRAWS} draws each; cap ${(100*RANK_CAP).toFixed(0)}% and floor ` +
+    `${(100*RANK_FLOOR).toFixed(0)}% per rank, ${(100*RANK_POLICY_CAP).toFixed(0)}% for smallest / 2nd smallest / ` +
+    `2nd largest / largest / smallest bottom number)\n`);
   console.log(pad('GENERATOR', 26) + pad('SMALLEST', 10) + pad('2nd', 10) + pad('3rd', 10) + pad('LARGEST', 10) + pad('SMALL-DEN', 11) + 'RESULT');
   console.log('-'.repeat(84));
   for (const r of rankRows) {
     console.log(pad(r.name, 26) + r.rate.map(x => pad((100 * x).toFixed(1) + '%', 10)).join('') +
       pad((100 * r.den).toFixed(1) + '%', 11) +
-      (r.err ? 'FAIL  ' + r.err : (r.exempt ? 'exempt (the stem asks for an extreme)' : 'pass')));
+      (r.err ? 'FAIL  ' + r.err : (r.exempt ? 'exempt (the stem prints the extreme it wants)' : 'pass')));
   }
+}
+
+/* RULE 6 + RULE 8, printed in full for the same reason (THIRD PASS 2026-09-16). */
+if (proseRows.length) {
+  console.log(`\nRULE 6 + RULE 8  PROSE BANKS  (key uniquely shortest OR longest under ${(100*LENGTH_TELL_CAP).toFixed(0)}%; ` +
+    `a STEM word carried by the key alone under ${(100*STEM_ECHO_CAP).toFixed(0)}%)\n`);
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('uLONGEST', 11) + pad('uSHORTEST', 12) + pad('STEM-ECHO', 12) + 'RESULT');
+  console.log('-'.repeat(84));
+  for (const r of proseRows) {
+    const row = rows.find(x => x.topic + '.' + x.name === r.name);
+    console.log(pad(r.name, 26) + pad(r.n, 8) + pad((100 * r.uLong).toFixed(1) + '%', 11) +
+      pad((100 * r.uShort).toFixed(1) + '%', 12) +
+      pad(r.solo === null ? 'n/a' : (100 * r.solo).toFixed(1) + '%', 12) +
+      (row && row.err ? 'FAIL  ' + row.err
+        : (r.exempt ? 'exempt (declared: a fixed 4-sentence set outside this lane)'
+          : (r.solo === null ? 'pass (RULE 6 only - RULE 8 is scoped to fractions)' : 'pass'))));
+  }
+}
+
+/* The negative controls, on the record of every run (THIRD PASS 2026-09-16). */
+if (controlRows.length) {
+  console.log('\nNEGATIVE CONTROLS  (each rebuilds a v3 defect and must be REJECTED by the gate written for it)\n');
+  for (const c of controlRows)
+    console.log(`${c.ok ? 'ok   caught' : 'FAIL       '}  ${c.label}\n             ${c.note}`);
 }
 
 console.log('');

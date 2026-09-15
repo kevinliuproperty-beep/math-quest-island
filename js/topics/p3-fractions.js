@@ -70,6 +70,56 @@
  *     denominator 13 is banned outright (legalFrac + RULE 4); gMakeOneIn widened
  *     from 25 to 75 distinct stems by asking the same move three ways.
  *
+ * REFUTATION FIXES, v4 2026-09-16 (Sweep fractions Refutation, THIRD PASS). One
+ * kill and five wounds; each site carries its own comment. The sentence all three
+ * refutations have now killed on is the same one: THE CHILD CAN BE RIGHT WITHOUT
+ * DOING THE MATHEMATICS - and each time the item was one an earlier pass had
+ * already written down as fine. Two of the six fixes below are therefore rules
+ * rather than rewrites: a rule this file already had, run against every generator
+ * in the file instead of the one it was written for.
+ *   - THE KILL, gEqualParts: the key restated the stem's own second clause word
+ *     for word and was the only option on the row containing "equal", "same",
+ *     "size" or "all", so "pick the option that repeats the sentence you have just
+ *     read" answered the declared pool-1 concept anchor on 100.00% of 20,000 draws
+ *     out of eighteen option sets. Two earlier passes called it "the best item in
+ *     the bank" and never ran the wording lens on it. The four sentences are
+ *     rebuilt so every content word in the key is printed by some other option
+ *     too; RULE 8, written for gCompareError and scoped to it BY NAME, now runs on
+ *     every prose bank in the topic with the v3 set as its negative control.
+ *     Policy 100.00% -> 0.0%. See FORMAT 1b.
+ *   - W1, gCompareBar's picture was never needed: one option on the named side and
+ *     three on the other makes the key the strict extreme, so "read greater/less
+ *     and take that extreme, never look at the bar" scored 100.00% - in the one
+ *     format whose reason for existing is pictorial support, sitting in RANK_EXEMPT
+ *     under a printed reason ("the stem asks for an extreme") that was true of the
+ *     four comparison formats beside it and false of it. The stem names two
+ *     conditions now, one of which can only be counted off the bar; the generator
+ *     is out of RANK_EXEMPT. Policy 100.00% -> 34%. See FORMAT 3b.
+ *   - W2, the feed had never been simulated below 80% accuracy. tools/feed-sim.mjs
+ *     prints a report-only 45% pass per topic; `fractions` serves pool 1 for 78.3%
+ *     of a session there against 20.3% at 80%. Not a lane defect - js/core.js and
+ *     the pool composition are out of fence - and it is on the record for the
+ *     integrator as a fleet finding.
+ *   - W3, gAddError stopped rotating: the numbers were drawn first and only the
+ *     beliefs that survived were offered, so one sentence was the key on 53.6% of
+ *     draws and was the uniquely SHORTEST option on exactly those draws. The
+ *     BELIEF is drawn first now, evenly, and the three sentences are written to one
+ *     length; RULE 6 reads both directions. 53.6% -> 33%. See FORMAT 4g.
+ *   - W4, the over-12 denominators had migrated undeclared (gSubSame 0.0% ->
+ *     39.8%, gSubRelated 0.0% -> 40.1%, ceilings 12 -> 24). The readability cap of
+ *     24 is gone: TWELVE is the whole rule, everywhere, gated with a negative
+ *     control. No named belief is lost - each one that used to overshoot is either
+ *     reachable at a smaller bottom number or named in WORDS on the card.
+ *   - W5, RULE 7 had a cap and no floor, and its policy cap skipped one rank. A
+ *     12% FLOOR and "second smallest" go in, and three generators are widened to
+ *     clear them (gAddRelated 7.4% -> 26%, gSubSame 8.4% -> 17%, gEqMissing 11.0%
+ *     -> 15%). The three `wholes` formats that shared one 335-entry answer space
+ *     exactly are separated (Jaccard 100% -> 31.2 / 19.9 / 35.5%). And sided()
+ *     itself carried two bugs the gates were fighting each other over: a
+ *     cross-side fallback swap that silently moved a distractor from below the key
+ *     to above it, and a value-dedupe that kept whichever of two equal candidates
+ *     was shuffled first rather than the one written in smaller pieces.
+ *
  * THE FOUR PRINCIPLES
  *  1. WHAT A FRACTION NAMES. A fraction names equal parts of one whole: the
  *     bottom number says how many EQUAL parts the whole was cut into, the top
@@ -161,12 +211,25 @@ const frQd = n => '<span class="frac"><span class="n">' + n + '</span><span clas
    things that reached 13 were the "+1" second-order slips - the half-substitute
    [n, d+1] at d = 12, gSubSame's [a-b, d+b] and gSimplestError's [N+t, D+t] - which
    put an off-P3-list bottom number in front of a child for no teaching reason at
-   all, including in the declared pool-1 anchor. The readability cap of 24 stays for
-   the named beliefs that genuinely overshoot; 13 is simply not one of them. */
+   all, including in the declared pool-1 anchor. */
+/* THIRD PASS 2026-09-16, W4. TWELVE IS NOW THE WHOLE CAP, and the 24 readability
+   allowance is gone. The v3 note led with "denominator 13 is banned outright" and
+   kept 24 for the named overshoot beliefs, which read as a tightening - while the
+   ceiling actually ROSE undeclared in four formats, because sided() reaches for an
+   overshoot candidate to break the one-sided rank and the overshoot a subtraction
+   bank has is [a-b, 2d] and [a-b, d+b]. gSubSame and gSubRelated went from 0.0% of
+   options over 12 to 39.8% and 40.1%, ceiling 12 -> 24, in a note whose own table
+   said 0%. Rather than re-declare a moving ceiling a third time, EVERY rendered
+   fraction in this file - stem, option, teaching card and figure - is now inside
+   the P3 denominator limit of 12, and tools/gen-sanity.mjs RULE 4 gates it with a
+   negative control. No named belief is lost: each one that used to overshoot past
+   12 is either still reachable at a smaller bottom number (gAddError draws the
+   belief FIRST and then numbers that fit it) or is now named IN WORDS on the
+   teaching card instead of being rendered as an off-syllabus fraction. */
 function legalFrac(p){
   return Array.isArray(p) && p.length === 2 &&
          Number.isInteger(p[0]) && Number.isInteger(p[1]) &&
-         p[0] >= 1 && p[1] >= 2 && p[0] < p[1] && p[1] <= 24 && p[1] !== 13;
+         p[0] >= 1 && p[1] >= 2 && p[0] < p[1] && p[1] <= 12;
 }
 const sameVal = (a, b) => a[0] * b[1] === b[0] * a[1];
 /* Exactly three named misconceptions, all legal, none worth what the key is
@@ -215,7 +278,21 @@ function slipsOk(key, slips){
    redraws - exactly as it already does for slipsOk. */
 function sided(key, cands){
   const ok = c => Array.isArray(c) && legalFrac(c) && !sameVal(c, key);
-  const uniq = arr => { const out = []; for (const c of arr) if (!out.some(s => sameVal(s, c))) out.push(c); return out; };
+  /* THIRD PASS 2026-09-16. When two named candidates are worth the SAME amount -
+     gSimplest names both [N-t, D-t] and [n-1, d-1], which at 9/12 are 6/9 and 2/3 -
+     the shuffle used to keep whichever came first, and half the time that was the
+     one with the BIG bottom number. The row was then entirely over the key's own
+     bottom number and "pick the smallest bottom number" scored 41.1%. Same amount,
+     same belief, so the one written in the smaller pieces is kept. */
+  const uniq = arr => {
+    const out = [];
+    for (const c of arr){
+      const i = out.findIndex(s => sameVal(s, c));
+      if (i < 0) out.push(c);
+      else if (c[1] < out[i][1]) out[i] = c;
+    }
+    return out;
+  };
   /* ... and wherever the bank can supply one, one option carries a bottom number
      UNDER the key's, so "pick the smallest bottom number" - the heuristic the first
      refutation wounded gEquivFromBar and gSimplestError for - cannot answer the
@@ -230,13 +307,23 @@ function sided(key, cands){
   if (!us.length) return null;
   const u = pick(us);
   const out = above.slice(0, u).concat(below.slice(0, 3 - u));
+  /* THIRD PASS 2026-09-16, W5. This swap used to fall back to replacing the LAST
+     seated candidate when no same-side alternative existed, which silently moved a
+     distractor from below the key to above it - and every key already in its
+     simplest form with a top number of 1 has nothing below it carrying a smaller
+     bottom number, so the fallback fired on exactly those draws and converted the
+     all-below seating into a one-above one. gSimplestError keyed the LARGEST of
+     four on 13.1% and the 2nd largest on 38.6% for that reason alone: a gate
+     against the bottom-number heuristic was quietly undoing the value-rank one.
+     The swap is side-preserving now, and where no same-side alternative exists the
+     row is left as drawn - the bottom-number policy is separately capped and
+     separately measured by RULE 7. */
   if (out.every(c => c[1] > key[1])){
-    const alt = above.concat(below).find(c => c[1] < key[1] && !out.some(s => sameVal(s, c)));
-    if (alt){
-      const hi = c => c[0]*key[1] > key[0]*c[1];
-      let i = out.length - 1;
-      while (i >= 0 && hi(out[i]) !== hi(alt)) i--;
-      out[i >= 0 ? i : out.length - 1] = alt;
+    const hi = c => c[0]*key[1] > key[0]*c[1];
+    const pool = above.concat(below).filter(c => c[1] < key[1]);
+    for (let i = out.length - 1; i >= 0; i--){
+      const alt = pool.find(c => hi(c) === hi(out[i]) && !out.some(s => sameVal(s, c)));
+      if (alt){ out[i] = alt; break; }
     }
   }
   return out;
@@ -342,10 +429,19 @@ function gPicIdentify(){
 
        SECOND PASS, WOUND 1: the three slips used to be fixed, which pinned the
        key's value rank. Every candidate the bank can name goes to sided() now. */
+    /* THIRD PASS 2026-09-16, W5. Only two of the five candidates sit above the key
+       on a typical draw, so sided() could seat three-above (key smallest) almost
+       never and two-above (key 2nd smallest) almost always: 15.5 / 39.7 / 23.8 /
+       21.0, and the 2nd-smallest rank was the one RULE 7's policy cap did not
+       cover. The two "a piece AND a part miscounted" entries the complement
+       formats already name are added here, one on each side, so all four seatings
+       are reachable on a typical draw. */
     slips = sided(key, [
       [d-n, d],                       /* read the white part instead of the blue */
       [n, d-1], [n+1, d],             /* miscounted the parts / the blue pieces, one too few */
       [n-1, d],                       /* miscounted the blue pieces, one too many */
+      [n+1, d-1],                     /* a blue piece too many AND a part too few */
+      [n-1, d-1],                     /* a blue piece too few AND a part too few */
       (d < 12 ? [n, d+1] : null)      /* counted a part that is not there */
     ].filter(Boolean)) || [];
     g++;
@@ -367,14 +463,32 @@ function gPicIdentify(){
 /* FORMAT 1b - concept check: the parts must be EQUAL (pool 1, 1 step).
    Nothing in the shipped bank asked this, and it is the idea every later
    fraction rests on. */
+/* THIRD PASS 2026-09-16, THE KILL. The key was the only option on the row that
+   contained the word "equal" - and the only one containing "same", "size", "all"
+   or "are" - and it restated the stem's own second clause verbatim, so "pick the
+   option that repeats the sentence you have just read" answered the declared
+   pool-1 concept anchor on 100.00% of 20,000 draws out of eighteen option sets.
+   Two earlier passes called it "the best item in the bank" and never ran the
+   wording lens on it; it was exempted by reputation.
+
+   The four sentences are rebuilt so that EVERY content word in the key is also
+   printed by at least one distractor - "fraction", "counts", "parts", "equal",
+   "size", "pieces" and "different" each appear somewhere else on the row - which
+   is what makes a fixed word policy worthless rather than merely weaker. The key
+   no longer restates the stem's clause, and each distractor is a named belief a
+   P3 child actually holds: pieces are parts whatever their size; the bottom
+   number counts only the pieces that match; a whole has to be cut evenly.
+   tools/gen-sanity.mjs RULE 8 - written for gCompareError and scoped to it by
+   name, which is why nothing looked here - now runs on every prose bank in the
+   topic, with the v3 option set as its negative control. */
 function gEqualParts(){
   const k = pick(KIDS), cake = pick(CAKES);
   const d = ri(4,12);
-  const key = 'The pieces are not all the same size, so 1 piece is not 1 out of ' + d + ' equal parts.';
+  const key = 'A fraction counts parts that are of equal size, and these ' + d + ' pieces are different sizes.';
   const wrongs = [
-    'Nothing is wrong: 1 piece out of ' + d + ' pieces is always ' + fr(1,d) + ' of it.',
-    'The bottom number should be the number of pieces ' + k[2] + ' did not take.',
-    'A fraction can only be written when the whole is cut into an even number of pieces.'
+    'Nothing is wrong: any ' + d + ' pieces of one whole are always ' + d + ' equal parts, at different sizes.',
+    'The bottom number should count only the pieces of the same size as the piece ' + k[2] + ' took.',
+    'A fraction can only be written when the whole is cut into an even number of equal parts.'
   ];
   /* The context is named once. Printing it a second time gave "1/5 of the pizza
      at the hawker centre", which is a mouthful a P3 child reads twice. */
@@ -391,7 +505,17 @@ function gEqualParts(){
 function gPicUnshaded(){
   let d = 8, n = 3, key = [5,8], slips = [[3,8],[6,8],[5,7]], g = 0;
   do {
-    d = ri(4,12); n = ri(2,d-2);
+    /* THIRD PASS 2026-09-16, W5(a). This generator, gSubFromOne and gMakeOne drew
+       the SAME d = ri(4,12) / a = ri(2,d-2) with the SAME candidate bank, so all
+       three produced exactly one 335-entry (option set + key) space - Jaccard
+       100.0% on all three pairs - and shapeKey plus the feed's repeat guard
+       counted them as three formats. Three of the four `wholes` formats were one
+       format under three sentences. The picture one is widened where a picture
+       can go and the other two cannot: a bar may be cut into 3 parts and it may
+       have a single part blue or a single part white, and the misread that only a
+       PICTURE affords - swapping the blue count and the white count - is named
+       here and nowhere else. */
+    d = ri(3,12); n = ri(1,d-1);
     key = [d-n,d];
     /* WOUND 4: same half-shaded gap as gPicIdentify - [n, d] is the key when
        d === 2n, so the bar could never be half blue. SECOND PASS W3(a): the
@@ -401,13 +525,15 @@ function gPicUnshaded(){
       [d-n+1, d], [d-n, d-1],         /* one white piece too many / a part miscounted */
       [d-n-1, d],                     /* one white piece too few */
       [d-n+1, d-1], [d-n-1, d-1],     /* a piece AND a part miscounted, each way */
+      [n, d-n], [d-n, n],             /* swapped the blue count and the white count */
       (d < 12 ? [d-n, d+1] : null)    /* counted a part that is not there */
     ].filter(Boolean)) || [];
     g++;
   } while (g < 200 && !slipsOk(key, slips));
   if (!slipsOk(key, slips)){ d = 8; n = 3; key = [5,8]; slips = [[3,8],[6,8],[5,7]]; }
   return fig(mcFrac('What fraction of the bar is <b>not</b> blue?', key, slips,
-    'Step 1: the bar is cut into ' + d + ' equal parts and ' + n + ' are blue, so the blue part is ' + fr(n,d) + '. ' +
+    'Step 1: the bar is cut into ' + d + ' equal parts and ' + n + ' ' + (n === 1 ? 'is' : 'are') +
+    ' blue, so the blue part is ' + fr(n,d) + '. ' +
     'Step 2: the whole bar is ' + fr(d,d) + ', so the part that is not blue is ' + d + ' − ' + n + ' = ' + (d-n) +
     ' parts, which is ' + fr(d-n,d) + '.' +
     /* SECOND PASS, W2: "n/d is the blue part, not the answer" named the KEY when
@@ -452,7 +578,14 @@ function gEquivFromBar(){
       [n, k*d],                           /* changed only the bottom number */
       (n > 1 ? [n-1, d] : null),          /* one big piece too few */
       (n > 1 ? [n-1, d-1] : null),        /* took one off the top and the bottom */
-      (d-1 > n ? [n, d-1] : null)         /* one part too few in the whole */
+      (d-1 > n ? [n, d-1] : null),        /* one part too few in the whole */
+      /* THIRD PASS 2026-09-16, W5. Below the key the bank could only name
+         [k*n-1, k*d] and [n, k*d] whenever n = 1 - nearly half of SCALABLE - so
+         three-below, the seating that makes the key the LARGEST of four, was
+         reachable on 12.6% of draws, a hair over RULE 7's new 12% floor and inside
+         its sampling noise. Two more of the file's own miscounts sit below it. */
+      [k*n-2, k*d],                       /* two small pieces too few */
+      (d+1 <= 12 ? [n, d+1] : null)       /* one part too many in the whole */
     ].filter(Boolean)) || [];
     g++;
   } while (g < 200 && !slipsOk(key, slips));
@@ -490,7 +623,14 @@ function gEqMissing(){
       n*(k-1),              /* multiplied by one less than the multiplier */
       k*(n-1),              /* multiplied one less than the top number */
       n + k,                /* added the multiplier instead of multiplying by it */
-      k*n + 1, k*n - 1      /* counted one small piece too many / too few */
+      k*n + 1, k*n - 1,     /* counted one small piece too many / too few */
+      /* THIRD PASS 2026-09-16, W5. Below k·n the bank could only name n, n(k-1)
+         and k(n-1), which collapse to one or two distinct values whenever n = 1 -
+         almost half of SCALABLE - so three-below, the seating that makes the key
+         the LARGEST of four, was reachable on 10.8% of draws, under RULE 7's new
+         12% floor. Two more of the file's documented miscounts sit below it. */
+      k*n + 2, k*n - 2,     /* counted two small pieces too many / too few */
+      n - 1                 /* took one off the top number before multiplying */
     ]) || [];
     g++;
   } while (g < 200 && !numsOk(key, slips));
@@ -526,7 +666,13 @@ function gEqMissingDen(){
       k*(d+n),              /* multiplied the two numbers added together */
       d + n*(k-1),          /* added the amount the top number grew */
       d + k,                /* added the multiplier instead of multiplying by it */
-      d                     /* left the bottom number alone */
+      d,                    /* left the bottom number alone */
+      /* THIRD PASS 2026-09-16, W5. k(d+n) runs past the 24 the integer banks read
+         as a number to recognise as wrong, so above the key the bank often had
+         only two candidates and three-above - the key as the SMALLEST of four -
+         sat at 13.7%, inside the new 12% floor's noise. */
+      k*d + 1, k*d + 2,     /* counted one / two small parts too many */
+      k*d - 1, k*d - 2      /* counted one / two small parts too few */
     ]) || [];
     g++;
   } while (g < 200 && !numsOk(key, slips));
@@ -566,11 +712,17 @@ function gPickEquiv(){
     slips = sided(key, [
       [n+k, d+k],                                  /* added k to the top AND the bottom */
       [k*n+1, k*d], [k*n-1, k*d],                  /* one small piece too many / too few */
+      [k*n+2, k*d],                                /* two small pieces too many */
       [n+1, d],                                    /* one big piece too many */
+      (n+1 < d-1 ? [n+1, d-1] : null),             /* one big piece too many, one part too few */
       [n, k*d],                                    /* changed only the bottom number */
       (t < k*n && t <= k*d-2 ? [k*n-t, k*d-t] : null),  /* took t off the top AND the bottom */
       (n > 1 ? [n-1, d-1] : null),                 /* took one off the top and the bottom */
-      (d-1 > n ? [n, d-1] : null)                  /* one part too few in the whole */
+      (d-1 > n ? [n, d-1] : null),                 /* one part too few in the whole */
+      /* THIRD PASS 2026-09-16, W5: two more below the key, so three-below - the key
+         as the LARGEST of four - clears the new 12% floor with room. */
+      [k*n-2, k*d],                                /* two small pieces too few */
+      (d+1 <= 12 ? [n, d+1] : null)                /* one part too many in the whole */
     ].filter(Boolean)) || [];
     g++;
   } while (g < 200 && !(t < k*n && t <= k*d-2 && slipsOk(key, slips)));
@@ -608,12 +760,24 @@ function gSimplest(){
       [N-t, D-t],                                  /* took t away from the top AND the bottom */
       [N+t, D+t],                                  /* added t to the top and the bottom instead */
       [N+1, D],                                    /* one piece too many, before dividing */
+      /* THIRD PASS 2026-09-16, W5. [N+t, D+t] is the only ABOVE-key candidate the
+         named beliefs supply and the 12 cap takes it off most draws, so three-above
+         - the key as the SMALLEST of four - sat at 12.7%, inside the floor's noise.
+         The mirrors of the two "left the bottom alone" slips go the other way. */
+      (N+t < D ? [N+t, D] : null),                 /* added t to the top and left the bottom */
+      [N+2, D],                                    /* two pieces too many, before dividing */
       [n, D],                                      /* divided only the top */
       [N-t, D],                                    /* took t off the top and left the bottom */
       (n+1 < d ? [n+1, d] : null),                 /* one piece too many */
       (n > 1 ? [n-1, d] : null),                   /* one piece too few */
       (d-1 > n ? [n, d-1] : null),                 /* divided the bottom one step too far */
       (n > 1 ? [n-1, d-1] : null),                 /* took one off the top and the bottom */
+      /* THIRD PASS 2026-09-16. Two more candidates carrying a bottom number UNDER
+         the key's, because "pick the smallest bottom number" came back to 39.0% -
+         inside RULE 7's 40% policy cap's noise - once the 12 cap took [N+t, D+t]
+         off most draws and left the row sitting over d. */
+      (n+1 < d-1 ? [n+1, d-1] : null),             /* one piece too many, one part too few */
+      (d-2 > n ? [n, d-2] : null),                 /* divided the bottom two steps too far */
       [n+1, d+1],                                  /* added one to the top and the bottom */
       [n, d+1]                                     /* did not divide the bottom far enough */
     ].filter(Boolean)) || [];
@@ -704,12 +868,28 @@ function gSimplestError(){
       [N-t, D-t],                         /* took t away from the top AND the bottom */
       [N+t, D+t],                         /* added t to the top and the bottom instead */
       [N+1, D],                           /* one piece too many, before dividing */
+      /* THIRD PASS 2026-09-16, W5. Same shortage as gSimplest: [N+t, D+t] is the
+         only named candidate above the key and the 12 cap takes it off most draws,
+         so the key sat at 13.7% smallest and 39.0% 2nd largest, both inside the
+         new floor's and the policy cap's noise. */
+      (N+t < D ? [N+t, D] : null),        /* added t to the top and left the bottom */
+      [N+2, D],                           /* two pieces too many, before dividing */
+      (N+1 < D-1 ? [N+1, D-1] : null),    /* one piece too many AND the bottom one short */
+      (N+2 < D-1 ? [N+2, D-1] : null),
       [n, D],                             /* divided only the top */
       [N-t, D],                           /* took t off the top and left the bottom */
       low,                                /* the same habit carried on to the answer */
       (d-1 > n ? [n, d-1] : null),        /* one step too far down the bottom */
       (n+1 < d ? [n+1, d] : null),        /* one piece too many */
-      [n+1, d+1]                          /* added one to the top and the bottom */
+      [n+1, d+1],                         /* added one to the top and the bottom */
+      /* THIRD PASS 2026-09-16, W5. Three-below - the key as the LARGEST of four -
+         sat at 13.3%, inside the new 12% floor's sampling noise, because only the
+         three "left the bottom alone / took it off both" entries land under the
+         key. Two of the file's named miscounts join them. */
+      (n > 1 ? [n-1, d] : null),          /* one piece too few in the answer */
+      (n+1 < d-1 ? [n+1, d-1] : null),    /* one piece too many, one part too few */
+      (d-2 > n ? [n, d-2] : null),        /* one step too far down the bottom, twice */
+      (d+1 <= 12 ? [n, d+1] : null)       /* did not divide the bottom far enough */
     ].filter(Boolean)) || [];
     g++;
   } while (g < 200 && !(t < N && t <= D-2 && slipsOk(key, slips)));
@@ -785,50 +965,95 @@ function gCompareUnit(){
 }
 
 /* FORMAT 3b - compare against a picture, using one of the two P3 rules
-   (pool 1, 1 step). Pictorial support is written into the syllabus objective. */
+   (pool 1, 1 step). Pictorial support is written into the syllabus objective.
+
+   THIRD PASS 2026-09-16, W1. The v3 format drew ONE option satisfying the stem's
+   direction and three from the other side of the blue fraction, so the key was the
+   strict maximum when the stem said "greater" and the strict minimum when it said
+   "less": the blind policy "read the direction word, take that extreme of the
+   option row, never look at the bar" scored 100.00% of 20,000 draws. The bar was
+   rendered on every draw and read on none of them, in the one format whose whole
+   reason for existing is pictorial support - and the generator sat in RANK_EXEMPT
+   beside four comparison formats whose stems DO name an extreme, under a printed
+   reason ("the stem asks for an extreme") that was true of them and false of it.
+
+   A single-threshold question cannot escape this: exactly one option greater than
+   the blue fraction IS the largest option. So the deciding step is moved onto the
+   PICTURE. The stem now names two conditions - the bar's own bottom number (or its
+   top number, on a coin flip), which can only be got by counting the parts, and a
+   direction - and the row carries TWO options on the named side of the blue
+   fraction, one of which fails the counted condition. Every option still shares a
+   top or a bottom number with the blue fraction, so every comparison a child makes
+   is one of the two P3 rules; what has gone is the option row that could be read
+   without the bar. gCompareBar is out of RANK_EXEMPT and gated like everything
+   else. Measured: direction-extreme policy 100.00% -> ~33%. */
 function gCompareBar(){
   let d = 8, n = 3, mode = 'sameD', dir = 'greater';
-  let pairs = [[5,8],[2,8],[1,8],[3,8]], g = 0, ok = false;
+  let key = [5,8], others = [[1,4],[2,8],[3,10]], g = 0, ok = false;
   do {
     d = ri(4,12); n = ri(1,d-1);
     mode = Math.random() < 0.5 ? 'sameD' : 'sameN';
     dir = Math.random() < 0.5 ? 'greater' : 'less';
-    let bank;
-    if (mode === 'sameD'){
-      bank = Array.from({length:d-1}, (_,i) => [i+1, d]).filter(p => p[0] !== n);
-    } else {
-      bank = [];
-      for (let q2 = n+1; q2 <= 12; q2++) if (q2 !== d) bank.push([n, q2]);
-    }
-    const right = bank.filter(p => dir === 'greater' ? p[0]*d > n*p[1] : p[0]*d < n*p[1]);
-    const wrong = bank.filter(p => dir === 'greater' ? p[0]*d < n*p[1] : p[0]*d > n*p[1]);
-    ok = right.length >= 1 && wrong.length >= 3;
+    const up = dir === 'greater';
+    const right = p => up ? p[0]*d > n*p[1] : p[0]*d < n*p[1];
+    const wrong = p => up ? p[0]*d < n*p[1] : p[0]*d > n*p[1];
+    /* the two banks the picture can be compared with by a P3 rule */
+    const bankD = [];            /* same bottom number as the bar */
+    for (let x = 1; x <= d-1; x++) if (x !== n) bankD.push([x, d]);
+    const bankN = [];            /* same top number as the bar */
+    for (let e = n+1; e <= 12; e++) if (e !== d) bankN.push([n, e]);
+    const named = mode === 'sameD' ? bankD : bankN;   /* the condition the stem names */
+    const off   = mode === 'sameD' ? bankN : bankD;   /* fails the condition */
+    const keyBank = named.filter(right), aBank = off.filter(right);
+    const bBank = named.filter(wrong),  cBank = off.filter(wrong);
+    ok = keyBank.length >= 1 && aBank.length >= 1 && bBank.length >= 1 && cBank.length >= 1;
     if (ok){
-      const w = shuffle(wrong).slice(0,3);
-      pairs = [pick(right)].concat(w);
-      ok = allDistinct(pairs);
+      /* The companion on the key's own side of the blue fraction is what decides
+         the rank, so the OFF-condition one is drawn first and the key is then
+         taken from short of it three draws in four: "read the direction word and
+         take that extreme of the row" is then right about a third of the time,
+         which is chance, and the four value ranks measure 19 / 33 / 33 / 15. */
+      const cross = [];
+      for (const kk of keyBank) for (const aa of aBank)
+        if (kk[0]*aa[1] !== aa[0]*kk[1]) cross.push([kk, aa]);
+      const beaten = cross.filter(x => up ? x[0][0]*x[1][1] < x[1][0]*x[0][1]
+                                         : x[0][0]*x[1][1] > x[1][0]*x[0][1]);
+      const winner = cross.filter(x => up ? x[0][0]*x[1][1] > x[1][0]*x[0][1]
+                                         : x[0][0]*x[1][1] < x[1][0]*x[0][1]);
+      const chosen = (beaten.length && (Math.random() < 0.75 || !winner.length)) ? pick(beaten)
+                   : (winner.length ? pick(winner) : (beaten.length ? pick(beaten) : null));
+      ok = !!chosen;
+      if (ok){
+        key = chosen[0];
+        others = [chosen[1], pick(bBank), pick(cBank)];
+        ok = allDistinct([key].concat(others));
+      }
     }
     g++;
   } while (g < 200 && !ok);
-  if (!ok){ d = 8; n = 3; mode = 'sameD'; dir = 'greater'; pairs = [[5,8],[2,8],[1,8],[7,8]]; }
-  const key = pairs[0];
+  if (!ok){ d = 8; n = 3; mode = 'sameD'; dir = 'greater'; key = [5,8]; others = [[3,4],[2,8],[3,10]]; }
+  const pairs = [key].concat(others);
   const order = shuffle(pairs.map((_,i) => i));
   const why = mode === 'sameD'
-    ? 'All four fractions have the same bottom number, ' + d + ', so every piece is the same size and you ' +
-      'only compare the top numbers. ' + key[0] + ' is ' + (dir === 'greater' ? 'more' : 'less') + ' than ' + n +
-      ', so ' + fr(key[0], key[1]) + ' is ' + (dir === 'greater' ? 'greater' : 'less') + ' than ' + fr(n,d) + '.'
-    : 'All four fractions have the same top number, ' + n + ', so compare the bottom numbers. ' +
-      'The bigger the bottom number, the more parts the whole is cut into and the SMALLER each piece. ' +
+    ? 'Two of the four are written in ' + d + 'ths like the bar; the other two are not, so they are out ' +
+      'whatever they are worth. Those two have the same bottom number as the bar, so the pieces are the ' +
+      'same size and only the top numbers are compared: ' + key[0] + ' is ' +
+      (dir === 'greater' ? 'more' : 'less') + ' than ' + n + ', so ' + fr(key[0], key[1]) + ' is ' +
+      (dir === 'greater' ? 'greater' : 'less') + ' than ' + fr(n,d) + '.'
+    : 'Two of the four have a top number of ' + n + ' like the bar; the other two do not, so they are out ' +
+      'whatever they are worth. Those two have the same top number, so the bottom numbers decide - the ' +
+      'bigger the bottom number, the more parts the whole is cut into and the SMALLER each piece. ' +
       key[1] + ' is ' + (key[1] < d ? 'smaller' : 'bigger') + ' than ' + d + ', so ' + fr(key[0], key[1]) +
       ' is ' + (dir === 'greater' ? 'greater' : 'less') + ' than ' + fr(n,d) + '.';
   return fig({
-    q: 'The bar below shows one fraction shaded blue. Which of these fractions is <b>' +
+    q: 'The bar below shows one fraction shaded blue. Which of these fractions has the <b>same ' +
+       (mode === 'sameD' ? 'bottom' : 'top') + ' number</b> as the bar AND is <b>' +
        (dir === 'greater' ? 'greater' : 'less') + '</b> than the blue fraction?',
     extra: '', choices: order.map(i => fr(pairs[i][0], pairs[i][1])), correct: order.indexOf(0),
-    explain: 'The bar is cut into ' + d + ' equal parts with ' + n + ' shaded, so the blue fraction is ' +
-             fr(n,d) + '. ' + why,
+    explain: 'Count the bar first: it is cut into ' + d + ' equal parts with ' + n + ' shaded, so the blue ' +
+             'fraction is ' + fr(n,d) + '. ' + why,
     answerText: fr(key[0], key[1]),
-    authoredFrac: pairs.slice(1).map(p => [p[0], p[1]])
+    authoredFrac: others.map(p => [p[0], p[1]])
   }, bar(d, n));
 }
 
@@ -1204,7 +1429,7 @@ function gOrderGap(){
 
 /* FORMAT 4a - like fractions, add (pool 1, 1 step). */
 function gAddSame(){
-  let d = 9, a = 4, b = 3, key = [7,9], slips = [[7,18],[1,9],[8,9]], g = 0;
+  let d = 9, a = 4, b = 3, key = [7,9], slips = [[1,9],[8,9],[7,8]], g = 0;
   do {
     d = ri(4,12); a = ri(1,d-2); b = ri(1,d-a-1);
     key = [a+b, d];
@@ -1215,8 +1440,15 @@ function gAddSame(){
        named belief that OVERSHOOTS, so the other side is carried by the two
        documented second-order slips the teaching card already names: counting one
        piece too many, and counting the bottom number one short. */
+    /* THIRD PASS 2026-09-16, W4. [a+b, 2d] printed a bottom number past 12 on the
+       option row of the declared pool-1 addition anchor in 36.5% of draws. The
+       belief is not lost - the teaching card names it in words and gives the
+       bottom number it produces - but an off-syllabus fraction is no longer put in
+       front of a P3 child as something to choose. legalFrac refuses it now; it is
+       left in the list, commented, so the next lane can see what was taken out and
+       why rather than finding a gap. */
     slips = sided(key, [
-      [a+b, 2*d],                       /* added the bottom numbers as well */
+      /* [a+b, 2*d] - added the bottom numbers as well; bottom number past 12 */
       [Math.abs(a-b), d],               /* subtracted the top numbers instead */
       [a+b+1, d],                       /* counted one piece too many */
       [a+b-1, d],                       /* counted one piece too few */
@@ -1229,12 +1461,12 @@ function gAddSame(){
        above the key is improper, and the key was the largest of four on 64.6% of
        draws until this guard went in. */
   } while (g < 200 && !(a !== b && a+b+1 < d && slipsOk(key, slips)));
-  if (!(a !== b && a+b+1 < d && slipsOk(key, slips))){ d = 9; a = 4; b = 3; key = [7,9]; slips = [[7,18],[1,9],[8,9]]; }
+  if (!(a !== b && a+b+1 < d && slipsOk(key, slips))){ d = 9; a = 4; b = 3; key = [7,9]; slips = [[1,9],[8,9],[7,8]]; }
   return mcFrac(fr(a,d) + ' + ' + fr(b,d) + ' = ?', key, slips,
     'Both fractions have the same bottom number, ' + d + ', so the pieces are already the same size. ' +
     'Count the pieces: ' + a + ' + ' + b + ' = ' + (a+b) + '. The bottom number is the SIZE of each piece, ' +
-    'so it stays ' + d + ', and the answer is ' + fr(a+b, d) + '. Adding the bottom numbers as well would give ' +
-    fr(a+b, 2*d) + ', which is only half as much.');
+    'so it stays ' + d + ', and the answer is ' + fr(a+b, d) + '. Adding the bottom numbers as well would ' +
+    'make the bottom number ' + (2*d) + ' - twice as many pieces, so only half as much.');
 }
 
 /* FORMAT 4b - like fractions, subtract (pool 2, 1 step). */
@@ -1248,14 +1480,26 @@ function gSubSame(){
        every time. The mirror of the named bottom-number belief lands below it:
        taking the bottom numbers away gives d - b, ADDING them gives 2d, and both
        are slips a child writes on a like-fraction subtraction. */
+    /* THIRD PASS 2026-09-16, W4 + W5. Two of the three below-key candidates were
+       [a-b, 2d] and [a-b, d+b], which is why 39.8% of this item's option rows
+       printed a bottom number past 12 (ceiling 24) after a note that declared
+       0.0%, and why the key was the LARGEST of four on only 8.2% of draws - under
+       RULE 7's new 12% floor - because below the key there was often nothing legal
+       left to seat. Both overshoot entries are gone with the 12 cap, and the
+       below-key side is carried instead by the second-order miscounts the teaching
+       cards in this file already name: one piece too few, the size of the piece
+       one or two too many, and the two of them together. */
     slips = sided(key, [
       [a+b, d],                         /* added the top numbers instead */
       [a-b, d-b],                       /* took the bottom numbers away as well */
       [a-b+1, d],                       /* counted one piece too many */
-      [a-b, 2*d],                       /* added the bottom numbers as well */
+      [a-b+1, d-1],                     /* a piece too many AND a part too few */
       [a-b-1, d],                       /* counted one piece too few */
-      [a-b, d+b]                        /* added b to the bottom number */
-    ]) || [];
+      [a-b-1, d-1],                     /* a piece too few AND a part too few */
+      (d+1 <= 12 ? [a-b, d+1] : null),  /* miscounted the size of the pieces, one over */
+      (d+2 <= 12 ? [a-b, d+2] : null),  /* miscounted the size of the pieces, two over */
+      (d+b <= 12 ? [a-b, d+b] : null)   /* added b to the bottom number */
+    ].filter(Boolean)) || [];
     g++;
   } while (g < 200 && !(a+b < d && d-b >= 2 && slipsOk(key, slips)));
   if (!(a+b < d && d-b >= 2 && slipsOk(key, slips))){ d = 9; a = 5; b = 2; key = [3,9]; slips = [[7,9],[3,7],[4,9]]; }
@@ -1300,7 +1544,12 @@ function gSubFromOne(){
 function gMakeOne(){
   let d = 8, a = 3, key = [5,8], slips = [[3,8],[6,8],[4,8]], g = 0;
   do {
-    d = ri(4,12); a = ri(2,d-2);
+    /* THIRD PASS 2026-09-16, W5(a) - the other half of the three-formats-in-one
+       finding. This one is widened where working BACKWARDS can go: the amount
+       already there may be a single piece or all but one, and the "a piece AND a
+       part miscounted" pair is carried in BOTH directions on the bottom number,
+       which gPicUnshaded and gSubFromOne do not do. */
+    d = ri(4,12); a = ri(1,d-1);
     key = [d-a, d];
     /* WOUND 4 + SECOND PASS W3(a) and WOUND 1 - the same three changes gSubFromOne
        carries, for the same reasons. */
@@ -1308,6 +1557,9 @@ function gMakeOne(){
       [a, d],                           /* answered the part already there */
       [d-a+1, d], [d-a-1, d],           /* one piece too many / too few */
       [d-a+1, d-1], [d-a-1, d-1],       /* a piece AND a part miscounted, each way */
+      (d+1 <= 12 ? [d-a+1, d+1] : null),/* the same again, one part too MANY */
+      (d+1 <= 12 ? [d-a-1, d+1] : null),
+      [d-a+2, d], [d-a-2, d],           /* two pieces too many / too few */
       (d+1 <= 12 ? [d-a, d+1] : null),  /* changed the size of the pieces as well */
       (d-a < d-1 ? [d-a, d-1] : null)   /* took one off the bottom number instead */
     ].filter(Boolean)) || [];
@@ -1315,7 +1567,8 @@ function gMakeOne(){
   } while (g < 200 && !slipsOk(key, slips));
   if (!slipsOk(key, slips)){ d = 8; a = 3; key = [5,8]; slips = [[3,8],[6,8],[4,8]]; }
   return mcFrac(fr(a,d) + ' + ? = 1 &nbsp; What is the missing fraction?', key, slips,
-    'One whole is ' + fr(d,d) + '. You already have ' + a + ' pieces, so you need ' + d + ' − ' + a + ' = ' +
+    'One whole is ' + fr(d,d) + '. You already have ' + a + ' ' + (a === 1 ? 'piece' : 'pieces') +
+    ', so you need ' + d + ' − ' + a + ' = ' +
     (d-a) + ' more of the same pieces: ' + fr(d-a, d) + '. Check it: ' + fr(a,d) + ' + ' + fr(d-a, d) + ' = ' +
     fr(d,d) + ', which is 1.');
 }
@@ -1354,8 +1607,14 @@ function gMakeOneIn(){
        is what keeps a side available when d = 2 collapses the named ones. */
     slips = sided(key, [
       [d-a, D], [k*a, D], [D-a, D], [D - k*a + 1, D], [D - k*a - 1, D],
-      [D - k*a + k, D], [D - k*a - k, D]   /* one BIG piece out, converted, each way */
-    ]) || [];
+      [D - k*a + k, D], [D - k*a - k, D],  /* one BIG piece out, converted, each way */
+      /* THIRD PASS 2026-09-16, W5: two more each way, so that the extreme seatings
+         clear RULE 7's new 12% floor with room rather than sitting inside its
+         sampling noise (15.0 / 14.7 measured at 20,000 draws). */
+      [D - k*a + 2, D], [D - k*a - 2, D],  /* two small pieces out, each way */
+      (D-1 > D - k*a ? [D - k*a, D-1] : null),
+      (D+1 <= 12 ? [D - k*a, D+1] : null)  /* the small pieces miscounted, each way */
+    ].filter(Boolean)) || [];
     ok = D <= 12 && a < d && slipsOk(key, slips);
     g++;
   } while (g < 200 && !ok);
@@ -1376,7 +1635,7 @@ function gMakeOneIn(){
    subtract was a like-fraction item, which is why pool 3 added no step. The two
    steps are: change one fraction into an equivalent one, then count the pieces. */
 function gAddRelated(){
-  let d = 4, k = 3, D = 12, a = 1, b = 2, key = [5,12], slips = [[3,16],[3,12],[7,12]], g = 0;
+  let d = 4, k = 3, D = 12, a = 1, b = 2, key = [5,12], slips = [[3,12],[7,12],[4,11]], g = 0;
   do {
     /* WOUND 2: the scale factor ran to 4, which is why only nine (d, k) pairs
        were reachable. It runs to 6 now - the D <= 12 guard below is the real
@@ -1388,15 +1647,25 @@ function gAddRelated(){
        draws, over the 45% the topic-wide gate allows. Scaling the SECOND fraction
        as well is a real related-fractions slip and it overshoots, so the row is
        drawn from both sides. */
+    /* THIRD PASS 2026-09-16, W4 + W5. The three "added the bottom numbers as well"
+       entries ([a+b, d+D] and [k*a+b, d+D] / [k*a+b, 2*D]) are what took 53.8% of
+       this item's option rows past a bottom number of 12, ceiling 24, and they are
+       out with the cap; the belief is named in words on the card instead. Their
+       removal is also the W5 fix: above the key only [k*a+b+1, D] and [k*a+b, D-1]
+       were reliably legal, so sided() could seat three-above - the key as the
+       SMALLEST of four - on 7.4% of draws, under the new 12% floor. The
+       piece-and-size miscount carried in both directions restores the third
+       candidate on each side, and the draw guard is tightened by one so it is
+       always legal. */
     slips = sided(key, [
-      [a+b, d+D],                       /* added the tops and the bottoms straight off */
       [a+b, D],                         /* did not convert the first fraction */
       [a + k*b, D],                     /* scaled the wrong fraction */
       [k*a + k*b, D],                   /* scaled BOTH fractions before adding */
-      [k*a + b, d+D], [k*a + b, 2*D],   /* added the tops AND the bottom numbers */
       [k*a + b + 1, D],                 /* counted one small piece too many */
+      [k*a + b + 1, D-1],               /* one piece too many AND the size one short */
       [k*a + b, D-1],                   /* counted the pieces right, the size one short */
-      [k*a + b - 1, D]                  /* counted one small piece too few */
+      [k*a + b - 1, D],                 /* counted one small piece too few */
+      [k*a + b - 1, D-1]                /* one piece too few AND the size one short */
     ]) || [];
     g++;
     /* k*a + b + 1 < D: the gcd(key, D) = 1 guard hugely over-selects the key
@@ -1404,17 +1673,17 @@ function gAddRelated(){
        every fraction above the key is improper, so the key was the largest of four
        on 52% of draws. Barring the top step leaves the overshoot reachable on
        every draw. Measured cost in distinct stems is recorded in the lane note. */
-  } while (g < 200 && !(D <= 12 && a < d && k*a + b + 1 < D && gcd(k*a + b, D) === 1 &&
+  } while (g < 200 && !(D <= 12 && a < d && k*a + b + 2 < D && gcd(k*a + b, D) === 1 &&
                         slipsOk(key, slips)));
-  if (!(D <= 12 && a < d && k*a + b + 1 < D && gcd(k*a + b, D) === 1 && slipsOk(key, slips))){
-    d = 4; k = 3; D = 12; a = 1; b = 2; key = [5,12]; slips = [[3,16],[3,12],[7,12]];
+  if (!(D <= 12 && a < d && k*a + b + 2 < D && gcd(k*a + b, D) === 1 && slipsOk(key, slips))){
+    d = 4; k = 3; D = 12; a = 1; b = 2; key = [5,12]; slips = [[3,12],[7,12],[4,11]];
   }
   return mcFrac('Add: ' + fr(a,d) + ' + ' + fr(b,D) + ' = ?', key, slips,
     'The pieces are different sizes, so make them the same first. ' + d + ' × ' + k + ' = ' + D +
     ', so cut each of the ' + d + ' parts into ' + k + ': ' + fr(a,d) + ' = ' + fr(k*a, D) + '. ' +
     'Now both are ' + D + 'ths and you can count them: ' + (k*a) + ' + ' + b + ' = ' + (k*a + b) +
-    ', giving ' + fr(k*a + b, D) + '. Adding the tops and the bottoms straight off would give ' +
-    fr(a+b, d+D) + ', which is not even close.');
+    ', giving ' + fr(k*a + b, D) + '. Adding the tops and the bottoms straight off would give a top ' +
+    'number of ' + (a+b) + ' over a bottom number of ' + (d+D) + ', which is not even close.');
 }
 
 /* FORMAT 4f - RELATED fractions, subtract (pool 3, 2 steps). */
@@ -1440,14 +1709,33 @@ function gSubRelated(){
       [k*a + b, D],                     /* added instead of subtracting */
       [k*a - b, D-1],                   /* counted the pieces right, the size one short */
       [k*(a-b), D],                     /* subtracted first, then converted the answer */
-      [k*a - b, d+D], [k*a - b, 2*D],   /* subtracted the tops, ADDED the bottom numbers */
+      /* THIRD PASS 2026-09-16, W4: [k*a-b, d+D] and [k*a-b, 2*D] - subtracted the
+         tops and ADDED the bottom numbers - put a bottom number past 12 on 40.1%
+         of this item's option rows, ceiling 24, under a note that declared 0.0%.
+         Out with the cap; the card names the belief in words. */
       [k*a - b - k, D],                 /* one BIG piece too few, converted */
-      [k*a - b - 1, D]                  /* counted one small piece too few */
-    ]) || [];
+      [k*a - b - 1, D],                 /* counted one small piece too few */
+      /* THIRD PASS 2026-09-16, W5. Removing the two overshoot entries above took
+         the BELOW-key side down to whatever [a-b, ...] could supply, and b runs to
+         D-1 so a-b is often not positive at all: sided() was then forced to seat
+         three-above and the key was the SMALLEST of four on 60.5% of draws. Four
+         more candidates go below - one and two small pieces too few, and the small
+         pieces themselves miscounted one or two parts over - and the draw guard
+         bars the one case that has nothing legal underneath it at all: a key of
+         one twelfth, below which no proper fraction with a bottom number to 12
+         exists. Everything else the format can draw is still reachable, which
+         costs seven of its 34 stems rather than the fifteen a flat "key >= 3"
+         guard cost. */
+      [k*a - b - 2, D],                 /* counted two small pieces too few */
+      [k*a - b - 1, D-1],               /* one piece too few AND the size one short */
+      (D+1 <= 12 ? [k*a - b, D+1] : null),  /* miscounted the size of the small pieces */
+      (D+2 <= 12 ? [k*a - b, D+2] : null),  /* ... one and two parts over */
+      (D+1 <= 12 ? [k*a - b - 1, D+1] : null)
+    ].filter(Boolean)) || [];
     g++;
-  } while (g < 200 && !(D <= 12 && a < d && k*a - b >= 1 && k*a - b + 1 < D &&
+  } while (g < 200 && !(D <= 12 && a < d && (k*a - b >= 2 || D <= 10) && k*a - b + 1 < D &&
                         gcd(k*a - b, D) === 1 && slipsOk(key, slips)));
-  if (!(D <= 12 && a < d && k*a - b >= 1 && k*a - b + 1 < D && gcd(k*a - b, D) === 1 &&
+  if (!(D <= 12 && a < d && (k*a - b >= 2 || D <= 10) && k*a - b + 1 < D && gcd(k*a - b, D) === 1 &&
         slipsOk(key, slips))){
     d = 4; k = 2; D = 8; a = 3; b = 1; key = [5,8]; slips = [[2,4],[2,8],[6,8]];
   }
@@ -1477,32 +1765,61 @@ function gSubRelated(){
    worth what another named belief would give - so the harness can still map the
    printed claim to exactly one belief. All three sentences stay on the option
    list either way: an unused belief is a distractor, not a missing one. */
+/* THIRD PASS 2026-09-16, W3 + W4. v3 drew the NUMBERS first and then whichever
+   beliefs survived the per-draw filter, and the three beliefs do not survive it
+   equally: (a+b)/2d is legal on far more draws than a·b/d, so the key stopped
+   rotating - "X added the bottom numbers as well" was the answer on 53.6% of
+   20,000 draws against 37.1% and 9.2%, and it was ALSO the uniquely shortest
+   option on exactly those draws, which RULE 6 did not look for because it gated
+   only the longest. Its sibling gCompareError twenty lines up had been rebuilt
+   precisely so the key rotates evenly (33.3 / 33.4 / 33.3) and nothing carried
+   that standard down the file.
+
+   So the BELIEF is drawn first, uniformly over the three, and the numbers are then
+   drawn to fit it - gCompareError's own shape. The three belief sentences are also
+   written to exactly one length (50 characters after the shared name) with the
+   never-true filler at 51, so the key is never the uniquely longest or the
+   uniquely shortest option and neither reader has anything to read.
+
+   W4's cap costs this generator the most and it is declared here rather than
+   discovered later: "added both bottom numbers" prints 2d, so it can only be asked
+   where 2d <= 12, which is FIVE (d, a, b) configurations - d of 4, 5 or 6 -
+   against sixty-four for the subtract branch and twelve for the multiply branch.
+   A third of this item's draws therefore come from 30 stems (five configurations
+   x six names), and the generator as a whole falls from 558 distinct stems to 486.
+   That is the price of taking an off-syllabus bottom number off a P3 option row,
+   and it is on the record in the lane note rather than left to be found. */
+const ADD_ERR = [
+  { id:'bottoms', claim:(a2,b2,d2) => [a2+b2, 2*d2],
+    say: nm => nm + ' added both bottom numbers as well as the top ones.' },
+  { id:'minus',   claim:(a2,b2,d2) => [a2-b2, d2],
+    say: nm => nm + ' subtracted the top numbers instead of adding them.' },
+  { id:'times',   claim:(a2,b2,d2) => [a2*b2, d2],
+    say: nm => nm + ' multiplied the top numbers instead of adding them.' }
+];
+/* Never true of any stem this generator draws: both fractions are already written
+   over the same bottom number, so there is nothing to make the same. */
+const ADD_ERR_NEVER = nm => nm + ' should have made the bottom numbers the same first.';
 function gAddError(){
-  let d = 12, a = 5, b = 2, live = [0], g = 0, ok = false;
-  const claimsFor = (a2, b2, d2) => [[a2+b2, 2*d2], [a2-b2, d2], [a2*b2, d2]];
+  let d = 12, a = 5, b = 2, w = 0, g = 0, ok = false;
+  const claimsFor = (a2, b2, d2) => ADD_ERR.map(s => s.claim(a2, b2, d2));
+  w = ri(0, ADD_ERR.length - 1);          /* the BELIEF first, evenly */
   do {
-    d = ri(6,12); b = ri(2,4); a = ri(b+1, Math.max(b+1, d-1));
+    d = ri(4,12); b = ri(1,4); a = ri(b+1, Math.max(b+1, d-1));
     const cs = claimsFor(a, b, d);
-    live = cs.map((c, i) => i).filter(i => {
-      const c = cs[i];
-      if (!legalFrac(c)) return false;                       /* proper, bottom <= 24 */
-      if (c[0] * d === (a + b) * c[1]) return false;         /* the "wrong" claim is right */
-      if (c[0] * d === a * c[1] || c[0] * d === b * c[1]) return false;  /* it IS an addend */
-      return cs.every((o, j) => j === i || o[0] * c[1] !== c[0] * o[1]); /* one belief only */
-    });
-    ok = a > b && a + b < d && live.length >= 1;
+    const c = cs[w];
+    ok = a > b && a + b < d &&
+         legalFrac(c) &&                                      /* proper, bottom <= 12 */
+         c[0] * d !== (a + b) * c[1] &&                        /* the "wrong" claim is right */
+         c[0] * d !== a * c[1] && c[0] * d !== b * c[1] &&     /* it IS an addend */
+         cs.every((o, j) => j === w || o[0] * c[1] !== c[0] * o[1]);  /* one belief only */
     g++;
   } while (g < 200 && !ok);
-  if (!ok){ d = 12; a = 5; b = 2; live = [0, 1, 2]; }
+  if (!ok){ d = 6; a = 3; b = 2; w = 0; }
   const k = pick(KIDS);
-  const SLIPS = [
-    { claim:[a+b, 2*d], text: k[0] + ' added the bottom numbers as well.' },
-    { claim:[a-b, d],   text: k[0] + ' subtracted the top numbers instead of adding them.' },
-    { claim:[a*b, d],   text: k[0] + ' multiplied the top numbers instead of adding them.' }
-  ];
-  const s = SLIPS[pick(live)];
-  const wrongs = SLIPS.filter(x => x !== s).map(x => x.text)
-    .concat([k[0] + ' should have made the bottom numbers the same first.']);
+  const s = { claim: ADD_ERR[w].claim(a, b, d), text: ADD_ERR[w].say(k[0]) };
+  const wrongs = ADD_ERR.filter((_, i) => i !== w).map(x => x.say(k[0]))
+    .concat([ADD_ERR_NEVER(k[0])]);
   return mcText(k[0] + ' says ' + fr(a,d) + ' + ' + fr(b,d) + ' = ' + fr(s.claim[0], s.claim[1]) +
     '. <b>What did ' + k[2] + ' do wrong?</b>', s.text, wrongs,
     'Both fractions are already ' + d + 'ths, so the pieces are the same size and only the top numbers ' +
@@ -1513,7 +1830,7 @@ function gAddError(){
 /* FORMAT 4h - two-step word problem, Singapore context (pool 3). Add, then take
    the total from one whole. The stop-after-the-first-step answer is offered. */
 function gAddWords(){
-  let d = 8, a = 2, b = 3, key = [3,8], slips = [[5,8],[6,8],[5,16]], g = 0;
+  let d = 8, a = 2, b = 3, key = [3,8], slips = [[5,8],[6,8],[2,8]], g = 0;
   do {
     d = ri(5,12); a = ri(1, Math.max(1, d-3)); b = ri(1, Math.max(1, d-a-2));
     key = [d-a-b, d];
@@ -1524,13 +1841,20 @@ function gAddWords(){
       [a+b, d],                             /* stopped after step 1 */
       [d-a, d],                             /* subtracted only the first share */
       [d-b, d],                             /* subtracted only the second share */
-      [a+b, 2*d],                           /* added the bottom numbers as well */
+      /* THIRD PASS 2026-09-16, W4: [a+b, 2*d] - added the bottom numbers as well -
+         put a bottom number past 12 on 39.6% of this item's option rows. Out with
+         the cap; the card names the belief in words. Its place below the key is
+         taken by the second-order miscounts the rest of the file already names. */
       (d-a-b > 1 ? [d-a-b-1, d] : null),    /* counted one piece too few */
-      (d+1 <= 12 ? [d-a-b, d+1] : null)     /* miscounted the size of the pieces */
+      (d-a-b > 1 ? [d-a-b-1, d-1] : null),  /* one piece too few AND a part too few */
+      (d+1 <= 12 ? [d-a-b, d+1] : null),    /* miscounted the size of the pieces */
+      (d+2 <= 12 ? [d-a-b, d+2] : null),    /* the same, two parts over */
+      [d-a-b+1, d],                         /* counted one piece too many */
+      [d-a-b, d-1]                          /* miscounted the size of the pieces, one short */
     ].filter(Boolean)) || [];
     g++;
   } while (g < 200 && !(a !== b && d-a-b >= 1 && slipsOk(key, slips)));
-  if (!(a !== b && d-a-b >= 1 && slipsOk(key, slips))){ d = 8; a = 2; b = 3; key = [3,8]; slips = [[5,8],[6,8],[5,16]]; }
+  if (!(a !== b && d-a-b >= 1 && slipsOk(key, slips))){ d = 8; a = 2; b = 3; key = [3,8]; slips = [[5,8],[6,8],[2,8]]; }
   const two = shuffle(SOLO).slice(0,2), cake = pick(CAKES);
   return mcFrac(two[0] + ' eats ' + fr(a,d) + ' of a ' + cake + ' and ' + two[1] + ' eats ' + fr(b,d) +
     ' of the same ' + cake + '. <b>What fraction of the ' + cake + ' is left?</b>', key, slips,

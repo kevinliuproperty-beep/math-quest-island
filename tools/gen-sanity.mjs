@@ -419,6 +419,25 @@ function checkShape(q) {
       if (!allowed.has(v)) return 'padded distractor shipped (' + v + '); authored: ' + q.authored.join(',');
     }
   }
+  /* Same contract for WORD-ANSWER banks (p2 sweep refutation 2026-09-15, WOUND 2).
+     q.authored cannot bind an item whose options are sentences, so a generator
+     whose four options are all authored strings declares q.optionSet instead: the
+     exact set it built, key included. Nothing outside that set may ship, the set
+     may not contain a duplicate, and the key must be in it - which is what makes
+     an arithmetic padding loop (the one gBondDiagnose and gDivCheckP2 used to
+     fall through to) impossible to reintroduce in silence. */
+  if (Array.isArray(q.optionSet)) {
+    const declared = q.optionSet.map(strip);
+    if (declared.length !== q.choices.length) {
+      return `optionSet declares ${declared.length} options but ${q.choices.length} shipped`;
+    }
+    if (new Set(declared).size !== declared.length) return 'optionSet contains a duplicate option: ' + declared.join(' | ');
+    const dset = new Set(declared);
+    for (const p of plain) {
+      if (!dset.has(p)) return 'undeclared option shipped ("' + p + '"); optionSet: ' + declared.join(' | ');
+    }
+    if (!dset.has(strip(q.answerText))) return 'the key is not one of the declared options: ' + declared.join(' | ');
+  }
   // numeric choices must be finite and positive (no negative or absurd distractors)
   for (const p of plain) {
     const n = parseFloat(p);
@@ -965,13 +984,24 @@ function oracle(q) {
       if (W <= P) return `p2 inverse: the answer ${W} is not bigger than ${P}, so nothing was added`;
       return near(W - P, ansNum) ? null : `p2 inverse: expected ${W - P}, got ${ansNum}`;
     }
-    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) − (\d+) in columns and gets (\d+)\. What is (\d+) − (\d+)\?$/))) {
+    /* REFUTATION FIX 2026-09-15 (WOUND 3): gAddSubError now asks for the slip AND
+       the result, so the key is a sentence, not a number. The premise checks are
+       unchanged; what is added is that the key sentence must be the one the named
+       mistake implies, and that no distractor may also print the true answer. */
+    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) − (\d+) in columns and gets (\d+)\. What went wrong, and what is (\d+) − (\d+)\?$/))) {
       const a = Number(m[1]), b = Number(m[2]), claim = Number(m[3]);
       if (Number(m[4]) !== a || Number(m[5]) !== b) return 'p2 column error: the question re-asks a different subtraction';
       if (claim === a - b) return `p2 column error: the "mistake" ${claim} is actually correct`;
       if ((b % 10) <= (a % 10)) return 'p2 column error: the ones column needs no renaming, so the named mistake cannot arise';
       if (claim !== sfl(a, b)) return `p2 column error: the printed claim ${claim} is not what the named mistake gives (${sfl(a, b)})`;
-      return near(a - b, ansNum) ? null : `p2 column error: expected ${a - b}, got ${ansNum}`;
+      const want = `The ones were subtracted the wrong way round. ${a} − ${b} = ${a - b}.`;
+      if (keyTxt !== want) return `p2 column error: key "${keyTxt}" should be "${want}"`;
+      for (const o of opts) {
+        if (o === keyTxt) continue;
+        const p = o.match(/= (\d+)\.$/);
+        if (p && Number(p[1]) === a - b) return `p2 column error: a distractor also prints the true answer ${a - b}`;
+      }
+      return null;
     }
     if ((m = text.match(/^[A-Za-z ]+ had (\d+) ([a-z]+) and bought (\d+) more\. (?:He|She) then gave away (\d+) ([a-z]+) at [a-z ]+\. How many ([a-z]+) are left\?$/))) {
       const A = Number(m[1]), B = Number(m[3]), C = Number(m[4]);
@@ -1020,7 +1050,10 @@ function oracle(q) {
       }
       return null;
     }
-    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) × (\d+) by counting in (\d+)s: ([\d, ]+)\. (?:He|She) says (\d+) × (\d+) = (\d+)\. What is (\d+) × (\d+)\?$/))) {
+    /* REFUTATION FIX 2026-09-15 (WOUND 3): gMulError now asks for the slip AND the
+       product. Every premise check below is the one that made this the strongest
+       item in the bank; the key-sentence and rival-answer checks are new. */
+    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) × (\d+) by counting in (\d+)s: ([\d, ]+)\. (?:He|She) says (\d+) × (\d+) = (\d+)\. What went wrong, and what is (\d+) × (\d+)\?$/))) {
       const a = Number(m[1]), b = Number(m[2]), claim = Number(m[7]);
       if (Number(m[3]) !== a) return 'p2 mul error: the count is not in the first factor';
       if (Number(m[5]) !== a || Number(m[6]) !== b || Number(m[8]) !== a || Number(m[9]) !== b) {
@@ -1031,7 +1064,14 @@ function oracle(q) {
       if (seq.length !== b + 1) return `p2 mul error: the printed count has ${seq.length} numbers, the named slip needs ${b + 1}`;
       if (seq[seq.length - 1] !== claim) return `p2 mul error: the count ends on ${seq[seq.length - 1]} but the claim is ${claim}`;
       if (claim === a * b) return `p2 mul error: the "wrong" answer ${claim} is actually correct`;
-      return near(a * b, ansNum) ? null : `p2 mul error: expected ${a * b}, got ${ansNum}`;
+      const wantMul = `One count too many was said. ${a} × ${b} = ${a * b}.`;
+      if (keyTxt !== wantMul) return `p2 mul error: key "${keyTxt}" should be "${wantMul}"`;
+      for (const o of opts) {
+        if (o === keyTxt) continue;
+        const p = o.match(/= (\d+)\.$/);
+        if (p && Number(p[1]) === a * b) return `p2 mul error: a distractor also prints the true product ${a * b}`;
+      }
+      return null;
     }
     if ((m = text.match(/^[A-Za-z ]+ buys (\d+) ([a-z]+) of ([a-z ]+)\. Each ([a-z]+) holds (\d+) ([a-z ]+)\. (?:He|She) gives away (\d+) ([a-z ]+)\. How many ([a-z ]+) are left\?$/))) {
       const a = Number(m[1]), b = Number(m[5]), c = Number(m[7]);
@@ -1076,13 +1116,28 @@ function oracle(q) {
       if (Number(m[6]) !== d * claim) return `p2 div check: the printed check ${d} × ${claim} = ${m[6]} is not that product`;
       if (T % d !== 0) return `p2 div check: ${T} does not divide by ${d}`;
       const quot = T / d;
-      if (claim === quot) return `p2 div check: the "wrong" answer ${claim} is actually correct`;
-      const want = `The answer is ${claim > quot ? 'too big' : 'too small'}. ${T} ÷ ${d} = ${quot}.`;
+      /* REFUTATION FIX 2026-09-15 (KILL 2 + WOUND 1). claim === quot is no longer
+         a defect - it is the 1-in-4 draw in which "The answer is correct." really
+         IS the key, which is what stops that option from being a free elimination.
+         What IS asserted now: the claim stays inside the P2 quotient range, the
+         key sentence is the one the arithmetic implies, no distractor prints the
+         true quotient, and - the tell the coarse format rule cannot see - the
+         key's number is not the only plausible one on screen. */
+      if (!(claim >= 1 && claim <= 10)) {
+        return `p2 div check: the claim ${claim} is outside the P2 quotient range 1-10`;
+      }
+      const want = `The answer is ${claim > quot ? 'too big' : claim < quot ? 'too small' : 'correct'}. ${T} ÷ ${d} = ${quot}.`;
       if (keyTxt !== want) return `p2 div check: key "${keyTxt}" should be "${want}"`;
+      const dis = [];
       for (const o of opts) {
         if (o === keyTxt) continue;
         const p = o.match(/= (\d+)\.$/);
-        if (p && Number(p[1]) === quot) return `p2 div check: a distractor also prints the true quotient ${quot}`;
+        if (!p) return `p2 div check: a distractor does not state a quotient ("${o}")`;
+        if (Number(p[1]) === quot) return `p2 div check: a distractor also prints the true quotient ${quot}`;
+        dis.push(Number(p[1]));
+      }
+      if (quot < Math.min(...dis) || quot > Math.max(...dis)) {
+        return `p2 div check: value tell - the key prints ${quot} while every distractor prints ${dis.join(', ')}, so the key is the only option in its range`;
       }
       return null;
     }
@@ -2412,6 +2467,65 @@ function pilotGates(q, topic) {
   return null;
 }
 
+/* ---------- p2 SWEEP REFUTATION GATE (2026-09-15) ---------------------------
+   The sweep note claimed "nothing printed anywhere in the topic - stem, option or
+   explanation - exceeds 1000, and no multiplication uses a table outside those
+   five", and its own note admitted both were "scanned, not asserted". The refuter
+   found the second half false in two generators: gDivShareP2 multiplied outside
+   the five tables in 112 of 2,000 draws (and printed the out-of-table product as
+   the answer key), gDivCheckP2 printed a true out-of-table multiplication in its
+   own stem in 213 of 2,000. Both were one-line draw bounds, and because nothing
+   asserted the claim, both would have reopened silently on the next edit. This is
+   the gate that claim always needed - the depth-pilot v4 wound-3 pattern ("a gate
+   narrower than the claim it is taken to support") closed for this file.
+
+   RULE 1, the 1000 ceiling. No integer above 1000 in a stem, an option or an
+   explanation.
+   RULE 2, the five tables. Every multiplication "a × b" printed anywhere must
+   have one factor in {2,3,4,5,10} and the other in 1-10. Every TRUE division
+   "a ÷ b" (bare, "= ?", or "= c" with c the real quotient) must be that same
+   multiplication read backwards. A division statement that is deliberately FALSE
+   is exempt from rule 2 and only from rule 2: gDivFamilyP2 offers "20 ÷ 11 = 2"
+   as a distractor whose whole point is that the child rejects it by inspection
+   ("uses the same three numbers"), and no child is asked to divide by 11 to see
+   it. Rule 1 still binds on every number in it.
+   RULE 3, the distractor contract. Every p2 draw must declare the options it
+   authored - q.authored for the numeric banks, q.optionSet for the word-answer
+   banks - so no generator can reach the child through a padding branch. */
+const P2_TABLE = new Set([2, 3, 4, 5, 10]);
+const p2InTables = (x, y) => (P2_TABLE.has(x) && y >= 1 && y <= 10) ||
+                             (P2_TABLE.has(y) && x >= 1 && x <= 10);
+function p2Gates(q, topic) {
+  if (topic !== 'p2') return null;
+  const text = [strip(q.q), strip(q.extra || ''), strip(q.explain || '')]
+    .concat((q.choices || []).map(strip)).join(' ‖ ');
+  for (const n of text.match(/\d+/g) || []) {
+    if (Number(n) > 1000) return `p2 scope: ${n} is printed, and the P2 number range stops at 1000`;
+  }
+  let mm;
+  const mul = /(\d+) × (\d+)/g;
+  while ((mm = mul.exec(text))) {
+    const x = Number(mm[1]), y = Number(mm[2]);
+    if (!p2InTables(x, y)) {
+      return `p2 scope: "${x} × ${y}" is printed, which is outside the 2, 3, 4, 5 and 10 times tables`;
+    }
+  }
+  const div = /(\d+) ÷ (\d+)(?: = (\d+))?/g;
+  while ((mm = div.exec(text))) {
+    const x = Number(mm[1]), y = Number(mm[2]);
+    const stated = mm[3] === undefined ? null : Number(mm[3]);
+    if (stated !== null && x !== y * stated) continue;   /* deliberately false: rule 1 only */
+    if (y === 0 || x % y !== 0) return `p2 scope: "${x} ÷ ${y}" is printed as a true fact but does not divide exactly`;
+    if (!p2InTables(y, x / y)) {
+      return `p2 scope: "${x} ÷ ${y} = ${x / y}" is printed, which is outside the 2, 3, 4, 5 and 10 times tables`;
+    }
+  }
+  if (!Array.isArray(q.authored) && !Array.isArray(q.optionSet)) {
+    return 'p2 distractor contract: the draw declares neither q.authored nor q.optionSet, so nothing binds its distractors';
+  }
+  return null;
+}
+
 /* ---------- collect every registered generator ---------- */
 const GENS = []; // { topic, skill, level, name, fn }
 for (const [tid, t] of Object.entries(TOPICS)) {
@@ -2450,6 +2564,8 @@ for (const g of GENS) {
     if (coin) { err = coin; badQ = q; break; }
     const pilot = pilotGates(q, g.topic);
     if (pilot) { err = pilot; badQ = q; break; }
+    const scope = p2Gates(q, g.topic);
+    if (scope) { err = scope; badQ = q; break; }
     distinct.add(qKey(q));
     const o = oracle(q);
     if (o === false) continue;

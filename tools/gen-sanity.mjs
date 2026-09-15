@@ -106,8 +106,26 @@ function evalExpr(src) {
 
 /* A question's identity is its stem PLUS its rendered extra PLUS its options:
    several generators keep a fixed stem ("Which fraction is the greatest?") and
-   vary only the choices, and buildSetFor's own dedup key is the raw HTML. */
+   vary only the choices, and buildSetFor's own dedup key is the raw HTML.
+   REFUTATION FIX (fourth pass 2026-09-16, WOUND 4): the choices were joined in
+   SHIPPED order, so a reshuffle of the same four options counted as a new
+   question and the sample-space collapse floor was met by shuffle entropy alone
+   - gMulRepeatAdd reported distinct 173 / 200 on a sample space of 25 items.
+   qKey now sorts the options, so a generator's DISTINCT count is its count of
+   distinct option SETS, which is what the floor is supposed to measure.
+
+   qSetKey keeps the shipped order, and the collapse floor uses it for every
+   topic except p2, because the sorted key turns up two findings OUTSIDE this
+   lane that this lane must not land silently:
+     - p4area.gLConcept is ONE question with four fixed options. Sorted, it is
+       `distinct 1 / 200`; the shipped-order key hid a genuinely collapsed bank.
+     - eight topics ship a 30-item level containing two draws that differ only by
+       option order, which the set-level check below would then call a duplicate.
+   Both are real, both belong to whoever owns those files and buildSetFor's own
+   dedup, and both are RECORDED here rather than fixed by a p2 lane. */
 const qKey = q => strip(q.q) + '|' + String(q.extra || '') + '|' +
+  (q.typed ? String(q.answer) : (q.choices || []).map(strip).sort().join(','));
+const qSetKey = q => strip(q.q) + '|' + String(q.extra || '') + '|' +
   (q.typed ? String(q.answer) : (q.choices || []).map(strip).join(','));
 
 /* ---------- the figure contract (iOS phase 0) ----------
@@ -1137,9 +1155,17 @@ function oracle(q) {
            factors, so the form cannot single the key out; the p2 option-feature
            gate below asserts that class for every p2 bank. The miscount sits
            either side of the true count so the key is not always the smaller of
-           the two unlike products, which would be a win by sorting. */
+           the two unlike products, which would be a win by sorting.
+
+           REFUTATION FIX (fourth pass 2026-09-16, WOUND 1): v × v is now w × n.
+           The old set was built from three numerals with w in exactly ONE of the
+           four options, so "bin the option with the odd numeral, then take the
+           remaining unlike product" was the key in 20,000 of 20,000 draws on two
+           seeds. Every numeral now appears in at least two options; the p2 TOKEN
+           RULER below asserts that class for every p2 bank, with this option set
+           as its negative control. */
         const n = addends.length, v = addends[0];
-        const setFor = w => [`${n} × ${v}`, `${w} × ${v}`, `${n} × ${n}`, `${v} × ${v}`];
+        const setFor = w => [`${n} × ${v}`, `${w} × ${v}`, `${n} × ${n}`, `${w} × ${n}`];
         if (!sameSet(setFor(n + 1), opts) && !(n > 1 && sameSet(setFor(n - 1), opts))) {
           return `p2 repeated addition: option set is not the four named readings - want [${setFor(n + 1).join(' | ')}] or [${setFor(n - 1).join(' | ')}], got [${opts.join(' | ')}]`;
         }
@@ -1289,62 +1315,103 @@ function oracle(q) {
       }
       return null;
     }
-    if ((m = text.match(/^[A-Za-z ]+ says (\d+) is greater than (\d+), because (\d+) is more than (\d+)\. What went wrong\?$/))) {
-      const a = Number(m[1]), b = Number(m[2]);
-      if (a >= b) return `p2 compare error: ${a} really is greater than ${b}, so nothing went wrong`;
-      if (Number(m[3]) !== a % 10 || Number(m[4]) !== b % 10) return 'p2 compare error: the printed reason does not quote the two ones digits';
-      const ha = Math.floor(a / 100), hb = Math.floor(b / 100);
-      if (ha >= hb) return 'p2 compare error: the hundreds do not settle it, so the stated fix is not the fix';
-      if (!((a % 10) > (b % 10) && Math.floor(a / 10) % 10 > Math.floor(b / 10) % 10)) {
-        return 'p2 compare error: the ones or the tens already point the right way, so one digit settles the item';
-      }
-      /* REFUTATION FIX (third pass 2026-09-15, KILL 1). Every distractor used to
-         end on the number the CHARACTER named, so the key was the only option on
-         the screen that disagreed with her - 100% with no digit read, on the
-         most-served generator in the topic - and one distractor stated the
-         correct hundreds comparison and then drew the opposite conclusion.
-         The rule below re-derives each option from the printed digits instead of
-         trusting a template: every option must quote a's digit and then b's digit
-         at the place it names, must name the number its own comparison implies
-         (so a self-contradicting option cannot ship), and exactly one must be
-         SOUND - the right place, read the right way round - which must be the
-         key. Finally at least two options must name each number, so the
-         conclusion alone never settles the item. */
-      const ta = Math.floor(a / 10) % 10, tb = Math.floor(b / 10) % 10;
-      const digitAt = (n, place) => place === 'hundreds' ? Math.floor(n / 100)
-                                  : place === 'tens' ? Math.floor(n / 10) % 10 : n % 10;
-      const sound = [], named = [];
-      for (const o of opts) {
-        const p = o.match(/^Start with the (hundreds|tens|ones): (\d+) is (less|more) than (\d+), so (\d+) is greater\.$/);
-        if (!p) return `p2 compare error: an option is not a place-value reading ("${o}")`;
-        const place = p[1], x = Number(p[2]), word = p[3], y = Number(p[4]), win = Number(p[5]);
-        if (x !== digitAt(a, place) || y !== digitAt(b, place)) {
-          return `p2 compare error: "${o}" does not quote the ${place} digit of ${a} and then of ${b} (${digitAt(a, place)}, ${digitAt(b, place)})`;
+    /* REFUTATION FIX (fourth pass 2026-09-16, WOUND 2 - the DECIDING-PLACE
+       REDESIGN). v4 fixed the hundreds as the deciding place on every draw, so
+       "start with the hundreds" AND "name the other number" together found the
+       key in 100% of draws with no digit compared, and the ones distractor was
+       the stem's own reason with "more" flipped to "less" - a free elimination.
+       The deciding place now varies one third each, which needs two stems: the
+       character quotes the misleading ones digits when the hundreds decide, and
+       claims the two numbers are the SAME when two places tie.
+
+       Nothing below trusts a template until it has re-derived the draw: the
+       deciding place is found from the digits, the stem's premise is checked
+       against it, every option must quote a's digit and then b's digit at the
+       place it names and must name the number its own comparison implies, and
+       EXACTLY ONE option must state a true comparison at the place that really
+       decides - which must be the key. A ones-comparison may not ship on a draw
+       whose stem quotes the ones, in either direction, so the stem's reason can
+       never reappear as an option with a word flipped. */
+    {
+      const cmpStem = text.match(/^[A-Za-z ]+ says (\d+) is greater than (\d+), because (\d+) is more than (\d+)\. What went wrong\?$/);
+      const tieStem = text.match(/^[A-Za-z ]+ says (\d+) and (\d+) are the same, because the hundreds and the (tens|ones) are the same\. What went wrong\?$/);
+      if (cmpStem || tieStem) {
+        const s = cmpStem || tieStem;
+        const a = Number(s[1]), b = Number(s[2]);
+        if (!(a >= 100 && a <= 999 && b >= 100 && b <= 999)) {
+          return `p2 compare error: ${a} and ${b} are not both three-digit numbers`;
         }
-        if (win !== a && win !== b) return `p2 compare error: "${o}" names ${win}, which is not one of the two numbers`;
-        if ((word === 'less') !== (win === b)) {
-          return `p2 compare error: "${o}" states a comparison and then names the other number - no child makes that mistake`;
+        if (a === b) return `p2 compare error: ${a} and ${b} are the same number, so the claim is not wrong`;
+        const digitAt = (n, place) => place === 'hundreds' ? Math.floor(n / 100)
+                                    : place === 'tens' ? Math.floor(n / 10) % 10 : n % 10;
+        const PLACES = ['hundreds', 'tens', 'ones'];
+        const decide = PLACES.find(p => digitAt(a, p) !== digitAt(b, p));
+        const win = digitAt(a, decide) > digitAt(b, decide) ? a : b;
+        if (cmpStem) {
+          if (decide !== 'hundreds') return `p2 compare error: the stem quotes the ones, but the ${decide} decide this draw`;
+          if (win !== b) return `p2 compare error: ${a} really is greater than ${b}, so nothing went wrong`;
+          if (Number(s[3]) !== a % 10 || Number(s[4]) !== b % 10) return 'p2 compare error: the printed reason does not quote the two ones digits';
+          if (!((a % 10) > (b % 10) && digitAt(a, 'tens') > digitAt(b, 'tens'))) {
+            return 'p2 compare error: the ones or the tens already point the right way, so one digit settles the item';
+          }
+        } else {
+          const tied = s[3];                       /* the stem names hundreds + this one as tied */
+          if (digitAt(a, 'hundreds') !== digitAt(b, 'hundreds') || digitAt(a, tied) !== digitAt(b, tied)) {
+            return `p2 compare error: the stem says the hundreds and the ${tied} are the same, and they are not`;
+          }
+          const want = tied === 'ones' ? 'tens' : 'ones';
+          if (decide !== want) return `p2 compare error: the stem ties the hundreds and the ${tied}, so the ${want} must decide, not the ${decide}`;
         }
-        if (place === 'hundreds' && (word === 'less' ? x < y : x > y)) sound.push(o);
-        named.push(win);
+        const sound = [], named = [];
+        for (const o of opts) {
+          const p = o.match(/^The (hundreds|tens|ones) decide: (\d+) is (less|more) than (\d+), so (\d+) is greater\.$/);
+          const t = o.match(/^The (hundreds|tens|ones) are the same, so (\d+) and (\d+) are the same size\.$/);
+          if (!p && !t) return `p2 compare error: an option is not a place-value reading ("${o}")`;
+          if (t) {
+            const place = t[1];
+            if (digitAt(a, place) !== digitAt(b, place)) {
+              return `p2 compare error: "${o}" says the ${place} are the same, and they are not (${digitAt(a, place)}, ${digitAt(b, place)})`;
+            }
+            if (!((Number(t[2]) === a && Number(t[3]) === b) || (Number(t[2]) === b && Number(t[3]) === a))) {
+              return `p2 compare error: "${o}" does not name the stem's two numbers`;
+            }
+            named.push(null);
+            continue;
+          }
+          const place = p[1], x = Number(p[2]), word = p[3], y = Number(p[4]), ends = Number(p[5]);
+          if (cmpStem && place === 'ones') {
+            return `p2 compare error: "${o}" states a ones comparison on a draw whose stem quotes the ones - that is the stem's own reason, flipped or repeated`;
+          }
+          if (x !== digitAt(a, place) || y !== digitAt(b, place)) {
+            return `p2 compare error: "${o}" does not quote the ${place} digit of ${a} and then of ${b} (${digitAt(a, place)}, ${digitAt(b, place)})`;
+          }
+          if (ends !== a && ends !== b) return `p2 compare error: "${o}" names ${ends}, which is not one of the two numbers`;
+          if ((word === 'less') !== (ends === b)) {
+            return `p2 compare error: "${o}" states a comparison and then names the other number - no child makes that mistake`;
+          }
+          if (place === decide && (word === 'less' ? x < y : x > y)) sound.push(o);
+          named.push(ends);
+        }
+        if (sound.length !== 1) {
+          return `p2 compare error: ${sound.length} of the four options name the ${decide} - the place that really decides - AND read them correctly (${opts.join(' | ')})`;
+        }
+        if (sound[0] !== keyTxt) return `p2 compare error: key "${keyTxt}" is not the sound reading "${sound[0]}"`;
+        const forWin = named.filter(w => w === win).length, forLose = named.filter(w => w !== null && w !== win).length;
+        if (forWin !== forLose) {
+          return `p2 compare error: ${forWin} options name ${win} and ${forLose} name the other number, so the conclusion alone narrows the item (${opts.join(' | ')})`;
+        }
+        const cmp = (place, word) => `The ${place} decide: ${digitAt(a, place)} is ${word} than ${digitAt(b, place)}, so ${word === 'less' ? b : a} is greater.`;
+        const tie = place => `The ${place} are the same, so ${a} and ${b} are the same size.`;
+        const right = digitAt(a, decide) > digitAt(b, decide) ? 'more' : 'less';
+        const wantSet = decide === 'hundreds'
+          ? [cmp('hundreds', 'less'), cmp('hundreds', 'more'), cmp('tens', 'more'), cmp('tens', 'less')]
+          : [cmp(decide, right), cmp(decide, right === 'more' ? 'less' : 'more'),
+             tie('hundreds'), tie(decide === 'tens' ? 'ones' : 'tens')];
+        if (!sameSet(wantSet, opts)) {
+          return `p2 compare error: option set is not the four named readings - want [${wantSet.join(' | ')}], got [${opts.join(' | ')}]`;
+        }
+        return null;
       }
-      if (sound.length !== 1) {
-        return `p2 compare error: ${sound.length} of the four options start on the hundreds AND read them correctly (${opts.join(' | ')})`;
-      }
-      if (sound[0] !== keyTxt) return `p2 compare error: key "${keyTxt}" is not the sound reading "${sound[0]}"`;
-      const forB = named.filter(w => w === b).length;
-      if (forB < 2 || named.length - forB < 2) {
-        return `p2 compare error: ${forB} of the four options name ${b} as the greater number, so the conclusion alone singles out the key`;
-      }
-      const wantCmp = [
-        `Start with the hundreds: ${ha} is less than ${hb}, so ${b} is greater.`,
-        `Start with the hundreds: ${ha} is more than ${hb}, so ${a} is greater.`,
-        `Start with the tens: ${ta} is more than ${tb}, so ${a} is greater.`,
-        `Start with the ones: ${a % 10} is less than ${b % 10}, so ${b} is greater.`];
-      if (!sameSet(wantCmp, opts)) {
-        return `p2 compare error: option set is not the four named readings - want [${wantCmp.join(' | ')}], got [${opts.join(' | ')}]`;
-      }
-      return null;
     }
   }
 
@@ -2876,6 +2943,58 @@ const P2_FEATURES = [
 ];
 const P2_FEATURE_CEILING = 0.90;
 
+/* ---------- p2 TOKEN RULER (refutation fourth pass 2026-09-16, WOUND 1)
+   The feature gate above reads three CLASSES off an option. The fourth pass's
+   wound lived one level below that, in the option list's own vocabulary: v4's
+   gMulRepeatAdd shipped n × v, w × v, n × n and v × v, and w appeared in exactly
+   ONE of the four options. "Find the numeral that is used once, bin that option,
+   then take the one of the three left that multiplies two different numbers" was
+   the key in 20,000 of 20,000 draws on two seeds, with no addend counted - and
+   all three feature scores for that bank were 0.0%, because numeral frequency
+   across the option list is not a class, it is a count.
+
+   The ruler is the count. Over a whole sample it asks: does an ODD TOKEN - a
+   numeral or a word that appears in exactly one of the four options, in the key
+   or in a distractor - hand the key over? A draw is a HIT when exactly one
+   option carries an odd token and either
+     - that option is the key (pick it), or
+     - binning it leaves the key as the only survivor carrying its value of one
+       of the three features above (bin it, then one glance).
+   60% of 2,000 draws fails. A bank where every option carries an odd token (four
+   bare numbers, four different sums, four fact-family statements) can never hit,
+   which is right: nothing is singled out when everything is. The threshold is
+   below the feature gate's 90% because this route needs no class of the key at
+   all, only that one option looks different from the rest.
+
+   Compatible with the p3numbers v5 token ruler and the fractions RULE 8 -
+   INTEGRATOR: promote one copy of this to the shared layer rather than keeping
+   three. Negative control: the v4 gMulRepeatAdd option set, which goes red at
+   100.0%. */
+const P2_TOKEN_CEILING = 0.60;
+const p2Tokens = o => new Set((o.toLowerCase().match(/\d+|[a-z]+/g) || []));
+function p2OddTokenHit(opts, keyOpt, stemNums) {
+  const toks = opts.map(p2Tokens);
+  const odd = [];
+  for (let i = 0; i < opts.length; i++) {
+    for (const t of toks[i]) {
+      if (toks.every((s, j) => j === i || !s.has(t))) { odd.push(i); break; }
+    }
+  }
+  if (odd.length !== 1) return null;
+  const at = odd[0];
+  if (opts[at] === keyOpt) return { how: 'IS the key', tok: [...toks[at]].filter(t => toks.every((s, j) => j === at || !s.has(t))).join(', ') };
+  const rest = opts.filter((_, i) => i !== at);
+  if (!rest.includes(keyOpt)) return null;
+  for (const f of P2_FEATURES) {
+    const kv = f.of(keyOpt, stemNums);
+    if (rest.filter(o => f.of(o, stemNums) === kv).length === 1) {
+      return { how: `is a distractor; binning it leaves the key as the only option with ${f.label}`,
+               tok: [...toks[at]].filter(t => toks.every((s, j) => j === at || !s.has(t))).join(', ') };
+    }
+  }
+  return null;
+}
+
 /* ---------- collect every registered generator ---------- */
 const GENS = []; // { topic, skill, level, name, fn }
 for (const [tid, t] of Object.entries(TOPICS)) {
@@ -2903,7 +3022,7 @@ for (const g of GENS) {
   let ranked = 0;
   const featHit = P2_FEATURES.map(() => 0);
   const featSample = P2_FEATURES.map(() => null);
-  let featN = 0;
+  let featN = 0, tokN = 0, tokHit = 0, tokSample = null;
   for (let i = 0; i < N; i++) {
     let q;
     try { q = g.fn(); } catch (e) { err = 'threw: ' + e.message; break; }
@@ -2930,6 +3049,12 @@ for (const g of GENS) {
     }
     if (g.topic === 'p2') {
       const fopts = (q.choices || []).map(strip);
+      if (fopts.length === 4) {
+        tokN++;
+        const stemNums0 = new Set(((strip(q.q) + ' ' + strip(q.extra || '')).match(/\d+/g) || []).map(Number));
+        const hit = p2OddTokenHit(fopts, strip(q.answerText), stemNums0);
+        if (hit) { tokHit++; tokSample = { hit, opts: fopts.slice(), key: strip(q.answerText) }; }
+      }
       if (fopts.length === 4 && !fopts.every(o => /^\d+$/.test(o))) {
         featN++;
         const stemNums = new Set(((strip(q.q) + ' ' + strip(q.extra || '')).match(/\d+/g) || []).map(Number));
@@ -2943,7 +3068,7 @@ for (const g of GENS) {
         }
       }
     }
-    distinct.add(qKey(q));
+    distinct.add(g.topic === 'p2' ? qKey(q) : qSetKey(q));
     const o = oracle(q);
     if (o === false) continue;
     matched++;
@@ -2968,6 +3093,13 @@ for (const g of GENS) {
             `${(100 * P2_RANK_FLOOR).toFixed(0)}% floor - a rank the key almost never takes is a free ` +
             `elimination, which is the same win by sorting the ceiling exists to stop ${spread}`;
     }
+  }
+  if (!err && tokN >= 50 && tokHit / tokN >= P2_TOKEN_CEILING) {
+    const s = tokSample;
+    err = `p2 token ruler: an option carries a token ("${s.hit.tok}") that appears in no other option, and it ` +
+          `${s.hit.how}, in ${tokHit} of ${tokN} draws (${(100 * tokHit / tokN).toFixed(1)}%), at or over the ` +
+          `${(100 * P2_TOKEN_CEILING).toFixed(0)}% ceiling - a child can find the key by spotting the odd word ` +
+          `or numeral, with no mathematics (key "${s.key}", options: ${s.opts.join(' | ')})`;
   }
   if (!err && featN >= 50) {
     for (let fi = 0; fi < P2_FEATURES.length; fi++) {
@@ -3001,7 +3133,7 @@ for (const tid of Object.keys(TOPICS)) {
       if (m) { ok = false; note = `L${lvl} ${m}`; break; }
     }
     if (!ok) break;
-    const keys = set[lvl].map(qKey);
+    const keys = set[lvl].map(qSetKey);
     if (new Set(keys).size !== keys.length) { ok = false; note = `L${lvl} duplicate questions inside one set`; break; }
     for (const q of set[lvl]) { const e = checkShape(q); if (e) { ok = false; note = `L${lvl} ${e}`; break; } }
     if (!ok) break;

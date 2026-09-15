@@ -28,7 +28,7 @@
  *   `pattern`). Compare left to right, one place at a time, and stop at the
  *   first place where the digits differ. A pattern is the same jump made again.
  *   gGreatest, gSmallest, gBetween, gOrder, gCompareError (compare);
- *   gPatternConcept, gPattern4, gMoreLess, gPatternMissing (pattern).
+ *   gPatternConcept, gPattern4, gMoreLess, gPatternMissing, gPatternOdd (pattern).
  *
  * PRINCIPLE 3 - ADDING AND SUBTRACTING WITHIN 10 000, WITH REGROUPING
  *   (skill `addsub`). When a column makes ten or more, the ten moves left; when
@@ -38,11 +38,17 @@
  *   gAddConcept, gAddRegroup, gSubRegroup, gMissingAddend, gMentalMake,
  *   gAddError, gSubError, gTwoStepWord, gBackFromTotal.
  *
- * NO GENERATOR SITS IN TWO POOLS. Pool 3 is two-step throughout by design: the
- * single-step fluency anchors live in pools 1 and 2, and the climb parks a
- * child in pool 3 for ~58% of a session, which is where the thinking has to be.
- * (Depth-pilot contract proposal 2 asks that a 1-step pool-3 slot be DECLARED
- * rather than accidental; this file declares that it has none.)
+ * NO GENERATOR SITS IN TWO POOLS. Pool 3 is two-step throughout by design - 11
+ * of 11 slots after the 2026-09-15 refutation, which found that gSubError and
+ * gZeroFix were their pool-2 twins' computation with a sentence wrapped round it
+ * and rebuilt both with a genuine second step. The single-step fluency anchors
+ * live in pools 1 and 2, and on THIS topic the feed serves pools 1/2/3 at
+ * 0.191 / 0.230 / 0.580 (500 seeds x 30 through MQI.createFeed; 0.186 / 0.225 /
+ * 0.589 before this pass), so a child is in pool 3 for 58% of a session - the
+ * P3-grade aggregate feed-sim prints (0.206 / 0.398 / 0.397) picks a random live
+ * P3 topic per seed and does NOT describe Thousand Isles. (Proposal 2 asks that a
+ * 1-step pool-3 slot be DECLARED rather than accidental; this file declares that
+ * it has none, with that 59% in front of the decision.)
  *
  * SCOPE (MOE Oct 2025, P3 p.35). Numbers up to 10 000: 1.1 counting in hundreds
  * and thousands, 1.2 number notation / representations / place values,
@@ -78,11 +84,22 @@
     ['Farhan', 'He'], ['Mei Ling', 'She']
   ];
   const PLACES = ['thousands', 'hundreds', 'tens', 'ones'];
+  const PLACE1 = ['thousand', 'hundred', 'ten', 'one'];   /* singular forms */
   const POW = [1000, 100, 10, 1];
   const MAXN = 9999;                       /* scope ceiling: numbers up to 10 000 */
 
   /* ---- house helpers -------------------------------------------------- */
   const ok = n => Number.isInteger(n) && n >= 1 && n <= MAXN;
+  /* W1 (Sweep p3numbers Refutation, 2026-09-15): SIX generators printed "1 tens",
+     "1 ones" or "1 thousands" - and one of them printed it in the STEM a child
+     reads (gZeroFix, 31% of draws). gBuildNum already carried the pluraliser and
+     nobody else called it. It is now a house helper, and EVERY place-word that
+     follows a count in this file goes through it. tools/gen-sanity.mjs gates the
+     prose so the sentence cannot come back. */
+  const pl = (v, w) => v + ' ' + w + (v === 1 ? '' : 's');
+  const plPlace = (v, i) => pl(v, PLACE1[i]);
+  /* "2 thousands, 9 hundreds, 1 ten, 8 ones" - the read-it-out-loud line */
+  const placeList = d => d.map(plPlace).join(', ');
   function allDistinct(list){
     const s = new Set();
     for (const v of list){ if (s.has(v)) return false; s.add(v); }
@@ -210,7 +227,7 @@ function standsFor(posLo, posHi){
   const val = dig * POW[p];
   const cands = [dig, dig*10, dig*100, dig*1000].filter(c => c !== val && c <= MAXN);
   return mcNum('In ' + n + ', the digit ' + dig + ' stands for how much?', '', val, cands, '',
-    'Read the places from the left: ' + PLACES.map((pl, i) => d[i] + ' ' + pl).join(', ') + '. The ' +
+    'Read the places from the left: ' + placeList(d) + '. The ' +
     dig + ' sits in the ' + PLACES[p] + ' place, so it stands for ' + dig + ' × ' + POW[p] + ' = ' + val +
     '. Saying just "' + dig + '" gives the digit, not what the digit is worth.');
 }
@@ -221,7 +238,7 @@ function gWhichDigit(){
   const d = digits4(), n = numOf(d), p = ri(0,3);
   const q = mcNum('Which digit is in the ' + PLACES[p] + ' place of ' + n + '?', '', d[p],
     [d[(p+1)%4], d[(p+2)%4], d[(p+3)%4]], '',
-    'Reading from the left, ' + n + ' is ' + PLACES.map((pl, i) => d[i] + ' ' + pl).join(', ') +
+    'Reading from the left, ' + n + ' is ' + placeList(d) +
     '. So the ' + PLACES[p] + ' digit is ' + d[p] + '.');
   return q;
 }
@@ -240,8 +257,9 @@ function gExpanded(){
     th*100 + ' + ' + t*10 + ' + ' + o                    /* dropped the empty hundreds place */
   ];
   return mcText('Which of these shows ' + n + ' in <b>expanded form</b>?', '', key, wrongs,
-    'Expanded form writes what each digit is worth and adds them up. ' + n + ' is ' + th +
-    ' thousands, 0 hundreds, ' + t + ' tens and ' + o + ' ones, so it is ' + th*1000 + ' + ' + t*10 +
+    'Expanded form writes what each digit is worth and adds them up. ' + n + ' is ' +
+    pl(th,'thousand') + ', 0 hundreds, ' + pl(t,'ten') + ' and ' + pl(o,'one') +
+    ', so it is ' + th*1000 + ' + ' + t*10 +
     ' + ' + o + '. The hundreds place is empty, so nothing is written for it - but the 0 still holds ' +
     'the place, which is why ' + th*100 + ' + ' + t*10 + ' + ' + o + ' is a different number (' +
     (th*100 + t*10 + o) + ').');
@@ -264,11 +282,11 @@ function gBuildNum(){
     reversed = o*1000 + t*100 + h*10 + th;      /* the four parts read back to front */
     g++;
   } while (g < 200 && !optsOk(n, [squashed, swapped, reversed]));
-  const pl = (v, w) => v + ' ' + w + (v === 1 ? '' : 's');
   return mcNum('Which number has ' + pl(th,'thousand') + ', ' + pl(h,'hundred') + ', ' + pl(t,'ten') +
     ' and ' + pl(o,'one') + '?', '', n, [squashed, swapped, reversed], '',
-    th + ' thousands = ' + th*1000 + ', ' + h + ' hundreds = ' + h*100 + ', ' + t + ' tens = ' + t*10 +
-    ', ' + o + ' ones = ' + o + '. Add them and you get ' + n + '. The 0 is doing a job: it holds the ' +
+    pl(th,'thousand') + ' = ' + th*1000 + ', ' + pl(h,'hundred') + ' = ' + h*100 + ', ' +
+    pl(t,'ten') + ' = ' + t*10 + ', ' + pl(o,'one') + ' = ' + o +
+    '. Add them and you get ' + n + '. The 0 is doing a job: it holds the ' +
     'empty place open. Leave it out and you get ' + squashed + ', a much smaller number.');
 }
 
@@ -298,60 +316,102 @@ function gStandsCompare(){
    second refutation's KILL was gLPerimDiff, whose key was the only prose option
    and the only one over four characters: a child settled it in a second with no
    geometry. Length is the tell here, so the bank equalises it - measured spread
-   across these five strings is 44-51 characters. */
+   across these five strings is 39-40 characters, and no option in this file
+   exceeds the 48-character ceiling gen-sanity now enforces. */
 const STANDS_SLIPS = {
-  digit: ' wrote the digit itself instead of what it is worth.',
-  right: ' used the place one column to the right of it.',
-  left:  ' used the place one column to the left of it.'
+  digit: ' wrote the digit, not what it is worth.',
+  right: ' used the column one place to the right.',
+  left:  ' used the column one place to the left.'
 };
-const STANDS_FILLERS = [
-  ' added up all four digits of the number instead.',
-  ' wrote down the digit that comes next in the number.'
-];
-/* The claim a slip would print, or null where the slip cannot apply. `p` is held
-   to the thousands or hundreds column so that "one column to the right" is never
-   the ones column, where it would mean exactly the same thing as "wrote the digit
+/* KILL 1 (Sweep p3numbers Refutation, 2026-09-15). The two "filler" options were
+   not fillers: each is a READING of the number, with arithmetic of its own, and
+   on 353 / 200,000 draws one of them reproduced the printed claim exactly - "In
+   6293, the digit 2 stands for 20" is explained equally by "one column to the
+   right" (2 tens) and by "added up all four digits" (6+2+9+3). Two true answers.
+   Both the generator and the harness walked only the three NAMED slips, so
+   neither could see it. Every reading now carries its own claim arithmetic, and
+   the draw is redrawn until EXACTLY ONE of the five reproduces the claim. */
+const STANDS_FILLER_SLIPS = {
+  sum:  ' added up all four digits of the number.',
+  next: ' wrote the digit that comes next in it.'
+};
+const STANDS_FILLERS = Object.keys(STANDS_FILLER_SLIPS).map(k => STANDS_FILLER_SLIPS[k]);
+const STANDS_READINGS = Object.keys(STANDS_SLIPS).concat(Object.keys(STANDS_FILLER_SLIPS));
+/* The claim a reading would print, or null where it cannot apply. `p` is held to
+   the thousands or hundreds column so that "one column to the right" is never the
+   ones column, where it would mean exactly the same thing as "wrote the digit
    itself" and the item would have two defensible answers. */
-function standsClaim(k, dig, p){
+function standsClaim(k, dig, p, d){
   if (k === 'digit') return dig;
-  if (k === 'right')  return p < 3 ? dig * POW[p+1] : null;
-  return p > 0 ? dig * POW[p-1] : null;
+  if (k === 'right') return p < 3 ? dig * POW[p+1] : null;
+  if (k === 'left')  return p > 0 ? dig * POW[p-1] : null;
+  if (k === 'sum')   return digitSum(numOf(d));
+  if (k === 'next')  return p < 3 ? d[p+1] : null;
+  return null;
 }
 function gStandsError(){
   const kid = pick(KIDS), who = kid[0], pron = kid[1];
-  const d = digits4(), n = numOf(d), p = ri(0,1), dig = d[p], val = dig * POW[p];
-  const keys = Object.keys(STANDS_SLIPS);
-  const usable = keys.filter(k => { const c = standsClaim(k, dig, p); return c !== null && c !== val && ok(c); });
-  const chosenKey = pick(usable);
-  const claim = standsClaim(chosenKey, dig, p);
-  /* a slip is only offered as a WRONG option when it does not also produce the
-     printed claim - checked on this draw, not assumed */
-  const wrongs = keys.filter(k => k !== chosenKey && standsClaim(k, dig, p) !== claim)
+  const named = Object.keys(STANDS_SLIPS);
+  let d = digits4(), p = 0, dig = d[0], chosenKey = 'digit', claim = dig, g = 0;
+  do {
+    d = digits4(); p = ri(0,1); dig = d[p];
+    const val = dig * POW[p];
+    const usable = named.filter(k => { const c = standsClaim(k, dig, p, d); return c !== null && c !== val && ok(c); });
+    chosenKey = usable.length ? pick(usable) : null;
+    claim = chosenKey ? standsClaim(chosenKey, dig, p, d) : null;
+    g++;
+    /* the claim must map to exactly ONE of the five readings - no option offered
+       on this draw may be defensible under any other reading */
+  } while (g < 200 && !(chosenKey !== null &&
+           STANDS_READINGS.filter(k => standsClaim(k, dig, p, d) === claim).length === 1));
+  const n = numOf(d), val = dig * POW[p];
+  const wrongs = named.filter(k => k !== chosenKey && standsClaim(k, dig, p, d) !== claim)
     .map(k => pron + STANDS_SLIPS[k])
     .concat(STANDS_FILLERS.map(f => pron + f));
   return mcText('In ' + n + ', ' + who + ' says the digit ' + dig + ' stands for ' + claim +
     '. <b>What did ' + pron.toLowerCase() + ' do wrong?</b>', '',
     pron + STANDS_SLIPS[chosenKey], shuffle(wrongs),
-    'The ' + dig + ' sits in the ' + PLACES[p] + ' place, so it stands for ' + dig + ' × ' + POW[p] +
+    'Read the places from the left: ' + placeList(d) + '. The ' + dig + ' sits in the ' + PLACES[p] +
+    ' place, so it stands for ' + dig + ' × ' + POW[p] +
     ' = ' + val + ', not ' + claim + '. ' + pron + STANDS_SLIPS[chosenKey] +
     ' Point at the column the digit is sitting in and say its name out loud before working out the value.');
 }
 
-/* FORMAT 7 - error spotting, CORRECT the mistake, numeric key (pool 3, 2 steps).
-   The dropped-zero slip, which is the single commonest P3 place-value error. */
+/* FORMAT 7 - error spotting, CORRECT the mistake, then step on (pool 3, 2 steps).
+   The dropped-zero slip, which is the single commonest P3 place-value error.
+
+   W4 (Sweep p3numbers Refutation, 2026-09-15): this slot used to ask only "what
+   number should he have written?", which is gBuildNum's pool-2 computation with a
+   wrong number printed beside it - 5,000 / 5,000 draws were answerable from the
+   four part-words alone, ignoring the printed number entirely. It now asks for a
+   SECOND described number measured against the rebuilt one, so the child has to
+   rebuild the number (holding the empty place open) AND then count on or back
+   from it. The dropped-zero trap is still the premise, and "stepped from the
+   squashed number" is now a named distractor instead of the answer. */
 function gZeroFix(){
-  const kid = pick(KIDS), who = kid[0], pron = kid[1];
-  let th = 6, t = 4, o = 9, g = 0;
-  do { th = ri(1,9); t = ri(1,9); o = ri(1,9); g++; }
-  while (g < 200 && !(t !== o &&
-         optsOk(th*1000 + t*10 + o, [th*100 + t*10 + o, th*1000 + t*100 + o, th*1000 + o*10 + t])));
-  const n = th*1000 + t*10 + o, squashed = th*100 + t*10 + o;
-  return mcNum(who + ' writes ' + th + ' thousands, 0 hundreds, ' + t + ' tens and ' + o + ' ones as ' +
-    squashed + '. <b>What number should ' + pron.toLowerCase() + ' have written?</b>', '', n,
-    [squashed, th*1000 + t*100 + o, th*1000 + o*10 + t], '',
+  const k1 = pick(KIDS), who = k1[0], pron = k1[1];
+  let k2 = pick(KIDS); while (k2[0] === who) k2 = pick(KIDS);
+  const other = k2[0];
+  let th = 6, t = 4, o = 9, step = 100, sg = 1, g = 0;
+  do {
+    th = ri(1,9); t = ri(1,9); o = ri(1,9);
+    step = pick([10, 100, 1000]); sg = pick([1, -1]);
+    g++;
+  } while (g < 400 && !(t !== o &&
+           optsOk(th*1000 + t*10 + o + sg*step,
+             [(th*100 + t*10 + o) + sg*step, th*1000 + t*10 + o, th*1000 + t*10 + o - sg*step])));
+  const n = th*1000 + t*10 + o, squashed = th*100 + t*10 + o, ans = n + sg*step;
+  const dir = sg === 1 ? 'more' : 'less';
+  return mcNum(who + ' writes ' + pl(th,'thousand') + ', 0 hundreds, ' + pl(t,'ten') + ' and ' +
+    pl(o,'one') + ' as ' + squashed + '. ' + other + "'s number is " + step + ' ' + dir +
+    ' than the number ' + who + ' meant to write. <b>What is ' + other + "'s number?</b>", '', ans,
+    [squashed + sg*step,        /* stepped on from the squashed number, zero still missing */
+     n,                         /* stopped after rebuilding, never took the step */
+     n - sg*step], '',          /* stepped the wrong way */
     pron + ' left the empty hundreds place out altogether, so every digit slid one place to the right ' +
     'and the number shrank from ' + n + ' to ' + squashed + '. The 0 has to be written: ' + th*1000 +
-    ' + 0 + ' + t*10 + ' + ' + o + ' = ' + n + '.');
+    ' + 0 + ' + t*10 + ' + ' + o + ' = ' + n + '. Then take the step from the RIGHT number: ' + n + ' ' +
+    (sg === 1 ? '+' : '−') + ' ' + step + ' = ' + ans + '.');
 }
 
 
@@ -433,11 +493,12 @@ function gOrder(){
 /* FORMAT 5 - error spotting on a comparison, DIAGNOSE (pool 3, 2 steps).
    Two flavours, and every filler option is checked against this draw so no
    second explanation is ever defensible. */
-/* Same length discipline as STANDS_SLIPS: 44-48 characters across all four. */
-const CMP_FIRST  = ' only compared the first digit of each number.';
-const CMP_RIGHT  = ' compared them from the right, not from the left.';
-const CMP_FILL1  = ' counted the odd digits in each number instead.';
-const CMP_FILL2  = ' added the digits up and compared the totals.';
+/* Same length discipline as STANDS_SLIPS: 39-40 characters across all four, so
+   every rendered option lands inside the 48-character ceiling. */
+const CMP_FIRST  = ' only compared the first digit of each.';
+const CMP_RIGHT  = ' compared from the right, not the left.';
+const CMP_FILL1  = ' counted the odd digits in each instead.';
+const CMP_FILL2  = ' added the digits up and compared those.';
 function oddCount(n){ return digitsOf(n).filter(d => d % 2 === 1).length; }
 function gCompareError(){
   const kid = pick(KIDS), who = kid[0], pron = kid[1];
@@ -467,7 +528,7 @@ function gCompareError(){
   const why = wantDigits
     ? (b + ' has four digits and ' + a + ' has only three, so ' + b + ' is the bigger number however ' +
        'the first digits look. A 4-digit number is always bigger than a 3-digit one.')
-    : ('Both numbers start with ' + Math.floor(a/1000) + ' thousands, so compare the HUNDREDS next: ' +
+    : ('Both numbers start with ' + pl(Math.floor(a/1000), 'thousand') + ', so compare the HUNDREDS next: ' +
        Math.floor(a/100)%10 + ' against ' + Math.floor(b/100)%10 + '. That settles it - ' + b +
        ' is the bigger number. The ones digit never gets a vote until everything to its left is equal.');
   return mcText(who + ' says ' + a + ' is greater than ' + b + '. <b>What did ' + pron.toLowerCase() +
@@ -547,15 +608,69 @@ function gPatternMissing(){
   const gap = ri(1,3);
   const terms = [0,1,2,3,4].map(k => start + k*s);
   const shown = terms.map((v, i) => i === gap ? '?' : String(v));
+  /* W2 (Sweep p3numbers Refutation, 2026-09-15): this explanation used to derive
+     the jump from terms[4] and terms[3] whatever the gap index was - so on the
+     33.7% of draws where the gap landed at index 3 the teaching sentence told the
+     child to find the jump from a number that is not on the page, and the number
+     it named was the ANSWER. The pair is now picked by index and is always two
+     SHOWN, adjacent terms. gen-sanity re-reads the pair out of the rendered
+     explanation and fails if either number is not printed in the stem. */
+  const j = gap === 1 ? 3 : 0;       /* gap 1 -> (3,4); gaps 2 and 3 -> (0,1) */
   return mcNum('What is the <b>missing number</b> in this pattern? <b>' + shown.join(', ') + '</b>',
     '', terms[gap],
     [terms[gap-1],            /* copied the number just before the gap */
      terms[gap] + s/10,       /* added the jump one column to the right */
      terms[gap-1] + 2*s], '', /* took two jumps instead of one */
     'Nobody tells you the jump, so find it from two numbers that sit next to each other: ' +
-    terms[4] + ' and ' + terms[3] + ' are ' + step + ' apart, so the pattern counts ' +
+    terms[j+1] + ' and ' + terms[j] + ' are ' + step + ' apart, so the pattern counts ' +
     (up ? 'on' : 'back') + ' in ' + step + 's. Now one jump from ' + terms[gap-1] + ' gives ' +
     terms[gap-1] + ' ' + (up ? '+' : '−') + ' ' + step + ' = ' + terms[gap] + '.');
+}
+
+/* FORMAT 10 - the odd one out: one printed term breaks the pattern (pool 3, 2
+   steps). The SECOND `pattern` generator in pool 3, and the reason it is here is
+   a measurement, not a taste call.
+
+   W3 (Sweep p3numbers Refutation, 2026-09-15): buildCarousel round-robins SKILLS
+   inside a pool, so a skill holding one generator gets the whole of its quarter.
+   With gPatternMissing alone on the `pattern` peg, pool 3 served it 3.64 times in
+   a 30-item session (worst 6) with ONE masked shape - the shape of the original
+   complaint, arriving through the variety gate rather than around it. A second
+   format on the same peg halves it.
+
+   Two steps, and neither is gPatternMissing's: find the jump the MAJORITY of the
+   printed terms agree on, then test the terms against it. The jump is not named,
+   the answer is one of the numbers on the page, and the three distractors are the
+   other printed terms - so this is an optionSet item (the options ARE the data),
+   not an authored-distractor one. The break is always a place-value column slip:
+   one jump taken in the next column down. */
+function gPatternOdd(){
+  const step = pick([100, 1000]);
+  const up = Math.random() < 0.5;
+  const s = up ? step : -step;
+  const off = pick([1, -1]) * (step / 10);
+  let start = 2000, terms = [], bi = 2, g = 0;
+  do {
+    start = up ? ri(1000, MAXN - 6*step) : ri(1000 + 6*step, MAXN);
+    bi = ri(1,4);                 /* the break is interior, so removing an END term
+                                     can never leave an arithmetic sequence */
+    terms = [0,1,2,3,4,5].map(k => start + k*s);
+    terms[bi] = terms[bi] + off;
+    g++;
+  } while (g < 200 && !(terms.every(ok) && allDistinct(terms)));
+  const odd = terms[bi];
+  const rest = terms.filter((_, i) => i !== bi);
+  /* the worked pair must be two terms that BOTH sit on the pattern and are next
+     to each other on the page */
+  const j = bi <= 1 ? 2 : 0;
+  const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
+  return mcSet('One number does <b>not belong</b> in this pattern. Which one is it? <b>' +
+    terms.join(', ') + '</b>', '', odd, shuffle(rest).slice(0, 3),
+    'Most of the jumps are the same size: ' + terms[j] + ' ' + (up ? '+' : '−') + ' ' + step + ' = ' +
+    terms[j+1] + ', so the pattern counts ' + (up ? 'on' : 'back') + ' in ' + STEP_WORD[step] +
+    '. Follow that jump from the start and the ' + ORD[bi] + ' number should be ' + (start + bi*s) +
+    ', but ' + odd + ' is printed instead - it is ' + Math.abs(off) + ' out, which is one jump taken ' +
+    'in the wrong column. Write the difference above each gap and the one that does not match jumps out.');
 }
 
 
@@ -571,12 +686,16 @@ function gAddConcept(){
   while (g < 200 && !((a % 10) + (b % 10) >= 10 && ((a % 10) + (b % 10)) % 10 !== 1 &&
          (a % 10) + (b % 10) !== 10));
   const s = (a % 10) + (b % 10), keep = s % 10;
-  const key = 'Write ' + keep + ' in the ones column and carry 1 ten into the tens column.';
+  /* §6 of the refutation: the old key ran to 68 characters against a bank maximum
+     of 48, and this is a pool-1 item every child meets. Every option now lands in
+     42-46 characters with the concept intact, and gen-sanity caps p3numbers
+     options at 48. */
+  const key = 'Write ' + keep + ', carry 1 ten into the tens column.';
   return mcText('When you add ' + a + ' + ' + b + ', the ones column makes ' + s +
     '. <b>What happens next?</b>', '', key, shuffle([
-      'Write ' + s + ' in the ones column.',
-      'Write ' + keep + ' in the ones column and carry 1 ten into the hundreds column.',
-      'Write 1 in the ones column and carry ' + keep + ' tens into the tens column.'
+      'Write ' + s + ' in the ones column, carry nothing.',
+      'Write ' + keep + ', carry 1 ten into the hundreds column.',
+      'Write 1, carry ' + keep + ' tens into the tens column.'
     ]),
     s + ' is ' + keep + ' ones and 1 ten. The ones column only has room for ones, so the ' + keep +
     ' stays there and the ten moves one place to the LEFT, into the tens column. That move is what ' +
@@ -662,10 +781,11 @@ function gMentalMake(){
 /* FORMAT 6 - error spotting, DIAGNOSE (pool 3, 2 steps). The claim is produced
    by exactly one named misconception; the two filler options are re-checked
    against this draw, so neither is ever a second defensible answer. */
-/* Same length discipline as STANDS_SLIPS: 44-52 characters across all four. */
-const ADD_NOCARRY = ' did not carry any tens into the next column.';
-const ADD_FILL_SUB = ' subtracted the two numbers instead of adding.';
-const ADD_FILL_SUM = ' added up all eight digits instead of adding.';
+/* Same length discipline as STANDS_SLIPS: 38-44 characters across all four, so
+   every rendered option lands inside the 48-character ceiling. */
+const ADD_NOCARRY = ' did not carry any of the tens at all.';
+const ADD_FILL_SUB = ' subtracted the numbers instead of adding.';
+const ADD_FILL_SUM = ' added up all eight digits, not the numbers.';
 function gAddError(){
   const kid = pick(KIDS), who = kid[0], pron = kid[1];
   let a = 2856, b = 1379, cols = [], key = 4235, g = 0;
@@ -681,7 +801,7 @@ function gAddError(){
   const useAll = Math.random() < 0.5;
   const col = cols[0];
   const claim = useAll ? noCarry(a, b) : addCols(a, b, col);
-  const oneText = ' forgot to carry the ten out of the ' + PLACES[col] + ' column.';
+  const oneText = ' forgot the carry in the ' + PLACES[col] + ' column.';
   const key_ = pron + (useAll ? ADD_NOCARRY : oneText);
   const wrongs = [pron + (useAll ? oneText : ADD_NOCARRY), pron + ADD_FILL_SUB, pron + ADD_FILL_SUM];
   return mcText(who + ' works out ' + a + ' + ' + b + ' and gets ' + claim + '. <b>What did ' +
@@ -691,26 +811,40 @@ function gAddError(){
     cols.length + ' of the four columns do that: the ' + cols.map(c => PLACES[c]).join(', ') + '.');
 }
 
-/* FORMAT 7 - error spotting, CORRECT the mistake, numeric key (pool 3, 2 steps).
-   The stem NAMES the slip, so the premise it states is true by construction and
-   the harness re-derives the printed wrong answer from it. */
+/* FORMAT 7 - error spotting, CORRECT the mistake and MEASURE it, numeric key
+   (pool 3, 2 steps). The stem NAMES the slip, so the premise it states is true by
+   construction and the harness re-derives the printed wrong answer from it.
+
+   W4 (Sweep p3numbers Refutation, 2026-09-15): the old stem ended "What is the
+   correct answer?", which is gSubRegroup's pool-2 computation with the wrong
+   answer handed to the child - 5,000 / 5,000 draws were answered by computing
+   a − b alone, and the extra sentence REMOVED a distractor by naming it. The item
+   now asks how far wrong the slip left him, so the child must do the regrouping
+   subtraction properly AND compare the two answers. The old key, a − b, is now
+   the lead distractor: it is exactly what a child who stops after step 1 writes.
+   (smallFromBig(a,b) >= a − b always, with equality only when no column needs
+   regrouping, and cols.length >= 1 is required - so the gap is always positive.) */
 function gSubError(){
   const kid = pick(KIDS), who = kid[0], pron = kid[1];
-  let a = 4003, b = 1568, key = 2435, claim = 3565, cols = [], g = 0;
+  let a = 4003, b = 1568, key = 2435, claim = 3565, gapv = 1130, cols = [], g = 0;
   do {
     a = ri(2000, MAXN); b = ri(1000, a - 1000);
-    key = a - b; claim = smallFromBig(a, b); cols = borrowCols(a, b);
+    key = a - b; claim = smallFromBig(a, b); cols = borrowCols(a, b); gapv = claim - key;
     g++;
-  } while (g < 200 && !(cols.length >= 1 && ok(key) && ok(claim) && claim !== key &&
-           optsOk(key, [claim, key + POW[cols[0]] * 10, key - POW[cols[0]] * 10])));
+  } while (g < 200 && !(cols.length >= 1 && ok(key) && ok(claim) && claim > key && ok(gapv) &&
+           optsOk(gapv, [key, claim, gapv + POW[cols[0]] * 10])));
   return mcNum(who + ' works out ' + a + ' − ' + b + '. In every column ' + pron.toLowerCase() +
     ' takes the smaller digit away from the bigger one, and gets ' + claim +
-    '. <b>What is the correct answer?</b>', '', key,
-    [claim, key + POW[cols[0]] * 10, key - POW[cols[0]] * 10], '',
+    '. <b>How much bigger is ' + (pron === 'He' ? 'his' : 'her') + ' answer than the correct one?</b>',
+    '', gapv,
+    [key,                            /* worked out the right answer and stopped there */
+     claim,                          /* handed his own wrong answer back */
+     gapv + POW[cols[0]] * 10], '',  /* lost a regrouping in the comparing step */
     'Taking the smaller digit from the bigger one in each column ignores which number is on top, and ' +
     'that is how ' + claim + ' appears. Done properly, the ' + PLACES[cols[0]] + ' column cannot give ' +
     'what is asked, so one is taken from the column on its left and turned into ten: ' + a + ' − ' + b +
-    ' = ' + key + '. Check by adding back: ' + b + ' + ' + key + ' = ' + a + '.');
+    ' = ' + key + '. Now compare the two answers: ' + claim + ' − ' + key + ' = ' + gapv +
+    '. Stopping at ' + key + ' answers a different question.');
 }
 
 /* FORMAT 8 - two-step word problem, Singapore context (pool 3, 2 steps) */
@@ -784,7 +918,8 @@ function gBackFromTotal(){
          [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
          [gMissingAddend,'addsub'],[gMentalMake,'addsub']],
       3:[[gStandsCompare,'place'],[gStandsError,'place'],[gZeroFix,'place'],
-         [gOrder,'compare'],[gCompareError,'compare'],[gPatternMissing,'pattern'],
+         [gOrder,'compare'],[gCompareError,'compare'],
+         [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],
          [gAddError,'addsub'],[gSubError,'addsub'],[gTwoStepWord,'addsub'],[gBackFromTotal,'addsub']]
     }
   });

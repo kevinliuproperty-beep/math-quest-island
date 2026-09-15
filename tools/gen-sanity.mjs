@@ -1027,7 +1027,7 @@ function oracle(q) {
     return null;
   }
 
-  /* PLACE VALUE - error spotting, DIAGNOSE. Re-derives which named misconception
+  /* PLACE VALUE - error spotting, DIAGNOSE. Re-derives which offered READING
      produced the printed claim, fails if it is none, two, or the true value, and
      fails if a distractor option would also explain the claim. */
   if ((m = text.match(/^In (\d+), (\S+(?: \S+)?) says the digit (\d) stands for (\d+)\. What did (he|she) do wrong\?$/))) {
@@ -1036,19 +1036,31 @@ function oracle(q) {
     if (s.split(m[3]).length !== 2) return 'p3 stands-error: the digit is not unique in ' + s;
     const p = s.indexOf(m[3]), val = dig * Math.pow(10, 3 - p);
     if (claim === val) return `p3 stands-error: the "wrong" claim ${claim} is the correct value`;
+    /* KILL 1 (Sweep p3numbers Refutation, 2026-09-15). This loop used to walk only
+       the three NAMED slips, so a "filler" option that also explained the printed
+       claim was invisible to it: the gate reported the class as impossible while
+       the generator shipped it on 353 of 200,000 draws ("In 6293 the digit 2
+       stands for 20" - one column right gives 20, and 6+2+9+3 gives 20 too).
+       Every option this item can print is a reading with arithmetic of its own,
+       and all FIVE are now checked, against the claim and against every option. */
     const slipText = {
-      digit: ' wrote the digit itself instead of what it is worth.',
-      right: ' used the place one column to the right of it.',
-      left: ' used the place one column to the left of it.'
+      digit: ' wrote the digit, not what it is worth.',
+      right: ' used the column one place to the right.',
+      left: ' used the column one place to the left.',
+      sum: ' added up all four digits of the number.',
+      next: ' wrote the digit that comes next in it.'
     };
+    const sd = s.split('').map(Number);
     const claimOf = k => k === 'digit' ? dig
       : k === 'right' ? (p < 3 ? dig * Math.pow(10, 3 - p - 1) : null)
-      : (p > 0 ? dig * Math.pow(10, 3 - p + 1) : null);
+      : k === 'left' ? (p > 0 ? dig * Math.pow(10, 3 - p + 1) : null)
+      : k === 'sum' ? sd.reduce((x, y) => x + y, 0)
+      : (p < 3 ? sd[p + 1] : null);
     const fired = Object.keys(slipText).filter(k => claimOf(k) === claim);
-    if (fired.length !== 1) return `p3 stands-error: ${fired.length} named misconceptions produce ${claim}`;
+    if (fired.length !== 1) return `p3 stands-error: ${fired.length} of the five offered readings produce ${claim}`;
     const want = slipText[fired[0]];
     const key = strip(q.answerText);
-    if (!key.endsWith(want)) return `p3 stands-error: claim ${claim} is the "${fired[0]}" slip but the key reads "${key}"`;
+    if (!key.endsWith(want)) return `p3 stands-error: claim ${claim} is the "${fired[0]}" reading but the key reads "${key}"`;
     for (const o of p3opts(q)) {
       if (o === key) continue;
       for (const k of Object.keys(slipText)) {
@@ -1058,13 +1070,25 @@ function oracle(q) {
     return null;
   }
 
-  /* PLACE VALUE - error spotting, CORRECT the mistake. The stem's own premise
-     (the number written with the empty hundreds place left out) is re-derived. */
-  if ((m = text.match(/^\S+(?: \S+)? writes (\d) thousands, 0 hundreds, (\d) tens and (\d) ones as (\d+)\. What number should (?:he|she) have written\?$/))) {
-    const th = Number(m[1]), t = Number(m[2]), o = Number(m[3]), printed = Number(m[4]);
+  /* PLACE VALUE - error spotting, CORRECT the mistake, then step on. The stem's
+     own premise (the number written with the empty hundreds place left out) is
+     re-derived, and so is the second described number. W4, 2026-09-15: the old
+     one-step form of this item ("what number should he have written?") is gone,
+     so the old oracle branch is gone with it - a stem in that shape now matches
+     nothing here and would be reported as uncovered. */
+  if ((m = text.match(/^(\S+(?: \S+)?) writes (\d) thousands?, 0 hundreds, (\d) tens? and (\d) ones? as (\d+)\. (\S+(?: \S+)?)'s number is (\d+) (more|less) than the number \1 meant to write\. What is \6's number\?$/))) {
+    const th = Number(m[2]), t = Number(m[3]), o = Number(m[4]), printed = Number(m[5]);
+    const step = Number(m[7]), sg = m[8] === 'more' ? 1 : -1;
+    if (m[1] === m[6]) return 'p3 zero-fix: both numbers belong to the same child';
+    if (th === 1 && /1 thousands/.test(text)) return 'p3 zero-fix: "1 thousands" in the stem';
     const squashed = th * 100 + t * 10 + o;
     if (printed !== squashed) return `p3 zero-fix: the stem prints ${printed}, but dropping the zero gives ${squashed}`;
-    const e = th * 1000 + t * 10 + o;
+    const meant = th * 1000 + t * 10 + o;
+    if (![10, 100, 1000].includes(step)) return `p3 zero-fix: ${step} is not a tens/hundreds/thousands step`;
+    const e = meant + sg * step;
+    if (e < 1 || e > 9999) return `p3 zero-fix: the answer ${e} is outside 1..9999`;
+    /* the item is two-step only if the number it asks for is NOT the rebuilt one */
+    if (e === meant) return 'p3 zero-fix: the second number equals the rebuilt number, so the item is one step';
     return near(e, ansNum) ? null : `p3 zero-fix: expected ${e}, got ${ansNum}`;
   }
 
@@ -1099,10 +1123,10 @@ function oracle(q) {
   if ((m = text.match(/^\S+(?: \S+)? says (\d+) is greater than (\d+)\. What did (he|she) do wrong\?$/))) {
     const a = Number(m[1]), b = Number(m[2]);
     if (!(b > a)) return `p3 compare-error: the claim "${a} is greater than ${b}" is true, so there is no mistake`;
-    const FIRST = ' only compared the first digit of each number.';
-    const RIGHT = ' compared them from the right, not from the left.';
-    const ODD = ' counted the odd digits in each number instead.';
-    const SUM = ' added the digits up and compared the totals.';
+    const FIRST = ' only compared the first digit of each.';
+    const RIGHT = ' compared from the right, not the left.';
+    const ODD = ' counted the odd digits in each instead.';
+    const SUM = ' added the digits up and compared those.';
     const lead = n => Number(String(n)[0]);
     const oddC = n => String(n).split('').filter(d => Number(d) % 2 === 1).length;
     const dSum = n => String(n).split('').reduce((s, d) => s + Number(d), 0);
@@ -1161,7 +1185,53 @@ function oracle(q) {
     const e = known[gapAt - 1] + d;
     if (e !== known[gapAt + 1] - d) return 'p3 missing: the two sides of the gap disagree';
     if (e < 1 || e > 9999) return `p3 missing: the answer ${e} is outside 1..9999`;
+    /* W2 (Sweep p3numbers Refutation, 2026-09-15): the explanation derived the
+       jump from terms[4] and terms[3] whatever the gap index was, so on 33.7% of
+       draws it told the child to work from a number that is not on the page - and
+       that number was the ANSWER. The teaching sentence is now read back out of
+       the rendered explanation and every number it works from must be PRINTED in
+       the stem, adjacent, and one jump apart. */
+    const ex = strip(q.explain || '');
+    const em = ex.match(/next to each other: (\d+) and (\d+) are (\d+) apart/);
+    if (!em) return 'p3 missing: the explanation does not say which two numbers the jump comes from';
+    const u = Number(em[1]), v = Number(em[2]), apart = Number(em[3]);
+    const iu = known.indexOf(u), iv = known.indexOf(v);
+    if (iu < 0 || iv < 0) return `p3 missing: the explanation derives the jump from ${u} and ${v}, and one of them is not printed in the stem`;
+    if (iu === gapAt || iv === gapAt) return 'p3 missing: the explanation derives the jump from the hidden term';
+    if (Math.abs(iu - iv) !== 1) return `p3 missing: the explanation calls ${u} and ${v} neighbours, but they are ${Math.abs(iu - iv)} places apart`;
+    if (Math.abs(u - v) !== apart || apart !== Math.abs(d)) return `p3 missing: the explanation says ${u} and ${v} are ${apart} apart, but the jump is ${Math.abs(d)}`;
+    const jm = ex.match(/one jump from (\d+) gives/);
+    if (!jm) return 'p3 missing: the explanation does not say which number it jumps from';
+    if (known.indexOf(Number(jm[1])) < 0 || known.indexOf(Number(jm[1])) === gapAt)
+      return `p3 missing: the explanation jumps from ${jm[1]}, which is not a printed term`;
     return near(e, ansNum) ? null : `p3 missing: expected ${e}, got ${ansNum}`;
+  }
+
+  /* PATTERN - the odd one out. The oracle finds, independently, the one printed
+     position whose value is off the line the other five sit on; it fails unless
+     exactly one such position exists, unless the key is that number, and unless
+     every other option is a printed term that DOES sit on the line. */
+  if ((m = text.match(/^One number does not belong in this pattern\. Which one is it\? ([\d, ]+)$/))) {
+    const t = m[1].split(',').map(x => Number(x.trim()));
+    if (t.length !== 6 || t.some(v => !Number.isFinite(v))) return 'p3 odd-one-out: expected six printed terms';
+    if (t.some(v => v < 1 || v > 9999)) return 'p3 odd-one-out: a term is outside 1..9999: ' + t.join(',');
+    const onLine = [];
+    for (let i = 0; i < 6; i++) {
+      const J = [0, 1, 2, 3, 4, 5].filter(j => j !== i);
+      const D = (t[J[1]] - t[J[0]]) / (J[1] - J[0]);
+      if (!Number.isInteger(D) || D === 0) continue;
+      if (J.every(j => t[j] === t[J[0]] + (j - J[0]) * D)) onLine.push(i);
+    }
+    if (onLine.length !== 1) return `p3 odd-one-out: ${onLine.length} of the six terms could be the one that does not belong`;
+    const e = t[onLine[0]];
+    const vals = p3opts(q).map(Number);
+    if (vals.length !== 4 || vals.some(v => !Number.isFinite(v))) return 'p3 odd-one-out: expected four numeric options';
+    if (vals.filter(v => v === e).length !== 1) return `p3 odd-one-out: the off-pattern number ${e} is not offered exactly once`;
+    for (const v of vals) {
+      if (v === e) continue;
+      if (t.indexOf(v) < 0) return `p3 odd-one-out: the option ${v} is not one of the printed terms`;
+    }
+    return near(e, ansNum) ? null : `p3 odd-one-out: expected ${e}, got ${ansNum}`;
   }
 
   /* ADD/SUB - concept check on regrouping. The column total the stem prints must
@@ -1170,7 +1240,7 @@ function oracle(q) {
     const a = Number(m[1]), b = Number(m[2]), s = Number(m[3]);
     if (a % 10 + b % 10 !== s) return `p3 add-concept: ${a} and ${b} give ${a % 10 + b % 10} in the ones column, not ${s}`;
     if (s < 10) return `p3 add-concept: ${s} does not regroup, so there is nothing to carry`;
-    const want = `Write ${s % 10} in the ones column and carry 1 ten into the tens column.`;
+    const want = `Write ${s % 10}, carry 1 ten into the tens column.`;
     const key = strip(q.answerText);
     if (key !== want) return `p3 add-concept: expected "${want}", got "${key}"`;
     return null;
@@ -1211,8 +1281,8 @@ function oracle(q) {
     const cols = p3carryCols(a, b);
     if (!cols.length) return `p3 add-error: ${a} + ${b} regroups in no column, so there is no carry to forget`;
     const key = strip(q.answerText);
-    const NOCARRY = ' did not carry any tens into the next column.';
-    const oneOf = c => ` forgot to carry the ten out of the ${P3_PLACES[c]} column.`;
+    const NOCARRY = ' did not carry any of the tens at all.';
+    const oneOf = c => ` forgot the carry in the ${P3_PLACES[c]} column.`;
     const byAll = p3noCarry(a, b) === claim;
     const byOne = cols.filter(c => p3add(a, b, c) === claim);
     if (byAll && byOne.length) return `p3 add-error: ${claim} is produced by two different named slips`;
@@ -1229,14 +1299,21 @@ function oracle(q) {
     return null;
   }
 
-  /* ADD/SUB - error spotting, CORRECT. The stem NAMES the slip, so the oracle
-     checks the printed wrong answer really is what that slip produces. */
-  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) [−-] (\d+)\. In every column (?:he|she) takes the smaller digit away from the bigger one, and gets (\d+)\. What is the correct answer\?$/))) {
+  /* ADD/SUB - error spotting, CORRECT the mistake and MEASURE it. The stem NAMES
+     the slip, so the oracle checks the printed wrong answer really is what that
+     slip produces, and then re-derives the GAP between it and the true answer.
+     W4, 2026-09-15: the old one-step form ("what is the correct answer?") is gone
+     and its oracle branch with it - a − b is now a distractor, and the oracle
+     fails if the key is that stop-after-step-1 number. */
+  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) [−-] (\d+)\. In every column (?:he|she) takes the smaller digit away from the bigger one, and gets (\d+)\. How much bigger is (?:his|her) answer than the correct one\?$/))) {
     const a = Number(m[1]), b = Number(m[2]), claim = Number(m[3]), e = a - b;
     if (p3smallFromBig(a, b) !== claim) return `p3 sub-error: the stem says small-from-big and prints ${claim}, but that slip gives ${p3smallFromBig(a, b)}`;
     if (claim === e) return `p3 sub-error: the "wrong" answer ${claim} is the correct one, so the item contradicts itself`;
     if (e < 1) return `p3 sub-error: ${a} − ${b} is not a positive whole number`;
-    return near(e, ansNum) ? null : `p3 sub-error: expected ${e}, got ${ansNum}`;
+    if (claim < e) return `p3 sub-error: the slip's ${claim} is smaller than the correct ${e}, so "how much bigger" has no answer`;
+    const gapv = claim - e;
+    if (near(e, ansNum)) return `p3 sub-error: the key is ${e}, which is only the subtraction - the item asks how much bigger ${claim} is`;
+    return near(gapv, ansNum) ? null : `p3 sub-error: expected ${gapv}, got ${ansNum}`;
   }
 
   /* ADD/SUB - two-step word problem */
@@ -2435,6 +2512,20 @@ function pilotGates(q, topic) {
     if (Number(mm[1]) < Number(mm[3]))
       return `"long" prints shorter than "wide": ${mm[1]} ${mm[2]} long and ${mm[3]} ${mm[4]} wide`;
   }
+
+  /* RULE 3, THE PLURALISER (Sweep p3numbers Refutation W1, 2026-09-15). Six
+     generators in p3-whole-numbers.js printed "1 tens", "1 ones" or "1 thousands"
+     - one of them in the STEM a child reads, on 31% of its draws - in a file that
+     already contained the pluraliser that fixes it. This is v4's W-A ("A 18 cm by
+     14 cm") in a different dress: an English error in a question a parent reads.
+     Every surface the child sees is checked, the EXPLANATION included, because
+     five of the six sites were in explanations and no other gate reads those. */
+  const prose = [strip(q.q), strip(q.extra || ''), strip(q.explain || '')]
+    .concat((q.choices || []).map(strip));
+  for (const f of prose) {
+    const bad = f.match(/\b1 (tens|ones|hundreds|thousands)\b/);
+    if (bad) return `pluraliser: "${bad[0]}" in "${f}"`;
+  }
   return null;
 }
 
@@ -2474,6 +2565,16 @@ function sweepGates(q, topic) {
     if (key > other * 1.4) {
       return `format tell by length: the key is ${key} characters against a longest distractor of ${other} (${opts.join(' | ')})`;
     }
+  }
+  /* RULE D, THE OPTION-LENGTH CEILING (Sweep p3numbers Refutation §6, 2026-09-15).
+     gAddConcept shipped a 68-character option - "Write 5 in the ones column and
+     carry 1 ten into the hundreds column." - against a previous bank maximum of
+     48 characters (p4pie.gPieWrongStatement) and a bank median of 3, in POOL 1
+     where every child meets it, and tools/layout-gate.mjs has never been run on
+     this file. 48 is the widest string the bank has actually shipped, so it is
+     the ceiling until something has been read on glass. */
+  for (const o of opts) {
+    if (o.length > 48) return `option length: ${o.length} characters, past the 48-character bank maximum ("${o}")`;
   }
   if (opts.length === 4 && opts.every(o => /^\d+$/.test(o))) {
     if (!Array.isArray(q.authored) && q.optionSet !== true) {

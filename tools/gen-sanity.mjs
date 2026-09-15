@@ -869,6 +869,261 @@ function oracle(q) {
     return false;
   }
 
+  /* ===== SWEEP 2026-09-15 lane: p2 "Number Beach" format banks ===============
+     One branch per new format in js/topics/p2-number-beach.js. Every key is
+     re-derived from the RENDERED stem, never from the generator's answerText,
+     and most branches also REFUTE THE ITEM'S OWN PREMISE the way the depth
+     pilot's error-spotting oracles do: an error-spotting item whose "mistake" is
+     actually correct, a skip count that does not step by the number it names, a
+     near-ten strategy on a number that is not near a ten, a fact family with two
+     true statements, an ordering item with two ordered lists, or a compare item
+     that a single digit already settles, all fail here rather than shipping.
+
+     THIS BLOCK SITS AT THE TOP OF THE MULTIPLE-CHOICE SECTION ON PURPOSE. Two of
+     the p2 stems below carry words the loose branches further down would claim
+     and then mis-derive: "Which list is in order from smallest to greatest?"
+     matches the /greatest|smallest/ compare branch, which would read the first
+     number of each list and fail a correct item. Specific above loose, per the
+     P3 pilot rule. Every regex here is anchored at both ends. --- */
+  {
+    const opts = (q.choices || []).map(strip);
+    const keyTxt = strip(q.answerText);
+    const nums = s => (String(s).match(/\d+/g) || []).map(Number);
+    /* the named P2 column-subtraction bug: take the smaller digit from the
+       larger in every column instead of renaming. Re-implemented here so the
+       oracle never borrows the topic file's own helper. */
+    const sfl = (x, y) => {
+      let out = 0, mul = 1;
+      for (let i = 0; i < 4; i++) {
+        out += Math.abs((Math.floor(x / mul) % 10) - (Math.floor(y / mul) % 10)) * mul;
+        mul *= 10;
+      }
+      return out;
+    };
+
+    /* --- PRINCIPLE 1: number bonds --- */
+    if ((m = text.match(/^Which pair of numbers makes (\d+)\?$/))) {
+      const T = Number(m[1]);
+      const hits = opts.filter(o => { const n = nums(o); return n.length === 2 && n[0] + n[1] === T; });
+      if (hits.length !== 1) return `p2 bond pair: ${hits.length} of the four pairs make ${T} (${opts.join(' | ')})`;
+      return hits[0] === keyTxt ? null : `p2 bond pair: key "${keyTxt}" but "${hits[0]}" is the pair that makes ${T}`;
+    }
+    if ((m = text.match(/^You know that (\d+) \+ (\d+) = (\d+)\. Which subtraction fact belongs to the same number bond\?$/))) {
+      const b = Number(m[1]), a = Number(m[2]), T = Number(m[3]);
+      if (b + a !== T) return `p2 bond family: the printed bond ${b} + ${a} does not make ${T}`;
+      const hits = opts.filter(o => {
+        const p = o.match(/^(\d+) − (\d+) = (\d+)$/);
+        return p && Number(p[1]) - Number(p[2]) === Number(p[3]);
+      });
+      if (hits.length !== 1) return `p2 bond family: ${hits.length} of the four statements are true (${opts.join(' | ')})`;
+      return hits[0] === keyTxt ? null : `p2 bond family: key "${keyTxt}" is not the true statement "${hits[0]}"`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ says (\d+) − (\d+) = (\d+)\. (?:He|She) checked it by working out (\d+) \+ (\d+) = (\d+)\. What should (\d+) − (\d+) be\?$/))) {
+      const T = Number(m[1]), a = Number(m[2]), claim = Number(m[3]);
+      if (Number(m[4]) !== a || Number(m[5]) !== claim) return 'p2 bond error: the printed check does not use the two numbers in the claim';
+      if (Number(m[6]) !== a + claim) return `p2 bond error: the printed check ${a} + ${claim} = ${m[6]} is not that sum`;
+      if (Number(m[7]) !== T || Number(m[8]) !== a) return 'p2 bond error: the question re-asks a different subtraction';
+      if (a + claim === T) return `p2 bond error: the "wrong" answer ${claim} is actually correct`;
+      const e = T - a;
+      return near(e, ansNum) ? null : `p2 bond error: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ needs (\d+) [A-Za-z ]+ for the [A-Za-z ]+\. (?:He|She) already has (\d+) and gets (\d+) more\. How many more [A-Za-z ]+ are still needed\?$/))) {
+      const T = Number(m[1]), A = Number(m[2]), B = Number(m[3]);
+      const e = T - A - B;
+      if (e <= 0) return `p2 bond word: ${A} + ${B} already makes ${A + B} of ${T}, so nothing is still needed`;
+      return near(e, ansNum) ? null : `p2 bond word: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ says (\d+) \+ (\d+) = (\d+)\. What is wrong\?$/))) {
+      const A = Number(m[1]), B = Number(m[2]), T = Number(m[3]), S = A + B;
+      if (S === T) return `p2 bond diagnose: ${A} + ${B} really is ${T}, so nothing is wrong`;
+      const want = `They make ${S}, which is ${Math.abs(S - T)} ${S > T ? 'too many' : 'too few'}.`;
+      if (keyTxt !== want) return `p2 bond diagnose: key "${keyTxt}" should be "${want}"`;
+      for (const o of opts) {
+        if (o === keyTxt) continue;
+        const n = nums(o);
+        if (n.length && n[0] === S) return `p2 bond diagnose: a distractor also states the true sum ${S}`;
+      }
+      return null;
+    }
+
+    /* --- PRINCIPLE 2: addition and subtraction with regrouping --- */
+    if ((m = text.match(/^[A-Za-z ]+ adds (\d+) \+ (\d+) in columns\. What happens in the ones column\?$/))) {
+      const a = Number(m[1]), b = Number(m[2]), s = (a % 10) + (b % 10);
+      if (s < 10) return `p2 regroup concept: ${a % 10} + ${b % 10} = ${s} does not regroup, so nothing is carried`;
+      const want = `${a % 10} + ${b % 10} = ${s}, so write ${s % 10} and carry 1 ten.`;
+      return keyTxt === want ? null : `p2 regroup concept: key "${keyTxt}" should be "${want}"`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) \+ (\d+) by adding (\d+) and then taking some away\. What is (\d+) \+ (\d+)\?$/))) {
+      const a = Number(m[1]), b = Number(m[2]), r = Number(m[3]);
+      if (Number(m[4]) !== a || Number(m[5]) !== b) return 'p2 near ten: the question re-asks a different sum';
+      if (r % 10 !== 0) return `p2 near ten: ${r} is not a whole ten`;
+      if (r <= b || r - b > 2) return `p2 near ten: ${b} is not within 2 of ${r}, so the strategy the stem describes does not apply`;
+      return near(a + b, ansNum) ? null : `p2 near ten: expected ${a + b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^A number is added to (\d+)\. The answer is (\d+)\. What is the number\?$/))) {
+      const P = Number(m[1]), W = Number(m[2]);
+      if (W <= P) return `p2 inverse: the answer ${W} is not bigger than ${P}, so nothing was added`;
+      return near(W - P, ansNum) ? null : `p2 inverse: expected ${W - P}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) − (\d+) in columns and gets (\d+)\. What is (\d+) − (\d+)\?$/))) {
+      const a = Number(m[1]), b = Number(m[2]), claim = Number(m[3]);
+      if (Number(m[4]) !== a || Number(m[5]) !== b) return 'p2 column error: the question re-asks a different subtraction';
+      if (claim === a - b) return `p2 column error: the "mistake" ${claim} is actually correct`;
+      if ((b % 10) <= (a % 10)) return 'p2 column error: the ones column needs no renaming, so the named mistake cannot arise';
+      if (claim !== sfl(a, b)) return `p2 column error: the printed claim ${claim} is not what the named mistake gives (${sfl(a, b)})`;
+      return near(a - b, ansNum) ? null : `p2 column error: expected ${a - b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ had (\d+) ([a-z]+) and bought (\d+) more\. (?:He|She) then gave away (\d+) ([a-z]+) at [a-z ]+\. How many ([a-z]+) are left\?$/))) {
+      const A = Number(m[1]), B = Number(m[3]), C = Number(m[4]);
+      if (m[2] !== m[5] || m[2] !== m[6]) return 'p2 addsub word: the stem changes what is being counted half-way through';
+      const e = A + B - C;
+      if (e <= 0) return `p2 addsub word: ${C} given away out of only ${A + B}`;
+      return near(e, ansNum) ? null : `p2 addsub word: expected ${e}, got ${ansNum}`;
+    }
+
+    /* --- PRINCIPLE 3: equal groups --- */
+    if ((m = text.match(/^[A-Za-z ]+ has (\d+) ([a-z]+) with (\d+) ([a-z]+) at each ([a-z]+)\. How many ([a-z]+) are there altogether\?$/))) {
+      const a = Number(m[1]), b = Number(m[3]);
+      if (m[4] !== m[6]) return 'p2 equal groups: the stem asks for something other than what sits in each group';
+      return near(a * b, ansNum) ? null : `p2 equal groups: expected ${a * b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ counts in (\d+)s: ([\d, ]+), … What number comes next\?$/))) {
+      const step = Number(m[1]);
+      const seq = m[2].split(',').map(s => Number(s.trim()));
+      if (seq.length < 3 || seq.some(v => !Number.isFinite(v))) return 'p2 skip count: could not read the printed count';
+      for (let i = 1; i < seq.length; i++) {
+        if (seq[i] - seq[i - 1] !== step) return `p2 skip count: the printed count ${seq.join(', ')} does not step by ${step}`;
+      }
+      if (seq[0] % step !== 0) return `p2 skip count: the count starts on ${seq[0]}, which is not in the ${step} times table`;
+      const e = seq[seq.length - 1] + step;
+      return near(e, ansNum) ? null : `p2 skip count: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^Which multiplication has the same answer as ([\d + ]+)\?$/))) {
+      const addends = m[1].split('+').map(s => Number(s.trim()));
+      if (addends.length < 2 || addends.some(v => !Number.isFinite(v))) return 'p2 repeated addition: could not read the addends';
+      if (addends.some(v => v !== addends[0])) return `p2 repeated addition: the addends ${addends.join(',')} are not all equal, so this is not equal groups`;
+      const total = addends.reduce((s, v) => s + v, 0);
+      const value = o => {
+        const p = o.match(/^(\d+) ([×+]) (\d+)$/);
+        if (!p) return null;
+        return p[2] === '×' ? Number(p[1]) * Number(p[3]) : Number(p[1]) + Number(p[3]);
+      };
+      const vals = opts.map(value);
+      if (vals.some(v => v === null)) return `p2 repeated addition: an option is not a two-number expression (${opts.join(' | ')})`;
+      const hits = opts.filter((o, i) => vals[i] === total);
+      if (hits.length !== 1) return `p2 repeated addition: ${hits.length} options evaluate to ${total}`;
+      if (hits[0] !== keyTxt) return `p2 repeated addition: key "${keyTxt}" is not the option that makes ${total}`;
+      const kp = keyTxt.match(/^(\d+) × (\d+)$/);
+      if (!kp) return `p2 repeated addition: the key "${keyTxt}" is not a multiplication`;
+      if (Number(kp[1]) !== addends.length || Number(kp[2]) !== addends[0]) {
+        return `p2 repeated addition: key ${keyTxt} does not read as ${addends.length} groups of ${addends[0]}`;
+      }
+      return null;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) × (\d+) by counting in (\d+)s: ([\d, ]+)\. (?:He|She) says (\d+) × (\d+) = (\d+)\. What is (\d+) × (\d+)\?$/))) {
+      const a = Number(m[1]), b = Number(m[2]), claim = Number(m[7]);
+      if (Number(m[3]) !== a) return 'p2 mul error: the count is not in the first factor';
+      if (Number(m[5]) !== a || Number(m[6]) !== b || Number(m[8]) !== a || Number(m[9]) !== b) {
+        return 'p2 mul error: the stem changes the fact half-way through';
+      }
+      const seq = m[4].split(',').map(s => Number(s.trim()));
+      if (seq.some((v, i) => v !== a * (i + 1))) return `p2 mul error: the printed count ${seq.join(', ')} is not the ${a} times table`;
+      if (seq.length !== b + 1) return `p2 mul error: the printed count has ${seq.length} numbers, the named slip needs ${b + 1}`;
+      if (seq[seq.length - 1] !== claim) return `p2 mul error: the count ends on ${seq[seq.length - 1]} but the claim is ${claim}`;
+      if (claim === a * b) return `p2 mul error: the "wrong" answer ${claim} is actually correct`;
+      return near(a * b, ansNum) ? null : `p2 mul error: expected ${a * b}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ buys (\d+) ([a-z]+) of ([a-z ]+)\. Each ([a-z]+) holds (\d+) ([a-z ]+)\. (?:He|She) gives away (\d+) ([a-z ]+)\. How many ([a-z ]+) are left\?$/))) {
+      const a = Number(m[1]), b = Number(m[5]), c = Number(m[7]);
+      if (m[3] !== m[6] || m[3] !== m[8] || m[3] !== m[9]) return 'p2 mul word: the stem changes what is being counted half-way through';
+      if (m[2].slice(0, 2) !== m[4].slice(0, 2)) return 'p2 mul word: the container in the second sentence is not the one bought';
+      const e = a * b - c;
+      if (e <= 0) return `p2 mul word: ${c} given away out of only ${a * b}`;
+      return near(e, ansNum) ? null : `p2 mul word: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^You know that (\d+) × (\d+) = (\d+)\. Which division fact uses the same three numbers\?$/))) {
+      const a = Number(m[1]), b = Number(m[2]), p = Number(m[3]);
+      if (a * b !== p) return `p2 div family: the printed fact ${a} × ${b} does not make ${p}`;
+      const hits = opts.filter(o => {
+        const t = o.match(/^(\d+) ÷ (\d+) = (\d+)$/);
+        return t && Number(t[2]) !== 0 && Number(t[1]) / Number(t[2]) === Number(t[3]);
+      });
+      if (hits.length !== 1) return `p2 div family: ${hits.length} of the four statements are true (${opts.join(' | ')})`;
+      return hits[0] === keyTxt ? null : `p2 div family: key "${keyTxt}" is not the true statement "${hits[0]}"`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ shares (\d+) ([a-z ]+) equally among (\d+) ([a-z]+)\. How many ([a-z ]+) do (\d+) ([a-z]+) get altogether\?$/))) {
+      const T = Number(m[1]), gN = Number(m[3]), want = Number(m[6]);
+      if (m[2] !== m[5] || m[4] !== m[7]) return 'p2 sharing: the stem changes what is shared or who is sharing it';
+      if (T % gN !== 0) return `p2 sharing: ${T} does not share equally among ${gN}`;
+      if (!(want > 0 && want < gN)) return `p2 sharing: the question asks about ${want} of only ${gN} sharers`;
+      const e = (T / gN) * want;
+      return near(e, ansNum) ? null : `p2 sharing: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^The [A-Za-z ]+ has (\d+) ([a-z]+)\. Each ([a-z]+) holds (\d+) ([a-z]+)\. (\d+) ([a-z]+) have already been filled\. How many more ([a-z]+) are needed\?$/))) {
+      const T = Number(m[1]), per = Number(m[4]), filled = Number(m[6]);
+      if (m[2] !== m[5]) return 'p2 grouping: the stem changes what is being packed';
+      if (m[7] !== m[8]) return 'p2 grouping: the stem changes what is being counted';
+      if (m[3].slice(0, 2) !== m[7].slice(0, 2)) return 'p2 grouping: the container that holds and the container counted are different things';
+      if (T % per !== 0) return `p2 grouping: ${T} does not fill whole ${m[7]}`;
+      const groups = T / per;
+      if (filled >= groups) return `p2 grouping: ${filled} already filled out of only ${groups}`;
+      const e = groups - filled;
+      return near(e, ansNum) ? null : `p2 grouping: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ works out (\d+) ÷ (\d+) and gets (\d+)\. (?:He|She) checks: (\d+) × (\d+) = (\d+)\. What does the check tell (?:him|her)\?$/))) {
+      const T = Number(m[1]), d = Number(m[2]), claim = Number(m[3]);
+      if (Number(m[4]) !== d || Number(m[5]) !== claim) return 'p2 div check: the check does not multiply the divisor by the claim';
+      if (Number(m[6]) !== d * claim) return `p2 div check: the printed check ${d} × ${claim} = ${m[6]} is not that product`;
+      if (T % d !== 0) return `p2 div check: ${T} does not divide by ${d}`;
+      const quot = T / d;
+      if (claim === quot) return `p2 div check: the "wrong" answer ${claim} is actually correct`;
+      const want = `The answer is ${claim > quot ? 'too big' : 'too small'}. ${T} ÷ ${d} = ${quot}.`;
+      if (keyTxt !== want) return `p2 div check: key "${keyTxt}" should be "${want}"`;
+      for (const o of opts) {
+        if (o === keyTxt) continue;
+        const p = o.match(/= (\d+)\.$/);
+        if (p && Number(p[1]) === quot) return `p2 div check: a distractor also prints the true quotient ${quot}`;
+      }
+      return null;
+    }
+
+    /* --- PRINCIPLE 4: comparing and ordering numbers to 1000 --- */
+    if ((m = text.match(/^(\d+) = (\d+) \+ \? \+ (\d+)\. What is the missing number\?$/))) {
+      const W = Number(m[1]), h = Number(m[2]), o = Number(m[3]);
+      if (h % 100 !== 0 || o >= 10) return 'p2 place value: the stem is not in hundreds + tens + ones form';
+      const e = W - h - o;
+      if (e <= 0 || e % 10 !== 0 || e >= 100) return `p2 place value: the missing piece ${e} is not a whole number of tens`;
+      return near(e, ansNum) ? null : `p2 place value: expected ${e}, got ${ansNum}`;
+    }
+    if ((m = text.match(/^Which list is in order from (smallest to greatest|greatest to smallest)\?$/))) {
+      const up = m[1] === 'smallest to greatest';
+      const ordered = s => {
+        const n = nums(s);
+        if (n.length < 2) return false;
+        for (let i = 1; i < n.length; i++) if (up ? n[i] <= n[i - 1] : n[i] >= n[i - 1]) return false;
+        return true;
+      };
+      const hits = opts.filter(ordered);
+      if (hits.length !== 1) return `p2 ordering: ${hits.length} of the four lists run ${m[1]} (${opts.join(' | ')})`;
+      return hits[0] === keyTxt ? null : `p2 ordering: key "${keyTxt}" is not the ordered list "${hits[0]}"`;
+    }
+    if ((m = text.match(/^[A-Za-z ]+ says (\d+) is greater than (\d+), because (\d+) is more than (\d+)\. What went wrong\?$/))) {
+      const a = Number(m[1]), b = Number(m[2]);
+      if (a >= b) return `p2 compare error: ${a} really is greater than ${b}, so nothing went wrong`;
+      if (Number(m[3]) !== a % 10 || Number(m[4]) !== b % 10) return 'p2 compare error: the printed reason does not quote the two ones digits';
+      const ha = Math.floor(a / 100), hb = Math.floor(b / 100);
+      if (ha >= hb) return 'p2 compare error: the hundreds do not settle it, so the stated fix is not the fix';
+      if (!((a % 10) > (b % 10) && Math.floor(a / 10) % 10 > Math.floor(b / 10) % 10)) {
+        return 'p2 compare error: the ones or the tens already point the right way, so one digit settles the item';
+      }
+      const want = `Start with the hundreds: ${ha} is less than ${hb}, so ${b} is greater.`;
+      if (keyTxt !== want) return `p2 compare error: key "${keyTxt}" should be "${want}"`;
+      const rival = opts.filter(o => o !== keyTxt && o.indexOf(`so ${b} is greater`) >= 0);
+      if (rival.length) return 'p2 compare error: a distractor also names the genuinely greater number';
+      return null;
+    }
+  }
+
   /* --- P4 lane: whole numbers up to 100 000 (spaced numerals: "47 253") ---
      These sit ABOVE the P3 branches on purpose: the P3 stems are the same shape
      with an unspaced numeral, and a looser branch that matched first would
@@ -2117,7 +2372,14 @@ function coincidence(q) {
 
    RULE 2, "long" >= "wide": a stem that prints "X ... long and Y ... wide" must
    print X >= Y. Was flipped in 1,710 of 8,000 draws across three generators. */
-const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area']);
+/* SWEEP 2026-09-15: 'p2' joins the pilot set. Number Beach was rebuilt to the
+   same contract, and rule 1 is what keeps its four word-answer banks honest -
+   gBondDiagnose, gRegroupConcept, gDivCheckP2 and gCompareError each ship four
+   options written to one pattern, and the rule fails the build the moment an
+   edit makes the key the only prose (or the only long) option. Rule 2 binds
+   trivially here (no p2 stem says "long"/"wide") and is left on so a later
+   measurement format inherits it. */
+const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'p2']);
 const optForm = s => {
   const t = strip(s);
   if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';

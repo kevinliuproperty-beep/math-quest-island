@@ -45,7 +45,12 @@
  *   - gAddSubP2h - the single-step fluency anchor (above);
  *   - gAddSubError - "... gets 35. What is 55 - 36?" - one subtraction, framed by
  *     a named misconception that is an excellent distractor but not a step;
- *   - gMulError   - "... says 4 x 9 = 40. What is 4 x 9?" - one table fact, same.
+ *   - gMulError   - "... says 4 x 9 = 40. What is 4 x 9?" - one step of READING,
+ *     not one table fact: the answer is the second-to-last number in the count
+ *     printed on the screen, in 20,000 of 20,000 draws (third-pass refutation,
+ *     WOUND 5). That IS the intended reasoning - "the count ran one too far" -
+ *     and the item is still worth setting, but the demand is reading the count,
+ *     not recalling the table.
  * The v2 rewrite of those last two asked for the slip AND the result, which the
  * second-pass refutation measured as answerable with NO arithmetic at all in
  * 20,000 of 20,000 draws each: the stem prints one fixed misconception, so the
@@ -742,22 +747,49 @@ function gSkipCount(){
 
 /* FORMAT 3.5 - concept check: repeated addition IS multiplication
    (pool 2, 2 steps). Exactly one option evaluates to the total; the oracle
-   evaluates all four and fails on a second correct reading. */
+   evaluates all four and fails on a second correct reading.
+
+   REFUTATION FIX (third pass 2026-09-15, KILL 2). The options were n × v (key),
+   v × v, n × n and n + v, and the draw loop guarantees n !== v - so the key was
+   the only option multiplying two DIFFERENT numbers, in 20,000 of 20,000 draws.
+   A child never had to count the addends: pick the one that is a multiplication
+   with two unlike numbers and be right forever, on the topic's only
+   multiplication concept check. The coarse format-tell rule could not see it,
+   because optForm classes "3 + 10" and "3 × 10" alike as an expression.
+
+   Every option is now a multiplication - the odd "n + v" that was not one at all
+   is gone, so the item stopped being a three-option question at the same time -
+   and TWO of the four multiply unlike numbers: the key, and the MISCOUNT, one
+   group too many or one too few, which is the slip this format exists to catch.
+   The other two are the two same-number products a child reaches for when they
+   multiply the wrong pair. So the form no longer singles the key out and the
+   addends have to be counted. The miscount is drawn either side of n on purpose:
+   fixing it at n+1 would have left the key as the SMALLER of the two unlike
+   products on every draw, which is a win by sorting - the same class the rank
+   gate exists to stop, one bank over. Asserted by the p2 option-feature gate in
+   tools/gen-sanity.mjs, which treats "+ vs ×" and "same-number vs
+   different-number product" as features and fails any p2 bank whose key is the
+   only option carrying one. */
 function gMulRepeatAdd(){
-  let n = 4, v = 6, g = 0;
+  let n = 4, v = 6, w = 5, g = 0;
   do {
-    v = pick([2, 3, 4, 5, 10]); n = ri(2, 5);
+    v = pick([2, 3, 4, 5, 10]); n = ri(2, 5); w = n + pick([1, -1]);
     g++;
-  } while (g < 400 && !(n !== v && n + v !== n * v && n * n !== n * v && v * v !== n * v &&
-           uniq4([n + ' × ' + v, v + ' × ' + v, n + ' + ' + v, n + ' × ' + n])));
+  } while (g < 400 && !(n !== v && w >= 1 && w !== v &&
+           uniq4([n + ' × ' + v, w + ' × ' + v, n + ' × ' + n, v + ' × ' + v]) &&
+           uniq4([n * v, w * v, n * n, v * v])));
   const addends = Array.from({ length: n }, () => v).join(' + ');
+  const many = w > n;
   return mcText('Which multiplication has the same answer as <b>' + addends + '</b>?', '',
     n + ' × ' + v,
-    [v + ' × ' + v, n + ' + ' + v, n + ' × ' + n],
+    [w + ' × ' + v, n + ' × ' + n, v + ' × ' + v],
     'Count the ' + v + 's: there are ' + n + ' of them, so this is ' + n + ' groups of ' + v +
-    ', which is ' + n + ' × ' + v + ' = ' + (n * v) + '. Multiplication is a short way of writing ' +
-    'the same number added over and over - that is the whole idea, and it is why the times tables ' +
-    'are worth knowing by heart.');
+    ', which is ' + n + ' × ' + v + ' = ' + (n * v) + '. Counting one group too ' +
+    (many ? 'many' : 'few') + ' gives ' + w + ' × ' + v + ', which is ' + v + ' too ' +
+    (many ? 'much' : 'little') + ', and multiplying the wrong pair gives ' + n + ' × ' + n +
+    ' or ' + v + ' × ' + v + '. Multiplication is a short way of writing the same number added ' +
+    'over and over - that is the whole idea, and it is why the times tables are worth knowing ' +
+    'by heart.');
 }
 
 /* FORMAT 3.6 - error spotting, correct the mistake (pool 3, ONE step - a
@@ -912,18 +944,29 @@ function gDivShareP2(){
 const FILL_CTX = [['buns', 'trays', 'tray', 'school canteen'], ['eggs', 'boxes', 'box', 'NTUC storeroom'],
                   ['kueh', 'bags', 'bag', 'hawker stall'], ['books', 'shelves', 'shelf', 'school library']];
 function gDivGroupWord(){
-  /* filled stops at groups - 3, not groups - 2: a key of 2 leaves only one whole
-     number below it, and the key could then never be anything but the smallest
-     or the second smallest option (rank gate, 2026-09-15). */
+  /* filled stops at groups - 4, not groups - 2: a key of 2 or 3 leaves at most
+     two whole numbers below it, and the key could then never be the LARGEST
+     option at all (rank gate, 2026-09-15).
+
+     REFUTATION FIX (third pass 2026-09-15, WOUND 1): at groups - 3 this bank
+     shipped [31.7 / 31.7 / 31.2 / 5.4] and passed the 45% ceiling, because the
+     ceiling never looked at a rank that is nearly EMPTY - and an almost-empty
+     rank is a free elimination: the key was not the largest of the four in 94.6%
+     of draws, and "pick the option closest to the count already filled" scored
+     59.8%. A key of 4 or more plus one more named slip BELOW it (the filled
+     containers taken off twice) lets ranked() field the top rank too, and the
+     gate now has a floor as well as a ceiling. */
   let per = 5, groups = 6, filled = 3, cands = null, g = 0;
   do {
-    per = pick([2, 3, 4, 5, 10]); groups = ri(5, 10); filled = ri(2, groups - 3);
+    per = pick([2, 3, 4, 5, 10]); groups = ri(6, 10); filled = ri(2, groups - 4);
     /* named slips: forgot the ones already filled; added them instead of taking
        them away; counted what is INSIDE the containers, not the containers;
-       answered the ones already filled; one container out either way. */
-    cands = (groups - filled >= 3)
+       answered the ones already filled; took the filled ones off TWICE; one or
+       two containers out either way. */
+    cands = (groups - filled >= 4)
       ? ranked(groups - filled, [groups, groups + filled, per * (groups - filled), filled,
-                                 groups - filled - 2, groups + 1].concat(nearSlips(groups - filled)))
+                                 groups - 2 * filled, groups - filled - 2,
+                                 groups + 1].concat(nearSlips(groups - filled)))
       : null;
     g++;
   } while (g < 400 && !(filled >= 2 && cands && optsOk(groups - filled, cands)));
@@ -1116,7 +1159,32 @@ function gOrderP2(){
 
 /* FORMAT 4.4 - error spotting, diagnose (pool 3, 2 steps). Drawn so the ones AND
    the tens both point the wrong way, and only the hundreds rule gets it right -
-   so the item cannot be answered by reading any single digit. */
+   so the item cannot be answered by reading any single digit.
+
+   REFUTATION FIX (third pass 2026-09-15, KILL 1). The option set used to be the
+   key plus three readings that all ended on the number the CHARACTER named, so
+   exactly one option on the screen disagreed with the character and it was
+   always the key: "the question says something went wrong, so it must be the
+   other number" scored 100% in 20,000 of 20,000 draws, on the most-served
+   generator in the topic (10.9% of every session), with no hundreds compared at
+   all. One of the three was worse than useless - it stated the CORRECT hundreds
+   comparison and then drew the opposite conclusion, which is not a mistake any
+   child makes.
+
+   The four options are now written to one sentence in which the stated
+   comparison always implies the number it names (a's digit first, b's second, so
+   "less than" always ends on b and "more than" always ends on a). What varies is
+   the REASON:
+     - the hundreds, read correctly     -> b   (the key: right place, right reading)
+     - the hundreds, read the wrong way -> a   (right place, slipped comparison)
+     - the tens, read correctly         -> a   (wrong place, right reading)
+     - the ones, read the wrong way     -> b   (wrong place, slipped comparison)
+   Two options name each number as the greater one and two state a true digit
+   comparison, so neither the conclusion nor the reading settles the item on its
+   own: only "the hundreds, read the right way round" does, and that is the whole
+   lesson. Asserted in tools/gen-sanity.mjs - the oracle re-derives every printed
+   digit from the stem, fails any option whose comparison contradicts its own
+   conclusion, and fails a draw where fewer than two options name either number. */
 function gCompareError(){
   let ha = 1, hb = 2, ta = 8, tb = 0, oa = 9, ob = 5, g = 0;
   do {
@@ -1126,21 +1194,26 @@ function gCompareError(){
     g++;
   } while (g < 400 && !(hb > ha && ta > tb && oa > ob));
   const a = ha * 100 + ta * 10 + oa, b = hb * 100 + tb * 10 + ob;
-  const line = (place, x, word, y, winner) =>
-    'Start with the ' + place + ': ' + x + ' is ' + word + ' ' + y + ', so ' + winner + ' is greater.';
-  const key = line('hundreds', ha, 'less than', hb, b);
+  /* x is always a's digit and y is always b's, so "less" names b and "more"
+     names a: no option can state a comparison and then contradict it. */
+  const line = (place, x, word, y) =>
+    'Start with the ' + place + ': ' + x + ' is ' + word + ' than ' + y + ', so ' +
+    (word === 'less' ? b : a) + ' is greater.';
+  const key = line('hundreds', ha, 'less', hb);
   const k = kid();
   return mcText(k[0] + ' says ' + a + ' is greater than ' + b + ', because ' + oa + ' is more than ' + ob +
     '. <b>What went wrong?</b>', '',
     key,
-    [line('ones', oa, 'more than', ob, a),
-     line('tens', ta, 'more than', tb, a),
-     line('hundreds', ha, 'less than', hb, a)],
+    [line('hundreds', ha, 'more', hb),
+     line('tens', ta, 'more', tb),
+     line('ones', oa, 'less', ob)],
     'The ones digit does not decide anything on its own. ' + a + ' has ' + plural(ha, 'hundred', 'hundreds') +
     ' and ' + b + ' has ' + hb + ', and ' + plural(ha, 'hundred', 'hundreds') + ' is less than ' +
     plural(hb, 'hundred', 'hundreds') + ', so ' + b + ' is the ' +
     'greater number. Always start on the LEFT, at the biggest place, and only move right when two ' +
-    'digits are the same.');
+    'digits are the same. Two of the other answers start in the wrong place, and two read a comparison ' +
+    'backwards: ' + ha + ' is not more than ' + hb + ', and ' + oa + ' is not less than ' + ob +
+    '. Check the PLACE first, then check which digit is really the bigger one.');
 }
 
 

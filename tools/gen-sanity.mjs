@@ -1130,10 +1130,18 @@ function oracle(q) {
         return `p2 repeated addition: key ${keyTxt} does not read as ${addends.length} groups of ${addends[0]}`;
       }
       {
+        /* REFUTATION FIX (third pass 2026-09-15, KILL 2): the fourth option used
+           to be "n + v", not a multiplication at all, which left the key as the
+           only option multiplying two DIFFERENT numbers in 20,000 of 20,000
+           draws. All four are multiplications now and two of them have unlike
+           factors, so the form cannot single the key out; the p2 option-feature
+           gate below asserts that class for every p2 bank. The miscount sits
+           either side of the true count so the key is not always the smaller of
+           the two unlike products, which would be a win by sorting. */
         const n = addends.length, v = addends[0];
-        const wantSet = [`${n} × ${v}`, `${v} × ${v}`, `${n} + ${v}`, `${n} × ${n}`];
-        if (!sameSet(wantSet, opts)) {
-          return `p2 repeated addition: option set is not the four named readings - want [${wantSet.join(' | ')}], got [${opts.join(' | ')}]`;
+        const setFor = w => [`${n} × ${v}`, `${w} × ${v}`, `${n} × ${n}`, `${v} × ${v}`];
+        if (!sameSet(setFor(n + 1), opts) && !(n > 1 && sameSet(setFor(n - 1), opts))) {
+          return `p2 repeated addition: option set is not the four named readings - want [${setFor(n + 1).join(' | ')}] or [${setFor(n - 1).join(' | ')}], got [${opts.join(' | ')}]`;
         }
       }
       return null;
@@ -1290,15 +1298,49 @@ function oracle(q) {
       if (!((a % 10) > (b % 10) && Math.floor(a / 10) % 10 > Math.floor(b / 10) % 10)) {
         return 'p2 compare error: the ones or the tens already point the right way, so one digit settles the item';
       }
-      const want = `Start with the hundreds: ${ha} is less than ${hb}, so ${b} is greater.`;
-      if (keyTxt !== want) return `p2 compare error: key "${keyTxt}" should be "${want}"`;
-      const rival = opts.filter(o => o !== keyTxt && o.indexOf(`so ${b} is greater`) >= 0);
-      if (rival.length) return 'p2 compare error: a distractor also names the genuinely greater number';
+      /* REFUTATION FIX (third pass 2026-09-15, KILL 1). Every distractor used to
+         end on the number the CHARACTER named, so the key was the only option on
+         the screen that disagreed with her - 100% with no digit read, on the
+         most-served generator in the topic - and one distractor stated the
+         correct hundreds comparison and then drew the opposite conclusion.
+         The rule below re-derives each option from the printed digits instead of
+         trusting a template: every option must quote a's digit and then b's digit
+         at the place it names, must name the number its own comparison implies
+         (so a self-contradicting option cannot ship), and exactly one must be
+         SOUND - the right place, read the right way round - which must be the
+         key. Finally at least two options must name each number, so the
+         conclusion alone never settles the item. */
       const ta = Math.floor(a / 10) % 10, tb = Math.floor(b / 10) % 10;
-      const wantCmp = [want,
-        `Start with the ones: ${a % 10} is more than ${b % 10}, so ${a} is greater.`,
+      const digitAt = (n, place) => place === 'hundreds' ? Math.floor(n / 100)
+                                  : place === 'tens' ? Math.floor(n / 10) % 10 : n % 10;
+      const sound = [], named = [];
+      for (const o of opts) {
+        const p = o.match(/^Start with the (hundreds|tens|ones): (\d+) is (less|more) than (\d+), so (\d+) is greater\.$/);
+        if (!p) return `p2 compare error: an option is not a place-value reading ("${o}")`;
+        const place = p[1], x = Number(p[2]), word = p[3], y = Number(p[4]), win = Number(p[5]);
+        if (x !== digitAt(a, place) || y !== digitAt(b, place)) {
+          return `p2 compare error: "${o}" does not quote the ${place} digit of ${a} and then of ${b} (${digitAt(a, place)}, ${digitAt(b, place)})`;
+        }
+        if (win !== a && win !== b) return `p2 compare error: "${o}" names ${win}, which is not one of the two numbers`;
+        if ((word === 'less') !== (win === b)) {
+          return `p2 compare error: "${o}" states a comparison and then names the other number - no child makes that mistake`;
+        }
+        if (place === 'hundreds' && (word === 'less' ? x < y : x > y)) sound.push(o);
+        named.push(win);
+      }
+      if (sound.length !== 1) {
+        return `p2 compare error: ${sound.length} of the four options start on the hundreds AND read them correctly (${opts.join(' | ')})`;
+      }
+      if (sound[0] !== keyTxt) return `p2 compare error: key "${keyTxt}" is not the sound reading "${sound[0]}"`;
+      const forB = named.filter(w => w === b).length;
+      if (forB < 2 || named.length - forB < 2) {
+        return `p2 compare error: ${forB} of the four options name ${b} as the greater number, so the conclusion alone singles out the key`;
+      }
+      const wantCmp = [
+        `Start with the hundreds: ${ha} is less than ${hb}, so ${b} is greater.`,
+        `Start with the hundreds: ${ha} is more than ${hb}, so ${a} is greater.`,
         `Start with the tens: ${ta} is more than ${tb}, so ${a} is greater.`,
-        `Start with the hundreds: ${ha} is less than ${hb}, so ${a} is greater.`];
+        `Start with the ones: ${a % 10} is less than ${b % 10}, so ${b} is greater.`];
       if (!sameSet(wantCmp, opts)) {
         return `p2 compare error: option set is not the four named readings - want [${wantCmp.join(' | ')}], got [${opts.join(' | ')}]`;
       }
@@ -2618,11 +2660,30 @@ function pilotGates(q, topic) {
    it. Rule 1 still binds on every number in it.
    RULE 3, the distractor contract. Every p2 draw must declare the options it
    authored - q.authored for the numeric banks, q.optionSet for the word-answer
-   banks - so no generator can reach the child through a padding branch. */
+   banks - so no generator can reach the child through a padding branch.
+
+   RULE 2b, TRUE MEANS TRUE (refutation third pass 2026-09-15, WOUND 4). Rule 2
+   validated a multiplication's FACTORS but never that a printed product is
+   right: "4 × 5 = 21" passed it, and the false-division arm silently waved
+   through any division whose stated answer was wrong. Every printed "a × b = c"
+   and "a ÷ b = c" must now be TRUE unless the generator is named below, with its
+   reason, as one that deliberately prints a false fact. */
 const P2_TABLE = new Set([2, 3, 4, 5, 10]);
 const p2InTables = (x, y) => (P2_TABLE.has(x) && y >= 1 && y <= 10) ||
                              (P2_TABLE.has(y) && x >= 1 && x <= 10);
-function p2Gates(q, topic) {
+/* The three banks that PRINT a fact which is deliberately wrong, each with the
+   reason it has to. Nothing else in the topic may, and a new name here needs the
+   same argument.
+     gMulError    - the stem prints the child's own wrong claim ("10 × 5 = 60");
+                    spotting it IS the item, and the oracle re-derives the printed
+                    skip count to prove the claim really is what that slip gives.
+     gDivFamilyP2 - one distractor is "20 ÷ 11 = 2", rejected by inspection
+                    ("uses the same three numbers"), never by dividing by 11.
+     gDivCheckP2  - three of the four options state a quotient that is not the
+                    true one, by construction; exactly one is true and the oracle
+                    checks which. */
+const P2_FALSE_FACT_OK = new Set(['gMulError', 'gDivFamilyP2', 'gDivCheckP2']);
+function p2Gates(q, topic, name) {
   if (topic !== 'p2') return null;
   const text = [strip(q.q), strip(q.extra || ''), strip(q.explain || '')]
     .concat((q.choices || []).map(strip)).join(' ‖ ');
@@ -2630,9 +2691,16 @@ function p2Gates(q, topic) {
     if (Number(n) > 1000) return `p2 scope: ${n} is printed, and the P2 number range stops at 1000`;
   }
   let mm;
-  const mul = /(\d+) × (\d+)/g;
+  const mul = /(\d+) × (\d+)(?: = (\d+))?/g;
   while ((mm = mul.exec(text))) {
     const x = Number(mm[1]), y = Number(mm[2]);
+    const stated = mm[3] === undefined ? null : Number(mm[3]);
+    if (stated !== null && x * y !== stated) {
+      if (!P2_FALSE_FACT_OK.has(name)) {
+        return `p2 scope: "${x} × ${y} = ${stated}" is printed, but ${x} × ${y} is ${x * y}, and this bank is not one of the declared false-fact banks`;
+      }
+      continue;   /* declared false claim: rule 1 only */
+    }
     if (!p2InTables(x, y)) {
       return `p2 scope: "${x} × ${y}" is printed, which is outside the 2, 3, 4, 5 and 10 times tables`;
     }
@@ -2641,7 +2709,12 @@ function p2Gates(q, topic) {
   while ((mm = div.exec(text))) {
     const x = Number(mm[1]), y = Number(mm[2]);
     const stated = mm[3] === undefined ? null : Number(mm[3]);
-    if (stated !== null && x !== y * stated) continue;   /* deliberately false: rule 1 only */
+    if (stated !== null && x !== y * stated) {
+      if (!P2_FALSE_FACT_OK.has(name)) {
+        return `p2 scope: "${x} ÷ ${y} = ${stated}" is printed, but that division is not true, and this bank is not one of the declared false-fact banks`;
+      }
+      continue;   /* declared false claim: rule 1 only */
+    }
     if (y === 0 || x % y !== 0) return `p2 scope: "${x} ÷ ${y}" is printed as a true fact but does not divide exactly`;
     if (!p2InTables(y, x / y)) {
       return `p2 scope: "${x} ÷ ${y} = ${x / y}" is printed, which is outside the 2, 3, 4, 5 and 10 times tables`;
@@ -2707,12 +2780,26 @@ function p2Gates(q, topic) {
    rank. At the default 200 samples a genuinely uniform bank sits six standard
    deviations inside that ceiling, so the gate does not flap.
 
+   THE FLOOR (refutation third pass 2026-09-15, WOUND 1). A ceiling alone never
+   looks at a rank that is nearly EMPTY, and an almost-empty rank is a free
+   elimination - the same win by sorting the ceiling exists to stop. gDivGroupWord
+   shipped [31.7 / 31.7 / 31.2 / 5.4] and passed: the key was not the largest
+   option in 94.6% of draws. No rank may hold less than 12% of the ranked draws.
+   Being a distribution claim on a finite sample it is tested with a 1.5
+   standard-error allowance, so at the default 200 samples it fires below about
+   8.6% and at SAMPLES=50000 below about 11.8% - tight enough to catch a 5%
+   rank at 200, loose enough that the thinnest honest bank in the file (gBonds,
+   17.5% at rank 3, where single-digit keys leave too few whole numbers
+   underneath) never flaps.
+
    EXEMPTION, declared and reasoned: gCompareNum asks "Which number is the
    greatest?". Its key is the extremum BY DEFINITION, so rank 0 or rank 3 in 100%
    of draws is the question being asked, not a tell a child can exploit. It is the
    only exemption, and a generator added to this set needs the same argument. */
 const P2_RANK_EXEMPT = new Set(['gCompareNum']);
 const P2_RANK_CEILING = 0.45;
+const P2_RANK_FLOOR = 0.12;
+const P2_RANK_SE = 1.5;            /* standard errors of slack on the floor test */
 const P2_RANK_NAME = ['smallest', 'second smallest', 'second largest', 'largest'];
 /* the four NUMERIC READINGS of an option set - four bare numbers, four options
    that each end on "= n." (the verdict-plus-quotient bank), or four that each open
@@ -2732,6 +2819,62 @@ function p2Readings(q) {
   }
   return null;
 }
+
+/* ---------- p2 OPTION FEATURE GATE (refutation third pass 2026-09-15, KILLS 1-2)
+   The rank gate made the numeric side honest and the format-tell rule catches a
+   coarse odd-one-out, and between them they missed both of the third pass's
+   kills, because both lived on the WORD-ANSWER side in a feature neither looks
+   at:
+     - gCompareError shipped three distractors that all ended on the number the
+       character named, so the key was the only option disagreeing with her -
+       100% of draws, no digit read;
+     - gMulRepeatAdd shipped n × v, v × v, n × n and n + v with n !== v forced, so
+       the key was the only option multiplying two DIFFERENT numbers - 100% of
+       draws, no addend counted. optForm classes "3 + 10" and "3 × 10" alike as an
+       expression, by design, so rule 1 could never see it.
+
+   This gate reads a small feature off every option of every p2 draw whose options
+   are not four bare numbers (those are the rank gate's business) and fails the
+   generator when the KEY is the only option carrying a feature's value in 90% or
+   more of the sample. The features are deliberately coarse - the kind of thing a
+   seven-year-old spots without doing any mathematics:
+     form       - is it a bare number, prose, or "x OP y"; and if it is an
+                  expression, WHICH operator and are its two numbers the same or
+                  different. This is optForm sharpened exactly where it was blunt.
+     stem num   - the BIGGEST number printed in the stem that the option names
+                  again, which is the number the option is about. "The key is the
+                  only option that names the other number" is exactly this. It is
+                  the biggest rather than the whole set because a stem that quotes
+                  single digits ("because 9 is more than 5") collides with the
+                  digits inside the options, and the full set then separates two
+                  options that are talking about the same number.
+     direction  - the comparison direction words it states (less/more than, too
+                  many/few, too big/small, correct).
+   It is a distribution claim like the rank gate, so it is sampled, not per-draw.
+   The 90% ceiling is deliberately loose: two accepted floors sit under it and
+   must stay passing - gDivCheckP2's verdict word is unique to the key in 38.0% of
+   draws (the honest 62.5% strategy floor of the verdict-plus-quotient format),
+   and gRegroupConcept's key is the only option reading "carry 1 ten" on every
+   draw, which every pass has accepted because that invariant IS the concept and
+   is not one of the features here. */
+const P2_FEATURES = [
+  { label: 'its form (bare number, prose, or which operator over two numbers that are the same or different)',
+    of: o => {
+      if (/^\d+$/.test(o)) return 'number';
+      const mm = o.match(/^(\d+)\s*([+×÷−-])\s*(\d+)(?:\s*=\s*(\d+))?$/);
+      if (mm) return mm[2] + ':' + (mm[1] === mm[3] ? 'same' : 'different');
+      return 'prose';
+    } },
+  { label: 'the biggest stem number it names again',
+    of: (o, stemNums) => {
+      const hit = (o.match(/\d+/g) || []).map(Number).filter(n => stemNums.has(n));
+      return hit.length ? String(Math.max(...hit)) : 'none';
+    } },
+  { label: 'the comparison direction it states',
+    of: o => [...new Set(o.match(/less than|more than|too many|too few|too big|too small|correct/g) || [])]
+               .sort().join(',') || 'none' }
+];
+const P2_FEATURE_CEILING = 0.90;
 
 /* ---------- collect every registered generator ---------- */
 const GENS = []; // { topic, skill, level, name, fn }
@@ -2758,6 +2901,9 @@ for (const g of GENS) {
   const distinct = new Set();
   const rankN = [0, 0, 0, 0];
   let ranked = 0;
+  const featHit = P2_FEATURES.map(() => 0);
+  const featSample = P2_FEATURES.map(() => null);
+  let featN = 0;
   for (let i = 0; i < N; i++) {
     let q;
     try { q = g.fn(); } catch (e) { err = 'threw: ' + e.message; break; }
@@ -2773,13 +2919,28 @@ for (const g of GENS) {
     if (coin) { err = coin; badQ = q; break; }
     const pilot = pilotGates(q, g.topic);
     if (pilot) { err = pilot; badQ = q; break; }
-    const scope = p2Gates(q, g.topic);
+    const scope = p2Gates(q, g.topic, g.name);
     if (scope) { err = scope; badQ = q; break; }
     if (g.topic === 'p2' && !P2_RANK_EXEMPT.has(g.name)) {
       const vals = p2Readings(q);
       if (vals) {
         const kv = vals[q.correct];
         if (Number.isFinite(kv)) { rankN[vals.filter(v => v < kv).length]++; ranked++; }
+      }
+    }
+    if (g.topic === 'p2') {
+      const fopts = (q.choices || []).map(strip);
+      if (fopts.length === 4 && !fopts.every(o => /^\d+$/.test(o))) {
+        featN++;
+        const stemNums = new Set(((strip(q.q) + ' ' + strip(q.extra || '')).match(/\d+/g) || []).map(Number));
+        const keyOpt = strip(q.answerText);
+        for (let fi = 0; fi < P2_FEATURES.length; fi++) {
+          const kv = P2_FEATURES[fi].of(keyOpt, stemNums);
+          if (fopts.filter(o => P2_FEATURES[fi].of(o, stemNums) === kv).length === 1) {
+            featHit[fi]++;
+            featSample[fi] = { kv, opts: fopts.slice() };
+          }
+        }
       }
     }
     distinct.add(qKey(q));
@@ -2792,13 +2953,31 @@ for (const g of GENS) {
     err = `sample space collapsed: only ${distinct.size} distinct questions in ${N} draws`;
   }
   if (!err && ranked >= 50) {
+    const spread = `[${rankN.map(n => (100 * n / ranked).toFixed(0) + '%').join(' / ')}]`;
     const worst = Math.max(...rankN), at = rankN.indexOf(worst);
+    const thin = Math.min(...rankN), atThin = rankN.indexOf(thin);
+    const slack = P2_RANK_SE * Math.sqrt(P2_RANK_FLOOR * (1 - P2_RANK_FLOOR) / ranked);
     if (worst / ranked > P2_RANK_CEILING) {
       err = `p2 key value rank: the key is the ${P2_RANK_NAME[at]} of the four printed numbers in ` +
             `${worst} of ${ranked} draws (${(100 * worst / ranked).toFixed(1)}%), over the ` +
             `${(100 * P2_RANK_CEILING).toFixed(0)}% ceiling - named slips all on one side of the key let ` +
-            `a child sort four numbers instead of doing the mathematics ` +
-            `[${rankN.map(n => (100 * n / ranked).toFixed(0) + '%').join(' / ')}]`;
+            `a child sort four numbers instead of doing the mathematics ${spread}`;
+    } else if (thin / ranked < P2_RANK_FLOOR - slack) {
+      err = `p2 key value rank: the key is the ${P2_RANK_NAME[atThin]} of the four printed numbers in ` +
+            `only ${thin} of ${ranked} draws (${(100 * thin / ranked).toFixed(1)}%), under the ` +
+            `${(100 * P2_RANK_FLOOR).toFixed(0)}% floor - a rank the key almost never takes is a free ` +
+            `elimination, which is the same win by sorting the ceiling exists to stop ${spread}`;
+    }
+  }
+  if (!err && featN >= 50) {
+    for (let fi = 0; fi < P2_FEATURES.length; fi++) {
+      if (featHit[fi] / featN < P2_FEATURE_CEILING) continue;
+      const s = featSample[fi];
+      err = `p2 option feature: the key is the ONLY option with ${P2_FEATURES[fi].label} in ` +
+            `${featHit[fi]} of ${featN} draws (${(100 * featHit[fi] / featN).toFixed(1)}%), at or over ` +
+            `the ${(100 * P2_FEATURE_CEILING).toFixed(0)}% ceiling - a child can pick the key out by ` +
+            `that alone, with no mathematics (key value "${s.kv}", options: ${s.opts.join(' | ')})`;
+      break;
     }
   }
   const cov = Math.round((matched / N) * 100);

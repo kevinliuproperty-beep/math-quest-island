@@ -1263,9 +1263,18 @@ function oracle(q) {
     const a = Number(m[1]), b = Number(m[2]), s = Number(m[3]);
     if (a % 10 + b % 10 !== s) return `p3 add-concept: ${a} and ${b} give ${a % 10 + b % 10} in the ones column, not ${s}`;
     if (s < 10) return `p3 add-concept: ${s} does not regroup, so there is nothing to carry`;
-    const want = `Write ${s % 10}, carry 1 ten into the tens column.`;
+    const want = `Write ${s % 10}, then carry 1 ten into the tens column.`;
     const key = strip(q.answerText);
     if (key !== want) return `p3 add-concept: expected "${want}", got "${key}"`;
+    /* W4, third pass: the key used to be the uniquely SHORTEST of the four
+       options on 100% of draws. The four strings are fixed-width by construction
+       (the ones total is always two digits and what stays in the column always
+       one), so the property is asserted here per draw as well as measured across
+       the bank by the LENGTH RANK gate below. */
+    const lens = (q.choices || []).map(c => strip(c).length);
+    if (Math.max.apply(null, lens) - Math.min.apply(null, lens) > 2) {
+      return `p3 add-concept: the four options span ${Math.min.apply(null, lens)}-${Math.max.apply(null, lens)} characters, so length separates them`;
+    }
     return null;
   }
 
@@ -2678,18 +2687,50 @@ for (const g of GENS) {
    SIZE. A bank fails if any one rank takes more than 45% of its draws (chance is
    25%), or if "pick the smallest" or "pick the largest" clears 40%.
 
-   EXEMPT, and the exemption is named in the printed table: a stem that asks for
-   the greatest, the smallest, or the number between two others. There the four
-   options ARE the data and their ordering IS the question - "the greatest is the
-   largest one" is the mathematics, not a shortcut past it. Nothing else is
-   exempt, including the other optionSet banks.
+   THE FLOOR (Sweep p3numbers Refutation, THIRD pass, W3). The ruler used to be
+   one-sided: it failed a rank above 45% and passed a rank at 0.00%. A rank that
+   is EMPTY is as much a tell as a rank that is full - it tells the child which
+   option to cross out, and crossing one out takes a guesser from 25% to 33.3% on
+   100% of draws. gMentalMake's key was never the largest of the four and
+   gTwoStepWord's never the smallest, each on 20,000 / 20,000, and four more banks
+   sat between 5.8% and 7.2% on one rank. A bank now also fails if any rank falls
+   BELOW 12% of its draws. 12% is half of chance and eight standard errors below
+   it at this sample size, so a bank that is flat by construction cannot trip it
+   by noise.
 
-   The gate carries its own negative control: the v2 gSubError option set is
-   rebuilt here from its own arithmetic and run through the same ruler, and the
-   harness fails if that does NOT come out red. --- */
+   EXEMPT - and this is the part the third pass was actually about. The exemption
+   used to be a REGEX ON THE STEM, /\b(greatest|smallest|between)\b/, printing
+   "there the ordering of the options IS the question". That sentence was true for
+   two banks and false for the third: gBetween's stem carries the two bounds on
+   100% of draws, so the options are NOT the data, and "pick the third smallest"
+   answered a slot the topic file calls "2 steps: check both ends" on 20,000 /
+   20,000 draws while this table printed it as exempt. A gate that exempts a bank
+   is a claim about that bank and needs the same evidence as a gate that passes
+   one.
+
+   So the exemption is now an explicit per-generator ALLOWLIST of two banks, each
+   with its measured justification, and the premise of each is re-checked on every
+   draw below (an exempt bank whose stem ever prints a digit fails the gate):
+
+     p3numbers.gGreatest - "Which number is the greatest?" The stem carries NO
+       number at all on 20,000 / 20,000 draws (measured). The four options are the
+       entire data of the question and "the greatest is the largest one" is the
+       mathematics, not a shortcut past it.
+     p3numbers.gSmallest - "Which number is the smallest?" Same measurement: no
+       number in the stem on 20,000 / 20,000 draws, all four options needed.
+
+   Nothing else is exempt - not gBetween, not gOrder, not gPatternOdd, not any
+   other optionSet bank. A regex would also have handed a free pass to any future
+   numeric bank whose stem merely contained the word: "the difference between 4021
+   and 1278" is one sentence away.
+
+   The gate carries two negative controls: the v2 gSubError option set and the
+   v3 gBetween option set, each rebuilt here from its own arithmetic so neither
+   control depends on the topic file still containing the defect. Both must come
+   out RED. --- */
 const RANK_N = 2000;
-const RANK_CAP = 0.45, EXTREME_CAP = 0.40;
-const MAGNITUDE_EXEMPT = /\b(greatest|smallest|between)\b/;
+const RANK_CAP = 0.45, EXTREME_CAP = 0.40, RANK_FLOOR = 0.12;
+const MAGNITUDE_EXEMPT = new Set(['p3numbers.gGreatest', 'p3numbers.gSmallest']);
 const rankRows = [];
 function rankOf(q) {
   const opts = (q.choices || []).map(strip);
@@ -2702,16 +2743,17 @@ function rankOf(q) {
 }
 function rankBank(draw) {
   const tally = [0, 0, 0, 0];
-  let seen = 0, stem = '';
+  let seen = 0, stem = '', withNumber = 0;
   for (let i = 0; i < RANK_N; i++) {
     let q;
-    try { q = draw(); } catch (e) { return { tally, seen, stem, threw: e.message }; }
+    try { q = draw(); } catch (e) { return { tally, seen, stem, withNumber, threw: e.message }; }
     const r = rankOf(q);
     if (r === null) continue;
     if (!stem) stem = strip(q.q);
+    if (/\d/.test(strip(q.q))) withNumber++;
     tally[r]++; seen++;
   }
-  return { tally, seen, stem };
+  return { tally, seen, stem, withNumber };
 }
 function rankVerdict(row) {
   if (!row.seen) return null;
@@ -2719,15 +2761,25 @@ function rankVerdict(row) {
   if (f[0] > EXTREME_CAP) return `"pick the smallest" answers it on ${(100 * f[0]).toFixed(1)}% of draws`;
   if (f[3] > EXTREME_CAP) return `"pick the largest" answers it on ${(100 * f[3]).toFixed(1)}% of draws`;
   for (let r = 0; r < 4; r++) if (f[r] > RANK_CAP) return `the key is rank ${r} of 4 by size on ${(100 * f[r]).toFixed(1)}% of draws`;
+  for (let r = 0; r < 4; r++) if (f[r] < RANK_FLOOR) return `rank ${r} of 4 by size is all but empty - ${(100 * f[r]).toFixed(1)}% of draws, so that option is a free elimination`;
   return null;
+}
+/* An exemption is a claim, so it is checked. An exempt bank is exempt BECAUSE the
+   four options are the whole of the data - which means its stem cannot be
+   carrying the question's numbers. If one ever does, the exemption is void and
+   the bank must be gated like the rest. This is the line gBetween would have
+   failed at b41111e. */
+function exemptVerdict(row) {
+  if (!row.withNumber) return null;
+  return `exempt but its stem prints a number on ${(100 * row.withNumber / row.seen).toFixed(1)}% of draws - the options are not the whole of the data, so the ordering is NOT the question`;
 }
 for (const g of GENS) {
   if (g.topic !== 'p3numbers') continue;
   const row = rankBank(g.fn);
   if (!row.seen) continue;                       /* not a numeric four-option bank */
   row.name = g.name; row.lvl = g.level;
-  row.exempt = MAGNITUDE_EXEMPT.test(row.stem);
-  row.err = row.exempt ? null : rankVerdict(row);
+  row.exempt = MAGNITUDE_EXEMPT.has(g.topic + '.' + g.name);
+  row.err = row.exempt ? exemptVerdict(row) : rankVerdict(row);
   rankRows.push(row);
   if (row.err) failures++;
 }
@@ -2756,6 +2808,100 @@ let rankControl = 'the v2 gSubError option set was not rejected by the rank gate
   const ctl = rankBank(v2SubError);
   const verdict = rankVerdict(ctl);
   if (verdict) rankControl = `the v2 gSubError rebuild goes red - ${verdict}`;
+  else failures++;
+}
+/* the second negative control: the v3 gBetween option set, which the stem-word
+   regex exempted and which "pick the third smallest" answered on 100% of draws.
+   Rebuilt from its own arithmetic, it must come out RED through the same ruler
+   that now runs over the real bank. */
+let betweenControl = 'the v3 gBetween option set was not rejected by the rank gate';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v3Between = () => {
+    for (let g = 0; g < 400; g++) {
+      const lo = rnd(1200, 8600), hi = lo + rnd(40, 700);
+      if (hi - lo <= 30) continue;
+      const key = lo + rnd(10, hi - lo - 10);
+      const below = lo - rnd(5, 300), above = hi + rnd(5, 300), far = lo - rnd(400, 900);
+      const opts = [key, below, above, far];
+      if (new Set(opts).size !== 4 || opts.some(v => v < 1 || v > 9999)) continue;
+      return { q: `Which number is between ${lo} and ${hi}?`, choices: opts.map(String), answerText: String(key), correct: 0 };
+    }
+    return { q: 'v3 gBetween control', choices: ['1', '2', '3', '4'], answerText: '2', correct: 0 };
+  };
+  const ctl = rankBank(v3Between);
+  const verdict = rankVerdict(ctl);
+  if (verdict) betweenControl = `the v3 gBetween option set goes red - ${verdict}`;
+  else failures++;
+}
+
+/* ---------- LENGTH-RANK GATE (third-pass W4, 2026-09-15) --------------------
+   RULE C above measures the key's length against the longest distractor ON ONE
+   DRAW, and only upwards: it fails a key more than 1.4x the longest wrong
+   answer. RULE D caps the maximum. Neither looks DOWN, and neither looks ACROSS
+   DRAWS - so gAddConcept, the pool-1 flagship of this topic, shipped a key that
+   was the uniquely SHORTEST of its four options on 20,000 / 20,000 draws at a
+   margin of exactly one character, and the second pass's line "no generator has a
+   readable shortest-option tell" was true only by that one character.
+
+   This is the other direction and the other axis. For every four-option bank in
+   the topic it draws 2,000 items and counts how often the key is the uniquely
+   shortest option, and how often it is the uniquely longest. Either at 90% or
+   more is a deterministic tell a child can learn without the mathematics, and
+   fails the topic. Below that it is reported, because a bank drifting towards it
+   is worth seeing before it arrives.
+
+   Negative control: the v2 gAddConcept option set, rebuilt here from its own
+   strings so the control does not depend on the topic file still containing the
+   defect. It must come out RED. --- */
+const LEN_N = 2000, LEN_CAP = 0.90;
+const lenRows = [];
+function lenBank(draw) {
+  let n = 0, uShort = 0, uLong = 0;
+  for (let i = 0; i < LEN_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return { n, uShort, uLong, threw: e.message }; }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !(q.correct >= 0)) continue;
+    const L = opts.map(o => o.length);
+    const lo = Math.min.apply(null, L), hi = Math.max.apply(null, L);
+    if (L.filter(x => x === lo).length === 1 && L[q.correct] === lo) uShort++;
+    if (L.filter(x => x === hi).length === 1 && L[q.correct] === hi) uLong++;
+    n++;
+  }
+  return { n, uShort, uLong };
+}
+function lenVerdict(row) {
+  if (!row.n) return null;
+  if (row.uShort / row.n >= LEN_CAP) return `the key is the uniquely SHORTEST option on ${(100 * row.uShort / row.n).toFixed(1)}% of draws`;
+  if (row.uLong / row.n >= LEN_CAP) return `the key is the uniquely LONGEST option on ${(100 * row.uLong / row.n).toFixed(1)}% of draws`;
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = lenBank(g.fn);
+  if (!row.n) continue;
+  row.name = g.name; row.lvl = g.level;
+  row.err = lenVerdict(row);
+  lenRows.push(row);
+  if (row.err) failures++;
+}
+let lenControl = 'the v2 gAddConcept option set was not rejected by the length gate';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v2AddConcept = () => {
+    const s = rnd(12, 18), keep = s % 10;
+    const opts = [
+      'Write ' + keep + ', carry 1 ten into the tens column.',
+      'Write ' + s + ' in the ones column, carry nothing.',
+      'Write ' + keep + ', carry 1 ten into the hundreds column.',
+      'Write 1, carry ' + keep + ' tens into the tens column.'
+    ];
+    return { q: 'v2 gAddConcept control', choices: opts, answerText: opts[0], correct: 0 };
+  };
+  const ctl = lenBank(v2AddConcept);
+  const verdict = lenVerdict(ctl);
+  if (verdict) lenControl = `the v2 gAddConcept option set goes red - ${verdict}`;
   else failures++;
 }
 
@@ -2871,18 +3017,32 @@ for (const r of rows) {
   console.log(pad(r.topic, 12) + pad(r.name, 18) + pad(r.skill, 12) + pad(r.n, 7) + pad(r.distinct, 10) + pad(r.cov + '%', 9) + (r.err ? 'FAIL  ' + r.err : 'pass'));
 }
 if (rankRows.length) {
-  console.log(`\nMAGNITUDE RANK  p3numbers, ${RANK_N} draws per numeric bank  (any rank <= ${Math.round(RANK_CAP * 100)}%, smallest/largest < ${Math.round(EXTREME_CAP * 100)}%)\n`);
+  console.log(`\nMAGNITUDE RANK  p3numbers, ${RANK_N} draws per numeric bank  (every rank ${Math.round(RANK_FLOOR * 100)}-${Math.round(RANK_CAP * 100)}%, smallest/largest < ${Math.round(EXTREME_CAP * 100)}%)\n`);
   console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('SMALLEST', 10) + pad('2nd', 8) + pad('3rd', 8) + pad('LARGEST', 9) + 'RESULT');
   console.log('-'.repeat(84));
   for (const r of rankRows) {
     const f = r.tally.map(t => (100 * t / r.seen).toFixed(1) + '%');
     console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.seen, 7) + pad(f[0], 10) + pad(f[1], 8) + pad(f[2], 8) + pad(f[3], 9) +
-      (r.err ? 'FAIL  ' + r.err : (r.exempt ? 'exempt: the ordering of the options IS the question' : 'pass')));
+      (r.err ? 'FAIL  ' + r.err : (r.exempt ? 'exempt (allowlisted by name): no number in the stem on any of ' + r.seen + ' draws, so the options ARE the data' : 'pass')));
   }
   const gated = rankRows.filter(r => !r.exempt).length;
   console.log('');
-  if (rankRows.every(r => !r.err)) console.log(`ok   magnitude rank: ${gated} numeric banks inside ${Math.round(RANK_CAP * 100)}% / ${Math.round(EXTREME_CAP * 100)}%, ${rankRows.length - gated} comparison anchors exempt`);
+  if (rankRows.every(r => !r.err)) console.log(`ok   magnitude rank: ${gated} numeric banks inside ${Math.round(RANK_FLOOR * 100)}-${Math.round(RANK_CAP * 100)}% / ${Math.round(EXTREME_CAP * 100)}%, ${rankRows.length - gated} comparison anchors exempt by name and re-checked`);
   console.log(`${/goes red/.test(rankControl) ? 'ok  ' : 'FAIL'} magnitude negative control: ${rankControl}`);
+  console.log(`${/goes red/.test(betweenControl) ? 'ok  ' : 'FAIL'} magnitude negative control: ${betweenControl}`);
+}
+if (lenRows.length) {
+  console.log(`\nLENGTH RANK  p3numbers, ${LEN_N} draws per bank  (the key uniquely shortest OR uniquely longest on < ${Math.round(LEN_CAP * 100)}% of draws)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('uSHORTEST', 12) + pad('uLONGEST', 11) + 'RESULT');
+  console.log('-'.repeat(84));
+  for (const r of lenRows) {
+    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) +
+      pad((100 * r.uShort / r.n).toFixed(1) + '%', 12) + pad((100 * r.uLong / r.n).toFixed(1) + '%', 11) +
+      (r.err ? 'FAIL  ' + r.err : 'pass'));
+  }
+  console.log('');
+  if (lenRows.every(r => !r.err)) console.log(`ok   length rank: ${lenRows.length} banks, no key uniquely shortest or uniquely longest on ${Math.round(LEN_CAP * 100)}% of draws`);
+  console.log(`${/goes red/.test(lenControl) ? 'ok  ' : 'FAIL'} length negative control: ${lenControl}`);
 }
 
 console.log('');

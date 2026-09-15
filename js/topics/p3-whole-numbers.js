@@ -60,9 +60,17 @@
  * distractors through slipSet(), so named slips land on BOTH sides of the key and
  * the key's rank among the four printed numbers moves from draw to draw.
  * tools/gen-sanity.mjs ranks all 2,000 draws of every numeric bank in the topic
- * and fails it if any rank takes more than 45%, or if "pick the smallest" or
- * "pick the largest" clears 40%. The comparison anchors (greatest / smallest /
- * between) are exempt and say so: there the ordering IS the question.
+ * and fails it if any rank takes more than 45%, if "pick the smallest" or "pick
+ * the largest" clears 40%, or if any rank falls below 12% (third pass, W3: a
+ * rank at 0% is a free elimination, worth +8.3 points to a guesser on 100% of
+ * draws). TWO banks are exempt - gGreatest and gSmallest - and they are
+ * allowlisted BY NAME, with the premise of the exemption re-measured on every
+ * draw: their stems carry no number at all (0.00% of 20,000 draws), so the four
+ * options ARE the data and "the greatest is the largest one" is the mathematics.
+ * gBetween used to ride the same exemption on a stem-word regex, and "pick the
+ * third smallest" answered it on 100.00% of draws while the gate printed it as
+ * impossible (third pass, KILL). Its stem carries both bounds on 100% of draws;
+ * it is gated like everything else now.
  *
  * SCOPE (MOE Oct 2025, P3 p.35). Numbers up to 10 000: 1.1 counting in hundreds
  * and thousands, 1.2 number notation / representations / place values,
@@ -130,6 +138,17 @@
     if (!ok(correct)) return false;
     return cands.every(ok) && allDistinct([correct].concat(cands));
   }
+  /* RULE C in tools/gen-sanity.mjs fails a key printed more than 1.4x as wide as
+     the longest distractor, and "pick the option with the odd number of digits"
+     is a strategy a child can run on sight. Most banks here draw four 4-digit
+     numbers and cannot trip either. The two banks whose named slips can collapse
+     to one or two digits (gStandsCompare's "compared the digits" family,
+     gMentalMake's "the amount moved") check here that at least one distractor is
+     printed at the key's own width, so the key is never the only wide option. */
+  function sameWidth(correct, cands){
+    const w = String(correct).length;
+    return cands.some(c => String(c).length === w);
+  }
 
   /* ---- MAGNITUDE RANK (second-pass KILL, 2026-09-15) -------------------
      The v2 gSubError rebuild was answered on 97.67% of draws by "pick the
@@ -148,23 +167,62 @@
      cannot be found, which is the caller's signal to redraw.
 
      tools/gen-sanity.mjs ranks every numeric bank in this topic over 2,000
-     draws and fails the topic if any one rank takes more than 45% of them, or
-     if "pick the smallest" or "pick the largest" clears 40%. The comparison
-     anchors (greatest / smallest / between) are exempt and say so: there the
-     ordering of the options IS the question. */
-  function slipSet(key, family){
+     draws and fails the topic if any one rank takes more than 45% of them, if
+     "pick the smallest" or "pick the largest" clears 40%, or - third pass, W3 -
+     if any rank falls BELOW 12%. A rank at 0% is as much a tell as a rank at
+     100%: it tells the child which option to cross out, and crossing one out
+     takes a guesser from 25% to 33.3% on every draw. The gate is now two-sided
+     and every family below carries slips on BOTH sides for that reason.
+
+     Third pass, W1. `minGap` forbids any slip closer to the key than the
+     SMALLEST PLACE VALUE THE ITEM TESTS. v3 added `ans +- step/10` to the two
+     counting banks, and on the step === 10 branch step/10 is 1: a distractor one
+     away from a 4-digit key is a proofreading trap on a phone, not a question
+     about tens. Nothing in the harness was asked about it (optsOk only checks
+     distinctness), so it is a constructor argument here.
+
+     Third pass, W2. `keepOne` names a set of slips of which exactly ONE is
+     guaranteed to be offered. gPatternMissing declared an anti-shortcut guard
+     ("at least two options are NOT printed in the stem") that held on every draw
+     and still left the compound "keep the options that end in the digits the run
+     holds constant, then drop anything already printed" with a single survivor -
+     always the key - on 44.65% of draws. The guard is now the stronger one the
+     wound asked for: one distractor that is ON the pattern's grid (so it
+     survives the trailing-digit test) and is NOT a printed term. keepOne holds
+     candidates on both sides of the key, so forcing one does not pin the rank.
+
+     The comparison anchors gGreatest and gSmallest are exempt from the rank gate
+     and NOTHING else is: see tools/gen-sanity.mjs, which now allowlists them by
+     NAME and re-checks the premise of the exemption on every draw. gBetween used
+     to be exempt by a stem-word regex and was answered by "pick the third
+     smallest" on 100.00% of draws. */
+  function slipSet(key, family, opt){
+    opt = opt || {};
+    const minGap = opt.minGap || 0;
     if (!ok(key)) return null;
     const seen = new Set([key]);
+    const usable = v => ok(v) && !seen.has(v) && Math.abs(v - key) >= minGap;
+    /* the guaranteed survivor, drawn from whichever candidates this draw allows */
+    let kept = null;
+    if (opt.keepOne){
+      const live = opt.keepOne.filter(usable);
+      if (!live.length) return null;
+      kept = pick(live);
+      seen.add(kept);
+    }
     const below = [], above = [];
     for (const v of family){
-      if (!ok(v) || seen.has(v)) continue;
+      if (!usable(v)) continue;
       seen.add(v);
       (v < key ? below : above).push(v);
     }
-    const lo = Math.max(0, 3 - above.length), hi = Math.min(3, below.length);
+    const need = kept === null ? 3 : 2;
+    const lo = Math.max(0, need - above.length), hi = Math.min(need, below.length);
     if (lo > hi) return null;
     const r = ri(lo, hi);                       /* how many slips land below the key */
-    return shuffle(shuffle(below).slice(0, r).concat(shuffle(above).slice(0, 3 - r)));
+    const out = shuffle(below).slice(0, r).concat(shuffle(above).slice(0, need - r));
+    if (kept !== null) out.push(kept);
+    return shuffle(out);
   }
 
   /* Numeric MC whose three distractors are all AUTHORED misconceptions. Stamps
@@ -368,16 +426,27 @@ function gStandsCompare(){
     d = digits4();
     i = ri(0,2); j = ri(i+1, 3);
     const vi = d[i]*POW[i], vj = d[j]*POW[j];
+    /* W3, third pass: the slips below the key were thin - the key was the
+       smallest of the four on 10.02% of 20,000 draws - because two of them
+       collapse onto each other whenever the two columns are adjacent. Comparing
+       the digits and then reading the answer back in EITHER column is two more
+       genuine slips below the key, and reading the second digit one column to its
+       RIGHT is one more above. */
     cands = d[i] > d[j] ? slipSet(vi - vj, [
       d[i] - d[j],                /* compared the digits, not what they are worth */
+      (d[i] - d[j])*POW[i],       /* ...then read that in the FIRST digit's column */
+      (d[i] - d[j])*POW[j],       /* ...then read that in the SECOND digit's column */
       vi - d[j]*POW[j-1],         /* read the second digit one column to its left */
+      vi - d[j]*POW[j+1],         /* read the second digit one column to its right */
+      vi + d[j]*POW[j-1],         /* ...and added it on instead of taking it off */
       vj,                         /* gave the second value on its own */
       vi,                         /* gave the first value on its own */
       vi + vj,                    /* added the two values instead of comparing them */
       vi - d[j]                   /* took the digit off the value */
     ]) : null;
     g++;
-  } while (g < 200 && !(d[i] > d[j] && cands && optsOk(d[i]*POW[i] - d[j]*POW[j], cands)));
+  } while (g < 200 && !(d[i] > d[j] && cands && optsOk(d[i]*POW[i] - d[j]*POW[j], cands) &&
+           sameWidth(d[i]*POW[i] - d[j]*POW[j], cands)));
   const n = numOf(d), vi = d[i]*POW[i], vj = d[j]*POW[j], ans = vi - vj;
   return mcNum('In ' + n + ', how much more does the digit ' + d[i] + ' stand for than the digit ' +
     d[j] + '?', '', ans, cands, '',
@@ -600,24 +669,55 @@ function gSmallest(){
     'hundreds next: ' + worst + ' is the smallest.');
 }
 
-/* FORMAT 4 - between two numbers (pool 2, 2 steps: check both ends) */
+/* FORMAT 4 - between two numbers (pool 2, 2 steps: check both ends)
+
+   KILL (Sweep p3numbers Refutation, THIRD pass, 2026-09-15). This bank was
+   answered by "pick the third smallest of the four options" on 20,000 / 20,000
+   draws - 100.00%, no reading of either bound, no comparison, no arithmetic -
+   and the magnitude gate printed it as EXEMPT, "there the ordering IS the
+   question". It was not: the question lives in the two bounds the stem prints on
+   100% of draws, and the key's rank was a by-product of how the distractors were
+   drawn. All three sat BELOW or ABOVE by construction - `far = lo - ri(400,900)`
+   is always further below `lo` than `below = lo - ri(5,300)`, so the sorted order
+   was always far < below < key < above. The generator was byte-identical back to
+   b41111e; what was new at c099275 was the gate line certifying the class as
+   impossible here.
+
+   The fix is the one the rest of this file already uses. Three out-of-range
+   distractors are drawn on BOTH sides of the range - a near miss and two further
+   out on each side - and how many of them land below the range is drawn
+   uniformly from 0 to 3, so the key's rank among the four printed numbers is
+   flat by construction (25% at each position, gated at 45%/12% like every other
+   numeric bank in the topic). Whichever side is used, its NEAR miss is always
+   offered, so the item still cannot be settled by one glance at one bound: a
+   distractor sits just outside the range it is asked about.
+
+   `lo` also starts at 1900 rather than 1200 so that the furthest-below distractor
+   (lo - 900) is still a 4-digit number. It used to print a 3-digit option on
+   6.37% of draws - recorded by the third pass as a note, closed here because it
+   costs one number. */
 function gBetween(){
-  let lo = 3450, hi = 3520, key = 3480, below = 3400, above = 3600, far = 2900, g = 0;
+  let lo = 3450, hi = 3520, key = 3480, cands = [3400, 3600, 2900], g = 0;
   do {
-    lo = ri(1200, 8600);
+    lo = ri(1900, 8300);                       /* hi + 900 <= 9999, lo - 900 >= 1000 */
     hi = lo + ri(40, 700);
     key = lo + ri(10, hi - lo - 10);
-    below = lo - ri(5, 300);
-    above = hi + ri(5, 300);
-    far = lo - ri(400, 900);
+    /* near miss first on each side: the option a child who checks only ONE end
+       will take. The rest are further out, so the four printed numbers still
+       spread across the line rather than bunching on one side of the range. */
+    const belows = [lo - ri(5, 150), lo - ri(160, 400), lo - ri(410, 900)];
+    const aboves = [hi + ri(5, 150), hi + ri(160, 400), hi + ri(410, 900)];
+    const r = ri(0, 3);                        /* how many distractors land BELOW the range */
+    cands = belows.slice(0, r).concat(aboves.slice(0, 3 - r));
     g++;
   } while (g < 200 && !(hi - lo > 30 && key > lo && key < hi &&
-           optsOk(key, [below, above, far]) &&
-           [below, above, far].every(v => v <= lo || v >= hi)));
-  return mcSet('Which number is <b>between</b> ' + lo + ' and ' + hi + '?', '', key, [below, above, far],
+           optsOk(key, cands) &&
+           cands.every(v => v < lo || v > hi)));
+  return mcSet('Which number is <b>between</b> ' + lo + ' and ' + hi + '?', '', key, cands,
     lo + ' is smaller than ' + key + ' and ' + key + ' is smaller than ' + hi + ', so ' + key +
     ' sits between them. Put the two end numbers on a line in your head and check the new number ' +
-    'against BOTH of them - one check is never enough.');
+    'against BOTH of them - one check is never enough. Every wrong answer sits outside the range, ' +
+    'they are not all on the same side of it, and one of them misses by only a little.');
 }
 
 /* FORMAT 5 - order four numbers (pool 3, 2 steps) */
@@ -719,22 +819,44 @@ function gPattern4(){
   /* the draw range is set so that EVERY named distractor also lands inside
      1..9999 - a distractor filtered out for being out of scope would let
      finishNum pad, and the padding branch is what the authored contract bans. */
-  const start = up ? ri(1000, MAXN - 6*step) : ri(1000 + 6*step, MAXN);
+  const start = up ? ri(1000, MAXN - 7*step) : ri(1000 + 7*step, MAXN);
   const terms = [0,1,2,3,4].map(k => start + k*s);
   const ans = start + 5*s;
-  /* the first three slips all land on the same side of the key for a given
-     direction (two below counting on, two above counting back), which is why the
-     key was rank 2 on every "count on" draw and rank 1 on every "count back" one.
-     The last two put the jump in the right column and slip a place in the column
-     to its right, one each way, so the sides are populated whichever way the
-     pattern runs. */
-  const cands = slipSet(ans, [
-    terms[4] + s/10,      /* counted on in the next-smaller unit */
-    terms[4] + 2*s,       /* took two jumps instead of one */
-    terms[4] - s,         /* jumped the wrong way */
-    ans + step/10,        /* took the jump, then one more in the smaller column */
-    ans - step/10         /* took the jump, then one back in the smaller column */
-  ]);
+  /* W1 (Sweep p3numbers Refutation, THIRD pass, 2026-09-15). v3 put `ans +-
+     step/10` in this family to populate both sides of the key. On the step === 10
+     branch step/10 is 1, so a distractor sat EXACTLY ONE away from a 4-digit key
+     on 31.75% of draws - a proofreading trap on a phone, not a question about
+     counting in tens. Worse, it handed the item away: `ans +- 1` and
+     `terms[4] + s/10` are the only options that break the trailing digits the
+     printed run holds constant, and everything else on offer was already printed,
+     so "keep what matches the run's last digits, drop what is already on the
+     page" left exactly one survivor - always the key - on 50.01% of draws, with
+     no arithmetic at all. (0.00% at cc2d326; this was a v3 regression and nothing
+     measured it either way.)
+
+     Every slip is now a whole number of JUMPS or a jump taken in the wrong
+     COLUMN, and none is closer to the key than the smallest place value this item
+     tests - 10 for a tens run, 10 for a hundreds run (the next-smaller-unit slip),
+     100 for a thousands run. That kills the near-miss and the trailing-digit
+     shortcut in the same stroke: with every option sitting on the run's own grid,
+     the trailing digits no longer separate the key from anything.
+
+     The offsets are symmetric about the key, so the rank stays flat whichever way
+     the pattern runs. */
+  const fam = [
+    ans + s,              /* took two jumps instead of one */
+    ans - s,              /* never took the last jump - the number already printed */
+    ans + 2*s,            /* took three jumps */
+    ans - 2*s,            /* jumped the wrong way from the last number */
+    ans + 10*s,           /* made the jump in the column to the LEFT */
+    ans - 10*s            /* the same slip, the other way */
+  ];
+  if (step >= 100){       /* the next-smaller unit is still a whole place value */
+    fam.push(terms[4] + s/10,   /* counted on from the last number in the smaller unit */
+             ans + step/10,     /* took the jump, then one more in the smaller column */
+             ans - step/10);    /* took the jump, then one back in the smaller column */
+  }
+  const cands = slipSet(ans, fam, { minGap: Math.max(10, step/10) });
   return mcNum('Count ' + (up ? 'on' : 'back') + ' in <b>' + STEP_WORD[step] +
     '</b>. What number comes next? <b>' + terms.join(', ') + ', ?</b>', '', ans, cands, '',
     'Each jump ' + (up ? 'adds' : 'takes away') + ' ' + step + ': ' + terms[3] + ' ' + (up ? '+' : '−') +
@@ -748,16 +870,25 @@ function gMoreLess(){
   const step = pick([10, 100, 1000]);
   const dir = pick(['more','less']);
   const sg = dir === 'more' ? 1 : -1;
-  /* range set so all three named distractors stay inside 1..9999 (see gPattern4) */
-  const n = dir === 'more' ? ri(1000 + step, MAXN - 2*step) : ri(1000 + 2*step, MAXN - step);
+  /* range set so all the named distractors stay inside 1..9999 (see gPattern4) */
+  const n = dir === 'more' ? ri(1000 + step, MAXN - 3*step) : ri(1000 + 3*step, MAXN - step);
   const ans = n + sg*step;
-  const cands = slipSet(ans, [
-    n + sg*(step/10),   /* moved the column to the right of the one asked for */
-    n - sg*step,        /* went the wrong way */
-    n + sg*2*step,      /* moved two places along instead of one */
-    ans + step/10,      /* moved the right column, then slipped one in the next */
-    ans - step/10       /* the same slip, the other way */
-  ]);
+  /* W1, third pass: the same `step/10` regression as gPattern4 - a distractor one
+     away from a 4-digit key on 32.08% of draws when the step was 10. Same fix:
+     whole steps and whole columns only, nothing closer to the key than the
+     smallest place value the item tests, symmetric about the key. */
+  const fam = [
+    ans + step,         /* took the step twice */
+    ans - step,         /* never took it - the number you were given back again */
+    ans + 2*step,       /* took it three times */
+    ans - 2*step,       /* went the wrong way */
+    ans + 10*step,      /* moved the column to the LEFT of the one asked for */
+    ans - 10*step       /* the same slip, the other way */
+  ];
+  if (step >= 100){     /* the column to the RIGHT is still a whole place value */
+    fam.push(ans + step/10, ans - step/10);
+  }
+  const cands = slipSet(ans, fam, { minGap: Math.max(10, step/10) });
   return mcNum('What number is ' + step + ' ' + dir + ' than ' + n + '?', '', ans, cands, '',
     n + ' ' + (dir === 'more' ? '+ ' : '− ') + step + ' = ' + ans + '. Only the ' + STEP_WORD[step] +
     ' digit changes, unless it rolls over and takes the digit on its left with it.');
@@ -792,14 +923,37 @@ function gPatternMissing(){
      given direction they all land on the same side of the key - the key was rank
      1 on every ascending draw and rank 2 on every descending one. The family now
      carries the column slip both ways and the jump made one column too far left,
-     so the key's position moves. */
+     so the key's position moves.
+
+     W2 (Sweep p3numbers Refutation, THIRD pass, 2026-09-15). The declared guard
+     above - "at least two of the four options are numbers NOT printed in the
+     stem" - held on 20,000 / 20,000 draws and was still not enough. The
+     trailing-digit test removes the survivors: every `+- s/10` slip breaks the
+     digits the printed run holds constant, and everything else on offer was
+     already on the page, so the compound "keep what matches the run's last
+     digits, then drop anything already printed" left exactly one option - always
+     the key - on 44.65% of draws, with no pattern work at all. (100.00% at
+     cc2d326; v3's slipSet more than halved it without anyone measuring it.)
+
+     The guard is now the one the wound asked for, and it is a guarantee rather
+     than a tendency: keepOne forces exactly one distractor that BOTH sits on the
+     pattern's own grid (so the trailing-digit test cannot touch it) AND is not a
+     printed term. Two of its four candidates are in scope on every draw - the
+     term after the end of the run and the term before its start - and they sit on
+     opposite sides of the key, so the guarantee does not pin the rank. */
   const cands = slipSet(terms[gap], [
     terms[gap-1],            /* copied the number just before the gap */
     terms[gap] + s/10,       /* added the jump one column to the right */
     terms[gap] - s/10,       /* the same slip, taken off instead of added */
     terms[gap-1] + 2*s,      /* took two jumps instead of one */
-    terms[gap] + 10*s        /* made the jump one column too far to the left */
-  ]);
+    terms[gap] + 10*s,       /* made the jump one column too far to the left */
+    terms[gap] - 10*s        /* the same slip, the other way */
+  ], { minGap: 10, keepOne: [
+    terms[4] + s,            /* carried the pattern PAST the end instead of filling the gap */
+    terms[0] - s,            /* counted back BEFORE the start instead of on to the gap */
+    terms[gap] + 10*s,       /* the jump one column too far to the left */
+    terms[gap] - 10*s        /* the same slip, the other way */
+  ] });
   return mcNum('What is the <b>missing number</b> in this pattern? <b>' + shown.join(', ') + '</b>',
     '', terms[gap], cands, '',
     'Nobody tells you the jump, so find it from two numbers that sit next to each other: ' +
@@ -870,14 +1024,26 @@ function gPatternOdd(){
            Math.floor(terms[bi] / 1000) === Math.floor((start + bi*s) / 1000) &&
            uniqueFit(terms) === bi));
   const odd = terms[bi];
-  const rest = terms.filter((_, i) => i !== bi);
+  /* W3, third pass. The three distractors used to be a random 3 of the 5 other
+     printed terms, which makes the key's rank among the four options a function
+     of WHERE the break landed: with the break interior, the odd term was the
+     smallest of the four on 12.51% of draws and the largest on 12.37%, against
+     25% for a flat bank. The rank gate now has a floor as well as a ceiling, and
+     this bank is inside it by construction instead of by luck: the number of
+     distractors drawn from BELOW the odd term is drawn uniformly from whatever
+     this break allows, exactly as slipSet does for the authored banks. */
+  const lower = terms.filter((v, i) => i !== bi && v < odd);
+  const upper = terms.filter((v, i) => i !== bi && v > odd);
+  const rLo = Math.max(0, 3 - upper.length), rHi = Math.min(3, lower.length);
+  const nBelow = ri(rLo, rHi);
+  const rest = shuffle(lower).slice(0, nBelow).concat(shuffle(upper).slice(0, 3 - nBelow));
   /* the worked pair must be two terms that BOTH sit on the pattern and are next
      to each other on the page */
   const j = bi <= 1 ? 2 : 0;
   const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
   const into = Math.abs(terms[bi] - terms[bi-1]), outOf = Math.abs(terms[bi+1] - terms[bi]);
   return mcSet('One number does <b>not belong</b> in this pattern. Which one is it? <b>' +
-    terms.join(', ') + '</b>', '', odd, shuffle(rest).slice(0, 3),
+    terms.join(', ') + '</b>', '', odd, rest,
     'Most of the jumps are the same size: ' + terms[j] + ' ' + (up ? '+' : '−') + ' ' + step + ' = ' +
     terms[j+1] + ', so the pattern counts ' + (up ? 'on' : 'back') + ' in ' + step +
     's. Follow that jump from the start and the ' + ORD[bi] + ' number should be ' + (start + bi*s) +
@@ -900,15 +1066,31 @@ function gAddConcept(){
          (a % 10) + (b % 10) !== 10));
   const s = (a % 10) + (b % 10), keep = s % 10;
   /* §6 of the refutation: the old key ran to 68 characters against a bank maximum
-     of 48, and this is a pool-1 item every child meets. Every option now lands in
-     42-46 characters with the concept intact, and gen-sanity caps p3numbers
-     options at 48. */
-  const key = 'Write ' + keep + ', carry 1 ten into the tens column.';
+     of 48, and this is a pool-1 item every child meets. Every option was brought
+     inside 42-46 characters with the concept intact, and gen-sanity caps
+     p3numbers options at 48.
+
+     W4 (Sweep p3numbers Refutation, THIRD pass, 2026-09-15). That rewrite left
+     the key the UNIQUELY SHORTEST of the four options on 20,000 / 20,000 draws -
+     42 characters against 43, 43 and 46 - on the flagship pool-1 item, in the one
+     direction nothing in the harness measured (RULE C fails a key more than 1.4x
+     the longest distractor; the ceiling caps the maximum; neither looks down).
+     The margin was one character, so it was not readable today - it was one word
+     away from being readable, and deterministic.
+
+     `keep` is always one digit and `s` always two, so these four lengths are
+     fixed on every draw: 47, 48, 47, 48. The key ties a distractor at the
+     minimum, so it is never the uniquely shortest option and never the uniquely
+     longest one, and the spread is one character. tools/gen-sanity.mjs now
+     measures both directions across the bank and fails a key that is uniquely
+     shortest (or uniquely longest) on 90% of draws, with the old option set as
+     its negative control. */
+  const key = 'Write ' + keep + ', then carry 1 ten into the tens column.';
   return mcText('When you add ' + a + ' + ' + b + ', the ones column makes ' + s +
     '. <b>What happens next?</b>', '', key, shuffle([
-      'Write ' + s + ' in the ones column, carry nothing.',
-      'Write ' + keep + ', carry 1 ten into the hundreds column.',
-      'Write 1, carry ' + keep + ' tens into the tens column.'
+      'Write ' + s + ' in the ones column, then carry nothing.',
+      'Write ' + keep + ' and carry 1 ten to the hundreds column.',
+      'Write 1, then carry ' + keep + ' tens into the tens column.'
     ]),
     s + ' is ' + keep + ' ones and 1 ten. The ones column only has room for ones, so the ' + keep +
     ' stays there and the ten moves one place to the LEFT, into the tens column. That move is what ' +
@@ -943,14 +1125,23 @@ function gAddRegroup(){
 function gSubRegroup(){
   let a = 5042, b = 1867, cols = [], key = 3175, cands = null, g = 0;
   do {
-    a = ri(2000, MAXN); b = ri(1000, a - 1000);
+    a = ri(3000, MAXN); b = ri(1000, a - 2000);   /* key >= 2000, so key - 1000 is still a 4-digit option */
     key = a - b; cols = borrowCols(a, b);
     /* a regrouping kept that was not needed lands above the answer, one lost
        lands below it, and the family carries both for every borrowing column -
-       the old three slips were two above and one below on every single draw. */
+       the old three slips were two above and one below on every single draw.
+
+       W3, third pass: that still left only |cols| slips below the key against
+       |cols| + 1 above, so on the many draws with exactly two borrowing columns
+       the key could not be the largest of the four - "pick the largest" was
+       eliminable on 93.4% of draws (rank 3 took 6.64% of 20,000). The
+       below-the-key slip is now drawn for EVERY column, not only the borrowing
+       ones: taking one from the column on the left in a column that could already
+       take away is the mirror misconception of forgetting to reduce the column
+       you did borrow from, and it is just as common on paper. */
     cands = cols.length >= 2 ? slipSet(key,
       [smallFromBig(a, b)].concat(cols.map(c => key + POW[c] * 10))
-                          .concat(cols.map(c => key - POW[c] * 10))) : null;
+                          .concat([1, 2, 3].map(c => key - POW[c] * 10))) : null;
     g++;
   } while (g < 200 && !(cols.length >= 2 && ok(key) && smallFromBig(a, b) !== key &&
            cands && optsOk(key, cands)));
@@ -965,11 +1156,11 @@ function gSubRegroup(){
 function gMissingAddend(){
   let a = 1278, total = 4021, key = 2743, cols = [], cands = null, g = 0;
   do {
-    total = ri(2000, MAXN); a = ri(1000, total - 1000);
+    total = ri(3000, MAXN); a = ri(1000, total - 2000);   /* key >= 2000: see gSubRegroup */
     key = total - a; cols = borrowCols(total, a);
     cands = cols.length >= 2 ? slipSet(key,          /* both sides, per column: see gSubRegroup */
       [smallFromBig(total, a)].concat(cols.map(c => key + POW[c] * 10))
-                              .concat(cols.map(c => key - POW[c] * 10))) : null;
+                              .concat([1, 2, 3].map(c => key - POW[c] * 10))) : null;
     g++;
   } while (g < 200 && !(cols.length >= 2 && ok(key) && smallFromBig(total, a) !== key &&
            cands && optsOk(key, cands)));
@@ -995,11 +1186,19 @@ function gMentalMake(){
     key = b - mv;
     /* "forgot to compensate" and "compensated the wrong way" both land above the
        key, which is why it was the second-smallest of the four on 97.8% of draws.
-       Compensating twice, and the amount moved itself, land below it. */
-    cands = slipSet(key, [b, b + mv, b + 2*mv, mv, b - 2*mv]);
+       Compensating twice, and the amount moved itself, land below it.
+
+       W3, third pass: two below and three above is not the same as flat. The key
+       was NEVER the largest of the four - 0.00% of 20,000 draws - so a child
+       could cross the biggest number out without doing any mental arithmetic,
+       which is +8.3 points to a guesser on every draw. (gTwoStepWord's mirror of
+       this was declared and argued in the file; this one was not mentioned
+       anywhere.) `b - 10` is the third slip below the key: a child who moves a
+       whole ten across instead of the `mv` the round-up actually needs. */
+    cands = slipSet(key, [b, b + mv, b + 2*mv, mv, b - 2*mv, b - 10]);
     g++;
   } while (g < 200 && !(a % 10 !== 0 && key >= 2 && (round - a) !== key &&
-           cands && optsOk(key, cands)));
+           cands && optsOk(key, cands) && sameWidth(key, cands)));
   const moved = round - a;
   return mcNum(who + ' works out ' + a + ' + ' + b + ' in ' + (pron === 'He' ? 'his' : 'her') +
     ' head. ' + pron + ' makes ' + round + ' first. ' + a + ' + ' + b + ' = ' + round + ' + ?', '',
@@ -1067,11 +1266,11 @@ function gSubError(){
   const kid = pick(KIDS), who = kid[0], pron = kid[1];
   let a = 4003, b = 1568, key = 2435, claim = 3565, cols = [], cands = null, g = 0;
   do {
-    a = ri(2000, MAXN); b = ri(1000, a - 1000);
+    a = ri(3000, MAXN); b = ri(1000, a - 2000);   /* key >= 2000: see gSubRegroup */
     key = a - b; claim = smallFromBig(a, b); cols = borrowCols(a, b);
     cands = cols.length >= 2 ? slipSet(key,
       [claim].concat(cols.map(c => key + POW[c] * 10))
-             .concat(cols.map(c => key - POW[c] * 10))) : null;
+             .concat([1, 2, 3].map(c => key - POW[c] * 10))) : null;
     g++;
   } while (g < 200 && !(cols.length >= 2 && ok(key) && ok(claim) && claim !== key &&
            cands && optsOk(key, cands)));
@@ -1098,20 +1297,29 @@ function gTwoStepWord(){
   let first = 2145, more = 480, key = 4770, cands = null, g = 0;
   do {
     more = ri(120, 900);
-    /* the range is set so that BOTH over-counting slips stay inside the ceiling;
-       a slip filtered out for being out of scope would leave the key pinned at
-       one end of the four printed numbers. */
-    first = ri(1000, Math.floor((MAXN - more) / 3));
+    /* the range is set so that ALL THREE over-counting slips stay inside the
+       ceiling; a slip filtered out for being out of scope would leave the key
+       pinned at one end of the four printed numbers. */
+    first = ri(1000, Math.floor((MAXN - 2*more) / 3));
     key = first + (first + more);
     /* stopping early and losing the "more" both land below the total, so the key
        was the second-largest of the four on every draw. Counting a month twice
-       lands above it. */
+       lands above it.
+
+       W3, third pass: three slips below and two above still left the key NEVER
+       the smallest of the four - 0.00% of 20,000 draws. The file declares and
+       argues that shape ("every slip that stops early lands below the total"),
+       and the argument is sound as far as it goes, but a declared free
+       elimination is still a free elimination. `key + second` is the third slip
+       above: a child who works out both months correctly and then adds this
+       month's total on top of the two-month answer. */
     cands = slipSet(key, [
       first + more,        /* stopped after step 1 */
       first * 2,           /* forgot that this month sold more */
       first + 2*more,      /* added the difference instead of last month's total */
       key + more,          /* counted the extra a second time */
-      key + first          /* counted last month twice over */
+      key + first,         /* counted last month twice over */
+      key + first + more   /* added this month's total on top of the answer */
     ]);
     g++;
   } while (g < 200 && !(ok(key) && ok(first + more) && cands && optsOk(key, cands)));
@@ -1134,13 +1342,21 @@ function gBackFromTotal(){
     gave = ri(300, 2200); got = ri(150, 1200); now = ri(2500, 5000);
     key = now + gave - got;
     /* "undid the buying only" and "took both away" land below the start, "undid
-       nothing" and "undid both the wrong way" land above it. */
+       nothing" and "undid both the wrong way" land above it.
+
+       W3, third pass: whether the fifth slip landed above or below the key
+       depended on whether `got` beat `gave`, which it rarely does, so the key was
+       the smallest of the four on only 7.04% of 20,000 draws. Two more slips -
+       one each side, neither depending on the draw - make three a side on every
+       draw: undoing a step TWICE is the same misconception in both directions. */
     cands = slipSet(key, [
-      now + got - gave,     /* undid both steps the wrong way round */
-      now + gave + got,     /* put both back instead of undoing the buy */
-      now + gave,           /* undid the giving away and stopped */
-      now - got,            /* undid the buying and stopped */
-      now - got - gave      /* took both away instead of undoing them */
+      now + got - gave,        /* undid both steps the wrong way round */
+      now + gave + got,        /* put both back instead of undoing the buy */
+      now + gave,              /* undid the giving away and stopped */
+      now + 2*gave - got,      /* put the given-away back twice over */
+      now - got,               /* undid the buying and stopped */
+      now + gave - 2*got,      /* took the bought ones off twice over */
+      now - got - gave         /* took both away instead of undoing them */
     ]);
     g++;
   } while (g < 300 && !(ok(key) && gave !== got && 2*gave !== got && cands && optsOk(key, cands)));

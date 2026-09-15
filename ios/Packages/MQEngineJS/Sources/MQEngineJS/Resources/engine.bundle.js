@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260915-b2d1275 */
-/* ENGINE_BUILD_META {"stamp":"20260915-b2d1275","date":"2026-09-15","sha":"b2d1275","dirty":false,"payloadHash":"412822f28d42fbc4","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260915-b2d1275","date":"2026-09-15","sha":"b2d1275","dirty":false,"payloadHash":"412822f28d42fbc4","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260915-908ec7e */
+/* ENGINE_BUILD_META {"stamp":"20260915-908ec7e","date":"2026-09-15","sha":"908ec7e","dirty":false,"payloadHash":"9f693ba70ef2fe4e","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260915-908ec7e","date":"2026-09-15","sha":"908ec7e","dirty":false,"payloadHash":"9f693ba70ef2fe4e","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -1211,10 +1211,33 @@ var buildSetFor = MQI.buildSetFor;
  * by design; what the audit killed was one anchor being the WHOLE skill in all
  * three pools, which is no longer true of any of them.
  *
+ * POOL 3 DEMAND, COUNTED HONESTLY: 7 of the 10 pool-3 slots ask a second solving
+ * step. THREE DO NOT, and they are declared here rather than counted as two-step:
+ *   - gAddSubP2h - the single-step fluency anchor (above);
+ *   - gAddSubError - "... gets 35. What is 55 - 36?" - one subtraction, framed by
+ *     a named misconception that is an excellent distractor but not a step;
+ *   - gMulError   - "... says 4 x 9 = 40. What is 4 x 9?" - one table fact, same.
+ * The v2 rewrite of those last two asked for the slip AND the result, which the
+ * second-pass refutation measured as answerable with NO arithmetic at all in
+ * 20,000 of 20,000 draws each: the stem prints one fixed misconception, so the
+ * true diagnosis was one fixed English clause and a child could learn the phrase.
+ * Both are back to their v1 questions (2026-09-15, KILL B). The number in the
+ * lane note is 7 of 10, not 9 of 10; a one-operation item with a named-mistake
+ * premise is still worth setting, and it is not a second step.
+ *
  * DISTRACTOR CONTRACT: every numeric item goes through mcNum with exactly three
  * NAMED misconceptions, and the draw is rejected (optsOk) unless all three are
  * positive, whole and distinct from the key and from each other - so q.authored
  * is stamped on every draw and finishNum's padding branch never fires.
+ * KEY VALUE RANK (2026-09-15, second-pass WOUND 3): three named slips that all
+ * land on ONE side of the key fix the key's position in the sorted option list,
+ * and a child can then win by sorting four numbers. Every numeric bank now hands
+ * ranked() a POOL of named slips with candidates on BOTH sides, and the draw
+ * picks a target rank from the ranks that pool can actually field. Asserted by
+ * the rank gate in tools/gen-sanity.mjs: no rank may hold more than 45% of a
+ * bank's draws. gCompareNum is the one documented exemption - "which is the
+ * greatest?" makes the key the extremum BY DEFINITION, so its rank is the
+ * question, not a tell.
  * Every WORD-ANSWER item goes through mcText, which stamps q.optionSet with the
  * four option strings the generator authored; the harness fails any draw that
  * ships an option outside that set (refutation fix 2026-09-15, WOUND 2 - the
@@ -1254,6 +1277,46 @@ function optsOk(correct, cands){
     s.add(c);
   }
   return true;
+}
+/* RANK-BALANCED NAMED DISTRACTORS (refutation second pass 2026-09-15, WOUND 3).
+   The named-misconception recipe has a cost nothing used to look at: three slips
+   that all land ABOVE the key (or all below it) put the key at the same position
+   in the sorted option list on every single draw, and "sort the four numbers and
+   take the third" then beats the mathematics. It did, on eight banks, in 20,000
+   of 20,000 draws each.
+
+   Every numeric bank now authors a POOL of named slips with candidates on BOTH
+   sides of the key. ranked() drops anything that is not a positive whole number
+   inside the P2 range or that collides with the key or with a slip already
+   taken, works out which target ranks the surviving pool can actually field, and
+   picks one of those ranks at random. Pool ORDER is preference order, so the
+   slip a bank's explanation names by hand is the first one taken on its side.
+   Returns null when the pool cannot field three distinct slips, which is the
+   caller's signal to redraw. */
+function ranked(correct, pool){
+  if (!Number.isInteger(correct) || correct <= 0) return null;
+  const lo = [], hi = [], seen = new Set([correct]);
+  for (const c of pool){
+    if (!Number.isInteger(c) || c <= 0 || c > 1000 || seen.has(c)) continue;
+    seen.add(c);
+    (c < correct ? lo : hi).push(c);
+  }
+  const ok = [];
+  for (let r = 0; r <= 3; r++) if (lo.length >= r && hi.length >= 3 - r) ok.push(r);
+  if (!ok.length) return null;
+  const r = pick(ok);
+  return lo.slice(0, r).concat(hi.slice(0, 3 - r));
+}
+/* The slips every column algorithm produces, named once and used by every bank:
+   one or two out in the ones column (a finger miscounted), and a whole ten - or,
+   on a three-digit key, a whole hundred - out because a carry or a borrow went
+   missing or went twice. They are real P2 answers, and they exist on both sides
+   of the key on purpose. Listed AFTER a bank's own slips so they only fill the
+   side the bank's own misconceptions leave empty. */
+function nearSlips(key){
+  const s = [key - 1, key + 1, key - 10, key + 10, key - 2, key + 2];
+  if (key >= 100) s.push(key - 100, key + 100);
+  return s;
 }
 /* Numeric MC whose distractors are all authored misconceptions. */
 function mcNum(stem, extra, correct, cands, unit, explain){
@@ -1321,15 +1384,24 @@ const kid = () => pick(KIDS);
    Was the entire p2/bonds skill in all three pools; it is now one voice in six
    and sits in pool 1 only. */
 function gBonds(){
-  let target = 100, a = 1, U = 10, r = 1, cands = [], g = 0;
+  let target = 100, a = 1, U = 10, r = 1, cands = null, g = 0;
   do {
     target = pick([10, 20, 100, 1000]);
     U = target === 1000 ? 100 : 10;
     a = target === 1000 ? 10 * ri(10, 99) : ri(1, target - 1);
     r = a % U;
-    cands = [a, target - a + 2 * r, target - (a - r)];
+    const k = target - a;
+    /* named slips, preference order: the part that was GIVEN; took the tens away
+       and added the ones back; added instead of taking away; took only the tens
+       away; took the ones away twice; one whole ten (or hundred) too many, or
+       too few, taken. Then the generic column slips fill whichever side is thin. */
+    cands = (r !== 0 && (target <= 20 || a > U))
+      ? ranked(k, [a, target - a + 2 * r, target + a, k + r, k - r, k - U, k + U]
+                    .concat(nearSlips(k)))
+      : null;
     g++;
-  } while (g < 400 && !(r !== 0 && (target <= 20 || a > U) && optsOk(target - a, cands)));
+  } while (g < 400 && !(cands && optsOk(target - a, cands)));
+  if (!cands) { target = 100; a = 35; U = 10; r = 5; cands = [35, 75, 70]; }
   const key = target - a;
   const slip = target <= 20
     ? 'The usual slip is to ADD the two numbers instead of taking one away, which gives ' + (target + a) + '.'
@@ -1411,17 +1483,24 @@ function gBondError(){
      always 1000 + 2r - a number above the P2 range, printed in the stem. Making
      1000 still ships in gBonds, gBondWord and gBondDiagnose, where nothing
      printed exceeds 1000. */
-  let T = 100, a = 35, r = 5, claim = 75, cands = [], g = 0;
+  let T = 100, a = 35, r = 5, claim = 75, cands = null, g = 0;
   do {
     T = pick([20, 100]);
     const U = 10;
     a = ri(1, T - 1);
     r = a % U;
     claim = T - a + 2 * r;
-    cands = [claim, T - (a - r), a + claim];
+    const k0 = T - a;
+    /* named slips: the claim itself; took only the tens away; the printed check
+       total; then the generic column slips, which is what puts candidates BELOW
+       the key - every one of the three original slips sat above it, so the key
+       was the smallest number on screen in 20,000 of 20,000 draws. */
+    cands = (r !== 0 && (T <= 20 || a > 10) && claim !== k0 && claim !== a)
+      ? ranked(k0, [claim, T - (a - r), a + claim].concat(nearSlips(k0)))
+      : null;
     g++;
-  } while (g < 400 && !(r !== 0 && (T <= 20 || a > 10) &&
-           claim !== T - a && claim !== a && optsOk(T - a, cands)));
+  } while (g < 400 && !(cands && optsOk(T - a, cands)));
+  if (!cands) { T = 100; a = 35; r = 5; claim = 75; cands = [75, 70, 110]; }
   const k = kid();
   const key = T - a;
   /* REFUTATION FIX (2026-09-15, WOUND 5): the explanation named a slip that
@@ -1451,15 +1530,19 @@ const BOND_CTX = [
   ['tickets', 'MRT station office']
 ];
 function gBondWord(){
-  let T = 100, A = 30, B = 20, cands = [], g = 0;
+  let T = 100, A = 30, B = 20, cands = null, g = 0;
   do {
     T = pick([100, 1000]);
     const step = T === 1000 ? 10 : 1;
     A = step * ri(Math.floor(10 / step) + 1, Math.floor((T * 0.5) / step));
     B = step * ri(Math.floor(10 / step) + 1, Math.floor((T * 0.4) / step));
-    cands = [A + B, T - A, T - B];
+    const k0 = T - A - B;
+    /* named slips: stopped after step 1; forgot the second lot; forgot the first
+       lot. All three sit above the key, so the column slips supply the ones below. */
+    cands = (k0 > 12) ? ranked(k0, [A + B, T - A, T - B].concat(nearSlips(k0))) : null;
     g++;
-  } while (g < 400 && !(T - A - B > 0 && optsOk(T - A - B, cands)));
+  } while (g < 400 && !(cands && optsOk(T - A - B, cands)));
+  if (!cands) { T = 100; A = 30; B = 20; cands = [50, 70, 80]; }
   const c = pick(BOND_CTX), k = kid();
   const key = T - A - B;
   return mcNum(k[0] + ' needs ' + T + ' ' + c[0] + ' for the ' + c[1] + '. ' + k[1] + ' already has ' + A +
@@ -1477,40 +1560,55 @@ function gBondDiagnose(){
   /* REFUTATION FIX (2026-09-15, WOUND 2): this bank used to fall through to an
      arithmetic padding loop (S ± 1, S ± 2, …) whenever the named alternates did
      not survive the 1000 ceiling, which is exactly the unauthored distractor the
-     numeric banks are forbidden from shipping. The wrong options are now three
-     NAMED slips - never added at all, dropped a carry, measured the gap from the
-     wrong end - and a draw that cannot field three of them is thrown away. */
+     numeric banks are forbidden from shipping.
+
+     REFUTATION FIX (second pass 2026-09-15, WOUND 4): the rebuilt bank still gave
+     two of its four options away for nothing. "They make T, so nothing is wrong."
+     was on screen in 20,000 of 20,000 draws and was the key in 0 of them, and the
+     key's printed sum was never the smallest of the three numeric options - so a
+     child who never added anything was down to two options, 50% for free. Both
+     legs are gone:
+       - the odd "nothing is wrong" option is deleted. All four options are now
+         the same sentence, and all four land on the SAME side of the whole as
+         the truth does, so the direction word carries no information either and
+         a draw can never make the key the only option reading "too many";
+       - the three wrong sums go through ranked(), so the key's position in the
+         sorted option list is uniform instead of fixed.
+     What is left is four honest readings of one addition, and the child has to
+     do the addition. The named slips are a carry dropped or added, two tens out,
+     and one or two out in the ones column. */
   const word = dd => dd > 0 ? 'too many' : 'too few';
   const lineFor = (sum, whole) =>
     'They make ' + sum + ', which is ' + Math.abs(sum - whole) + ' ' + word(sum - whole) + '.';
-  let T = 100, A = 30, B = 80, off = 10, wrongs = [], g = 0;
+  let T = 100, A = 30, B = 100, off = 30, wrongs = [], g = 0;
   do {
     T = pick([100, 1000]);
     const step = T === 1000 ? 50 : 5;
-    off = T === 1000 ? pick([50, 100, 150]) : pick([10, 20, 30]);
+    /* the gap is big enough that a slip of one or two ones, or of a whole ten,
+       still lands on the truth's side of the whole (see `sameSide`). */
+    off = T === 1000 ? -pick([150, 200, 250]) : pick([30, 40, 50]);
     /* SCOPE (own 2,000-draw scan, 2026-09-15): at T = 1000 the pair may only
        fall SHORT. A pair that overshoots would print a sum above 1000 in the
        option list, which is outside the P2 number range. At T = 100 both
-       directions are drawn, and both directions appear among the options on
-       every draw, so nothing about the item gives the direction away. */
+       directions are drawn. */
     if (T !== 1000 && Math.random() < 0.5) off = -off;
-    if (T === 1000) off = -off;
-    A = step * ri(1, Math.floor((T * 0.7) / step));
-    B = T + off - A;
+    const S0 = T + off;
+    A = step * ri(1, Math.floor(S0 / step) - 1);
+    B = S0 - A;
     wrongs = [];
-    if (A > 0 && B > 0 && off !== 0 && A + B === T + off && A <= 1000 && B <= 1000){
-      const S0 = A + B, d0 = Math.abs(off), carry = T === 1000 ? 100 : 10;
-      const seen = new Set([S0, T]);
-      const named = [S0 - carry, S0 + carry, S0 - d0, S0 + d0, S0 - 2 * d0, S0 + 2 * d0];
-      wrongs = ['They make ' + T + ', so nothing is wrong.'];
-      for (const v of named){
-        if (wrongs.length >= 3) break;
-        if (v > 0 && v <= 1000 && !seen.has(v)) { seen.add(v); wrongs.push(lineFor(v, T)); }
-      }
-      if (wrongs.length !== 3) wrongs = [];
+    if (A > 0 && B > 0 && A + B === S0 && S0 <= 1000 && T - A > 0){
+      const sameSide = v => Number.isInteger(v) && v > 0 && v <= 1000 &&
+                            v !== T && (v > T) === (S0 > T);
+      const sel = ranked(S0, [S0 - 10, S0 + 10, S0 - 20, S0 + 20, S0 - 1, S0 + 1,
+                              S0 - 2, S0 + 2, S0 - 100, S0 + 100].filter(sameSide));
+      if (sel) wrongs = sel.map(v => lineFor(v, T));
     }
     g++;
   } while (g < 400 && wrongs.length !== 3);
+  if (wrongs.length !== 3){
+    T = 100; A = 60; B = 70; off = 30;
+    wrongs = [lineFor(120, T), lineFor(140, T), lineFor(131, T)];
+  }
   const S = A + B;
   const key = lineFor(S, T);
   const k = kid();
@@ -1544,7 +1642,7 @@ function smallerFromLarger(x, y){
   return out;
 }
 function gAddSubP2(max, mustRegroup){
-  let a = 5, b = 3, add = true, cands = [], g = 0;
+  let a = 5, b = 3, add = true, cands = null, g = 0;
   do {
     add = Math.random() < 0.5;
     /* the addition draw is bounded so the "wrote the carried ten twice"
@@ -1552,16 +1650,24 @@ function gAddSubP2(max, mustRegroup){
     if (add){ a = ri(2, max - 2); b = ri(1, Math.max(1, max - a - (max > 20 ? 10 : 0))); }
     else { a = ri(3, max); b = ri(1, a - 1); }
     const key = add ? a + b : a - b;
-    cands = add ? [a + b + 10, a + b - 10, Math.abs(a - b)]
-                : [a - b + 10, a - b - 10, (a + b <= max ? a + b : smallerFromLarger(a, b))];
+    /* named slips. ADD: the carry written twice / dropped; subtracted instead;
+       one of the two numbers answered on its own; one of them added twice.
+       SUBTRACT: the borrow dropped / taken twice; added instead; the smaller
+       digit taken from the larger in every column; nothing taken away at all;
+       the number taken away answered instead; it taken away twice.
+       Both lists straddle the key, and nearSlips fills any side left thin.
+       No option may print above 1000 (the top of the P2 number range) - ranked()
+       drops those, which is also what kept 1000 − 477 from offering 1477. */
+    cands = (key >= 3) ? ranked(key, (add
+      ? [key + 10, key - 10, Math.abs(a - b), a, b, key + a, key + b]
+      : [key + 10, key - 10, a + b, smallerFromLarger(a, b), a, b, key - b]
+      ).concat(nearSlips(key))) : null;
     const regroups = add ? (a % 10) + (b % 10) >= 10 : (b % 10) > (a % 10);
     g++;
     if (mustRegroup && !regroups) continue;
-    /* no option may print above 1000: that is the top of the P2 number range,
-       and the smaller-from-larger fallback can otherwise land on 1477 for
-       1000 − 477 (own scan, 2026-09-15). */
-    if (optsOk(key, cands) && cands.every(v => v <= 1000)) break;
+    if (cands && optsOk(key, cands)) break;
   } while (g < 400);
+  if (!cands) { add = true; a = 7; b = 8; cands = [25, 5, 1]; }
   const key = add ? a + b : a - b;
   if (add) {
     return mcNum(a + ' + ' + b + ' = ?', '', key, cands, '',
@@ -1605,15 +1711,19 @@ function gRegroupConcept(){
 /* FORMAT 2.4 - mental strategy: add a near-ten by adding the ten and giving
    some back (pool 2, 2 steps). MOE P2 mental calculation. */
 function gNearTen(){
-  let a = 38, b = 9, round = 10, d = 1, cands = [], g = 0;
+  let a = 38, b = 9, round = 10, d = 1, cands = null, g = 0;
   do {
     b = pick([8, 9, 18, 19, 28, 29]);
     round = b + (10 - (b % 10));
     d = round - b;
     a = ri(b + 2, 99 - round);
-    cands = [a + round, a + b - 2 * d, a - b];
+    /* named slips: forgot to give the d back; gave it back twice; subtracted
+       instead of adding; then the column slips on the thin side. */
+    cands = ranked(a + b, [a + round, a + b - 2 * d, a - b, a + round + d]
+                            .concat(nearSlips(a + b)));
     g++;
-  } while (g < 400 && !(a > b && a + round < 100 && optsOk(a + b, cands)));
+  } while (g < 400 && !(a > b && a + round < 100 && cands && optsOk(a + b, cands)));
+  if (!cands) { a = 38; b = 9; round = 10; d = 1; cands = [48, 45, 29]; }
   const k = kid();
   return mcNum(k[0] + ' works out ' + a + ' + ' + b + ' by adding ' + round +
     ' and then taking some away. <b>What is ' + a + ' + ' + b + '?</b>', '',
@@ -1627,15 +1737,21 @@ function gNearTen(){
    sentence rather than as "137 + ? = 265", so the child has to build the
    subtraction themselves. */
 function gAddSubInverse(){
-  let P = 137, W = 265, cands = [], g = 0;
+  let P = 137, W = 265, cands = null, g = 0;
   do {
     /* P + W is the "added instead of taking away" distractor and it is the one
        that matters on an inverse item, so the draw is bounded to keep it inside
        the P2 number range (own scan, 2026-09-15). */
     P = ri(101, 300); W = ri(P + 20, 1000 - P);
-    cands = [P + W, smallerFromLarger(W, P), W - P + 10];
+    /* named slips: added the two given numbers; took the smaller digit from the
+       larger in every column; dropped the borrow. All three land above the key,
+       so the column slips supply the ones below it. */
+    cands = ranked(W - P, [P + W, smallerFromLarger(W, P), W - P + 10]
+                            .concat(nearSlips(W - P)));
     g++;
-  } while (g < 400 && !((P % 10) > (W % 10) && W - P > 0 && P + W <= 1000 && optsOk(W - P, cands)));
+  } while (g < 400 && !((P % 10) > (W % 10) && W - P > 0 && P + W <= 1000 &&
+           cands && optsOk(W - P, cands)));
+  if (!cands) { P = 137; W = 265; cands = [402, 138, 127]; }
   return mcNum('A number is added to ' + P + '. The answer is ' + W + '. <b>What is the number?</b>', '',
     W - P, cands, '',
     'Adding put the number IN, so taking away gets it back out: ' + W + ' − ' + P + ' = ' + (W - P) +
@@ -1644,38 +1760,41 @@ function gAddSubInverse(){
     'sense check a seven-year-old can make on their own.');
 }
 
-/* FORMAT 2.7 - error spotting, DIAGNOSE AND CORRECT (pool 3, 2 steps).
+/* FORMAT 2.7 - error spotting, correct the mistake (pool 3, ONE step - a
+   DECLARED POOL-3 ANCHOR, see the header).
    The named misconception is the commonest column-subtraction bug in P2: taking
    the SMALLER digit from the LARGER in each column instead of renaming.
    The oracle re-derives the printed claim from that rule and fails if the claim
    is not actually what that mistake produces.
 
-   REFUTATION FIX (2026-09-15, WOUND 3): the question used to be "What is a − b?"
-   - a bare subtraction in 2,000 of 2,000 draws, so a child who ignored the story
-   got the key in one operation and the slot counted as ONE step, not two. Each
-   option now carries BOTH halves - the slip that was made and the result it
-   gives - so the item cannot be answered without doing the diagnosis as well as
-   the arithmetic, the way gPeriError earned its two steps in the depth pilot.
-   optsOk still binds: the four printed results are distinct positive whole
-   numbers, so no two options can print the same answer. */
+   REFUTATION FIX (second pass 2026-09-15, KILL B): the v2 rewrite asked "What
+   went wrong, and what is a − b?" with every option carrying both halves, and
+   counted the slot as two-step. It was worse than the one-step item it replaced:
+   the stem prints ONE fixed misconception, so the true diagnosis was the single
+   English clause "The ones were subtracted the wrong way round." in 20,000 of
+   20,000 draws, and a child who read no numbers at all and picked the remembered
+   phrase was right every time. A worksheet is seen once; this generator is
+   served to the same child every few minutes, and what that trains is phrase
+   recognition. The question is back to the bare subtraction it asked at 4f75943.
+   The slot is counted as ONE step in the lane note and in this file's header. */
 function gAddSubError(){
-  let a = 52, b = 27, claim = 35, cands = [], g = 0;
+  let a = 52, b = 27, claim = 35, cands = null, g = 0;
   do {
     a = ri(31, 99); b = ri(12, a - 11);
     claim = smallerFromLarger(a, b);
-    cands = [claim, a - b - 10, (Math.floor(a / 10) - Math.floor(b / 10)) * 10];
+    /* named slips: the printed claim itself (the smaller-from-larger bug); a ten
+       renamed when none was needed; the ones column skipped altogether. The last
+       two straddle the key, and nearSlips fills in below it. */
+    cands = ranked(a - b, [claim, a - b - 10, (Math.floor(a / 10) - Math.floor(b / 10)) * 10]
+                            .concat(nearSlips(a - b)));
     g++;
   } while (g < 400 && !((b % 10) > (a % 10) && Math.floor(a / 10) > Math.floor(b / 10) &&
-           claim !== a - b && optsOk(a - b, cands)));
+           claim !== a - b && cands && optsOk(a - b, cands)));
+  if (!cands) { a = 52; b = 27; claim = 35; cands = [35, 15, 30]; }
   const k = kid();
-  const tensOnly = (Math.floor(a / 10) - Math.floor(b / 10)) * 10;
-  const say = (slip, n) => slip + ' ' + a + ' − ' + b + ' = ' + n + '.';
-  return mcText(k[0] + ' works out ' + a + ' − ' + b + ' in columns and gets ' + claim +
-    '. <b>What went wrong, and what is ' + a + ' − ' + b + '?</b>', '',
-    say('The ones were subtracted the wrong way round.', a - b),
-    [say('Nothing went wrong; the working is correct.', claim),
-     say('A ten was renamed when none was needed.', a - b - 10),
-     say('The ones column was skipped altogether.', tensOnly)],
+  return mcNum(k[0] + ' works out ' + a + ' − ' + b + ' in columns and gets ' + claim +
+    '. <b>What is ' + a + ' − ' + b + '?</b>', '',
+    a - b, cands, '',
     'In the ones column ' + (a % 10) + ' − ' + (b % 10) + ' will not go, so ' + k[0] +
     ' turned it round and did ' + (b % 10) + ' − ' + (a % 10) + ' instead. That is the mistake. Rename ' +
     'one ten instead: ' + (a % 10) + ' becomes ' + ((a % 10) + 10) + ' ones, ' + ((a % 10) + 10) + ' − ' +
@@ -1687,12 +1806,16 @@ function gAddSubError(){
 const HAVE_CTX = [['marbles', 'the void deck'], ['stickers', 'the school fair'],
                   ['beads', 'the craft corner'], ['cards', 'the canteen swap']];
 function gAddSubWord(){
-  let A = 245, B = 178, C = 134, cands = [], g = 0;
+  let A = 245, B = 178, C = 134, cands = null, g = 0;
   do {
     A = ri(110, 420); B = ri(60, 330); C = ri(40, Math.min(A - 10, 240));
-    cands = [A + B, A + B + C, A - C];
+    /* named slips: stopped after step 1; added the giving-away instead of taking
+       it; forgot the buying. The first two sit above the key, the third below. */
+    cands = ranked(A + B - C, [A + B, A + B + C, A - C].concat(nearSlips(A + B - C)));
     g++;
-  } while (g < 400 && !(A + B + C <= 1000 && A + B - C > 0 && A - C > 0 && optsOk(A + B - C, cands)));
+  } while (g < 400 && !(A + B + C <= 1000 && A + B - C > 0 && A - C > 0 &&
+           cands && optsOk(A + B - C, cands)));
+  if (!cands) { A = 245; B = 178; C = 134; cands = [423, 557, 111]; }
   const c = pick(HAVE_CTX), k = kid();
   const key = A + B - C;
   return mcNum(k[0] + ' had ' + A + ' ' + c[0] + ' and bought ' + B + ' more. ' + k[1] + ' then gave away ' +
@@ -1720,12 +1843,16 @@ function gAddSubWord(){
    flagged in its section 6). The stem is byte-identical to gMul's, so the
    shared "a × b = ?" oracle still binds. */
 function gMulP2(tables){
-  let a = 2, b = 2, cands = [], g = 0;
+  let a = 2, b = 2, cands = null, g = 0;
   do {
     a = pick(tables); b = ri(2, 10);
-    cands = [a * b + a, a * b - a, a + b];
+    /* named slips: stopped one count late / one count early; added the two
+       numbers; one group of the wrong size; two counts late / early. */
+    cands = ranked(a * b, [a * b + a, a * b - a, a + b, a * b + b, a * b - b,
+                           a * (b + 2), a * (b - 2)].concat(nearSlips(a * b)));
     g++;
-  } while (g < 400 && !optsOk(a * b, cands));
+  } while (g < 400 && !(cands && optsOk(a * b, cands)));
+  if (!cands) { a = 3; b = 4; cands = [15, 9, 7]; }
   return mcNum(a + ' × ' + b + ' = ?', '', a * b, cands, '',
     a + ' × ' + b + ' = ' + (a * b) + ' means ' + b + ' groups of ' + a + '. Count in ' + a + 's: ' +
     Array.from({ length: Math.min(b, 5) }, (_, i) => a * (i + 1)).join(', ') + '… and stop on the ' +
@@ -1744,12 +1871,16 @@ const GROUP_CTX = [
   ['The void deck', 'mats', 'cushions', 'mat']
 ];
 function gGroupsP2(){
-  let a = 4, b = 5, cands = [], g = 0;
+  let a = 4, b = 5, cands = null, g = 0;
   do {
     a = pick([2, 3, 4, 5, 10]); b = ri(2, 10);
-    cands = [a + b, a * b - a, a * b + b];
+    /* named slips: counted the groups instead of what is in them; one group too
+       few / too many; a group of the wrong size; two groups out. */
+    cands = ranked(a * b, [a + b, a * b - a, a * b + b, a * b + a, a * b - b,
+                           a * (b + 2), a * (b - 2)].concat(nearSlips(a * b)));
     g++;
-  } while (g < 400 && !optsOk(a * b, cands));
+  } while (g < 400 && !(cands && optsOk(a * b, cands)));
+  if (!cands) { a = 4; b = 5; cands = [9, 16, 25]; }
   const c = pick(GROUP_CTX);
   return mcNum(c[0] + ' has ' + a + ' ' + c[1] + ' with ' + b + ' ' + c[2] + ' at each ' + c[3] +
     '. <b>How many ' + c[2] + ' are there altogether?</b>', '',
@@ -1767,8 +1898,11 @@ function gSkipCount(){
   const start = a * ri(1, 4);
   const seq = [start, start + a, start + 2 * a, start + 3 * a];
   const last = seq[seq.length - 1], key = last + a;
-  let cands = [last + 1, last + 2 * a, key - 1];
-  if (!optsOk(key, cands)) cands = [last + 1, last + 2 * a, key + 1];
+  /* named slips: counted on by one instead of by a; skipped a count; said the
+     last number again; one short of the right count. */
+  let cands = ranked(key, [last + 1, last + 2 * a, key - 1, key + 1, last,
+                           key + 2 * a, last - 1].concat(nearSlips(key)));
+  if (!cands) cands = [last + 1, last + 2 * a, key - 1];
   const k = kid();
   return mcNum(k[0] + ' counts in ' + a + 's: ' + seq.join(', ') + ', … <b>What number comes next?</b>', '',
     key, cands, '',
@@ -1797,34 +1931,40 @@ function gMulRepeatAdd(){
     'are worth knowing by heart.');
 }
 
-/* FORMAT 3.6 - error spotting, DIAGNOSE AND CORRECT (pool 3, 2 steps).
+/* FORMAT 3.6 - error spotting, correct the mistake (pool 3, ONE step - a
+   DECLARED POOL-3 ANCHOR, see the header).
    The named misconception: skip counting for the answer but saying one number
    too many. The stem PRINTS the count, and the oracle checks the printed count
    really is a, 2a, ... (b+1)a and really does end on the claim - so the item can
    never contradict itself the way the pilot's gLError once did.
 
-   REFUTATION FIX (2026-09-15, WOUND 3): the question used to be "What is a × b?"
-   - a bare table fact in 2,000 of 2,000 draws, answerable without reading the
-   story at all, so the slot was ONE step. Each option now names the slip AND
-   gives the result it produces, so both halves are forced. */
+   REFUTATION FIX (second pass 2026-09-15, KILL B): the v2 rewrite asked "What
+   went wrong, and what is a × b?" with the slip and the result in every option.
+   Because the stem prints one fixed misconception, the true diagnosis was the
+   single clause "One count too many was said." in 20,000 of 20,000 draws - a
+   child who read no numbers and picked the remembered phrase scored 100%. The
+   question is back to the bare table fact it asked at 4f75943, and the slot is
+   counted as ONE step. The premise checks - the printed count really is the a
+   times table, really has b+1 entries, and really ends on the claim - are what
+   make this the strongest item in the file, and they are untouched. */
 function gMulError(){
-  let a = 4, b = 3, cands = [], g = 0;
+  let a = 4, b = 3, cands = null, g = 0;
   do {
     a = pick([2, 3, 4, 5, 10]); b = ri(3, 9);
-    cands = [a * (b + 1), a + b, a * (b - 1)];
+    /* named slips: the claim itself (one count too many); one count too few; the
+       two numbers added rather than counted; two counts out either way. */
+    cands = ranked(a * b, [a * (b + 1), a * (b - 1), a + b, a * (b + 2), a * (b - 2)]
+                            .concat(nearSlips(a * b)));
     g++;
-  } while (g < 400 && !(a * (b + 1) <= 100 && optsOk(a * b, cands)));
+  } while (g < 400 && !(a * (b + 1) <= 100 && cands && optsOk(a * b, cands)));
+  if (!cands) { a = 4; b = 3; cands = [16, 8, 7]; }
   const seq = Array.from({ length: b + 1 }, (_, i) => a * (i + 1));
   const claim = seq[seq.length - 1];
   const k = kid();
-  const say = (slip, n) => slip + ' ' + a + ' × ' + b + ' = ' + n + '.';
-  return mcText(k[0] + ' works out ' + a + ' × ' + b + ' by counting in ' + a + 's: ' + seq.join(', ') +
+  return mcNum(k[0] + ' works out ' + a + ' × ' + b + ' by counting in ' + a + 's: ' + seq.join(', ') +
     '. ' + k[1] + ' says ' + a + ' × ' + b + ' = ' + claim +
-    '. <b>What went wrong, and what is ' + a + ' × ' + b + '?</b>', '',
-    say('One count too many was said.', a * b),
-    [say('Nothing went wrong; the count is right.', claim),
-     say('One count too few was said.', a * (b - 1)),
-     say('The two numbers were added, not counted.', a + b)],
+    '. <b>What is ' + a + ' × ' + b + '?</b>', '',
+    a * b, cands, '',
     'Count the numbers ' + k[0] + ' said, not the size of them: there are ' + (b + 1) + ' of them, but ' +
     a + ' × ' + b + ' needs only ' + b + ' of them. Stop at the ' + ord(b) + ': ' + a + ' × ' + b + ' = ' +
     (a * b) + '. Touching a finger for each count is the fix - one finger per group.');
@@ -1834,14 +1974,20 @@ function gMulError(){
 const PACK_CTX = [['packets', 'packet', 'curry puffs'], ['boxes', 'box', 'kaya toast slices'],
                   ['trays', 'tray', 'buns'], ['bags', 'bag', 'kueh']];
 function gMulTwoStep(){
-  let a = 5, b = 4, c = 3, cands = [], g = 0;
+  let a = 5, b = 4, c = 3, cands = null, g = 0;
   do {
     /* never give away more than half: a P2 word problem that leaves 2 of 10
        reads as a trick rather than a two-step (own read, 2026-09-15). */
     a = ri(2, 9); b = pick([2, 3, 4, 5, 10]); c = ri(2, Math.max(2, Math.floor(a * b / 2)));
-    cands = [a * b, a * b + c, a + b];
+    /* named slips: stopped after step 1; added the giving-away instead of taking
+       it; added the two numbers; gave the lot away twice. */
+    cands = (a * b - c >= 6)
+      ? ranked(a * b - c, [a * b, a * b + c, a + b, a * b - 2 * c]
+                            .concat(nearSlips(a * b - c)))
+      : null;
     g++;
-  } while (g < 400 && !(a * b - c > 0 && optsOk(a * b - c, cands)));
+  } while (g < 400 && !(cands && optsOk(a * b - c, cands)));
+  if (!cands) { a = 5; b = 4; c = 3; cands = [20, 23, 9]; }
   const p = pick(PACK_CTX), k = kid();
   const key = a * b - c;
   return mcNum(k[0] + ' buys ' + a + ' ' + p[0] + ' of ' + p[2] + '. Each ' + p[1] + ' holds ' + b + ' ' +
@@ -1855,12 +2001,19 @@ function gMulTwoStep(){
 /* FORMAT 3.8 - direct division fact, the DECLARED ANCHOR of the div skill
    (pool 1, 1 step). */
 function gDivP2fact(){
-  let a = 5, b = 4, cands = [], g = 0;
+  /* b starts at 3, not 2: with a quotient of 2 there is only one whole number
+     below the key, so the key could never be anything but the smallest or the
+     second smallest option and the rank gate could not be met (2026-09-15). */
+  let a = 5, b = 4, cands = null, g = 0;
   do {
-    a = pick([2, 3, 4, 5, 10]); b = ri(2, 10);
-    cands = [b + 1, b - 1, a];
+    a = pick([2, 3, 4, 5, 10]); b = ri(3, 10);
+    /* named slips: one count too many / too few; answered the number shared
+       BETWEEN instead of how many each got; answered the whole amount; two
+       counts out; answered one. */
+    cands = ranked(b, [b + 1, b - 1, a, a * b, b + 2, b - 2, 1].concat(nearSlips(b)));
     g++;
-  } while (g < 400 && !optsOk(b, cands));
+  } while (g < 400 && !(cands && optsOk(b, cands)));
+  if (!cands) { a = 5; b = 4; cands = [5, 3, 20]; }
   return mcNum((a * b) + ' ÷ ' + a + ' = ?', '', b, cands, '',
     'Turn it into a multiplication: ' + a + ' × ? = ' + (a * b) + '. Count in ' + a + 's until you reach ' +
     (a * b) + ' and see how many counts it took - ' + b + '. So ' + (a * b) + ' ÷ ' + a + ' = ' + b + '.');
@@ -1902,13 +2055,19 @@ function gDivShareP2(){
      of the two factors is itself a P2 table (the other is 1-10 by construction),
      so the whole item stays inside the 2/3/4/5/10 tables end to end. Asserted by
      the p2 scope gate in tools/gen-sanity.mjs, not just scanned. */
-  let gN = 5, each = 4, want = 2, cands = [], g = 0;
+  let gN = 5, each = 4, want = 2, cands = null, g = 0;
   do {
     gN = pick([3, 4, 5, 10]); each = ri(2, 10); want = ri(2, gN - 1);
-    cands = [each, gN * each - want, want * gN];
+    /* named slips: stopped after the sharing and answered ONE share; took the
+       number of sharers off the total; multiplied by the wrong number; one share
+       too many or too few; the whole amount. */
+    cands = (gN > 2 && want < gN && inTables(want, each))
+      ? ranked(want * each, [each, gN * each - want, want * gN, (want + 1) * each,
+                             (want - 1) * each, gN * each].concat(nearSlips(want * each)))
+      : null;
     g++;
-  } while (g < 400 && !(gN > 2 && want < gN && inTables(want, each) &&
-           optsOk(want * each, cands)));
+  } while (g < 400 && !(cands && optsOk(want * each, cands)));
+  if (!cands) { gN = 5; each = 4; want = 2; cands = [4, 18, 10]; }
   const c = pick(SHARE_CTX), k = kid();
   const total = gN * each, key = want * each;
   return mcNum(k[0] + ' shares ' + total + ' ' + c[0] + ' equally among ' + gN + ' ' + c[1] +
@@ -1924,12 +2083,22 @@ function gDivShareP2(){
 const FILL_CTX = [['buns', 'trays', 'tray', 'school canteen'], ['eggs', 'boxes', 'box', 'NTUC storeroom'],
                   ['kueh', 'bags', 'bag', 'hawker stall'], ['books', 'shelves', 'shelf', 'school library']];
 function gDivGroupWord(){
-  let per = 5, groups = 6, filled = 3, cands = [], g = 0;
+  /* filled stops at groups - 3, not groups - 2: a key of 2 leaves only one whole
+     number below it, and the key could then never be anything but the smallest
+     or the second smallest option (rank gate, 2026-09-15). */
+  let per = 5, groups = 6, filled = 3, cands = null, g = 0;
   do {
-    per = pick([2, 3, 4, 5, 10]); groups = ri(5, 10); filled = ri(2, groups - 2);
-    cands = [groups, groups + filled, per * groups - per * filled];
+    per = pick([2, 3, 4, 5, 10]); groups = ri(5, 10); filled = ri(2, groups - 3);
+    /* named slips: forgot the ones already filled; added them instead of taking
+       them away; counted what is INSIDE the containers, not the containers;
+       answered the ones already filled; one container out either way. */
+    cands = (groups - filled >= 3)
+      ? ranked(groups - filled, [groups, groups + filled, per * (groups - filled), filled,
+                                 groups - filled - 2, groups + 1].concat(nearSlips(groups - filled)))
+      : null;
     g++;
-  } while (g < 400 && !(filled >= 2 && groups - filled > 1 && optsOk(groups - filled, cands)));
+  } while (g < 400 && !(filled >= 2 && cands && optsOk(groups - filled, cands)));
+  if (!cands) { per = 5; groups = 6; filled = 2; cands = [6, 8, 20]; }
   const c = pick(FILL_CTX);
   const total = per * groups, key = groups - filled;
   return mcNum('The ' + c[3] + ' has ' + total + ' ' + c[0] + '. Each ' + c[2] + ' holds ' + per + ' ' +
@@ -1958,35 +2127,44 @@ function gDivCheckP2(){
      - the two spare distractors were counted up from 1, so they printed a
        quotient of 3 or less in 2,000 of 2,000 draws and the key was the only
        plausible number in 80.9% of them - the gLPerimDiff class in a value
-       pattern the coarse format-tell rule cannot see. The wrong quotients are now
-       drawn from the same 2-10 band as the key and forced to STRADDLE it, and
-       every option states the verdict its own quotient implies, so no option can
-       be picked out by its value or by its wording. The oracle asserts both. */
+       pattern the coarse format-tell rule cannot see.
+
+     REFUTATION FIX (second pass 2026-09-15, KILL A). The v2 fix drew the three
+     wrong quotients from 2-10 and forced them to STRADDLE the key, and the
+     oracle failed any draw that did not. That straddle IS a value tell, and a
+     required one: the key's quotient was never the smallest and never the
+     largest of the four, in 20,000 of 20,000 draws. Sort the four options by
+     their printed quotient, discard the largest and the smallest, and take the
+     one of the two left that does NOT read "The answer is correct." - that found
+     the key in 15,035 of 20,000 draws (75.2%) with no division done, against 25%
+     chance. Worse, correcting it meant rewriting the oracle branch that had been
+     added to protect it: a gate that encodes the defect.
+
+     The straddle is gone from the draw AND from the oracle. The three wrong
+     quotients are now drawn so that the key's RANK among the four printed
+     quotients is uniform - each of the four positions about a quarter of the
+     time - which is what the rank gate in tools/gen-sanity.mjs asserts, on this
+     bank and on every numeric bank in the file. The claim is still always one of
+     the four printed quotients, so exactly one option reads "correct" on every
+     draw; it is the key in about one draw in four, and a distractor otherwise. */
   const rightKey = Math.random() < 0.25;
   let d = 4, quot = 6, claim = 6, others = [], g = 0;
   do {
     d = pick([2, 3, 4, 5, 10]);
-    quot = ri(3, 9);                  /* leaves room for a wrong quotient on BOTH sides */
-    claim = rightKey ? quot : quot + pick([1, 2, 3]) * (Math.random() < 0.5 ? 1 : -1);
-    others = [];
-    if (claim >= 2 && claim <= 10){
-      const pool = [];
-      for (let n = 2; n <= 10; n++) if (n !== quot && n !== claim) pool.push(n);
-      for (let t = 0; t < 40 && others.length !== 3; t++){
-        const s = shuffle(pool.slice()).slice(0, rightKey ? 3 : 2);
-        const cand = rightKey ? s : [claim].concat(s);
-        const all = cand.concat([quot]);
-        /* (a) the key's quotient is never the only plausible number - a wrong
-           quotient sits above it and another below it; (b) both direction words
-           appear, so the wording alone cannot settle it either. */
-        if (cand.length === 3 &&
-            Math.min.apply(null, cand) < quot && Math.max.apply(null, cand) > quot &&
-            Math.min.apply(null, all) < claim && Math.max.apply(null, all) > claim) others = cand;
-      }
-    }
+    quot = ri(2, 10);
+    const r = ri(0, 3);               /* the key's target rank among the four quotients */
+    const lo = [], hi = [];
+    for (let n = 2; n <= 10; n++) { if (n < quot) lo.push(n); else if (n > quot) hi.push(n); }
+    others = (lo.length >= r && hi.length >= 3 - r)
+      ? shuffle(lo).slice(0, r).concat(shuffle(hi).slice(0, 3 - r))
+      : [];
+    /* the claim has to be ON SCREEN or no option could read "correct" at all:
+       it is the key's own quotient in the rightKey draws and one of the three
+       wrong quotients otherwise. */
+    if (others.length === 3) claim = rightKey ? quot : pick(others);
     g++;
   } while (g < 400 && others.length !== 3);
-  if (others.length !== 3){ d = 5; quot = 6; claim = rightKey ? 6 : 8; others = rightKey ? [4, 7, 9] : [8, 4, 9]; }
+  if (others.length !== 3){ d = 5; quot = 6; claim = rightKey ? 6 : 8; others = [4, 7, 8]; }
   const T = d * quot;
   /* every option is internally coherent: it asserts a quotient and the verdict
      that quotient implies about the claim. Exactly one asserts the true one, and
@@ -2056,12 +2234,19 @@ function gCompareNum(){
 
 /* FORMAT 4.2 - place value in expanded form (pool 1, 1 step). */
 function gPlaceP2(){
-  let h = 4, t = 7, o = 6, cands = [], g = 0;
+  /* t starts at 2: with one ten the only named slips below the key are 1 and the
+     digit itself, which pins the key's rank (rank gate, 2026-09-15). */
+  let h = 4, t = 7, o = 6, cands = null, g = 0;
   do {
-    h = ri(1, 9); t = ri(1, 9); o = ri(1, 9);
-    cands = [t, t * 100, t * 10 + o];
+    h = ri(1, 9); t = ri(2, 9); o = ri(1, 9);
+    /* named slips: wrote the DIGIT instead of what it is worth; read the tens as
+       hundreds; swept the ones up with the tens; one ten too few / too many;
+       took the ones off the tens; wrote the hundreds and the tens together. */
+    cands = ranked(t * 10, [t, t * 100, t * 10 + o, (t - 1) * 10, (t + 1) * 10,
+                            t * 10 - o, h * 100 + t * 10]);
     g++;
-  } while (g < 400 && !(t !== h && t !== o && optsOk(t * 10, cands)));
+  } while (g < 400 && !(t !== h && t !== o && cands && optsOk(t * 10, cands)));
+  if (!cands) { h = 4; t = 7; o = 6; cands = [7, 700, 76]; }
   const W = h * 100 + t * 10 + o;
   return mcNum(W + ' = ' + (h * 100) + ' + ? + ' + o + '. <b>What is the missing number?</b>', '',
     t * 10, cands, '',
@@ -7793,4 +7978,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260915-b2d1275 */
+/* ENGINE_BUILD_END 20260915-908ec7e */

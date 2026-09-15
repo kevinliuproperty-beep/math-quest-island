@@ -323,15 +323,54 @@
       ' + ' + H + ') = ' + (2 * (W + H)) + ' cm. Cutting a rectangular corner changes the area, not the perimeter.');
   }
 
-  /* pool 2: concept check on what the cut does */
+  /* pool 2: concept check on what the cut does.
+
+     SWEEP FRACTIONS REFUTATION 2026-09-15, inherited debt (v6). The old option set
+     keyed "It stays the same." (19 characters) against "It gets smaller." /
+     "It gets bigger." / "It is halved." (16 / 15 / 13), so the key was the unique
+     LONGEST option in 100% of draws and the whole item could be settled with a
+     ruler - the same class as the pilot's own gLPerimDiff kill. The fractions lane
+     found it with its RULE 6 and exempted it by name; this is the fix.
+
+     Three things hold now. (1) ONE GRAMMATICAL FRAME per set: every option in a set
+     is the same kind of sentence about the same subject, so nothing is singled out
+     by form or by opening. (2) BALANCED LENGTH: within a set the four options sit
+     within two characters of each other, and both the longest and the shortest
+     length are SHARED by at least two options, so the key is never the unique
+     longest or the unique shortest. (3) THE FRAME ROTATES: three frames, so the
+     option SET moves between draws instead of being the one fixed quartet a child
+     meets every time. The concept and the three named misconceptions - shorter by
+     the cut, longer by the cut, depends on the size of the cut - are unchanged. */
+  const L_CONCEPT_FRAMES = [
+    { ask: '<b>What happens to the perimeter?</b>',
+      same: 'It stays exactly the same as before.',     /* 36 */
+      shorter: 'It gets shorter by the two cut sides.', /* 37 */
+      longer: 'It gets longer by the two cut sides.',   /* 36 */
+      depends: 'It depends on the size of the corner.', /* 37 */
+      noun: 'perimeter' },
+    { ask: '<b>Which sentence is true of the L-shape?</b>',
+      same: 'The perimeter stays the same as before.',  /* 39 */
+      shorter: 'The perimeter gets shorter than before.', /* 39 */
+      longer: 'The perimeter gets longer than before.', /* 38 */
+      depends: 'The perimeter depends on the cut size.', /* 38 */
+      noun: 'perimeter' },
+    { ask: '<b>What happens to the distance around the outside?</b>',
+      same: 'The distance around it is the same as before.',    /* 45 */
+      shorter: 'The distance around it is shorter by the cut.', /* 45 */
+      longer: 'The distance around it is longer than before.',  /* 45 */
+      depends: 'The distance around it depends on the corner.', /* 45 */
+      noun: 'distance around the outside' }
+  ];
   function gLConcept() {
+    const f = pick(L_CONCEPT_FRAMES);
     return mcText(
       'A rectangular corner is cut out of a rectangle to make an L-shape with right angles at every corner. ' +
-      '<b>What happens to the perimeter?</b>', '',
-      'It stays the same.',
-      ['It gets smaller.', 'It gets bigger.', 'It is halved.'],
+      f.ask, '',
+      f.same,
+      [f.shorter, f.longer, f.depends],
       'The two new sides at the notch are exactly as long as the two pieces removed from the old sides, ' +
-      'so the total walk around is unchanged. The AREA does get smaller: that is the measurement the cut takes away.');
+      'so the ' + f.noun + ' is unchanged however big the cut is. The AREA does get smaller: ' +
+      'that is the measurement the cut takes away.');
   }
 
   /* pool 3: inverse - the area is given, find the missing corner dimension */

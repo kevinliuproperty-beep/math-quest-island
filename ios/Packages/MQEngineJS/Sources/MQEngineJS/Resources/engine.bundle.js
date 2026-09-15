@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260915-e010bde */
-/* ENGINE_BUILD_META {"stamp":"20260915-e010bde","date":"2026-09-15","sha":"e010bde","dirty":false,"payloadHash":"19ebf839b550939b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260915-e010bde","date":"2026-09-15","sha":"e010bde","dirty":false,"payloadHash":"19ebf839b550939b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260915-e61d2e0 */
+/* ENGINE_BUILD_META {"stamp":"20260915-e61d2e0","date":"2026-09-15","sha":"e61d2e0","dirty":false,"payloadHash":"6e70deea88a6ffab","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260915-e61d2e0","date":"2026-09-15","sha":"e61d2e0","dirty":false,"payloadHash":"6e70deea88a6ffab","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -463,7 +463,20 @@ function typedRejectReason(raw, q){
 
   const FEED_RING = 3;        /* fix 2: how many stem shapes back we refuse to repeat */
   const FEED_RETRIES = 8;     /* attempts before we accept a repeat - a one-generator pool must never hang */
-  const FEED_MIN_L3_SKILLS = 3;
+  /* v4 REFUTATION WOUND 1 (2026-09-15), 3 -> 2. The level-3 borrow was written in
+     the Repetition + Demand Audit, BEFORE the wave-3 blocker added the lastGen and
+     lastSkill guards below. Those guards already do the whole job: measured over
+     200 seeds x 30 items at 80% accuracy with the borrow forced off, P(next item
+     repeats the previous generator) is 0.000, P(next item repeats the previous
+     skill) is 0.000 and the worst run is 1, on geometry, tables AND p4area. So at
+     exactly two skills the borrow buys nothing - and it costs: deleting gMissSide
+     took geometry's pool 3 from three skills to two, thinL3 flipped true, and 48.8%
+     of the climb's level-3 turns were served out of pool 2. The depth pilot's two
+     pool-3-only formats (gPeriError, gPeriFence) halved, 20.3% -> 10.3% of a
+     session, and the child met the single-step fluency anchor as the hard question.
+     At ONE skill the carousel really is too short to hide a repeat, so the borrow
+     stays for that case. tools/feed-sim.mjs gates the pool source at level 3. */
+  const FEED_MIN_L3_SKILLS = 2;
 
   /* A skill carousel over one pool: [gen, skill] pairs grouped by skill, cycled in
      a shuffled order that RESHUFFLES on every full cycle (so two sessions do not
@@ -492,14 +505,17 @@ function typedRejectReason(raw, q){
    *
    * LEVEL-3 ALTERNATION RULE. The mastery climb is untouched - still 3 right in a
    * row up, 2 wrong in a row down, capped at pool 3. But that climb pins ~58% of a
-   * session in pool 3, and where pool 3 carries FEWER THAN 3 distinct skills the
-   * carousel is too short to hide a repeat. In that case level 3 alternates a pool
-   * 3 draw with a pool 2 draw. This is deliberate: the audit's fix 3 (purify pool 3
-   * so it holds only generators absent from pools 1 and 2) does the OPPOSITE - it
-   * collapses pool 3 to one or two generators and RAISES the repeat rate to 0.49
-   * with a worst run of 24. Pool 3 cannot be purified until new pool-3 generators
-   * are written, so variety at level 3 is bought by borrowing pool 2, not by
-   * narrowing pool 3.
+   * session in pool 3, and where pool 3 carries FEWER THAN FEED_MIN_L3_SKILLS
+   * distinct skills the carousel is too short to hide a repeat. In that case level 3
+   * alternates a pool 3 draw with a pool 2 draw. This is deliberate: the audit's
+   * fix 3 (purify pool 3 so it holds only generators absent from pools 1 and 2) does
+   * the OPPOSITE - it collapses pool 3 to one or two generators and RAISES the
+   * repeat rate to 0.49 with a worst run of 24. Pool 3 cannot be purified until new
+   * pool-3 generators are written, so variety at level 3 is bought by borrowing pool
+   * 2, not by narrowing pool 3.
+   * The threshold is now 2, not 3 - see FEED_MIN_L3_SKILLS. At two skills the
+   * lastGen/lastSkill guards already hold the repeat rate at 0.000, so the borrow
+   * only diluted the level.
    */
   function createFeed(topic, opts){
     const def = TOPICS[topic];
@@ -1359,6 +1375,25 @@ function gCompareNum(){
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
 
+/* ---- WOUND 3 (v4 refutation, 2026-09-15): the authored-distractor contract ----
+   The v3 pass applied this guard to the two area/perimeter files only, so in THIS
+   file mcNum's padding branch still fired and the harness's distractor-identity
+   contract silently stopped binding: gDivError 25.6% of draws, gDivShare 15.5%,
+   gDoubling 14.0%, gGroups 3.4% (2,000 draws each) dropped a NAMED misconception
+   and shipped `key + 1` in its place. optsOk is the same guard the area/perimeter
+   files use: every named distractor must be a positive integer, distinct from the
+   key and from every other named distractor. A generator that redraws until
+   optsOk passes can never reach the padding branch, so q.authored is stamped on
+   every draw and tools/gen-sanity.mjs's padding gate binds. */
+function optsOk(correct, cands){
+  const s = new Set([correct]);
+  for (const c of cands){
+    if (!Number.isInteger(c) || c <= 0 || s.has(c)) return false;
+    s.add(c);
+  }
+  return true;
+}
+
 function mcNum(stem, extra, correct, cands, unit, explain){
   const seen = new Set([correct]); const d = [];
   for (const c of cands){
@@ -1412,7 +1447,14 @@ const GROUP_CTX = [
   ['The MRT platform has','benches','seats on each bench','seats']
 ];
 function gGroups(){
-  const c=pick(GROUP_CTX), a=pick(ALL_TABLES), b=ri(2,10), p=a*b;
+  const c=pick(GROUP_CTX);
+  /* wound 3: redraw until the three named distractors are clean (a+b can equal
+     the product, and a+b can equal p-a), so mcNum never pads. */
+  let a=6,b=3,ok=false;
+  for(let i=0;i<200&&!ok;i++){ a=pick(ALL_TABLES); b=ri(2,10);
+    ok=optsOk(a*b,[a+b, a*b-a, a*b+b]); }
+  if(!ok){ a=6; b=3; }
+  const p=a*b;
   return mcNum(c[0]+' '+a+' '+c[1]+', with '+b+' '+c[2]+'. <b>How many '+c[3]+' are there altogether?</b>','',
     p,[a+b, p-a, p+b],'',
     'Equal groups means multiply: '+a+' groups of '+b+' = '+a+' × '+b+' = '+p+' '+c[3]+
@@ -1451,7 +1493,12 @@ function gNotMultiple(){
 
 /* FORMAT 7 - doubling strategy: build a new fact from a known one (pool 3) */
 function gDoubling(){
-  const a=pick([3,4,6,7,8,9]), b=ri(3,9), p=a*b;
+  /* wound 3: p+a and p+b collide whenever a === b, which is 1 draw in 7. */
+  let a=3,b=4,ok=false;
+  for(let i=0;i<200&&!ok;i++){ a=pick([3,4,6,7,8,9]); b=ri(3,9);
+    ok=optsOk(2*a*b,[a*b+2, a*b+a, a*b+b]); }
+  if(!ok){ a=3; b=4; }
+  const p=a*b;
   return mcNum('You know that '+a+' × '+b+' = '+p+'. Use <b>doubling</b> to work out '+(2*a)+' × '+b+'.','',
     2*p,[p+2, p+a, p+b],'',
     'Doubling one factor doubles the product. '+(2*a)+' is double '+a+', so '+(2*a)+' × '+b+
@@ -1466,8 +1513,16 @@ const SHARE_CTX = [
 ];
 function gDivShare(){
   const c=pick(SHARE_CTX);
-  const g=pick(HARD_TABLES), each=ri(3,10), total=g*each;
-  let want=ri(2,g-1); if(want<2) want=2;
+  /* wound 3: "each" (stopping after the division) collides with want x each when
+     want is 1, and total-want collides with want x g on plenty of draws. */
+  let g=6,each=4,want=2,ok=false;
+  for(let i=0;i<200&&!ok;i++){
+    g=pick(HARD_TABLES); each=ri(3,10);
+    want=ri(2,g-1); if(want<2) want=2;
+    ok=optsOk(want*each,[each, g*each-want, want*g]);
+  }
+  if(!ok){ g=6; each=4; want=2; }
+  const total=g*each;
   return mcNum(c[0]+' '+total+' '+c[1]+' equally into '+g+' '+c[2]+'. <b>How many '+c[1]+' are in '+
     want+' '+c[3]+'?</b>','',
     want*each,[each, total-want, want*g],'',
@@ -1478,8 +1533,16 @@ function gDivShare(){
 
 /* FORMAT 9 - error spotting: check a division with multiplication (pool 3) */
 function gDivError(){
-  const a=pick(HARD_TABLES), b=ri(3,10), p=a*b;
-  const claim = Math.random()<0.5 ? b+1 : b-1;
+  /* wound 3: the divisor a collides with the key b, and with Ravi's claim b +- 1,
+     on a quarter of draws - the worst padding rate in the file. */
+  let a=6,b=4,claim=5,ok=false;
+  for(let i=0;i<200&&!ok;i++){
+    a=pick(HARD_TABLES); b=ri(3,10);
+    claim = Math.random()<0.5 ? b+1 : b-1;
+    ok=optsOk(b,[claim, a, a+b]);
+  }
+  if(!ok){ a=6; b=4; claim=5; }
+  const p=a*b;
   return mcNum('Ravi says '+p+' ÷ '+a+' = '+claim+'. He checked it by working out '+a+' × '+claim+
     ' = '+(a*claim)+'. <b>What should '+p+' ÷ '+a+' be?</b>','',
     b,[claim, a, a+b],'',
@@ -3712,6 +3775,22 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
      L is a thin unbuildable sliver. Applied to every corner cut in this file. */
   const capCut = n => Math.max(2, Math.min(n - 3, Math.floor(2 * n / 3)));
 
+  /* ---- WOUND 2 (v4 refutation, 2026-09-15): "A 18 cm by 14 cm tile" -----------
+     The article in front of a NUMBER follows the number's SPOKEN form, not its
+     first digit: an 8, an 11, an 18, an 80, but a 1, a 9, a 100. Three stems in
+     this file open on a drawn dimension and printed the wrong article whenever
+     that dimension was 8, 11 or 18 - measured at gLPerimDiff 27.0%, gLSkirting
+     26.5%, gLCornerInverse 19.2% of 1,000 draws. Every dimension this bank prints
+     is at most two digits, so 8 / 11 / 18 / 80-89 is the whole rule; the 800-899
+     arm is there so the helper stays correct if the ranges ever grow.
+     tools/gen-sanity.mjs gates the three pilot files against both mistakes. */
+  function anNum(n){
+    const s = String(n);
+    return /^(8|11|18)$/.test(s) || /^8\d$/.test(s) || /^8\d\d$/.test(s);
+  }
+  const artLc = n => (anNum(n) ? 'an ' : 'a ');
+  const artUc = n => (anNum(n) ? 'An ' : 'A ');
+
   /* ---- rectangles and squares: find the missing dimension (1.1, 1.2) ---- */
 
   const RECT_CTX = [
@@ -3962,7 +4041,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     if (!ok) { W = 12; H = 9; a = 4; b = 3; }
     const area = W * H - a * b;
     return mcNum(
-      'An L-shape is made from a ' + W + ' cm by ' + H + ' cm rectangle with a rectangular corner cut out. ' +
+      'An L-shape is made from ' + artLc(W) + W + ' cm by ' + H + ' cm rectangle with a rectangular corner cut out. ' +
       'The corner cut out is ' + a + ' cm wide. The area of the L-shape is ' + area +
       ' cm². <b>How tall is the corner that was cut out?</b>', '',
       b, [a, W * H - area, area - a], CM,
@@ -3984,7 +4063,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     if (!ok) { W = 10; H = 8; rate = 5; a = 3; b = 2; }
     const per = 2 * (W + H);
     return mcNum(
-      'An L-shaped kitchen floor is a ' + W + ' m by ' + H + ' m rectangle with a ' + a + ' m by ' + b +
+      'An L-shaped kitchen floor is ' + artLc(W) + W + ' m by ' + H + ' m rectangle with ' + artLc(a) + a + ' m by ' + b +
       ' m corner taken out for a store room. Skirting board is fitted right around the edge of the floor at $' +
       rate + ' per metre. <b>What does the skirting cost altogether, in dollars?</b>', '',
       per * rate, [(W * H - a * b) * rate, (per - a - b) * rate, per], '',
@@ -4032,7 +4111,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     }
     if (!ok) { W = 12; H = 9; a = 4; b = 3; }
     return mcText(
-      'A ' + W + ' cm by ' + H + ' cm rectangular tile has a corner piece ' + a + ' cm by ' + b +
+      artUc(W) + W + ' cm by ' + H + ' cm rectangular tile has a corner piece ' + a + ' cm by ' + b +
       ' cm cut away, leaving an L-shape with right angles at every corner. <b>How much longer is ' +
       'the perimeter of the whole rectangle than the perimeter of the L-shape?</b>', '',
       '0 cm',
@@ -6864,4 +6943,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260915-e010bde */
+/* ENGINE_BUILD_END 20260915-e61d2e0 */

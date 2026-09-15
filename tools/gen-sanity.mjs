@@ -585,17 +585,34 @@ function decimalsOracle(q) {
     for (let i = 1; i < k.length; i++) { const d = DCMP(k[i], k[i - 1]); if (asc ? d <= 0 : d >= 0) return `order: the key list is not in order (${strip(q.choices[keyIdx])})`; }
     return null;
   }
-  if ((m = text.match(/^(.+?) says (\d+\.\d+) is greater than (\d+\.\d+), because (\d+) is greater than (\d+)\. What is wrong with that\?$/))) {
-    const small = DP(m[2]), big = DP(m[3]);
-    if (DCMP(small, big) >= 0) return `compare error: the stem's "wrong" claim is TRUE - ${m[2]} is not less than ${m[3]}`;
-    if (m[2].replace('.', '').replace(/^0/, '') !== m[4] || m[3].replace('.', '').replace(/^0/, '') !== m[5]) {
+  if ((m = text.match(/^(.+?) says (\d+\.\d+) is greater than (\d+\.\d+), because (\d+) is greater than (\d+)\. Which of these puts it right\?$/))) {
+    const A = DP(m[2]), B = DP(m[3]);
+    if (DCMP(A, B) >= 0) return `compare error: the stem's "wrong" claim is TRUE - ${m[2]} is not less than ${m[3]}`;
+    if (A.n !== Number(m[4]) || B.n !== Number(m[5])) {
       return `compare error: the printed digit strings (${m[4]}, ${m[5]}) are not the digits of ${m[2]} and ${m[3]}`;
     }
-    if (Number(m[4]) <= Number(m[5])) return 'compare error: the misconception does not even hold on the digits';
-    const want = `${m[3]} is the greater one.`;
-    const hits = q.choices.filter(c => strip(c).endsWith(want)).length;
-    if (hits !== 1) return `compare error: ${hits} options end by naming ${m[3]} as the greater - there must be exactly one`;
-    if (!strip(q.choices[keyIdx]).endsWith(want)) return 'compare error: the key is not the option naming the true greater number';
+    if (A.n <= B.n) return 'compare error: the misconception does not even hold on the digits';
+    if (A.dp !== B.dp + 1) return `compare error: ${m[2]} and ${m[3]} are ${A.dp - B.dp} places apart - the options only stay the same length at one`;
+    /* KILL 2 (refutation v2 @ 0157aa1). The four options used to be four different
+       sentences, three of which were the key on 0 / 40,000 draws - one of them the
+       identical string every time. They are now four readings of the SAME
+       comparison: B padded into A's place or not, crossed with which number is
+       named as the greater. Exactly one is true, and the verdict splits 2-2 so the
+       option naming the true greater number is not free. */
+    const deep = DV(B.n * 10, A.dp), flat = DV(B.n, A.dp);
+    const rows = [[deep, B], [flat, A], [deep, A], [flat, B]];
+    const lined = /^Lined up with /.test(strip(q.choices[keyIdx]));
+    const say = r => lined
+      ? `Lined up with ${m[2]}, ${m[3]} is written ${DTXT(r[0])}, so ${DTXT(r[1])} is the greater one.`
+      : `${m[2]} is ${A.n} ${DEC_PLACES[A.dp]} and ${m[3]} is ${r[0].n} ${DEC_PLACES[A.dp]}, so ${DTXT(r[1])} is the greater one.`;
+    const offered = rows.map(say);
+    for (const o of offered) {
+      if (q.choices.filter(c => strip(c) === o).length !== 1) return `compare error: "${o}" is not offered exactly once`;
+    }
+    if (strip(q.choices[keyIdx]) !== offered[0]) return `compare error: expected key "${offered[0]}", got "${strip(q.choices[keyIdx])}"`;
+    /* the verdict must split 2-2, or "pick the one naming the other number" wins */
+    const namesB = q.choices.filter(c => strip(c).endsWith(`${m[3]} is the greater one.`)).length;
+    if (namesB !== 2) return `compare error: ${namesB} of the four options name ${m[3]} as the greater - the verdict must split 2-2`;
     return null;
   }
   /* WOUND 4: the second `compare` voice in pool 3. One list, exactly one adjacent
@@ -650,38 +667,49 @@ function decimalsOracle(q) {
     if (!opts[keyIdx] || !DEQ(DROUND(opts[keyIdx], to), target)) return 'round back: the key does not round to the target';
     return null;
   }
-  if ((m = text.match(/^(.+?) rounds (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places) and says the answer is (\d+(?:\.\d+)?)\. What went wrong\?$/))) {
+  if ((m = text.match(/^(.+?) rounds (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places) and says the answer is (\d+(?:\.\d+)?)\. Which digit did \1 look at\?$/))) {
     const v = DP(m[2]), to = DEC_ROUND_TO[m[3]], said = DP(m[4]);
     const truth = DROUND(v, to);
     if (DEQ(said, truth)) return `round error: the printed claim ${m[4]} is CORRECT - the stem contradicts itself`;
     if (said.dp !== to) return `round error: the claim ${m[4]} is not even written to ${m[3]}`;
-    /* THE KILL, closed and gated (refutation 2026-09-15). This item used to be
-       settled by reading: exactly two options ended "so the answer is N" and one of
-       those two printed the number the stem had already declared wrong. No option
-       carries an answer at all now, so the branch re-derives the DIAGNOSIS instead. */
-    if (v.dp !== to + 2) return `round error: ${m[2]} carries ${v.dp} places - the draw must keep TWO past ${m[3]}`;
-    const base = Math.floor(v.n / 100), d1 = Math.floor((v.n % 100) / 10), d2 = v.n % 10, d0 = base % 10;
-    if (said.n !== base + (d1 < 5 ? 1 : 0)) {
-      return `round error: the claim ${m[4]} is not the wrong-way answer (${DTXT(DV(base + (d1 < 5 ? 1 : 0), to))})`;
+    /* THE KILL, second pass (refutation v2 @ 0157aa1). The v1 mechanism - two
+       answer-bearing tails, one printing the declared-wrong number - is gone and
+       stays gone. What replaced it was a FRAME tell: the key was the only option
+       naming a direction, the only one carrying "but", and the 3rd longest on
+       every draw. All four options are now the same sentence over a different
+       digit of the printed number, and this branch re-derives which digit the
+       child must have used. */
+    const digs = (m[2].replace('.', '').match(/\d/g) || []).map(Number);
+    if (digs.length !== 4) return `round error: ${m[2]} prints ${digs.length} digits - the draw must print exactly four`;
+    if (new Set(digs).size !== 4) return `round error: ${m[2]} repeats a digit, so two options would print the same numeral`;
+    const wlen = m[2].indexOf('.');
+    const ci = wlen + to;                       /* the digit rounding is allowed to look at */
+    if (ci < 0 || ci > 3) return `round error: rounding ${m[2]} to ${m[3]} looks past the four printed digits`;
+    const dc = digs[ci];
+    const up = dc < 5;                          /* the way the child ACTUALLY went */
+    if (said.n !== truth.n + (up ? 1 : -1)) {
+      return `round error: the claim ${m[4]} is not the wrong-way answer (${DTXT(DV(truth.n + (up ? 1 : -1), to))})`;
     }
-    /* the last digit and the rounding-place digit must both point the same way as
-       the next digit, or "used the last digit" / "used the <place> digit" would be
-       a SECOND defensible diagnosis of the very same printed answer */
-    if ((d1 >= 5) !== (d2 >= 5)) return `round error: the last digit ${d2} sits on the other side of 5 from ${d1} - two options then diagnose the same slip`;
-    if ((d1 >= 5) !== (d0 >= 5)) return `round error: the ${to === 0 ? 'ones' : DEC_PLACES[to]} digit ${d0} sits on the other side of 5 from ${d1}`;
-    if (new Set([d0, d1, d2]).size !== 3) return `round error: ${d0}/${d1}/${d2} - the three named digits must differ, or two options print the same numeral`;
-    const placeName = to === 0 ? 'ones' : DEC_PLACES[to];
-    const went = d1 < 5 ? 'up' : 'down', right = d1 < 5 ? 'down' : 'up';
-    const offered = [
-      `${m[1]} used the next digit, ${d1}, but rounded ${went} instead of ${right}.`,
-      `${m[1]} used the last digit, ${d2}, instead of the next one.`,
-      `${m[1]} used the ${placeName} digit itself, ${d0}, instead of the next one.`,
-      `${m[1]} rounded to ${DEC_ROUND_PHRASE[to + 1]} first and then rounded that answer again.`
-    ];
+    /* EXACTLY ONE of the other three digits sends it the way she went, or the
+       diagnosis is not unique */
+    const just = [];
+    for (let i = 0; i < 4; i++) if (i !== ci && (up ? digs[i] >= 5 : digs[i] <= 4)) just.push(i);
+    if (just.length !== 1) {
+      return `round error: ${just.length} of the other three digits would have rounded ${up ? 'up' : 'down'} - exactly one must`;
+    }
+    const ORD = ['first', 'second', 'third', 'fourth'];
+    const dir = up ? 'up' : 'down';
+    const offered = [0, 1, 2, 3].map(i => `${m[1]} rounded ${dir} after looking at the ${ORD[i]} digit, ${digs[i]}.`);
     for (const o of offered) {
       if (q.choices.filter(c => strip(c) === o).length !== 1) return `round error: "${o}" is not offered exactly once`;
     }
-    if (strip(q.choices[keyIdx]) !== offered[0]) return `round error: expected key "${offered[0]}", got "${strip(q.choices[keyIdx])}"`;
+    const want = offered[just[0]];
+    if (strip(q.choices[keyIdx]) !== want) return `round error: expected key "${want}", got "${strip(q.choices[keyIdx])}"`;
+    /* every option states the SAME direction, so the direction word cannot single
+       the key out - the frame gate measures this across draws, this asserts it here */
+    if (q.choices.some(c => !new RegExp(`rounded ${dir} after looking`).test(strip(c)))) {
+      return 'round error: an option states a direction other than the one the stem\'s claim implies';
+    }
     /* and nothing may hand the child the number the stem declares wrong */
     for (const c of q.choices) {
       if (decTokens(c).some(t => DEQ(t, said))) return `round error: an option repeats ${m[4]}, the number the stem declares wrong ("${strip(c)}")`;
@@ -743,20 +771,44 @@ function decimalsOracle(q) {
     }
     return null;
   }
-  if ((m = text.match(/^(.+?) says that (\d+\.\d+) of a dollar is (\d+) cents\. What is wrong with that\?$/))) {
+  if ((m = text.match(/^(.+?) says that (\d+\.\d+) of a dollar is \$(\d+\.\d\d)\. Which of these puts it right\?$/))) {
     const v = DP(m[2]);
-    if (v.dp > 2) return `money decimal: ${m[2]} is finer than one cent`;
-    const trueCents = v.n * TEN(2 - v.dp);
-    if (trueCents === Number(m[3])) return `money decimal: the printed claim (${m[3]} cents) is CORRECT - the stem contradicts itself`;
-    const want = `so ${m[2]} of a dollar is ${trueCents} cents.`;
-    const hits = q.choices.filter(c => strip(c).endsWith(want)).length;
-    if (hits !== 1) return `money decimal: ${hits} options end with the true value ${trueCents} cents`;
-    if (!strip(q.choices[keyIdx]).endsWith(want)) return 'money decimal: the key does not carry the true value';
-    /* every option must close in the same frame, or the tail alone narrows the set */
-    for (const c of q.choices) {
-      if (!/, so \d+(?:\.\d+)? of a dollar is \d+ cents\.$/.test(strip(c))) {
-        return `money decimal: the option "${strip(c)}" does not close in the shared frame`;
-      }
+    if (v.dp < 1 || v.dp > 2) return `money decimal: ${m[2]} is not tenths or hundredths of a dollar`;
+    const d = v.n;
+    if (d < 2 || d > 9) return `money decimal: ${m[2]} is not a single non-unit digit of its place`;
+    const trueC = TEN(2 - v.dp);                       /* cents in one of that place */
+    const trueCents = d * trueC;
+    const claim = Math.round(Number(m[3]) * 100);
+    if (trueCents === claim) return `money decimal: the printed claim ($${m[3]}) is CORRECT - the stem contradicts itself`;
+    /* WOUND 3 (refutation v2 @ 0157aa1). Two of the four frames were the key on
+       0 / 20,000 draws, so "neither the longest nor the shortest" was a coin flip
+       that never deleted the key. All four options now wear ONE frame over three
+       live beliefs about what a single place of a dollar is worth, plus the
+       add-instead-of-multiply slip; every amount is money, so all four are exactly
+       the same length. */
+    const other = trueC === 10 ? 1 : 10;
+    const rows = [[trueC, trueCents], [100, d * 100], [other, d * other], [trueC, trueC + d]];
+    const MONEY = c => '$' + DTXT(DV(c, 2));
+    const headFirst = /^A /.test(strip(q.choices[keyIdx]));
+    const qtyD = `${d} ${DEC_PLACES[v.dp]}`;
+    const say = r => headFirst
+      ? `A ${DEC_PLACE_ONE[v.dp]} of a dollar is ${MONEY(r[0])}, and ${m[2]} is ${qtyD}, so that is ${MONEY(r[1])}.`
+      : `${m[2]} is ${qtyD}, and a ${DEC_PLACE_ONE[v.dp]} of a dollar is ${MONEY(r[0])}, so that is ${MONEY(r[1])}.`;
+    const offered = rows.map(say);
+    if (new Set(offered).size !== 4) return 'money decimal: two of the four named readings collide';
+    for (const o of offered) {
+      if (q.choices.filter(c => strip(c) === o).length !== 1) return `money decimal: "${o}" is not offered exactly once`;
+    }
+    if (strip(q.choices[keyIdx]) !== offered[0]) return `money decimal: expected key "${offered[0]}", got "${strip(q.choices[keyIdx])}"`;
+    /* the misconception the stem states must be on the list, or the item answers a
+       question nobody asked */
+    if (!offered.some(o => o.endsWith(`so that is $${m[3]}.`))) {
+      return `money decimal: the claim $${m[3]} the stem calls wrong is not one of the four readings`;
+    }
+    /* all four exactly the same length: no length rank exists to read */
+    const lens = q.choices.map(c => strip(c).length);
+    if (Math.max(...lens) - Math.min(...lens) > 2) {
+      return `money decimal: the four options span ${Math.max(...lens) - Math.min(...lens)} characters - they must be within two`;
     }
     return null;
   }
@@ -849,11 +901,48 @@ function decimalsOracle(q) {
     if (strip(q.answerText) !== '$' + DTXT(DV(want, 2))) return `change: answerText "${strip(q.answerText)}" is not the money form`;
     return null;
   }
-  if ((m = text.match(/^At the school bookshop (?:a|an) .+ costs \$(\d+\.\d\d)\. Which calculation gives the cost of (\d+) of them\?$/))) {
-    const want = `${m[2]} × $${m[1]}`;
-    if (strip(q.choices[keyIdx]) !== want) return `which calculation: expected "${want}", key says "${strip(q.choices[keyIdx])}"`;
-    if (q.choices.filter(c => strip(c) === want).length !== 1) return 'which calculation: the true calculation is offered twice';
-    return null;
+  /* WOUND 2 (refutation v2 @ 0157aa1). The key was ALWAYS `n × $x` and the three
+     distractor frames were the key on 0% of draws, so "pick the multiplication"
+     answered the pool-1 muldiv anchor on 20,000 / 20,000 draws - and at 45%
+     accuracy it is the 4th most-served item in the topic. The DEMAND is now drawn
+     three ways over the same furniture, so the key is a ×, a + or a ÷; every draw
+     ships TWO options carrying the key's operator, and this branch asserts both. */
+  {
+    const two = text.match(/^At the school bookshop (.+?) costs \$(\d+\.\d\d) and (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of (\d+ .+|one of each)\?$/);
+    const box = text.match(/^At the school bookshop a box of (\d+) (.+?) costs \$(\d+\.\d\d), and (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of one (.+)\?$/);
+    if (two || box) {
+      let want, opCount;
+      if (two) {
+        const x = `$${two[2]}`, y = `$${two[4]}`;
+        const eachOf = two[5].match(/^(\d+) /);
+        if (eachOf) {
+          const n = eachOf[1];
+          want = `${n} × ${x}`;
+          opCount = c => c.indexOf(' × ') >= 0;
+          const offered = [`${n} × ${x}`, `${n} × ${y}`, `${x} + ${y}`, `${x} + ${x}`];
+          for (const o of offered) if (q.choices.filter(c => strip(c) === o).length !== 1) {
+            return `which calculation: "${o}" is not offered exactly once`;
+          }
+        } else {
+          want = `${x} + ${y}`;
+          opCount = c => c.indexOf(' + ') >= 0;
+          if (!q.choices.some(c => /^\$\d+\.\d\d \+ \$\d+\.\d\d$/.test(strip(c)) && strip(c) !== want)) {
+            return 'which calculation: the "one of each" draw ships only one addition, so the operator alone answers it';
+          }
+        }
+        if (two[2] === two[4]) return 'which calculation: the two prices are the same amount';
+      } else {
+        want = `$${box[3]} ÷ ${box[1]}`;
+        opCount = c => c.indexOf(' ÷ ') >= 0;
+        const cents = Math.round(Number(box[3]) * 100);
+        if (cents % Number(box[1]) !== 0) return `which calculation: $${box[3]} does not share equally into ${box[1]}`;
+      }
+      if (strip(q.choices[keyIdx]) !== want) return `which calculation: expected "${want}", key says "${strip(q.choices[keyIdx])}"`;
+      if (q.choices.filter(c => strip(c) === want).length !== 1) return 'which calculation: the true calculation is offered twice';
+      const sharers = q.choices.filter(c => opCount(strip(c))).length;
+      if (sharers < 2) return `which calculation: only the key carries its operator - "pick the ${want.replace(/[^+×÷]/g, '').trim()}" answers the item with no arithmetic`;
+      return null;
+    }
   }
   if ((m = text.match(/^One lap of the running track at .+ is (\d+\.\d+) km\. .+ runs (\d+) laps\./))) {
     const lap = DP(m[1]);
@@ -1019,6 +1108,18 @@ function decGates(q, topic) {
   for (const c of raw) {
     const om = c.match(/\$\d+\.\d+/g) || [];
     for (const mm of om) if (!/^\$\d+\.\d\d$/.test(mm)) return `money format: an option writes "${mm}" - a money amount with a point shows two places`;
+  }
+  /* RULE D9 - no decimals option may be ZERO. The v2 fix to gDecAddSub left its
+     redraw guard unsatisfiable on every add draw (`Set(...).size === 5` where the
+     add branch can only reach 4, because noCarry IS key - scale there), so the
+     loop ran to its ceiling and shipped "0.0" against "4.93 + 1.37 = ?" on 0.77%
+     of draws. Zero is not an answer any child weighs to a sum of two positive
+     numbers - it is a free elimination wearing a named distractor's badge, and
+     mcDec's own filter tested c.n < 0, not c.n <= 0. Nothing in the harness
+     expressed either half. */
+  for (const c of (q.choices || [])) {
+    const z = decOf(strip(c));
+    if (z && z.n === 0) return `zero option shipped ("${strip(c)}") - zero is a free elimination, not a named misconception`;
   }
   if (Array.isArray(q.decAuthored)) {
     const named = new Set(q.decAuthored);
@@ -2955,6 +3056,173 @@ let rankReport = null;
   }
 }
 
+/* ---------- PROSE OPTION GATE (refutation SECOND PASS 2026-09-15, KILLS 1-2) ------
+   FOR THE INTEGRATOR: this is the decimals sibling of the p2 option-feature gate
+   (P2_FEATURES / P2_FEATURE_CEILING in the p2 lane's gen-sanity) and of the
+   fractions lane's RULE 8. Same shape, same vocabulary, one axis further on:
+
+     - p2's gate reads coarse FEATURES off every option of a draw and fails a
+       generator when the key is the only option carrying a feature's value in 90%
+       or more of the sample. That arm is reproduced here verbatim in structure,
+       with a decimals feature list and a TIGHTER ceiling (60%), because the
+       decimals banks are prose-heavy and 90% let three settles through.
+     - fractions' RULE 8 is the same idea applied per draw inside one oracle: the
+       words the stem uses must be repeated by at least two options, so the item
+       cannot be answered by matching vocabulary.
+     - what NEITHER expresses, and what both of tonight's kills lived in, is the
+       key's SENTENCE SHAPE ACROSS DRAWS. The MAGNITUDE-RANK gate measures a
+       numeric key's rank among numeric options; RULE D6 compares masked tails
+       WITHIN one item; pilotGates counts option forms. gDecRoundError's key was
+       the only option naming a direction and the only one carrying "but" on
+       40,000 / 40,000 draws, and gDecCmpError shipped three never-correct frames
+       on every draw, one of them the identical sentence every time. Both are
+       properties of a GENERATOR, not of an item, so both are sampled here.
+
+   THE THREE ARMS, all on draws whose four options are NOT four bare numbers
+   (those are the rank gate's business):
+
+     FEATURE    no single feature value may be unique to the key on 60% or more of
+                the sample. Features are deliberately coarse - the kind of thing a
+                ten-year-old spots without doing any mathematics.
+     FRAME      mask the names and every number. (a) No masked frame that ships on
+                50% or more of draws may be the key on NONE of them - a
+                never-correct frame is a free elimination that never moves. (b) The
+                key must wear at least THREE distinct masked frames, unless the
+                generator ships fewer than three frames in total, in which case the
+                frame carries no information at all (gDecBetween's four options are
+                all "# and #", and that is exactly right).
+     LENGTH     on draws where the four options span more than two characters, the
+                key's length rank - competition rank, broken by the shipped order,
+                so exactly equal lengths land uniformly - may not exceed 45%. Only
+                sentence options are measured: the length of a NUMBER is its
+                magnitude, which the rank gate already owns, and "3 + 0.1 + 0.09"
+                is not a sentence a child eyeballs for length. --- */
+const DEC_FEATURES = [
+  { label: 'the rounding or comparison direction it states',
+    of: o => [...new Set((o.match(/\b(up|down|greater|less|more|fewer|smaller|bigger|left|right|further|nearer)\b/gi) || [])
+                .map(s => s.toLowerCase()))].sort().join(',') || 'none' },
+  { label: 'the connective it hangs on',
+    of: o => [...new Set((o.match(/\b(but|instead|because|so|then|although|however)\b/gi) || [])
+                .map(s => s.toLowerCase()))].sort().join(',') || 'none' },
+  { label: 'its form (bare number, prose, or which operator it uses)',
+    of: o => {
+      if (/^\$?\d+(\.\d+)?( [a-zℓ]+)?$/.test(o)) return 'number';
+      const ops = [...new Set(o.match(/[+×÷−]/g) || [])].sort().join('');
+      return ops ? 'op:' + ops : 'prose';
+    } },
+  { label: 'the biggest number printed in the stem that it names again',
+    of: (o, stemNums) => {
+      const hit = (o.match(/\d+(?:\.\d+)?/g) || []).map(Number).filter(n => stemNums.has(n));
+      return hit.length ? String(Math.max(...hit)) : 'none';
+    } },
+  { label: 'its length to the nearest four characters',
+    of: o => String(Math.round(o.length / 4)) }
+];
+const DEC_FEATURE_CEILING = 0.60;
+const DEC_FRAME_SHIP = 0.50;            /* a frame this common that is never the key */
+const DEC_KEY_FRAMES = 3;               /* ... and the key may not wear one sentence */
+const DEC_LEN_CEILING = 0.45;
+const DEC_LEN_SPREAD = 2;               /* under this many characters, length is not a tell */
+const DEC_MODAL_CEILING = 0.45;         /* ... and no key may be the same answer this often */
+const DEC_PROSE_FLOOR = 200;            /* below this many measurable draws, no verdict */
+const DEC_NAME_MASK = /\b(Mei Ling|Siti|Ravi|Kumar|Wei Jie|Nurul|Jun Hao|Priya|Ah Seng|Aisyah)\b/g;
+const decFrame = s => s.replace(DEC_NAME_MASK, '@').replace(/\d+(?:\.\d+)?/g, '#').toLowerCase();
+const decIsSentence = o => (o.match(/[A-Za-z]{2,}/g) || []).length >= 3;
+/* one generator, sampled. Returns every arm's tally so the report can print it. */
+function decProseScan(gens, draws) {
+  const out = [];
+  for (const g of gens) {
+    const hit = DEC_FEATURES.map(() => 0), sample = DEC_FEATURES.map(() => null);
+    const shipped = new Map(), keyFrames = new Map(), keyVals = new Map();
+    const lenRank = [0, 0, 0, 0];
+    let n = 0, lenN = 0, allN = 0;
+    for (let i = 0; i < draws; i++) {
+      let q;
+      try { q = g.fn(); } catch (e) { continue; }
+      const opts = (q.choices || []).map(strip);
+      if (opts.length !== 4 || !Number.isInteger(q.correct)) continue;
+      /* THE MODAL-KEY ARM runs on EVERY draw, prose or not. gDecRoundSum's key was
+         "5 kg" on 48.7% of its draws - four distinct answers in the whole
+         generator - and MAGNITUDE-RANK is blind to it by construction: it asks
+         where the key sits among its own OPTIONS, never how often the key is the
+         same NUMBER. "Always answer 5 kg" beat the rank gate's own ceiling on the
+         axis the rank gate does not measure. */
+      allN++;
+      keyVals.set(opts[q.correct], (keyVals.get(opts[q.correct]) || 0) + 1);
+      if (opts.every(o => /^\$?\d+(\.\d+)?( [a-zℓ]+)?$/.test(o))) continue;
+      n++;
+      const key = opts[q.correct];
+      const stemNums = new Set(((strip(q.q) + ' ' + strip(q.extra || '')).match(/\d+(?:\.\d+)?/g) || []).map(Number));
+      for (let fi = 0; fi < DEC_FEATURES.length; fi++) {
+        const kv = DEC_FEATURES[fi].of(key, stemNums);
+        if (opts.filter(o => DEC_FEATURES[fi].of(o, stemNums) === kv).length === 1) {
+          hit[fi]++;
+          sample[fi] = { kv, opts: opts.slice() };
+        }
+      }
+      const frames = opts.map(decFrame);
+      for (const f of new Set(frames)) shipped.set(f, (shipped.get(f) || 0) + 1);
+      keyFrames.set(frames[q.correct], (keyFrames.get(frames[q.correct]) || 0) + 1);
+      if (opts.every(decIsSentence)) {
+        const lens = opts.map(o => o.length);
+        const spread = Math.max(...lens) - Math.min(...lens);
+        if (spread > DEC_LEN_SPREAD) {
+          let r = 0;
+          for (let j = 0; j < 4; j++) if (lens[j] > lens[q.correct] || (lens[j] === lens[q.correct] && j < q.correct)) r++;
+          lenRank[r]++; lenN++;
+        }
+      }
+    }
+    const dead = [...shipped.entries()].filter(([f, c]) => c / (n || 1) >= DEC_FRAME_SHIP && !keyFrames.has(f));
+    const modal = [...keyVals.entries()].sort((a, b) => b[1] - a[1])[0] || ['', 0];
+    out.push({ name: g.name, n, hit, sample, lenRank, lenN,
+      frames: shipped.size, keyFrames: keyFrames.size, dead,
+      allN, modalText: modal[0], modalShare: allN ? modal[1] / allN : 0 });
+  }
+  return out;
+}
+const proseRows = [];
+{
+  const decGens = GENS.filter(g => g.topic === 'decimals').map(g => ({ name: g.name, fn: g.fn }));
+  for (const r of decProseScan(decGens, RANK_DRAWS)) {
+    let note = null;
+    if (r.allN >= DEC_PROSE_FLOOR && r.modalShare > DEC_MODAL_CEILING) {
+      note = `modal key: the answer is "${r.modalText}" on ${(100 * r.modalShare).toFixed(1)}% of ${r.allN} draws, over the ` +
+        `${(100 * DEC_MODAL_CEILING).toFixed(0)}% ceiling - "always answer the same thing" then beats chance, on the value ` +
+        `axis the magnitude-rank gate does not measure`;
+    }
+    if (note) { proseRows.push({ ...r, ok: false, note }); failures++; continue; }
+    if (r.n < DEC_PROSE_FLOOR) { proseRows.push({ ...r, ok: true, note: 'not enough prose draws to judge' }); continue; }
+    for (let fi = 0; fi < DEC_FEATURES.length; fi++) {
+      if (r.hit[fi] / r.n < DEC_FEATURE_CEILING) continue;
+      const s = r.sample[fi];
+      note = `prose option feature: the key is the ONLY option with ${DEC_FEATURES[fi].label} in ` +
+        `${r.hit[fi]} of ${r.n} draws (${(100 * r.hit[fi] / r.n).toFixed(1)}%), at or over the ` +
+        `${(100 * DEC_FEATURE_CEILING).toFixed(0)}% ceiling - a child picks the key out by that alone, with no ` +
+        `mathematics (key value "${s.kv}", options: ${s.opts.join(' | ')})`;
+      break;
+    }
+    if (!note && r.dead.length) {
+      note = `never-correct frame: "${r.dead[0][0]}" ships on ${(100 * r.dead[0][1] / r.n).toFixed(1)}% of draws and is ` +
+        `the key on NONE of them - a free elimination that never moves`;
+    }
+    if (!note && r.frames >= DEC_KEY_FRAMES && r.keyFrames < DEC_KEY_FRAMES) {
+      note = `the key wears ${r.keyFrames} masked sentence${r.keyFrames === 1 ? '' : 's'} across ${r.n} draws while the ` +
+        `generator ships ${r.frames} - a prose key may not wear the same sentence every time`;
+    }
+    if (!note && r.lenN >= DEC_PROSE_FLOOR) {
+      const worst = Math.max(...r.lenRank), at = r.lenRank.indexOf(worst);
+      if (worst / r.lenN > DEC_LEN_CEILING) {
+        note = `prose length rank: the key is the ${RANK_LABELS[at].replace('largest', 'longest').replace('smallest', 'shortest')} ` +
+          `option on ${worst} of ${r.lenN} draws (${(100 * worst / r.lenN).toFixed(1)}%), over the ` +
+          `${(100 * DEC_LEN_CEILING).toFixed(0)}% ceiling - "neither the longest nor the shortest" then beats chance`;
+      }
+    }
+    proseRows.push({ ...r, ok: !note, note });
+    if (note) failures++;
+  }
+}
+
 /* ---------- NAMED-DISTRACTOR CONTRACT COVERAGE (refutation WOUND 2) ---------------
    The lane's note claimed the contract bound on 29 of 32 generators. It bound on 27:
    gDecCompare and gDecCmpMixed stamped nothing at all and were not in the exemption
@@ -3065,6 +3333,123 @@ const negRows = [];
     ok: spreadRow.worst <= RANK_CEILING,
     note: `worst rank share ${(spreadRow.worst * 100).toFixed(1)}% over ${spreadRow.n} draws` });
   if (spreadRow.worst > RANK_CEILING) failures++;
+
+  /* ---- negative controls for the PROSE-OPTION GATE (second pass, KILLS 1-2) ----
+     Both kills rebuilt here as they shipped at 0157aa1. Each is a distribution
+     over draws, not a defect in any one item - every individual draw below passes
+     every per-item rule in the harness, which is why they shipped green twice. */
+  /* every arm that fires is reported, not just the first, so each of the gate's
+     three arms is separately proven by the controls rather than shadowed by
+     whichever one happens to run first */
+  const proseCtl = (name, fn) => {
+    const r = decProseScan([{ name, fn }], 2000)[0];
+    const why = [];
+    for (let fi = 0; fi < DEC_FEATURES.length; fi++) {
+      if (r.hit[fi] / r.n >= DEC_FEATURE_CEILING) {
+        why.push(`FEATURE ${DEC_FEATURES[fi].label} unique to the key on ${(100 * r.hit[fi] / r.n).toFixed(1)}%`);
+      }
+    }
+    if (r.dead.length) why.push(`FRAME ${r.dead.length} never-correct frame(s), the commonest on ${(100 * r.dead[0][1] / r.n).toFixed(1)}% of draws`);
+    if (r.frames >= DEC_KEY_FRAMES && r.keyFrames < DEC_KEY_FRAMES) {
+      why.push(`FRAME the key wears ${r.keyFrames} sentence(s) of the ${r.frames} shipped`);
+    }
+    if (r.lenN >= 200 && Math.max(...r.lenRank) / r.lenN > DEC_LEN_CEILING) {
+      why.push(`LENGTH the key is pinned to one rank on ${(100 * Math.max(...r.lenRank) / r.lenN).toFixed(1)}% of draws`);
+    }
+    if (r.modalShare > DEC_MODAL_CEILING) {
+      why.push(`MODAL the key is "${r.modalText}" on ${(100 * r.modalShare).toFixed(1)}% of draws`);
+    }
+    ctl(name, 'the prose-option gate', why.length ? why.join('; ') : null);
+  };
+  /* KILL 1 as it shipped: the key is the only option naming a direction, the only
+     one carrying "but", and the only one outside three never-correct frames. */
+  proseCtl('SECOND-PASS KILL 1 - v2 gDecRoundError, the key is the only option with a direction', () => {
+    const up = Math.random() < 0.5, lo = up ? 1 : 5, hi = up ? 4 : 9;
+    const roll = () => lo + Math.floor(Math.random() * (hi - lo + 1));
+    let d0, d1, d2;
+    do { d0 = roll(); d1 = roll(); d2 = roll(); } while (new Set([d0, d1, d2]).size !== 3);
+    const who = 'Priya', went = up ? 'up' : 'down', right = up ? 'down' : 'up';
+    const opts = [
+      `${who} used the next digit, ${d1}, but rounded ${went} instead of ${right}.`,
+      `${who} used the last digit, ${d2}, instead of the next one.`,
+      `${who} used the ones digit itself, ${d0}, instead of the next one.`,
+      `${who} rounded to 1 decimal place first and then rounded that answer again.`
+    ];
+    const order = opts.slice(1);
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    const all = order.slice();
+    const at = Math.floor(Math.random() * 4);
+    all.splice(at, 0, opts[0]);
+    return { q: `${who} rounds <b>${d0}.${d1}${d2}</b> to <b>the nearest whole number</b>. <b>What went wrong?</b>`,
+             extra: '', choices: all, correct: at, answerText: opts[0], explain: 'A negative control.' };
+  });
+  /* KILL 2 as it shipped: three never-correct frames, one of them a literal
+     constant, and the key's frame never appears as a distractor. */
+  proseCtl('SECOND-PASS KILL 2 - v2 gDecCmpError, three never-correct frames on every draw', () => {
+    const t = 3 + Math.floor(Math.random() * 7);
+    let h; do { h = 11 + Math.floor(Math.random() * (t * 10 - 12)); } while (h % 10 === 0);
+    const small = DTXT(DV(h, 2)), big = DTXT(DV(t, 1));
+    const key = `${small} is ${DECQTY(Math.floor(h / 10), 1)} and ${DECQTY(h % 10, 2)}, which is less than ` +
+      `${DECQTY(t, 1)}, so ${big} is the greater one.`;
+    const all = [key,
+      `Nothing is wrong. ${h} is greater than ${t}, so ${small} is greater than ${big}.`,
+      `${big} should have been written as ${DTXT(DV(t, 2))} first, and then ${small} would be the greater one.`,
+      'The digits after the point should have been counted, because the number with more digits is always the greater one.'];
+    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
+    return { q: `Jun Hao says <b>${small}</b> is greater than <b>${big}</b>. <b>What is wrong with that?</b>`,
+             extra: '', choices: all, correct: all.indexOf(key), answerText: key, explain: 'A negative control.' };
+  });
+  /* WOUND 5: the prose LENGTH-RANK gap. Four generators sat at one length rank on
+     100% of draws and "neither the longest nor the shortest" was a coin flip on
+     each. Every shipped decimals bank now keeps its prose options within two
+     characters, so nothing in the live file exercises this arm - which is exactly
+     why it needs a control. Same frame, same direction, same feature values on all
+     four options; only the key is always the 2nd longest. */
+  proseCtl('WOUND 5 - a prose generator whose key is the 2nd longest on every draw', () => {
+    /* one masked frame, one coarse length bucket, no direction word, no connective
+       and no stem number - a three-character spread and nothing else, so the RANK
+       arm is the only thing that can see the key pinned to 2nd longest */
+    const all = ['Siti counted up to 6789 and stopped.', 'Siti counted up to 23456 and stopped.',
+                 'Siti counted up to 12 and stopped.', 'Siti counted up to 345 and stopped.'];
+    const key = all[0];
+    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
+    return { q: 'A negative control.', extra: '', choices: all, correct: all.indexOf(key),
+             answerText: key, explain: 'A negative control.' };
+  });
+  /* WOUND 4: the VALUE axis. gDecRoundSum's draw ranges concentrated the total so
+     hard that the key was one of four numbers and "always answer 5 kg" won 48.7%,
+     over the magnitude-rank gate's own ceiling on the axis it cannot see. Every
+     individual item is clean and every rank is spread; only the answer repeats. */
+  proseCtl('WOUND 4 - a generator whose key is the same number on half its draws', () => {
+    const k = Math.random() < 0.5 ? 5 : 4 + Math.floor(Math.random() * 4);
+    const all = [`${k} kg`, `${k + 1} kg`, `${k - 1} kg`, `${k + 2} kg`];
+    const at = Math.floor(Math.random() * 4);
+    const opts = all.slice(1);
+    opts.splice(at, 0, all[0]);
+    return { q: 'A negative control.', extra: '', choices: opts, correct: at, answerText: all[0],
+             explain: 'A negative control.' };
+  });
+  /* and the control on the controls: a prose generator that DOES rotate its key's
+     frame, shares its direction word and keeps its options the same length must
+     pass, or the gate is just failing every word-answer bank. */
+  {
+    const ORD = ['first', 'second', 'third', 'fourth'];
+    const fn = () => {
+      const ds = [1, 2, 3, 4, 5, 6, 7, 8, 9].slice();
+      for (let i = ds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ds[i], ds[j]] = [ds[j], ds[i]]; }
+      const d = ds.slice(0, 4), dir = Math.random() < 0.5 ? 'up' : 'down';
+      const all = [0, 1, 2, 3].map(i => `Siti rounded ${dir} after looking at the ${ORD[i]} digit, ${d[i]}.`);
+      const at = Math.floor(Math.random() * 4);
+      return { q: 'A negative control.', extra: '', choices: all, correct: at, answerText: all[at],
+               explain: 'A negative control.' };
+    };
+    const r = decProseScan([{ name: 'ctlProseSpread', fn }], 2000)[0];
+    const worstFeat = Math.max(...r.hit) / r.n;
+    const ok = worstFeat < DEC_FEATURE_CEILING && !r.dead.length && r.keyFrames >= DEC_KEY_FRAMES;
+    negRows.push({ name: 'SECOND-PASS KILLS - a prose generator that DOES rotate its key\'s frame passes',
+      ok, note: `worst feature ${(worstFeat * 100).toFixed(1)}%, key frames ${r.keyFrames}, never-correct frames ${r.dead.length}` });
+    if (!ok) failures++;
+  }
 }
 
 /* ---------- manifest gate (Wave 3, W3 Pie+Cosmetics Refutation KILL) --------------
@@ -3169,6 +3554,35 @@ if (rankReport) {
       (w ? `  (worst: ${w.name} ${(w.worst * 100).toFixed(1)}% "${RANK_LABELS[w.rank]}")` : ''));
   }
 }
+if (proseRows.length) {
+  console.log('');
+  const judged = proseRows.filter(r => r.n >= DEC_PROSE_FLOOR);
+  console.log(`PROSE-OPTION GATE  (${RANK_DRAWS} draws x ${proseRows.length} decimals generators, ${judged.length} of them with ` +
+    `word-answer draws; feature ceiling ${(DEC_FEATURE_CEILING * 100).toFixed(0)}%, key frames >= ${DEC_KEY_FRAMES}, ` +
+    `length rank ceiling ${(DEC_LEN_CEILING * 100).toFixed(0)}%, modal key ceiling ${(DEC_MODAL_CEILING * 100).toFixed(0)}%)`);
+  const badProse = proseRows.filter(r => !r.ok);
+  if (badProse.length) {
+    for (const r of badProse) console.log(`FAIL prose  ${r.name}  ${r.note}`);
+  } else {
+    const worstFeat = judged.map(r => ({ name: r.name, v: Math.max(...r.hit) / r.n,
+      fi: r.hit.indexOf(Math.max(...r.hit)) })).sort((a, b) => b.v - a.v)[0];
+    const lenRows = judged.filter(r => r.lenN >= DEC_PROSE_FLOOR)
+      .map(r => ({ name: r.name, v: Math.max(...r.lenRank) / r.lenN })).sort((a, b) => b.v - a.v)[0];
+    console.log(`  ok   no feature value is unique to the key on ${(DEC_FEATURE_CEILING * 100).toFixed(0)}% or more of a ` +
+      `generator's draws  (worst: ${worstFeat.name} ${(worstFeat.v * 100).toFixed(1)}%, ${DEC_FEATURES[worstFeat.fi].label})`);
+    console.log(`  ok   no never-correct frame ships on ${(DEC_FRAME_SHIP * 100).toFixed(0)}% or more of any generator's draws, ` +
+      `and every multi-frame key wears >= ${DEC_KEY_FRAMES} sentences  (thinnest: ` +
+      `${judged.filter(r => r.frames >= DEC_KEY_FRAMES).sort((a, b) => a.keyFrames - b.keyFrames)[0].name} ` +
+      `${judged.filter(r => r.frames >= DEC_KEY_FRAMES).sort((a, b) => a.keyFrames - b.keyFrames)[0].keyFrames})`);
+    console.log(`  ok   no prose key sits at one length rank on more than ${(DEC_LEN_CEILING * 100).toFixed(0)}% of the draws ` +
+      `whose options span more than ${DEC_LEN_SPREAD} characters` +
+      (lenRows ? `  (worst: ${lenRows.name} ${(lenRows.v * 100).toFixed(1)}%)` : '  (no generator spans that far)'));
+    const modalWorst = proseRows.filter(r => r.allN >= DEC_PROSE_FLOOR).sort((a, b) => b.modalShare - a.modalShare)[0];
+    console.log(`  ok   no generator's key is the same answer on more than ${(DEC_MODAL_CEILING * 100).toFixed(0)}% of its draws` +
+      (modalWorst ? `  (worst: ${modalWorst.name} ${(modalWorst.modalShare * 100).toFixed(1)}% "${modalWorst.modalText}")` : ''));
+  }
+}
+
 const badContract = contractRows.filter(r => !r.ok);
 console.log('');
 if (badContract.length) for (const r of badContract) console.log(`FAIL contract  ${r.name}  ${r.note}`);

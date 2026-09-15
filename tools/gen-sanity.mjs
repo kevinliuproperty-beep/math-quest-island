@@ -419,6 +419,35 @@ function checkShape(q) {
       if (!allowed.has(v)) return 'padded distractor shipped (' + v + '); authored: ' + q.authored.join(',');
     }
   }
+  /* The same contract for a FRACTION MC (depth sweep 2026-09-15). q.authored is
+     parsed with parseFloat, and a rendered fraction strips to its digits run
+     together, so a fraction bank could not use it. A generator that sets
+     q.authoredFrac asserts the same three things in fraction arithmetic: three
+     named misconceptions, none worth what the key is worth, and NOTHING else
+     shipped - which is what makes finishFrac's padding branch provably dead on
+     every draw rather than on the lucky ones (refutation §6). */
+  if (Array.isArray(q.authoredFrac)) {
+    const rf = s => {
+      const mm = String(s).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
+      return mm ? [Number(mm[1]), Number(mm[2])] : null;
+    };
+    const key = rf(q.answerText);
+    if (!key) return 'authoredFrac set but the key is not a rendered fraction';
+    if (q.authoredFrac.length !== 3) return `authoredFrac: ${q.authoredFrac.length} named distractors, expected 3`;
+    for (const s of q.authoredFrac) {
+      if (!Array.isArray(s) || s.length !== 2 || !Number.isInteger(s[0]) || !Number.isInteger(s[1]))
+        return 'authoredFrac: a named distractor is not an [n, d] pair of integers';
+      if (key[0] * s[1] === s[0] * key[1])
+        return `authoredFrac: named distractor ${s[0]}/${s[1]} is worth what the key ${key[0]}/${key[1]} is worth`;
+    }
+    for (let i = 0; i < q.choices.length; i++) {
+      if (i === q.correct) continue;
+      const o = rf(q.choices[i]);
+      if (!o) return 'authoredFrac: a shipped option is not a rendered fraction';
+      if (!q.authoredFrac.some(s => s[0] * o[1] === o[0] * s[1]))
+        return `padded distractor shipped (${o[0]}/${o[1]}); authored: ${q.authoredFrac.map(s => s[0] + '/' + s[1]).join(', ')}`;
+    }
+  }
   // numeric choices must be finite and positive (no negative or absurd distractors)
   for (const p of plain) {
     const n = parseFloat(p);
@@ -431,8 +460,13 @@ function checkShape(q) {
 }
 
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
-/* Return: null = verified, string = failure, false = no oracle matched. */
-function oracle(q) {
+/* Return: null = verified, string = failure, false = no oracle matched.
+   `topic` is the registered topic id the generator was drawn from. It is used by
+   exactly one block - the P3 fractions bank added by the 2026-09-15 depth sweep -
+   so that a bank of house stem shapes cannot claim another topic's stems, and
+   another topic's looser branch cannot claim the bank's. Everything else here
+   still dispatches on the rendered text alone. */
+function oracle(q, topic) {
   const text = strip(q.q);
   const extra = strip(q.extra || '');
   const ansNum = parseFloat(strip(q.answerText));
@@ -1417,6 +1451,364 @@ function oracle(q) {
     return near(e, mval(mixA[0])) ? null : `p5 mixed: expected ${e}, got ${mval(mixA[0])}`;
   }
 
+  /* ===== DEPTH SWEEP 2026-09-15: THE P3 FRACTIONS BANK ======================
+     js/topics/p3-fractions.js, 25 generators, one oracle branch each. Every key
+     is re-derived from the RENDERED stem - or, for the three picture formats,
+     from the bar model's own shaded segments - and never from the generator's
+     answerText. Premises are re-derived too: an error-spotting claim must map to
+     exactly ONE named misconception and must never be the right answer, a
+     comparison must have a unique extreme, an ordering must run in the direction
+     the stem asks for, and a "related fractions" stem must actually print two
+     related denominators.
+
+     THIS BLOCK MUST STAY ABOVE the loose fraction branches below it. Those fire
+     on any stem containing "equivalent to", "simplest form", "greatest" or
+     ending "= ?" with two rendered fractions, and three of them would MIS-READ
+     these stems rather than merely under-check them: the loose compare branch
+     reads the ordering item's four three-fraction options as single fractions
+     and reports a false failure. Specific above loose, per the P3 pilot rule.
+
+     The block is scoped to the `fractions` topic because its stems are HOUSE
+     shapes, not universal ones: "a/d + b/d = ?" is drawn by p2 (whole numbers),
+     by p4fractions (which REDUCES its answers) and by p5fractions too, and a bank
+     oracle that claimed those would report a false failure on four generators it
+     was never written for. Scoping is the fence, not a weakening - coverage
+     inside `fractions` is 100% on all 25 generators, and the loose branches below
+     keep serving every other topic exactly as before. */
+  if (topic === 'fractions') {
+    const fOpts = (q.choices || []).map(c => parseFrac(c));
+    const fEq = (a, b) => !!a && !!b && a[0] * b[1] === b[0] * a[1];
+    const fVal = a => a[0] / a[1];
+    const keyF = parseFrac(q.answerText);
+    const show = a => a ? a[0] + '/' + a[1] : '?';
+
+    /* --- the three picture formats, read off the rendered bar model ---------
+       The oracle counts `seg` / `seg fill` divs exactly as a child counts parts
+       and shaded parts, and the closing branch fails any NEW bar-model generator
+       that arrives without an oracle, so a picture can never ship unchecked. */
+    if (/class="barModel"/.test(String(q.extra))) {
+      const raw = String(q.extra);
+      const on = (raw.match(/class="seg fill"/g) || []).length;
+      const total = (raw.match(/class="seg[ "]/g) || []).length;
+      if (!total) return 'bar model: no segments rendered';
+      if (on < 1 || on >= total) return `bar model: ${on} of ${total} parts shaded - a P3 fraction of a whole must be proper`;
+      if (total > 12) return `bar model: ${total} parts exceeds the P3 denominator limit of 12`;
+      if (/^What fraction of the bar is blue\?$/.test(text)) {
+        if (!keyF) return 'bar identify: the key is not a rendered fraction';
+        if (keyF[1] !== total) return `bar identify: key ${show(keyF)} is not written in ${total}ths`;
+        return near(on / total, fVal(keyF)) ? null
+          : `bar identify: ${on}/${total} shaded but the key is ${show(keyF)}`;
+      }
+      if (/^What fraction of the bar is not blue\?$/.test(text)) {
+        if (!keyF) return 'bar complement: the key is not a rendered fraction';
+        if (keyF[1] !== total) return `bar complement: key ${show(keyF)} is not written in ${total}ths`;
+        if (!fOpts.some((o, i) => i !== q.correct && o && o[0] === on && o[1] === total))
+          return 'bar complement: the shaded fraction itself is not offered as a distractor';
+        return near((total - on) / total, fVal(keyF)) ? null
+          : `bar complement: ${total - on}/${total} is not blue but the key is ${show(keyF)}`;
+      }
+      if ((m = text.match(/^The bar below is cut into (\d+) equal parts, and (\d+) of them are blue\. Which fraction is equivalent to the blue fraction\?$/))) {
+        const p = Number(m[1]), b = Number(m[2]);
+        if (p !== total || b !== on) return `bar equivalence: the stem says ${b} of ${p} but the picture shows ${on} of ${total}`;
+        if (!keyF) return 'bar equivalence: the key is not a rendered fraction';
+        if (!near(on / total, fVal(keyF))) return `bar equivalence: key ${show(keyF)} is not worth ${on}/${total}`;
+        if (gcd(keyF[0], keyF[1]) !== 1) return `bar equivalence: key ${show(keyF)} is not itself in simplest form`;
+        if (keyF[1] >= total) return `bar equivalence: key ${show(keyF)} does not regroup ${on}/${total} into bigger parts`;
+        for (let i = 0; i < fOpts.length; i++)
+          if (i !== q.correct && fEq(fOpts[i], keyF)) return 'bar equivalence: a distractor is also equivalent';
+        return null;
+      }
+      if ((m = text.match(/^The bar below shows one fraction shaded blue\. Which of these fractions is (greater|less) than the blue fraction\?$/))) {
+        const wantGreater = m[1] === 'greater';
+        if (fOpts.length !== 4 || fOpts.some(o => !o)) return 'bar compare: an option is not a rendered fraction';
+        const hits = fOpts.filter(o => wantGreater ? o[0] * total > on * o[1] : o[0] * total < on * o[1]);
+        if (hits.length !== 1) return `bar compare: ${hits.length} of the four options are ${m[1]} than ${on}/${total}`;
+        const sameD = fOpts.every(o => o[1] === total), sameN = fOpts.every(o => o[0] === on);
+        if (!sameD && !sameN) return 'bar compare: the options share neither the top nor the bottom number, so no P3 comparing rule applies';
+        if (fOpts.some(o => o[0] === on && o[1] === total)) return 'bar compare: the shaded fraction itself is one of the options';
+        return fEq(hits[0], keyF) ? null : `bar compare: expected ${show(hits[0])}, key is ${show(keyF)}`;
+      }
+      return 'bar model: rendered a bar model but no oracle matched the stem';
+    }
+
+    /* --- concept check: the parts must be EQUAL --- */
+    if ((m = text.match(/^(.+) cuts a (.+) into (\d+) pieces, but the pieces are not all the same size\. (?:She|He) takes 1 piece\. Why can (?:she|he) not call that piece/))) {
+      const d = Number(m[3]);
+      const f = parseFrac(q.q);
+      if (!f || f[0] !== 1 || f[1] !== d) return `equal parts: the stem prints ${show(f)} for 1 of ${d} pieces`;
+      if (d > 12) return `equal parts: ${d} pieces exceeds the P3 denominator limit of 12`;
+      const want = 'The pieces are not all the same size, so 1 piece is not 1 out of ' + d + ' equal parts.';
+      if (strip(q.answerText) !== want) return `equal parts: expected "${want}", got "${strip(q.answerText)}"`;
+      if (q.choices.filter(c => /^Nothing is wrong/.test(strip(c))).length !== 1)
+        return 'equal parts: the "any 1 of N pieces is 1/N" misconception is not offered exactly once';
+      return null;
+    }
+
+    /* --- comparing: three stems, one rule each, all with a UNIQUE extreme ---- */
+    const compareFour = (label, wantMax, needUnit) => {
+      if (fOpts.length !== 4 || fOpts.some(o => !o)) return `${label}: an option is not a rendered fraction`;
+      if (fOpts.some(o => o[0] >= o[1] || o[1] > 12)) return `${label}: an option is not a proper fraction with a denominator to 12`;
+      if (needUnit && fOpts.some(o => o[0] !== 1)) return `${label}: an option is not a unit fraction`;
+      const vals = fOpts.map(fVal);
+      const want = wantMax ? Math.max(...vals) : Math.min(...vals);
+      if (vals.filter(v => near(v, want)).length !== 1) return `${label}: the ${wantMax ? 'greatest' : 'smallest'} is not unique`;
+      const sameD = fOpts.every(o => o[1] === fOpts[0][1]), sameN = fOpts.every(o => o[0] === fOpts[0][0]);
+      if (!sameD && !sameN) return `${label}: the four fractions share neither the top nor the bottom number, so no P3 comparing rule applies`;
+      return near(vals[q.correct], want) ? null : `${label}: flagged ${vals[q.correct]}, the extreme is ${want}`;
+    };
+    if ((m = text.match(/^These fractions are all one part of a whole\. Which one is the (greatest|smallest)\?$/)))
+      return compareFour('unit compare', m[1] === 'greatest', true);
+    if ((m = text.match(/^These fractions all have the same bottom number\. Which one is the (greatest|smallest)\?$/))) {
+      if (fOpts.length === 4 && fOpts.every(Boolean) && !fOpts.every(o => o[1] === fOpts[0][1]))
+        return 'like compare: the stem promises one bottom number and the options do not share one';
+      return compareFour('like compare', m[1] === 'greatest', false);
+    }
+    if ((m = text.match(/^Which of these fractions is the (greatest|smallest)\?$/)))
+      return compareFour('mixed compare', m[1] === 'greatest', false);
+
+    /* --- comparing, as a Singapore word problem. The wholes must be declared the
+       same size: comparing fractions of different wholes is not a question. --- */
+    if ((m = text.match(/^.+ each bought a same-size .+\. .+\. Who ate the (most|least)\?$/))) {
+      const wantMax = m[1] === 'most';
+      const pairs = [...String(q.q).matchAll(/([A-Z][a-z]+) ate <span class="frac"><span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]
+        .map(x => [x[1], Number(x[2]), Number(x[3])]);
+      if (pairs.length !== 4) return `who ate most: ${pairs.length} name+fraction pairs found, expected 4`;
+      if (pairs.some(p => p[1] >= p[2] || p[2] > 12)) return 'who ate most: a share is not a proper fraction with a denominator to 12';
+      const vals = pairs.map(p => p[1] / p[2]);
+      if (new Set(vals.map(v => Math.round(v * 1e6))).size !== 4) return 'who ate most: two of the four shares are the same amount';
+      const tops = new Set(pairs.map(p => p[1])), bots = new Set(pairs.map(p => p[2]));
+      if (tops.size !== 1 && bots.size !== 1) return 'who ate most: the shares share neither the top nor the bottom number, so no P3 comparing rule applies';
+      const want = wantMax ? Math.max(...vals) : Math.min(...vals);
+      const who = pairs[vals.findIndex(v => near(v, want))][0];
+      const opts = q.choices.map(strip);
+      if (new Set(opts).size !== 4 || !pairs.every(p => opts.includes(p[0])))
+        return 'who ate most: the four options are not the four names in the stem';
+      return strip(q.answerText) === who ? null : `who ate most: expected ${who}, got ${strip(q.answerText)}`;
+    }
+
+    /* --- error spotting 1 of 3: DIAGNOSE the backwards denominator rule ------ */
+    if ((m = text.match(/^(.+?) says .+ is greater than .+, because (\d+) is greater than (\d+)\. What did (?:she|he) do wrong\?$/))) {
+      const name = m[1], d1 = Number(m[2]), d2 = Number(m[3]);
+      const fs = allFracs(q.q);
+      if (fs.length !== 2) return `compare error-spot: ${fs.length} fractions in the stem, expected 2`;
+      const A = fs[0], B = fs[1];
+      if (A[1] !== d1 || B[1] !== d2) return `compare error-spot: the printed reason names ${d1} and ${d2}, the fractions are ${show(A)} and ${show(B)}`;
+      if (A[0] !== B[0]) return 'compare error-spot: the two fractions do not share a top number, so the named rule does not apply';
+      if (!(d1 > d2)) return 'compare error-spot: the stated reason is not the bigger-denominator belief';
+      if (A[1] > 12 || B[1] > 12) return 'compare error-spot: a denominator exceeds 12';
+      if (A[0] * B[1] >= B[0] * A[1]) return `compare error-spot: the claim ${show(A)} > ${show(B)} is actually TRUE`;
+      const want = name + ' forgot that the bigger the bottom number, the smaller each piece.';
+      if (strip(q.answerText) !== want) return `compare error-spot: expected "${want}", got "${strip(q.answerText)}"`;
+      if (q.choices.filter(c => strip(c).indexOf(name) === 0).length !== 4)
+        return 'compare error-spot: not every option opens with the name, so the key is the odd one out';
+      return null;
+    }
+
+    /* --- ordering three fractions, in the direction the stem asks for -------- */
+    if ((m = text.match(/^Put these fractions in order, from the (smallest to the greatest|greatest to the smallest): .+\. Which order is correct\?$/))) {
+      const asc = m[1] === 'smallest to the greatest';
+      const shown = allFracs(q.q);
+      if (shown.length !== 3) return `ordering: ${shown.length} fractions in the stem, expected 3`;
+      if (shown.some(f => f[0] >= f[1] || f[1] > 12)) return 'ordering: a fraction is not proper with a denominator to 12';
+      const vals = shown.map(f => f[0] / f[1]);
+      if (new Set(vals.map(v => Math.round(v * 1e6))).size !== 3) return 'ordering: two of the three fractions are the same amount';
+      const want = shown.slice().sort((a, b) => asc ? a[0] * b[1] - b[0] * a[1] : b[0] * a[1] - a[0] * b[1]);
+      const seq = s => allFracs(s).map(f => f[0] + '/' + f[1]).join(' ');
+      const wantSeq = want.map(f => f[0] + '/' + f[1]).join(' ');
+      const opts = (q.choices || []).map(seq);
+      if (opts.length !== 4 || opts.some(o => o.split(' ').length !== 3)) return 'ordering: an option does not list exactly three fractions';
+      const setOf = o => o.split(' ').slice().sort().join(' ');
+      if (opts.some(o => setOf(o) !== setOf(wantSeq))) return 'ordering: an option lists a fraction that is not in the stem';
+      const right = opts.filter(o => o === wantSeq).length;
+      if (right !== 1) return `ordering: ${right} of the four options are in the right order`;
+      if (seq(q.q) === wantSeq) return 'ordering: the stem already lists the fractions in the answer order';
+      return seq(q.answerText) === wantSeq ? null : `ordering: expected ${wantSeq}, got ${seq(q.answerText)}`;
+    }
+
+    /* --- equivalence: the two inverses, then recognition -------------------- */
+    if (/What is the missing numerator\?$/.test(text)) {
+      const from = parseFrac(q.q);
+      const to = q.q.match(/<span class="n">\?<\/span><span class="d">(\d+)<\/span>/);
+      if (!from || !to) return 'missing numerator: the stem does not print n/d = ?/D';
+      const D = Number(to[1]);
+      if (D > 12) return `missing numerator: denominator ${D} exceeds 12`;
+      if (gcd(from[0], from[1]) !== 1) return `missing numerator: the given fraction ${show(from)} is not in its simplest form`;
+      if (D % from[1] !== 0) return `missing numerator: ${D} is not a whole number of ${from[1]}s`;
+      const k = D / from[1];
+      if (k < 2) return 'missing numerator: the scale factor is not greater than 1';
+      const e = from[0] * k;
+      if (e >= D) return `missing numerator: ${e}/${D} is not a proper fraction`;
+      return near(e, ansNum) ? null : `missing numerator: expected ${e} for ${show(from)} -> ?/${D}, got ${ansNum}`;
+    }
+    if (/What is the missing denominator\?$/.test(text)) {
+      const from = parseFrac(q.q);
+      const to = q.q.match(/<span class="n">(\d+)<\/span><span class="d">\?<\/span>/);
+      if (!from || !to) return 'missing denominator: the stem does not print n/d = N/?';
+      const N = Number(to[1]);
+      if (gcd(from[0], from[1]) !== 1) return `missing denominator: the given fraction ${show(from)} is not in its simplest form`;
+      if (N % from[0] !== 0) return `missing denominator: ${N} is not a whole number of ${from[0]}s`;
+      const k = N / from[0];
+      if (k < 2) return 'missing denominator: the scale factor is not greater than 1';
+      const e = from[1] * k;
+      if (e > 12) return `missing denominator: ${e} exceeds the P3 denominator limit of 12`;
+      if (N >= e) return `missing denominator: ${N}/${e} is not a proper fraction`;
+      return near(e, ansNum) ? null : `missing denominator: expected ${e} for ${show(from)} -> ${N}/?, got ${ansNum}`;
+    }
+    if (/^Which fraction is equivalent to /.test(text)) {
+      const f = parseFrac(q.q);
+      if (!f || !keyF) return 'equivalent: the stem or the key has no rendered fraction';
+      if (gcd(f[0], f[1]) !== 1) return `equivalent: the given fraction ${show(f)} is not in its simplest form`;
+      if (!fEq(f, keyF)) return `equivalent: ${show(keyF)} is not equivalent to ${show(f)}`;
+      if (keyF[1] > 12) return `equivalent: key denominator ${keyF[1]} exceeds 12`;
+      if (keyF[1] <= f[1]) return `equivalent: the key ${show(keyF)} does not scale ${show(f)} UP`;
+      for (let i = 0; i < fOpts.length; i++)
+        if (i !== q.correct && fEq(fOpts[i], f)) return 'equivalent: a distractor is also equivalent';
+      return null;
+    }
+
+    /* --- simplest form: direct, negative form, and CORRECT the mistake ------- */
+    if (/^Express .+ in its simplest form\.$/.test(text)) {
+      const f = parseFrac(q.q);
+      if (!f || !keyF) return 'simplest: the stem or the key has no rendered fraction';
+      if (f[0] >= f[1] || f[1] > 12) return `simplest: ${show(f)} is not a proper fraction with a denominator to 12`;
+      const g2 = gcd(f[0], f[1]);
+      if (g2 < 2) return `simplest: ${show(f)} is already in its simplest form, so the question has nothing to do`;
+      const e = [f[0] / g2, f[1] / g2];
+      if (keyF[0] !== e[0] || keyF[1] !== e[1]) return `simplest: expected ${show(e)}, got ${show(keyF)}`;
+      for (let i = 0; i < fOpts.length; i++)
+        if (i !== q.correct && fEq(fOpts[i], keyF)) return 'simplest: a distractor is worth what the key is worth';
+      return null;
+    }
+    if (/^Which of these fractions is already in its simplest form\?$/.test(text)) {
+      if (fOpts.length !== 4 || fOpts.some(o => !o)) return 'already simplest: an option is not a rendered fraction';
+      if (fOpts.some(o => o[0] >= o[1] || o[1] > 12)) return 'already simplest: an option is not a proper fraction with a denominator to 12';
+      const simp = fOpts.filter(o => gcd(o[0], o[1]) === 1);
+      if (simp.length !== 1) return `already simplest: ${simp.length} of the four options are already in simplest form`;
+      if (!keyF || keyF[0] !== simp[0][0] || keyF[1] !== simp[0][1])
+        return `already simplest: expected ${show(simp[0])}, got ${show(keyF)}`;
+      return null;
+    }
+    if ((m = text.match(/^(.+?) says .+ in its simplest form is .+, because (?:she|he) took (\d+) away from the top and (\d+) away from the bottom\. What is .+ in its simplest form\?$/))) {
+      const t2 = Number(m[2]);
+      if (Number(m[3]) !== t2) return 'simplest error-spot: the stem takes different amounts off the top and the bottom';
+      const fs = allFracs(q.q);
+      if (fs.length !== 3) return `simplest error-spot: ${fs.length} fractions in the stem, expected 3`;
+      const F = fs[0], claim = fs[1], F2 = fs[2];
+      if (F[0] !== F2[0] || F[1] !== F2[1]) return 'simplest error-spot: the stem names two different fractions';
+      if (F[0] >= F[1] || F[1] > 12) return `simplest error-spot: ${show(F)} is not a proper fraction with a denominator to 12`;
+      if (claim[0] !== F[0] - t2 || claim[1] !== F[1] - t2)
+        return `simplest error-spot: the printed claim ${show(claim)} is not ${F[0]} - ${t2} over ${F[1]} - ${t2}`;
+      const g2 = gcd(F[0], F[1]);
+      if (g2 < 2) return `simplest error-spot: ${show(F)} is already in its simplest form`;
+      const e = [F[0] / g2, F[1] / g2];
+      if (claim[0] * e[1] === e[0] * claim[1]) return `simplest error-spot: the "wrong" claim ${show(claim)} is worth the right answer`;
+      if (!keyF || keyF[0] !== e[0] || keyF[1] !== e[1]) return `simplest error-spot: expected ${show(e)}, got ${show(keyF)}`;
+      if (!fOpts.some((o, i) => i !== q.correct && o && o[0] === claim[0] && o[1] === claim[1]))
+        return 'simplest error-spot: the printed wrong answer is not offered as a distractor';
+      return null;
+    }
+
+    /* --- adding and subtracting: like, from one whole, related, and the two
+       word formats. Every key must be printed in the house form (the exact
+       numerator over the exact denominator), not merely equivalent to it. --- */
+    /* (?!1 ) keeps "1 - a/d = ?" out of this branch: stripped, its first token is
+       the whole number 1, not a fraction, and it has its own oracle below. */
+    if ((m = text.match(/^(?!1 )\d+ ([+−-]) \d+ = \?$/))) {
+      const fs = allFracs(q.q);
+      if (fs.length !== 2) return `like fractions: ${fs.length} fractions rendered, expected 2`;
+      const A = fs[0], B = fs[1];
+      if (A[1] !== B[1]) return `like fractions: ${A[1]} and ${B[1]} are not the same bottom number`;
+      if (A[1] > 12) return `like fractions: denominator ${A[1]} exceeds 12`;
+      if (A[0] >= A[1] || B[0] >= B[1]) return 'like fractions: an operand is not a proper fraction';
+      const top = m[1] === '+' ? A[0] + B[0] : A[0] - B[0];
+      if (top < 1) return 'like fractions: the answer is zero or negative';
+      if (top >= A[1]) return 'like fractions: the answer is not within one whole';
+      if (!keyF) return 'like fractions: the key is not a rendered fraction';
+      return (keyF[0] === top && keyF[1] === A[1]) ? null
+        : `like fractions: expected ${top}/${A[1]}, got ${show(keyF)}`;
+    }
+    if (/^1 [−-] \d+ = \?$/.test(text)) {
+      const fs = allFracs(q.q);
+      if (fs.length !== 1) return `one minus: ${fs.length} fractions rendered, expected 1`;
+      const A = fs[0];
+      if (A[0] >= A[1] || A[1] > 12) return `one minus: ${show(A)} is not a proper fraction with a denominator to 12`;
+      if (!keyF) return 'one minus: the key is not a rendered fraction';
+      const top = A[1] - A[0];
+      if (!fOpts.some((o, i) => i !== q.correct && o && o[0] === A[0] && o[1] === A[1]))
+        return 'one minus: the part taken away is not offered as a distractor';
+      return (keyF[0] === top && keyF[1] === A[1]) ? null
+        : `one minus: expected ${top}/${A[1]}, got ${show(keyF)}`;
+    }
+    if (/\+ \? = 1 What is the missing fraction\?$/.test(text)) {
+      const fs = allFracs(q.q);
+      if (fs.length !== 1) return `make one: ${fs.length} fractions rendered, expected 1`;
+      const A = fs[0];
+      if (A[0] >= A[1] || A[1] > 12) return `make one: ${show(A)} is not a proper fraction with a denominator to 12`;
+      if (!keyF) return 'make one: the key is not a rendered fraction';
+      const top = A[1] - A[0];
+      if (!near(A[0] / A[1] + fVal(keyF), 1)) return `make one: ${show(A)} + ${show(keyF)} != 1`;
+      return (keyF[0] === top && keyF[1] === A[1]) ? null
+        : `make one: expected ${top}/${A[1]}, got ${show(keyF)}`;
+    }
+    if ((m = text.match(/^(Add|Subtract): \d+ [+−-] \d+ = \?$/))) {
+      const fs = allFracs(q.q);
+      if (fs.length !== 2) return `related fractions: ${fs.length} fractions rendered, expected 2`;
+      const A = fs[0], B = fs[1];
+      if (A[0] >= A[1] || B[0] >= B[1]) return 'related fractions: an operand is not a proper fraction';
+      if (B[1] > 12) return `related fractions: denominator ${B[1]} exceeds 12`;
+      if (B[1] % A[1] !== 0) return `related fractions: ${B[1]} is not a multiple of ${A[1]}, so the fractions are not RELATED (that is P4 work)`;
+      const k = B[1] / A[1];
+      if (k < 2) return 'related fractions: the two denominators are the same - that is a LIKE fraction item, not a related one';
+      const top = m[1] === 'Add' ? k * A[0] + B[0] : k * A[0] - B[0];
+      if (top < 1) return 'related fractions: the answer is zero or negative';
+      if (top >= B[1]) return 'related fractions: the answer is not within one whole';
+      if (gcd(top, B[1]) !== 1) return `related fractions: the key ${top}/${B[1]} is not in its simplest form, so an equivalent option would be defensible too`;
+      if (!keyF) return 'related fractions: the key is not a rendered fraction';
+      return (keyF[0] === top && keyF[1] === B[1]) ? null
+        : `related fractions: expected ${top}/${B[1]}, got ${show(keyF)}`;
+    }
+
+    /* --- error spotting 2 of 3: DIAGNOSE the added-denominators mistake ------ */
+    if ((m = text.match(/^(.+?) says .+ \+ .+ = .+\. What did (?:she|he) do wrong\?$/))) {
+      const name = m[1];
+      const fs = allFracs(q.q);
+      if (fs.length !== 3) return `add error-spot: ${fs.length} fractions in the stem, expected 3`;
+      const A = fs[0], B = fs[1], claim = fs[2];
+      if (A[1] !== B[1]) return 'add error-spot: the two fractions are not like fractions';
+      if (A[1] > 12) return `add error-spot: denominator ${A[1]} exceeds 12`;
+      const trueTop = A[0] + B[0];
+      if (trueTop >= A[1]) return 'add error-spot: the true sum is not within one whole';
+      if (claim[0] * A[1] === trueTop * claim[1]) return `add error-spot: the "wrong" claim ${show(claim)} is worth the true answer`;
+      const SLIPS = [
+        [[A[0] + B[0], 2 * A[1]], name + ' added the bottom numbers as well.'],
+        [[A[0] - B[0], A[1]], name + ' subtracted the top numbers instead of adding them.'],
+        [[A[0] * B[0], A[1]], name + ' multiplied the top numbers instead of adding them.']
+      ];
+      const hits = SLIPS.filter(s => s[0][0] === claim[0] && s[0][1] === claim[1]);
+      if (hits.length !== 1) return `add error-spot: the printed claim ${show(claim)} matches ${hits.length} named misconceptions for ${show(A)} + ${show(B)}`;
+      if (strip(q.answerText) !== hits[0][1]) return `add error-spot: expected "${hits[0][1]}", got "${strip(q.answerText)}"`;
+      if (q.choices.filter(c => strip(c).indexOf(name) === 0).length !== 4)
+        return 'add error-spot: not every option opens with the name, so the key is the odd one out';
+      return null;
+    }
+
+    /* --- two-step word problem: add, then take from one whole --------------- */
+    if (/^.+ eats .+ of a .+ and .+ eats .+ of the same .+\. What fraction of the .+ is left\?$/.test(text)) {
+      const fs = allFracs(q.q);
+      if (fs.length !== 2) return `cake left: ${fs.length} fractions in the stem, expected 2`;
+      const A = fs[0], B = fs[1];
+      if (A[1] !== B[1]) return 'cake left: the two shares are not like fractions';
+      if (A[1] > 12) return `cake left: denominator ${A[1]} exceeds 12`;
+      const eaten = A[0] + B[0];
+      if (eaten >= A[1]) return 'cake left: the two of them eat a whole cake or more, so nothing is left to name';
+      if (!keyF) return 'cake left: the key is not a rendered fraction';
+      const top = A[1] - eaten;
+      if (!fOpts.some((o, i) => i !== q.correct && o && o[0] === eaten && o[1] === A[1]))
+        return 'cake left: the stop-after-step-1 answer is not offered as a distractor';
+      return (keyF[0] === top && keyF[1] === A[1]) ? null
+        : `cake left: expected ${top}/${A[1]}, got ${show(keyF)}`;
+    }
+  }
   /* --- fraction arithmetic (rendered via fr(), so read the markup) --- */
   if (/[+] *\? *= *1|\+ \? = 1/.test(strip(q.q).replace(/\s+/g, ' ')) || /\+ \? &nbsp; What is the missing/.test(q.q)) {
     const f = parseFrac(q.q);
@@ -2098,6 +2490,30 @@ function coincidence(q) {
     const s = new Set(opts.map(v => Math.round(v * 1e6)));
     if (s.size !== opts.length) return `coincidence: two options are the same number (${opts.join(', ')})`;
   }
+  /* THE FRACTION FORM OF THE SAME BAN (depth sweep 2026-09-15). The rule above
+     compares options as NUMBERS, and a rendered fraction strips to its digits run
+     together ("3/8" -> "38"), so 1/2 beside 3/6 sailed through it: two options
+     worth the same amount, which to a child who can reduce is two right answers
+     and to one who cannot is a duplicate. Fires on any question whose options are
+     ALL rendered fractions, in any topic.
+     ONE EXEMPTION, declared: a "simplest form" stem legitimately offers an
+     unsimplified equivalent (4/6 beside the key 2/3) - there the FORM is what is
+     asked for, not the amount, and only one option is in simplest form. Nothing
+     in this repo uses it today; the exemption exists so a later author does not
+     have to weaken the rule to write that item. */
+  {
+    const fr4 = (q.choices || []).map(c => {
+      const mm = String(c).match(/^<span class="frac"><span class="n">(\d+)<\/span><span class="d">(\d+)<\/span><\/span>$/);
+      return mm ? [Number(mm[1]), Number(mm[2])] : null;
+    });
+    const asksForm = /simplest form/i.test(text);
+    if (!asksForm && fr4.length > 1 && fr4.every(Boolean)) {
+      for (let i = 0; i < fr4.length; i++) for (let j = i + 1; j < fr4.length; j++) {
+        if (fr4[i][0] * fr4[j][1] === fr4[j][0] * fr4[i][1])
+          return `coincidence: options ${fr4[i][0]}/${fr4[i][1]} and ${fr4[j][0]}/${fr4[j][1]} are the same amount`;
+      }
+    }
+  }
   return null;
 }
 
@@ -2116,8 +2532,24 @@ function coincidence(q) {
    fine; what is banned is the single odd one out that points at the answer.
 
    RULE 2, "long" >= "wide": a stem that prints "X ... long and Y ... wide" must
-   print X >= Y. Was flipped in 1,710 of 8,000 draws across three generators. */
-const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area']);
+   print X >= Y. Was flipped in 1,710 of 8,000 draws across three generators.
+
+   DEPTH SWEEP 2026-09-15 adds `fractions` to the set and two rules that are the
+   fraction twins of rule 2:
+
+   RULE 3, SAME-SIZE WHOLES. A stem in which two or more people eat or take a
+   fraction must say the wholes are the same size. "Siti ate 3/8 and Kumar ate
+   3/5" is not a question at all unless the two cakes are the same cake, and the
+   wording inversion the refutation warned about is exactly this class: a stem
+   whose words quietly contradict the arithmetic it wants.
+
+   RULE 4, SYLLABUS SHAPE. Every rendered fraction in a P3 fractions item must be
+   PROPER (an improper fraction and a mixed number are both MOE P4), and the KEY
+   may not carry a denominator past 12. A named misconception is allowed a bigger
+   bottom number up to 24 - adding the denominators really does give 5/14, and
+   refusing to print it would take the mistake off the table - but nothing a child
+   is asked to produce may leave the syllabus. */
+const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'fractions']);
 const optForm = s => {
   const t = strip(s);
   if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';
@@ -2146,6 +2578,30 @@ function pilotGates(q, topic) {
   while ((mm = re.exec(all))) {
     if (Number(mm[1]) < Number(mm[3]))
       return `"long" prints shorter than "wide": ${mm[1]} ${mm[2]} long and ${mm[3]} ${mm[4]} wide`;
+  }
+  if (topic === 'fractions') {
+    const stem = strip(q.q);
+    /* RULE 3: two or more people's fractions, one unstated whole. */
+    const eaters = (stem.match(/ (ate|eats|takes|took) /g) || []).length;
+    if (eaters >= 2 && !/same/.test(stem))
+      return `two or more shares are compared or combined without saying the wholes are the same size: "${stem}"`;
+    /* RULE 4: syllabus shape, on every rendered fraction reachable from the item. */
+    const seen = [];
+    eachString({ q: q.q, extra: q.extra || '', explain: q.explain || '', answerText: q.answerText, choices: q.choices || [] },
+      '', seen, new Set());
+    for (const [where, s] of seen) {
+      for (const f of [...String(s).matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]) {
+        const n = Number(f[1]), d = Number(f[2]);
+        /* n === d is allowed and is deliberate: "one whole is 8/8" is how P3
+           teaches making one whole, and every explain in the `wholes` bank prints
+           it. What is banned is n > d, which is a genuine improper fraction. */
+        if (n > d) return `improper fraction ${n}/${d} rendered in ${where} - improper fractions and mixed numbers are MOE P4`;
+        if (d > 24) return `denominator ${d} rendered in ${where} is past the readability cap of 24`;
+      }
+    }
+    const kf = String(q.answerText).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
+    if (kf && Number(kf[2]) > 12)
+      return `the key ${kf[1]}/${kf[2]} carries a denominator past the P3 limit of 12`;
   }
   return null;
 }
@@ -2189,7 +2645,7 @@ for (const g of GENS) {
     const pilot = pilotGates(q, g.topic);
     if (pilot) { err = pilot; badQ = q; break; }
     distinct.add(qKey(q));
-    const o = oracle(q);
+    const o = oracle(q, g.topic);
     if (o === false) continue;
     matched++;
     if (o) { err = o; badQ = q; break; }

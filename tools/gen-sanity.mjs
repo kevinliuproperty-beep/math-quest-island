@@ -1482,6 +1482,30 @@ function oracle(q, topic) {
     const keyF = parseFrac(q.answerText);
     const show = a => a ? a[0] + '/' + a[1] : '?';
 
+    /* SWEEP FRACTIONS REFUTATION, SECOND PASS 2026-09-15, WOUND 1. Four branches
+       below used to assert that one PARTICULAR named distractor sat on the row -
+       "the shaded fraction itself", "the part taken away", "the printed wrong
+       answer", "the stop-after-step-1 answer". That assertion is exactly what held
+       the distractor sets fixed, and a fixed set of named beliefs is one-sided in
+       VALUE, which pinned the key's rank to one place on 100.00% of draws in five
+       generators (RULE 7 below). The generators now draw three of a longer named
+       list, on both sides of the key, so the check is INVERTED and made stronger:
+       the oracle re-derives the whole named list from the rendered stem or from the
+       drawn bar and fails any option that is not on it. A padded distractor still
+       cannot ship - and neither can an arbitrary one - while a both-sided row can. */
+    const fromList = (label, list) => {
+      const named = list.filter(c => Array.isArray(c) && Number.isInteger(c[0]) && Number.isInteger(c[1]) &&
+                                     c[0] >= 1 && c[1] >= 2);
+      for (let i = 0; i < (q.choices || []).length; i++) {
+        if (i === q.correct) continue;
+        const o = fOpts[i];
+        if (!o) return `${label}: option "${strip(q.choices[i])}" is not a rendered fraction`;
+        if (!named.some(c => c[0] === o[0] && c[1] === o[1]))
+          return `${label}: ${show(o)} is not one of the misconceptions this item names (${named.map(show).join(', ')})`;
+      }
+      return null;
+    };
+
     /* --- the three picture formats, read off the rendered bar model ---------
        The oracle counts `seg` / `seg fill` divs exactly as a child counts parts
        and shaded parts, and the closing branch fails any NEW bar-model generator
@@ -1496,18 +1520,35 @@ function oracle(q, topic) {
       if (/^What fraction of the bar is blue\?$/.test(text)) {
         if (!keyF) return 'bar identify: the key is not a rendered fraction';
         if (keyF[1] !== total) return `bar identify: key ${show(keyF)} is not written in ${total}ths`;
+        const badI = fromList('bar identify', [
+          [total-on, total], [on, total-1], [on+1, total], [on-1, total], [on, total+1]
+        ]);
+        if (badI) return badI;
+        /* SECOND PASS, W2: on a half-shaded bar the complement IS the key, and the
+           card said so - "3/6 is the part that is NOT blue" under the key 3/6, on
+           12.96% of draws. */
+        if (2 * on === total && /is the part that is NOT blue/.test(strip(q.explain)))
+          return `bar identify: the card calls the key ${show(keyF)} "the part that is NOT blue" on a half-shaded bar`;
         return near(on / total, fVal(keyF)) ? null
           : `bar identify: ${on}/${total} shaded but the key is ${show(keyF)}`;
       }
       if (/^What fraction of the bar is not blue\?$/.test(text)) {
         if (!keyF) return 'bar complement: the key is not a rendered fraction';
         if (keyF[1] !== total) return `bar complement: key ${show(keyF)} is not written in ${total}ths`;
-        /* WOUND 4 (refutation 2026-09-15): when the bar is HALF shaded the shaded
-           fraction is worth the key, so it cannot be offered - which is exactly why
-           the generator used to refuse every half-shaded draw. The requirement now
-           binds only where it can be met. */
-        if (2 * on !== total && !fOpts.some((o, i) => i !== q.correct && o && o[0] === on && o[1] === total))
-          return 'bar complement: the shaded fraction itself is not offered as a distractor';
+        /* WOUND 4 (refutation 2026-09-15) took the "shaded fraction must be offered"
+           requirement down to where it could be met (it IS the key on a half-shaded
+           bar); the SECOND PASS replaces it with the whole named list, re-derived
+           from the drawn bar. */
+        const badU = fromList('bar complement', [
+          [on, total], [total-on+1, total], [total-on-1, total],
+          [total-on, total-1], [total-on, total+1],
+          [total-on+1, total-1], [total-on-1, total-1]
+        ]);
+        if (badU) return badU;
+        /* SECOND PASS, W2: the card may not name the key and then call it the other
+           part - which is what it did on 22.6% of draws once the halves arrived. */
+        if (2 * on === total && /is the blue part, not the answer/.test(strip(q.explain)))
+          return `bar complement: the card calls the key ${show(keyF)} "the blue part, not the answer" on a half-shaded bar`;
         return near((total - on) / total, fVal(keyF)) ? null
           : `bar complement: ${total - on}/${total} is not blue but the key is ${show(keyF)}`;
       }
@@ -1664,8 +1705,8 @@ function oracle(q, topic) {
         return `compare error-spot: the stated reason "${reason}" matches ${hits.length} named beliefs, expected exactly 1`;
       const SAY = {
         bottom: ' thought a bigger bottom number makes a bigger fraction.',
-        sum:    ' compared the totals of the two numbers in each fraction.',
-        top:    ' thought a smaller top number makes a bigger fraction.'
+        sum:    ' added the top number to the bottom number in each fraction.',
+        top:    ' used the bottom number rule on the top numbers instead.'
       };
       const want = name + SAY[hits[0]];
       if (strip(q.answerText) !== want) return `compare error-spot: expected "${want}", got "${strip(q.answerText)}"`;
@@ -1677,6 +1718,20 @@ function oracle(q, topic) {
           return `compare error-spot: the "${id}" belief is not on the option list, so the key has fewer than two named rivals`;
       if (opts.filter(c => Object.keys(SAY).some(id => c === name + SAY[id])).length !== 3)
         return 'compare error-spot: the option set is not the three named beliefs plus exactly one never-true diagnosis';
+      /* SECOND PASS 2026-09-15, KILL 1 RELOCATED - RULE 8, THE NOUN. The stem prints
+         the child's stated reason so that the belief can be fingerprinted, and in v2
+         that reason named its belief with the same noun the KEY used while no other
+         option repeated it: "find the words the reason used and pick the option that
+         repeats them" scored 94.5% over 5,000 draws without a fraction being
+         compared. The vocabulary of the reason must not single the key out, so at
+         least two options have to repeat it - and the build fails if they do not. */
+      const noun = hits[0] === 'sum' ? null : hits[0] + ' number';
+      const repeats = o => noun ? o.indexOf(noun) >= 0 : /\badded\b|\badding\b|\btotals?\b/.test(o);
+      const n2 = opts.filter(repeats).length;
+      if (!repeats(strip(q.answerText)))
+        return `compare error-spot: the key does not name what the reason names ("${reason}")`;
+      if (n2 < 2)
+        return `compare error-spot: only the key repeats what the stated reason names ("${reason}"), so the item is answered by matching the words (${opts.join(' | ')})`;
       return null;
     }
 
@@ -1702,26 +1757,45 @@ function oracle(q, topic) {
     }
 
     /* --- the gap in an already-ordered row (WOUND 1's second `order` format) ---
-       The row must really be in the direction it declares, the four options must
-       share a top or a bottom number with it so a P3 rule applies, and EXACTLY one
-       option may sit between the two printed neighbours. */
-    if ((m = text.match(/^These fractions are in order, from the (smallest to the greatest|greatest to the smallest): .+\. Which fraction belongs in the gap\?$/))) {
+       SECOND PASS 2026-09-15, WOUND 2. The gap used to be the MIDDLE slot on every
+       draw, so this oracle could look for the one option "between the two printed
+       neighbours" - and so could a child, without ever knowing which way the row
+       ran. The gap is now the smallest, the middle or the greatest slot, drawn
+       evenly, so the oracle re-derives the row from the rendered '?' position and
+       asserts the general rule: dropping the option into the gap must leave the
+       whole row strictly increasing in value in the direction the stem declares,
+       and EXACTLY one of the four may do it. At an end that is a one-sided test,
+       which is the point - a child running the order backwards now gets it wrong. */
+    if ((m = text.match(/^These fractions are in order, from the (smallest to the greatest|greatest to the smallest): (.+)\. Which fraction belongs in the gap\?$/))) {
       const asc = m[1] === 'smallest to the greatest';
+      const cells = m[2].split(', ');
+      if (cells.length !== 3) return `ordered gap: the row prints ${cells.length} cells, expected 3`;
+      const gapAt = cells.indexOf('?');
+      if (gapAt < 0 || cells.filter(c => c === '?').length !== 1) return 'ordered gap: the row does not print exactly one gap';
       const shown = allFracs(q.q);
       if (shown.length !== 2) return `ordered gap: ${shown.length} fractions printed in the row, expected 2`;
       if (shown.some(f => f[0] >= f[1] || f[1] > 12)) return 'ordered gap: a fraction in the row is not proper with a denominator to 12';
-      const lo = asc ? shown[0] : shown[1], hi = asc ? shown[1] : shown[0];
-      if (!(lo[0] * hi[1] < hi[0] * lo[1]))
-        return `ordered gap: the row prints ${show(shown[0])} then ${show(shown[1])} but declares ${m[1]}`;
       if (fOpts.length !== 4 || fOpts.some(o => !o)) return 'ordered gap: an option is not a rendered fraction';
       if (fOpts.some(o => o[0] >= o[1] || o[1] > 12)) return 'ordered gap: an option is not proper with a denominator to 12';
-      const sameD = lo[1] === hi[1] && fOpts.every(o => o[1] === lo[1]);
-      const sameN = lo[0] === hi[0] && fOpts.every(o => o[0] === lo[0]);
+      const sameD = shown[0][1] === shown[1][1] && fOpts.every(o => o[1] === shown[0][1]);
+      const sameN = shown[0][0] === shown[1][0] && fOpts.every(o => o[0] === shown[0][0]);
       if (!sameD && !sameN) return 'ordered gap: the row and the options share neither the top nor the bottom number, so no P3 ordering rule applies';
-      if (fOpts.some(o => fEq(o, lo) || fEq(o, hi))) return 'ordered gap: an option repeats a fraction already printed in the row';
-      const between = fOpts.filter(o => lo[0] * o[1] < o[0] * lo[1] && o[0] * hi[1] < hi[0] * o[1]);
-      if (between.length !== 1) return `ordered gap: ${between.length} of the four options sit between ${show(lo)} and ${show(hi)}`;
-      return fEq(between[0], keyF) ? null : `ordered gap: expected ${show(between[0])}, key is ${show(keyF)}`;
+      if (fOpts.some(o => shown.some(p => fEq(o, p)))) return 'ordered gap: an option repeats a fraction already printed in the row';
+      /* rebuild the row with the candidate in the gap, read in VALUE order */
+      const fitsRow = o => {
+        const cell = cells.map(c => c === '?' ? o : null);
+        let j = 0;
+        for (let i = 0; i < 3; i++) if (!cell[i]) cell[i] = shown[j++];
+        const seq = asc ? cell : cell.slice().reverse();
+        return seq[0][0]*seq[1][1] < seq[1][0]*seq[0][1] && seq[1][0]*seq[2][1] < seq[2][0]*seq[1][1];
+      };
+      /* the printed pair must already run the way the stem says */
+      const pair = asc ? shown : shown.slice().reverse();
+      if (!(pair[0][0]*pair[1][1] < pair[1][0]*pair[0][1]))
+        return `ordered gap: the row prints ${show(shown[0])} then ${show(shown[1])} but declares ${m[1]}`;
+      const fitters = fOpts.filter(fitsRow);
+      if (fitters.length !== 1) return `ordered gap: ${fitters.length} of the four options fit the gap, expected exactly 1`;
+      return fEq(fitters[0], keyF) ? null : `ordered gap: expected ${show(fitters[0])}, key is ${show(keyF)}`;
     }
 
     /* --- equivalence: the two inverses, then recognition -------------------- */
@@ -1819,9 +1893,13 @@ function oracle(q, topic) {
       const e = [F[0] / g2, F[1] / g2];
       if (claim[0] * e[1] === e[0] * claim[1]) return `simplest error-spot: the "wrong" claim ${show(claim)} is worth the right answer`;
       if (!keyF || keyF[0] !== e[0] || keyF[1] !== e[1]) return `simplest error-spot: expected ${show(e)}, got ${show(keyF)}`;
-      if (!fOpts.some((o, i) => i !== q.correct && o && o[0] === claim[0] && o[1] === claim[1]))
-        return 'simplest error-spot: the printed wrong answer is not offered as a distractor';
-      return null;
+      /* SECOND PASS, WOUND 1: the whole named list, re-derived from the stem, in
+         place of "the printed wrong answer must be offered" - which was what kept
+         two of the three slips below the key on every draw. */
+      return fromList('simplest error-spot', [
+        [F[0]-t2, F[1]-t2], [F[0]+t2, F[1]+t2], [F[0]+1, F[1]], [e[0], F[1]], [F[0]-t2, F[1]],
+        [e[0], e[1]-1], [e[0]-1, e[1]-1], [e[0]+1, e[1]], [e[0]+1, e[1]+1]
+      ]);
     }
 
     /* --- adding and subtracting: like, from one whole, related, and the two
@@ -1850,10 +1928,17 @@ function oracle(q, topic) {
       if (A[0] >= A[1] || A[1] > 12) return `one minus: ${show(A)} is not a proper fraction with a denominator to 12`;
       if (!keyF) return 'one minus: the key is not a rendered fraction';
       const top = A[1] - A[0];
-      /* WOUND 4: when d === 2a the part taken away IS the answer, so it cannot be
-         offered - which is why this format could never key one half. */
-      if (2 * A[0] !== A[1] && !fOpts.some((o, i) => i !== q.correct && o && o[0] === A[0] && o[1] === A[1]))
-        return 'one minus: the part taken away is not offered as a distractor';
+      /* SECOND PASS, WOUND 1: the whole named list, re-derived, in place of the one
+         distractor the old check demanded. */
+      const badM = fromList('one minus', [
+        [A[0], A[1]], [top+1, A[1]], [top-1, A[1]], [top, A[1]-1], [top, A[1]+1],
+        [top+1, A[1]-1], [top-1, A[1]-1]
+      ]);
+      if (badM) return badM;
+      /* SECOND PASS, W2: on d = 2a the part taken away IS what is left, and the card
+         said it was "not the part that is left" - 26.0% of draws. */
+      if (2 * A[0] === A[1] && /is the part that was taken away, not the part that is left/.test(strip(q.explain)))
+        return `one minus: the card calls the key ${show(keyF)} "the part that was taken away, not the part that is left"`;
       return (keyF[0] === top && keyF[1] === A[1]) ? null
         : `one minus: expected ${top}/${A[1]}, got ${show(keyF)}`;
     }
@@ -1861,8 +1946,13 @@ function oracle(q, topic) {
        format). Two steps, so the oracle checks both: the answer completes the
        whole, AND it is written over the bottom number the stem asks for, which
        must be a genuine multiple of the stem's own. --- */
-    if ((m = text.match(/\+ \? = 1 What is the missing fraction, written in (\d+)ths\?$/))) {
-      const D = Number(m[1]);
+    /* SECOND PASS 2026-09-15, W4: authored at 25 distinct stems and served 1.70
+       times a session, so the same move is asked three ways now. The oracle admits
+       exactly those three readings and nothing else. */
+    if ((m = text.match(/^(.+) What is the missing fraction, written in (\d+)ths\?$/))) {
+      const lead = m[1], D = Number(m[2]);
+      if (!/^(?:\d+ \+ \? = 1|\? \+ \d+ = 1|1 [−-] \d+ = \?)$/.test(lead))
+        return `make one in parts: the stem reads "${lead}", which is not one of the three one-whole forms`;
       const fs = allFracs(q.q);
       if (fs.length !== 1) return `make one in parts: ${fs.length} fractions rendered, expected 1`;
       const A = fs[0];
@@ -1946,8 +2036,15 @@ function oracle(q, topic) {
       if (eaten >= A[1]) return 'cake left: the two of them eat a whole cake or more, so nothing is left to name';
       if (!keyF) return 'cake left: the key is not a rendered fraction';
       const top = A[1] - eaten;
-      if (!fOpts.some((o, i) => i !== q.correct && o && o[0] === eaten && o[1] === A[1]))
-        return 'cake left: the stop-after-step-1 answer is not offered as a distractor';
+      /* SECOND PASS, WOUND 1: the whole named list, re-derived from the two shares,
+         in place of "the stop-after-step-1 answer must be offered" - which, with
+         "subtracted only one share", held the key at the bottom of the row on 56.8%
+         of draws. */
+      const badC = fromList('cake left', [
+        [eaten, A[1]], [A[1]-A[0], A[1]], [A[1]-B[0], A[1]], [eaten, 2*A[1]],
+        [top-1, A[1]], [top, A[1]+1]
+      ]);
+      if (badC) return badC;
       return (keyF[0] === top && keyF[1] === A[1]) ? null
         : `cake left: expected ${top}/${A[1]}, got ${show(keyF)}`;
     }
@@ -2796,6 +2893,17 @@ function pilotGates(q, topic) {
            it. What is banned is n > d, which is a genuine improper fraction. */
         if (n > d) return `improper fraction ${n}/${d} rendered in ${where} - improper fractions and mixed numbers are MOE P4`;
         if (d > 24) return `denominator ${d} rendered in ${where} is past the readability cap of 24`;
+        /* SECOND PASS 2026-09-15, W3(a)/W4. THIRTEEN is banned outright. MOE P3
+           stops at twelve, and no named misconception in this bank can produce a
+           13: adding the bottoms of a like pair gives 2d, of a related pair
+           d(1+k), subtracting them d(k-1), taking one away d-1 - none of which is
+           13. The only things that reached it were the "+1" second-order slips
+           (the half-substitute [n, d+1] at d = 12, gSubSame's [a-b, d+b],
+           gSimplestError's [N+t, D+t]), which put an off-P3-list bottom number in
+           front of a child - including in the declared pool-1 anchor - for no
+           teaching reason at all. 24 stays the cap for the beliefs that genuinely
+           overshoot; 13 is not one of them. */
+        if (d === 13) return `denominator 13 rendered in ${where} - no named misconception in this bank produces one, and MOE P3 stops at 12`;
       }
     }
     const kf = String(q.answerText).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
@@ -2869,6 +2977,127 @@ for (const g of GENS) {
     failures++;
     if (badQ) console.error(`   sample: ${JSON.stringify({ q: strip(badQ.q), extra: strip(badQ.extra || ''), choices: (badQ.choices || []).map(strip), correct: badQ.correct, answerText: strip(badQ.answerText), answer: badQ.answer })}`);
   }
+}
+
+/* ---------- RULE 7: THE VALUE-RANK GATE -------------------------------------
+   SWEEP FRACTIONS REFUTATION, SECOND PASS 2026-09-15, WOUND 1 - the one finding
+   that reaches past this lane.
+
+   RULE 1 gates option FORM, RULE 5 the SENTENCE FRAME, RULE 6 the LENGTH. Nothing
+   anywhere in this repo asked where the KEY sits when the four options are sorted
+   by VALUE. Sorted that way, five generators in p3-fractions.js pinned the key to
+   one rank on 100.00% of 50,000 draws - gAddSame 3rd of 4, gEquivFromBar 2nd,
+   gSubSame smallest, gSubRelated 3rd, gEqMissingDen LARGEST - covering 5.4 of every
+   30 served items, and gEqMissingDen was therefore answered by "circle the biggest
+   number on the row" every single time, without a fraction being read. Its twin
+   gEqMissing keyed a non-extreme on 100.00%, which halves the row for any child who
+   has noticed.
+
+   THE CAUSE IS THE CONTRACT, which is why this gate matters beyond one file. "Key
+   plus exactly three NAMED beliefs, padding branch provably dead" is the depth
+   pilot's strongest rule and it is what produces the defect: a misconception errs
+   in ONE direction, so three of them land on one side of the key and the rank
+   collapses. Measured on the shipped baseline, a blind ranking policy scores 52.4%
+   of served items; on this lane 52.1% - so it is not a topic-level regression. What
+   changed is CONCENTRATION: the baseline's worst pin was 83.4%, the lane's were
+   100.00%. A 50% pin is not learnable. A 100% pin is permanent.
+
+   THE GATE. Over its OWN 2,000 draws - fixed, not SAMPLES, because a 33% rate
+   cannot be told from a 45% one in 200 - every generator whose four options are all
+   bare positive numbers or all single rendered fractions must keep:
+     - the key's rank by value under 45% for each of the four ranks;
+     - "pick the smallest", "pick the largest" and "pick the second largest" each
+       under 40%;
+     - "pick the smallest bottom number", scored as a policy (guess evenly among
+       ties), under 40%.
+
+   FOR THE INTEGRATOR. The gate is scoped to `fractions` - the file this lane
+   rewrote - and NOT to the rest of the bank, which has never been measured this way
+   and whose generators would light up red on a first run. The two helpers below
+   (valueRank and smallestDenPolicy) are the whole of the measurement and are
+   deliberately topic-agnostic: widening the gate is one entry in RANK_TOPICS plus
+   whatever exemptions that topic's compare/order formats need. It should go in
+   before the depth-pilot contract is applied to a fourth topic, because the
+   contract CAUSES the defect and nothing in the repo could see it.
+
+   EXEMPTIONS, declared not hidden. A stem that names the direction and asks for an
+   extreme ("which of these is the greatest?") keys the extreme BY CONSTRUCTION -
+   that is the skill, not a tell - so the five comparison formats are named here. */
+const RANK_TOPICS = new Set(['fractions']);
+const RANK_EXEMPT = new Set([
+  'fractions.gCompareUnit', 'fractions.gCompareBar', 'fractions.gCompareSameD',
+  'fractions.gCompareWords', 'fractions.gGreatest4'
+]);
+const RANK_DRAWS = 2000;
+const RANK_CAP = 0.45;          /* no single rank may hold more than this */
+const RANK_POLICY_CAP = 0.40;   /* "pick smallest / largest / second largest / smallest bottom" */
+/* The option row's four values, or null when it is not a rankable row: four bare
+   positive integers, or four single rendered fractions. */
+function optionValues(q) {
+  const opts = q.choices || [];
+  if (opts.length !== 4) return null;
+  const vals = [];
+  for (const o of opts) {
+    const t = strip(o);
+    const fs = [...String(o).matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)];
+    if (fs.length === 1 && !/[A-Za-z]/.test(t)) { vals.push(Number(fs[0][1]) / Number(fs[0][2])); continue; }
+    if (fs.length === 0 && /^\d+$/.test(t)) { vals.push(Number(t)); continue; }
+    return null;
+  }
+  return vals;
+}
+/* 1 = the key is the smallest of the four by value, 4 = the largest. */
+function valueRank(q) {
+  const vals = optionValues(q);
+  if (!vals) return null;
+  const kv = vals[q.correct];
+  if (vals.filter(v => v === kv).length !== 1) return null;
+  return vals.filter(v => v < kv).length + 1;
+}
+/* "pick the smallest bottom number", scored as a policy: guess evenly among the
+   options that tie for the smallest denominator. */
+function smallestDenPolicy(q) {
+  const opts = q.choices || [];
+  if (opts.length !== 4) return null;
+  const ds = [];
+  for (const o of opts) {
+    const fs = [...String(o).matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)];
+    if (fs.length !== 1 || /[A-Za-z]/.test(strip(o))) return null;
+    ds.push(Number(fs[0][2]));
+  }
+  const mn = Math.min(...ds), tied = ds.filter(d => d === mn).length;
+  return ds[q.correct] === mn ? 1 / tied : 0;
+}
+const rankRows = [];
+for (const g of GENS) {
+  if (!RANK_TOPICS.has(g.topic)) continue;
+  const key = g.topic + '.' + g.name;
+  const r = [0, 0, 0, 0];
+  let ranked = 0, denDraws = 0, denScore = 0;
+  for (let i = 0; i < RANK_DRAWS; i++) {
+    let q;
+    try { q = g.fn(); } catch (e) { break; }
+    const rk = valueRank(q);
+    if (rk) { ranked++; r[rk - 1]++; }
+    const dp = smallestDenPolicy(q);
+    if (dp !== null) { denDraws++; denScore += dp; }
+  }
+  if (ranked < RANK_DRAWS / 2) continue;      /* not a numeric / fraction MC bank */
+  const rate = r.map(x => x / ranked);
+  const den = denDraws ? denScore / denDraws : 0;
+  let err = null;
+  if (!RANK_EXEMPT.has(key)) {
+    const over = rate.findIndex(x => x > RANK_CAP);
+    const NAMES = ['smallest', 'second smallest', 'second largest', 'largest'];
+    if (over >= 0)
+      err = `value-rank tell: the key is the ${NAMES[over]} of the four options by value in ${(100 * rate[over]).toFixed(1)}% of ${ranked} draws - "pick the ${NAMES[over]}" answers the item without the mathematics`;
+    else for (const i of [0, 3, 2])
+      if (rate[i] >= RANK_POLICY_CAP) { err = `value-rank tell: "pick the ${NAMES[i]}" is right in ${(100 * rate[i]).toFixed(1)}% of ${ranked} draws`; break; }
+    if (!err && den >= RANK_POLICY_CAP)
+      err = `bottom-number tell: "pick the smallest bottom number" scores ${(100 * den).toFixed(1)}% over ${denDraws} draws`;
+  }
+  rankRows.push({ name: key, skill: g.skill, ranked, rate, den, exempt: RANK_EXEMPT.has(key), err });
+  if (err) failures++;
 }
 
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
@@ -2982,6 +3211,20 @@ console.log('-'.repeat(84));
 for (const r of rows) {
   console.log(pad(r.topic, 12) + pad(r.name, 18) + pad(r.skill, 12) + pad(r.n, 7) + pad(r.distinct, 10) + pad(r.cov + '%', 9) + (r.err ? 'FAIL  ' + r.err : 'pass'));
 }
+/* RULE 7, printed in full: the table IS the finding, so it is on the record of
+   every run and not only when it goes red. */
+if (rankRows.length) {
+  console.log(`\nRULE 7  VALUE RANK OF THE KEY  (${RANK_DRAWS} draws each; cap ${(100*RANK_CAP).toFixed(0)}% per rank, ` +
+    `${(100*RANK_POLICY_CAP).toFixed(0)}% for smallest / largest / 2nd largest / smallest bottom number)\n`);
+  console.log(pad('GENERATOR', 26) + pad('SMALLEST', 10) + pad('2nd', 10) + pad('3rd', 10) + pad('LARGEST', 10) + pad('SMALL-DEN', 11) + 'RESULT');
+  console.log('-'.repeat(84));
+  for (const r of rankRows) {
+    console.log(pad(r.name, 26) + r.rate.map(x => pad((100 * x).toFixed(1) + '%', 10)).join('') +
+      pad((100 * r.den).toFixed(1) + '%', 11) +
+      (r.err ? 'FAIL  ' + r.err : (r.exempt ? 'exempt (the stem asks for an extreme)' : 'pass')));
+  }
+}
+
 console.log('');
 for (const s of setRows) console.log(`${s.ok ? 'ok  ' : 'FAIL'} buildSetFor(${s.tid})  30 x 3 levels${s.note ? '  ' + s.note : ''}`);
 

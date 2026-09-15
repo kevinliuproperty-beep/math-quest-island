@@ -1,0 +1,20 @@
+42
+# ^ The executed-test FLOOR for `ios/test.command` with no --filter.
+#
+# The first run of digits is the only thing parsed; everything below is for humans.
+#
+# WHY IT EXISTS. This gate was killed for reporting success with zero tests executed:
+# `./test.command --filter <anything that matches nothing>` printed
+# "Test run with 0 tests in 0 suites passed" and exited 0. Requiring a non-zero count
+# closes that. This file closes the other half - a suite that quietly stops being
+# DISCOVERED (a renamed file, a target dropped from Package.swift, a @Suite that no
+# longer compiles in) shrinks the count without failing anything, and the gate stays
+# green over a smaller and smaller surface.
+#
+# HOW TO CHANGE IT. Raise it in the same commit that adds tests. LOWER it only in the
+# same commit that removes them, so the reduction appears in the diff and somebody has
+# to justify it in a message. Never edit it to turn a red gate green.
+#
+# 42 = MQEngineJS bridge (10) + MQContent models (8) + Figure spec decoding (14, incl.
+#      parameterised cases) + Grading parity corpus (4) + Engine lifetime and memory (6)
+#      as of the fix pass on lane/engine-bridge, 2026-09-07.

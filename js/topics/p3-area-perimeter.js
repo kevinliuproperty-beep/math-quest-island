@@ -10,7 +10,9 @@
  * FORMAT BANK (one principle, many stems a teacher would rotate through):
  *   direct compute (gPeri), concept check (gPeriConcept),
  *   compare two figures (gPeriCompare), error spotting (gPeriError),
- *   two-step word problem (gPeriFence), area (gAreaRect, gSquarePA).
+ *   two-step word problem (gPeriFence), area (gAreaRect, gSquareArea).
+ *   (gSquarePA was split into gSquarePeri/gSquareArea by main's wave-3 blocker
+ *   fix and integrated here on 2026-09-15; the pilot's redraws ride on both.)
  *
  * DEPTH PILOT v2, 2026-09-05 (refutation kills 2 + 3, wound 1):
  *  - SCOPE. gPeriInverse and gPeriDouble are gone: perimeter-in / side-out is
@@ -81,12 +83,13 @@ function mcText(stem, extra, correctText, wrongs, explain){
            explain: explain, answerText: correctText };
 }
 
-function rectHtml(L,B){
-  const w=Math.min(240,L*20), h=Math.max(34,Math.min(110,B*16));
-  return '<div style="display:inline-block;padding:0 56px 0 8px">'+
-         '<div class="rectBox" style="width:'+w+'px;height:'+h+'px"><span class="rectLabelB">'+B+' cm</span></div>'+
-         '<div class="rectLabelL" style="width:'+w+'px">'+L+' cm</div></div>';
-}
+/* INTEGRATION 2026-09-15 (depth pilot x web 2). The rectangle leaves this file as
+   PURE DATA; js/figures.js draws it, and gen-sanity's checkNoMarkup now REFUSES a
+   picture built as markup in q.extra. Spec: { type:'rect', length, breadth, unit }
+   - see js/topics/README.md. The pilot's redraw constraints are unchanged; only
+   where the picture comes from has moved. */
+function rectFig(L,B){ return { type:'rect', length:L, breadth:B, unit:'cm' }; }
+const fig = (q, figure) => (q.figure = figure, q);
 
 /* FORMAT 1 - direct compute, on a labelled figure (pool 1) */
 function gPeri(){
@@ -94,30 +97,36 @@ function gPeri(){
   do { L=ri(3,12); B=ri(2,L); g++; }
   while (g<200 && !(paOk(L,B) && optsOk(2*(L+B),[L+B,L*B,2*L+B,2*(L+B)+2])));
   const p=2*(L+B);
-  return finishNum('What is the <b>perimeter</b> of this rectangle?',rectHtml(L,B),p,[L+B,L*B,2*L+B,p+2],'cm',
-    'Perimeter = go all the way around: '+L+' + '+B+' + '+L+' + '+B+' = '+p+' cm.');
+  return fig(finishNum('What is the <b>perimeter</b> of this rectangle?','',p,[L+B,L*B,2*L+B,p+2],'cm',
+    'Perimeter = go all the way around: '+L+' + '+B+' + '+L+' + '+B+' = '+p+' cm.'), rectFig(L,B));
 }
 function gAreaRect(){
   let L=6,B=4,g=0;
   do { L=ri(3,12); B=ri(2,Math.min(L,9)); g++; }
   while (g<200 && !(paOk(L,B) && optsOk(L*B,[2*(L+B),L+B,L*B+L,L*B-B])));
   const a=L*B;
-  return finishNum('What is the <b>area</b> of this rectangle?',rectHtml(L,B),a,[2*(L+B),L+B,a+L,a-B],'cm²',
-    'Area = length × breadth = '+L+' × '+B+' = '+a+' cm².');
+  return fig(finishNum('What is the <b>area</b> of this rectangle?','',a,[2*(L+B),L+B,a+L,a-B],'cm²',
+    'Area = length × breadth = '+L+' × '+B+' = '+a+' cm².'), rectFig(L,B));
 }
-function gSquarePA(){
-  const wantPeri = Math.random() < 0.5;
+/* Wave-3 blocker fix (main): gSquarePA rendered BOTH an area face and a perimeter
+ * face from one generator, so a pool entry tagged 'peri' could still show an area
+ * stem (and vice versa). Split into two deterministic generators so the skill tag
+ * on a pool entry is the skill the child actually meets. Same content, no new items.
+ * INTEGRATION 2026-09-15: the pilot's coincidence redraw is carried onto BOTH
+ * halves - side 4 is the perimeter-16 / area-16 draw Kevin stops on, and side 2
+ * collides 4 x s with s x s in the option list. */
+function gSquarePeri(){
   let s=5,g=0;
-  /* side 4 is the coincidence draw (perimeter 16, area 16); side 2 collides
-     4 x s with s x s in the option list. Both are redrawn out. */
   do { s=ri(2,12); g++; }
-  while (g<200 && !(4*s !== s*s &&
-        optsOk(wantPeri?4*s:s*s, wantPeri?[s*s,2*s,4*s+s,4*s-2]:[4*s,2*s,s*s+s,s*s-s])));
-  if(wantPeri){
-    const p=4*s;
-    return finishNum('A square has sides of '+s+' cm. What is its <b>perimeter</b>?','',p,[s*s,2*s,p+s,p-2],'cm',
-      'A square has 4 equal sides: 4 × '+s+' = '+p+' cm.');
-  }
+  while (g<200 && !(4*s !== s*s && optsOk(4*s,[s*s,2*s,4*s+s,4*s-2])));
+  const p=4*s;
+  return finishNum('A square has sides of '+s+' cm. What is its <b>perimeter</b>?','',p,[s*s,2*s,p+s,p-2],'cm',
+    'A square has 4 equal sides: 4 × '+s+' = '+p+' cm.');
+}
+function gSquareArea(){
+  let s=5,g=0;
+  do { s=ri(2,12); g++; }
+  while (g<200 && !(4*s !== s*s && optsOk(s*s,[4*s,2*s,s*s+s,s*s-s])));
   const a=s*s;
   return finishNum('A square has sides of '+s+' cm. What is its <b>area</b>?','',a,[4*s,2*s,a+s,a-s],'cm²',
     'Area of a square = side × side = '+s+' × '+s+' = '+a+' cm².');
@@ -212,8 +221,14 @@ function gPeriFence(){
       area:   {label:'Area',                   tip:'Area = length × breadth (count the squares inside). Watch the unit: cm² not cm!'}
     },
     pools:{
-      1:[[gSquarePA,'peri'],[gPeri,'peri'],[gPeriConcept,'peri']],
-      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquarePA,'area'],[gPeri,'peri']],
+      /* INTEGRATION 2026-09-15: the pilot's pools, with main's gSquarePA split
+         applied - every former [gSquarePA,'peri'] is now gSquarePeri and every
+         [gSquarePA,'area'] is gSquareArea, so the skill tag is the skill the child
+         meets. gSquareArea joins pool 1 (as on main) because pool 1's old
+         [gSquarePA,'peri'] entry already showed an area stem on half its draws;
+         without it the split would silently delete area from level 1. */
+      1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area']],
+      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri']],
       3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area']]
     }
   });

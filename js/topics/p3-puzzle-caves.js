@@ -40,7 +40,11 @@ function gGiveTake(){
   const start=ri(10,60), gave=ri(2,9), got=ri(2,9);
   const now=start-gave+got;
   return finishTyped('Mei had some stickers. She <b>gave away '+gave+'</b>, then <b>got '+got+' more</b>. Now she has <b>'+now+'</b>. How many did she have at first?',
-    start,'Work backwards: '+now+' − '+got+' = '+(now-got)+', then '+(now-got)+' + '+gave+' = '+start+'.');
+    start,'Work backwards: '+now+' − '+got+' = '+(now-got)+', then '+(now-got)+' + '+gave+' = '+start+'.',
+    /* the answer is a count of STICKERS, and "stickers" is on the grader's shared
+       TYPED_UNITS list, so declare it: "32 stickers" and a bare "32" pass, "32 kg"
+       is now rejected (unit sweep, 2026-09-07). */
+    'stickers');
 }
 function gHeadsLegs(){
   const g=ri(1,5), c=ri(2,7);

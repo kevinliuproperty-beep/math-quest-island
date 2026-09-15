@@ -586,6 +586,72 @@
     body.compact .lane-col { order: 1; display: grid; gap: 7px; }
     body.compact .panel-col { order: 2; }
   }
+
+  /* ---------------------------------------------------------------- THE SOLVE SCREEN
+     THE FIELD RULING, 2026-09-05: "once you define the cube and do solve with me all you need is
+     cube and instruction and the play/stop forward back", and earlier the same evening, "the only
+     center stage is model, the play bar and the next move". The report came off a tablet, where
+     the one screen layout was not one screen: the cube was the only frame measured in screen
+     height and everything around it stood on a fixed floor, so on a short screen the cube shrank
+     to a sixteenth of the glass while the furniture beside it stayed the size it is on a desk.
+     So while the walkthrough owns the player, this layer deals off everything that is not the
+     loop - where she is in the method, how far there is to go, the letter pads, the fold of extra
+     bits, the quiet rows and the caption under the cube - and spends the whole of the returned
+     height on the model. What is left is the model, the words, the move she is on, the transport
+     under the model, the one setting she reaches for mid solve, and the answer buttons at the
+     moments she is asked. Nothing is deleted: leaving the walkthrough puts all of it straight
+     back, and Classic never sees a rule of it.
+     THE STRIP LOSES ITS FLOOR HERE AND ONLY HERE. That floor exists so a lane cannot change
+     height under her hand, and the strip is the last thing in its lane, so there is nothing below
+     it to be pushed: with no chant running it is an empty box holding up nothing, and a chant
+     starting grows the lane downwards into space that was already empty. Same no-jerk law, one
+     fewer hole. */
+  body.compact.guiding .panel-col > * { display: none; }
+  body.compact.guiding .panel-col > #liveSay { display: block; }
+  body.compact.guiding .panel-col > .askbox { display: block; }
+  /* HOW MUCH I DO STAYS. It is the one setting she reaches for in the middle of a solve, and the
+     screen it was sitting on has just been dealt away, so the quiet card around it is reduced to
+     the row itself: no border, no padding, nothing else in it. */
+  body.compact.guiding .panel-col > .card.sleek { display: block; border: 0; padding: 0; background: none; }
+  body.compact.guiding .panel-col > .card.sleek > * { display: none; }
+  body.compact.guiding .panel-col > .card.sleek > #liveLevel { display: flex; }
+  body.compact.guiding .panel-col > .card.spare { display: none; }
+  /* the tracking lane keeps the move she is on, and the chant strip for as long as a chant runs */
+  body.compact.guiding .lane-col > * { display: none; }
+  body.compact.guiding .lane-col > .tile-live { display: flex; }
+  body.compact.guiding .lane-col > #liveStrip { display: block; min-height: 0; }
+  /* the letters are for her own hands on her own cube, which is not what this screen is */
+  body.compact.guiding .stage-col > .pads { display: none; }
+  /* the caption under the cube says what the chips on the cube already say, and the height it
+     costs is height the model wants */
+  body.compact.guiding .grip-note { display: none; }
+
+  /* THE CUBE IS A HARD 200px BOX whose blocks are placed at fixed offsets, so widening its frame
+     does not make it bigger: only a scale does, and the scale rides the camera's own transform,
+     written from this custom property. Perspective is scaled with it so the foreshortening stays
+     exactly what it was and the cube does not get deeper as it gets bigger. */
+  @media (min-width: 901px) {
+    body.compact.guiding .studio.lanes3 { grid-template-columns: minmax(360px, 26vw) minmax(280px, 1fr) minmax(230px, 16vw); }
+    body.compact.guiding .stage { height: clamp(280px, 47vh, 400px); --cubescale: 1.25; perspective: 1188px; }
+  }
+  /* a tall landscape screen gives the frame its full height, so the cube takes it */
+  @media (min-width: 901px) and (min-height: 820px) {
+    body.compact.guiding .stage { --cubescale: 1.55; perspective: 1473px; }
+  }
+  /* PORTRAIT IS TWO LANES WHILE THE LOOP RUNS. Stacked in one column the model was down to a
+     fifth of the height and everything else was below the fold; the words go beside the cube and
+     the move she is on goes underneath both, which fits the whole loop on the glass. */
+  @media (min-width: 640px) and (max-width: 900px) {
+    body.compact.guiding .studio, body.compact.guiding .studio.lanes3 { grid-template-columns: minmax(300px, 50vw) minmax(260px, 1fr); }
+    body.compact.guiding .stage-col { order: 0; grid-column: 1; grid-row: 1; }
+    body.compact.guiding .panel-col { order: 1; grid-column: 2; grid-row: 1; }
+    body.compact.guiding .lane-col { order: 2; grid-column: 1 / -1; grid-row: 2; }
+    body.compact.guiding .stage { height: clamp(240px, 40vh, 380px); --cubescale: 1.3; perspective: 1235px; }
+  }
+  /* and a tall one, which is how a tablet is held in portrait, gives it more again */
+  @media (min-width: 640px) and (max-width: 900px) and (min-height: 900px) {
+    body.compact.guiding .stage { --cubescale: 1.55; perspective: 1473px; }
+  }
   /* ===== COMPACT END ===== */
   .sideread.match small { color: var(--green); }
 </style>
@@ -3636,7 +3702,19 @@ var GUIDE = (function () {
   function loadLayout() { return storeGet('layout') === 'compact' ? 'compact' : 'classic'; }
   function applyLayout() {
     document.body.classList.toggle('compact', app.layout === 'compact');
+    reaimCube();
     paintLayoutSwitch();
+  }
+  /* THE CUBE'S SIZE IS WRITTEN INTO ITS OWN TRANSFORM, so a screen that changes the size it asks
+     for has to re-aim the camera, or the cube keeps whatever size the last screen gave it.
+     Instantly, then back to the fading camera a frame later, which is what a swap looks like
+     everywhere else in here. The first draw builds the camera itself, so before that there is
+     nothing to re-aim and nothing to say about it. */
+  function reaimCube() {
+    try {
+      applyCam(true);
+      setTimeout(function () { try { applyCam(false); } catch (e2) { /* gone */ } }, 60);
+    } catch (e) { /* the camera is not built yet */ }
   }
   function paintLayoutSwitch() {
     var sw = $('layoutswitch');
@@ -6402,7 +6480,7 @@ var GUIDE = (function () {
      re-reads the cube she is holding right now and carries straight on at the new level. */
   var LEVELS = [['watch', 'Watch'], ['try', 'Try'], ['solo', 'On my own']];
   function levelRow() {
-    return '<div class="row" style="margin-top:9px"><span class="tag">How much I do</span>'
+    return '<div class="row" id="liveLevel" style="margin-top:9px"><span class="tag">How much I do</span>'
       + LEVELS.map(function (l) {
         var on = app.level === l[0];
         return '<button class="btn' + (on ? ' on' : '') + '" data-lvl="' + l[0] + '" aria-pressed="'
@@ -6874,6 +6952,15 @@ var GUIDE = (function () {
     else if (app.mode === 'explain') h = panelExplain();
     else h = panelMess();
     p.innerHTML = h;
+    /* WHO OWNS THE SCREEN. While the walkthrough is stepping her through a cube - the one it
+       worked out, or the one in her own hands - the screen is the model, the words and the
+       transport, and the one screen layout is what acts on that. Anywhere else this is off and
+       every screen is exactly the screen it was. */
+    var loop = app.mode === 'solve' && !!(app.plan || app.guide);
+    if (document.body.classList.contains('guiding') !== loop) {
+      document.body.classList.toggle('guiding', loop);
+      reaimCube();
+    }
     dealLanes();
     Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-mode') === app.mode ? 'true' : 'false');
@@ -7253,7 +7340,14 @@ var GUIDE = (function () {
   function applyCam(instant) {
     var c = $('cube3d');
     c.classList.toggle('nofade', !!instant);
-    c.style.transform = 'rotateX(' + (-24 + peek.x) + 'deg) rotateY(' + (-34 + peek.y) + 'deg)';
+    /* THE SIZE RIDES THE CAMERA'S OWN TRANSFORM, AND IT HAS TO. The cube is a fixed 200px box
+       whose blocks are placed at fixed offsets, so the only thing that makes it bigger is a
+       scale; this line is the only transform this element is allowed to carry, because a wrapper
+       around it would break the chain of 3D contexts and flatten the whole cube into a paper
+       square on the tablet. No property set, no scale, and the number is 1: every screen that
+       does not ask for a bigger cube gets exactly the camera it had. */
+    var s = (getComputedStyle(c).getPropertyValue('--cubescale') || '').trim() || '1';
+    c.style.transform = 'scale3d(' + s + ',' + s + ',' + s + ') rotateX(' + (-24 + peek.x) + 'deg) rotateY(' + (-34 + peek.y) + 'deg)';
   }
   var stage = $('stage');
   stage.addEventListener('pointerdown', function (e) {

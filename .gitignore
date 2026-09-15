@@ -1,0 +1,11 @@
+# Build output of `npm run build:engine`. Regenerable in one command, so it is not
+# committed here - the COMMITTED copy of the engine bundle is the Swift package resource
+# at ios/Packages/MQEngineJS/Sources/MQEngineJS/Resources/engine.bundle.js, which SwiftPM
+# and Xcode need on disk without running Node. `npm run check:engine` proves that copy is
+# not stale; `npm test` runs the same check.
+dist/
+
+# SwiftPM
+ios/.build/
+ios/.swiftpm/
+.DS_Store

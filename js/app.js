@@ -15,11 +15,19 @@ const ri = MQI.gen.ri, pick = MQI.gen.pick;
 
 let TOPIC='fractions';
 let QSET=null;
+/* The normal-mode session feed (MQI.createFeed): skill round-robin inside the
+   current pool + a no-repeat-last-3-stem-shapes ring. Live rather than
+   pre-generated, because the no-repeat guard is a SERVING-order rule and the
+   mastery climb hops between pools mid-session, so three sets pre-built per pool
+   cannot enforce it across a pool change.
+   Repetition + Demand Audit 2026-09-05, fixes 1 + 2. */
+let FEED=null;
 /* A mode may install its own question feed (Patchwerk draws across every unlocked
    topic for the chosen class level). Null = the normal single-topic quiz set. */
 let MODE_FEED=null;
 function makeQuestion(level){
   if(MODE_FEED) return MODE_FEED(level);
+  if(FEED) return FEED.next(level);
   if(QSET && QSET[level] && QSET[level].length) return QSET[level].shift();
   return makeQuestionFor(TOPIC,level);
 }
@@ -156,7 +164,8 @@ function newGame(){
   if(DB.gameMode==='patchwerk'){ newPatchwerkGame(); return; }
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
   MODE_FEED=null;
-  QSET=buildSetFor(TOPIC,30);
+  QSET=null;
+  FEED=MQI.createFeed(TOPIC);
   S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
       rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
       wrongs:[], skills:{}, busy:false, t0:Date.now(), timed:DB.timed };
@@ -170,8 +179,20 @@ function newGame(){
   }
   renderDots(); renderMonster(); renderHp(); updateStreak();
   show('battleScreen');
-  banner(TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',1400);
-  setTimeout(nextQuestion,300);
+  /* K3(b), Phone Width Refutation. This used to be banner(...,1400) with the first
+     question scheduled at +300 ms, so 1,100 ms of every quest's FIRST question - a
+     question the child has never seen - was painted underneath the banner, unread.
+     The banner has a reserved band of its own now and covers nothing, so this is no
+     longer a legibility bug; it is a pacing one, and both halves are fixed together:
+     the announcement is shortened to 900 ms (long enough to read three words, and
+     the topic name is also on the map node the child just tapped) and the question
+     is dealt AFTER it clears, at 950 ms. Total dead air at quest start falls from
+     1,400 ms to 950 ms, and no question is ever dealt under a banner.
+     The post-answer banners are deliberately NOT delayed: CRITICAL HIT is a reward
+     that should ride over the next question, and now that it has its own band it can
+     do that without covering a word of it. */
+  banner(TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
+  setTimeout(nextQuestion,950);
 }
 /* ---------------- Patchwerk (js/modes/patchwerk.js) ---------------- */
 /* The mode owns pacing and scoring. The shell owns the DOM and the question feed. */
@@ -205,13 +226,26 @@ function newPatchwerkGame(){
   if(!topics.length){ alert('No unlocked quests for '+DB.grade+' yet.'); return; }
   const tier=mode.config.TIERS[DB.pwTier]||mode.config.TIERS[mode.config.DEFAULT_TIER];
 
-  QSET=null;
+  QSET=null; FEED=null;
+  /* Patchwerk already rotates the TOPIC on every item, which is why the audit
+     measured its repeat rate at 0.021 against the main mode's 0.376. Stack
+     weighting is untouched; the only addition is the same no-repeat-last-3 stem
+     shape ring the main feed carries, so it cannot regress into a run of clones. */
+  const pwRing=[];
   MODE_FEED=function(){
     const lvl=pwPickPool(pwStacks());
-    TOPIC=pick(topics);
-    const q=makeQuestionFor(TOPIC,lvl);
+    let last=null;
+    for(let t=0;t<6;t++){
+      TOPIC=pick(topics);
+      const q=makeQuestionFor(TOPIC,lvl);
+      const shape=MQI.shapeKey(q);
+      last={q,shape};
+      if(pwRing.indexOf(shape)!==-1) continue;
+      break;
+    }
+    pwRing.push(last.shape); while(pwRing.length>3) pwRing.shift();
     if(S) S.level=lvl;            /* keeps ctx.difficulty live */
-    return q;
+    return last.q;
   };
   S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
       rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
@@ -238,6 +272,10 @@ function pwResolve(right){
   const a=MQI.activeMode; if(!a) return;
   const mode=a.mode, ctx=a.ctx;
   const q=Q;                                     /* onAnswer may advance Q immediately */
+  /* Read the child's text BEFORE onAnswer runs - it may draw the next question
+     synchronously and clear the field. Play modes teach the same lesson as the
+     quest does (Unit Sweep Refutation W1). */
+  const typedRaw = q.typed ? $('typedInput').value.trim() : '';
   const answerMs=Math.max(0,Date.now()-(S.qAt||Date.now()));
   const probe=mode._run && mode._run.isStunned(ctx.elapsedMs);
   if(probe){ S.busy=false; return; }              /* swallowed by the input lock */
@@ -254,9 +292,9 @@ function pwResolve(right){
     floatDmg('-'+(ev.damage||0), ev.enraged?'#ffe66d':'#ff8f8f','right');
   } else {
     S.streak=0;
-    S.wrongs.push({q:q.q+(q.extra||''), a:q.answerText, ex:q.explain, skill:q.skill});
+    S.wrongs.push({q:q.q+figHtml(q), a:q.answerText, ex:q.explain, skill:q.skill});
     $('feedback').innerHTML=(ev.froze?'<span class="ok">🧊 Freeze! Your stacks are safe. </span>':'')+
-      '<span class="no">'+(q.typed?('The answer is <b>'+q.answerText+'</b>. '):'')+(q.explain||'')+'</span>';
+      '<span class="no">'+unitLead(typedRaw,q)+(q.typed?('The answer is <b>'+q.answerText+'</b>. '):'')+(q.explain||'')+'</span>';
     S.stunUntil=Date.now()+mode.config.STUN_MS;   /* the mode's input lock, honoured */
   }
   /* The mode schedules the next question itself (immediately, or after the stun). */
@@ -351,11 +389,115 @@ function startQTimer(){
   },100);
 }
 
+/* The figure contract (js/topics/README.md): a generator emits its diagram as pure
+   data on q.figure and never as markup; js/figures.js is the only thing that draws
+   it. This is the shell's single call into the renderer. */
+function figHtml(q){
+  if(q && q.figure && MQI.renderFigure) return MQI.renderFigure(q.figure);
+  return (q && q.extra) || '';
+}
+
+/* ---------------- the two measurements a drawing cannot make for itself ----------
+ * (Phone Width Refutation, 2026-09-07.) js/figures.js is pure string building and
+ * knows nothing about the viewport; these are the shell's side of the contract, and
+ * both are gated by `npm run test:layout`.
+ *
+ *  --mqFigMaxH  The height the drawing may actually have. Measured from the LIVE
+ *               column: the battle screen's inner height minus every sibling of the
+ *               question card, minus the card's own padding and its other children.
+ *               A scaling figure (pie, line) caps itself against it and shrinks with
+ *               its aspect preserved; the rest scroll inside #qextra. Without it, a
+ *               390 x 664 iPhone (the state Safari is in with the URL bar showing)
+ *               painted the pie 97 px past its card, through both HP numbers and
+ *               55 px into the answer buttons.
+ *  [data-more]  Whether a .fig-scroll box has more content off its right edge. This
+ *               is what makes the table's scroll cue REAL: the background-shadow
+ *               trick could only draw behind the cells, so the opaque header row
+ *               painted over it and the cue showed on the value row alone.
+ *
+ * Driven by one MutationObserver on #app plus resize and scroll, debounced to a
+ * frame - so every render site (a question, a Patchwerk round, the end screen's
+ * review list) is covered without a call at each one. */
+function syncFigures(){
+  const q=$('qextra'), frame=$('qextraFrame'), card=$('qcard'), scr=$('battleScreen');
+  if(q && frame && card && scr && scr.classList.contains('active')){
+    let used=0;
+    for(const el of scr.children){ if(el!==card) used+=el.getBoundingClientRect().height; }
+    const cs=getComputedStyle(card), n=v=>parseFloat(v)||0;
+    const gap=n(cs.rowGap);
+    let box=n(cs.paddingTop)+n(cs.paddingBottom)+n(cs.borderTopWidth)+n(cs.borderBottomWidth)
+           +n(cs.marginTop)+n(cs.marginBottom);
+    for(const el of card.children){ if(el!==frame && el.offsetParent!==null) box+=el.getBoundingClientRect().height+gap; }
+    const budget=Math.max(96, Math.round(scr.clientHeight-used-box));
+    q.style.setProperty('--mqFigMaxH', budget+'px');
+    /* A drawing that declares data-fit may be scaled to fit; its prose may not. Hand
+       it exactly the height left over once the card's own words are measured - a
+       guessed constant made a 1024 px desktop shrink a pie that had room to spare.
+       Recomputed only when the drawing, the budget or the width actually changed, so
+       the twice-a-second clock tick does not re-lay-out the figure. */
+    const fits=q.querySelectorAll('svg[data-fit="1"]');
+    /* the signature must not include the style attribute this block writes, or every
+       sync would see a "changed" figure and re-lay it out */
+    const sig=(q.firstElementChild?q.firstElementChild.className:'')+'|'+(q.textContent||'').length
+             +'|'+budget+'|'+window.innerWidth;
+    if(fits.length && q.dataset.figSig!==sig){
+      q.dataset.figSig=sig;
+      for(const svg of fits) svg.style.removeProperty('max-height');
+      const root=q.firstElementChild;
+      /* THE FIT IS BOUNDED BY THE READING FLOOR. Scaling a drawing down to make it fit
+         is the same trade the bar graph was killed for making: at 390 x 664 an
+         unbounded height fit put the pie's own sector numbers at 7.24 px. So the fit
+         may shrink a drawing only until its smallest label reaches 11 px on the glass
+         (10 px at 320) - past that it stops, and the card scrolls instead, with the
+         "⌄ more" cue. Readability first, scroll second, cover nothing ever. */
+      const floor=window.innerWidth<=320?10:11;
+      for(const svg of fits){
+        const natural=root?root.getBoundingClientRect().height:0;
+        const svgH=svg.getBoundingClientRect().height;
+        if(!(natural>budget) || !(svgH>0)) continue;
+        let minDecl=Infinity;
+        for(const t of svg.querySelectorAll('text')){
+          const fs=parseFloat(getComputedStyle(t).fontSize);
+          if(fs>0) minDecl=Math.min(minDecl,fs);
+        }
+        const vbH=(svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.height)||svgH;
+        /* +0.2 px of margin on the floor: without it the fit lands EXACTLY on the
+           floor and sub-pixel rounding puts the measured size a hundredth under it. */
+        const readable=isFinite(minDecl)? vbH*(floor+0.2)/minDecl : 0;
+        const want=svgH-(natural-budget);
+        if(want>=svgH) continue;
+        const h=Math.max(72, readable, want);
+        if(h<svgH) svg.style.maxHeight=Math.ceil(h)+'px';
+      }
+    } else if(!fits.length) delete q.dataset.figSig;
+    frame.setAttribute('data-more', (q.scrollHeight-q.clientHeight-q.scrollTop)>1 ? '1':'0');
+  }
+  for(const fr of document.querySelectorAll('.fig-frame')){
+    const sc=fr.querySelector('.fig-scroll');
+    fr.setAttribute('data-more', sc && (sc.scrollWidth-sc.clientWidth-sc.scrollLeft)>1 ? '1':'0');
+  }
+}
+(function(){
+  let queued=false;
+  const kick=()=>{ if(queued) return; queued=true;
+    requestAnimationFrame(()=>{ queued=false; try{ syncFigures(); }catch(e){} }); };
+  const arm=()=>{
+    const app=document.getElementById('app');
+    if(!app) return;
+    new MutationObserver(kick).observe(app,{childList:true,subtree:true});
+    app.addEventListener('scroll', kick, true);
+    kick();
+  };
+  window.addEventListener('resize', kick);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', arm);
+  else arm();
+})();
+
 function nextQuestion(){
   if(!S) return;
   Q=makeQuestion(S.level);
   $('qtext').innerHTML=Q.q;
-  $('qextra').innerHTML=Q.extra||'';
+  $('qextra').innerHTML=figHtml(Q);
   $('feedback').innerHTML='';
   const box=$('answers'); box.innerHTML='';
   if(Q.typed){
@@ -401,11 +543,54 @@ function monsterCounterattack(){
   if(S.heroHp<=0) setTimeout(()=>endGame(false),700);
   else setTimeout(nextQuestion,1800);
 }
+/* ===== THE UNIT TEACHING CARD ========================================
+ * Unit Sweep Refutation W1 (2026-09-07). The unit sweep declared q.unit on 20
+ * generators and turned 160 previously-accepted wrong-unit answers into
+ * rejections - and shipped no new teaching for a single one of them. Sampled 270
+ * of those rejections across nine unit classes: in 270 of 270 the child read
+ *
+ *     child typed  : 300 cm
+ *     child is told: The answer is 300 cm². 1/2 x 24 x 25 = 300 cm².
+ *
+ * sees 300 under 300, and concludes the game is broken. A rejection a child
+ * cannot decode teaches nothing, and this game's north star is fade-out.
+ *
+ * So when the NUMBER was right and only the unit was wrong, lead with that, in
+ * words a P3 can read, and say WHY that unit - the reason is the teaching, not
+ * the correction. One short sentence per unit class; never a lecture, and never
+ * shown on a wrong number.
+ *
+ * MQI.typedRejectReason is the single definition of "unit-only wrong", shared with
+ * the bridge verdict (reason: 'wrong-unit'), so the web card and a SwiftUI view
+ * cannot drift apart on when to show this. */
+const UNIT_WHY = [
+  [['cm2','m2'],                    'area is measured in squares'],
+  [['cm3','m3','ml','l'],           'this asks how much space it fills'],
+  [['cm','m','km','mm'],            'this asks how long something is'],
+  [['$','cents','cent','dollars'],  'this asks how much money'],
+  [['%'],                           'this asks for a percentage'],
+  [['kg','g'],                      'this asks how heavy it is'],
+  [['min','h','s'],                 'this asks how long it takes']
+];
+function unitWhy(unit){
+  const n = MQI.normUnit(unit);
+  for(const [members,why] of UNIT_WHY) if(members.indexOf(n)!==-1) return why;
+  return 'that is what you are counting';   /* count nouns: pupils, stickers, cubes, buns */
+}
+/* '' when this was not a unit-only miss. Otherwise the child's card, canonical
+   unit in bold (the first member when the question accepts a set of equivalents). */
+function unitLead(raw, q){
+  if(!q || !q.typed || !q.unit) return '';
+  if(MQI.typedRejectReason(raw, q) !== 'wrong-unit') return '';
+  const want = MQI.unitList(q.unit)[0];
+  if(!want) return '';
+  return 'Your number was right. The unit should be <b>'+want+'</b>, because '+unitWhy(want)+'. ';
+}
 function markWrong(feedbackHtml){
   S.streak=0; S.wrongRow++; S.rightRow=0;
   if(S.wrongRow>=2 && S.level>1){ S.level--; S.wrongRow=0; }
   sfx.wrong();
-  S.wrongs.push({q:Q.q+(Q.extra||''), a:Q.answerText, ex:Q.explain, skill:Q.skill});
+  S.wrongs.push({q:Q.q+figHtml(Q), a:Q.answerText, ex:Q.explain, skill:Q.skill});
   $('feedback').innerHTML=feedbackHtml;
   updateStreak();
 }
@@ -440,7 +625,10 @@ function resolve(right){
       else setTimeout(nextQuestion,550);
     },250);
   } else {
-    markWrong('<span class="no">'+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
+    /* The child's own text is still in the (now disabled) field - answerTyped
+       leaves it there - so the card can name the unit they actually typed. */
+    const lead = Q.typed ? unitLead($('typedInput').value.trim(), Q) : '';
+    markWrong('<span class="no">'+lead+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
     setTimeout(monsterCounterattack,1000);
   }
 }
@@ -832,21 +1020,75 @@ function autoplayHook(){
     const gd=p.get('grade'); if(gd && GRADES.includes(gd)){ DB.grade=gd; saveData(); }
     if(p.get('mode')==='patchwerk'){ DB.gameMode='patchwerk'; saveData(); }
     renderStart();
-    if(shot==='map'){ setTimeout(renderMap,150); }
+    if(shot==='map'){ setTimeout(()=>{
+      renderMap();
+      /* scroll=<px> scrolls the map's own scroll container, which is capped at
+         #app{max-height:1000px}. Without it a headless --screenshot can only ever
+         capture the first eight island cards, so the nodes a wave ADDS (they append
+         at the bottom) are invisible to the integration gate. Inert in production. */
+      const sc=parseInt(p.get('scroll'),10);
+      if(sc>0){ setTimeout(()=>{ const el=document.getElementById('mapScreen'); if(el) el.scrollTop=sc; },200); }
+    },150); }
+    /* shot=feed&topic=ID&n=<k> draws k CONSECUTIVE items from ONE session feed
+       (the same FEED object a child plays) and lists them with their skill, so the
+       integration gate can prove the round-robin interleave on the glass rather than
+       only in tools/feed-sim.mjs. Read-only: it never answers or scores. Inert in
+       production, like every other shot mode. */
+    if(shot==='feed'){
+      const t=p.get('topic'); const n=Math.min(parseInt(p.get('n'),10)||5,10);
+      if(t && TOPICS[t]){ TOPIC=t; setTimeout(()=>{
+        newGame();
+        const rows=[];
+        for(let k=0;k<n;k++){
+          nextQuestion();
+          rows.push('<div class="qbox" style="margin:8px 0;text-align:left">'+
+            '<div style="opacity:.75;font-size:13px">Q'+(k+1)+' &nbsp;|&nbsp; skill: <b>'+
+            (Q&&Q.skill?Q.skill:'?')+'</b> &nbsp;|&nbsp; pool '+((S&&S.level)||1)+'</div>'+
+            '<div>'+(Q?Q.q:'')+'</div></div>');
+        }
+        /* write AFTER the normal per-question render has settled, otherwise
+           nextQuestion's own paint overwrites the list. */
+        setTimeout(()=>{
+          const host=document.getElementById('qtext');
+          if(host) host.innerHTML='<div style="font-size:15px">'+rows.join('')+'</div>';
+          for(const id of ['qextra','answers','feedback','typedWrap','timerWrap']){
+            const el=document.getElementById(id); if(el) el.innerHTML='';
+          }
+        },450);
+      },150); }
+      return;
+    }
     if(shot==='q'){
       const t=p.get('topic');
       /* find=<substring> redraws until a question whose rendered stem contains that
          substring comes up, so a gate can screenshot ONE named item type rather than
-         whatever pool 1 happens to hand over first. Capped, and inert in production. */
+         whatever pool 1 happens to hand over first. Capped, and inert in production.
+
+         WOUND 5 (Figure Spec Refutation, 2026-09-07). This was written up as "does
+         not work"; it is a 50 ms race. newGame() ends with setTimeout(nextQuestion,
+         300), so the find loop - scheduled at +250 ms - ran its 900 draws and was
+         then OVERWRITTEN by that deferred first draw 50 ms later, and the gate
+         always screenshotted a random item. Rather than swap one magic delay for a
+         bigger one, wait for the first draw to actually land (Q goes non-null) and
+         sweep only then: deterministic on a slow machine too.
+
+         Side effect worth keeping in the gate playbook: the loop leaves S.level = 3,
+         so find=<a string that never matches> is a working live-play route to pool
+         3 - a pool-3 figure can be shot from the real app with no bench page. */
       const find=p.get('find');
       if(t && TOPICS[t]){ TOPIC=t; setTimeout(()=>{
         newGame();
-        if(find){ setTimeout(()=>{
-          for(let k=0;k<900 && (!Q || Q.q.indexOf(find)===-1);k++){
-            if(S) S.level = 1 + (k % 3);   /* sweep all three pools, not just pool 1 */
-            nextQuestion();
-          }
-        }, 250); }
+        if(find){
+          Q=null;   /* newGame() does not clear it; the wait below keys off it */
+          const sweep=()=>{
+            for(let k=0;k<900 && (!Q || Q.q.indexOf(find)===-1);k++){
+              if(S) S.level = 1 + (k % 3);   /* sweep all three pools, not just pool 1 */
+              nextQuestion();
+            }
+          };
+          const afterFirstDraw=n=>{ if(Q || n>40){ sweep(); return; } setTimeout(()=>afterFirstDraw(n+1),25); };
+          afterFirstDraw(0);
+        }
       },150); }
     }
     return;

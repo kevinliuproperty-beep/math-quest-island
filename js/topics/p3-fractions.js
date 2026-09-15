@@ -10,14 +10,16 @@
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
 
+/* The bar model leaves this file as PURE DATA; js/figures.js draws it.
+   Spec: { type:'fractionBar', parts, filled } - see js/topics/README.md. */
+const fig = (q, figure) => (q.figure = figure, q);
+
 function gPicIdentify(){
   const d=ri(2,8), n=ri(1,d-1);
-  let bar='<div class="barModel">';
-  for(let i=0;i<d;i++) bar+='<div class="seg'+(i<n?' fill':'')+'"></div>';
-  bar+='</div>';
   const cands=[[d-n,d],[n,d+1],[n+1,d],[n,d-1]];
-  return finishFrac('What fraction of the bar is <b>blue</b>?', bar, [n,d], cands,
-    n+' out of '+d+' parts are blue, so it is '+fr(n,d)+'.');
+  return fig(finishFrac('What fraction of the bar is <b>blue</b>?', '', [n,d], cands,
+    n+' out of '+d+' parts are blue, so it is '+fr(n,d)+'.'),
+    { type:'fractionBar', parts:d, filled:n });
 }
 function gCompare4(mode){
   let pairs=[];

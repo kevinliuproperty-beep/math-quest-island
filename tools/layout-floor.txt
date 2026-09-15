@@ -1,0 +1,6 @@
+49
+# Surfaces this gate measures PER VIEWPORT on an unfiltered run:
+#   7 screens (home, map, battle, patchwerk, leaderboard, review, banner drive)
+# + 7 figure types x (5 live items + 1 deliberately widest spec) = 42
+# The gate multiplies this by the number of viewports it is running and FAILS below it.
+# Raise it when the gate starts drawing more; never lower it to make a run pass.

@@ -10,13 +10,18 @@
  * `geometry`); area of a triangle (P5); volume (P5).
  *
  * Composite figures are either DESCRIBED in words with every dimension stated, or
- * RENDERED as an inline-styled L-shape whose six sides ALL carry a printed number
- * label a child can read on screen. Nothing lives in a data-* attribute: the harness
- * oracle re-derives area and perimeter by parsing those same printed labels.
+ * emitted as PURE DATA on `q.figure` ({type:'lshape', W, H, a, b, unit}) and drawn
+ * by the shared renderer js/figures.js as an L-shape whose six sides ALL carry a
+ * printed number label a child can read on screen. Nothing lives in a data-*
+ * attribute: the harness oracle re-derives area and perimeter by parsing those
+ * same printed labels. Spec fields are documented in js/topics/README.md.
  */
 (function () {
   const G = MQI.gen;
   const ri = G.ri, pick = G.pick, finishNum = G.finishNum, finishTyped = G.finishTyped;
+
+  /* attach a figure spec to a finished question */
+  const fig = (q, figure) => (q.figure = figure, q);
 
   /* finishNum prepends its own space to the unit, so these carry none. */
   const CM2 = 'cm²', CM = 'cm';
@@ -184,12 +189,18 @@
 
   /* ---- composite L-shape, RENDERED with every side labelled (1.3) ---- */
 
-  const S = 11;   /* px per cm */
-
   /* An L-shape: a W x H rectangle with an a x b piece removed from the top-right.
      Sides clockwise from the top-left corner:
        top = W - a, cut down = b, cut across = a, right = H - b, bottom = W, left = H.
-     Every one of the six is printed on the figure. */
+     The renderer derives and prints every one of the six from W/H/a/b, so the spec
+     and the picture can never disagree.
+     INTEGRATION 2026-09-15: the figure is now PURE DATA drawn by js/figures.js
+     (main's phase-0 figure contract - gen-sanity's checkNoMarkup refuses a picture
+     built as markup in q.extra), and the pilot's constrained draw is kept intact
+     on top of it: the `extra` predicate, the coincidence ban and the 2/3 cut cap
+     all still choose W/H/a/b before the spec is emitted. js/figures.js emits the
+     same class="lfig" / lf-* labels the old inline builder did, so every oracle
+     that reads the six printed sides keeps binding. */
   function makeL(extra) {
     let W = 13, H = 11, a = 4, b = 3, ok = false;
     for (let i = 0; i < 400 && !ok; i++) {
@@ -199,56 +210,32 @@
       ok = paOk(per, area) && (!extra || extra({ W, H, a, b, per, area }));
     }
     if (!ok) { W = 13; H = 11; a = 4; b = 3; }
-    const lab = (cls, v, css) =>
-      '<span class="lf-' + cls + '" style="position:absolute;font-size:12px;font-weight:600;' +
-      'color:#0f172a;background:#fff;padding:0 2px;' + css + '">' + v + '</span>';
-
-    const w = W * S, h = H * S, aw = a * S, bh = b * S;
-    let html = '<div class="lfig" style="display:inline-block;background:#fff;padding:16px 22px;' +
-      'border-radius:8px;color:#0f172a">' +
-      '<div style="position:relative;width:' + w + 'px;height:' + h + 'px">' +
-      /* the L drawn as two solid blocks */
-      '<div style="position:absolute;left:0;top:0;width:' + (w - aw) + 'px;height:' + bh +
-      'px;background:#93c5fd;border:2px solid #1d4ed8;border-right:none;border-bottom:none;box-sizing:border-box"></div>' +
-      '<div style="position:absolute;left:0;top:' + bh + 'px;width:' + w + 'px;height:' + (h - bh) +
-      'px;background:#93c5fd;border:2px solid #1d4ed8;border-top:none;box-sizing:border-box"></div>' +
-      '<div style="position:absolute;left:0;top:' + bh + 'px;width:' + (w - aw) +
-      'px;height:2px;background:#93c5fd"></div>' +
-      /* the six printed side lengths */
-      lab('top', W - a, 'left:' + ((w - aw) / 2) + 'px;top:-9px;transform:translateX(-50%)') +
-      lab('cutdown', b, 'left:' + (w - aw) + 'px;top:' + (bh / 2) + 'px;transform:translate(-50%,-50%)') +
-      lab('cutacross', a, 'left:' + (w - aw / 2) + 'px;top:' + (bh - 9) + 'px;transform:translateX(-50%)') +
-      lab('right', H - b, 'left:' + w + 'px;top:' + (bh + (h - bh) / 2) + 'px;transform:translate(-50%,-50%)') +
-      lab('bottom', W, 'left:' + (w / 2) + 'px;top:' + (h - 9) + 'px;transform:translateX(-50%)') +
-      lab('left', H, 'left:0;top:' + (h / 2) + 'px;transform:translate(-50%,-50%)') +
-      '</div>' +
-      '<div style="margin-top:10px;font-size:.85em;color:#475569">All lengths are in cm. ' +
-      'Every side of the figure is labelled. The corners are all right angles.</div></div>';
-    return { html, W, H, a, b, area: W * H - a * b, per: 2 * (W + H) };
+    return { figure: { type: 'lshape', W, H, a, b, unit: 'cm' },
+             W, H, a, b, area: W * H - a * b, per: 2 * (W + H) };
   }
 
   /* pool 3: area of the rendered L-shape */
   function gLArea() {
     const g = makeL(x => optsOk(x.area, [x.W * x.H, x.per, x.a * x.b, x.area + x.a, x.area + 1]));
     const wrong = g.W * g.H;
-    return finishNum(
-      'What is the area of this figure?', g.html, g.area,
+    return fig(finishNum(
+      'What is the area of this figure?', '', g.area,
       [wrong, g.per, g.a * g.b, g.area + g.a, g.area + 1], CM2,
       'Take the whole ' + g.W + ' cm by ' + g.H + ' cm rectangle, ' + g.W + ' × ' + g.H +
       ' = ' + wrong + ' cm², then take away the ' + g.a + ' cm by ' + g.b +
       ' cm corner, ' + (g.a * g.b) + ' cm². ' + wrong + ' − ' + (g.a * g.b) +
-      ' = ' + g.area + ' cm².');
+      ' = ' + g.area + ' cm².'), g.figure);
   }
 
   /* pool 3: perimeter of the rendered L-shape */
   function gLPerimeter() {
     const g = makeL(x => optsOk(x.per, [x.area, x.W + x.H, x.per - x.a, x.per + x.a, x.per - 2 * x.b]));
-    return finishNum(
-      'What is the perimeter of this figure?', g.html, g.per,
+    return fig(finishNum(
+      'What is the perimeter of this figure?', '', g.per,
       [g.area, g.W + g.H, g.per - g.a, g.per + g.a, g.per - 2 * g.b], CM,
       'Perimeter means all the way round, so add the six labelled sides: ' +
       (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W + ' + ' + g.H +
-      ' = ' + g.per + ' cm. Missing out the two sides at the notch is the usual slip.');
+      ' = ' + g.per + ' cm. Missing out the two sides at the notch is the usual slip.'), g.figure);
   }
 
   /* pool 3: error spotting on the rendered figure, misconception named */
@@ -268,15 +255,15 @@
       Math.max(x.a, x.b) + 2 <= Math.min(x.W - x.a, x.H - x.b, x.W, x.H) &&
       optsOk(x.per, [x.per - x.a - x.b, x.area, x.W + x.H]));
     const claim = g.per - g.a - g.b;      /* the four longest sides, summed */
-    return mcNum(
+    return fig(mcNum(
       'Ravi walks around this figure and adds up only the four longest sides. He says the perimeter is ' +
-      claim + ' cm. <b>What is the correct perimeter of this figure?</b>', g.html,
+      claim + ' cm. <b>What is the correct perimeter of this figure?</b>', '',
       g.per, [claim, g.area, g.W + g.H], CM,
       'The four longest sides are ' + (g.W - g.a) + ' cm, ' + (g.H - g.b) + ' cm, ' + g.W +
       ' cm and ' + g.H + ' cm, and they add to ' + claim + ' cm. Ravi left out the two shortest sides, ' +
       'the ' + g.a + ' cm and the ' + g.b + ' cm at the notch. Every side of an L-shape is part of the ' +
       'walk around: ' + (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' + (g.H - g.b) + ' + ' + g.W +
-      ' + ' + g.H + ' = ' + g.per + ' cm.');
+      ' + ' + g.H + ' = ' + g.per + ' cm.'), g.figure);
   }
 
   /* pool 3: compare the figure with a square, and by how much */
@@ -290,13 +277,13 @@
     while (4 * s === g.per) s = ri(3, 20);
     const diff = Math.abs(g.per - 4 * s);
     const bigger = g.per > 4 * s ? 'the figure' : 'the square';
-    return mcNum(
+    return fig(mcNum(
       'A square of side ' + s + ' cm sits beside this figure. <b>How much longer is the perimeter of ' +
-      bigger + ' than the perimeter of the other shape?</b>', g.html,
+      bigger + ' than the perimeter of the other shape?</b>', '',
       diff, [g.per, 4 * s, g.area], CM,
       'The figure: add the six labelled sides, ' + (g.W - g.a) + ' + ' + g.b + ' + ' + g.a + ' + ' +
       (g.H - g.b) + ' + ' + g.W + ' + ' + g.H + ' = ' + g.per + ' cm. The square: 4 × ' + s + ' = ' +
-      (4 * s) + ' cm. The difference is ' + diff + ' cm. Comparing areas answers a different question.');
+      (4 * s) + ' cm. The difference is ' + diff + ' cm. Comparing areas answers a different question.'), g.figure);
   }
 
   /* pool 2: the same figure DESCRIBED in words, every dimension stated */
@@ -476,7 +463,11 @@
       around: { label: 'Perimeter of an L-shape', tip: 'Walk a finger right around the outside and count every labelled side. The two sides at the notch are the ones children forget — and a corner cut never changes the perimeter, only the area.' }
     },
     pools: {
-      1: [[gRectSideFromArea, 'missing'], [gSquareSideFromPerimeter, 'missing'], [gLConcept, 'around']],
+      /* INTEGRATION 2026-09-15: the pilot's pools, plus main's addition of
+         gCompositeWordsAdd to pool 1 (both sides only ADDED entries here, so the
+         union is the resolution - nothing either lane put in level 1 is dropped). */
+      1: [[gRectSideFromArea, 'missing'], [gSquareSideFromPerimeter, 'missing'], [gLConcept, 'around'],
+          [gCompositeWordsAdd, 'compose']],
       2: [[gRectSideFromPerimeter, 'missing'], [gSquareSideFromArea, 'missing'], [gCompositeWordsAdd, 'compose'],
           [gLWords, 'around'], [gPeriFromArea, 'missing'], [gLPerimDiff, 'around']],
       3: [[gCompositeWordsSub, 'compose'], [gLArea, 'compose'], [gLPerimeter, 'around'],

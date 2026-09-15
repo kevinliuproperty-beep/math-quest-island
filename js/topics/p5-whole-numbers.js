@@ -78,7 +78,10 @@
     const who = pick(NAMES), p = pick([100, 1000]), each = ri(12, 95);
     return finishTyped(who + ' orders ' + p + ' packets of kaya toast for the school fun fair. Each packet costs ' +
       each + ' cents. How many cents is that altogether?', each * p,
-      each + ' x ' + p + ' = ' + (each * p) + ' cents. Multiplying by ' + p + ' just shifts the digits left.');
+      each + ' x ' + p + ' = ' + (each * p) + ' cents. Multiplying by ' + p + ' just shifts the digits left.',
+      /* the one unit-bearing stem in this file: the answer is a number of CENTS,
+         so declare it and a wrong unit is rejected (unit sweep, 2026-09-07). */
+      'cents');
   }
 
   MQI.registerTopic({

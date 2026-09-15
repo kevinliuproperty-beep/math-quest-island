@@ -50,7 +50,11 @@ function finishNum(qHtml, extraHtml, correct, cands, unit, explain){
     else if(correct-t>0 && !nums.includes(correct-t)) nums.push(correct-t);
     t++; if(t>60) break;
   }
-  const u=unit?(' '+unit):'';
+  /* W3 cosmetic (Dress Rehearsal Wave 2, item 3): a degree sign and a percent sign
+     are written TIGHT against the number ("40°", "75%"), the way every stem in the
+     app writes them; a word unit keeps its space ("12 cm"). The old ' '+unit made
+     the angle options read "40 °" beside a stem reading "50°". */
+  const u=unit?((unit==='°'||unit==='%')?unit:(' '+unit)):'';
   const order=shuffle(nums.map((_,i)=>i));
   return { q:qHtml, extra:extraHtml||'', choices:order.map(i=>nums[i]+u), correct:order.indexOf(0),
            explain, answerText: correct+u };
@@ -64,16 +68,41 @@ function gMul(tables){
     a+' × '+b+' = '+p+'. Count in '+a+'s: '+Array.from({length:Math.min(b,4)},(_,i)=>a*(i+1)).join(', ')+'…');
 }
 
+/* unitList(unit) -> [] | ['cm³'] | ['cm³','ml']
+ * The one place that normalises `q.unit`'s two legal shapes. A STRING is one unit.
+ * An ARRAY is a set of EQUIVALENT units, any of which the child may type; the FIRST
+ * is canonical and is the one printed in answerText and explanations.
+ * Unit Sweep Refutation W2 (2026-09-07): 1 ml IS 1 cm³, and three volume generators
+ * print that identity in their own stem while rejecting the other half of it. One
+ * declared unit could not express "these two spellings are the same quantity".
+ * Blank/absent entries are dropped, so ['cm³', ''] is just ['cm³']. */
+function unitList(unit){
+  if (unit === null || unit === undefined) return [];
+  const raw = Array.isArray(unit) ? unit : [unit];
+  const out = [];
+  for (let i=0;i<raw.length;i++){
+    if (raw[i] === null || raw[i] === undefined) continue;
+    const s = String(raw[i]).trim();
+    if (s && out.indexOf(s) === -1) out.push(s);
+  }
+  return out;
+}
+
 /* finishTyped(stem, answer, explain, unit)
- * `unit` is the unit the STEM asks for ("cm²", "pages", "min", "l"...). It lands on
- * q.unit so gradeTyped can (a) strip that unit when the child types it and (b) REJECT
- * a wrong one. Wave-2 kill (P4 Area+Graphs Refutation, §2 unit gap): before this,
- * finishTyped set no q.unit at all, so "113 cm" graded CORRECT for a 113 cm² answer.
+ * `unit` is the unit the STEM asks for ("cm²", "pages", "min", "l"...), or an ARRAY
+ * of equivalent units (["cm³","ml"]) when two spellings name the same quantity. It
+ * lands on q.unit so gradeTyped can (a) strip that unit when the child types it and
+ * (b) REJECT a wrong one. Wave-2 kill (P4 Area+Graphs Refutation, §2 unit gap):
+ * before this, finishTyped set no q.unit at all, so "113 cm" graded CORRECT for a
+ * 113 cm² answer. With an array, the FIRST member is canonical: it is what
+ * answerText prints, so the child still reads one house answer.
  * Leave `unit` off only when the answer is a bare count with no unit. */
 function finishTyped(qHtml, answer, explain, unit){
-  const u = unit ? String(unit) : '';
+  const list = unitList(unit);
+  const u = list.length ? list[0] : '';
   return { q:qHtml, extra:'', typed:true, answer, choices:[], correct:-1,
-           unit:u, explain, answerText: u ? (answer+' '+u) : (''+answer) };
+           unit: list.length > 1 ? list : u, explain,
+           answerText: u ? (answer+' '+u) : (''+answer) };
 }
 
 /* ===== TYPED-ANSWER GRADING =========================================
@@ -106,7 +135,14 @@ const TYPED_UNITS = [
   /* time */
   'minutes','minute','mins','min','hours','hour','hr','h','seconds','secs','sec','s',
   /* counts the wave-2 rate stems name */
-  'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads'
+  'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads',
+  /* money and the cube count. Quest Refutation K2 (2026-09-07): these are tokens
+     the STEMS write and the CHIP ROW offers, and the grader used to strip none of
+     them, so "12.50 cents" on a "$" question came back 'not a number' and the
+     teaching card fell back to "The answer is 12.5." with nothing said about the
+     unit. gen-sanity has scanned stems for them since the unit sweep; the grader
+     had not caught up. */
+  '$','cents','cent','dollars','dollar','cubes','cube'
 ].sort((a,b) => b.length - a.length);
 const UNIT_ALIAS = {
   'ℓ':'l', 'litre':'l', 'litres':'l',
@@ -115,8 +151,28 @@ const UNIT_ALIAS = {
   'minute':'min', 'minutes':'min', 'mins':'min',
   'hour':'h', 'hours':'h', 'hr':'h',
   'second':'s', 'seconds':'s', 'secs':'s', 'sec':'s',
-  'page':'pages', 'bun':'buns'
+  'page':'pages', 'bun':'buns',
+  'cent':'cents', 'dollar':'dollars', 'cube':'cubes'
 };
+/* Does `s` end with the unit token `u`, at a boundary a WORD could start on?
+ *
+ * Quest Refutation K2 (2026-09-07). The tail match used to be a bare suffix test,
+ * so a question declaring "m" ate one character off "8.5 cm", was left with
+ * "8.5 c", and reported `not a number` - a wrong UNIT reported as an unreadable
+ * answer, which is the one rejection the teaching card cannot lead. The child
+ * typed 8.5 and the card told them the answer is 8.5. Same shape for l+ml, g+kg.
+ *
+ * The rule: a token that STARTS with a letter may only match where a letter does
+ * not already run, so "m" does not match inside "cm" but does match after a space
+ * or after a digit ("8.5m"). Symbols ($ % °) start no word and need no boundary. */
+function endsWithUnit(s, u){
+  if (!u) return false;
+  const n = s.length, m = u.length;
+  if (n <= m) return false;
+  if (s.slice(n - m).toLowerCase() !== u.toLowerCase()) return false;
+  if (!/[A-Za-z]/.test(u.charAt(0))) return true;
+  return !/[A-Za-z]/.test(s.charAt(n - m - 1));
+}
 function normUnit(u){
   const s = String(u).trim().toLowerCase();
   return Object.prototype.hasOwnProperty.call(UNIT_ALIAS, s) ? UNIT_ALIAS[s] : s;
@@ -131,30 +187,28 @@ function reduceFrac(n, d){
 }
 /* Returns {ok:true, value, unit, frac?} or {ok:false, reason}.
  * `q` is optional; when it declares a unit, that unit is strippable even if it is
- * not on TYPED_UNITS (so a lane may invent "crates" without touching the shared kit). */
+ * not on TYPED_UNITS (so a lane may invent "crates" without touching the shared kit).
+ * q.unit may be a STRING or an ARRAY of equivalent units - every member is
+ * strippable, longest spelling first so "cm³" wins over a shorter member. */
 function parseTypedAnswer(raw, q){
   if (raw === null || raw === undefined) return { ok:false, reason:'empty' };
   let s = String(raw).trim();
   if (s === '') return { ok:false, reason:'empty' };
   let unit = '';
-  /* 1. a unit the question itself declares, whatever it is */
-  const declared = q && (q.unit || q.units);
-  if (declared){
-    const d = String(declared).trim();
-    if (d && s.length > d.length && s.slice(-d.length).toLowerCase() === d.toLowerCase()){
-      unit = d; s = s.slice(0, s.length - d.length).trim();
-    }
+  /* The LONGEST whole token that ends the answer, across the question's own
+     declared units and the broad shared list together - not the declared list
+     first and the shared list only if that missed. Longest-first is what stops a
+     one-letter declared unit ("m", "l", "g") from eating the tail of the longer
+     one the child actually typed ("cm", "ml", "kg"); the boundary test in
+     `endsWithUnit` is what stops it from eating a letter out of the middle.
+     Declared units are searched first so they win a tie, which keeps a lane free
+     to invent "crates" without touching the shared kit. */
+  const candidates = unitList(q && (q.unit || q.units)).concat(TYPED_UNITS);
+  for (let i=0;i<candidates.length;i++){
+    const c = candidates[i];
+    if (c.length > unit.length && endsWithUnit(s, c)) unit = c;
   }
-  /* 2. otherwise any unit on the broad shared list */
-  if (!unit){
-    const low = s.toLowerCase();
-    for (let i=0;i<TYPED_UNITS.length;i++){
-      const u = TYPED_UNITS[i];
-      if (low.length > u.length && low.slice(low.length-u.length) === u){
-        unit = u; s = s.slice(0, s.length-u.length).trim(); break;
-      }
-    }
-  }
+  if (unit) s = s.slice(0, s.length - unit.length).trim();
   s = s.replace(/^\$\s*/, '').replace(/,/g, '').trim();
   if (s === '') return { ok:false, reason:'empty' };
   /* mixed number: "1 1/2" */
@@ -172,7 +226,15 @@ function parseTypedAnswer(raw, q){
     if (!d) return { ok:false, reason:'divide by zero' };
     return { ok:true, value:n/d, frac:reduceFrac(n, d), unit };
   }
-  if (!/^[-+]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return { ok:false, reason:'not a number' };
+  /* A TRAILING FULL STOP is the one correct-value rejection a child can reach on the
+     iPad's own keypad (Unit Sweep Refutation, 2026-09-07): inputmode="decimal" offers
+     digits and a dot, and a thumb that ends "41.10." typed a right answer. "41." was
+     always fine (\d+\.\d* allows an empty fraction); a SECOND dot was not. Drop ONE
+     trailing dot, and only when what is left is otherwise a valid number - fractions
+     and mixed numbers have already matched above, so "3/4." stays wrong. */
+  const NUMERIC = /^[-+]?(\d+(\.\d*)?|\.\d+)$/;
+  if (!NUMERIC.test(s) && s.slice(-1) === '.' && NUMERIC.test(s.slice(0, -1))) s = s.slice(0, -1);
+  if (!NUMERIC.test(s)) return { ok:false, reason:'not a number' };
   const v = Number(s);
   if (!Number.isFinite(v)) return { ok:false, reason:'not a number' };
   return { ok:true, value:v, unit };
@@ -184,10 +246,17 @@ function parseTypedAnswer(raw, q){
 function gradeTyped(raw, q){
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return false;
-  const want = q && (q.unit || q.units);
-  if (want && p.unit && normUnit(p.unit) !== normUnit(want)) return false;
+  const want = unitList(q && (q.unit || q.units));
+  /* ANY declared member is accepted - a string declares one, an array declares a set
+     of equivalents ("cm³" and "ml" are the same quantity, and the stems say so). */
+  if (want.length && p.unit){
+    const got = normUnit(p.unit);
+    let hit = false;
+    for (let i=0;i<want.length;i++) if (normUnit(want[i]) === got){ hit = true; break; }
+    if (!hit) return false;
+  }
   /* a unit typed on a question that declares none is only accepted off the shared list */
-  if (!want && p.unit && TYPED_UNITS.indexOf(normUnit(p.unit)) === -1
+  if (!want.length && p.unit && TYPED_UNITS.indexOf(normUnit(p.unit)) === -1
       && TYPED_UNITS.indexOf(String(p.unit).toLowerCase()) === -1) return false;
   if (q && Array.isArray(q.fracAnswer)){
     const r = reduceFrac(Number(q.fracAnswer[0]), Number(q.fracAnswer[1]));
@@ -204,6 +273,33 @@ function gradeTyped(raw, q){
   }
   const tol = Number.isInteger(ans) ? 1e-9 : 0.005;
   return Math.abs(p.value - ans) <= tol;
+}
+/* WHY a typed answer was rejected, in machine words. Null when it was accepted.
+ *   'wrong-unit'   the VALUE is right; the only thing that rejected it is the unit
+ *   'wrong-value'  the number itself is wrong (whatever the unit said)
+ *   <parse reason>  'empty' | 'not a number' | 'divide by zero' - it never parsed
+ *
+ * Unit Sweep Refutation W1 (2026-09-07): the unit sweep manufactured 160 rejections
+ * and shipped no new teaching for them. In 270 of 270 sampled wrong-unit rejections
+ * the child read "The answer is 300 cm²" under their own "300" and had no way to
+ * tell what was wrong. ONE definition of the distinction lives here, so the web
+ * card (js/app.js resolve) and the bridge verdict (tools/engine/api.js -> Swift
+ * Verdict.Reason) can never drift apart on it.
+ *
+ * The test is not "is the number close" - it is the grader's own answer to "would
+ * this same input pass if the question declared no unit?". That inherits dp, the
+ * fraction rules and every tolerance for free, and cannot fall out of step with
+ * gradeTyped because it IS gradeTyped. */
+function typedRejectReason(raw, q){
+  const p = parseTypedAnswer(raw, q);
+  if (!p.ok) return String(p.reason || 'unparsed');
+  if (gradeTyped(raw, q)) return null;
+  if (p.unit && q){
+    const bare = {};
+    for (const k in q) if (k !== 'unit' && k !== 'units') bare[k] = q[k];
+    if (gradeTyped(raw, bare)) return 'wrong-unit';
+  }
+  return 'wrong-value';
 }
   /* ===== GEN-KIT-END ================================================== */
 
@@ -239,25 +335,175 @@ function gradeTyped(raw, q){
   }
 
   /* ---------------- question builders ---------------- */
+  /* The raw primitive: one uniform draw with replacement from a pool, no memory.
+     Kept because Patchwerk rotates TOPICS on every item and gets its variety that
+     way. The single-topic feed must NOT use this directly - see createFeed. */
   function makeQuestionFor(topic,level){
     const [g,skill]=pick(TOPICS[topic].pools[level]);
     const q=g();
     q.level=level; q.skill=skill;
     return q;
   }
-  /* Pre-generate a full quiz set with no duplicate questions across the whole run. */
+
+  /* ---------------- feed: stem shape + session selector ----------------
+   * Fixes 1 + 2 of the Repetition + Demand Audit (2026-09-05). Kevin played the
+   * shipped build and got "perimeter, perimeter, area, area"; measured, the next
+   * item repeated the previous template 32 - 38% of the time (P3 0.376) because
+   * makeQuestionFor is a uniform draw with replacement and the only rejection was
+   * an exact-duplicate guard. Kevin's ruling: repetition IS easiness.
+   */
+
+  /* Stem SHAPE key: two draws of the same template collapse to one key however
+     the numbers land. HTML tags, fractions, money, numbers, quoted strings and
+     proper nouns are all placeheld. Mirrors the audit's shapeKey (and
+     tools/feed-sim.mjs). Over-masking is safe - it only makes the no-repeat guard
+     stricter; UNDER-masking is the failure mode, so common sentence words are the
+     only capitalised tokens kept. */
+  const SHAPE_STOP = new Set(('A An The What Which How If In On At Of For From To And Or But So Then When Where Why Who '
+    + 'Find Work Round Write Express Simplify Solve Calculate Convert Complete Give Use Look Read Add Subtract Multiply '
+    + 'Divide Count Fill Choose Pick Draw Shade Here There This That It Is Are Was Were Do Does Each Every After Before '
+    + 'True False Yes No Total Sum Both All Some One Two Three Four Five Six Seven Eight Nine Ten First Second Third '
+    + 'Last Next Same Answer Question Hint Note').split(' '));
+  function shapeKey(q){
+    let s = String((q && q.q) || '') + ' ||X|| ' + String((q && q.extra) || '');
+    s = s.replace(/<span class="frac">[\s\S]*?<\/span><\/span>/g, ' [FRAC] ');
+    s = s.replace(/<span class="n">\d+<\/span><span class="d">\d+<\/span>/g, ' [FRAC] ');
+    s = s.replace(/<[^>]*>/g, ' [T] ');
+    s = s.replace(/&nbsp;/g, ' ');
+    s = s.replace(/\$\s?[\d, ]+(\.\d+)?/g, ' [MONEY] ');
+    s = s.replace(/\d[\d, ]*(\.\d+)?/g, ' [NUM] ');
+    s = s.replace(/"[^"]*"/g, ' [QUOTED] ');
+    s = s.replace(/[A-Z][a-z']+/g, w => SHAPE_STOP.has(w) ? w : ' [NAME] ');
+    return s.replace(/\s+/g, ' ').trim();
+  }
+
+  /* A question's identity for the session's no-exact-duplicate guard: stem PLUS
+     extra PLUS the options. The pre-fix key was stem + extra alone, and several
+     generators keep a fixed stem and vary only the choices ("Which number is the
+     smallest?"), so under a round-robin that key made the SECOND draw of such a
+     skill a permanent duplicate and starved the skill out of the carousel for the
+     rest of the session. This is the same identity tools/gen-sanity.mjs uses. */
+  function qIdentity(q){
+    const opts = q.typed ? String(q.answer) : (q.choices || []).join('');
+    return (q.q + '|' + (q.extra || '') + '|' + opts).replace(/\s+/g, '');
+  }
+
+  const FEED_RING = 3;        /* fix 2: how many stem shapes back we refuse to repeat */
+  const FEED_RETRIES = 8;     /* attempts before we accept a repeat - a one-generator pool must never hang */
+  const FEED_MIN_L3_SKILLS = 3;
+
+  /* A skill carousel over one pool: [gen, skill] pairs grouped by skill, cycled in
+     a shuffled order that RESHUFFLES on every full cycle (so two sessions do not
+     run the same carousel), with each skill's own generators rotated the same way. */
+  function buildCarousel(pool){
+    const bySkill = new Map();
+    for (const pr of pool){
+      const skill = pr[1] || '';
+      if (!bySkill.has(skill)) bySkill.set(skill, []);
+      bySkill.get(skill).push(pr);
+    }
+    return { skills: Array.from(bySkill.keys()), bySkill, order: [], i: 0, gi: new Map() };
+  }
+  function carouselNext(c){
+    if (c.i >= c.order.length){ c.order = shuffle(c.skills); c.i = 0; }
+    const skill = c.order[c.i++];
+    const gens = c.bySkill.get(skill);
+    let st = c.gi.get(skill);
+    if (!st || st.i >= st.order.length){ st = { order: shuffle(gens), i: 0 }; c.gi.set(skill, st); }
+    return st.order[st.i++];
+  }
+
+  /* createFeed(topic, opts) -> { next(level), shapeOf }
+   *   opts.dedup        (default true)  no two items in a session share a stem
+   *   opts.alternateL3  (default true)  see the level-3 rule below
+   *
+   * LEVEL-3 ALTERNATION RULE. The mastery climb is untouched - still 3 right in a
+   * row up, 2 wrong in a row down, capped at pool 3. But that climb pins ~58% of a
+   * session in pool 3, and where pool 3 carries FEWER THAN 3 distinct skills the
+   * carousel is too short to hide a repeat. In that case level 3 alternates a pool
+   * 3 draw with a pool 2 draw. This is deliberate: the audit's fix 3 (purify pool 3
+   * so it holds only generators absent from pools 1 and 2) does the OPPOSITE - it
+   * collapses pool 3 to one or two generators and RAISES the repeat rate to 0.49
+   * with a worst run of 24. Pool 3 cannot be purified until new pool-3 generators
+   * are written, so variety at level 3 is bought by borrowing pool 2, not by
+   * narrowing pool 3.
+   */
+  function createFeed(topic, opts){
+    const def = TOPICS[topic];
+    if (!def) throw new Error('createFeed: unknown topic ' + topic);
+    const o = opts || {};
+    const dedup = o.dedup !== false;
+    const alternateL3 = o.alternateL3 !== false;
+    const car = { 1: buildCarousel(def.pools[1]), 2: buildCarousel(def.pools[2]), 3: buildCarousel(def.pools[3]) };
+    const thinL3 = car[3].skills.length < FEED_MIN_L3_SKILLS;
+    const ring = [];
+    const seen = new Set();
+    let l3flip = 0;
+    let lastGen = null;   /* the generator that produced the item now on screen */
+    /* Wave-3 blocker: the carousel round-robins skills WITHIN one pool, but each
+       pool owns its own carousel, so a level change (and the level-3 alternation)
+       could hand the child the same skill twice or three times running - the
+       "perimeter, perimeter, perimeter" texture the dress rehearsal caught. The
+       skill now on screen is remembered ACROSS pools and refused the same way a
+       repeated generator is. */
+    let lastSkill = null;
+
+    function accept(q, shape, key, gen){
+      if (dedup && key) seen.add(key);
+      ring.push(shape);
+      while (ring.length > FEED_RING) ring.shift();
+      lastGen = gen;
+      lastSkill = q.skill;
+      return q;
+    }
+    function next(level){
+      const want = (level === 2 || level === 3) ? level : 1;
+      let use = want;
+      if (want === 3 && alternateL3 && thinL3) use = (l3flip++ % 2 === 0) ? 3 : 2;
+      const c = car[use];
+      /* Three passes, loosening one guard at a time, because a pool with only 3
+         skills fills the 3-deep shape ring in a single carousel cycle and would
+         then reject EVERY candidate - including the ones that are not repeats at
+         all. Pass 1 (t < FEED_RETRIES): no repeat generator, no shape from the
+         last 3. Pass 2: no repeat generator. Pass 3: no exact duplicate only.
+         The feed must never hang: 25% of skills in the game own exactly one stem
+         shape, and a pool can be a single generator. */
+      let last = null;
+      const tries = dedup ? FEED_RETRIES * 2 + 500 : FEED_RETRIES * 2;
+      for (let t = 0; t < tries; t++){
+        const pr = carouselNext(c);
+        const q = pr[0]();
+        q.level = use; q.skill = pr[1];
+        const shape = shapeKey(q);
+        const key = dedup ? qIdentity(q) : null;
+        last = { q, shape, key, gen: pr[0] };
+        if (dedup && seen.has(key)) continue;                             /* exact duplicate, as before the fix */
+        /* fix 2, two ways of being "the same template": the same generator as the
+           item now on screen (this is the one that carries across a pool change -
+           gPeri sits in pools 1, 2 AND 3), or a stem shape seen in the last 3. */
+        if (t < FEED_RETRIES * 2 && pr[0] === lastGen) continue;
+        if (t < FEED_RETRIES * 2 && c.skills.length > 1 && pr[1] === lastSkill) continue;
+        if (t < FEED_RETRIES && ring.indexOf(shape) !== -1) continue;
+        return accept(q, shape, key, pr[0]);
+      }
+      return accept(last.q, last.shape, last.key, last.gen);
+    }
+    return { next, shapeOf: shapeKey, thinL3, skillsPerPool: { 1: car[1].skills.length, 2: car[2].skills.length, 3: car[3].skills.length } };
+  }
+
+  /* Pre-generate a full quiz set with no duplicate questions across the whole run.
+     Now drawn through a feed, so each pool's set is skill-round-robin ordered and
+     carries the no-repeat-last-3 guard. alternateL3 is OFF here: a set built for
+     level 3 must actually be level 3 (the live feed in js/app.js owns the
+     alternation, because it is a serving-order rule, not a build-order one). */
   function buildSetFor(topic, perLevel){
     const set={1:[],2:[],3:[]};
-    const seen=new Set();
+    const feed=createFeed(topic,{alternateL3:false});
     for(const lvl of [1,2,3]){
       let guard=0;
       while(set[lvl].length<perLevel && guard<500){
         guard++;
-        const q=makeQuestionFor(topic,lvl);
-        const key=(q.q+'|'+(q.extra||'')).replace(/\s+/g,'');
-        if(seen.has(key)) continue;
-        seen.add(key);
-        set[lvl].push(q);
+        set[lvl].push(feed.next(lvl));
       }
     }
     return set;
@@ -266,11 +512,11 @@ function gradeTyped(raw, q){
   const api = {
     gen: { ri, pick, shuffle, gcd, fr, eq, buildFracChoices, finishFrac, finishNum, finishTyped,
            gMul, EASY_TABLES, HARD_TABLES },
-    parseTypedAnswer, gradeTyped, normUnit,
+    parseTypedAnswer, gradeTyped, normUnit, unitList, typedRejectReason,
     topics: TOPICS,
     modes: MODES,
     registerTopic, registerMode,
-    makeQuestionFor, buildSetFor
+    makeQuestionFor, buildSetFor, createFeed, shapeKey
   };
   /* Script-tag order must not matter for modes. A mode file that loads BEFORE
      core.js pushes itself onto MQI.pendingModes instead of calling registerMode:

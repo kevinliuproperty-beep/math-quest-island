@@ -5,7 +5,8 @@
  * notation ONLY. No multiplication or division of money (that is P4 decimals),
  * amounts kept under $100, answers never negative.
  * Unit convention: the unit lives in the QUESTION STEM ("in dollars, e.g. 4.75")
- * and the typed answer is a bare number, per js/topics/README.md.
+ * and the typed answer is a bare number, per js/topics/README.md - but every
+ * finishTyped here ALSO declares '$' so gradeTyped rejects a wrong unit.
  */
 (function () {
   const G = MQI.gen;
@@ -23,52 +24,67 @@
      cash-payable: force the last cent digit to 0 or 5. */
   function cents(lo, hi){ let c = ri(lo, hi); c -= c % 5; if (c < lo) c += 5; return c; }
 
+  /* UNIT DECLARED as '$' on every typed item here. The stem says "in dollars" and
+     the answer is a bare decimal, but a typed question that declares NO unit lets
+     gradeTyped accept any token off the shared TYPED_UNITS list - "4.75 kg" and
+     "4.75 pupils" both graded CORRECT (Dress Rehearsal Phase 0, 2026-09-07, same
+     defect class as p5triangle). With '$' declared, a bare "4.75" still passes, a
+     leading "$4.75" still passes, and a wrong unit is now rejected.
+     answerText is re-rendered as money so the review card reads "$4.75" rather
+     than finishTyped's default "4.75 $" - same shape as p5-rate.js gParkingCharge. */
+  const asMoney = (q, c) => (q.answerText = money(c), q);
+
   function gAddTwo(){
     const who = pick(NAMES), a = cents(120, 590);
     const b = cents(80, 450);
     const t = a + b;
-    return finishTyped(who + ' spends ' + money(a) + ' on ' + pick(MEALS) + ' and ' + money(b) + ' on ' +
+    return asMoney(finishTyped(who + ' spends ' + money(a) + ' on ' + pick(MEALS) + ' and ' + money(b) + ' on ' +
       pick(CHEAP) + ' at ' + pick(STALLS) + '. How much does ' + who + ' spend in total? (in dollars, e.g. 4.75)',
       dollars(t),
-      'Line up the dollars with the dollars and the cents with the cents: ' + money(a) + ' + ' + money(b) + ' = ' + money(t) + '.');
+      'Line up the dollars with the dollars and the cents with the cents: ' + money(a) + ' + ' + money(b) + ' = ' + money(t) + '.',
+      '$'), t);
   }
   function gAddBig(){
     const who = pick(NAMES), a = cents(850, 2900);
     const b = cents(650, 2400);
     const t = a + b;
-    return finishTyped(who + ' spends ' + money(a) + ' on ' + pick(BIG) + ' and ' + money(b) + ' on ' +
+    return asMoney(finishTyped(who + ' spends ' + money(a) + ' on ' + pick(BIG) + ' and ' + money(b) + ' on ' +
       pick(MEALS) + ' at ' + pick(STALLS) + '. How much is spent in total? (in dollars, e.g. 14.75)',
       dollars(t),
       'Add the cents first: they make ' + ((a%100)+(b%100)) + ' cents' +
       (((a%100)+(b%100)) >= 100 ? ', which is over a dollar, so carry 1 to the dollars. ' : '. ') +
-      money(a) + ' + ' + money(b) + ' = ' + money(t) + '.');
+      money(a) + ' + ' + money(b) + ' = ' + money(t) + '.',
+      '$'), t);
   }
   function gAddThree(){
     const who = pick(NAMES), a = cents(150, 700), b = cents(120, 600);
     const c = cents(90, 500);
     const t = a + b + c;
-    return finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ', ' + pick(CHEAP) + ' for ' + money(b) +
+    return asMoney(finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ', ' + pick(CHEAP) + ' for ' + money(b) +
       ' and ' + pick(CHEAP) + ' for ' + money(c) + ' at ' + pick(STALLS) +
       '. How much does the food cost in total? (in dollars, e.g. 9.85)',
       dollars(t),
-      'Add two at a time: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + ', then ' + money(a+b) + ' + ' + money(c) + ' = ' + money(t) + '.');
+      'Add two at a time: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + ', then ' + money(a+b) + ' + ' + money(c) + ' = ' + money(t) + '.',
+      '$'), t);
   }
   function gSubSmall(){
     const who = pick(NAMES), have = cents(600, 990);
     const spend = cents(150, 550);
     const left = have - spend;
-    return finishTyped(who + ' has ' + money(have) + '. ' + who + ' buys ' + pick(CHEAP) + ' for ' + money(spend) +
+    return asMoney(finishTyped(who + ' has ' + money(have) + '. ' + who + ' buys ' + pick(CHEAP) + ' for ' + money(spend) +
       ' at ' + pick(STALLS) + '. How much money is left? (in dollars, e.g. 2.35)',
       dollars(left),
-      money(have) + ' - ' + money(spend) + ' = ' + money(left) + '. Subtract the cents first, then the dollars.');
+      money(have) + ' - ' + money(spend) + ' = ' + money(left) + '. Subtract the cents first, then the dollars.',
+      '$'), left);
   }
   function gSubBorrow(){
     const who = pick(NAMES), spend = cents(1250, 4400), left = cents(120, 900);
     const have = spend + left;
-    return finishTyped(who + ' has ' + money(have) + '. ' + who + ' pays ' + money(spend) + ' for ' + pick(BIG) +
+    return asMoney(finishTyped(who + ' has ' + money(have) + '. ' + who + ' pays ' + money(spend) + ' for ' + pick(BIG) +
       ' at ' + pick(STALLS) + '. How much money is left? (in dollars, e.g. 6.45)',
       dollars(left),
-      'Change one dollar into 100 cents if the cents will not subtract: ' + money(have) + ' - ' + money(spend) + ' = ' + money(left) + '.');
+      'Change one dollar into 100 cents if the cents will not subtract: ' + money(have) + ' - ' + money(spend) + ' = ' + money(left) + '.',
+      '$'), left);
   }
   function gChange(){
     const who = pick(NAMES), b = cents(120, 640);
@@ -76,11 +92,12 @@
     const note = pick([1000, 2000, 5000]);
     const given = (a + b) < note ? note : 5000;
     const chg = given - a - b;
-    return finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ' and ' + pick(CHEAP) + ' for ' + money(b) +
+    return asMoney(finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ' and ' + pick(CHEAP) + ' for ' + money(b) +
       ' at ' + pick(STALLS) + ', then hands the stallholder ' + money(given) +
       '. How much change should ' + who + ' get? (in dollars, e.g. 3.15)',
       dollars(chg),
-      'First find the cost: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + '. Then ' + money(given) + ' - ' + money(a+b) + ' = ' + money(chg) + '.');
+      'First find the cost: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + '. Then ' + money(given) + ' - ' + money(a+b) + ' = ' + money(chg) + '.',
+      '$'), chg);
   }
 
   MQI.registerTopic({

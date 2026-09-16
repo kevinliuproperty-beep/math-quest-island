@@ -271,7 +271,12 @@ function gDecDigitValue() {
   const place = ri(1, dp);
   const d = dec[place - 1];
   const key = D(d, place);
-  const leftSlip = D(d * 10, place);                       /* read one place too far left */
+  /* WOUND 3 (refutation v4 @ 7ec7919): written as D(d * 10, place) this printed
+     "0.40", and a trailing zero after the point is a badge no key in this bank can
+     ever wear - "delete the option ending in a zero" was a free elimination on
+     100% of draws. The VALUE is unchanged; it is now written the way a child
+     writes it, which is also the way the misconception reads. */
+  const leftSlip = dnat(D(d * 10, place));                 /* read one place too far left */
   const onesDigit = D(whole, place);                       /* used the ones digit instead */
   /* "looked at the wrong digit" needs a second decimal digit; a one-place number
      has none, so it offers "one place too deep" there instead. */
@@ -313,9 +318,13 @@ function gDecBuild() {
     w = ds[0]; d1 = ds[1]; d2 = ds[2];
     p1 = Math.random() < 0.5 ? 1 : 2;
     key = D(w * 1000 + d1 * P10[3 - p1] + d2, 3);
-    packed = D(w * 1000 + d1 * 100 + d2 * 10, 3);              /* wrote the digits in a row */
+    /* WOUND 2 + WOUND 3 (refutation v4 @ 7ec7919): written at three places this
+       printed "1.870", a trailing zero no key here can carry - and a child who
+       writes the digits in a row writes 1.87, not 1.870. dnat prints what the
+       slip actually produces. */
+    packed = dnat(D(w * 1000 + d1 * 100 + d2 * 10, 3));        /* wrote the digits in a row */
     swapped = D(w * 1000 + d2 * P10[3 - p1] + d1, 3);          /* the two digits in each other's place */
-    packedSwapped = D(w * 1000 + d2 * 100 + d1 * 10, 3);       /* in a row AND the wrong way round */
+    packedSwapped = dnat(D(w * 1000 + d2 * 100 + d1 * 10, 3)); /* in a row AND the wrong way round */
   } while (guard < 200 && !dallDistinct([key, packed, swapped, packedSwapped]));
   const parts = qty(w, 0) + ', ' + qty(d1, p1) + ' and ' + qty(d2, p2);
   /* WOUND 1: `packed` always sits above the key and the two swaps sit wherever the
@@ -323,16 +332,42 @@ function gDecBuild() {
      named slips, both below: the child who forgets to write the whole number at
      all, and the child who writes the first part and the last part but drops the
      middle one. */
-  const noWhole = D(key.n - w * 1000, 3);
+  /* COUPLING GATE (fourth pass, found by the new arm): "forgot to write the whole
+     number at all" is the key with its whole ones removed, so it repeats the KEY's
+     digits after the point exactly - and it is the only option that does. "The
+     option whose whole ones are one of the numbers in the question, and whose
+     digits after the point another option repeats" then settled 57% of draws and
+     was right every time. The slip is kept and written the way a child who loses
+     the whole number actually writes it - the digits in a row, with the empty place
+     still held open by the zero - so it no longer carries the key's own tail. */
+  const noWhole = dnat(D(d1 * 100 + d2 * 10, 3));
   const noMiddle = D(w * 1000 + d2, 3);
   /* and one guaranteed ABOVE, so the two swaps falling below cannot pin the key
      to the top: the child who ignores the decimal point altogether. */
   const noPoint = D(w * 100 + d1 * 10 + d2, 0);
-  return mcDec('Which number is made up of <b>' + parts + '</b>?', '',
-    key, [packed, swapped, packedSwapped, noWhole, noMiddle, noPoint], '',
-    parts + ' is written ' + dtext(key) + '. There are no ' + PLACE_WORD[p1 === 1 ? 2 : 1] +
-    ', so a zero holds that place open. Writing the digits in a row with no zero gives ' +
-    dtext(packed) + ', which is a different number.');
+  /* WOUND 2 (refutation v4 @ 7ec7919): the explanation named `packed` by number,
+     and `packed` was one of six candidates of which three ship - so on 50.48% of
+     draws a child re-read the explanation, hunted the row for a number that was not
+     on it, and found the LOOKALIKE `packedSwapped` instead. Making `packed` a must
+     would have fixed it and pinned the key's magnitude rank (it sits above the key
+     on every draw), so the explanation is written off the row instead: whichever
+     named slip actually shipped is the one it calls out, and each carries its own
+     sentence so the diagnosis still matches the number. */
+  const named = [
+    [packed, 'Writing the digits in a row with no zero gives '],
+    [packedSwapped, 'Writing the digits in a row with no zero and the wrong way round gives '],
+    [swapped, 'Putting each of the two digits in the other one\'s place gives '],
+    [noMiddle, 'Leaving the middle part out altogether gives '],
+    [noWhole, 'Forgetting the whole number gives '],
+    [noPoint, 'Ignoring the decimal point gives ']
+  ];
+  const q = mcDec('Which number is made up of <b>' + parts + '</b>?', '',
+    key, [packed, swapped, packedSwapped, noWhole, noMiddle, noPoint], '', '');
+  const on = named.find(c => c[0] && q.choices.indexOf(dtext(c[0])) >= 0) || named[0];
+  q.explain = parts + ' is written ' + dtext(key) + '. There are no ' + PLACE_WORD[p1 === 1 ? 2 : 1] +
+    ', so a zero holds that place open. ' + on[1] + dtext(on[0]) + ', which is a different number.';
+  q.answerText = dtext(key);
+  return q;
 }
 
 /* FORMAT 1d - concept check: how many of a smaller place make this number?
@@ -359,7 +394,15 @@ function gDecHowMany() {
      whole ones too) - let the picker vary how many options sit above the key. */
   const wholeOnly = w * P10[j];
   const digitsAsWholes = (w + digitsOnly) * P10[j];
-  const wrongs = rankInts(V, [shallow, digitsOnly, wholeOnly, V * 10, digitsAsWholes]);
+  /* WOUND 4 (refutation v4 @ 7ec7919): "neither the longest nor the shortest
+     numeral" settled 38.1% of draws here at 53.5% accuracy, because the key was the
+     only option written to its own number of digits whenever this slip did not
+     ship. "Counted the whole ones and forgot the digits after the point" is written
+     to EXACTLY the key's length on every draw (w followed by j zeros against
+     val.n followed by j - dp zeros), so it ships on all of them and the key is
+     never alone in the middle. It sits below the key, where the picker already had
+     two others, so no rank moves. */
+  const wrongs = rankInts(V, [{ n: wholeOnly, must: true }, shallow, digitsOnly, V * 10, digitsAsWholes]);
   const q = finishNum('How many <b>' + PLACE_WORD[j] + '</b> are there in <b>' + dtext(val) + '</b>?', '',
     V, wrongs, '',
     'One whole is ' + qty(P10[j], j) + ', so ' + qty(w, 0) + ' is ' + qty(w * P10[j], j) +
@@ -379,7 +422,13 @@ function gDecExpand() {
   const term = (d, place) => dtext(D(d, place));
   const key = w + ' + ' + dec.map((d, i) => term(d, i + 1)).join(' + ');
   const noPoint = w + ' + ' + dec.join(' + ');
-  const reversed = w + ' + ' + dec.map((d, i) => term(d, dp - i)).join(' + ');
+  /* COUPLING GATE (refutation v4 @ 7ec7919, the gate's own finding): this used to
+     print its places in the reverse order too, so the KEY was the only option
+     ending on a term written to the number's own last place - "pick the option
+     that ends at the same depth as the number" settled it on 100% of draws with no
+     place value read at all. The digits are still the wrong way round; the places
+     now run big to small like the key's, so the depth of the last term is shared. */
+  const reversed = w + ' + ' + dec.map((d, i) => term(dec[dp - 1 - i], i + 1)).join(' + ');
   const allTenths = w + ' + ' + dec.map(d => term(d, 1)).join(' + ');
   return mcText('Which of these shows <b>' + numStr + '</b> written as the sum of its place values?', '',
     key, [noPoint, reversed, allTenths],
@@ -701,8 +750,7 @@ function gDecBetween() {
    wrong way, looked at the LAST digit instead of the next one, rounded to the
    wrong place. */
 function gDecRound() {
-  let to = 1, val = D(3268, 3), key = D(33, 1), wrongDir = D(32, 1), lastSlip = D(32, 1),
-      wrongPlace = D(3, 0), guard = 0, ok = false;
+  let to = 2, val = D(3268, 3), key = D(327, 2), guard = 0, ok = false, cands = [];
   do {
     guard++;
     to = ri(0, 2);
@@ -714,27 +762,42 @@ function gDecRound() {
     const d1 = Math.floor((val.n - base * cut) / P10[dp - to - 1]);
     const d2 = val.n % 10;
     key = dround(val, to);
-    wrongDir = D(d1 >= 5 ? key.n - 1 : key.n + 1, to);
-    /* the LAST-digit slip only exists when there is more than one digit to drop;
-       where there is only one, the slip on offer is "did not round at all". */
-    lastSlip = dp > to + 1 ? D(base + (d2 >= 5 ? 1 : 0), to) : val;
-    wrongPlace = dround(val, to === 0 ? 1 : to - 1);
     if (dp > to + 1 && (d1 >= 5) === (d2 >= 5)) continue;
-    if (!(wrongDir.n > 0 && key.n > 0)) continue;
-    if (!dallDistinct([key, wrongDir, lastSlip, wrongPlace])) continue;
+    if (key.n <= 0) continue;
+    /* REGRESSION, found by the v5 trailing-zero work (WOUND 3) and not by any pass:
+       `to` was drawn over 0, 1 and 2 and the generator shipped `2 decimal places`
+       on 20,000 of 20,000 draws. At to = 0 and to = 1 the "rounded the wrong way"
+       slip and the "looked at the LAST digit" slip are THE SAME NUMBER by
+       construction - the draw forces the two digits onto opposite sides of 5, so
+       both land on the other side of the key - and a flat dallDistinct() over four
+       fixed candidates rejected every such draw. Two thirds of MOE 1.5 were
+       unreachable and the bank's own scope line said otherwise. The slips are a
+       LIST now, deduplicated by value, and a draw survives on any three of them. */
+    const bank = [
+      D(d1 >= 5 ? key.n - 1 : key.n + 1, to),                /* rounded the wrong way */
+      dp > to + 1 ? D(base + (d2 >= 5 ? 1 : 0), to) : null,  /* looked at the LAST digit */
+      dround(val, to === 0 ? 1 : to - 1),                    /* rounded to the place next door */
+      dround(val, Math.min(3, to + 1)),                      /* rounded one place too many */
+      val                                                    /* did not round at all */
+    ];
+    cands = [];
+    for (const c of bank) {
+      if (!c || c.n <= 0 || dsame(c, key) || cands.some(k => dsame(k, c))) continue;
+      cands.push(c);
+    }
+    if (cands.length < 3) continue;
     ok = true;
     break;
   } while (guard < 400);
-  if (!ok) { to = 1; val = D(3268, 3); key = D(33, 1); wrongDir = D(32, 1); lastSlip = D(327, 2); wrongPlace = D(3, 0); }
-  const lastDigit = lastSlip;
+  if (!ok) { to = 1; val = D(3268, 3); key = D(33, 1);
+             cands = [D(32, 1), D(3, 0), D(327, 2), val]; }
   return mcDec('Round <b>' + dtext(val) + '</b> to <b>' + roundPhrase(to) + '</b>.', '',
-    key, [wrongDir, lastDigit, wrongPlace], '',
+    key, cands, '',
     'Look only at the digit just after the ' + (to === 0 ? 'ones' : PLACE_WORD[to]) + ' place: it is ' +
     d1Of(val, to) + '. Since ' + d1Of(val, to) + ' is ' +
     (d1Of(val, to) >= 5 ? '5 or more, round up' : '4 or less, round down') + ', ' + dtext(val) +
     ' rounded to ' + roundPhrase(to) + ' is ' + dtext(key) + '. The digits further along do not change the decision.');
 }
-/* the digit just after place `to` - the only digit rounding is allowed to look at */
 function d1Of(val, to) {
   const cut = P10[val.dp - to];
   const base = Math.floor(val.n / cut);
@@ -855,22 +918,53 @@ function gDecRoundBack() {
    exactly one cell is right in both. Each digit is printed twice and each answer
    is printed twice, so EVERY token sits in exactly two options: no unique token,
    no unique length, no digit alone on its side of 5, and no value rule can pick
-   a single option out. The best any stem-free reading can do is halve the field,
-   and the half it keeps is one of the two things the item teaches - which digit
-   rounding looks at, or what that digit does. A child who can do one half scores
-   50%; the item is answered by doing both. (That 50% floor is declared as a
-   residual, the same class as gDecCmpError's.)
+   a single option out.
 
-   Everything the second pass fixed is kept: the options are one masked frame, so
-   no frame is ever never-correct and none singles the key out; they carry no
-   direction word and no connective; and the two answers are one column apart, so
-   the four options stay inside two characters of each other. The child's digit
-   is named in the stem and is NOT offered, so no option is refuted for free by
-   reading the stem alone. */
+   THE FOURTH PASS'S KILL, and the v5 draw that closes it. The grid was lexically
+   perfect and still settled on 79.14% of draws, because its TWO AXES WERE BOTH
+   READABLE OFF THE STEM and one of them was free:
+
+     R1  the stem said "to the nearest whole number" and the offered wrong answer
+         was the number rounded to the place NEXT DOOR, so it carried a different
+         number of decimal places. "The answer is written to the place the stem
+         names" deleted two options - never the key - on 100.00% of draws, with no
+         arithmetic at all. That half of the grid was a FORMAT CONVENTION.
+     R3  the stem printed the digit the child read, and the offered wrong digit
+         was drawn from a different set than the right one, so on 79.14% of draws
+         exactly one of the two offered digits sat immediately BESIDE the stem's
+         digit inside the numeral - and it was always the right one. R1 AND R3
+         together settled 79.14% of draws and were right every single time.
+
+   Both are closed by the draw, not by a gate:
+
+     (a) THE ANSWER AXIS IS NOW ARITHMETIC. The two answers are the number rounded
+         the right way and the number rounded THE WRONG WAY - base and base + 1 at
+         the place the stem names - so BOTH are written to exactly the decimal
+         places the rounding phrase implies and neither can be deleted by reading
+         it. Telling them apart is the 5-or-more rule itself, which is the lesson.
+     (b) THE STEM NAMES A PLACE, NOT A DIGIT. "X looks at the hundredths digit"
+         prints no digit for an option to stand next to, so the adjacency route is
+         structurally dead: a child who wants to use position has to FIND the
+         named place in the numeral first, which is the other half of the lesson.
+         It also means no option can be refuted by matching a printed digit.
+     (c) THE TWO OFFERED DIGITS ARE DRAWN ON INDEPENDENT SIDES OF 5, each 50/50,
+         so "pick the digit that is 5 or more", "pick the smaller digit" and every
+         other side-of-5 rule is a coin flip rather than a tell.
+
+   Self-consistency is a deliberate two-two split: the option pairing the right
+   digit with the right answer and the option pairing the other digit with what
+   THAT digit would give are both internally consistent, so "pick the option that
+   agrees with itself" leaves two and never settles.
+
+   The declared residual is a 50% floor whose free half is the lesson: a child who
+   can round but cannot name the place gets the answer and guesses the digit, and
+   a child who can name the place but cannot round gets the digit and guesses the
+   answer. Neither half is a format convention, and no rule that reads only the
+   printed shapes beats a coin. */
 function gDecRoundError() {
   const who = pick(NAMES);
   let to = 1, wlen = 1, digits = [1, 2, 6, 3], val = D(1263, 3);
-  let ci = 2, xi = 3, yi = 1, truth = D(13, 1), said = D(12, 1), other = D(1, 0), guard = 0, ok = false;
+  let ci = 2, xi = 3, yi = 1, truth = D(13, 1), wrong = D(12, 1), guard = 0, ok = false;
   do {
     guard++;
     wlen = ri(1, 2);                                   /* digits before the point */
@@ -878,71 +972,66 @@ function gDecRoundError() {
     to = ri(0, dp - 1);                                /* whole number, 1 dp or 2 dp */
     ci = wlen + to;                                    /* the digit rounding must look at */
     if (ci > 3) continue;                              /* it has to be one of the four */
-    digits = distinctDigits(4);                        /* four different numerals, 1..9 */
-    const dc = digits[ci];
-    val = D(digits.reduce((a, d) => a * 10 + d, 0), dp);
-    const cut = P10[dp - to], base = Math.floor(val.n / cut);
-    truth = D(base + (dc >= 5 ? 1 : 0), to);
-    /* the digit the child SAYS he used, named in the stem and never offered. It
-       sits on the other side of 5 from the rounding digit, so the 5-or-more rule
-       applied correctly to it gives the other answer and the claim is genuinely
-       wrong - the premise is the child's own stated method, not an inference. */
+    /* the place the child read instead: the one being rounded TO, or one further
+       along. Nobody rounds off the tens digit, so those draws are not offered. */
     const xs = [];
-    for (let i = 0; i < 4; i++) {
-      /* and it is a digit a child actually reads by mistake: the one sitting IN
-         the place being rounded to, or one further along. Nobody rounds off the
-         tens digit, so those draws are not offered as a diagnosis. */
-      if (i !== ci && (i === ci - 1 || i > ci) && (digits[i] >= 5) !== (dc >= 5)) xs.push(i);
-    }
+    for (let i = 0; i < 4; i++) if (i !== ci && (i === ci - 1 || i > ci)) xs.push(i);
     if (!xs.length) continue;
     xi = pick(xs);
-    said = D(base + (digits[xi] >= 5 ? 1 : 0), to);
     /* the offered wrong digit: the digit IN the place being rounded to, or the
        last digit of the number - the two digits a child actually looks at by
-       mistake, and the two this file's own explanations warn about. */
+       mistake, and the two this file's own explanations warn about. It is never
+       the digit sitting in the place the stem names, or the stem would refute one
+       option for free. */
     let ys = [ci - 1, 3].filter(i => i >= 0 && i !== ci && i !== xi);
     if (!ys.length) ys = [0, 1, 2, 3].filter(i => i !== ci && i !== xi);
     if (!ys.length) continue;
     yi = pick(ys);
-    /* the offered wrong answer: rounded to the place next door, the named slip
-       gDecRound already carries. One column out keeps the four option strings
-       within two characters of one another, so no length rank can be read. */
-    other = dround(val, to === 0 ? 1 : to - 1);
-    if (truth.n <= 0 || said.n <= 0 || other.n <= 0) continue;
-    if (dsame(said, truth) || dsame(other, truth) || dsame(other, said)) continue;
+    /* (c): the right digit and the offered wrong digit each take their side of 5
+       on an independent coin, so no side-of-5 reading of the option list beats
+       chance. The other two digits are whatever is left. */
+    const loP = shuffle([1, 2, 3, 4]), hiP = shuffle([5, 6, 7, 8, 9]);
+    const take = s => (s ? hiP : loP).pop();
+    digits = [0, 0, 0, 0];
+    digits[ci] = take(Math.random() < 0.5);
+    digits[yi] = take(Math.random() < 0.5);
+    const restP = shuffle(loP.concat(hiP));
+    for (let i = 0; i < 4; i++) if (!digits[i]) digits[i] = restP.pop();
+    const dc = digits[ci];
+    val = D(digits.reduce((a, d) => a * 10 + d, 0), dp);
+    const cut = P10[dp - to], base = Math.floor(val.n / cut);
+    /* (a): both answers live at the place the stem names, one column apart - the
+       number rounded correctly and the number rounded the wrong way. */
+    truth = D(base + (dc >= 5 ? 1 : 0), to);
+    wrong = D(base + (dc >= 5 ? 0 : 1), to);
+    if (truth.n <= 0 || wrong.n <= 0 || dsame(truth, wrong)) continue;
     /* no trailing zero anywhere: "1.20" is not how a child writes an answer */
-    if (to > 0 && (truth.n % 10 === 0 || said.n % 10 === 0)) continue;
-    if (other.dp > 0 && other.n % 10 === 0) continue;
-    /* RULE D5: nothing an option prints may be the number the stem declares
-       wrong. The options print two single digits and two answers, so a
-       whole-number claim is the exposure - and a whole-number ANSWER that reads
-       as one of the printed digits would be ambiguous, so that goes too. */
+    if (to > 0 && (truth.n % 10 === 0 || wrong.n % 10 === 0)) continue;
+    /* a whole-number answer that reads as one of the two printed digits would be
+       ambiguous, so those draws go (the same guard RULE D5 used to need) */
     const shown = [digits[ci], digits[yi]];
-    if (said.dp === 0 && shown.indexOf(said.n) !== -1) continue;
     if (truth.dp === 0 && shown.indexOf(truth.n) !== -1) continue;
-    if (other.dp === 0 && shown.indexOf(other.n) !== -1) continue;
+    if (wrong.dp === 0 && shown.indexOf(wrong.n) !== -1) continue;
     ok = true;
     break;
   } while (guard < 400);
   /* the fallback obeys every rule the draw does: 1.263 to 1 decimal place, with
-     the child reading the thousandths 3 instead of the hundredths 6 and claiming
-     1.2; the offered wrong digit is the tenths 2 and the offered wrong answer is
-     1.263 rounded to the nearest whole number instead. */
+     the child reading the thousandths place instead of the hundredths; the offered
+     wrong digit is the tenths 2 and the two answers are 1.3 and 1.2. */
   if (!ok) { wlen = 1; to = 1; ci = 2; xi = 3; yi = 1; digits = [1, 2, 6, 3]; val = D(1263, 3);
-             truth = D(13, 1); said = D(12, 1); other = D(1, 0); }
-  const dc = digits[ci], dx = digits[xi], dy = digits[yi];
+             truth = D(13, 1); wrong = D(12, 1); }
+  const dc = digits[ci], dy = digits[yi];
   const placeOf = i => (i >= wlen ? PLACE_WORD[i - wlen + 1] : (i === wlen - 1 ? 'ones' : 'tens'));
   const opt = (d, r) => who + ' should have looked at the digit ' + d + ', and the answer is ' + dtext(r) + '.';
   return mcText(who + ' rounds <b>' + dtext(val) + '</b> to <b>' + roundPhrase(to) + '</b>. ' + who +
-    ' looks at the <b>' + dx + '</b>, says that ' + dx + ' is ' + (dx >= 5 ? '5 or more' : '4 or less') +
-    ', rounds ' + (dx >= 5 ? 'up' : 'down') + ', and gives the answer <b>' + dtext(said) +
-    '</b>. <b>Which digit should ' + who + ' have looked at, and what is the correct answer?</b>', '',
-    opt(dc, truth), [opt(dc, other), opt(dy, truth), opt(dy, other)],
+    ' looks at the <b>' + placeOf(xi) + '</b> digit. <b>Which digit should ' + who +
+    ' have looked at, and what is the correct answer?</b>', '',
+    opt(dc, truth), [opt(dc, wrong), opt(dy, truth), opt(dy, wrong)],
     'Rounding to ' + roundPhrase(to) + ' looks at one digit only: the next one along, which is the ' +
     placeOf(ci) + ' digit of ' + dtext(val) + ', ' + dc + '. ' + who + ' looked at the ' + placeOf(xi) +
-    ' digit, ' + dx + ', instead, and the other digits, before it and after it, do not get a vote. ' +
+    ' digit instead, and the other digits, before it and after it, do not get a vote. ' +
     dc + ' is ' + (dc >= 5 ? '5 or more, so round up' : '4 or less, so round down') + ', so ' + dtext(val) +
-    ' rounded to ' + roundPhrase(to) + ' is ' + dtext(truth) + ', not ' + dtext(said) + '.');
+    ' rounded to ' + roundPhrase(to) + ' is ' + dtext(truth) + '.');
 }
 
 /* FORMAT 2i - two-step word problem, SG wet market (pool 3): add, THEN round. */
@@ -1081,7 +1170,16 @@ function gDecToFrac() {
             gcd(Number(String(n).split('').reverse().join('')), 100) === 1))));
   const val = D(n, dp);
   const revDigits = Number(String(n).split('').reverse().join(''));
-  const cands = [[n, den * 10], [den - n, den], dp === 1 ? [n, den + 1] : [revDigits, den]];
+  /* WOUND 4 (refutation v4 @ 7ec7919): at one place the third candidate was
+     [n, 11], and a fraction of a decimal can never have a denominator of 11 - "the
+     denominator has to divide 10 or 100" deleted it by inspection, and composed
+     with "and it cannot be deeper than the number is" that left the key against one
+     other option on 48.0% of draws. The replacement is the part-whole slip this
+     file already uses in gDecMoneyFrac: the whole counted in FIVE parts instead of
+     ten. Its denominator divides 100, it is no deeper than the stem, and it is in
+     lowest terms, so neither rule touches it. */
+  const fifths = n < 5 ? [n, 5] : [10 - n, 5];
+  const cands = [[n, den * 10], [den - n, den], dp === 1 ? fifths : [revDigits, den]];
   const q = finishFrac('Write <b>' + dtext(val) + '</b> as a fraction in its <b>simplest form</b>.', '',
     [n, den], cands,
     dtext(val) + ' is ' + qty(n, dp) + ', and ' + PLACE_WORD[dp] + ' go over ' + den +
@@ -1248,7 +1346,13 @@ function gDecAddSub() {
      on 0.77% of draws wearing a named distractor's badge. The distinctness test
      now counts the candidates it actually has: five on a subtract draw, four on an
      add draw, where two of them are the same number by construction. */
-  } while (guard < 300 && !(key % 10 !== 0 && key > scale && noCarry > 0 && other > 0 && rounded > 0 &&
+  /* WOUND 3 (refutation v4 @ 7ec7919): `key % 10 !== 0` is gone. It was written to
+     stop "5.60" being an answer, and the side effect was that the KEY could never
+     end in a zero after the point while distractors could - a badge that said
+     "distractor" on every draw it appeared. The operands still may not end in a
+     zero (that is what keeps the last column real); the sum may land wherever the
+     arithmetic puts it, which is what a child's column addition does. */
+  } while (guard < 300 && !(key > scale && noCarry > 0 && other > 0 && rounded > 0 &&
            a % 10 !== 0 && b % 10 !== 0 &&
            new Set([key, noCarry, other, overCarry, key - scale, rounded]).size === (addMode ? 5 : 6)));
   const A = D(a, dp), B = D(b, dp), K = D(key, dp);
@@ -1371,8 +1475,11 @@ function gDecAlignError() {
     if (t0 - P10[m0] <= 0 || df <= 0) continue;
     /* "writes the 9 underneath the 9" reads as a riddle; the two last digits differ */
     if (a.n % 10 === b.n % 10) continue;
+    const patched0 = Math.floor(t0 / P10[m0]) * P10[m0] + (a.n + b.n) % P10[m0];
+    if (!twoSided && (patched0 <= 0 || patched0 === t0)) continue;
     if (!dallDistinct([D(t0, m0), D(a.n + b.n, m0), D(a.n + b.n, 0), D(t0 + P10[m0], m0),
-                       D(df, m0), D(t0 - P10[m0], m0), D(t0, m0 + 1), D(t0, m0 - 1)])) continue;
+                       D(df, m0), D(t0 - P10[m0], m0), D(t0, m0 + 1), D(t0, m0 - 1)]
+                      .concat(twoSided ? [] : [D(patched0, m0)]))) continue;
     ok = true;
     break;
   } while (guard < 400);
@@ -1386,10 +1493,19 @@ function gDecAlignError() {
   const diff = D(Math.abs(a.n * P10[m - a.dp] - b.n * P10[m - b.dp]), m);   /* subtracted instead */
   const overCarry = D(trueN + P10[m], m);            /* carried where there was nothing to carry */
   const lostCarry = D(trueN - P10[m], m);            /* wrote the carried ten down and lost it */
+  /* COUPLING GATE (refutation v4 @ 7ec7919, the gate's own finding). On the "7 + 0.6"
+     picture the KEY is made of the two numbers in the stem - 7 from one and .6 from
+     the other - and on 83% of those draws it was the ONLY option whose whole ones
+     came from one stem number and whose digits after the point came from another.
+     This candidate carries the key's own whole ones with the digits after the point
+     of the wrong answer the stem prints - "got the whole ones right and kept the
+     rest of the misaligned sum" - so it matches the key on every whole-part reading
+     there is, on BOTH shapes, and it ships on every draw. */
+  const patched = twoSided ? null : must(D(Math.floor(trueN / P10[m]) * P10[m] + claim.n % P10[m], m));
   return mcDec(who + ' works out <b>' + dtext(a) + ' + ' + dtext(b) + '</b>. ' + who +
     ' writes the ' + lastB + ' underneath the ' + lastA + ' and gets <b>' + dtext(claim) +
     '</b>. <b>What is the correct answer?</b>', '',
-    key, [noPoint, diff, overCarry, lostCarry, pLeft(key), pRight(key)], '',
+    key, [noPoint, diff, overCarry, lostCarry, patched, pLeft(key), pRight(key)], '',
     'Line up the decimal POINTS, not the last digits. Write ' + dtext(a) + ' and ' + dtext(b) +
     ' one under the other with the points in a column, filling the short one out with a zero: ' +
     dtext(D(a.n * P10[m - a.dp], m)) + ' + ' + dtext(D(b.n * P10[m - b.dp], m)) + ' = ' + dtext(key) +
@@ -1442,51 +1558,74 @@ const BOOKSHOP_ITEMS = [['a pen', 'pens', 'pen'], ['an exercise book', 'exercise
   ['a ruler', 'rulers', 'ruler'], ['a glue stick', 'glue sticks', 'glue stick'],
   ['a pencil', 'pencils', 'pencil'], ['an eraser', 'erasers', 'eraser']];
 function gDecMulConcept() {
-  let x = 115, y = 240, n = 7, guard = 0, ok = false;
+  let x = 115, y = 240, n = 7, m = 4, z = 150, z2 = 310, guard = 0, ok = false;
   do {
     guard++;
     x = pick([105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195]);
     y = pick([210, 220, 240, 250, 265, 280, 295, 310, 325, 350, 375, 420]);
     n = ri(3, 9);
+    /* the SECOND box, for mode 2 - a different count at a different price, so the
+       option that divides the wrong box price is a real slip and not a shape */
+    m = ri(3, 9); z = pick([105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195]);
+    /* the THIRD price, for mode 1 - so a second two-price addition can be offered */
+    z2 = pick([210, 220, 240, 250, 265, 280, 295, 310, 325, 350, 375, 420]);
     /* every option must evaluate to a DIFFERENT amount, so exactly one of them can
        be the answer to the question actually asked, whichever question it is */
-    if (new Set([n * x, n * y, x + y, y + y, x + x, x, y, n * x + y]).size !== 8) continue;
+    if (new Set([n * x, n * y, x + y, y + z2, x + x, n * (n * x)]).size !== 6) continue;
+    if (m === n || z === x || m * z === n * x || z2 === x || z2 === y) continue;
     ok = true;
     break;
   } while (guard < 900);
-  if (!ok) { x = 115; y = 240; n = 7; }
-  const items = shuffle(BOOKSHOP_ITEMS).slice(0, 2);
-  const total = n * x;
+  if (!ok) { x = 115; y = 240; n = 7; m = 4; z = 150; z2 = 310; }
+  const items = shuffle(BOOKSHOP_ITEMS).slice(0, 3);
+  const total = n * x, other = m * z;
   const mode = ri(0, 2);
-  const mul = (a, b) => a + ' × ' + b, div = (a, b) => a + ' ÷ ' + b, add = (a, b) => a + ' + ' + b;
+  const mul = (a, b) => a + ' × ' + b, div = (a, b) => a + ' ÷ ' + b,
+        add = (a, b) => a + ' + ' + b, sub = (a, b) => a + ' − ' + b;
   let stem, key, wrongs, explain;
   if (mode === 0) {
     stem = 'At the school bookshop ' + items[0][0] + ' costs <b>' + money(x) + '</b> and ' + items[1][0] +
       ' costs <b>' + money(y) + '</b>. <b>Which calculation</b> gives the cost of <b>' + n + ' ' + items[0][1] + '</b>?';
     /* two × and two +, so RULE D6's masked tails split 2-2 and neither operator
-       narrows the set on its own */
+       narrows the set on its own; and the key names only the first price, which
+       one distractor does too, so the OPERAND LIST does not narrow it either. */
     key = mul(n, money(x));
     wrongs = [mul(n, money(y)), add(money(x), money(y)), add(money(x), money(x))];
     explain = 'Buying ' + n + ' of the same thing means ' + n + ' equal groups of ' + money(x) +
       ', so you multiply: ' + n + ' × ' + money(x) + ' = ' + money(n * x) + '. ' + money(y) +
       ' is the price of ' + items[1][0] + ', and adding the price to itself buys two of them, not ' + n + '.';
   } else if (mode === 1) {
-    stem = 'At the school bookshop ' + items[0][0] + ' costs <b>' + money(x) + '</b> and ' + items[1][0] +
-      ' costs <b>' + money(y) + '</b>. <b>Which calculation</b> gives the cost of <b>one of each</b>?';
+    stem = 'At the school bookshop ' + items[0][0] + ' costs <b>' + money(x) + '</b>, ' + items[1][0] +
+      ' costs <b>' + money(y) + '</b> and ' + items[2][0] + ' costs <b>' + money(z2) +
+      '</b>. <b>Which calculation</b> gives the cost of <b>one ' + items[0][2] + ' and one ' +
+      items[1][2] + '</b>?';
+    /* KILL 2 (refutation v4 @ 7ec7919): the key used to be the ONLY option naming
+       two different money amounts, so the operand list answered the item on 100% of
+       this mode's draws without the operation ever being considered. A third price
+       puts a SECOND two-price addition on the row - the right method on the wrong
+       pair - so the operand shape is shared, RULE D6's masked tails still split
+       2-2, and what is left to decide is which two prices and which operation. */
     key = add(money(x), money(y));
-    wrongs = [add(money(y), money(y)), mul(n, money(x)), mul(n, money(y))];
-    explain = 'One of each means the two prices put together, so you add: ' + money(x) + ' + ' + money(y) +
-      ' = ' + money(x + y) + '. Doubling one price buys two of that one thing, and multiplying by ' + n +
-      ' buys ' + n + ' of it.';
+    wrongs = [add(money(y), money(z2)), mul(n, money(x)), mul(n, money(y))];
+    explain = 'One of each means the two prices put together, so you add the price of ' + items[0][0] +
+      ' and the price of ' + items[1][0] + ': ' + money(x) + ' + ' + money(y) + ' = ' + money(x + y) +
+      '. ' + money(z2) + ' is the price of ' + items[2][0] + ', which nobody asked about, and multiplying by ' +
+      n + ' buys ' + n + ' of one thing instead of one of two.';
   } else {
     stem = 'At the school bookshop a box of <b>' + n + ' ' + items[0][1] + '</b> costs <b>' + money(total) +
-      '</b>, and ' + items[1][0] + ' costs <b>' + money(y) +
+      '</b>, and a box of <b>' + m + ' ' + items[1][1] + '</b> costs <b>' + money(other) +
       '</b>. <b>Which calculation</b> gives the cost of <b>one ' + items[0][2] + '</b>?';
+    /* KILL 2, the other half: the key used to be the ONLY option shaped "a price
+       shared into a count", so its operand shape alone answered the item. Both
+       boxes are now priced, three of the four options share a price into a count,
+       and the work is choosing WHICH price and WHICH count - not spotting the
+       division. */
     key = div(money(total), n);
-    wrongs = [div(n, money(total)), mul(n, money(y)), add(money(total), money(y))];
-    explain = 'One box holds ' + n + ' of them for ' + money(total) + ', so you share that price into ' + n +
-      ' equal parts: ' + money(total) + ' ÷ ' + n + ' = ' + money(x) + '. Dividing the other way round shares ' +
-      n + ' into a price, which is not a cost at all.';
+    wrongs = [div(money(other), m), mul(n, money(total)), mul(n, money(other))];
+    explain = 'One box holds ' + n + ' ' + items[0][1] + ' for ' + money(total) +
+      ', so you share THAT price into ' + n + ' equal parts: ' + money(total) + ' ÷ ' + n + ' = ' +
+      money(x) + '. ' + money(other) + ' ÷ ' + m + ' is the cost of one ' + items[1][2] +
+      ', and multiplying a box price makes it dearer instead of sharing it out.';
   }
   return mcText(stem, '', key, wrongs, explain);
 }
@@ -1504,7 +1643,7 @@ function gDecMulWhole() {
      One group too few and one group too many bracket it at the same magnitude. */
   return mcDec('<b>' + dtext(A) + ' × ' + n + ' = ?</b>', '',
     key, [D(a + n * P10[dp], dp), pRight(key), pLeft(key),
-          D(a * (n - 1), dp), D(a * (n + 1), dp)], '',
+          dnat(D(a * (n - 1), dp)), dnat(D(a * (n + 1), dp))], '',
     'Multiply as if there were no decimal point: ' + a + ' × ' + n + ' = ' + (a * n) + '. ' + dtext(A) +
     ' has ' + dp + ' digit' + (dp > 1 ? 's' : '') + ' after the point, so the answer has ' + dp +
     ' too: ' + dtext(key) + '. Adding instead of multiplying answers a different question.');
@@ -1512,35 +1651,42 @@ function gDecMulWhole() {
 
 /* FORMAT 4h - direct compute: a decimal shared by a 1-digit whole number (pool 2) */
 function gDecDivWhole() {
-  let dp = 1, key = 24, n = 3, guard = 0, wholeOnly = 20, copyDown = 22;
+  let dp = 1, key = 24, n = 3, guard = 0, wholeOnly = 20, forgotWhole = 2588, droppedWhole = 88;
   do {
     guard++;
     dp = ri(1, 2); key = ri(P10[dp] + 1, 4 * P10[dp]); n = ri(2, 9);
     /* divided the whole ones and threw the digits after the point away */
     wholeOnly = Math.floor(Math.floor(key * n / P10[dp]) / n) * P10[dp];
-    /* WOUND 5 (refutation v3 @ c9d26fb): "neither the longest nor the shortest
-       numeral" won 67.8% here - the only >= 60% strategy left in the bank - on the
-       axis MAGNITUDE-RANK cannot see, which is how a number is WRITTEN rather than
-       what it is worth. The key sat between pRight(K) and pLeft(K) by construction,
-       so the two extremes of written length were always the two point-placement
-       slips and a child deleted both without placing a point. This candidate
-       divides the whole ones and copies the digits after the point straight down -
-       a real P4 slip, and one whose whole-number part is the key's own, so it is
-       written to exactly the key's length on every draw and the key can never be
-       alone in the middle. It ships on every draw (must), which is what makes the
-       equalisation structural rather than a matter of which three get picked. */
-    copyDown = Math.floor(Math.floor(key * n / P10[dp]) / n) * P10[dp] + (key * n) % P10[dp];
+    /* WOUND 1 (refutation v4 @ 7ec7919). The v3 fix to the written-length route was
+       a "divided the whole ones and copied the digits down" candidate that shipped
+       on every draw. It closed the length route and opened a VALUE route that was
+       worse: the identity floor(floor(x/a)/b) = floor(x/(ab)) made its whole ones
+       the KEY'S OWN, and the digits it copied down were the digits after the point
+       of the number printed in the STEM. So exactly two options shared a whole
+       number part, one of them ended in the stem's own digits, and the other one
+       was the answer - 100.00% settled, 100.00% right, no division done.
+
+       These two are the same slip cut the other way and they borrow nothing the key
+       borrows. "Divided the digits after the point and left the whole ones alone"
+       keeps the STEM's whole ones (never the key's) with the KEY's digits after the
+       point (never the stem's); "shared it out and forgot to write the whole ones"
+       keeps the key's digits with no whole ones at all. Both are real P4 slips,
+       both are written to the key's own number of decimal places so RULE D1 still
+       binds, and neither hands a child a whole-number part to match. */
+    forgotWhole = Math.floor(key * n / P10[dp]) * P10[dp] + key % P10[dp];
+    droppedWhole = key % P10[dp];
   } while (guard < 300 && !(key % 10 !== 0 && (key * n) % 10 !== 0 && key * n !== n * P10[dp] && wholeOnly > 0 &&
-         copyDown > 0 && copyDown !== key &&
+         droppedWhole > 0 && forgotWhole !== key &&
          dallDistinct([D(key, dp), D(key, dp + 1), D(key, dp - 1), D(Math.abs(key * n - n * P10[dp]), dp),
-                       D(key * n, dp), D(wholeOnly, dp), D(copyDown, dp)])));
+                       D(key * n, dp), D(wholeOnly, dp), D(forgotWhole, dp), D(droppedWhole, dp)])));
   const total = key * n;
   const T = D(total, dp), K = D(key, dp);
   /* WOUND 1 (89.0% "second smallest"): the point-one-right slip was the only
      candidate below the key. "Divided the whole ones only" is the second one, and
      "did not divide at all" is a second candidate above it. */
   return mcDec('<b>' + dtext(T) + ' ÷ ' + n + ' = ?</b>', '',
-    K, [must(D(copyDown, dp)), pRight(K), pLeft(K), D(Math.abs(total - n * P10[dp]), dp), D(total, dp), dnat(D(wholeOnly, dp))], '',
+    K, [D(forgotWhole, dp), D(droppedWhole, dp), pRight(K), pLeft(K),
+        D(Math.abs(total - n * P10[dp]), dp), D(total, dp), dnat(D(wholeOnly, dp))], '',
     'Divide as if there were no decimal point: ' + total + ' ÷ ' + n + ' = ' + key + '. ' + dtext(T) +
     ' has ' + dp + ' digit' + (dp > 1 ? 's' : '') + ' after the point, so the answer keeps the point in the same column: ' +
     dtext(K) + '. Check it by multiplying back: ' + dtext(K) + ' × ' + n + ' = ' + dtext(T) + '.');

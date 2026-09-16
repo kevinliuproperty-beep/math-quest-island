@@ -506,22 +506,38 @@ const decTokens = s => [...String(strip(s)).matchAll(/\d+(?:\.\d+)?/g)].map(x =>
    is two options on every draw, which is the kill. --------------------------- */
 const DEC_ORD4 = ['first', 'second', 'third', 'fourth'];
 const DEC_V4_STEM = /^(.+?) rounds (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places)\. \1 looks at the (\d), says that (\d) is (5 or more|4 or less), rounds (up|down), and gives the answer (\d+(?:\.\d+)?)\. Which digit should \1 have looked at, and what is the correct answer\?$/;
+/* v5 (this pass): the stem names the PLACE the child read, not the digit, and
+   declares no answer at all; the two answers offered are the number rounded the
+   right way and the number rounded the wrong way, both at the place the stem
+   names. See the block comment on gDecRoundError. */
+const DEC_V5_STEM = /^(.+?) rounds (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places)\. \1 looks at the (tens|ones|tenths|hundredths|thousandths) digit\. Which digit should \1 have looked at, and what is the correct answer\?$/;
 const DEC_V3_STEM = /^(.+?) rounds (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places) and says the answer is (\d+(?:\.\d+)?)\. Which digit did \1 look at\?$/;
 const DEC_V4_OPT = /^(.+?) should have looked at the digit (\d), and the answer is (\d+(?:\.\d+)?)\.$/;
 const DEC_V3_OPT = /^(.+?) rounded (up|down) after looking at the (first|second|third|fourth) digit, (\d)\.$/;
 /* the facts a rounding-diagnosis stem states, re-derived from the rendered text */
 function decRoundDiagnosis(text) {
   let m, shape = null;
-  if ((m = text.match(DEC_V4_STEM))) shape = 'v4';
+  if ((m = text.match(DEC_V5_STEM))) shape = 'v5';
+  else if ((m = text.match(DEC_V4_STEM))) shape = 'v4';
   else if ((m = text.match(DEC_V3_STEM))) shape = 'v3';
   else return null;
   const who = m[1], v = DP(m[2]), to = DEC_ROUND_TO[m[3]];
   const digs = (m[2].replace('.', '').match(/\d/g) || []).map(Number);
   const wlen = m[2].indexOf('.');
-  const said = DP(shape === 'v4' ? m[8] : m[4]);
+  const said = shape === 'v5' ? null : DP(shape === 'v4' ? m[8] : m[4]);
   const f = { shape, who, v, to, digs, wlen, ci: wlen + to, said, truth: DROUND(v, to) };
   f.dc = f.digs[f.ci];
   if (shape === 'v4') { f.dx = Number(m[4]); f.dxSaid = Number(m[5]); f.rule = m[6]; f.dir = m[7]; }
+  if (shape === 'v5') {
+    f.xPlace = m[4];
+    /* the index of the place the stem names, in the digits of the printed numeral.
+       DEC_PLACES runs ones, tenths, hundredths, thousandths, and the ones digit is
+       at wlen - 1, so the offset is that index minus one. */
+    f.xi = m[4] === 'tens' ? wlen - 2 : wlen + DEC_PLACES.indexOf(m[4]) - 1;
+    /* both answers live at the place the stem names, one column apart */
+    const cut = TEN(v.dp - to), base = Math.floor(v.n / cut);
+    f.wrong = DV(base + (f.dc >= 5 ? 0 : 1), to);
+  }
   return f;
 }
 /* the direction the stem's own claim says the child went */
@@ -529,6 +545,14 @@ const decWentUp = f => DCMP(f.said, f.truth) > 0;
 /* is this option consistent with everything the stem states? null = unparsed. */
 function decRoundDefensible(f, optText) {
   let m;
+  if (f.shape === 'v5') {
+    if (!(m = optText.match(DEC_V4_OPT))) return null;      /* same option frame as v4 */
+    const r = DP(m[3]);
+    if (!r) return null;
+    /* the stem pins the number and the place; the two live questions are which
+       digit rounding is allowed to look at, and what that digit then gives */
+    return Number(m[2]) === f.dc && DEQ(r, f.truth);
+  }
   if (f.shape === 'v4') {
     if (!(m = optText.match(DEC_V4_OPT))) return null;
     const r = DP(m[3]);
@@ -738,10 +762,71 @@ function decimalsOracle(q) {
     const f = decRoundDiagnosis(text);
     if (f) {
       /* THE KILL, third pass: the killed shape had two defensible answers, so its
-         stem may not ship at all. It is kept parseable only as a negative control. */
-      if (f.shape !== 'v4') {
+         stem may not ship at all. THE KILL, fourth pass: the v4 stem printed the
+         digit the child read AND offered a wrong answer written to a different
+         place, so the rounding phrase deleted two options for free and the digit
+         standing next to the printed one deleted a third. Both shapes are kept
+         parseable only as negative controls. */
+      if (f.shape === 'v3') {
         return 'round error: this is the v3 stem ("Which digit did X look at?"), which has two defensible answers - ' +
                'the stem must pin the method it is diagnosing';
+      }
+      if (f.shape === 'v4') {
+        return 'round error: this is the v4 stem, which PRINTS the digit the child read and offers an answer ' +
+               'written to a different place - "the answer at the place the stem names" and "the digit beside the ' +
+               'one the stem names" settle it on 79% of draws with no arithmetic';
+      }
+      if (f.shape === 'v5') {
+        const { v, to, digs, wlen, ci, dc, xi, truth, wrong } = f;
+        if (digs.length !== 4) return `round error: ${DTXT(v)} prints ${digs.length} digits - the draw must print exactly four`;
+        if (new Set(digs).size !== 4) return `round error: ${DTXT(v)} repeats a digit, so a named digit is ambiguous`;
+        if (ci < 0 || ci > 3) return `round error: rounding ${DTXT(v)} to ${DEC_ROUND_PHRASE[to]} looks past the four printed digits`;
+        if (xi < 0 || xi > 3) return `round error: the stem names the ${f.xPlace} place, which ${DTXT(v)} does not print`;
+        if (xi === ci) return 'round error: the stem says the child read the very place rounding points at, so nothing went wrong';
+        const cut = TEN(v.dp - to), base = Math.floor(v.n / cut);
+        if (!DEQ(truth, DV(base + (dc >= 5 ? 1 : 0), to))) return 'round error: the correct answer does not re-derive';
+        if (DEQ(wrong, truth) || wrong.n <= 0) return 'round error: the wrong-way answer is not a second answer';
+        const raw = q.choices.map(strip);
+        const parsed = raw.map(o => o.match(DEC_V4_OPT));
+        if (parsed.some(x => !x)) return `round error: an option is not in the diagnosis frame ("${raw[parsed.findIndex(x => !x)]}")`;
+        /* (a) THE ANSWER AXIS IS ARITHMETIC. Both answers must be written to the
+           place the stem names, or the rounding phrase deletes two options for
+           free - which is exactly the fourth pass's kill. */
+        for (const pz of parsed) {
+          const r = DP(pz[3]);
+          if (!r) return 'round error: an option does not print a number';
+          if (r.dp !== to) {
+            return `round error: the option answer ${pz[3]} is not written to ${DEC_ROUND_PHRASE[to]} - ` +
+                   'the rounding phrase would delete it with no arithmetic';
+          }
+          if (!DEQ(r, truth) && !DEQ(r, wrong)) return `round error: ${pz[3]} is neither the right answer nor the wrong-way one`;
+        }
+        /* (b) THE STEM NAMES A PLACE, NOT A DIGIT. No digit printed in the stem may
+           be matched against, and the digit sitting in the named place may never be
+           offered, or one option is refuted by reading alone. */
+        const dx = digs[xi];
+        for (const pz of parsed) if (Number(pz[2]) === dx) {
+          return `round error: the digit in the ${f.xPlace} place (${dx}) is offered back - the stem refutes it for free`;
+        }
+        const verdicts = raw.map(o => decRoundDefensible(f, o));
+        const live = verdicts.filter(Boolean).length;
+        if (live !== 1) return `round error: ${live} defensible options - every distractor must be refuted by something the stem states`;
+        if (!verdicts[keyIdx]) return `round error: the key is not the defensible option ("${raw[keyIdx]}")`;
+        /* the 2 x 2 contract: two digits and two answers, each printed by exactly
+           two of the four options, so no token singles an option out */
+        const dSet = new Map(), rSet = new Map();
+        for (const pz of parsed) {
+          dSet.set(pz[2], (dSet.get(pz[2]) || 0) + 1);
+          rSet.set(pz[3], (rSet.get(pz[3]) || 0) + 1);
+        }
+        if (dSet.size !== 2 || [...dSet.values()].some(c => c !== 2)) {
+          return `round error: the option set is not a 2 x 2 grid - digits ${[...dSet.keys()].join(', ')}`;
+        }
+        if (rSet.size !== 2 || [...rSet.values()].some(c => c !== 2)) {
+          return `round error: the option set is not a 2 x 2 grid - answers ${[...rSet.keys()].join(', ')}`;
+        }
+        if (!dSet.has(String(dc))) return 'round error: the digit rounding points at is not among the options';
+        return null;
       }
       const { v, to, digs, wlen, ci, dc, dx, said, truth } = f;
       if (digs.length !== 4) return `round error: ${DTXT(v)} prints ${digs.length} digits - the draw must print exactly four`;
@@ -990,39 +1075,53 @@ function decimalsOracle(q) {
      three ways over the same furniture, so the key is a ×, a + or a ÷; every draw
      ships TWO options carrying the key's operator, and this branch asserts both. */
   {
-    const two = text.match(/^At the school bookshop (.+?) costs \$(\d+\.\d\d) and (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of (\d+ .+|one of each)\?$/);
-    const box = text.match(/^At the school bookshop a box of (\d+) (.+?) costs \$(\d+\.\d\d), and (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of one (.+)\?$/);
-    if (two || box) {
-      let want, opCount;
-      if (two) {
-        const x = `$${two[2]}`, y = `$${two[4]}`;
-        const eachOf = two[5].match(/^(\d+) /);
-        if (eachOf) {
-          const n = eachOf[1];
-          want = `${n} × ${x}`;
-          opCount = c => c.indexOf(' × ') >= 0;
-          const offered = [`${n} × ${x}`, `${n} × ${y}`, `${x} + ${y}`, `${x} + ${x}`];
-          for (const o of offered) if (q.choices.filter(c => strip(c) === o).length !== 1) {
-            return `which calculation: "${o}" is not offered exactly once`;
-          }
-        } else {
-          want = `${x} + ${y}`;
-          opCount = c => c.indexOf(' + ') >= 0;
-          if (!q.choices.some(c => /^\$\d+\.\d\d \+ \$\d+\.\d\d$/.test(strip(c)) && strip(c) !== want)) {
-            return 'which calculation: the "one of each" draw ships only one addition, so the operator alone answers it';
-          }
-        }
-        if (two[2] === two[4]) return 'which calculation: the two prices are the same amount';
+    const many = text.match(/^At the school bookshop (.+?) costs \$(\d+\.\d\d) and (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of (\d+) (.+)\?$/);
+    const each = text.match(/^At the school bookshop (.+?) costs \$(\d+\.\d\d), (.+?) costs \$(\d+\.\d\d) and (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of one (.+?) and one (.+?)\?$/);
+    const box = text.match(/^At the school bookshop a box of (\d+) (.+?) costs \$(\d+\.\d\d), and a box of (\d+) (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of one (.+)\?$/);
+    if (many || each || box) {
+      let want, prices;
+      if (many) {
+        want = `${many[5]} × $${many[2]}`;
+        prices = [many[2], many[4]];
+        if (many[2] === many[4]) return 'which calculation: the two prices are the same amount';
+      } else if (each) {
+        want = `$${each[2]} + $${each[4]}`;
+        prices = [each[2], each[4], each[6]];
+        if (new Set(prices).size !== 3) return 'which calculation: two of the three prices are the same amount';
       } else {
         want = `$${box[3]} ÷ ${box[1]}`;
-        opCount = c => c.indexOf(' ÷ ') >= 0;
-        const cents = Math.round(Number(box[3]) * 100);
-        if (cents % Number(box[1]) !== 0) return `which calculation: $${box[3]} does not share equally into ${box[1]}`;
+        prices = [box[3], box[6]];
+        for (const [c, k] of [[box[3], box[1]], [box[6], box[4]]]) {
+          if (Math.round(Number(c) * 100) % Number(k) !== 0) return `which calculation: $${c} does not share equally into ${k}`;
+        }
+        if (box[1] === box[4]) return 'which calculation: the two boxes hold the same number';
+        if (box[3] === box[6]) return 'which calculation: the two boxes cost the same';
       }
-      if (strip(q.choices[keyIdx]) !== want) return `which calculation: expected "${want}", key says "${strip(q.choices[keyIdx])}"`;
-      if (q.choices.filter(c => strip(c) === want).length !== 1) return 'which calculation: the true calculation is offered twice';
-      const sharers = q.choices.filter(c => opCount(strip(c))).length;
-      if (sharers < 2) return `which calculation: only the key carries its operator - "pick the ${want.replace(/[^+×÷]/g, '').trim()}" answers the item with no arithmetic`;
+      const raw = q.choices.map(strip);
+      if (raw[keyIdx] !== want) return `which calculation: expected "${want}", key says "${raw[keyIdx]}"`;
+      if (raw.filter(c => c === want).length !== 1) return 'which calculation: the true calculation is offered twice';
+      /* KILL 2 (refutation v4 @ 7ec7919). The v3 contract asserted only that two
+         options carried the key's OPERATOR. That was true and it was not what gave
+         the item away: in two of the three modes the key was the only option with
+         the key's OPERAND SHAPE - the only one naming two different money amounts,
+         or the only one shaped "a price shared into a count" - so the operand list
+         answered the item before the operation was considered at all. Both axes are
+         asserted now, and a third: the key may not be the only option naming the
+         same COUNT of the stem's prices that it names. */
+      const opOf = c => { const mm = c.match(/[+×÷−]/); return mm ? mm[0] : null; };
+      const shapeOf = c => c.replace(/\$\d+\.\d\d/g, 'M').replace(/\d+/g, 'C').replace(/[^MC]/g, '');
+      const pricesIn = c => (c.match(/\$\d+\.\d\d/g) || []).map(t => t.slice(1)).filter(t => prices.indexOf(t) >= 0);
+      const kOp = opOf(want), kShape = shapeOf(want), kPrices = new Set(pricesIn(want)).size;
+      if (!kOp) return 'which calculation: the key carries no operator';
+      if (raw.filter(c => opOf(c) === kOp).length < 2) {
+        return `which calculation: only the key carries "${kOp}" - "pick the ${kOp}" answers the item with no arithmetic`;
+      }
+      if (raw.filter(c => shapeOf(c) === kShape).length < 2) {
+        return `which calculation: only the key is shaped "${kShape}" - the operand list answers the item before the operation does`;
+      }
+      if (raw.filter(c => new Set(pricesIn(c)).size === kPrices).length < 2) {
+        return `which calculation: only the key names ${kPrices} of the stem's prices - the operand list answers the item on its own`;
+      }
       return null;
     }
   }
@@ -2944,7 +3043,9 @@ const optForm = s => {
   const t = strip(s);
   if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';
   if (/^\$?\d+(\.\d+)?\s*(cm²|cm2|cm|mm|km|m|kg|g|ml|ℓ|h|min|s)$/.test(t)) return 'number+unit';
-  if (/^[\d\s+×x*÷/\-=().$]+$/.test(t)) return 'expression';
+  /* U+2212 MINUS SIGN is what the topic files print; without it "$2.20 - $1.60"
+     read as prose and a calculation bank tallied 3-1 against itself. */
+  if (/^[\d\s+×x*÷/\-−=().$]+$/.test(t)) return 'expression';
   return 'prose';
 };
 function pilotGates(q, topic) {
@@ -3455,6 +3556,309 @@ let roundScan = null, roundCtl = null;
   }
 }
 
+/* ---------- STEM-OPTION COUPLING GATE (refutation FOURTH PASS 2026-09-16) --------
+   FOR THE INTEGRATOR: this is the arm the fourth pass named as a whole missing
+   AXIS, and it is written as a standalone helper - decCouplingScan() over a list of
+   { name, fn } - so it lifts into the shared harness without the decimals code
+   round it. Every other arm in every lane looks at ONE side of an item:
+
+     MAGNITUDE-RANK        where the key sits among its own OPTIONS
+     PROSE-OPTION GATE     which features the key alone carries, among its OPTIONS
+     RULE D1 / D6          decimal places and masked tails, among its OPTIONS
+     RULE D5               one number the STEM declares wrong
+     the per-item oracles  the STEM's premise and the key
+
+   Nothing measured the STEM AND THE OPTIONS TOGETHER, and all three of the fourth
+   pass's worst findings lived exactly there:
+
+     gDecRoundError  the stem's rounding phrase fixed the answer's decimal places,
+                     so two options died with no arithmetic (100% of draws); the
+                     digit standing next to the one the stem printed killed a third.
+                     Together: 79.14% settled, 100% right.
+     gDecMulConcept  the key was the only option naming two different money amounts
+                     from the stem (mode 1) and the only one shaped "a stem price
+                     shared into a count" (mode 2). 66.83% settled, 100% right.
+     gDecDivWhole    the must-candidate carried the KEY's whole-number part and the
+                     STEM's own digits after the point, so "of the two sharing a
+                     whole part, take the one that is not the stem's digits" settled
+                     100.00% of draws with no division done.
+
+   HOW IT WORKS. For every draw, each option is scored against a small family of
+   COARSE relations - the kind a ten-year-old sees without doing any mathematics -
+   to the rendered stem and to the other options. Two arms then run:
+
+     PAIR ARM        every relation, both ways round ("the options that have it",
+                     "the options that do not"), alone and in pairs. A rule KEEPS
+                     the options that satisfy it; it SETTLES when exactly one option
+                     survives. A generator fails when any such rule settles 60% or
+                     more of its draws and is right 90% or more of the times it
+                     settles. Pairs matter: on gDecRoundError each half alone left
+                     two options and settled 0.0%, and the harness therefore read
+                     zero for three passes.
+     FEATURE ARM     coarse CATEGORICAL values (the operand shape, which of the
+                     stem's prices an option names, the depth it ends on). Scored
+                     the way the prose gate's feature arm is: the share of draws on
+                     which the KEY is the only option carrying its own value. A
+                     value every option differs on carries no information at all -
+                     "the odd one out" does not exist - so a feature is only counted
+                     on draws where it PARTITIONS the four.
+
+   PER STEM SHAPE. Both arms are scored inside each stem shape as well as over the
+   whole generator, because a tell that lives in one mode of three is invisible at a
+   bank-wide ceiling and is 100% to the child in front of it - which is exactly how
+   gDecMulConcept read 33.8% on the prose gate while being settled outright on
+   two-thirds of its draws. The shape key is the sequence of numeric-token CLASSES
+   the stem prints plus its rounding phrase: coarse on purpose, so it is invariant
+   across the nouns and names a generator rotates and each mode has enough draws in
+   it to judge. --------------------------------------------------------------- */
+const CPL_CEILING = 0.60;               /* settles this share of a shape's draws ... */
+const CPL_ACC = 0.90;                   /* ... and is right this often when it does */
+const CPL_SHAPE_FLOOR = 200;            /* below this many draws a shape is not judged */
+const cplNums = c => (String(c).match(/\d+(?:\.\d+)?/g) || []);
+const cplWhole = t => String(t).split('.')[0];
+const cplFrac = t => { const i = String(t).indexOf('.'); return i < 0 ? null : String(t).slice(i + 1); };
+const cplDp = t => { const f = cplFrac(t); return f === null ? 0 : f.length; };
+const cplMoney = c => String(c).match(/\$\d+(?:\.\d\d)?/g) || [];
+const cplShape = c => String(c).replace(/\$\d+(?:\.\d\d)?/g, 'M').replace(/\d+(?:\.\d+)?/g, 'C').replace(/[^MC+×÷−-]/g, '');
+const cplOperands = c => cplShape(c).replace(/[^MC]/g, '');
+const cplOperator = c => { const mm = String(c).match(/[+×÷−]/g); return mm ? [...new Set(mm)].sort().join('') : null; };
+/* a single digit an option NAMES, as opposed to a number it prints */
+const cplLone = c => [...String(c).matchAll(/(?<![\d.])(\d)(?![\d.])/g)].map(x => Number(x[1]));
+/* everything the rendered stem offers an option to match itself against */
+function cplStem(q) {
+  const t = strip(q.q) + ' ' + strip(q.extra || '');
+  /* the rounding phrase prints a lone "1" or "2" of its own ("1 decimal place");
+     those are not digits the stem NAMES, so they are cut before the digit scan */
+  const bare = t.replace(/\b[12] decimal places?\b/g, ' ');
+  const numerals = cplNums(t);
+  const ph = t.match(/(the nearest whole number|1 decimal place|2 decimal places)/);
+  const named = cplLone(bare);
+  const adj = new Set();
+  for (const nu of numerals) {
+    const ds = nu.replace('.', '').split('').map(Number);
+    for (let i = 0; i < ds.length; i++) if (named.indexOf(ds[i]) !== -1) {
+      if (i > 0) adj.add(ds[i - 1]);
+      if (i < ds.length - 1) adj.add(ds[i + 1]);
+    }
+  }
+  return { text: t, numerals, set: new Set(numerals), roundTo: ph ? DEC_ROUND_TO[ph[1]] : null,
+    fracs: new Set(numerals.map(cplFrac).filter(x => x !== null)),
+    wholes: new Set(numerals.map(cplWhole)), dps: new Set(numerals.map(cplDp)),
+    money: new Set(cplMoney(t)), adj,
+    digits: new Set(numerals.join('').replace(/\./g, '').split('').map(Number)) };
+}
+const CPL_PREDS = [
+  { k: 'repeats a number printed in the stem', of: (o, st) => cplNums(o).some(v => st.set.has(v)) },
+  { k: 'repeats the largest number printed in the stem', of: (o, st) => {
+      if (!st.numerals.length) return false;
+      const mx = Math.max(...st.numerals.map(Number));
+      return cplNums(o).some(v => Number(v) === mx); } },
+  { k: "its digits after the point are a stem number's", of: (o, st) => {
+      const v = cplNums(o); if (!v.length) return false;
+      return v.some(x => { const f = cplFrac(x); return f !== null && st.fracs.has(f); }); } },
+  { k: "its whole-number part is a stem number's", of: (o, st) => {
+      const v = cplNums(o); if (!v.length) return false;
+      return v.some(x => st.wholes.has(cplWhole(x))); } },
+  { k: "its decimal places equal the stem's rounding phrase", of: (o, st) => {
+      if (st.roundTo === null) return false;
+      const v = cplNums(o); if (!v.length) return false;
+      return cplDp(v[v.length - 1]) === st.roundTo; } },
+  { k: "its decimal places equal a stem number's", of: (o, st) => {
+      const v = cplNums(o); if (!v.length) return false;
+      return st.dps.has(cplDp(v[v.length - 1])); } },
+  { k: 'it names a digit sitting beside a digit the stem names', of: (o, st) =>
+      cplLone(o).some(d => st.adj.has(d)) },
+  { k: 'it names a digit the stem prints', of: (o, st) => cplLone(o).some(d => st.digits.has(d)) },
+  { k: 'it names two different money amounts from the stem', of: (o, st) => {
+      const mm = cplMoney(o).filter(x => st.money.has(x));
+      return mm.length >= 2 && new Set(mm).size >= 2; } },
+  { k: 'its first operand is a money amount from the stem', of: (o, st) => {
+      const sh = cplShape(o); return sh.length > 1 && sh[0] === 'M' && st.money.size > 0; } },
+  { k: 'its last operand is a bare count', of: o => { const sh = cplShape(o); return sh.length > 1 && sh[sh.length - 1] === 'C'; } },
+  /* and the option-to-option half of the same axis, which is where gDecDivWhole's
+     "the two options sharing a whole-number part" route lived */
+  /* these two read "the whole-number part of an option" and "the digits after the
+     point of an option", which only mean anything when the option IS a number. On
+     a calculation like "$1.25 + $3.50" the last token is an OPERAND, and matching
+     operands across options is a relation no child reads - so bare-number option
+     sets only, which is where gDecDivWhole's route lived. */
+  { k: 'it shares its whole-number part with another option', of: (o, st, all) => {
+      if (!all.every(x => DEC_PURE.test(x))) return false;
+      const v = cplNums(o); if (!v.length) return false;
+      const w = cplWhole(v[0]);
+      return all.filter(x => { const u = cplNums(x); return u.length && cplWhole(u[0]) === w; }).length > 1; } },
+  { k: 'it shares its digits after the point with another option', of: (o, st, all) => {
+      if (!all.every(x => DEC_PURE.test(x))) return false;
+      const v = cplNums(o); const f = v.length ? cplFrac(v[0]) : null;
+      if (f === null) return false;
+      return all.filter(x => { const u = cplNums(x); return u.length && cplFrac(u[0]) === f; }).length > 1; } },
+  { k: 'its operand shape is shared with another option', of: (o, st, all) => {
+      const sh = cplOperands(o); if (sh.length < 2) return false;
+      return all.filter(x => cplOperands(x) === sh).length > 1; } }
+];
+const CPL_FEATS = [
+  { k: 'the operand-and-operator shape it is written in', of: o => { const sh = cplShape(o); return sh.length > 1 ? sh : null; } },
+  { k: "which of the stem's money amounts it names", of: (o, st) => st.money.size ? cplMoney(o).filter(v => st.money.has(v)).sort().join(',') : null },
+  { k: "which of the stem's numbers it repeats", of: (o, st) => st.set.size ? cplNums(o).filter(v => st.set.has(v)).sort().join(',') : null },
+  { k: 'the decimal places of the number it ends on', of: o => { const v = cplNums(o); return v.length ? String(cplDp(v[v.length - 1])) : null; } },
+  { k: 'the operator it is written with', of: o => cplOperator(o) },
+  { k: 'the lone digits it names', of: o => { const d = cplLone(o); return d.length ? d.slice().sort().join(',') : null; } }
+];
+const CPL_POP = new Uint8Array(16);
+for (let i = 0; i < 16; i++) CPL_POP[i] = (i & 1) + ((i >> 1) & 1) + ((i >> 2) & 1) + ((i >> 3) & 1);
+const cplFrame = t => {
+  const toks = [...String(t).matchAll(/\$?\d+(?:\.\d+)?/g)].map(x => x[0]);
+  const cls = toks.map(v => v[0] === '$' ? 'M' : (v.indexOf('.') >= 0 ? 'D' : 'C')).join('');
+  const ph = String(t).match(/(the nearest whole number|1 decimal place|2 decimal places)/);
+  return cls + (ph ? '|' + ph[1] : '');
+};
+const cplLabel = i => (i % 2 ? 'NOT ' : '') + CPL_PREDS[i >> 1].k;
+const cplRule = r => r.feat !== undefined
+  ? `the key is the ONLY option with its value of ${CPL_FEATS[r.feat].k}`
+  : (r.a === r.b ? `"${cplLabel(r.a)}"` : `"${cplLabel(r.a)}" AND "${cplLabel(r.b)}"`);
+function decCouplingScan(gens, draws) {
+  const P = CPL_PREDS.length, S = 2 * P, F = CPL_FEATS.length;
+  const out = [];
+  for (const g of gens) {
+    const mk = () => ({ n: 0, fires: new Int32Array(S * S), right: new Int32Array(S * S), feat: new Int32Array(F) });
+    const bank = mk(), groups = new Map();
+    for (let i = 0; i < draws; i++) {
+      let q;
+      try { q = g.fn(); } catch (e) { continue; }
+      const opts = (q.choices || []).map(strip);
+      if (opts.length !== 4 || !Number.isInteger(q.correct)) continue;
+      const st = cplStem(q);
+      const fr = cplFrame(st.text);
+      let grp = groups.get(fr);
+      if (!grp) { grp = mk(); groups.set(fr, grp); }
+      bank.n++; grp.n++;
+      for (let f = 0; f < F; f++) {
+        const vals = opts.map(o => CPL_FEATS[f].of(o, st));
+        if (vals.some(v => v === null)) continue;
+        if (new Set(vals).size >= 4) continue;
+        if (vals.filter(v => v === vals[q.correct]).length === 1) { bank.feat[f]++; grp.feat[f]++; }
+      }
+      const masks = new Int32Array(S);
+      for (let p = 0; p < P; p++) {
+        let mk2 = 0;
+        for (let j = 0; j < 4; j++) if (CPL_PREDS[p].of(opts[j], st, opts)) mk2 |= (1 << j);
+        masks[2 * p] = mk2; masks[2 * p + 1] = (~mk2) & 15;
+      }
+      const kb = 1 << q.correct;
+      for (let a = 0; a < S; a++) for (let b = a; b < S; b++) {
+        const mm = masks[a] & masks[b];
+        if (CPL_POP[mm] !== 1) continue;
+        const idx = a * S + b;
+        bank.fires[idx]++; grp.fires[idx]++;
+        if (mm === kb) { bank.right[idx]++; grp.right[idx]++; }
+      }
+    }
+    const best = t => {
+      if (!t.n) return null;
+      let o = null;
+      for (let f = 0; f < F; f++) {
+        const settle = t.feat[f] / t.n;
+        if (!o || settle > o.settle) o = { feat: f, settle, acc: 1 };
+      }
+      for (let a = 0; a < S; a++) for (let b = a; b < S; b++) {
+        const idx = a * S + b, fr2 = t.fires[idx];
+        if (!fr2) continue;
+        const acc = t.right[idx] / fr2, settle = fr2 / t.n;
+        if (acc < CPL_ACC) continue;
+        if (!o || settle > o.settle) o = { a, b, settle, acc };
+      }
+      return o;
+    };
+    let worst = best(bank), at = '(whole bank)';
+    for (const [fr, grp] of groups) {
+      if (grp.n < CPL_SHAPE_FLOOR) continue;
+      const w = best(grp);
+      if (w && (!worst || w.settle > worst.settle)) { worst = w; at = fr; }
+    }
+    out.push({ name: g.name, n: bank.n, shapes: groups.size, worst, at,
+      ok: !(worst && worst.settle >= CPL_CEILING && worst.acc >= CPL_ACC) });
+  }
+  return out;
+}
+
+/* gDecRoundError and gDecMulConcept AS THEY SHIPPED AT 7ec7919, rebuilt here so the
+   two routes the fourth pass killed are LIVE negative controls: this gate has to
+   find each of them, or it is measuring nothing. Both were green on every other arm
+   in this harness on the day they were killed. */
+function ctlV4RoundError() {
+  const rand = n => Math.floor(Math.random() * n);
+  const sh = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  for (let guard = 0; guard < 900; guard++) {
+    const wlen = 1 + rand(2), dp = 4 - wlen, to = rand(dp), ci = wlen + to;
+    if (ci > 3) continue;
+    const digits = sh([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 4);
+    const dc = digits[ci];
+    const v = DV(digits.reduce((a, d) => a * 10 + d, 0), dp);
+    const cut = TEN(dp - to), base = Math.floor(v.n / cut);
+    const truth = DV(base + (dc >= 5 ? 1 : 0), to);
+    const xs = [];
+    for (let i = 0; i < 4; i++) if (i !== ci && (i === ci - 1 || i > ci) && (digits[i] >= 5) !== (dc >= 5)) xs.push(i);
+    if (!xs.length) continue;
+    const xi = xs[rand(xs.length)];
+    const said = DV(base + (digits[xi] >= 5 ? 1 : 0), to);
+    let ys = [ci - 1, 3].filter(i => i >= 0 && i !== ci && i !== xi);
+    if (!ys.length) ys = [0, 1, 2, 3].filter(i => i !== ci && i !== xi);
+    const yi = ys[rand(ys.length)];
+    /* the v4 wrong answer: rounded to the place NEXT DOOR, so it is written to a
+       different number of decimal places than the stem's rounding phrase implies */
+    const other = DROUND(v, to === 0 ? 1 : to - 1);
+    if (truth.n <= 0 || said.n <= 0 || other.n <= 0) continue;
+    if (DEQ(said, truth) || DEQ(other, truth) || DEQ(other, said)) continue;
+    if (to > 0 && (truth.n % 10 === 0 || said.n % 10 === 0)) continue;
+    if (other.dp > 0 && other.n % 10 === 0) continue;
+    const opt = (d, r) => `Siti should have looked at the digit ${d}, and the answer is ${DTXT(r)}.`;
+    const key = opt(dc, truth);
+    const all = sh([key, opt(dc, other), opt(digits[yi], truth), opt(digits[yi], other)]);
+    return { q: `Siti rounds <b>${DTXT(v)}</b> to <b>${DEC_ROUND_PHRASE[to]}</b>. Siti looks at the ` +
+                `<b>${digits[xi]}</b>, says that ${digits[xi]} is ${digits[xi] >= 5 ? '5 or more' : '4 or less'}, ` +
+                `rounds ${digits[xi] >= 5 ? 'up' : 'down'}, and gives the answer <b>${DTXT(said)}</b>. ` +
+                `<b>Which digit should Siti have looked at, and what is the correct answer?</b>`,
+             extra: '', choices: all, correct: all.indexOf(key), answerText: key, explain: 'A negative control.' };
+  }
+  return null;
+}
+function ctlV4MulConcept() {
+  const rand = n => Math.floor(Math.random() * n);
+  const sh = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const M = c => '$' + DTXT(DV(c, 2));
+  const XS = [105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195];
+  const YS = [210, 220, 240, 250, 265, 280, 295, 310, 325, 350, 375, 420];
+  const x = XS[rand(XS.length)], y = YS[rand(YS.length)], n = 3 + rand(7), total = n * x;
+  const mode = rand(3);
+  let stem, key, wrongs;
+  if (mode === 0) {
+    stem = `At the school bookshop a pen costs <b>${M(x)}</b> and a ruler costs <b>${M(y)}</b>. <b>Which calculation</b> gives the cost of <b>${n} pens</b>?`;
+    key = `${n} × ${M(x)}`;
+    wrongs = [`${n} × ${M(y)}`, `${M(x)} + ${M(y)}`, `${M(x)} + ${M(x)}`];
+  } else if (mode === 1) {
+    /* the killed mode: the key is the ONLY option naming two different prices */
+    stem = `At the school bookshop a pen costs <b>${M(x)}</b> and a ruler costs <b>${M(y)}</b>. <b>Which calculation</b> gives the cost of <b>one of each</b>?`;
+    key = `${M(x)} + ${M(y)}`;
+    wrongs = [`${M(y)} + ${M(y)}`, `${n} × ${M(x)}`, `${n} × ${M(y)}`];
+  } else {
+    /* the killed mode: the key is the ONLY option shaped "money shared into a count" */
+    stem = `At the school bookshop a box of <b>${n} pens</b> costs <b>${M(total)}</b>, and a ruler costs <b>${M(y)}</b>. <b>Which calculation</b> gives the cost of <b>one pen</b>?`;
+    key = `${M(total)} ÷ ${n}`;
+    wrongs = [`${n} ÷ ${M(total)}`, `${n} × ${M(y)}`, `${M(total)} + ${M(y)}`];
+  }
+  const all = sh([key].concat(wrongs));
+  return { q: stem, extra: '', choices: all, correct: all.indexOf(key), answerText: key, explain: 'A negative control.' };
+}
+
+const couplingRows = [];
+{
+  const decGens = GENS.filter(g => g.topic === 'decimals').map(g => ({ name: g.name, fn: g.fn }));
+  for (const r of decCouplingScan(decGens, RANK_DRAWS)) {
+    couplingRows.push(r);
+    if (!r.ok) failures++;
+  }
+}
+
 /* ---------- NAMED-DISTRACTOR CONTRACT COVERAGE (refutation WOUND 2) ---------------
    The lane's note claimed the contract bound on 29 of 32 generators. It bound on 27:
    gDecCompare and gDecCmpMixed stamped nothing at all and were not in the exemption
@@ -3661,6 +4065,41 @@ const negRows = [];
     return { q: 'A negative control.', extra: '', choices: opts, correct: at, answerText: all[0],
              explain: 'A negative control.' };
   });
+  /* ---- negative controls for the STEM-OPTION COUPLING gate (fourth pass) ----
+     The two generators the fourth pass killed, rebuilt exactly as they shipped at
+     7ec7919. Both were green on every other arm in this file on the day they were
+     killed, so if this gate does not turn them red it is measuring nothing. */
+  const couplingCtl = (name, fn, want) => {
+    const r = decCouplingScan([{ name, fn }], 2000)[0];
+    ctl(name, want, r.ok ? null
+      : `${cplRule(r.worst)} settles ${(100 * r.worst.settle).toFixed(2)}% at ${(100 * r.worst.acc).toFixed(1)}%` +
+        (r.at === '(whole bank)' ? '' : `, inside one of its ${r.shapes} stem shapes`));
+  };
+  couplingCtl('FOURTH-PASS KILL 1 - v4 gDecRoundError, the rounding phrase and the neighbouring digit',
+    ctlV4RoundError, 'the stem-option coupling ceiling');
+  couplingCtl('FOURTH-PASS KILL 2 - v4 gDecMulConcept, the operand shape of the option list',
+    ctlV4MulConcept, 'the stem-option coupling ceiling');
+  /* and the control on those controls: a generator that borrows nothing from its
+     stem must pass, or the ceiling is just failing every bank that prints a number */
+  {
+    const fn = () => {
+      const k = 200 + Math.floor(Math.random() * 600), a = Math.floor(Math.random() * 4);
+      const others = [];
+      for (let i = 0; i < a; i++) others.push(k + 17 * (i + 1));
+      for (let i = others.length; i < 3; i++) others.push(k - 17 * (i + 1));
+      const all = [DTXT(DV(k, 2))].concat(others.map(v => DTXT(DV(v, 2))));
+      const at = Math.floor(Math.random() * 4), rest = all.slice(1);
+      rest.splice(at, 0, all[0]);
+      return { q: `A negative control asks for <b>${DTXT(DV(k * 3, 2))}</b> shared into <b>3</b>.`,
+               extra: '', choices: rest, correct: at, answerText: all[0], explain: 'A negative control.' };
+    };
+    const r = decCouplingScan([{ name: 'ctlNoCoupling', fn }], 2000)[0];
+    negRows.push({ name: 'FOURTH-PASS KILLS - a generator that borrows nothing from its stem passes',
+      ok: r.ok, note: r.worst ? `worst rule settles ${(100 * r.worst.settle).toFixed(2)}% at ${(100 * r.worst.acc).toFixed(1)}%`
+                              : 'no rule of that accuracy fires at all' });
+    if (!r.ok) failures++;
+  }
+
   /* and the control on the controls: a prose generator that DOES rotate its key's
      frame, shares its direction word and keeps its options the same length must
      pass, or the gate is just failing every word-answer bank. */
@@ -3850,6 +4289,28 @@ if (roundScan) {
   console.log(`         ... and on the same control the same two rules read ` +
     `"${roundCtl.lone.name}" ${(roundCtl.lone.settle * 100).toFixed(1)}%, ` +
     `"${roundCtl.smallest.name}" ${(roundCtl.smallest.settle * 100).toFixed(1)}%`);
+}
+
+if (couplingRows.length) {
+  console.log('');
+  const judged = couplingRows.filter(r => r.worst);
+  console.log(`STEM-OPTION COUPLING  (${RANK_DRAWS} draws x ${couplingRows.length} decimals generators, ` +
+    `${CPL_PREDS.length} stem/option relations scored alone and in pairs plus ${CPL_FEATS.length} categorical ` +
+    `features, per generator AND per stem shape; ceiling ${(CPL_CEILING * 100).toFixed(0)}% settled at ` +
+    `${(CPL_ACC * 100).toFixed(0)}% accuracy)`);
+  const badCpl = couplingRows.filter(r => !r.ok);
+  if (badCpl.length) {
+    for (const r of badCpl) {
+      console.log(`FAIL coupling  ${r.name}  ${cplRule(r.worst)} settles ${(100 * r.worst.settle).toFixed(2)}% of ` +
+        `draws and is right ${(100 * r.worst.acc).toFixed(1)}% of the time` +
+        (r.at === '(whole bank)' ? '' : `  [inside one of its ${r.shapes} stem shapes]`));
+    }
+  } else {
+    const w = judged.sort((a, b) => b.worst.settle - a.worst.settle)[0];
+    console.log(`  ok   no rule built from the stem and the option list together settles ` +
+      `${(CPL_CEILING * 100).toFixed(0)}% of any generator's draws at ${(CPL_ACC * 100).toFixed(0)}% accuracy` +
+      (w ? `  (worst: ${w.name} ${(100 * w.worst.settle).toFixed(2)}% at ${(100 * w.worst.acc).toFixed(1)}%)` : ''));
+  }
 }
 
 const badContract = contractRows.filter(r => !r.ok);

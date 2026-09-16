@@ -1593,9 +1593,38 @@ function oracle(q) {
     const e = 2 * (W + H);
     return near(e, ansNum) ? null : `L in words: expected ${e}, got ${ansNum}`;
   }
+  /* gLConcept (v6, 2026-09-15). The key used to be one fixed sentence, so the oracle
+     could name it literally. The frame now rotates, so the oracle checks the SHAPE of
+     the option set instead, which is the thing the fix actually promises: the four
+     options must be the unchanged key plus the three named misconceptions (shorter
+     by the cut, longer, depends on the size of the cut), one each, the unchanged one
+     must be the key, and the key must be neither the unique longest nor the unique
+     shortest of the four - the length tell RULE 6 below catches only across a whole
+     run, asserted here per draw so it cannot come back one frame at a time. */
   if (/^A rectangular corner is cut out of a rectangle to make an L-shape/.test(text)) {
-    return strip(q.answerText) === 'It stays the same.' ? null
-      : `L concept: expected "It stays the same.", got "${strip(q.answerText)}"`;
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4) return `L concept: ${opts.length} options, expected 4`;
+    const tags = opts.map(o => {
+      const t = [];
+      if (/\bthe same\b/i.test(o)) t.push('same');
+      if (/\bshorter\b/i.test(o)) t.push('shorter');
+      if (/\blonger\b/i.test(o)) t.push('longer');
+      if (/\bdepends\b/i.test(o)) t.push('depends');
+      return t;
+    });
+    if (tags.some(t => t.length !== 1))
+      return `L concept: an option carries ${tags.find(t => t.length !== 1).length} misconception markers, expected exactly 1 (${opts.join(' | ')})`;
+    const flat = tags.map(t => t[0]).sort().join(',');
+    if (flat !== 'depends,longer,same,shorter')
+      return `L concept: the option set is {${flat}}, expected the key plus shorter / longer / depends (${opts.join(' | ')})`;
+    if (tags[q.correct][0] !== 'same')
+      return `L concept: the key is the "${tags[q.correct][0]}" option, expected the unchanged one (${opts[q.correct]})`;
+    const lens = opts.map(o => o.length), mx = Math.max(...lens), mn = Math.min(...lens);
+    if (lens[q.correct] === mx && lens.filter(l => l === mx).length === 1)
+      return `L concept: the key is the unique longest option (${lens.join('/')}) - answerable with a ruler`;
+    if (lens[q.correct] === mn && lens.filter(l => l === mn).length === 1)
+      return `L concept: the key is the unique shortest option (${lens.join('/')}) - answerable with a ruler`;
+    return null;
   }
   if ((m = text.match(/^An L-shape is made from a (\d+) cm by (\d+) cm rectangle with a rectangular corner cut out\. The corner cut out is (\d+) cm wide\. The area of the L-shape is (\d+) cm/))) {
     const W = Number(m[1]), H = Number(m[2]), a = Number(m[3]), area = Number(m[4]);
@@ -2133,7 +2162,33 @@ function coincidence(q) {
    15.5%, gDoubling 14.0%, gGroups 3.4% shipped `key + 1` padding in place of a
    named misconception). Naming the generators is deliberate: this asserts the LIST
    of items that owe the contract, so deleting a redraw guard fails here rather than
-   quietly dropping the item out of the check. */
+   quietly dropping the item out of the check.
+
+   >>> PORTED 2026-09-15 from lane/sweep-fractions @ a892bde (Sweep fractions
+   >>> Refutation, THE KILL). RULES 5 and 6 below, their helpers (optWords,
+   >>> allProse, frameOpenings, keyIsLongest) and the RULE 6 tallies in the run
+   >>> loop are that lane's code, carried over so the depth pilot's own files are
+   >>> held to it. INTEGRATOR: this is a DUPLICATE of the fractions lane's block -
+   >>> dedupe on merge, keep one copy. TWO DELIBERATE DIFFERENCES: the fractions
+   >>> lane's PILOT_TOPICS also lists `fractions` (its file is not on this branch),
+   >>> and its LENGTH_TELL_EXEMPT = new Set(['p4area.gLConcept']) is NOT carried -
+   >>> the exemption was the debt it declared, and this branch pays it (v6) rather
+   >>> than inheriting it. Dropping the exemption is what makes the old gLConcept
+   >>> option set go red here.
+
+   RULE 5, SENTENCE FRAME (per draw, in pilotGates). RULE 1 tallies option FORM four
+   ways and is blind to four options that are all prose. gCompareError shipped four
+   prose options all opening with the same child's name - a 4-0 form tally - while
+   three read "X should have ..." and the key alone read "X forgot that ...". So:
+   when all four options are prose of two words or more, strip the words every option
+   shares at the front (the name, "The", and so on, which is what defeats a naive
+   first-two-words check) and take the next two words of each. Exactly one odd
+   opening against three that share one is the gLPerimDiff tell in prose clothing,
+   and the build fails. A 2-2 split, or three or four distinct openings, is fine.
+
+   RULE 6, LENGTH (per GENERATOR, in the run loop below, because no single draw can
+   show it). If the key is the unique longest of four prose options in 100% of a
+   generator's draws, the item can be answered with a ruler. <<< end of port */
 const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area']);
 /* every mcNum call site in the three pilot files */
 const PILOT_MCNUM = new Set([
@@ -2145,6 +2200,25 @@ const PILOT_MCNUM = new Set([
 /* spoken form starts with a vowel: eight, eleven, eighteen, eighty-something */
 const anWord = s => /^(8|11|18)$/.test(s) || /^8\d$/.test(s) || /^8\d\d$/.test(s);
 const BAD_ARTICLE = /\b([Aa]n?) (\d+)\b/g;
+/* >>> PORTED from lane/sweep-fractions a892bde - RULE 5 / RULE 6 helpers. INTEGRATOR: dedupe. */
+const optWords = s2 => strip(s2).split(' ').filter(Boolean);
+/* all four options are sentences a child reads, not bare numbers or fraction rows */
+const allProse = opts => opts.length === 4 &&
+  opts.every(o => /[A-Za-z]{3}/.test(strip(o)) && optWords(o).length >= 2);
+/* the two words that open each option once the shared opening is stripped off */
+function frameOpenings(opts) {
+  const ws = opts.map(optWords);
+  const min = Math.min(...ws.map(w => w.length));
+  let c = 0;
+  while (c < min && ws.every(w => w[c].toLowerCase() === ws[0][c].toLowerCase())) c++;
+  return ws.map(w => w.slice(c, c + 2).join(' ').toLowerCase());
+}
+/* the key is the unique longest of the four */
+const keyIsLongest = (opts, correct) => {
+  const lens = opts.map(o => strip(o).length), mx = Math.max(...lens);
+  return lens[correct] === mx && lens.filter(l => l === mx).length === 1;
+};
+/* <<< end of ported helpers */
 const optForm = s => {
   const t = strip(s);
   if (/^\$?\d+(\.\d+)?$/.test(t)) return 'number';
@@ -2171,6 +2245,21 @@ function pilotGates(q, topic, name) {
         return `format tell: one option is ${odd[0]} while the other three are ${bulk[0]} (${opts.map(strip).join(' | ')})`;
       }
     }
+    /* >>> PORTED from lane/sweep-fractions a892bde - RULE 5: the same tell one layer
+       in, on the sentence frame. INTEGRATOR: dedupe. */
+    if (allProse(opts)) {
+      const open = frameOpenings(opts);
+      const t2 = new Map();
+      for (const o of open) t2.set(o, (t2.get(o) || 0) + 1);
+      if (t2.size === 2) {
+        const odd2 = [...t2.entries()].find(([, c]) => c === 1);
+        if (odd2) {
+          const bulk2 = [...t2.entries()].find(([, c]) => c === 3);
+          return `sentence-frame tell: one option opens "${odd2[0]} ..." while the other three open "${bulk2[0]} ..." (${opts.map(strip).join(' | ')})`;
+        }
+      }
+    }
+    /* <<< end of ported RULE 5 */
   }
   const all = strip(q.q) + ' ' + strip(q.extra || '');
   let mm;
@@ -2214,6 +2303,9 @@ const rows = [];
 
 for (const g of GENS) {
   let err = null, badQ = null, matched = 0;
+  /* >>> PORTED from lane/sweep-fractions a892bde - RULE 6 tallies: no single draw can
+     show a length tell, only the whole run can. INTEGRATOR: dedupe. */
+  let proseDraws = 0, keyLongest = 0, lastProse = null;
   const distinct = new Set();
   for (let i = 0; i < N; i++) {
     let q;
@@ -2230,6 +2322,10 @@ for (const g of GENS) {
     if (coin) { err = coin; badQ = q; break; }
     const pilot = pilotGates(q, g.topic, g.name);
     if (pilot) { err = pilot; badQ = q; break; }
+    if (PILOT_TOPICS.has(g.topic) && allProse(q.choices || [])) {
+      proseDraws++;
+      if (keyIsLongest(q.choices, q.correct)) { keyLongest++; lastProse = q; }
+    }
     distinct.add(qKey(q));
     const o = oracle(q);
     if (o === false) continue;
@@ -2239,6 +2335,16 @@ for (const g of GENS) {
   if (!err && distinct.size < DISTINCT_FLOOR) {
     err = `sample space collapsed: only ${distinct.size} distinct questions in ${N} draws`;
   }
+  /* >>> PORTED from lane/sweep-fractions a892bde - RULE 6, the length tell (Sweep
+     fractions Refutation 2026-09-15, THE KILL). The fractions lane guarded this with
+     `&& !LENGTH_TELL_EXEMPT.has(...)` for its one declared exemption, p4area.gLConcept.
+     That exemption is deliberately NOT carried: v6 rewrote gLConcept so it passes.
+     INTEGRATOR: dedupe, and keep this unexempted copy. */
+  if (!err && proseDraws >= 20 && keyLongest === proseDraws) {
+    err = `length tell: the key is the unique longest of the four sentences in ${keyLongest} of ${proseDraws} draws - the item can be answered with a ruler`;
+    badQ = lastProse;
+  }
+  /* <<< end of ported RULE 6 */
   const cov = Math.round((matched / N) * 100);
   rows.push({ topic: g.topic, name: g.name, skill: g.skill, n: N, distinct: distinct.size, cov, err });
   if (err) {

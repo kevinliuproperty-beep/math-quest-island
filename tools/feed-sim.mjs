@@ -97,7 +97,15 @@ for (const tid of Object.keys(TOPICS)) {
 }
 /* The harness masks stems itself rather than calling MQI.shapeKey, so a core
    under test that predates the fix is measured with the SAME ruler. Kept in step
-   with core.js shapeKey by hand; the audit's key it descends from is identical. */
+   with core.js shapeKey by hand; the audit's key it descends from is identical.
+
+   EIGHTH PASS 2026-09-16, W7. v8 widened the fraction regex below to `-?\d+` when
+   it widened every fraction regex in tools/gen-sanity.mjs, and js/core.js:370's
+   shapeKey - which this block exists to MIRROR - was left at `\d+`. Inert while
+   nothing in the game renders a negative fraction, but the simulator and the app
+   were no longer computing the same shape key, so the repeat guard this file
+   certifies was not quite the one the app runs. Back in step with core.js;
+   core.js is out of this lane's fence and is untouched. */
 const SHAPE_STOP = new Set(('A An The What Which How If In On At Of For From To And Or But So Then When Where Why Who '
   + 'Find Work Round Write Express Simplify Solve Calculate Convert Complete Give Use Look Read Add Subtract Multiply '
   + 'Divide Count Fill Choose Pick Draw Shade Here There This That It Is Are Was Were Do Does Each Every After Before '
@@ -259,7 +267,32 @@ if (HAS_FEED) {
    generator in a session. It gates nothing: the thresholds above were set against
    measured behaviour at 0.8 and are not re-argued here. It is the ruler that was
    missing, and a topic whose busiest pool-1 generator comes round five times a
-   session is a topic to look at, not a failure to stop the build. --- */
+   session is a topic to look at, not a failure to stop the build. ---
+
+   INTEGRATOR (wave 1): lane/sweep-fractions arrived at the identical section from
+   its own third pass. Its measurements are kept here rather than dropped, because
+   they are a second topic's numbers on the same ruler:
+
+   Sweep fractions Refutation (THIRD PASS, 2026-09-16), W2 - and the same finding
+   the p3numbers second pass landed, arriving here by a different road. Every feed
+   measurement in three sweeps and three refutations has been taken at ONE accuracy,
+   0.8, which keeps the simulated child near the top of the climb; and measure()
+   picks a random live topic per seed, so no per-topic number ever appears.
+
+   The app's climb is 3-right-up / 2-wrong-down, so accuracy does not shift the pool
+   mix a little - it inverts it. Measured on `fractions` at 0.45: pool 1 carries
+   79.9% of a 30-item session against 19.8% at 0.8, and the twelve pool-3 formats
+   this lane was written to add fall to 3.3% between them. The kill and the wound
+   this pass found both sit in pool 1, which is to say they land almost entirely on
+   the child who is not doing well.
+
+   This section is the ruler that was missing. It runs every live topic on its own
+   at 0.45 and prints the pool mix and the busiest generator in a session. It GATES
+   NOTHING: the thresholds above were set against measured behaviour at 0.8 and are
+   not re-argued here. FOR THE INTEGRATOR - this is a fleet finding, not a fractions
+   one: the pool composition and the climb live in js/core.js, outside this lane's
+   fence, and a topic whose busiest pool-1 generator comes round four times a
+   session is a topic to look at, not a build to stop. --- */
 {
   const LOW = 0.45;
   console.log(`\nstruggling-child pass  accuracy ${LOW}, ${SEEDS} seeds x ${LEN}, per topic  (REPORT ONLY, nothing here gates)\n`);

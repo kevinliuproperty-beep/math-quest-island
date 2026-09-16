@@ -31,9 +31,45 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+/* The negative controls, frozen at the commit that shipped them, so a control
+   cannot drift away from the generator it names. See W4 at the stem ruler. */
+import { gPatternConceptV10, gAddConceptV10, gCompareErrorV10, gStandsErrorV11, gAddConceptV11 }
+  from './fixtures/p3numbers-v10.mjs';
 
 const N = Number(process.env.SAMPLES) || 200;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+/* ---------- SEED (W2, ELEVENTH pass, 2026-09-16) ------------------------------
+   THE HARNESS HEADER SAID "deterministic" FOR ELEVEN PASSES AND IT WAS NOT. Every
+   ruler in this file samples thousands of draws through `Math.random` and every
+   number it prints moved between runs: two verbatim runs at SAMPLES=200 differed
+   on 718 of 608 printed lines. That is survivable for a cap at 0.40 read off a
+   4,000-draw sample, and it is NOT survivable for the BOARD gate, whose exposure
+   clause is a hard threshold at exactly 1.00 served per session while the SERVED
+   column drifts by ~0.14 between runs - three banks (gAddError, gSubError,
+   gTwoStepWord) sit inside that band, so which side of the gate they land on was
+   decided by the run you happened to look at.
+
+   `Math` is the SAME object the vm context below is handed, so replacing
+   `Math.random` here seeds the generators, the feed, every ruler's sampling and
+   the negative controls in one stroke - there is no second entropy source in
+   js/core.js (`ri` is the only caller) or in this file. mulberry32, the same
+   generator the refutation's own harness uses, so the two are comparable.
+
+   SEED=<n> overrides. The default is fixed, so `node tools/gen-sanity.mjs` twice
+   is byte-identical and a gate line can be quoted as a fact rather than as a
+   sample. Fitting one seed and holding out another is what the sweep does; the
+   harness's job is to be the same instrument twice. --- */
+const SEED = Number(process.env.SEED) || 20260916;
+function mulberry32(a) {
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+Math.random = mulberry32(SEED);
 
 /* ---------- load the pure layer in a DOM-less vm ---------- */
 const ctx = { Math, console, Number, Array, Set, Map, JSON, String, Object, Boolean, Error, isNaN, parseInt, parseFloat };
@@ -1588,6 +1624,477 @@ function oracle(q) {
     return near(e, ansNum) ? null : `more/less: expected ${e}, got ${ansNum}`;
   }
 
+  /* ===== SWEEP 2026-09-15 lane: p3numbers (Thousand Isles) ==================
+     One oracle per FORMAT in the rebuilt bank, each re-deriving the key from the
+     RENDERED stem and never from the generator's own answerText. Several also
+     refute the item's own PREMISE: the error-spotting oracles fail if the printed
+     wrong answer is actually right, or if it maps to two named misconceptions, or
+     if a distractor option ALSO explains it. Anchored stems, above the loose
+     "a + b = ?" / "which number is the greatest" branches further down.
+     The column arithmetic here is written out independently; it is not imported
+     from the topic file. ------------------------------------------------------- */
+  const P3_PLACES = ['thousands', 'hundreds', 'tens', 'ones'];
+  const P3_POW = [1000, 100, 10, 1];
+  const p3dig = n => [0, 1, 2, 3].map(i => Math.floor(n / P3_POW[i]) % 10);
+  const p3add = (a, b, suppressAt) => {
+    const A = p3dig(a), B = p3dig(b); let carry = 0, out = 0;
+    for (let i = 3; i >= 0; i--) { const s = A[i] + B[i] + carry; out += (s % 10) * P3_POW[i]; carry = (s >= 10 && i !== suppressAt) ? 1 : 0; }
+    return out + carry * 10000;
+  };
+  const p3carryCols = (a, b) => {
+    const A = p3dig(a), B = p3dig(b), out = []; let c = 0;
+    for (let i = 3; i >= 0; i--) { const s = A[i] + B[i] + c; if (s >= 10) { out.push(i); c = 1; } else c = 0; }
+    return out;
+  };
+  const p3noCarry = (a, b) => { const A = p3dig(a), B = p3dig(b); let o = 0; for (let i = 0; i < 4; i++) o += ((A[i] + B[i]) % 10) * P3_POW[i]; return o; };
+  const p3smallFromBig = (a, b) => { const A = p3dig(a), B = p3dig(b); let o = 0; for (let i = 0; i < 4; i++) o += Math.abs(A[i] - B[i]) * P3_POW[i]; return o; };
+  const p3digitSum = n => p3dig(n).reduce((s, d) => s + d, 0);
+  const p3opts = qq => (qq.choices || []).map(strip);
+
+  /* PLACE VALUE - compare two digit values inside one number (was gStandsHard) */
+  if ((m = text.match(/^In (\d+), how much more does the digit (\d) stand for than the digit (\d)\?$/))) {
+    const s = m[1], di = m[2], dj = m[3];
+    if (s.length !== 4) return 'p3 stands-compare: expected a 4-digit number, got ' + s;
+    if (s.split(di).length !== 2 || s.split(dj).length !== 2) return 'p3 stands-compare: a named digit is not unique in ' + s;
+    const i = s.indexOf(di), j = s.indexOf(dj);
+    if (i >= j) return 'p3 stands-compare: the first digit named must sit further left, got ' + s + ' ' + di + '/' + dj;
+    const e = Number(di) * Math.pow(10, 3 - i) - Number(dj) * Math.pow(10, 3 - j);
+    if (e <= 0) return 'p3 stands-compare: the difference is not positive';
+    return near(e, ansNum) ? null : `p3 stands-compare: expected ${e}, got ${ansNum}`;
+  }
+
+  /* PLACE VALUE - expanded form. Every option is evaluated; exactly one may sum
+     to the number in the stem, and it must be the key. */
+  if ((m = text.match(/^Which of these shows (\d+) in expanded form\?$/))) {
+    const n = Number(m[1]);
+    const sums = p3opts(q).map(o => {
+      const parts = o.split('+').map(t => t.trim());
+      if (!parts.length || parts.some(t => !/^\d+$/.test(t))) return NaN;
+      return parts.reduce((s, t) => s + Number(t), 0);
+    });
+    if (sums.some(Number.isNaN)) return 'p3 expanded: an option is not a sum of whole numbers: ' + p3opts(q).join(' | ');
+    const hits = sums.filter(v => v === n).length;
+    if (hits !== 1) return `p3 expanded: ${hits} of the four options add up to ${n}`;
+    if (sums[q.correct] !== n) return `p3 expanded: the flagged option adds to ${sums[q.correct]}, not ${n}`;
+    return null;
+  }
+
+  /* PLACE VALUE - a wrong claim, CORRECTED. `gStandsError` (name the
+     misconception) was RETIRED on the eleventh pass: the claim's character count
+     was injective onto the misconception and the bank was answered at 100.00 /
+     100.00% by counting it. Its oracle is gone with it - a "What did she do
+     wrong?" stem about a digit's worth now matches nothing here and would be
+     reported as uncovered. What is re-derived instead: the claim is a real place
+     misread of the SAME digit, it is not the true value, the option row is the
+     digit at each of the four places, and the key is the digit's own column. */
+  if ((m = text.match(/^In (\d+), (\S+(?: \S+)?) says the digit (\d) stands for (\d+)\. How much does the digit (\d) really stand for\?$/))) {
+    const s = m[1], dig = Number(m[3]), claim = Number(m[4]);
+    if (s.length !== 4) return 'p3 stands-fix: expected a 4-digit number, got ' + s;
+    if (m[5] !== m[3]) return `p3 stands-fix: the stem names the digit ${m[3]} and then asks about ${m[5]}`;
+    if (s.split(m[3]).length !== 2) return 'p3 stands-fix: the digit is not unique in ' + s;
+    const p = s.indexOf(m[3]), val = dig * Math.pow(10, 3 - p);
+    if (claim === val) return `p3 stands-fix: the "wrong" claim ${claim} is the correct value`;
+    const places = [1, 10, 100, 1000].map(v => dig * v);
+    if (places.indexOf(claim) < 0)
+      return `p3 stands-fix: ${claim} is not the digit ${dig} read in any column, so it is not a place misread`;
+    const opts = p3opts(q).map(Number).sort((x, y) => x - y);
+    const want = places.slice().sort((x, y) => x - y);
+    if (opts.length !== 4 || opts.some((v, i) => v !== want[i]))
+      return `p3 stands-fix: the option row is ${opts.join(', ')} and not the digit at all four places (${want.join(', ')})`;
+    if (opts.filter(v => v === val).length !== 1) return `p3 stands-fix: ${val} is not on the row exactly once`;
+    return near(val, ansNum) ? null : `p3 stands-fix: expected ${val}, got ${ansNum}`;
+  }
+
+  /* PLACE VALUE - error spotting, CORRECT the mistake, then step on. The stem's
+     own premise (the number written with the empty hundreds place left out) is
+     re-derived, and so is the second described number. W4, 2026-09-15: the old
+     one-step form of this item ("what number should he have written?") is gone,
+     so the old oracle branch is gone with it - a stem in that shape now matches
+     nothing here and would be reported as uncovered. */
+  if ((m = text.match(/^(\S+(?: \S+)?) writes (\d) thousands?, 0 hundreds, (\d) tens? and (\d) ones? as (\d+)\. What is (\d+) (more|less) than the correct number\?$/))) {
+    const th = Number(m[2]), t = Number(m[3]), o = Number(m[4]), printed = Number(m[5]);
+    const step = Number(m[6]), sg = m[7] === 'more' ? 1 : -1;
+    if (th === 1 && /1 thousands/.test(text)) return 'p3 zero-fix: "1 thousands" in the stem';
+    const squashed = th * 100 + t * 10 + o;
+    if (printed !== squashed) return `p3 zero-fix: the stem prints ${printed}, but dropping the zero gives ${squashed}`;
+    const meant = th * 1000 + t * 10 + o;
+    if (![10, 100, 1000].includes(step)) return `p3 zero-fix: ${step} is not a tens/hundreds/thousands step`;
+    const e = meant + sg * step;
+    /* W3, second pass: 2.28% of keys were 3-digit numbers, in the one item whose
+       whole lesson is that the zero stops the number shrinking. */
+    if (e < 1000 || e > 9999) return `p3 zero-fix: the answer ${e} is not a 4-digit number`;
+    /* the item is two-step only if the number it asks for is NOT the rebuilt one */
+    if (e === meant) return 'p3 zero-fix: the second number equals the rebuilt number, so the item is one step';
+    if (strip(q.q).split(/\s+/).length > 22) return `p3 zero-fix: the stem runs to ${strip(q.q).split(/\s+/).length} words`;
+    return near(e, ansNum) ? null : `p3 zero-fix: expected ${e}, got ${ansNum}`;
+  }
+
+  /* COMPARE - which line compares the stem's pair correctly (v11). Every option is
+     evaluated from the rendered text. The row must carry the stem's pair with BOTH
+     symbols and a second pair with both symbols, so that exactly TWO of the four
+     lines are true as written and the agree/disagree split is 2-2 - which is what
+     kills the "the statement that agrees with the order is the odd one out"
+     deduction a 1-3 split hands to a child who cannot read either symbol. The key
+     is the true line about the STEM's pair; the other true line is about the other
+     pair and does not answer the question asked. */
+  if ((m = text.match(/^Which line compares (\d+) and (\d+) correctly\?$/)) &&
+      (q.choices || []).every(c => /^\d+ [<>] \d+$/.test(strip(c)))) {
+    const sx = Number(m[1]), sy = Number(m[2]);
+    const st = p3opts(q).map(o => {
+      const p = o.split(' ');
+      return { text: o, l: Number(p[0]), sign: p[1], r: Number(p[2]) };
+    });
+    if (st.length !== 4) return 'p3 compare-line: expected four statements';
+    if (st.some(x => x.l === x.r)) return 'p3 compare-line: a statement compares a number with itself';
+    if (st.some(x => x.l < 1 || x.l > 9999 || x.r < 1 || x.r > 9999)) return 'p3 compare-line: a printed number is outside scope';
+    const isTrue = x => x.sign === '>' ? x.l > x.r : x.l < x.r;
+    const mine = st.filter(x => x.l === sx && x.r === sy);
+    const other = st.filter(x => !(x.l === sx && x.r === sy));
+    if (mine.length !== 2) return `p3 compare-line: ${mine.length} of the four lines are about the stem's pair, not 2`;
+    if (mine[0].sign === mine[1].sign) return 'p3 compare-line: the stem pair is printed with the same symbol twice, so the symbol is not load-bearing';
+    if (other.length !== 2 || other[0].l !== other[1].l || other[0].r !== other[1].r)
+      return 'p3 compare-line: the other two lines are not the same pair, so "the pair that repeats" names the key';
+    if (other[0].sign === other[1].sign) return 'p3 compare-line: the decoy pair is printed with one symbol, so its two lines are not 1 true and 1 false';
+    const hits = mine.filter(isTrue);
+    if (hits.length !== 1) return `p3 compare-line: ${hits.length} of the stem's two lines are true`;
+    if (hits[0].text !== strip(q.answerText)) return `p3 compare-line: the true line is "${hits[0].text}" but the key reads "${strip(q.answerText)}"`;
+    if (st.filter(isTrue).length !== 2) return `p3 compare-line: ${st.filter(isTrue).length} of the four lines are true as written, so the agree/disagree split is not 2-2`;
+    const gt = st.filter(x => x.sign === '>').length;
+    if (gt !== 2) return `p3 compare-line: ${gt} of the four statements print ">", so the sign is a tell`;
+    return null;
+  }
+
+  /* COMPARE - between two bounds named in place-value words (v12). `gComparePlace`
+     (the deciding place and what it is worth) was RETIRED on the eleventh pass at
+     100.00 / 100.00%, so its oracle is gone with it - that stem now matches nothing
+     here and would be reported as uncovered. Both bounds are rebuilt from the WORDS
+     the child reads, never from the generator, and the straddle premise the rank
+     exemption rests on is asserted per draw. */
+  if ((m = text.match(/^Which number is greater than (\d+) thousands? (\d+) hundreds? and smaller than (\d+) thousands? (\d+) hundreds?\?$/))) {
+    const lo = Number(m[1]) * 1000 + Number(m[2]) * 100;
+    const hi = Number(m[3]) * 1000 + Number(m[4]) * 100;
+    if (!(hi > lo)) return `p3 between-worded: the stem names ${lo} and ${hi}, which are not in order`;
+    if (/\b1 thousands|\b1 hundreds/.test(text)) return 'p3 between-worded: "1 thousands" or "1 hundreds" in the stem';
+    const vals = p3opts(q).map(Number);
+    if (vals.some(v => !Number.isFinite(v))) return 'p3 between-worded: an option is not a number';
+    if (vals.some(v => v < 1000 || v > 9999)) return `p3 between-worded: an option is outside 1000-9999 (${vals.join(', ')})`;
+    const hits = vals.filter(v => v > lo && v < hi);
+    if (hits.length !== 1) return `p3 between-worded: ${hits.length} of the four options lie between ${lo} and ${hi}`;
+    /* the premise of the by-name flat-rank exemption: the wrong answers sit on
+       BOTH sides, so neither single bound settles the item */
+    if (!vals.some(v => v < lo) || !vals.some(v => v > hi))
+      return `p3 between-worded: the four options do not straddle the range, so one bound settles it (${vals.join(', ')})`;
+    return near(hits[0], ansNum) ? null : `p3 between-worded: expected ${hits[0]}, got ${ansNum}`;
+  }
+
+  /* COMPARE - between two numbers. Exactly one option may lie strictly between. */
+  if ((m = text.match(/^Which number is between (\d+) and (\d+)\?$/))) {
+    const lo = Number(m[1]), hi = Number(m[2]);
+    if (!(hi > lo)) return `p3 between: the stem prints ${lo} and ${hi}, which are not in order`;
+    const vals = p3opts(q).map(Number);
+    if (vals.some(v => !Number.isFinite(v))) return 'p3 between: an option is not a number';
+    const hits = vals.filter(v => v > lo && v < hi);
+    if (hits.length !== 1) return `p3 between: ${hits.length} of the four options lie between ${lo} and ${hi}`;
+    return near(hits[0], ansNum) ? null : `p3 between: expected ${hits[0]}, got ${ansNum}`;
+  }
+
+  /* COMPARE - order four numbers. Every option must be the SAME four numbers in
+     some order, and exactly one of them may be ascending. */
+  if (/^Which list is in order from the smallest to the greatest\?$/.test(text)) {
+    const lists = p3opts(q).map(o => o.split(',').map(t => Number(t.trim())));
+    if (lists.some(l => l.length !== 4 || l.some(v => !Number.isFinite(v)))) return 'p3 order: an option is not four numbers';
+    const sig = l => l.slice().sort((x, y) => x - y).join(',');
+    if (new Set(lists.map(sig)).size !== 1) return 'p3 order: the options are not all the same four numbers';
+    const asc = l => l.every((v, i) => i === 0 || v > l[i - 1]);
+    const hits = lists.filter(asc).length;
+    if (hits !== 1) return `p3 order: ${hits} of the four options are in ascending order`;
+    if (!asc(lists[q.correct])) return 'p3 order: the flagged option is not in ascending order';
+    return null;
+  }
+
+  /* COMPARE - error spotting on a comparison. The claim must be genuinely false,
+     the named slip must be the one the numbers exhibit, and NEITHER filler option
+     may also produce the claim on this draw. */
+  if ((m = text.match(/^\S+(?: \S+)? says (\d+) is greater than (\d+)\. What did (he|she) do wrong\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]);
+    if (!(b > a)) return `p3 compare-error: the claim "${a} is greater than ${b}" is true, so there is no mistake`;
+    const FIRST = ' only compared the first digit of each.';
+    const RIGHT = ' compared from the right, not the left.';
+    const ODD = ' counted the odd digits in each instead.';
+    const SUM = ' added the digits up and compared those.';
+    const lead = n => Number(String(n)[0]);
+    const oddC = n => String(n).split('').filter(d => Number(d) % 2 === 1).length;
+    const dSum = n => String(n).split('').reduce((s, d) => s + Number(d), 0);
+    const fires = { [FIRST]: lead(a) > lead(b), [RIGHT]: a % 10 > b % 10, [ODD]: oddC(a) > oddC(b), [SUM]: dSum(a) > dSum(b) };
+    const firing = Object.keys(fires).filter(k => fires[k]);
+    if (firing.length !== 1) return `p3 compare-error: ${firing.length} of the four offered explanations produce "${a} > ${b}"`;
+    const key = strip(q.answerText);
+    if (!key.endsWith(firing[0])) return `p3 compare-error: the slip that fires is "${firing[0].trim()}" but the key reads "${key}"`;
+    if (!p3opts(q).some(o => o === key)) return 'p3 compare-error: the key is not among the options';
+    return null;
+  }
+
+  /* PATTERN - name the jump */
+  if ((m = text.match(/^In this number pattern, what is the jump from one number to the next\? ([\d, ]+)$/))) {
+    const t = m[1].split(',').map(x => Number(x.trim()));
+    if (t.length < 3 || t.some(v => !Number.isFinite(v))) return 'p3 jump: could not read the sequence';
+    const d = t[1] - t[0];
+    if (!t.every((v, i) => i === 0 || v - t[i - 1] === d)) return 'p3 jump: the printed terms are not an arithmetic sequence: ' + t.join(',');
+    if (t.some(v => v < 1000 || v > 9999)) return 'p3 jump: a term is outside 1000..9999: ' + t.join(',');
+    return near(d, ansNum) ? null : `p3 jump: expected ${d}, got ${ansNum}`;
+  }
+
+  /* PATTERN - counting on/back in tens, hundreds, thousands. The stem NAMES the
+     unit, so the oracle checks the printed terms really move by that unit in that
+     direction before it derives the next one. */
+  if ((m = text.match(/^Count (on|back) in (tens|hundreds|thousands)\. What number comes next\? ([\d, ]+), \?$/))) {
+    const unit = { tens: 10, hundreds: 100, thousands: 1000 }[m[2]];
+    const sgn = m[1] === 'on' ? 1 : -1;
+    const t = m[3].split(',').map(x => Number(x.trim()));
+    if (t.length !== 5 || t.some(v => !Number.isFinite(v))) return 'p3 count: expected five printed terms';
+    if (!t.every((v, i) => i === 0 || v - t[i - 1] === sgn * unit)) return `p3 count: the terms do not move ${sgn * unit} each time: ` + t.join(',');
+    if (t.some(v => v < 1000 || v > 9999)) return 'p3 count: a term is outside 1000..9999: ' + t.join(',');
+    const e = t[4] + sgn * unit;
+    if (e < 1 || e > 9999) return `p3 count: the answer ${e} is outside 1..9999`;
+    return near(e, ansNum) ? null : `p3 count: expected ${e}, got ${ansNum}`;
+  }
+
+  /* PATTERN - missing middle term, jump NOT given. The oracle derives the jump
+     from the printed neighbours and refuses a stem whose knowns disagree. */
+  if ((m = text.match(/^What is the missing number in this pattern\? ([\d,? ]+)$/))) {
+    const raw = m[1].split(',').map(x => x.trim());
+    if (raw.length !== 5) return 'p3 missing: expected five slots';
+    const gapAt = raw.indexOf('?');
+    if (gapAt < 0 || raw.filter(x => x === '?').length !== 1) return 'p3 missing: expected exactly one ?';
+    if (gapAt === 0 || gapAt === 4) return 'p3 missing: the gap must be inside the sequence, not at an end';
+    const known = raw.map((x, i) => (i === gapAt ? null : Number(x)));
+    if (known.some((v, i) => i !== gapAt && !Number.isFinite(v))) return 'p3 missing: a printed term is not a number';
+    let d = null;
+    for (let i = 1; i < 5; i++) {
+      if (i === gapAt || i - 1 === gapAt) continue;
+      const step = known[i] - known[i - 1];
+      if (d === null) d = step;
+      else if (d !== step) return `p3 missing: the printed terms are not one arithmetic sequence (${d} then ${step})`;
+    }
+    if (d === null || d === 0) return 'p3 missing: could not derive the jump from the printed terms';
+    const e = known[gapAt - 1] + d;
+    if (e !== known[gapAt + 1] - d) return 'p3 missing: the two sides of the gap disagree';
+    if (e < 1 || e > 9999) return `p3 missing: the answer ${e} is outside 1..9999`;
+    /* W2 (Sweep p3numbers Refutation, 2026-09-15): the explanation derived the
+       jump from terms[4] and terms[3] whatever the gap index was, so on 33.7% of
+       draws it told the child to work from a number that is not on the page - and
+       that number was the ANSWER. The teaching sentence is now read back out of
+       the rendered explanation and every number it works from must be PRINTED in
+       the stem, adjacent, and one jump apart. */
+    const ex = strip(q.explain || '');
+    const em = ex.match(/next to each other: (\d+) and (\d+) are (\d+) apart/);
+    if (!em) return 'p3 missing: the explanation does not say which two numbers the jump comes from';
+    const u = Number(em[1]), v = Number(em[2]), apart = Number(em[3]);
+    const iu = known.indexOf(u), iv = known.indexOf(v);
+    if (iu < 0 || iv < 0) return `p3 missing: the explanation derives the jump from ${u} and ${v}, and one of them is not printed in the stem`;
+    if (iu === gapAt || iv === gapAt) return 'p3 missing: the explanation derives the jump from the hidden term';
+    if (Math.abs(iu - iv) !== 1) return `p3 missing: the explanation calls ${u} and ${v} neighbours, but they are ${Math.abs(iu - iv)} places apart`;
+    if (Math.abs(u - v) !== apart || apart !== Math.abs(d)) return `p3 missing: the explanation says ${u} and ${v} are ${apart} apart, but the jump is ${Math.abs(d)}`;
+    const jm = ex.match(/one jump from (\d+) gives/);
+    if (!jm) return 'p3 missing: the explanation does not say which number it jumps from';
+    if (known.indexOf(Number(jm[1])) < 0 || known.indexOf(Number(jm[1])) === gapAt)
+      return `p3 missing: the explanation jumps from ${jm[1]}, which is not a printed term`;
+    return near(e, ansNum) ? null : `p3 missing: expected ${e}, got ${ansNum}`;
+  }
+
+  /* PATTERN - the odd one out. The oracle finds, independently, the one printed
+     position whose value is off the line the other five sit on; it fails unless
+     exactly one such position exists, unless the key is that number, and unless
+     every other option is a printed term that DOES sit on the line. */
+  if ((m = text.match(/^One number does not belong in this pattern\. Which one is it\? ([\d, ]+)$/))) {
+    const t = m[1].split(',').map(x => Number(x.trim()));
+    if (t.length !== 6 || t.some(v => !Number.isFinite(v))) return 'p3 odd-one-out: expected six printed terms';
+    if (t.some(v => v < 1 || v > 9999)) return 'p3 odd-one-out: a term is outside 1..9999: ' + t.join(',');
+    const onLine = [];
+    for (let i = 0; i < 6; i++) {
+      const J = [0, 1, 2, 3, 4, 5].filter(j => j !== i);
+      const D = (t[J[1]] - t[J[0]]) / (J[1] - J[0]);
+      if (!Number.isInteger(D) || D === 0) continue;
+      if (J.every(j => t[j] === t[J[0]] + (j - J[0]) * D)) onLine.push(i);
+    }
+    if (onLine.length !== 1) return `p3 odd-one-out: ${onLine.length} of the six terms could be the one that does not belong`;
+    const e = t[onLine[0]];
+    const vals = p3opts(q).map(Number);
+    if (vals.length !== 4 || vals.some(v => !Number.isFinite(v))) return 'p3 odd-one-out: expected four numeric options';
+    if (vals.filter(v => v === e).length !== 1) return `p3 odd-one-out: the off-pattern number ${e} is not offered exactly once`;
+    for (const v of vals) {
+      if (v === e) continue;
+      if (t.indexOf(v) < 0) return `p3 odd-one-out: the option ${v} is not one of the printed terms`;
+    }
+    return near(e, ansNum) ? null : `p3 odd-one-out: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - concept check: what the carried 1 is WORTH. The prose form of this
+     item was retired by the PM on the SIXTH pass's kill (five lexical axes, five
+     passes, the last one answered by the key being the ONLY option with no
+     private phrase of its own), and the concept check is now numeric, so this
+     oracle re-derives the key from the RENDERED column addition rather than
+     matching a sentence. Everything the stem asserts is re-checked:
+
+       - the named source column really does make the printed total, which means
+         the columns to its RIGHT must not carry into it;
+       - the printed total really does regroup (>= 10) and the digit the stem
+         says stays behind really is its ones digit;
+       - the column the small 1 is written above is the one immediately LEFT of
+         the source column;
+       - both addends and their sum are inside the 10 000 ceiling;
+       - and the key is that column's place value, re-derived here and never
+         read from answerText. */
+  if ((m = text.match(/^(\S+(?: \S+)?) works out (\d+) \+ (\d+) in columns\. The (\w+) column makes (\d+), so (?:he|she) writes (\d+) in the (\w+) column and a small 1 above the (\w+) column\. How much is that small 1 worth\?$/))) {
+    const a = Number(m[2]), b = Number(m[3]), s = Number(m[5]), keep = Number(m[6]);
+    const src = P3_PLACES.indexOf(m[4]), col = P3_PLACES.indexOf(m[8]);
+    if (src < 0) return `p3 add-concept: "${m[4]}" is not a column name`;
+    if (col < 0) return `p3 add-concept: "${m[8]}" is not a column name`;
+    if (m[7] !== m[4]) return `p3 add-concept: the digit stays in the ${m[7]} column but the total was the ${m[4]} column's`;
+    if (col !== src - 1) return `p3 add-concept: a carry out of the ${m[4]} column goes to the ${P3_PLACES[src - 1]} column, not the ${m[8]} column`;
+    if (String(a).length !== 4 || String(b).length !== 4) return `p3 add-concept: expected two 4-digit addends, got ${a} + ${b}`;
+    if (a + b > 9999) return `p3 add-concept: ${a} + ${b} = ${a + b} is past the 10 000 ceiling`;
+    const A = p3dig(a), B = p3dig(b);
+    for (let i = 3; i > src; i--) {
+      if (A[i] + B[i] >= 10) return `p3 add-concept: the ${P3_PLACES[i]} column carries into the ${m[4]} column, so it does not make ${s} on its own`;
+    }
+    if (A[src] + B[src] !== s) return `p3 add-concept: the ${m[4]} column of ${a} + ${b} makes ${A[src] + B[src]}, not ${s}`;
+    if (s < 10) return `p3 add-concept: ${s} does not regroup, so there is nothing to carry`;
+    if (s > 19) return `p3 add-concept: two digits cannot make ${s}`;
+    if (keep !== s % 10) return `p3 add-concept: ${s} leaves ${s % 10} in the column, not ${keep}`;
+    const want = P3_POW[col];
+    if (!near(want, ansNum)) return `p3 add-concept: the small 1 above the ${m[8]} column is worth ${want}, got ${ansNum}`;
+    /* the four options are bare numbers, so the magnitude rank gate and RULES
+       A-D below own the rest; what is asserted per draw is that exactly one of
+       them is the value the carry is worth. */
+    const hits = p3opts(q).filter(o => Number(o) === want).length;
+    if (hits !== 1) return `p3 add-concept: ${hits} of the four options are ${want}`;
+    return null;
+  }
+
+  /* W2, SEVENTH pass. On three draws in five the stem describes the carry by the
+     column TOTAL and never names the column, so the child has to find the column
+     before there is a place name to translate. The oracle finds it the same way -
+     by adding the columns of the RENDERED addends - and asserts the premise that
+     makes the stem answerable at all: exactly ONE column can make the printed
+     total. Nothing here reads the generator's answerText. */
+  if ((m = text.match(/^(\S+(?: \S+)?) works out (\d+) \+ (\d+) in columns\. One column makes (\d+), so (?:he|she) writes (\d+) in that column and a small 1 above the column on its left\. How much is that small 1 worth\?$/))) {
+    const a = Number(m[2]), b = Number(m[3]), s = Number(m[4]), keep = Number(m[5]);
+    if (String(a).length !== 4 || String(b).length !== 4) return `p3 add-concept (by total): expected two 4-digit addends, got ${a} + ${b}`;
+    if (a + b > 9999) return `p3 add-concept (by total): ${a} + ${b} = ${a + b} is past the 10 000 ceiling`;
+    if (s < 10) return `p3 add-concept (by total): ${s} does not regroup, so there is nothing to carry`;
+    if (s > 19) return `p3 add-concept (by total): two digits cannot make ${s}`;
+    if (keep !== s % 10) return `p3 add-concept (by total): ${s} leaves ${s % 10} in the column, not ${keep}`;
+    const A = p3dig(a), B = p3dig(b);
+    const made = [];
+    for (let i = 3; i >= 0; i--) if (A[i] + B[i] === s) made.push(i);
+    if (made.length !== 1) return `p3 add-concept (by total): ${made.length} columns of ${a} + ${b} make ${s}, so "one column makes ${s}" does not point at one column`;
+    const src = made[0];
+    if (src === 0) return 'p3 add-concept (by total): the thousands column has no column on its left';
+    for (let i = 3; i > src; i--) {
+      if (A[i] + B[i] >= 10) return `p3 add-concept (by total): the ${P3_PLACES[i]} column carries into the ${P3_PLACES[src]} column, so it does not make ${s} on its own`;
+    }
+    const want = P3_POW[src - 1];
+    if (!near(want, ansNum)) return `p3 add-concept (by total): the small 1 above the ${P3_PLACES[src - 1]} column is worth ${want}, got ${ansNum}`;
+    const hits = p3opts(q).filter(o => Number(o) === want).length;
+    if (hits !== 1) return `p3 add-concept (by total): ${hits} of the four options are ${want}`;
+    return null;
+  }
+
+  /* ADD/SUB - direct compute. Also asserts the item is genuinely a REGROUPING
+     item, which is the principle this whole skill exists to teach. */
+  if ((m = text.match(/^What is (\d+) \+ (\d+)\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), e = a + b;
+    if (e > 9999) return `p3 add: ${a} + ${b} = ${e} is past the 10 000 ceiling`;
+    if (p3carryCols(a, b).length < 2) return `p3 add: ${a} + ${b} regroups in fewer than two columns, so it is not a regrouping item`;
+    return near(e, ansNum) ? null : `p3 add: expected ${e}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^What is (\d+) [−-] (\d+)\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), e = a - b;
+    if (e < 1) return `p3 sub: ${a} − ${b} = ${e} is not a positive whole number`;
+    if (p3smallFromBig(a, b) === e) return `p3 sub: ${a} − ${b} needs no regrouping, so it is not a regrouping item`;
+    return near(e, ansNum) ? null : `p3 sub: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - mental strategy: make the next ten, then adjust */
+  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) \+ (\d+) in (?:his|her) head\. (?:He|She) makes (\d+) first\. (\d+) \+ (\d+) = (\d+) \+ \?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), r = Number(m[3]);
+    if (Number(m[4]) !== a || Number(m[5]) !== b || Number(m[6]) !== r) return 'p3 mental: the stem restates different numbers on its second line';
+    if (a < 10 || a > 99 || b < 10 || b > 99) return `p3 mental: MOE 2.2 is two 2-digit numbers, got ${a} and ${b}`;
+    /* W1, EIGHTH pass: the two addends are printed in a drawn order now, so the
+       number that was rounded up is the FIRST on one draw in two and the SECOND on
+       the other. `a + b - r` is the key either way (that is why the item has one
+       answer whichever addend the child rounds), so the premise the oracle holds
+       the stem to is the weaker, true one: r is the next ten up from one of them. */
+    const nextTen = v => r > v && r - v < 10;
+    if (r % 10 !== 0 || !(nextTen(a) || nextTen(b)))
+      return `p3 mental: ${r} is not the next ten up from ${a} or from ${b}`;
+    const e = a + b - r;
+    if (e < 1) return `p3 mental: the adjusted part ${e} is not positive`;
+    return near(e, ansNum) ? null : `p3 mental: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - error spotting, DIAGNOSE. The printed wrong total must be produced
+     by exactly one named misconception, and the two filler options must not
+     produce it either. */
+  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) \+ (\d+) and gets (\d+)\. What did (he|she) do wrong\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), claim = Number(m[3]), e = a + b;
+    if (claim === e) return `p3 add-error: the "wrong" total ${claim} is the correct answer`;
+    const cols = p3carryCols(a, b);
+    if (!cols.length) return `p3 add-error: ${a} + ${b} regroups in no column, so there is no carry to forget`;
+    const key = strip(q.answerText);
+    const NOCARRY = ' did not carry any of the tens at all.';
+    const oneOf = c => ` forgot the carry in the ${P3_PLACES[c]} column.`;
+    const byAll = p3noCarry(a, b) === claim;
+    const byOne = cols.filter(c => p3add(a, b, c) === claim);
+    if (byAll && byOne.length) return `p3 add-error: ${claim} is produced by two different named slips`;
+    if (!byAll && byOne.length !== 1) return `p3 add-error: ${byOne.length} single-carry slips produce ${claim}`;
+    const want = byAll ? NOCARRY : oneOf(byOne[0]);
+    if (!key.endsWith(want)) return `p3 add-error: ${claim} is the "${want.trim()}" slip but the key reads "${key}"`;
+    if (a - b === claim) return `p3 add-error: "subtracted instead of adding" also gives ${claim}`;
+    if (p3digitSum(a) + p3digitSum(b) === claim) return `p3 add-error: "added all the digits together" also gives ${claim}`;
+    for (const o of p3opts(q)) {
+      if (o === key) continue;
+      if (o.endsWith(NOCARRY) && byAll) return 'p3 add-error: a distractor repeats the key';
+      for (const c of cols) if (o.endsWith(oneOf(c)) && p3add(a, b, c) === claim) return `p3 add-error: a distractor also explains ${claim}: "${o}"`;
+    }
+    return null;
+  }
+
+  /* ADD/SUB - error spotting, CORRECT the mistake. The stem NAMES the slip, so the
+     oracle checks the printed wrong answer really is what that slip produces.
+     Second pass, 2026-09-15: the v2 "how much bigger is her answer" form and its
+     oracle branch are both gone - that rebuild was answered on 97.67% of draws by
+     picking the smallest option. A stem in the v2 shape now matches nothing here
+     and would be reported as uncovered. The magnitude-rank gate below is what
+     keeps this form honest instead. */
+  if ((m = text.match(/^\S+(?: \S+)? works out (\d+) [−-] (\d+)\. In every column (?:he|she) takes the smaller digit away from the bigger one, and gets (\d+)\. What is the correct answer\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]), claim = Number(m[3]), e = a - b;
+    if (p3smallFromBig(a, b) !== claim) return `p3 sub-error: the stem says small-from-big and prints ${claim}, but that slip gives ${p3smallFromBig(a, b)}`;
+    if (claim === e) return `p3 sub-error: the "wrong" answer ${claim} is the correct one, so the item contradicts itself`;
+    if (e < 1) return `p3 sub-error: ${a} − ${b} is not a positive whole number`;
+    return near(e, ansNum) ? null : `p3 sub-error: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - two-step word problem */
+  if ((m = text.match(/^The (.+) sold (\d+) (.+) last month\. This month it sold (\d+) more (.+) than last month\. How many (.+) altogether in the two months\?$/))) {
+    if (m[3] !== m[5] || m[3] !== m[6]) return 'p3 two-step: the stem changes what it is counting part-way through';
+    const first = Number(m[2]), more = Number(m[4]), e = first + (first + more);
+    if (e > 9999) return `p3 two-step: the total ${e} is past the 10 000 ceiling`;
+    return near(e, ansNum) ? null : `p3 two-step: expected ${e}, got ${ansNum}`;
+  }
+
+  /* ADD/SUB - working backwards */
+  if ((m = text.match(/^\S+(?: \S+)? had some (.+)\. (?:He|She) gave away (\d+) of them, then bought (\d+) more\. Now (?:he|she) has (\d+)\. How many (.+) did (?:he|she) have at first\?$/))) {
+    if (m[1] !== m[5]) return 'p3 backwards: the stem changes what it is counting part-way through';
+    const gave = Number(m[2]), got = Number(m[3]), now = Number(m[4]);
+    const e = now + gave - got;
+    if (e < 1 || e > 9999) return `p3 backwards: the starting amount ${e} is outside 1..9999`;
+    if (e - gave < 0) return `p3 backwards: ${e} cannot give away ${gave}`;
+    return near(e, ansNum) ? null : `p3 backwards: expected ${e}, got ${ansNum}`;
+  }
+  /* ===== end SWEEP p3numbers block ======================================== */
+
   /* --- P3 pilot: compound units (km/m, m/cm, kg/g, litre/ml) --- */
   const UF = { km: 1000, m: 100, kg: 1000, 'ℓ': 1000 };
   if ((m = text.match(/^(\d+) (km|m|kg|ℓ) (\d+) (m|cm|g|ml) = \?$/))) {
@@ -2812,7 +3319,9 @@ function coincidence(q) {
    edit makes the key the only prose (or the only long) option. Rule 2 binds
    trivially here (no p2 stem says "long"/"wide") and is left on so a later
    measurement format inherits it. */
-const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'p2']);
+/* SWEEP 2026-09-15: p3numbers joins the pilot files, so the format-tell rule and
+   the "long" >= "wide" rule now bind Thousand Isles too. */
+const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'p2', 'p3numbers']);
 /* every mcNum call site in the three pilot files */
 const PILOT_MCNUM = new Set([
   'geometry.gPeriCompare', 'geometry.gPeriFence',
@@ -2900,6 +3409,123 @@ function pilotGates(q, topic, name) {
     const gotAn = am[1].toLowerCase() === 'an';
     if (wantAn !== gotAn)
       return `wrong article: "${am[0]}" should read "${(gotAn ? am[1][0] : am[1][0] + 'n')} ${am[2]}"`;
+  }
+
+  /* RULE 3b, THE PLURALISER (Sweep p3numbers Refutation W1, 2026-09-15). Six
+     generators in p3-whole-numbers.js printed "1 tens", "1 ones" or "1 thousands"
+     - one of them in the STEM a child reads, on 31% of its draws - in a file that
+     already contained the pluraliser that fixes it. This is v4's W-A ("A 18 cm by
+     14 cm") in a different dress: an English error in a question a parent reads.
+     Every surface the child sees is checked, the EXPLANATION included, because
+     five of the six sites were in explanations and no other gate reads those.
+     INTEGRATOR (wave 1): renamed `prose` -> `proseFields` because RULE 3's
+     article check above already binds the name `prose` in this scope. */
+  const proseFields = [strip(q.q), strip(q.extra || ''), strip(q.explain || '')]
+    .concat((q.choices || []).map(strip));
+  for (const f of proseFields) {
+    const bad = f.match(/\b1 (tens|ones|hundreds|thousands)\b/);
+    if (bad) return `pluraliser: "${bad[0]}" in "${f}"`;
+  }
+  return null;
+}
+
+/* ---------- SWEEP 2026-09-15 gates: p3numbers (Thousand Isles) only ---------
+   RULE A, SCOPE CEILING. The topic is "Numbers up to 10 000". No whole number
+   printed in a stem, an extra or an option may exceed 9999 - the P3 Pilot
+   Refutation caught exactly this leak (gMoreLess offering 17342 as an option on
+   a 1000-more item), and a tolerance downstream is not a fix.
+
+   RULE B, THE DISTRACTOR CONTRACT, BINDING ON EVERY DRAW. The 2026-09-05
+   refutation's §6 finding was that q.authored only stamped on 2,569 of 7,200
+   draws, so the distractor-identity gate was quietly off most of the time. Here
+   every four-option question whose options are all plain numbers must declare
+   which kind it is: `q.authored` (all three distractors are named
+   misconceptions, and nothing was padded in by finishNum) or `q.optionSet` (the
+   four options ARE the data the child compares - greatest, smallest, between,
+   which list is in order). A question that declares neither fails. */
+function sweepGates(q, topic) {
+  if (topic !== 'p3numbers') return null;
+  const fields = [strip(q.q), strip(q.extra || '')].concat((q.choices || []).map(strip));
+  for (const f of fields) {
+    for (const tok of (f.match(/\d+/g) || [])) {
+      if (Number(tok) > 9999) return `scope: ${tok} is past the 10 000 ceiling, in "${f}"`;
+    }
+  }
+  const opts = (q.choices || []).map(strip);
+  /* RULE C, THE FORMAT TELL BY LENGTH. pilotGates already bans an option whose
+     coarse FORM is the odd one out. The second refutation's actual kill was
+     subtler: gLPerimDiff's key was the only option over four characters, so the
+     tell was LENGTH, not form. On a word-answer item every option must therefore
+     be in the same size bracket - a key more than 1.4x the longest distractor is
+     a question a child can win without the mathematics. (Candidate for promotion
+     into pilotGates once the other three pilot files have been measured.) */
+  if (opts.length === 4 && q.correct >= 0) {
+    const key = opts[q.correct].length;
+    const other = Math.max.apply(null, opts.filter((_, i) => i !== q.correct).map(o => o.length));
+    if (key > other * 1.4) {
+      return `format tell by length: the key is ${key} characters against a longest distractor of ${other} (${opts.join(' | ')})`;
+    }
+  }
+  /* RULE D, THE OPTION-LENGTH CEILING (Sweep p3numbers Refutation §6, 2026-09-15).
+     gAddConcept shipped a 68-character option - "Write 5 in the ones column and
+     carry 1 ten into the hundreds column." - against a previous bank maximum of
+     48 characters (p4pie.gPieWrongStatement) and a bank median of 3, in POOL 1
+     where every child meets it, and tools/layout-gate.mjs has never been run on
+     this file. 48 is the widest string the bank has actually shipped, so it is
+     the ceiling until something has been read on glass. */
+  for (const o of opts) {
+    if (o.length > 48) return `option length: ${o.length} characters, past the 48-character bank maximum ("${o}")`;
+  }
+  if (opts.length === 4 && opts.every(o => /^\d+$/.test(o))) {
+    if (!Array.isArray(q.authored) && q.optionSet !== true) {
+      return `distractor contract: a numeric MC declared neither q.authored nor q.optionSet (${opts.join(' | ')})`;
+    }
+    if (Array.isArray(q.authored) && q.optionSet === true) {
+      return 'distractor contract: a question declared both q.authored and q.optionSet';
+    }
+  }
+  /* RULE E, AN EXPLANATION MAY ONLY NAME A WRONG ANSWER THAT IS ON THE ROW
+     (Sweep p3numbers Refutation, SIXTH pass, W5 - and the same class the p2 lane
+     closed one pass earlier, where it is rule 5). Four banks ended their
+     explanation by naming ONE misconception and its value while the three
+     printed distractors are drawn by slipSet out of a LARGER family, so the
+     number the sentence blamed was not on the options row on `gSubRegroup`
+     52.98%, `gTwoStepWord` 49.95%, `gAddRegroup` 49.15% and `gBuildNum` 38.06%
+     of draws. No arithmetic in any of them is wrong and nothing leaks while the
+     child is choosing - which is why six passes walked over it - but it is an
+     explanation asserting something about the option list that the draw did not
+     deliver, and it sends the reader to look for a number that is not on the
+     screen. No gate read explanations for this.
+
+     The rule is the narrowest one that binds: every number an explanation names
+     immediately after an ANSWER-NAMING verb - "gives", "give you", "you get",
+     "answers", "leaves you with", "would give" - must be one of the four printed
+     options. A sentence about the key passes, because the key is an option; a
+     sentence about a slip that did not ship does not.
+
+     The number must also be TERMINAL - not followed by an operator - because an
+     answer is a value and working is a sum. Two pattern banks write "One more
+     jump gives 5777 + 100 = 5877", where the number after the verb opens the
+     working and the ANSWER is the key at the far end of it; without that
+     lookahead the rule fires on both of them and catches neither's defect.
+     Everything else a p3numbers explanation prints ("1 thousand = 1000",
+     "4739 + 100 = 4839") never follows one of the verbs at all.
+
+     Negative control: the v6 `gSubRegroup` explanation and its own option row,
+     rebuilt from their own strings, which must come out RED. */
+  {
+    const ex = strip(q.explain || '');
+    const optNums = new Set();
+    for (const o of opts) for (const t of (o.match(/\d+/g) || [])) optNums.add(t);
+    let em;
+    /* (?!\d) forces the whole digit run to be taken before the operator test, so
+       the engine cannot backtrack to a PREFIX of the number and slip past it */
+    const re = /\b(gives you|give you|gives|you get|answers|leaves you with|would give) (\d+)(?!\d)(?!\s*[-+−×÷=])/g;
+    while ((em = re.exec(ex))) {
+      if (!optNums.has(em[2])) {
+        return `explanation names an absent answer: "${em[1]} ${em[2]}", but ${em[2]} is not one of the four options (${[...optNums].join(', ')})`;
+      }
+    }
   }
   return null;
 }
@@ -3396,6 +4022,8 @@ for (const g of GENS) {
     if (coin) { err = coin; badQ = q; break; }
     const pilot = pilotGates(q, g.topic, g.name);
     if (pilot) { err = pilot; badQ = q; break; }
+    const sweep = sweepGates(q, g.topic);
+    if (sweep) { err = sweep; badQ = q; break; }
     if (PILOT_TOPICS.has(g.topic) && allProse(q.choices || [])) {
       proseDraws++;
       if (keyIsLongest(q.choices, q.correct)) { keyLongest++; lastProse = q; }
@@ -3550,6 +4178,1952 @@ for (const g of GENS) {
   }
 }
 
+/* ---------- MAGNITUDE-RANK GATE (second-pass KILL, 2026-09-15) --------------
+   The v2 gSubError rebuild shipped a question that "pick the smallest number on
+   the screen" answered on 48,835 of 50,000 draws. Nothing here could see it:
+   RULE 1 measures option FORM, RULE C measures the key's LENGTH against the
+   longest distractor, RULE D caps option length - all three count characters,
+   and every option in that item was four characters or fewer. The tell was
+   MAGNITUDE, and the harness had no ruler for it.
+
+   This is the ruler. For every numeric four-option MC bank in the topic it draws
+   2,000 items and tallies where the key sits among the four printed numbers by
+   SIZE. A bank fails if any one rank takes more than 45% of its draws (chance is
+   25%), or if "pick the smallest" or "pick the largest" clears 40%.
+
+   THE FLOOR (Sweep p3numbers Refutation, THIRD pass, W3). The ruler used to be
+   one-sided: it failed a rank above 45% and passed a rank at 0.00%. A rank that
+   is EMPTY is as much a tell as a rank that is full - it tells the child which
+   option to cross out, and crossing one out takes a guesser from 25% to 33.3% on
+   100% of draws. gMentalMake's key was never the largest of the four and
+   gTwoStepWord's never the smallest, each on 20,000 / 20,000, and four more banks
+   sat between 5.8% and 7.2% on one rank. A bank now also fails if any rank falls
+   BELOW 12% of its draws. 12% is half of chance and eight standard errors below
+   it at this sample size, so a bank that is flat by construction cannot trip it
+   by noise.
+
+   EXEMPT - and this is the part the third pass was actually about. The exemption
+   used to be a REGEX ON THE STEM, /\b(greatest|smallest|between)\b/, printing
+   "there the ordering of the options IS the question". That sentence was true for
+   two banks and false for the third: gBetween's stem carries the two bounds on
+   100% of draws, so the options are NOT the data, and "pick the third smallest"
+   answered a slot the topic file calls "2 steps: check both ends" on 20,000 /
+   20,000 draws while this table printed it as exempt. A gate that exempts a bank
+   is a claim about that bank and needs the same evidence as a gate that passes
+   one.
+
+   So the exemption is now an explicit per-generator ALLOWLIST of two banks, each
+   with its measured justification, and the premise of each is re-checked on every
+   draw below (an exempt bank whose stem ever prints a digit fails the gate):
+
+     p3numbers.gGreatest - "Which number is the greatest?" The stem carries NO
+       number at all on 20,000 / 20,000 draws (measured). The four options are the
+       entire data of the question and "the greatest is the largest one" is the
+       mathematics, not a shortcut past it.
+     p3numbers.gSmallest - "Which number is the smallest?" Same measurement: no
+       number in the stem on 20,000 / 20,000 draws, all four options needed.
+
+   Nothing else is exempt - not gBetween, not gOrder, not gPatternOdd, not any
+   other optionSet bank. A regex would also have handed a free pass to any future
+   numeric bank whose stem merely contained the word: "the difference between 4021
+   and 1278" is one sentence away.
+
+   FLAT-RANK EXEMPT, and it is a different exemption from the one above (fourth
+   pass, W1, and the PM's ruling on it). MAGNITUDE_EXEMPT above says "the four
+   options ARE the data"; its premise is that the stem prints no number. gBetween
+   cannot claim that and does not. What it claims is narrower and is measured:
+
+     p3numbers.gBetween - "Which number is between LO and HI?" The three wrong
+       answers STRADDLE the range, at least one below LO and at least one above
+       HI on 20,000 / 20,000 draws, so neither single bound settles the item -
+       the demand the FORMAT comment declares ("2 steps: check both ends") is the
+       demand the item makes. The key is inside the range and every distractor
+       outside it, so the key's rank IS the count of distractors below it: a
+       straddle forces rank 1 or 2 and forbids rank 0 and rank 3. Measured
+       0.00 / 49.9 / 50.1 / 0.00 over 20,000 draws, so "pick the second or third
+       smallest" is worth ~50% against 25% chance. That is the STRUCTURAL FLOOR
+       of any four-option between-item whose distractors straddle, not a property
+       of this one, and it is bought with the elimination it removes. v4 took the
+       other branch - flat rank, all three wrong answers on one side of the range
+       on 49.91% of draws - and shipped an explanation that was false on exactly
+       those draws.
+
+   The premise is re-checked on every draw, and it is checked in BOTH directions,
+   because "rank 1 or 2 only" is not on its own a claim worth exempting - v3's
+   killed option set satisfied it too (far < below < key < above: two wrong
+   answers below, one above, key rank 2 on 100.00% of draws, "pick the third
+   smallest" deterministic). A flat-rank-exempt bank must therefore show BOTH:
+
+     1. the key is NEVER the smallest and NEVER the largest of the four - the
+        straddle actually holds, so neither single bound settles the item; and
+     2. the two ranks that remain are SHARED, each at 35% or more of draws - so
+        the ~50% is a two-way guess and not the v3 kill wearing an exemption.
+
+   Fail either and the topic goes red. The v3 gBetween negative control below is
+   run through the UNEXEMPTED ruler and fails the 45% ceiling there; run through
+   this one it would fail clause 2, which is the point of writing clause 2 down.
+
+   The gate carries two negative controls: the v2 gSubError option set and the
+   v3 gBetween option set, each rebuilt here from its own arithmetic so neither
+   control depends on the topic file still containing the defect. Both must come
+   out RED. --- */
+const RANK_N = 2000;
+const RANK_CAP = 0.45, EXTREME_CAP = 0.40, RANK_FLOOR = 0.12;
+const MAGNITUDE_EXEMPT = new Set(['p3numbers.gGreatest', 'p3numbers.gSmallest']);
+/* p3numbers.gBetweenWorded joins gBetween here on the TWELFTH pass, and on the
+   same premise re-checked the same way. It is the bank that replaced the RETIRED
+   gComparePlace: the same straddling distractor set, the same "check both ends"
+   demand, the same structural rank floor - and both clauses below, which is what
+   makes this an exemption rather than an excuse. Its bounds are named in
+   place-value words, so the second step is building them before either end can be
+   checked; that changes the stem and nothing about the geometry the exemption is
+   about. */
+const FLAT_RANK_EXEMPT = new Set(['p3numbers.gBetween', 'p3numbers.gBetweenWorded']);
+const rankRows = [];
+function rankOf(q) {
+  const opts = (q.choices || []).map(strip);
+  if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o))) return null;
+  const key = Number(strip(q.answerText));
+  if (!Number.isFinite(key)) return null;
+  const sorted = opts.map(Number).sort((a, b) => a - b);
+  const r = sorted.indexOf(key);
+  return r < 0 ? null : r;
+}
+function rankBank(draw) {
+  const tally = [0, 0, 0, 0];
+  let seen = 0, stem = '', withNumber = 0;
+  for (let i = 0; i < RANK_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return { tally, seen, stem, withNumber, threw: e.message }; }
+    const r = rankOf(q);
+    if (r === null) continue;
+    if (!stem) stem = strip(q.q);
+    if (/\d/.test(strip(q.q))) withNumber++;
+    tally[r]++; seen++;
+  }
+  return { tally, seen, stem, withNumber };
+}
+function rankVerdict(row) {
+  if (!row.seen) return null;
+  const f = row.tally.map(t => t / row.seen);
+  if (f[0] > EXTREME_CAP) return `"pick the smallest" answers it on ${(100 * f[0]).toFixed(1)}% of draws`;
+  if (f[3] > EXTREME_CAP) return `"pick the largest" answers it on ${(100 * f[3]).toFixed(1)}% of draws`;
+  for (let r = 0; r < 4; r++) if (f[r] > RANK_CAP) return `the key is rank ${r} of 4 by size on ${(100 * f[r]).toFixed(1)}% of draws`;
+  for (let r = 0; r < 4; r++) if (f[r] < RANK_FLOOR) return `rank ${r} of 4 by size is all but empty - ${(100 * f[r]).toFixed(1)}% of draws, so that option is a free elimination`;
+  return null;
+}
+/* An exemption is a claim, so it is checked. An exempt bank is exempt BECAUSE the
+   four options are the whole of the data - which means its stem cannot be
+   carrying the question's numbers. If one ever does, the exemption is void and
+   the bank must be gated like the rest. This is the line gBetween would have
+   failed at b41111e. */
+function exemptVerdict(row) {
+  if (!row.withNumber) return null;
+  return `exempt but its stem prints a number on ${(100 * row.withNumber / row.seen).toFixed(1)}% of draws - the options are not the whole of the data, so the ordering is NOT the question`;
+}
+/* The flat-rank exemption's premise, re-measured on every draw. Both clauses, in
+   the order the header states them. */
+const STRADDLE_SHARE = 0.35;
+function flatExemptVerdict(row) {
+  if (!row.seen) return null;
+  const f = row.tally.map(t => t / row.seen);
+  if (f[0] > 0 || f[3] > 0)
+    return `flat-rank exempt on a STRADDLE premise, but the key is the smallest of the four on ${(100 * f[0]).toFixed(1)}% of draws and the largest on ${(100 * f[3]).toFixed(1)}% - the three wrong answers do not straddle, so one bound settles the item and the exemption is not being paid for`;
+  if (Math.min(f[1], f[2]) < STRADDLE_SHARE)
+    return `flat-rank exempt, but its two live ranks run ${(100 * f[1]).toFixed(1)}% / ${(100 * f[2]).toFixed(1)}% - the key's rank is all but fixed, which is the third pass's KILL ("pick the third smallest", 100.00%) and not the two-way guess the exemption declares`;
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = rankBank(g.fn);
+  if (!row.seen) continue;                       /* not a numeric four-option bank */
+  row.name = g.name; row.lvl = g.level;
+  row.exempt = MAGNITUDE_EXEMPT.has(g.topic + '.' + g.name);
+  row.flat = FLAT_RANK_EXEMPT.has(g.topic + '.' + g.name);
+  row.err = row.exempt ? exemptVerdict(row) : row.flat ? flatExemptVerdict(row) : rankVerdict(row);
+  rankRows.push(row);
+  if (row.err) failures++;
+}
+/* the negative control: the v2 gSubError option set, rebuilt from its own
+   arithmetic so the control does not depend on the topic file still containing
+   the defect. It must come out RED. */
+let rankControl = 'the v2 gSubError option set was not rejected by the rank gate';
+{
+  const PW = [1000, 100, 10, 1];
+  const dg = n => [0, 1, 2, 3].map(i => Math.floor(n / PW[i]) % 10);
+  const sfb = (a, b) => { const A = dg(a), B = dg(b); let o = 0; for (let i = 0; i < 4; i++) o += Math.abs(A[i] - B[i]) * PW[i]; return o; };
+  const bcols = (a, b) => { const A = dg(a), B = dg(b), o = []; let br = 0; for (let i = 3; i >= 0; i--) { const t = A[i] - br; if (t < B[i]) { o.push(i); br = 1; } else br = 0; } return o; };
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v2SubError = () => {
+    for (let g = 0; g < 400; g++) {
+      const a = rnd(2000, 9999), b = rnd(1000, a - 1000);
+      const key = a - b, claim = sfb(a, b), cols = bcols(a, b);
+      if (!cols.length || claim <= key) continue;
+      const gap = claim - key, far = gap + PW[cols[0]] * 10;
+      const opts = [gap, key, claim, far];
+      if (new Set(opts).size !== 4 || opts.some(v => v < 1 || v > 9999)) continue;
+      return { q: 'v2 gSubError control', choices: opts.map(String), answerText: String(gap), correct: 0 };
+    }
+    return { q: 'v2 gSubError control', choices: ['1', '2', '3', '4'], answerText: '2', correct: 0 };
+  };
+  const ctl = rankBank(v2SubError);
+  const verdict = rankVerdict(ctl);
+  if (verdict) rankControl = `the v2 gSubError rebuild goes red - ${verdict}`;
+  else failures++;
+}
+/* the second negative control: the v3 gBetween option set, which the stem-word
+   regex exempted and which "pick the third smallest" answered on 100% of draws.
+   Rebuilt from its own arithmetic, it must come out RED through the same ruler
+   that now runs over the real bank. */
+let betweenControl = 'the v3 gBetween option set was not rejected by the rank gate';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v3Between = () => {
+    for (let g = 0; g < 400; g++) {
+      const lo = rnd(1200, 8600), hi = lo + rnd(40, 700);
+      if (hi - lo <= 30) continue;
+      const key = lo + rnd(10, hi - lo - 10);
+      const below = lo - rnd(5, 300), above = hi + rnd(5, 300), far = lo - rnd(400, 900);
+      const opts = [key, below, above, far];
+      if (new Set(opts).size !== 4 || opts.some(v => v < 1 || v > 9999)) continue;
+      return { q: `Which number is between ${lo} and ${hi}?`, choices: opts.map(String), answerText: String(key), correct: 0 };
+    }
+    return { q: 'v3 gBetween control', choices: ['1', '2', '3', '4'], answerText: '2', correct: 0 };
+  };
+  const ctl = rankBank(v3Between);
+  const verdict = rankVerdict(ctl);
+  if (verdict) betweenControl = `the v3 gBetween option set goes red - ${verdict}`;
+  else failures++;
+}
+
+/* ---------- LENGTH-RANK GATE (third-pass W4, 2026-09-15) --------------------
+   RULE C above measures the key's length against the longest distractor ON ONE
+   DRAW, and only upwards: it fails a key more than 1.4x the longest wrong
+   answer. RULE D caps the maximum. Neither looks DOWN, and neither looks ACROSS
+   DRAWS - so gAddConcept, the pool-1 flagship of this topic, shipped a key that
+   was the uniquely SHORTEST of its four options on 20,000 / 20,000 draws at a
+   margin of exactly one character, and the second pass's line "no generator has a
+   readable shortest-option tell" was true only by that one character.
+
+   This is the other direction and the other axis. For every four-option bank in
+   the topic it draws 2,000 items and counts how often the key is the uniquely
+   shortest option, and how often it is the uniquely longest. Either at 90% or
+   more is a deterministic tell a child can learn without the mathematics, and
+   fails the topic. Below that it is reported, because a bank drifting towards it
+   is worth seeing before it arrives.
+
+   THE TIED KEY, AND WHY THE PRINTED NUMBER WAS NOT HONEST (fourth pass, W2).
+   The ruler counts a draw only when the key is UNIQUELY at the extreme, so a key
+   tied with one other option at the minimum reads as 0.0% - and "pick one of the
+   shortest options" is worth 50% on every such draw, against 25% chance. Three
+   banks live there: gAddConcept and gCompareError are tied at the minimum on
+   100% of draws, gExpanded tied at the maximum on 100%, and gAddError is
+   UNIQUELY shortest on ~50% and is the only one of the four any pass has named.
+
+   The thresholds do not move: a one-character margin is not readable, which is
+   the standard this bank has been held to throughout, and every margin in this
+   topic is one character. What moves is the printed number. Two more columns are
+   measured and printed - PICK-SHORT and PICK-LONG, the value of "pick one of the
+   shortest (longest) options" summed as 1/k over the k options tied at that
+   extreme - so a bank whose key is tied at the minimum prints 50.0%, not 0.0%,
+   and a bank whose four options are all the same length prints 25.0%, which is
+   chance and is the honest number for it too.
+
+   Negative control: the v2 gAddConcept option set, rebuilt here from its own
+   strings so the control does not depend on the topic file still containing the
+   defect. It must come out RED. --- */
+const LEN_N = 2000, LEN_CAP = 0.90;
+const lenRows = [];
+function lenBank(draw) {
+  let n = 0, uShort = 0, uLong = 0, pShort = 0, pLong = 0, step = 0, stepHi = 0, spread = 0;
+  for (let i = 0; i < LEN_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return { n, uShort, uLong, pShort, pLong, step, stepHi, spread, threw: e.message }; }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !(q.correct >= 0)) continue;
+    const L = opts.map(o => o.length);
+    const lo = Math.min.apply(null, L), hi = Math.max.apply(null, L);
+    const nLo = L.filter(x => x === lo).length, nHi = L.filter(x => x === hi).length;
+    if (nLo === 1 && L[q.correct] === lo) uShort++;
+    if (nHi === 1 && L[q.correct] === hi) uLong++;
+    if (L[q.correct] === lo) pShort += 1 / nLo;
+    if (L[q.correct] === hi) pLong += 1 / nHi;
+    /* fifth pass, W1: the value of "pick one of the shortest" says nothing about
+       whether the eye can SEE which options those are. That is the STEP from the
+       shortest option to the next length up - 1 character at 4e50301, 4 at
+       cfa2da8 on this bank, and the number no column in this gate printed. */
+    const up = L.filter(x => x > lo), dn = L.filter(x => x < hi);
+    step += up.length ? Math.min.apply(null, up) - lo : 0;
+    stepHi += dn.length ? hi - Math.max.apply(null, dn) : 0;
+    spread += hi - lo;
+    n++;
+  }
+  return { n, uShort, uLong, pShort, pLong, step, stepHi, spread };
+}
+function lenVerdict(row) {
+  if (!row.n) return null;
+  if (row.uShort / row.n >= LEN_CAP) return `the key is the uniquely SHORTEST option on ${(100 * row.uShort / row.n).toFixed(1)}% of draws`;
+  if (row.uLong / row.n >= LEN_CAP) return `the key is the uniquely LONGEST option on ${(100 * row.uLong / row.n).toFixed(1)}% of draws`;
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = lenBank(g.fn);
+  if (!row.n) continue;
+  row.name = g.name; row.lvl = g.level;
+  row.err = lenVerdict(row);
+  lenRows.push(row);
+  if (row.err) failures++;
+}
+let lenControl = 'the v2 gAddConcept option set was not rejected by the length gate';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v2AddConcept = () => {
+    const s = rnd(12, 18), keep = s % 10;
+    const opts = [
+      'Write ' + keep + ', carry 1 ten into the tens column.',
+      'Write ' + s + ' in the ones column, carry nothing.',
+      'Write ' + keep + ', carry 1 ten into the hundreds column.',
+      'Write 1, carry ' + keep + ' tens into the tens column.'
+    ];
+    return { q: 'v2 gAddConcept control', choices: opts, answerText: opts[0], correct: 0 };
+  };
+  const ctl = lenBank(v2AddConcept);
+  const verdict = lenVerdict(ctl);
+  if (verdict) lenControl = `the v2 gAddConcept option set goes red - ${verdict}`;
+  else failures++;
+}
+
+/* ---------- WIDTH-CLASS RANK GATE (seventh-pass KILL, 2026-09-16) -----------
+   THREE RULERS POINTED AT THIS OPTION ROW AND ALL THREE MISSED IT. MAGNITUDE
+   RANK ranks the key against ALL FOUR options; LENGTH RANK ranks it against the
+   EXTREMES (uniquely shortest, uniquely longest, and the value of picking one of
+   those); RULES C and D cap its width. Nothing ranked the key against the
+   options it is CONFUSABLE WITH - the ones printed at the same width - and that
+   is the cell the seventh pass's KILL lived in:
+
+     In this number pattern, what is the jump?  9103, 9203, 9303, 9403
+       1000 (4)  |  100 (3) <- key  |  200 (3)  |  10 (2)
+
+   Two options are three characters long; the answer is the smaller of those two.
+   No arithmetic, no subtraction, no reading of the run - 69.63% / 69.48% of
+   20,000 draws at each of two seeds on gPatternConcept, pool 1's busiest
+   generator, while MAGNITUDE RANK printed 16.6 / 31.4 / 35.2 / 16.9 pass and
+   LENGTH RANK printed uSHORTEST 0.0% PICK-SHORT 8.4% pass. Both were true.
+
+   THE MECHANISM IS THE HOUSE CONSTRUCTION, NOT ONE BANK. Slip families here are
+   built by MULTIPLYING the key - 2*step, keep*POW[col], s*POW[src] - and a small
+   multiple of a number is printed at that number's own width, ABOVE it. So
+   wherever such a slip ships, the key is the MINIMUM of its own width class by
+   construction. The rule fired on six banks of this topic (69.6 / 45.8 / 25.4 /
+   23.3 / 9.0 / 6.8%) and it will fire on any slipSet-shaped family in the game.
+
+   WHAT IS MEASURED. Every numeric four-option bank in the topic, 2,000 draws.
+   The options are grouped by printed character width; the COMMONEST class is the
+   width with the strictly greatest count, and it must hold at least two options
+   and must NOT hold all four (a row that is all one width is the magnitude
+   gate's business, and "the smallest of all four" is already gated there). If
+   there is no such class the rule declines. Otherwise the key is MIN, MID or MAX
+   inside that class, or OUT of it - and OUT is a pass, because a rule that fires
+   and points at a wrong answer is worse than useless to a child.
+
+   THE GATE. Each of MIN / MID / MAX must stay under 45% of draws, and the two
+   rules a child can actually run - "commonest width, then the smallest" and
+   "commonest width, then the largest" - must each stay under 40%. NO BANK IS
+   EXEMPT and none needs to be: the three comparison anchors print four options
+   of one width, so the rule declines on 100% of their draws.
+
+   Negative control: the v7 gPatternConcept option set, rebuilt here from its own
+   arithmetic so the control does not depend on the topic file still containing
+   the defect. It must come out RED. --- */
+/* THE TIE CLAUSE FLOOR IS 5% (Sweep p3numbers Refutation, NINTH pass, Call 3 -
+   REJECTED as written, and the refutation's number taken). The clause shipped at
+   10%, and the only 2-2 tie left anywhere in the topic is gAddConcept's, at
+   8.37 / 8.29% with the key in the NARROWER pair on 100.00% of it - every other
+   bank is at 0.00%. A threshold set 1.6 points above the single surviving
+   instance is not gating, it is describing: the clause built to catch a 2-2 tie
+   with a certainty on it passed the only one in the file. At 5% it fails
+   gAddConcept and nothing else, and gAddConcept carries a NAMED exemption with
+   the trade written into the gate line, so the certainty the threshold used to
+   hide is one the harness says out loud.
+
+   THE TRADE, AND ITS PREMISE, RE-CHECKED. Closing the tie means refusing the
+   subsets that make it, which costs 14 of the bank's 64 distinct option rows. A
+   64-row board is the larger defect and a 50-row one is worse, so the trade is
+   worth making - but only while it is actually being paid for. The exemption is
+   therefore void if the board ever falls to 50 rows or fewer, which is exactly
+   the board closing the tie would have left. */
+const WIDTH_N = 2000, WIDTH_RANK_CAP = 0.45, WIDTH_RULE_CAP = 0.40;
+const WIDTH_ELIM_CAP = 0.40, WIDTH_TIE_FLOOR = 0.05, WIDTH_TIE_CAP = 0.95;
+/* EMPTY since v11 (2026-09-16). gAddConcept's tie exemption rested on a BOARD
+   trade - "closing the 2-2 width tie costs 14 of the bank's 64 option rows, and a
+   50-row board is the larger defect". The v11 rebuild makes the board worthless
+   instead of wide (7 rows, every one of them worth exactly chance), and the tie it
+   still ships puts the key in the wider pair on 50.0% of draws rather than on
+   100.0%, so it passes the unexempted branch and needs no allowlist. */
+const TIE_EXEMPT = {};
+const widthRows = [];
+/* BOTH DIRECTIONS (W3 + W4, EIGHTH pass, 2026-09-16). The v8 column scored where
+   the key sits INSIDE the commonest class and treated KEY OUT as a pass, so
+   nothing measured the other direction - "the key is IN the class, so cross out
+   every option that is not the commonest width". On eight banks that elimination
+   was a CERTAINTY (KEY IN 100.00% of the draws where a class exists:
+   gPatternConcept, gBuildNum, gStandsCompare, gMentalMake, gPattern4, gMoreLess,
+   gPatternMissing, gBackFromTotal; gZeroFix 99.83 / 99.78%). And where two widths
+   tied 2-2 the ruler DECLINED by design, which is where the tell was loudest:
+   gStandsCompare tied on 17.61 / 17.23% of draws with the key in the WIDER pair on
+   100.00% of them, gAddConcept on 8.37 / 8.29% with the key in the NARROWER pair on
+   100.00%. The column now reads both directions and the tie branch, and gates the
+   VALUE of the elimination a child can actually run. */
+function widthDetail(opts, correct) {
+  const w = opts.map(o => o.length);
+  const cnt = new Map();
+  for (const x of w) cnt.set(x, (cnt.get(x) || 0) + 1);
+  let best = -1, bestW = null, tie = false;
+  for (const [ww, c] of cnt) {
+    if (c > best) { best = c; bestW = ww; tie = false; }
+    else if (c === best) tie = true;
+  }
+  const key = Number(opts[correct]);
+  /* the 2-2 branch: two widths hold the same, largest count, and it is at least
+     two - so there is a pair to keep and a pair to cross out, and no commonest
+     class for the rank columns to read. Four distinct widths is not this: there
+     the rule declines because there is no class at all. */
+  if (tie && best >= 2) {
+    const widest = Math.max.apply(null, w);
+    const keep = opts.filter((o, i) => w[i] === widest).map(Number);
+    return { cls: 'none', tie: true, wide: w[correct] === widest, keep: keep };
+  }
+  if (best < 2 || best === opts.length) return { cls: 'none', tie: false };
+  const group = opts.filter((o, i) => w[i] === bestW).map(Number);
+  if (w[correct] !== bestW) return { cls: 'out', tie: false, group: group };
+  if (key === Math.min.apply(null, group)) return { cls: 'min', tie: false, group: group };
+  if (key === Math.max.apply(null, group)) return { cls: 'max', tie: false, group: group };
+  return { cls: 'mid', tie: false, group: group };
+}
+function widthClassOf(opts, correct) { return widthDetail(opts, correct).cls; }
+function widthBank(draw) {
+  const t = { n: 0, min: 0, mid: 0, max: 0, out: 0, none: 0, tie: 0, tieWide: 0, elim: 0, board: new Set() };
+  for (let i = 0; i < WIDTH_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o)) || !(q.correct >= 0)) continue;
+    /* the option BOARD, which is what the tie exemption's trade is paid in */
+    t.board.add(opts.slice().sort((a, b) => Number(a) - Number(b)).join(','));
+    const d = widthDetail(opts, q.correct);
+    t[d.cls]++; t.n++;
+    /* ELIM is the value of the whole rule a child can run: keep only the options
+       printed at the commonest width, and on a 2-2 tie keep the wider pair; guess
+       inside what is left, or across all four when the rule declines. */
+    if (d.tie) {
+      t.tie++;
+      if (d.wide) t.tieWide++;
+      t.elim += d.wide ? 1 / d.keep.length : 0;
+    } else if (d.cls === 'none') t.elim += 0.25;
+    else if (d.cls === 'out') t.elim += 0;
+    else t.elim += 1 / d.group.length;
+  }
+  return t;
+}
+function widthVerdict(row) {
+  if (!row.n) return null;
+  const f = k => row[k] / row.n;
+  if (f('min') > WIDTH_RULE_CAP)
+    return `"take the commonest printed width, then the smallest number in it" answers it on ${(100 * f('min')).toFixed(1)}% of draws`;
+  if (f('max') > WIDTH_RULE_CAP)
+    return `"take the commonest printed width, then the largest number in it" answers it on ${(100 * f('max')).toFixed(1)}% of draws`;
+  for (const k of ['min', 'mid', 'max']) {
+    if (f(k) > WIDTH_RANK_CAP)
+      return `the key is the ${k.toUpperCase()} of its own printed-width class on ${(100 * f(k)).toFixed(1)}% of draws`;
+  }
+  /* W3: the KEY IN direction, scored by the VALUE of the elimination rather than
+     by the bare rate, because a certainty that cannot fire is not a route. */
+  if (f('elim') > WIDTH_ELIM_CAP)
+    return `"cross out every option that is not the commonest printed width" is worth ${(100 * f('elim')).toFixed(1)}% to a guesser`;
+  /* W4: the tie branch the ruler used to decline on. A bank that ships one often
+     must not put the key on the same side of it every time. */
+  if (f('tie') >= WIDTH_TIE_FLOOR) {
+    const wide = row.tieWide / row.tie;
+    if (wide > WIDTH_TIE_CAP || 1 - wide > WIDTH_TIE_CAP) {
+      const side = wide > 0.5 ? 'WIDER' : 'NARROWER';
+      const rate = (100 * (wide > 0.5 ? wide : 1 - wide)).toFixed(1);
+      const said = `two widths tie 2-2 on ${(100 * f('tie')).toFixed(1)}% of draws and the key is in the ${side} pair on ${rate}% of them`;
+      const floor = TIE_EXEMPT[row.name];
+      if (floor === undefined) return said;
+      /* allowlisted by name, and the trade re-checked: the tie is kept because
+         closing it would cost 14 of the bank's option rows, so the exemption only
+         stands while the board it buys is actually wider than the closed one */
+      if (row.board.size <= floor)
+        return `tie-exempt by name on a BOARD premise, but the board is ${row.board.size} distinct option rows - closing the tie would leave ${floor}, so the trade is not being paid for`;
+      row.tieDeclared = `DECLARED (allowlisted by name): ${said}; kept because closing it costs 14 of ${row.board.size} option rows, and a ${floor}-row board is the larger defect`;
+      return null;
+    }
+  }
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = widthBank(g.fn);
+  if (!row.n) continue;                          /* not a numeric four-option bank */
+  row.name = g.name; row.lvl = g.level;
+  row.err = widthVerdict(row);
+  widthRows.push(row);
+  if (row.err) failures++;
+}
+let widthControl = 'the v7 gPatternConcept option set was not rejected by the width-class gate';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const v7PatternConcept = () => {
+    const step = [10, 100, 1000][rnd(0, 2)];
+    const fam = [1, 10, 100, 1000, 2 * step].filter(v => v !== step);
+    const below = fam.filter(v => v < step), above = fam.filter(v => v > step);
+    const lo = Math.max(0, 3 - above.length), hi = Math.min(3, below.length);
+    const r = rnd(lo, hi);
+    const opts = shuf(shuf(below).slice(0, r).concat(shuf(above).slice(0, 3 - r)).concat([step]));
+    return { q: 'v7 gPatternConcept control', choices: opts.map(String),
+             answerText: String(step), correct: opts.indexOf(step) };
+  };
+  const ctl = widthBank(v7PatternConcept);
+  const verdict = widthVerdict(ctl);
+  if (verdict) widthControl = `the v7 gPatternConcept option set goes red - ${verdict}`;
+  else failures++;
+}
+/* W3's own control: a row whose key is always inside a TWO-member commonest class
+   and never outside it - the elimination is then worth 50% on every draw, which is
+   what KEY IN at 100% buys a child when the class is small. */
+let elimControl = 'a key always inside a two-member width class was not rejected by the KEY IN direction';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const twoWide = () => {
+    const key = rnd(2000, 8000);
+    /* 30 draws in 100 print four distinct widths and the rule declines; on the
+       other 70 one distractor sits at the key's own width and two are narrower, so
+       the elimination keeps TWO options and the key is always one of them. The key
+       is the smaller of the pair half the time and the larger half the time, which
+       keeps MIN and MAX under their own caps: the only column that can see this
+       row is the value of the elimination itself. */
+    const opts = rnd(1, 100) <= 30
+      ? [String(key), String(rnd(100, 999)), String(rnd(10, 99)), String(rnd(1, 9))]
+      : [String(key), String(rnd(0, 1) ? key + rnd(1, 900) : key - rnd(1, 900)),
+         String(rnd(10, 99)), String(rnd(100, 999))];
+    const sh = shuf(opts);
+    return { q: 'two-member width class control', choices: sh,
+             answerText: String(key), correct: sh.indexOf(String(key)) };
+  };
+  const ctl = widthBank(twoWide);
+  const verdict = widthVerdict(ctl);
+  if (verdict) elimControl = `a key always inside a two-member width class goes red - ${verdict}`;
+  else failures++;
+}
+/* W4's own control: the v8 gStandsCompare tie shape - two widths tying 2-2 on a
+   fifth of draws with the key always in the wider pair. */
+let tieControl = 'a key always in the wider half of a 2-2 width tie was not rejected';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const tied = () => {
+    /* one draw in five ties 2-2 with the key in the wider pair; the rest print
+       four distinct widths and decline, so the elimination is worth only 30% and
+       the tie clause is the one column that can fail this row. */
+    if (rnd(1, 5) > 1) {
+      const key = rnd(1000, 9999);
+      const sh = shuf([String(key), String(rnd(100, 999)), String(rnd(10, 99)), String(rnd(1, 9))]);
+      return { q: '2-2 width tie control', choices: sh,
+               answerText: String(key), correct: sh.indexOf(String(key)) };
+    }
+    const key = rnd(100, 499);
+    const sh = shuf([String(key), String(key + rnd(100, 400)), String(rnd(10, 49)), String(rnd(50, 99))]);
+    return { q: '2-2 width tie control', choices: sh,
+             answerText: String(key), correct: sh.indexOf(String(key)) };
+  };
+  const ctl = widthBank(tied);
+  const verdict = widthVerdict(ctl);
+  if (verdict) tieControl = `a key always in the wider half of a 2-2 width tie goes red - ${verdict}`;
+  else failures++;
+}
+
+/* ---------- SHAPE RULER (eighth-pass KILL, 2026-09-16) ----------------------
+   TWO KILLS IN TWO PASSES ON AN AXIS NOTHING IN THIS HARNESS HAD EVER READ. The
+   seventh pass killed gPatternConcept on WIDTH; the v8 fix took the key off the
+   power-of-ten ladder and left the ladder in the distractor family, and the
+   eighth pass killed the same bank again on SHAPE:
+
+     In this number pattern, what is the jump?  1314, 3814, 6314, 8814
+       10  |  1  |  2500 <- key  |  100
+
+   Three options are 1-followed-by-zeros and one is not. "Cross out 1, 10, 100 and
+   1000, then take the smallest of what is left" answered pool 1's busiest
+   generator on 67.07% / 66.44% of 20,000 draws at two seeds, was NEVER wrong when
+   it fired (0 exceptions in 40,000), needed no arithmetic and never read the four
+   printed terms. MAGNITUDE RANK printed 17.0 / 28.1 / 27.2 / 27.7 pass, LENGTH
+   RANK passed, and the WIDTH-CLASS column - added one pass earlier for exactly
+   this class of defect - printed 25.6% MIN and passed. All three were true.
+
+   WHAT IS MEASURED. Every numeric four-option bank in the topic, 2,000 draws, and
+   three per-option features a child can see without arithmetic:
+
+     "is 1 followed by zeros"      1, 10, 100, 1000
+     "is a multiple of 100"        100, 300, 1000, 2500
+     "is round to the nearest ten" 10, 20, 150, 250
+
+   Two things are scored for each feature. UNIQUENESS, both directions: the key is
+   the only option that HAS it (a pure odd-one-out), or the only option that has it
+   NOT (equivalently, all three distractors have it and the key does not). And the
+   ROUTE, which is what the kill actually was: cross out every option that has the
+   feature - or every option that does not - and then take the smallest or the
+   largest of what survives. A route is scored OUTRIGHT over every draw, so a rule
+   that declines scores nothing, exactly as the width column scores MIN.
+
+   THE GATE. Neither uniqueness direction may reach 60% of draws, and no route may
+   reach 45%.
+
+   THE ROUTE CAP IS 45% AND `gAddConcept` IS ALLOWLISTED BY NAME (Sweep p3numbers
+   Refutation, NINTH pass, Call 1 - REJECTED as written, and the refutation's
+   number taken). The cap this ruler shipped with was 60%, chosen so that
+   `gAddConcept` - which sits at 51.9% structurally, because its key is the value
+   of a carried 1 and therefore a power of ten, so on the tens column no multiple
+   of ten can be printed below it and on the ones column the key IS 1 - would pass
+   under it. A cap set eight points above the one bank that cannot comply is that
+   bank's figure plus slack, and no measurement supports the slack. The second
+   highest live shape route in the topic is 41.1%. The cap is now 45%, the same
+   number the width-class ruler takes, and `gAddConcept` carries a NAMED exemption
+   with its premise re-checked on every draw - the mechanism gGreatest, gSmallest
+   and gBetween already use on the magnitude gate. It matters immediately: at 60%
+   this cap would not have caught the ninth pass's digit-column route on four of
+   the seven banks it lit up; at 45% it would have caught all four.
+
+   A FOURTH FEATURE (ninth pass, W5). "Contains a zero digit anywhere" answered
+   gStandsCompare on 42.4% of draws and this ruler could not see it: the three
+   features it shipped with are all about a number's TAIL, and this one is about
+   its BODY. It is at least as visible to a child as the other three, and it was
+   found by a feature sweep rather than by anyone's intuition, which is the reason
+   it belongs in the ruler rather than in a residual.
+
+   Negative control: the v8 gPatternConcept option set, rebuilt here from its own
+   arithmetic so the control does not depend on the topic file still containing the
+   defect. It must come out RED on the route. --- */
+const SHAPE_N = 2000, SHAPE_UNIQ_CAP = 0.60, SHAPE_RULE_CAP = 0.45;
+const SHAPE_FEATURES = [
+  ['1 followed by zeros', o => /^10*$/.test(o)],
+  ['a multiple of 100', o => Number(o) % 100 === 0],
+  ['round to the nearest ten', o => Number(o) % 10 === 0],
+  ['carrying a 0 digit', o => o.indexOf('0') !== -1]
+];
+/* The allowlisted banks, each with the premise its exemption rests on, re-checked
+   on every draw. An exemption is a claim; if the premise ever stops holding the
+   exemption lapses and the bank runs through the unexempted ruler.
+
+   gAddConcept IS NO LONGER HERE (v11, 2026-09-16). Its exemption rested on "the
+     key is the worth of a carried 1, so it is 1 followed by zeros on every draw",
+     and the v11 rebuild widens the key set: the bank now asks for the worth of
+     the carried 1 OR the worth of the digit that stays, so the key is 1 followed
+     by zeros on half the draws and a multiple of a digit on the other half, the
+     option row splits 2-2 on this feature, and every route sits at 25.0%. The
+     51.9% the exemption was written for is gone with the premise, and an
+     exemption whose premise has stopped holding is a failure, not a pass - which
+     is exactly what the re-check below printed when the rebuild landed.
+   gGreatest / gSmallest - the SAME two banks, on the SAME premise, that the
+     magnitude gate has allowlisted since the third pass: their stem prints no
+     number, so the four options ARE the data and the ordering IS the question.
+     Every shape route ends in "take the largest" or "take the smallest", so on
+     these two banks the route the ruler scores is the item. W5's fourth feature
+     is what brought them over the line (46.8% and 49.2%), not a change to either
+     bank; the eighth pass's three tail features never split their rows hard
+     enough to show it. Exempting them from the ROUTE cap and nothing else is the
+     same call the magnitude gate already made, written down here too. */
+const SHAPE_EXEMPT = {
+  gGreatest:   ['the stem prints no number, so the four options ARE the data and the ordering IS the question',
+                (o, q) => !/\d/.test(strip(q.q) + ' ' + strip(q.extra || ''))],
+  gSmallest:   ['the stem prints no number, so the four options ARE the data and the ordering IS the question',
+                (o, q) => !/\d/.test(strip(q.q) + ' ' + strip(q.extra || ''))]
+};
+const shapeRows = [];
+function shapeBank(draw, exempt) {
+  const t = { n: 0, premise: 0, f: SHAPE_FEATURES.map(() => ({ uKey: 0, uWrong: 0, outSmall: 0, outLarge: 0, inSmall: 0, inLarge: 0 })) };
+  for (let i = 0; i < SHAPE_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o)) || !(q.correct >= 0)) continue;
+    t.n++;
+    if (exempt && exempt[1](opts[q.correct], q)) t.premise++;
+    const key = Number(opts[q.correct]);
+    for (let k = 0; k < SHAPE_FEATURES.length; k++) {
+      const has = SHAPE_FEATURES[k][1], c = t.f[k];
+      const yes = opts.filter(o => has(o)).map(Number);
+      const no = opts.filter(o => !has(o)).map(Number);
+      if (yes.length === 1 && yes[0] === key) c.uKey++;
+      if (no.length === 1 && no[0] === key) c.uWrong++;
+      /* A ROUTE only counts where the shape actually SPLITS the row. If every
+         option has the feature, or none does, then "cross out the ones that have
+         it and take the largest" IS "take the largest", which is the MAGNITUDE
+         RANK gate's business - and that gate allowlists the two comparison
+         anchors by name with their premise re-checked, because there the ordering
+         is the question. Scoring it here would fail gGreatest and gSmallest on
+         the very thing they ask. */
+      if (yes.length && no.length) {
+        if (Math.min.apply(null, no) === key) c.outSmall++;
+        if (Math.max.apply(null, no) === key) c.outLarge++;
+        if (Math.min.apply(null, yes) === key) c.inSmall++;
+        if (Math.max.apply(null, yes) === key) c.inLarge++;
+      }
+    }
+  }
+  return t;
+}
+function shapeVerdict(row) {
+  if (!row.n) return null;
+  for (let k = 0; k < SHAPE_FEATURES.length; k++) {
+    const name = SHAPE_FEATURES[k][0], c = row.f[k], f = x => c[x] / row.n;
+    if (f('outSmall') > SHAPE_RULE_CAP)
+      return `"cross out every option that is ${name}, then take the smallest of the rest" answers it on ${(100 * f('outSmall')).toFixed(1)}% of draws`;
+    if (f('outLarge') > SHAPE_RULE_CAP)
+      return `"cross out every option that is ${name}, then take the largest of the rest" answers it on ${(100 * f('outLarge')).toFixed(1)}% of draws`;
+    if (f('inSmall') > SHAPE_RULE_CAP)
+      return `"keep only the options that are ${name}, then take the smallest" answers it on ${(100 * f('inSmall')).toFixed(1)}% of draws`;
+    if (f('inLarge') > SHAPE_RULE_CAP)
+      return `"keep only the options that are ${name}, then take the largest" answers it on ${(100 * f('inLarge')).toFixed(1)}% of draws`;
+  }
+  return shapeVerdictUniq(row);
+}
+/* the uniqueness half on its own: the allowlisted bank is exempt from the ROUTE
+   cap and from nothing else */
+function shapeVerdictUniq(row) {
+  if (!row.n) return null;
+  for (let k = 0; k < SHAPE_FEATURES.length; k++) {
+    const name = SHAPE_FEATURES[k][0], c = row.f[k], f = x => c[x] / row.n;
+    if (f('uKey') > SHAPE_UNIQ_CAP)
+      return `the key is the ONLY option that is ${name} on ${(100 * f('uKey')).toFixed(1)}% of draws`;
+    if (f('uWrong') > SHAPE_UNIQ_CAP)
+      return `all three distractors are ${name} and the key is not, on ${(100 * f('uWrong')).toFixed(1)}% of draws`;
+  }
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const ex = SHAPE_EXEMPT[g.name];
+  const row = shapeBank(g.fn, ex);
+  if (!row.n) continue;                          /* not a numeric four-option bank */
+  row.name = g.name; row.lvl = g.level;
+  row.err = shapeVerdict(row);
+  if (ex) {
+    /* the premise, re-checked on every draw - not asserted once in a comment */
+    if (row.premise === row.n) {
+      row.exempt = `exempt from the ROUTE cap (allowlisted by name): ${ex[0]}, re-checked on all ${row.n} draws`;
+      row.err = shapeVerdictUniq(row);            /* the uniqueness caps still bind */
+    } else {
+      row.err = `allowlisted by name, but the premise FAILED - ${ex[0]} on only ${(100 * row.premise / row.n).toFixed(1)}% of draws`;
+    }
+  }
+  shapeRows.push(row);
+  if (row.err) failures++;
+}
+let shapeControl = 'the v8 gPatternConcept option set was not rejected by the shape ruler';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const v8PatternConcept = () => {
+    let step, fam;
+    if (rnd(0, 2) === 0) {                       /* the counting anchor, one draw in three */
+      step = [10, 100, 1000][rnd(0, 2)];
+      fam = [1, 10, 100, 1000].filter(v => v !== step);
+    } else {                                     /* the v8 in-between branch */
+      step = [15, 25, 150, 250, 1500, 2500][rnd(0, 5)];
+      fam = [1, 10, 100, 1000, 2 * step, 3 * step].filter(v => v !== step && v <= 9999);
+    }
+    const opts = shuf(shuf(fam).slice(0, 3).concat([step])).map(String);
+    return { q: 'v8 gPatternConcept control', choices: opts,
+             answerText: String(step), correct: opts.indexOf(String(step)) };
+  };
+  const ctl = shapeBank(v8PatternConcept);
+  const verdict = shapeVerdict(ctl);
+  if (verdict) shapeControl = `the v8 gPatternConcept option set goes red - ${verdict}`;
+  else failures++;
+}
+
+/* ---------- COLUMN RULER (ninth-pass KILL, 2026-09-16) ----------------------
+   NINE RULERS READ THIS TOPIC AND NOT ONE OF THEM EVER READ ACROSS THE FOUR
+   PRINTED NUMBERS DIGIT BY DIGIT. MAGNITUDE ranks the key against all four;
+   LENGTH ranks it against the extremes; WIDTH-CLASS ranks it inside its own
+   width; SHAPE reads each option's roundness; PHRASE reads prose. The ninth pass
+   read the option row as a COLUMN OF DIGITS and the topic fell over:
+
+     What is the missing number in this pattern?  3069, ?, 3469, 3669, 3869
+       1269  |  3469  |  2869  |  3269 <- key
+     Thousands: 1, 3, 2, 3 - cross out 1269 and 2869. Hundreds: 2, 4, 8, 2 -
+     cross out 3469. One answer left, and it is right. The run was never read.
+
+         "Look down each column of the four answers.
+          If a digit is in the minority there, cross that answer out."
+
+   answered gPatternMissing - pool 3, served 2.12 items per 30-item session at
+   0.80 accuracy - on 72.58 / 72.68% of 20,000 draws at two seeds, with no
+   arithmetic and without the stem being read at all; gMoreLess on 77.7%,
+   gPattern4 on 67.1%, gSubError / gSubRegroup / gMissingAddend on 58.5 - 58.8%
+   and gAddRegroup on 53.7%.
+
+   IT WAS slipSet's OWN DESIGN PRINCIPLE, MEASURED FROM THE OUTSIDE - see the
+   long comment on slipSet in js/topics/p3-whole-numbers.js for the algebra, for
+   why the ninth pass's own proposed contract ("at most one slip per draw may
+   differ from the key in exactly one digit column") does NOT close it, and for
+   the two row shapes that do.
+
+   WHAT IS MEASURED, on every numeric four-option bank in the topic, 2,000 draws,
+   off the RENDERED options and nothing else. The four numbers are laid out
+   right-aligned by place value, exactly as a child reads a column; a number that
+   does not reach a column has a BLANK there and a blank is a symbol like any
+   other. Then, in both directions:
+
+     ROUTE   the elimination leaves exactly one option standing and it is the key
+     VALUE   what the elimination is WORTH - cross out every minority digit, then
+             guess among whatever is left. 25% is chance; the rule leaving all
+             four, or crossing the whole row out, scores exactly chance. This is
+             the unit Call 2 of the ninth pass argued for and it is the one that
+             binds here too: a rate is not a route, a value is.
+     LONER   the MIRROR, and the direction residual 3 has declared on gPatternOdd
+             since the sixth pass: the option that stands ALONE in some column
+             while the rest agree, taken as the answer.
+     3-of-4  reported, not gated: how often some column carries the key's digit in
+             exactly three of the four printed numbers. That shape hands one
+             option away as a free cross-out, and what a free cross-out is worth
+             is what VALUE already measures.
+
+   THE GATE. ROUTE, VALUE and LONER each under 40%. No bank is exempt.
+
+   Negative control: the v9 gPatternMissing option set, rebuilt here from its own
+   arithmetic so the control does not depend on the topic file still containing
+   the defect. It must come out RED. --- */
+const COL_N = 2000, COL_ROUTE_CAP = 0.40, COL_VALUE_CAP = 0.40, COL_LONER_CAP = 0.40;
+const colRows = [];
+function colGrid(opts) {
+  const d = opts.map(o => o.split('').reverse());
+  let w = 0;
+  for (const x of d) if (x.length > w) w = x.length;
+  const cols = [];
+  for (let i = 0; i < w; i++) cols.push(d.map(x => i < x.length ? x[i] : ' '));
+  return cols;
+}
+function colBank(draw) {
+  const t = { n: 0, route: 0, value: 0, loner: 0, three: 0 };
+  for (let i = 0; i < COL_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o)) || !(q.correct >= 0)) continue;
+    t.n++;
+    const cols = colGrid(opts);
+    const alive = [true, true, true, true], lone = [false, false, false, false];
+    let three = false;
+    for (const col of cols) {
+      const cnt = new Map();
+      for (const c of col) cnt.set(c, (cnt.get(c) || 0) + 1);
+      let max = 0;
+      for (const v of cnt.values()) if (v > max) max = v;
+      for (let k = 0; k < 4; k++) {
+        if (cnt.get(col[k]) < max) alive[k] = false;
+        if (cnt.get(col[k]) === 1 && max >= 2) lone[k] = true;
+      }
+      if (cnt.get(col[q.correct]) === 3) three = true;
+    }
+    let n = 0;
+    for (const a of alive) if (a) n++;
+    if (n === 1 && alive[q.correct]) t.route++;
+    t.value += n ? (alive[q.correct] ? 1 / n : 0) : 0.25;
+    const idx = [];
+    for (let k = 0; k < 4; k++) if (lone[k]) idx.push(k);
+    if (idx.length === 1 && idx[0] === q.correct) t.loner++;
+    if (three) t.three++;
+  }
+  return t;
+}
+function colVerdict(row) {
+  if (!row.n) return null;
+  const f = k => row[k] / row.n;
+  if (f('route') > COL_ROUTE_CAP)
+    return `"in each column cross out any answer whose digit is in the minority" answers it outright on ${(100 * f('route')).toFixed(1)}% of draws`;
+  if (f('value') > COL_VALUE_CAP)
+    return `that elimination is worth ${(100 * f('value')).toFixed(1)}% to a guesser`;
+  if (f('loner') > COL_LONER_CAP)
+    return `the MIRROR - "take the answer that stands alone in a column" - answers it on ${(100 * f('loner')).toFixed(1)}% of draws`;
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = colBank(g.fn);
+  if (!row.n) continue;                          /* not a numeric four-option bank */
+  row.name = g.name; row.lvl = g.level;
+  row.err = colVerdict(row);
+  colRows.push(row);
+  if (row.err) failures++;
+}
+let colControl = 'the v9 gPatternMissing option set was not rejected by the column ruler';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const okv = v => Number.isInteger(v) && v >= 1 && v <= 9999;
+  /* v9's slipSet: the below/above split drawn, then the three slips taken
+     UNIFORMLY from each side - no column scoring anywhere. */
+  const v9SlipSet = (key, family, keepOne) => {
+    const seen = new Set([key]);
+    const usable = v => okv(v) && !seen.has(v) && Math.abs(v - key) >= 10;
+    const live = keepOne.filter(usable);
+    if (!live.length) return null;
+    const kept = live[rnd(0, live.length - 1)];
+    seen.add(kept);
+    const below = [], above = [];
+    for (const v of family) { if (!usable(v)) continue; seen.add(v); (v < key ? below : above).push(v); }
+    const lo = Math.max(0, 2 - above.length), hi = Math.min(2, below.length);
+    if (lo > hi) return null;
+    const r = rnd(lo, hi);
+    return shuf(shuf(below).slice(0, r).concat(shuf(above).slice(0, 2 - r)).concat([kept]));
+  };
+  const v9PatternMissing = () => {
+    for (let tries = 0; tries < 200; tries++) {
+      const step = [100, 150, 200, 250, 500][rnd(0, 4)];
+      const up = rnd(0, 1) === 0, s = up ? step : -step;
+      const start = up ? rnd(1000 + step, 9999 - 5 * step) : rnd(1000 + 5 * step, 9999 - step);
+      const gap = rnd(1, 3);
+      const terms = [0, 1, 2, 3, 4].map(k => start + k * s);
+      const key = terms[gap];
+      const cands = v9SlipSet(key,
+        [terms[gap - 1], key + s / 10, key - s / 10, terms[gap - 1] + 2 * s, key + 10 * s, key - 10 * s],
+        [terms[4] + s, terms[0] - s, key + 10 * s, key - 10 * s]);
+      if (!cands || cands.length !== 3) continue;
+      const set = new Set([key].concat(cands));
+      if (set.size !== 4 || !cands.every(okv)) continue;
+      const opts = shuf([key].concat(cands)).map(String);
+      return { q: 'v9 gPatternMissing control', choices: opts,
+               answerText: String(key), correct: opts.indexOf(String(key)) };
+    }
+    return { q: '', choices: [] };
+  };
+  const ctl = colBank(v9PatternMissing);
+  const verdict = colVerdict(ctl);
+  if (verdict) colControl = `the v9 gPatternMissing option set goes red - ${verdict}`;
+  else failures++;
+}
+
+/* ---------- PHRASE RULER (fifth-pass KILL, 2026-09-16) ----------------------
+   NOTHING IN THIS HARNESS READ THE WORDS UNTIL v5, AND THEN IT READ TWO OF THEM.
+   RULE C and RULE D count characters; the LENGTH RANK gate counts characters in
+   the other direction; the MAGNITUDE RANK gate counts numbers. The v5 TOKEN
+   RULER read tokens and ADJACENT PAIRS - and the fifth pass answered the pool-1
+   flagship with a FOUR-word phrase, "ten into the tens", on 20,000 / 20,000
+   draws at two seeds, while the gate printed 0.00% at n = 1 and n = 2 and
+   reported the bank clean. Its negative control could not save it either: the
+   control rebuilt the v4 option set, whose tell was a BIGRAM, so it certified
+   the ruler against the defect the ruler was built from rather than against the
+   class it names. Five kills, five axes, and each new gate was built exactly one
+   notch short of the next one: magnitude after form, character length after
+   magnitude, a word after character length, and now a PHRASE after a word.
+
+   This ruler is built so there is no next notch on this axis. It reads
+
+     PHRASES OF EVERY LENGTH.  Not tokens and pairs: every contiguous n-gram at
+       every n from one word to the whole option, over THREE token streams - raw,
+       lightly stemmed ("tens" -> "ten", so a plural cannot hide a repeat), and
+       digit-normalised-plus-stemmed (every run of digits -> "#", so a phrase is
+       not diluted by the draw's own numbers changing under it, which was the v5
+       ruler's other written-down blind spot).
+
+     WORD SETS, UNORDERED.  Every combination of the key's words up to size
+       three, present in the key and absent from all three distractors. This is
+       the axis that answered v5 in its simplest form: the key was the only
+       option holding both "ten" and "tens", so a child scanning for "ten ...
+       tens" did not even need them in order. Raw and stemmed.
+
+   TWO BOUNDS, AND WHY THEY ARE THERE RATHER THAN HIDDEN.
+
+     (a) A key-only phrase cannot be eliminated at EVERY n. The whole key is one
+         of its own n-grams and no distractor may equal the key, so at n = the
+         key's own length every four-option bank in the game is "100% key-only"
+         and an uncapped phrase FAILURE rule is unsatisfiable by construction.
+         What a child can actually use is a SHORT distinctive phrase, so the
+         failure rule is capped at PHRASE_CAP words - and the SHORTEST key-only
+         phrase length is measured with no cap at all and printed for every bank
+         on every run, so a tell sitting just above the cap is visible rather
+         than absent. gAddConcept at cfa2da8 printed 4; at HEAD it prints 10.
+
+     (b) The same is true of word sets - the key's FULL word set is key-only
+         unless some distractor holds every word it holds - so the failure rule
+         is capped at three words, and the uncapped fact is printed instead: the
+         SUPERSET column says how often a distractor holds every word the key
+         holds, which is the only construction that kills the word-set axis at
+         every size at once. A bank at 100% there cannot be answered by any word
+         combination, ordered or not, of any size.
+
+   A bank fails when one feature inside those bounds clears 60% of its draws in
+   either direction - (a) key-only, a child picking the key out by a phrase; or
+   (b) present in all three distractors and absent from the key, a child crossing
+   three options out by one. 60% is well clear of the honest structural halves
+   this bank has: gCompareError's two flavours put "only" in the key and nowhere
+   else on ~50% of draws, gAddError's "forgot" on ~50%, gStandsError's "not" on
+   ~43% - each is the item's own two- or three-way design showing through, not a
+   shortcut past it, and each is reported rather than failed.
+
+   Negative control: the v5 gAddConcept option set, rebuilt here from its own
+   strings so the control does not depend on the topic file still containing the
+   defect. It must come out RED - and it must come out red on a FOUR-word phrase
+   and on the two-word SET, neither of which the v5 ruler could see. --- */
+/* THE MIRROR COLUMN (sixth-pass KILL, 2026-09-16). Every column the v6 ruler
+   printed was a fact about the KEY - key-only phrase, key-only word set,
+   all-wrong phrase, the key's MIN-n, and how often a distractor is a superset of
+   the key. The v6 `gAddConcept` rebuild lifted the key's MIN-n to 10 words and
+   left the three distractors at 1, 1 and 2 ("14", "right", "Write 1"), so the
+   key became the only option in the bank with nothing of its own: "cross out the
+   three options that say something none of the others say and take the one that
+   is left" answered the pool-1 flagship on 100.00% of 20,000 draws at each of
+   two seeds. The row printed `MIN-n 10 ... pass`, and the evidence of safety and
+   the mechanism of the defect were the same number read from opposite ends.
+
+   The ruler now measures EVERY option the same way and gates the SPREAD. For
+   each draw the shortest private phrase of all four options is computed - a
+   phrase present in that option and absent from the other three - and the bank
+   FAILS when the key's exceeds EVERY distractor's by more than GAP_CAP words on
+   60% or more of draws. A key-only phrase that is long is not a defect on its
+   own; a key-only phrase that is long while every distractor's is short IS one,
+   because the difference is what a child eliminates on. The three distractor
+   values are printed as min / mid / max on every run next to the key's, so the
+   comparison that answers the item is visible in the row that certifies it.
+
+   The general lesson, which this ruler is the fix for: a ruler that measures
+   only the key is measuring half the item. Every option on a four-option row is
+   a choice the child compares against the others, so the property worth gating
+   is a property of the spread across four, never of one of them. */
+const TOK_N = 2000, TOK_CAP = 0.60, PHRASE_CAP = 6, SET_CAP = 3, GAP_CAP = 2;
+const tokRows = [];
+const stemTok = w => (w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) ? w.slice(0, -1) : w;
+const tokenise = s => (strip(s).toLowerCase().match(/[a-z0-9]+/g) || []);
+/* feature -> phrase length in words, over the three streams */
+function phraseFeats(t) {
+  const out = new Map();
+  const streams = [['r', t], ['s', t.map(stemTok)], ['#', t.map(w => /^\d+$/.test(w) ? '#' : stemTok(w))]];
+  for (const [tag, arr] of streams)
+    for (let n = 1; n <= arr.length; n++)
+      for (let i = 0; i + n <= arr.length; i++) out.set(tag + ':' + arr.slice(i, i + n).join(' '), n);
+  return out;
+}
+function setsUpTo(words, k) {
+  const out = [];
+  const rec = (start, cur) => {
+    if (cur.length) out.push(cur.slice());
+    if (cur.length === k) return;
+    for (let i = start; i < words.length; i++) { cur.push(words[i]); rec(i + 1, cur); cur.pop(); }
+  };
+  rec(0, []);
+  return out;
+}
+function tokBank(draw) {
+  const keyOnly = new Map(), wrongOnly = new Map(), setOnly = new Map(), shortest = new Map();
+  let n = 0, sample = null, superset = 0;
+  /* the mirror column: the key's own MIN-n summed, the three distractors' summed
+     as min / mid / max, and how often the key's exceeds all three by > GAP_CAP */
+  let dn = 0, kSum = 0, dLo = 0, dMid = 0, dHi = 0, gap = 0, gapSample = null;
+  const out = () => ({ n, keyOnly, wrongOnly, setOnly, shortest, superset, sample,
+                       dn, kSum, dLo, dMid, dHi, gap, gapSample });
+  for (let i = 0; i < TOK_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { const r = out(); r.threw = e.message; return r; }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !(q.correct >= 0)) continue;
+    if (opts.every(o => /^\d+$/.test(o))) continue;      /* bare-number banks: the magnitude ruler owns those */
+    const T = opts.map(tokenise);
+    const F = T.map(phraseFeats);
+    const k = q.correct, w = [0, 1, 2, 3].filter(j => j !== k);
+    let minN = Infinity;
+    for (const [f, len] of F[k]) if (w.every(j => !F[j].has(f))) {
+      if (len < minN) minN = len;
+      if (len <= PHRASE_CAP) {
+        keyOnly.set(f, (keyOnly.get(f) || 0) + 1);
+        if (!sample) sample = opts.slice();
+      }
+    }
+    shortest.set(minN, (shortest.get(minN) || 0) + 1);
+    /* the same measurement, run on the three DISTRACTORS (sixth-pass KILL) */
+    {
+      const privMin = idx => {
+        const others = [0, 1, 2, 3].filter(j => j !== idx);
+        let mn = Infinity;
+        for (const [f, len] of F[idx]) if (len < mn && others.every(j => !F[j].has(f))) mn = len;
+        return mn;
+      };
+      const dm = w.map(privMin).sort((x, y) => x - y);
+      if (Number.isFinite(minN) && dm.every(Number.isFinite)) {
+        dn++; kSum += minN; dLo += dm[0]; dMid += dm[1]; dHi += dm[2];
+        if (minN - dm[2] > GAP_CAP) { gap++; if (!gapSample) gapSample = opts.slice(); }
+      }
+    }
+    for (const [f, len] of F[w[0]]) if (len <= PHRASE_CAP && F[w[1]].has(f) && F[w[2]].has(f) && !F[k].has(f)) {
+      wrongOnly.set(f, (wrongOnly.get(f) || 0) + 1);
+      if (!sample) sample = opts.slice();
+    }
+    /* unordered word sets, raw and stemmed. The two streams overlap on every
+       word a stem does not change, so the hits are deduped INSIDE the draw
+       before they are tallied: a feature found twice in one draw is still one
+       draw, not two. */
+    {
+      const hit = new Set();
+      let sup = false;
+      for (const st of [x => x, stemTok]) {
+        const S = T.map(t => new Set(t.map(st)));
+        const kw = [...new Set(T[k].map(st))];
+        if (w.some(j => kw.every(x => S[j].has(x)))) sup = true;
+        for (const c of setsUpTo(kw, SET_CAP))
+          if (w.every(j => !c.every(x => S[j].has(x)))) hit.add('{' + c.slice().sort().join(' + ') + '}');
+      }
+      if (sup) superset++;
+      for (const f of hit) setOnly.set(f, (setOnly.get(f) || 0) + 1);
+      if (hit.size && !sample) sample = opts.slice();
+    }
+    n++;
+  }
+  return out();
+}
+const tokTop = m => [...m.entries()].reduce((a, e) => e[1] > a[1] ? e : a, ['-', 0]);
+const tokMinN = row => [...row.shortest.entries()].reduce((a, e) => e[1] > a[1] ? e : a, [0, 0])[0];
+const tokDist = row => row.dn ? [row.dLo / row.dn, row.dMid / row.dn, row.dHi / row.dn] : [0, 0, 0];
+function tokVerdict(row) {
+  if (!row.n) return null;
+  const k = tokTop(row.keyOnly), w = tokTop(row.wrongOnly), s = tokTop(row.setOnly);
+  const opts = row.sample ? `  (${row.sample.join(' | ')})` : '';
+  /* THE MIRROR RULE (sixth-pass KILL): the key has no phrase of its own and each
+     distractor does, so the child crosses out the three that say something none
+     of the others say and takes the one that is left. */
+  if (row.dn && row.gap / row.dn >= TOK_CAP) {
+    const d = tokDist(row).map(x => x.toFixed(2));
+    const g = row.gapSample ? `  (${row.gapSample.join(' | ')})` : opts;
+    return `the KEY's shortest private phrase is more than ${GAP_CAP} words longer than EVERY distractor's on ${row.gap} of ${row.dn} draws (${(100 * row.gap / row.dn).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - MIN-n key ${(row.kSum / row.dn).toFixed(2)} against distractors ${d[0]} / ${d[1]} / ${d[2]}; a child crosses out the three options that say something none of the others say${g}`;
+  }
+  if (k[1] / row.n >= TOK_CAP)
+    return `"${k[0]}" is in the KEY and in no distractor on ${k[1]} of ${row.n} draws (${(100 * k[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child picks the key out by that phrase alone${opts}`;
+  if (s[1] / row.n >= TOK_CAP)
+    return `the word set ${s[0]} is in the KEY and in no distractor on ${s[1]} of ${row.n} draws (${(100 * s[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child picks the key out by those words in any order${opts}`;
+  if (w[1] / row.n >= TOK_CAP)
+    return `"${w[0]}" is in ALL THREE distractors and not in the key on ${w[1]} of ${row.n} draws (${(100 * w[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child crosses three options out by that phrase alone${opts}`;
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = tokBank(g.fn);
+  if (!row.n) continue;
+  row.name = g.name; row.lvl = g.level;
+  row.err = tokVerdict(row);
+  tokRows.push(row);
+  if (row.err) failures++;
+}
+let tokControl = 'the v5 gAddConcept option set was not rejected by the phrase ruler';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v5AddConcept = () => {
+    const s = rnd(12, 18), keep = s % 10;
+    const opts = [
+      'Write ' + keep + ', carry 1 ten into the tens column.',
+      'Write ' + s + ' in the ones column, carry no ten.',
+      'Write ' + keep + ', carry 1 ten into the hundreds column.',
+      'Write 1 and carry ' + keep + ' tens into the tens column.'
+    ];
+    return { q: 'v5 gAddConcept control', choices: opts, answerText: opts[0], correct: 0 };
+  };
+  const ctl = tokBank(v5AddConcept);
+  const verdict = tokVerdict(ctl);
+  const phrase = tokTop(ctl.keyOnly), set = tokTop(ctl.setOnly);
+  /* the control is only doing its job if BOTH new axes fire: the four-word
+     phrase the v5 ruler was one notch short of, and the unordered pair */
+  const phraseOk = phrase[1] / ctl.n >= TOK_CAP && /ten into the ten/.test(phrase[0]);
+  const setOk = set[1] / ctl.n >= TOK_CAP && /ten \+ tens/.test(set[0]);
+  if (verdict && phraseOk && setOk)
+    tokControl = `the v5 gAddConcept option set goes red - "${phrase[0]}" key-only on ${(100 * phrase[1] / ctl.n).toFixed(1)}% (a FOUR-word phrase, which the v5 ruler could not see) and the word set ${set[0]} key-only on ${(100 * set[1] / ctl.n).toFixed(1)}%; shortest key-only phrase ${tokMinN(ctl)} words`;
+  else failures++;
+}
+/* the THIRD negative control, for the mirror rule: the v6 gAddConcept option
+   set, which every column the v6 ruler printed reported as `pass`. It must come
+   out red, and it must come out red ON THE GAP - a key MIN-n of 10 words against
+   distractors at 1 / 1 / 2 - because none of the v6 axes can see it. */
+let gapControl = 'the v6 gAddConcept option set was not rejected by the mirror rule';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v6AddConcept = () => {
+    const s = rnd(12, 18), keep = s % 10;
+    const opts = [
+      'Write ' + keep + ', carry 1 ten to the column on its left.',
+      'Write ' + s + ', carry 1 ten to the column on its left.',
+      'Write ' + keep + ', carry 1 ten to the column on its right.',
+      'Write 1 ten, carry ' + keep + ' to the column on its left.'
+    ];
+    return { q: 'v6 gAddConcept control', choices: opts, answerText: opts[0], correct: 0 };
+  };
+  const ctl = tokBank(v6AddConcept);
+  const verdict = tokVerdict(ctl);
+  const d = tokDist(ctl), keyMin = ctl.dn ? ctl.kSum / ctl.dn : 0;
+  /* the control is only doing its job if the MIRROR rule is what fires: the v6
+     set is clean on every axis the v6 ruler carried, so a red on one of those
+     would mean the control had drifted off the class it exists to certify. */
+  const mirrorFired = !!verdict && /shortest private phrase/.test(verdict);
+  const shape = ctl.dn && keyMin >= 8 && d[2] <= 3 && ctl.gap / ctl.dn >= TOK_CAP;
+  const oldAxesQuiet = tokTop(ctl.keyOnly)[1] / ctl.n < TOK_CAP &&
+                       tokTop(ctl.setOnly)[1] / ctl.n < TOK_CAP &&
+                       tokTop(ctl.wrongOnly)[1] / ctl.n < TOK_CAP;
+  if (mirrorFired && shape && oldAxesQuiet)
+    gapControl = `the v6 gAddConcept option set goes red on the MIRROR rule - MIN-n key ${keyMin.toFixed(2)} words against distractors ${d[0].toFixed(2)} / ${d[1].toFixed(2)} / ${d[2].toFixed(2)} on ${(100 * ctl.gap / ctl.dn).toFixed(1)}% of draws - while every axis the v6 ruler carried reports it clean (key-only phrase ${(100 * tokTop(ctl.keyOnly)[1] / ctl.n).toFixed(1)}%, key-only word set ${(100 * tokTop(ctl.setOnly)[1] / ctl.n).toFixed(1)}%, all-wrong ${(100 * tokTop(ctl.wrongOnly)[1] / ctl.n).toFixed(1)}%, SUPERSET ${(100 * ctl.superset / ctl.n).toFixed(1)}%)`;
+  else failures++;
+}
+/* the negative control for RULE E: the v6 gSubRegroup explanation on its own
+   option row, with the "commonest slip" value left off the row exactly as
+   slipSet left it off on 52.98% of draws. */
+let explControl = 'the v6 gSubRegroup explanation was not rejected by RULE E';
+{
+  const ctlQ = {
+    q: 'What is 5042 − 1867?', extra: '',
+    choices: ['3175', '3275', '3165', '4175'], correct: 0, answerText: '3175',
+    authored: [3275, 3165, 4175],
+    explain: '5042 − 1867 = 3175. In the ones column you cannot take away enough, so you take one ' +
+      'from the column on its left and turn it into ten. Taking the smaller digit away from the ' +
+      'bigger one in every column instead - which is the commonest slip - gives 3182.'
+  };
+  const hit = sweepGates(ctlQ, 'p3numbers');
+  if (hit && /explanation names an absent answer/.test(hit) && /3182/.test(hit))
+    explControl = `the v6 gSubRegroup explanation goes red - ${hit}`;
+  else failures++;
+}
+
+/* ---------- READING A NUMERIC ROW OFF ANY OPTION SET (v11, 2026-09-16) --------
+   THE STRUCTURAL FINDING OF THE TENTH PASS, in one line of code repeated five
+   times. Every numeric ruler in this file was gated on
+
+       if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o))) return null;
+
+   so magnitude, length, width-class, shape and column all returned null the
+   moment an option stopped being a bare numeral - and the six prose banks were
+   left to the phrase ruler, which reads words. `gCompareError` was answered
+   outright on 100.00% of draws by counting the characters in the two numbers its
+   stem printed, and no ruler with the shape to find it could see the row at all.
+
+   The gate is now a READING, not a test. `numRow` returns the four options as
+   numerals whenever the row can honestly be read as four numbers - bare numerals
+   as before, PLACE NAMES at their place value ("the hundreds" -> 100), and mixed
+   rows where each option carries exactly one numeral ("12 cm" -> 12). Every
+   numeric ruler then runs on that reading, so a bank that answers with a place
+   name or a measurement is gated by the same five rulers as a bank that answers
+   with a bare number. Rows whose options carry NO numeral, or more than one
+   (comparison statements, expanded forms, ordered lists), are not numbers and
+   are not pretended to be: they go to the OPTION-ROW GEOMETRY ruler below. --- */
+const PLACE_VALUE = {
+  one: 1, ones: 1, ten: 10, tens: 10, hundred: 100, hundreds: 100,
+  thousand: 1000, thousands: 1000, 'ten thousand': 10000, 'ten thousands': 10000
+};
+function numRow(opts) {
+  if (!opts || opts.length !== 4) return null;
+  if (opts.every(o => /^\d+$/.test(o))) return opts.slice();
+  const out = [];
+  for (const o of opts) {
+    const t = String(o).trim().toLowerCase().replace(/^the\s+/, '').replace(/\s+(place|column)$/, '');
+    if (PLACE_VALUE[t] !== undefined) { out.push(String(PLACE_VALUE[t])); continue; }
+    const n = String(o).match(/\d+/g);
+    if (n && n.length === 1) { out.push(n[0]); continue; }
+    return null;
+  }
+  return out;
+}
+
+/* ---------- OPTION-ROW GEOMETRY RULER (tenth-pass KILL, v11) ------------------
+   NOTHING IN THIS HARNESS HAD EVER READ THE NUMBERS INSIDE A PROSE OPTION. The
+   tenth pass killed `gCompareTrue` on exactly that:
+
+     Which of these is true?
+       2678 > 2849 | 2678 > 2504 <- key | 2678 < 2521 | 2678 < 2522
+
+   Every line started with the same number, so a child covered it and read the
+   four numbers on the right: three bunched and one off on its own. The loner's
+   line carried a ">", so "take the OTHER > line" answered the item on 79.22 /
+   79.14% of 20,000 draws at each of two seeds - and, because the rule never uses
+   what either symbol MEANS, a child who thinks "<" means greater scored exactly
+   the same. The item could not tell the two children apart.
+
+   WHAT IS MEASURED. Every four-option bank in the topic whose options are NOT a
+   numeric row but DO carry numerals. The numerals are read off the rendered
+   option in order, and four things are scored.
+
+   1. POSITION RANK. For the first, the last and the largest numeral of each
+      option, where the key's sits among the four. A rank past 45%, or an extreme
+      past 40%, is the magnitude gate's complaint one layer in.
+   2. LONER -> SYMBOL. Find the option whose numeral at a position sits apart from
+      the other three (nearest neighbour furthest away), read the non-numeric
+      separator on ITS line, and take the other line carrying the same separator.
+      This is the v10 kill, and it is scored outright. Cap 40%.
+   3. THE AGREE / DISAGREE SINGLETON, which is the general result behind it. Take
+      any "which of these is true?" row over four DIFFERENT pairs with exactly one
+      true statement. A child compares each pair - real work, no symbol knowledge
+      - and asks only "does the symbol agree with the order I found?". Exactly one
+      line agrees, so the split is 1-3 and the singleton is the key WHICHEVER WAY
+      the child believes the symbols point. That is 100% on any such bank. The
+      only structure that breaks it is the same number pair on the row with both
+      symbols, which makes the split 2-2. Scored both ways round; cap 40%.
+   4. THE REPEAT NARROWING, which is the price of breaking 3. When the row carries
+      one pair twice, "keep the lines that use the stem's two numbers" is worth
+      50% to a guesser and cannot be lowered - a pair's two true statements are
+      "p > q" and "q < p" and its two false ones "p < q" and "q > p", so any third
+      line about the same pair puts the key in the doubled writing order. It is
+      REPORTED against a 60% cap, the same structural-floor treatment gBetween's
+      straddle gets on the magnitude gate.
+
+   Negative control: the v10 gCompareTrue option row, rebuilt here from its own
+   arithmetic so the control does not depend on the topic file still containing
+   the defect. It must come out RED on 2 and on 3. --- */
+const GEO_N = 2000, GEO_RANK_CAP = 0.45, GEO_EXTREME_CAP = 0.40;
+const GEO_ROUTE_CAP = 0.40, GEO_NARROW_CAP = 0.60;
+const geoRows = [];
+function geoParts(o) {
+  const nums = (String(o).match(/\d+/g) || []).map(Number);
+  const sym = String(o).replace(/\d+/g, '').replace(/\s+/g, ' ').trim();
+  return { nums, sym };
+}
+function geoBank(draw, exempt) {
+  const t = { n: 0, rank: { first: [0,0,0,0], last: [0,0,0,0], max: [0,0,0,0] },
+              seen: { first: 0, last: 0, max: 0 }, dec: { first: 0, last: 0, max: 0 },
+              loner: 0, single: 0, narrow: 0, pairRow: 0, premise: 0 };
+  for (let i = 0; i < GEO_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !(q.correct >= 0)) continue;
+    if (numRow(opts)) continue;                       /* the numeric rulers own those */
+    const P = opts.map(geoParts);
+    if (!P.every(p => p.nums.length)) continue;
+    t.n++;
+    if (exempt && exempt[1](P)) t.premise++;
+    /* 1. where the key's numeral sits, at three read-off positions */
+    const at = {
+      first: P.map(p => p.nums[0]),
+      last: P.map(p => p.nums[p.nums.length - 1]),
+      max: P.map(p => Math.max.apply(null, p.nums))
+    };
+    /* RANK IS ONLY READ WHERE THE ROW HAS ONE. When two lines carry the same
+       number at a position - which is exactly what the same-pair-twice structure
+       makes happen - "take the line with the smallest first number" does not name
+       a line at all, and scoring it as though it did would print a 50% route that
+       no child can run. The ruler declines that position and says so (DECLINED),
+       the way the width-class ruler declines a row with no commonest width. */
+    for (const k of ['first', 'last', 'max']) {
+      if (new Set(at[k]).size !== 4) { t.dec[k]++; continue; }
+      t.seen[k]++;
+      const sorted = at[k].slice().sort((a, b) => a - b);
+      const r = sorted.indexOf(at[k][q.correct]);
+      if (r >= 0) t.rank[k][r]++;
+    }
+    /* 2. the loner at each position names a separator; take the other line with it */
+    let lonerHit = false;
+    for (const k of ['first', 'last', 'max']) {
+      const v = at[k];
+      if (new Set(v).size < 4) continue;
+      let bi = 0, bv = -1;
+      for (let a = 0; a < 4; a++) {
+        let dm = Infinity;
+        for (let b = 0; b < 4; b++) if (a !== b) dm = Math.min(dm, Math.abs(v[a] - v[b]));
+        if (dm > bv) { bv = dm; bi = a; }
+      }
+      const sym = P[bi].sym;
+      const same = [];
+      for (let a = 0; a < 4; a++) if (a !== bi && P[a].sym === sym) same.push(a);
+      if (same.length === 1 && same[0] === q.correct) lonerHit = true;
+    }
+    if (lonerHit) t.loner++;
+    /* 3. the agree / disagree singleton, on rows of the form "a SYM b" */
+    const two = P.every(p => p.nums.length === 2 && /^[<>]$/.test(p.sym));
+    if (two) {
+      const agree = [];
+      for (let a = 0; a < 4; a++) {
+        const p = P[a];
+        agree.push(p.sym === '>' ? p.nums[0] > p.nums[1] : p.nums[0] < p.nums[1]);
+      }
+      const yes = [0,1,2,3].filter(a => agree[a]);
+      const no = [0,1,2,3].filter(a => !agree[a]);
+      if ((yes.length === 1 && yes[0] === q.correct) || (no.length === 1 && no[0] === q.correct)) t.single++;
+      /* 4. the repeat narrowing: the option set whose numeral pair appears most */
+      const cnt = new Map();
+      for (const p of P) {
+        const k = p.nums.slice().sort((a, b) => a - b).join('-');
+        cnt.set(k, (cnt.get(k) || 0) + 1);
+      }
+      const top = Math.max.apply(null, [...cnt.values()]);
+      if (top >= 2) t.pairRow++;
+      const dom = [...cnt].filter(e => e[1] === top);
+      if (dom.length === 1) {
+        const live = [0,1,2,3].filter(a => P[a].nums.slice().sort((x, y) => x - y).join('-') === dom[0][0]);
+        t.narrow += live.indexOf(q.correct) >= 0 ? 1 / live.length : 0;
+      } else t.narrow += 0.25;
+    } else t.narrow += 0.25;
+  }
+  return t;
+}
+/* gOrder is allowlisted from the RANK caps and from nothing else, on the same
+   premise gGreatest and gSmallest carry on the magnitude gate and with the same
+   re-check on every draw: its four options are the SAME four numbers in four
+   different orders, so the ordering IS the question. Residual 28 is the number
+   this exemption is about. The composed rule - "cross out every list that does
+   not start with the smallest first number, then cross out every list that does
+   not end with the biggest last number" - answers gOrder OUTRIGHT on 90.20 /
+   89.94% of 20,000 draws at each of two seeds, and the seventh pass's 58.01% was
+   the UNIQUE-start figure, not the route. The refutation rules it in-skill as a
+   P3 teacher and this file adopts that ruling: finding the smallest of four
+   numbers and the biggest of four numbers is MOE 1.4 comparison, which is the
+   skill the item is for - the child has shortened a four-number sort to two
+   comparisons, not escaped it. It is DECLARED at 90.2%, not at 58%. */
+const GEO_EXEMPT = {
+  gOrder: ['every option is the same four numbers in a different order, so the ordering IS the question',
+           (P) => {
+             const k = P.map(p => p.nums.slice().sort((a, b) => a - b).join(','));
+             return k.every(x => x === k[0]);
+           }]
+};
+function geoVerdict(row) {
+  if (!row.n) return null;
+  if (row.loner / row.n > GEO_ROUTE_CAP)
+    return `"the number that sits apart names a symbol - take the other line with it" answers it on ${(100 * row.loner / row.n).toFixed(1)}% of draws`;
+  if (row.single / row.n > GEO_ROUTE_CAP)
+    return `the AGREE/DISAGREE singleton - "the one line whose symbol is the odd one out" - answers it on ${(100 * row.single / row.n).toFixed(1)}% of draws, and it needs no knowledge of which symbol means greater`;
+  if (row.narrow / row.n > GEO_NARROW_CAP)
+    return `"keep only the lines built from the numbers that repeat" is worth ${(100 * row.narrow / row.n).toFixed(1)}% to a guesser`;
+  if (row.exempt) return null;
+  for (const k of ['first', 'last', 'max']) {
+    if (!row.seen[k]) continue;
+    const f = row.rank[k].map(x => x / row.seen[k]);
+    if (f[0] > GEO_EXTREME_CAP) return `"take the line with the uniquely smallest ${k.toUpperCase()} number" answers it on ${(100 * f[0]).toFixed(1)}% of the draws that have one`;
+    if (f[3] > GEO_EXTREME_CAP) return `"take the line with the uniquely largest ${k.toUpperCase()} number" answers it on ${(100 * f[3]).toFixed(1)}% of the draws that have one`;
+    for (let r = 0; r < 4; r++) if (f[r] > GEO_RANK_CAP)
+      return `the key's ${k.toUpperCase()} number is rank ${r} of 4 on ${(100 * f[r]).toFixed(1)}% of the draws that have a rank`;
+  }
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const ex = GEO_EXEMPT[g.name];
+  const row = geoBank(g.fn, ex);
+  if (!row.n) continue;
+  row.name = g.name; row.lvl = g.level;
+  if (ex) {
+    if (row.premise === row.n) { row.exempt = `exempt from the RANK caps (allowlisted by name): ${ex[0]}, re-checked on all ${row.n} draws`; }
+    else { row.err = `allowlisted by name, but the premise FAILED - ${ex[0]} on only ${(100 * row.premise / row.n).toFixed(1)}% of draws`; }
+  }
+  if (!row.err) row.err = geoVerdict(row);
+  geoRows.push(row);
+  if (row.err) failures++;
+}
+let geoControl = 'the v10 gCompareTrue option row was not rejected by the geometry ruler';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  /* v10's draw: three companions on ONE side of n and one on the other, the key
+     taken from the three, so the lone companion is the extreme of the four and
+     its statement carries the key's sign. */
+  const v10CompareTrue = () => {
+    const th = rnd(1, 9), n = th * 1000 + rnd(120, 879);
+    const below = Math.random() < 0.5, many = [], one = [];
+    let guard = 0;
+    while (many.length < 3 && guard++ < 400) {
+      const v = below ? th * 1000 + rnd(0, (n % 1000) - 1) : th * 1000 + rnd((n % 1000) + 1, 999);
+      if (v !== n && many.indexOf(v) < 0) many.push(v);
+    }
+    guard = 0;
+    while (one.length < 1 && guard++ < 400) {
+      const v = below ? th * 1000 + rnd((n % 1000) + 1, 999) : th * 1000 + rnd(0, (n % 1000) - 1);
+      if (v !== n && many.indexOf(v) < 0) one.push(v);
+    }
+    const others = many.concat(one), ki = rnd(0, 2);
+    const key = n + ' ' + (others[ki] < n ? '>' : '<') + ' ' + others[ki];
+    const wrongs = others.filter((_, i) => i !== ki).map(v => n + ' ' + (v < n ? '<' : '>') + ' ' + v);
+    const opts = shuf([key].concat(wrongs));
+    return { q: 'Which of these is true?', extra: '', choices: opts,
+             answerText: key, correct: opts.indexOf(key) };
+  };
+  const ctl = geoBank(v10CompareTrue);
+  const verdict = geoVerdict(ctl);
+  if (verdict && /sits apart|singleton/.test(verdict))
+    geoControl = `the v10 gCompareTrue option row goes red - ${verdict}` +
+      ` (and the AGREE/DISAGREE singleton alone is ${(100 * ctl.single / ctl.n).toFixed(1)}%, which is the general result: on a row of four DIFFERENT pairs with one true statement it is 100% by construction)`;
+  else failures++;
+}
+
+/* ---------- STEM RULER (tenth-pass KILL, v11) ---------------------------------
+   THE OTHER HALF OF THE GAP. Nothing anywhere read a STEM feature against which
+   option string is the key, and that is where `gCompareError` died at 100.00%:
+   one boolean chose both the shape of the stem (a 3-digit number against a
+   4-digit one, or two 4-digit ones) and which of four fixed sentences was the
+   key. Counting the characters in the two printed numbers answered the busiest
+   bank in the topic with certainty, twice a session, and the phrase ruler read
+   both live sentences at ~50% and called it the item's own two-way design.
+
+   WHAT IS MEASURED. For every four-option bank in the topic, four cheap countable
+   properties of the RENDERED stem:
+
+     LENGTHS   the sorted character-lengths of every numeral the stem prints
+     COUNT     how many numerals it prints
+     ROUND     which of them are round to ten and to a hundred, as a sorted flag
+     NAME      the child's name, where the stem uses one
+
+   For each property the ruler fits a lookup on the FIRST half of the draws -
+   property value -> the option STRING that is most often the key at that value -
+   and scores it on the SECOND half, answering with that string when it is on the
+   row and guessing uniformly when it is not. Fitting and scoring on different
+   halves is what stops a bank with an unbounded key set from scoring itself; a
+   bank whose four option strings are fixed and whose key is a function of the
+   stem's shape scores 100%.
+
+   THE GATE. No stem property may answer a bank past 40%.
+
+   WHAT IS NOT MEASURED, and why. The QUESTION'S OWN WORDS. A stem that asks "how
+   much is that small 1 worth?" rather than "how much is the digit that stays
+   worth?" has told the child which of two answers to look for, and that is
+   reading, not a tell - the child still owes the column. The properties above are
+   all about the numerals a stem PRINTS, which is the axis the kill lived on.
+
+   Negative control: the v10 gCompareError stem and option row, rebuilt here from
+   its own arithmetic. It must come out RED at 100%. --- */
+const STEM_N = 4000, STEM_CAP = 0.40, STEM_LIFT_CAP = 0.15;
+const stemRows = [];
+const KID_NAMES = 'Aisyah|Jun Wei|Jun Hao|Kavitha|Marcus|Siti|Priya|Daryl|Xin Yi|Farhan|Mei Ling|Wei Jie|Nurul|Ryan|Hui Min';
+const KID_RE = new RegExp('\\b(' + KID_NAMES + ')\\b');
+/* THE KEY'S UNIT (W3, ELEVENTH pass, 2026-09-16). This ruler used to fit
+   stem property -> the option STRING that is most often the key, and it scored
+   the WHOLE string. gStandsError's options all begin with the pronoun of the
+   child named in the stem ("She used the column one place to the left."), so
+   "She ..." and "He ..." were two different keys for one misconception and the
+   held-out table could only ever name one of them. The route the eleventh pass
+   measured at 100.0 / 100.0% printed here as 70.3 / 69.4% - 30 points of
+   dilution bought entirely by a word the stem hands the child for free, on a
+   property (NUMERAL LENGTHS) that was already the loudest in the table. Any
+   pronoun-prefixed prose bank was diluted the same way, so a route between 40%
+   and 100% could have sat under the cap on the strength of the prefix alone.
+
+   The unit is now the option with everything the STEM ALREADY SUPPLIES stripped
+   off the front: a leading pronoun, or a leading child's name. Nothing else is
+   touched - the misconception's own words are the key. The frozen v11
+   gStandsError is carried below as the negative control for exactly this, and it
+   must come out at ~100%. */
+const stemNorm = o => String(o)
+  .replace(new RegExp('^(?:' + KID_NAMES + ')\\b[,:]?\\s*'), '')
+  .replace(/^(?:He|She|They|It|he|she|they|it)\b\s*/, '')
+  .trim();
+/* the numerals a stem prints, longest common suffix over those with 2+ digits:
+   "1240, 1340, 1440, 1540" -> "40", two places held constant. */
+function trailingConstant(s) {
+  const nums = (s.match(/\d+/g) || []).filter(x => x.length >= 2);
+  if (nums.length < 2) return '-';
+  let k = 0;
+  const lim = Math.min.apply(null, nums.map(x => x.length));
+  while (k < lim && nums.every(x => x[x.length - 1 - k] === nums[0][nums[0].length - 1 - k])) k++;
+  return String(k);
+}
+const STEM_FEATURES = [
+  ['NUMERAL LENGTHS', s => (s.match(/\d+/g) || []).map(x => x.length).sort().join(',')],
+  ['NUMERAL COUNT', s => String((s.match(/\d+/g) || []).length)],
+  ['ROUNDNESS', s => (s.match(/\d+/g) || []).map(x => (Number(x) % 100 === 0 ? 'H' : Number(x) % 10 === 0 ? 'T' : '-')).sort().join('')],
+  ['NAME', s => (s.match(KID_RE) || ['-'])[0]],
+  /* THE FIFTH PROPERTY (W5, ELEVENTH pass). The first four all read the stem's
+     numerals in ISOLATION - how many there are, how long they are, how round
+     they are - and every one of them reads gPatternConcept at 24-29% while a
+     child reads it at 66.7% off the relation BETWEEN them: "count how many
+     digits at the end of the printed numbers never change, and keep only the
+     options with that many zeros on the end". On the counting-anchor row that
+     answers the item outright and is never wrong; on the ladder rows it narrows
+     four to two. It is invisible to all ten of the harness's other rulers. */
+  ['TRAILING CONSTANT', trailingConstant]
+];
+function stemBank(draw, exempt) {
+  const half = STEM_N >> 1;
+  const sample = [];
+  for (let i = 0; i < STEM_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return { n: 0, threw: e.message }; }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !(q.correct >= 0)) continue;
+    const st = strip(q.q) + ' ' + strip(q.extra || '');
+    /* the key's unit is the option with what the STEM supplies stripped off -
+       W3, and the reason the v11 gStandsError control below reads 100% */
+    sample.push({ stem: st, opts: opts.map(stemNorm), key: stemNorm(opts[q.correct]) });
+  }
+  let prem = 0;
+  if (exempt) for (const x of sample) if (exempt[1](x.stem)) prem++;
+  const out = { n: sample.length, base: 0, premise: prem, f: STEM_FEATURES.map(() => ({ hit: 0, vals: 0 })) };
+  if (sample.length < 200) return out;
+  /* THE BASELINE, and why every cell is read against it. A bank whose option pool
+     holds strings that are NEVER the answer hands a child a constant rule with no
+     stem in it at all - gAddError's two fillers never key, so "always say he did
+     not carry" is worth 50% before a single numeral has been read. That is the
+     tenth pass's W3 and it belongs to the option pool, not to the stem. The stem
+     ruler therefore gates the LIFT a property adds over the best constant answer,
+     and prints both numbers so the two defects cannot be mistaken for each other. */
+  {
+    const t = new Map();
+    for (let i = 0; i < half; i++) t.set(sample[i].key, (t.get(sample[i].key) || 0) + 1);
+    let b = null, bn = -1;
+    for (const [k, n] of t) if (n > bn) { bn = n; b = k; }
+    let score = 0, seen = 0;
+    for (let i = half; i < sample.length; i++) {
+      seen++;
+      if (sample[i].opts.indexOf(b) < 0) score += 0.25;
+      else if (b === sample[i].key) score += 1;
+    }
+    out.base = seen ? score / seen : 0;
+  }
+  for (let k = 0; k < STEM_FEATURES.length; k++) {
+    const of = STEM_FEATURES[k][1];
+    const table = new Map();
+    for (let i = 0; i < half; i++) {
+      const v = of(sample[i].stem);
+      if (!table.has(v)) table.set(v, new Map());
+      const t = table.get(v);
+      t.set(sample[i].key, (t.get(sample[i].key) || 0) + 1);
+    }
+    const best = new Map();
+    for (const [v, t] of table) {
+      let b = null, bn = -1;
+      for (const [s, n] of t) if (n > bn) { bn = n; b = s; }
+      best.set(v, b);
+    }
+    out.f[k].vals = best.size;
+    let score = 0, seen = 0;
+    for (let i = half; i < sample.length; i++) {
+      const v = of(sample[i].stem), guess = best.get(v);
+      seen++;
+      if (guess === undefined || sample[i].opts.indexOf(guess) < 0) score += 0.25;
+      else if (guess === sample[i].key) score += 1;
+    }
+    out.f[k].hit = seen ? score / seen : 0;
+  }
+  return out;
+}
+/* THE ALLOWLIST IS ONE LINE SHORTER AND ONE LINE LONGER THAN IT WAS.
+
+   GONE - gStandsError. The tenth pass excused it from this cap because "locating
+   the named digit's column is the item's own work". The eleventh pass measured
+   the route the exemption was covering and it does not locate the column: it
+   counts the characters in the claim the stem prints, never reads the four-digit
+   number, and answers 100.00 / 100.00% of 20,000 draws at each of two seeds. The
+   premise as coded (`three numerals in the stem`) was true of any stem with three
+   numerals in it, constrained nothing about the route, and so could not lapse when
+   the route was the defect. The bank is RETIRED (see js/topics/p3-whole-numbers.js)
+   and its frozen v11 body is the negative control at the bottom of this section.
+
+   NEW - gPatternConcept, and only on the TRAILING CONSTANT property the fifth
+   feature adds. The refutation ruled the route in-skill and this file adopts that
+   ruling with the number said out loud rather than hidden: "count how many digits
+   at the end of the printed numbers never change" IS naming the jump, which is
+   the question, and it is the topic's own `pattern` tip in the topic's own words
+   ("write the difference above each gap ... then say how big it is - a jump of
+   10, 100 or 1000"). It is worth 66.71 / 66.98% to a guesser and 33.42 / 33.96%
+   outright, on a bank served 1.35 at 0.80 and 4.91 / 4.99 at 0.45.
+
+   THE PREMISE IS NARROW AND IT IS RE-CHECKED ON EVERY DRAW, which is what makes
+   this an exemption and not the gStandsError mistake repeated: the stem must
+   print four numerals that form an ARITHMETIC LADDER - each one a constant step
+   from the last. If the stem ever stops being a ladder, the trailing digits stop
+   being the jump, and the exemption is void. The exemption covers ONE property;
+   the other four are gated as they are everywhere else. */
+const STEM_EXEMPT = {
+  gPatternConcept: ['the stem prints four terms of an arithmetic ladder and the jump between them IS the question, so the digits they hold constant are the item and not its packaging',
+                    s => {
+                      const n = (s.match(/\d+/g) || []).map(Number);
+                      if (n.length !== 4) return false;
+                      const d = n[1] - n[0];
+                      return d > 0 && n[2] - n[1] === d && n[3] - n[2] === d;
+                    },
+                    'TRAILING CONSTANT']
+};
+function stemVerdict(row, only) {
+  if (!row.n || row.n < 200) return null;
+  for (let k = 0; k < STEM_FEATURES.length; k++) {
+    if (row.f[k].vals < 2) continue;
+    if (only && STEM_FEATURES[k][0] === only) continue;
+    if (row.f[k].hit > STEM_CAP && row.f[k].hit - row.base > STEM_LIFT_CAP)
+      return `the stem's ${STEM_FEATURES[k][0]} names the key on ${(100 * row.f[k].hit).toFixed(1)}% of held-out draws, ${(100 * (row.f[k].hit - row.base)).toFixed(1)} points over the best answer that reads no stem at all`;
+  }
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const ex = STEM_EXEMPT[g.name];
+  const row = stemBank(g.fn, ex);
+  if (!row.n) continue;
+  row.name = g.name; row.lvl = g.level;
+  /* an exemption that covers ONE property leaves the other four gated, so the
+     verdict is still taken - with that property skipped - and the declaration is
+     printed beside it */
+  if (ex) {
+    if (row.premise === row.n) row.exempt = `${ex[2]} exempt by name: ${ex[0]}, re-checked on all ${row.n} draws`;
+    else row.err = `allowlisted by name, but the premise FAILED - ${ex[0]} on only ${(100 * row.premise / row.n).toFixed(1)}% of draws`;
+  }
+  if (!row.err) row.err = stemVerdict(row, ex ? ex[2] : null);
+  stemRows.push(row);
+  if (row.err) failures++;
+}
+/* TWO NEGATIVE CONTROLS, and both are now FAITHFUL REPLICAS rather than
+   rebuilds-from-memory (W4, ELEVENTH pass). The v11 controls were re-derived
+   inside this file from their own arithmetic, and two of the three had drifted
+   from the generator they named - the board control printed gPatternConcept as
+   203 rows worth 77.8% where live v10 measures 139 rows / 78.2%, gAddConcept at
+   68.2% against 73.1%, and this section's v10CompareError replica dropped BOTH of
+   the real generator's ones-digit guards, which were the two guards that made its
+   leak total. A control that has drifted from the item it names has stopped
+   testing that item. Every control in this file now runs the FROZEN generator
+   itself, lifted verbatim out of the commit that shipped it and parked in
+   tools/fixtures/p3numbers-v10.mjs where no lane fix can reach it.
+
+     v10 gCompareError (91b1178) - must go red on NUMERAL LENGTHS: the two numbers
+       in its stem have different digit counts on exactly the draws whose key is
+       "only compared the first digit of each".
+     v11 gStandsError (21e2417) - must go red at ~100%: this is the bank the
+       eleventh pass killed by counting the characters in the claim, and it is
+       here to prove the W3 normalisation above is doing its job. Scored on the
+       raw option strings it reads ~70%; scored on the normalised key it reads
+       what the route is actually worth. If this control ever falls back towards
+       70%, the pronoun is being counted as part of the misconception again. */
+let stemControl = 'the v10 gCompareError stem was not rejected by the stem ruler';
+{
+  const ctl = stemBank(gCompareErrorV10);
+  const verdict = stemVerdict(ctl);
+  if (verdict && /NUMERAL LENGTHS/.test(verdict))
+    stemControl = `the v10 gCompareError stem goes red - ${verdict}`;
+  else failures++;
+}
+let stemNormControl = 'the v11 gStandsError stem was not rejected by the normalised stem ruler';
+{
+  const ctl = stemBank(gStandsErrorV11);
+  const verdict = stemVerdict(ctl);
+  const hit = ctl.f[0].hit;
+  if (verdict && /NUMERAL LENGTHS/.test(verdict) && hit >= 0.95)
+    stemNormControl = `the v11 gStandsError stem goes red at the route's real worth - ${verdict}`;
+  else {
+    stemNormControl = `the v11 gStandsError control reads only ${(100 * hit).toFixed(1)}% on NUMERAL LENGTHS - the key's unit is being diluted by something the stem supplies, which is the W3 defect`;
+    failures++;
+  }
+}
+
+/* ---------- BOARD WORTH x EXPOSURE (tenth-pass KILL, v11) ---------------------
+   RESIDUAL 23 AND RESIDUAL 6 SAT IN THE SWEEP NOTE FOR THREE PASSES AND NOBODY
+   MULTIPLIED THEM. Residual 23 recorded that `gPatternConcept` prints only 139
+   distinct option rows and `gAddConcept` only 64, and that the row alone pins the
+   key on most of them. Residual 6 recorded that `gPatternConcept` is served 5.00
+   times per 30-item session at 0.45 accuracy and `gAddConcept` 3.37. Put together
+   they are a child who owns the whole board inside thirty sessions and then
+   answers 78.17% / 73.11% of both banks with no mathematics - a kill on both
+   clauses of the termination rule, and the PM ruled that the kill STANDS.
+
+   WHAT IS MEASURED, for every bank in the topic.
+
+     SATURATION - the distinct option rows over N draws against the rows over
+       N/2. A board that stops growing is FINITE and is a thing a child can own;
+       a board still doubling with the sample is not a board at all, and is
+       reported and not gated. This is the "finite option pool" clause, measured
+       rather than asserted.
+     RECALL - full-table recall accuracy: remember, for each row, the answer it
+       carries most often, and answer with it. 25.0% is chance on four options.
+     SERVED - items per 30-item session through the app's own MQI.createFeed and
+       its own 3-right-up / 2-wrong-down climb, at 0.80 and at 0.45 accuracy.
+     SESSIONS TO OWN - rows divided by the busier of the two served figures: how
+       many sessions a child needs before the whole board has gone past once.
+
+   THE GATE. A bank FAILS when its board is finite AND recall is 60% or more AND
+   it is served at least once per session AND the whole board goes past inside
+   SESSIONS_CAP sessions. All four clauses are load-bearing: the third is the
+   PM's exposure clause, and the fourth is what stops the gate reading a 500-row
+   board a child meets once every six hundred sessions as the same defect as a
+   7-row board they own in three.
+
+   Negative controls: the v10 gPatternConcept board and the v10 gAddConcept board,
+   both rebuilt here from their own arithmetic. Both must come out RED. --- */
+const BOARD_N = 4000, BOARD_RECALL_CAP = 0.60, BOARD_SERVED_CAP = 1.0;
+const BOARD_SESSIONS_CAP = 60, BOARD_GROWTH = 1.10, BOARD_SESSIONS = 400;
+const boardRows = [];
+function boardBank(draw) {
+  const half = BOARD_N >> 1;
+  const rowsHalf = new Set(), tab = new Map();
+  let n = 0;
+  for (let i = 0; i < BOARD_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return { n: 0, threw: e.message }; }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !(q.correct >= 0)) continue;
+    const row = opts.slice().sort().join(' | ');
+    if (i < half) rowsHalf.add(row);
+    if (!tab.has(row)) tab.set(row, new Map());
+    const t = tab.get(row);
+    t.set(opts[q.correct], (t.get(opts[q.correct]) || 0) + 1);
+    n++;
+  }
+  let worth = 0;
+  for (const [, t] of tab) worth += Math.max.apply(null, [...t.values()]);
+  /* the key share of every option string that ever appears: the 1:3 the PM asked
+     for, reported as the widest and the narrowest share on the board */
+  return { n, rows: tab.size, half: rowsHalf.size, recall: n ? worth / n : 0,
+           finite: rowsHalf.size ? tab.size / rowsHalf.size <= BOARD_GROWTH : false };
+}
+/* exposure, through the app's own feed and its own climb */
+function servedPerSession(acc) {
+  const T = TOPICS['p3numbers'];
+  const tally = new Map();
+  for (let s = 0; s < BOARD_SESSIONS; s++) {
+    const feed = MQI.createFeed('p3numbers');
+    let level = 1, r = 0, w = 0;
+    for (let i = 0; i < 30; i++) {
+      const q = feed.next(level);
+      const nm = q.__gen;
+      if (nm) tally.set(nm, (tally.get(nm) || 0) + 1);
+      if (Math.random() < acc) { r++; w = 0; if (r >= 3 && level < 3) { level++; r = 0; } }
+      else { w++; r = 0; if (w >= 2 && level > 1) { level--; w = 0; } }
+    }
+  }
+  const out = new Map();
+  for (const [k, v] of tally) out.set(k, v / BOARD_SESSIONS);
+  return out;
+}
+let served80 = new Map(), served45 = new Map();
+{
+  /* stamp generator identity on the pool entries, exactly as tools/feed-sim.mjs
+     does, so the feed's own selection code reports who it served */
+  const T = TOPICS['p3numbers'];
+  const originals = { 1: T.pools[1], 2: T.pools[2], 3: T.pools[3] };
+  for (const lvl of [1, 2, 3]) {
+    T.pools[lvl] = T.pools[lvl].map(pr => {
+      const fn = pr[0], nm = fn.name;
+      return [() => { const q = fn(); q.__gen = nm; return q; }, pr[1]];
+    });
+  }
+  served80 = servedPerSession(0.80);
+  served45 = servedPerSession(0.45);
+  for (const lvl of [1, 2, 3]) T.pools[lvl] = originals[lvl];
+}
+function boardVerdict(row) {
+  if (!row.n) return null;
+  if (!row.finite) return null;
+  const served = Math.max(row.s80 || 0, row.s45 || 0);
+  const toOwn = served ? row.rows / served : Infinity;
+  if (row.recall >= BOARD_RECALL_CAP && served >= BOARD_SERVED_CAP && toOwn <= BOARD_SESSIONS_CAP)
+    return `a FINITE board of ${row.rows} rows worth ${(100 * row.recall).toFixed(1)}% to full-table recall, served ${served.toFixed(2)} per session - the whole board goes past in ${toOwn.toFixed(0)} sessions`;
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = boardBank(g.fn);
+  if (!row.n) continue;
+  row.name = g.name; row.lvl = g.level;
+  row.s80 = served80.get(g.name) || 0;
+  row.s45 = served45.get(g.name) || 0;
+  row.err = boardVerdict(row);
+  boardRows.push(row);
+  if (row.err) failures++;
+}
+/* THE TWO BOARD CONTROLS ARE THE FROZEN v10 GENERATORS THEMSELVES (W4, ELEVENTH
+   pass). They used to be rebuilt here from their own arithmetic, and both had
+   drifted from the item they name: gPatternConcept came out as 203 rows worth
+   77.8% where live v10 is 139 rows / 78.2%, and gAddConcept as 68.2% where live
+   v10 is 73.1% - a row count 46% high on one and a recall 5 points low on the
+   other. Both still went red, so no gate was compromised, but a control that no
+   longer reproduces the defect it is named for has stopped testing for it. The
+   two generators now run verbatim out of tools/fixtures/p3numbers-v10.mjs.
+   Their SERVED figures are the measured v10 exposures and are pinned here,
+   because the v10 feed no longer exists to measure. */
+let boardControl = 'the v10 option boards were not rejected by the board gate';
+{
+  const a = boardBank(gPatternConceptV10), b = boardBank(gAddConceptV10);
+  a.s45 = 5.00; a.s80 = 1.28; a.name = 'v10 gPatternConcept';
+  b.s45 = 3.37; b.s80 = 0.75; b.name = 'v10 gAddConcept';
+  const va = boardVerdict(a), vb = boardVerdict(b);
+  if (va && vb) boardControl = `the frozen v10 option boards go red - gPatternConcept: ${va}; gAddConcept: ${vb}`;
+  else failures++;
+}
+
+/* ---------- STEM ABSTRACTION x EXPOSURE (W6, ELEVENTH pass) -------------------
+   THE BOARD GATE ABOVE READS THE OPTION ROW AND NOTHING ELSE, AND THAT IS HALF
+   OF THE BOARD A CHILD ACTUALLY OWNS. gAddConcept's option-row board is 7 rows
+   at 25.9 / 26.2% - chance, exactly as the v11 rebuild claims. Abstract its STEM
+   the way a child does, though - the question it asks x the place words it
+   prints x the small digits it prints, with the big numerals thrown away because
+   nobody memorises those - and the table was 42 rows with 70.81 / 71.31% recall,
+   served 3.31 per session, owned in ~55 sessions. Finite, over 60%, over 1.00 a
+   session, inside 60 sessions: all four clauses of this file's own gate, on a
+   surface the gate could not see. It is the same blind spot the v11 option-row
+   board was built to close, one layer up.
+
+   THE ABSTRACTION, and why it is this one. Every numeral of THREE OR MORE digits
+   is replaced by `#`; everything else survives - the question's words, the place
+   names, the one- and two-digit numbers a child can hold. That is deliberately
+   generous to the bank: it keeps more of the stem than a child would, so the
+   table it builds is WIDER than the real one and the gate is conservative. A
+   bank fails on the same four clauses as the option-row board.
+
+   THE CARVE-OUT, written down so it can be checked rather than asserted: a stem
+   table is exempt only where the stem set IS the syllabus fact set - where owning
+   the table means owning the facts the topic exists to teach, and there is
+   nothing left over. gAddConcept was offered that carve-out on its 42 rows and
+   does not get it: `keep` ran 2..8 and the carried digit was always 1 and the
+   ones column never appeared, so the 42 rows were a proper subset of the P3
+   digit x column fact set with a question type stapled on - not the fact set. The
+   bank was widened instead (see js/topics/p3-whole-numbers.js): the stem no
+   longer names the column on any draw, so the abstraction cannot pin the key.
+
+   Negative control: the frozen v11 gAddConcept - the bank this gate was built
+   for, whose option row is worth exactly chance and whose stem table the eleventh
+   pass measured at 42 rows / 70.8%. It must come out RED. --- */
+const stemBoardRows = [];
+/* the child's NAME and the pronoun that follows from it are not part of what a
+   child memorises - they are the same ten names on every bank in the topic - so
+   they are abstracted away with the big numerals. Leaving them in multiplies
+   every table by ten and hides a 42-row board inside a 420-row one, which is
+   exactly how a finite table escapes a finiteness test. */
+const KID_RE_G = new RegExp('\\b(?:' + KID_NAMES + ')\\b', 'g');
+const stemAbstract = s => strip(s)
+  .replace(KID_RE_G, '@')
+  .replace(/\b(?:He|She|he|she|His|Her|his|her)\b/g, '@')
+  .replace(/\d{3,}/g, '#');
+function stemBoardBank(draw) {
+  const half = BOARD_N >> 1;
+  const rowsHalf = new Set(), tab = new Map();
+  let n = 0;
+  for (let i = 0; i < BOARD_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return { n: 0, threw: e.message }; }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !(q.correct >= 0)) continue;
+    const row = stemAbstract(strip(q.q) + ' ' + strip(q.extra || ''));
+    if (i < half) rowsHalf.add(row);
+    if (!tab.has(row)) tab.set(row, new Map());
+    const t = tab.get(row);
+    const key = stemNorm(opts[q.correct]);
+    t.set(key, (t.get(key) || 0) + 1);
+    n++;
+  }
+  let worth = 0;
+  for (const [, t] of tab) worth += Math.max.apply(null, [...t.values()]);
+  return { n, rows: tab.size, half: rowsHalf.size, recall: n ? worth / n : 0,
+           finite: rowsHalf.size ? tab.size / rowsHalf.size <= BOARD_GROWTH : false };
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = stemBoardBank(g.fn);
+  if (!row.n) continue;
+  row.name = g.name; row.lvl = g.level;
+  row.s80 = served80.get(g.name) || 0;
+  row.s45 = served45.get(g.name) || 0;
+  row.err = boardVerdict(row);
+  stemBoardRows.push(row);
+  if (row.err) failures++;
+}
+let stemBoardControl = 'the v11 gAddConcept stem table was not rejected by the stem-abstraction gate';
+{
+  const c = stemBoardBank(gAddConceptV11);
+  c.s45 = 3.31; c.s80 = 0.78; c.name = 'v11 gAddConcept';
+  const v = boardVerdict(c);
+  /* the option-row board of the SAME generator is the other half of the control:
+     it must stay at chance, or this gate is just the board gate wearing a hat */
+  const row = boardBank(gAddConceptV11);
+  if (v && row.recall < 0.35) stemBoardControl = `the frozen v11 gAddConcept stem table goes red while its option row stays at chance (${(100 * row.recall).toFixed(1)}%) - ${v}`;
+  else failures++;
+}
+
+
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
 const setRows = [];
 for (const tid of Object.keys(TOPICS)) {
@@ -3661,6 +6235,232 @@ console.log('-'.repeat(84));
 for (const r of rows) {
   console.log(pad(r.topic, 12) + pad(r.name, 18) + pad(r.skill, 12) + pad(r.n, 7) + pad(r.distinct, 10) + pad(r.cov + '%', 9) + (r.err ? 'FAIL  ' + r.err : 'pass'));
 }
+if (rankRows.length) {
+  console.log(`\nMAGNITUDE RANK  p3numbers, ${RANK_N} draws per numeric bank  (every rank ${Math.round(RANK_FLOOR * 100)}-${Math.round(RANK_CAP * 100)}%, smallest/largest < ${Math.round(EXTREME_CAP * 100)}%)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('SMALLEST', 10) + pad('2nd', 8) + pad('3rd', 8) + pad('LARGEST', 9) + 'RESULT');
+  console.log('-'.repeat(84));
+  for (const r of rankRows) {
+    const f = r.tally.map(t => (100 * t / r.seen).toFixed(1) + '%');
+    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.seen, 7) + pad(f[0], 10) + pad(f[1], 8) + pad(f[2], 8) + pad(f[3], 9) +
+      (r.err ? 'FAIL  ' + r.err
+             : r.exempt ? 'exempt (allowlisted by name): no number in the stem on any of ' + r.seen + ' draws, so the options ARE the data'
+             : r.flat ? 'flat-rank exempt (allowlisted by name): the wrong answers STRADDLE the range on all ' + r.seen + ' draws, so neither bound settles it and the key is 2nd or 3rd by construction'
+             : 'pass'));
+  }
+  const gated = rankRows.filter(r => !r.exempt && !r.flat).length;
+  console.log('');
+  if (rankRows.every(r => !r.err)) console.log(`ok   magnitude rank: ${gated} numeric banks inside ${Math.round(RANK_FLOOR * 100)}-${Math.round(RANK_CAP * 100)}% / ${Math.round(EXTREME_CAP * 100)}%, ${rankRows.filter(r => r.exempt).length} comparison anchors and ${rankRows.filter(r => r.flat).length} straddle bank${rankRows.filter(r => r.flat).length === 1 ? '' : 's'} exempt by name, every premise re-checked`);
+  console.log(`${/goes red/.test(rankControl) ? 'ok  ' : 'FAIL'} magnitude negative control: ${rankControl}`);
+  console.log(`${/goes red/.test(betweenControl) ? 'ok  ' : 'FAIL'} magnitude negative control: ${betweenControl}`);
+}
+if (lenRows.length) {
+  console.log(`\nLENGTH RANK  p3numbers, ${LEN_N} draws per bank  (the key uniquely shortest OR uniquely longest on < ${Math.round(LEN_CAP * 100)}% of draws)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('uSHORTEST', 12) + pad('uLONGEST', 11) +
+    pad('PICK-SHORT', 12) + pad('PICK-LONG', 11) + pad('LO-STEP', 9) + pad('HI-STEP', 9) + pad('SPREAD', 9) + 'RESULT');
+  console.log('-'.repeat(120));
+  for (const r of lenRows) {
+    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) +
+      pad((100 * r.uShort / r.n).toFixed(1) + '%', 12) + pad((100 * r.uLong / r.n).toFixed(1) + '%', 11) +
+      pad((100 * r.pShort / r.n).toFixed(1) + '%', 12) + pad((100 * r.pLong / r.n).toFixed(1) + '%', 11) +
+      pad((r.step / r.n).toFixed(2), 9) + pad((r.stepHi / r.n).toFixed(2), 9) + pad((r.spread / r.n).toFixed(2), 9) +
+      (r.err ? 'FAIL  ' + r.err : 'pass'));
+  }
+  console.log('');
+  console.log(`     PICK-SHORT / PICK-LONG are the value of "pick one of the shortest (longest) options", counted 1/k over the k options tied at that extreme.`);
+  console.log(`     LO-STEP / HI-STEP (fifth pass, W1) are the gap in CHARACTERS from the shortest option up to the next length, and from the longest option down to`);
+  console.log(`     the next, and SPREAD is shortest to longest. A key tied at one extreme is read off the step at THAT end: gCompareError's is LO-STEP. PICK-SHORT`);
+  console.log(`     measures the value of the rule and uSHORTEST measures uniqueness; only MIN-STEP says whether the eye can see which options the rule points at.`);
+  console.log(`     All REPORTED, not gated: 25.0% is chance, and a key tied with one other option reads 50.0% under PICK-SHORT and 0.0% under "uniquely".`);
+  if (lenRows.every(r => !r.err)) console.log(`ok   length rank: ${lenRows.length} banks, no key uniquely shortest or uniquely longest on ${Math.round(LEN_CAP * 100)}% of draws`);
+  console.log(`${/goes red/.test(lenControl) ? 'ok  ' : 'FAIL'} length negative control: ${lenControl}`);
+}
+if (widthRows.length) {
+  console.log(`\nWIDTH-CLASS RANK  p3numbers, ${WIDTH_N} draws per numeric bank  (both directions: each of MIN / MID / MAX < ${Math.round(WIDTH_RANK_CAP * 100)}%, "commonest width, then smallest / largest" < ${Math.round(WIDTH_RULE_CAP * 100)}%, the KEY IN elimination worth < ${Math.round(WIDTH_ELIM_CAP * 100)}%, and no 2-2 tie branch on >= ${Math.round(WIDTH_TIE_FLOOR * 100)}% of draws with the key on one side past ${Math.round(WIDTH_TIE_CAP * 100)}%)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('CLASS', 8) + pad('KEY MIN', 9) +
+    pad('KEY MID', 9) + pad('KEY MAX', 9) + pad('KEY OUT', 9) + pad('KEY IN', 9) + pad('ELIM', 8) +
+    pad('TIE', 8) + pad('TIE WIDE', 10) + pad('NO CLASS', 10) + 'RESULT');
+  console.log('-'.repeat(150));
+  for (const r of widthRows) {
+    const f = k => (100 * r[k] / r.n).toFixed(1) + '%';
+    const cls = r.min + r.mid + r.max + r.out;
+    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) +
+      pad((100 * cls / r.n).toFixed(1) + '%', 8) +
+      pad(f('min'), 9) + pad(f('mid'), 9) + pad(f('max'), 9) + pad(f('out'), 9) +
+      pad(cls ? (100 * (r.min + r.mid + r.max) / cls).toFixed(1) + '%' : '-', 9) +
+      pad(f('elim'), 8) + pad(f('tie'), 8) +
+      pad(r.tie ? (100 * r.tieWide / r.tie).toFixed(1) + '%' : '-', 10) +
+      pad(f('none'), 10) +
+      (r.err ? 'FAIL  ' + r.err : (r.tieDeclared || 'pass')));
+  }
+  console.log('');
+  console.log(`     CLASS is how often a commonest width exists at all (at least two options, never all four - a row that is all one width is the magnitude gate's).`);
+  console.log(`     KEY OUT means the rule fires and points at a WRONG option; NO CLASS means it declines. MIN is the rule the seventh pass killed this topic with.`);
+  console.log(`     KEY IN (W3, eighth pass) is the OTHER direction: of the draws where a class exists, how often the key is inside it - at 100% "cross out every`);
+  console.log(`     option that is not the commonest width" is a free elimination that is never wrong. ELIM is what that rule is actually WORTH to a guesser, and it`);
+  console.log(`     is ELIM that is gated at ${Math.round(WIDTH_ELIM_CAP * 100)}%: a certainty that keeps three options, or that fires on one draw in fifty, is not a route.`);
+  console.log(`     TIE (W4) is the 2-2 branch the class rule DECLINES on, and TIE WIDE is how often the key is in the wider pair of it. A bank that ships a tie on`);
+  console.log(`     ${Math.round(WIDTH_TIE_FLOOR * 100)}% of draws or more fails if the key sits on the same side of it past ${Math.round(WIDTH_TIE_CAP * 100)}% (ninth pass, Call 3: the floor was 10%, which sat 1.6 points`);
+  console.log(`     above the only surviving tie in the topic and therefore described it instead of gating it). One bank is allowlisted by name on the tie clause,`);
+  console.log(`     with its trade re-checked on the option board it buys; no bank is exempt from the other four.`);
+  {
+    /* Call 2's amendment: a per-bank ELIM column nobody reads is a per-bank
+       column nobody reads. The worst figure in the topic is named here, so the
+       next pass can see it move without re-deriving it by hand. */
+    const worst = widthRows.slice().sort((a, b) => b.elim / b.n - a.elim / a.n)[0];
+    if (worst) console.log(`     WORST ELIM in the topic: ${worst.name} at ${(100 * worst.elim / worst.n).toFixed(2)}%, ${(100 * (WIDTH_ELIM_CAP - worst.elim / worst.n)).toFixed(1)} points under the ${Math.round(WIDTH_ELIM_CAP * 100)}% cap.`);
+    for (const r of widthRows) if (r.tieDeclared) console.log(`     ${r.name}: ${r.tieDeclared}`);
+  }
+  if (widthRows.every(r => !r.err)) console.log(`ok   width-class rank: ${widthRows.length} numeric banks, no key MIN / MID / MAX past ${Math.round(WIDTH_RANK_CAP * 100)}%, no width rule past ${Math.round(WIDTH_RULE_CAP * 100)}%, no elimination worth ${Math.round(WIDTH_ELIM_CAP * 100)}%, and every 2-2 tie branch either absent or declared by name`);
+  console.log(`${/goes red/.test(widthControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${widthControl}`);
+  console.log(`${/goes red/.test(elimControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${elimControl}`);
+  console.log(`${/goes red/.test(tieControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${tieControl}`);
+}
+if (shapeRows.length) {
+  console.log(`\nSHAPE RULER  p3numbers, ${SHAPE_N} draws per numeric bank  (per-option SHAPE: no route past ${Math.round(SHAPE_RULE_CAP * 100)}%, and no shape value unique to the key or to all three distractors on ${Math.round(SHAPE_UNIQ_CAP * 100)}% of draws)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) +
+    SHAPE_FEATURES.map(f => pad(f[0].slice(0, 12).toUpperCase(), 14) + pad('uKEY', 8) + pad('uWRONG', 9) + pad('ROUTE', 8)).join('') + 'RESULT');
+  console.log('-'.repeat(170));
+  for (const r of shapeRows) {
+    let line = pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7);
+    for (let k = 0; k < SHAPE_FEATURES.length; k++) {
+      const c = r.f[k], best = Math.max(c.outSmall, c.outLarge, c.inSmall, c.inLarge);
+      line += pad('', 14) + pad((100 * c.uKey / r.n).toFixed(1) + '%', 8) +
+        pad((100 * c.uWrong / r.n).toFixed(1) + '%', 9) + pad((100 * best / r.n).toFixed(1) + '%', 8);
+    }
+    console.log(line + (r.err ? 'FAIL  ' + r.err : (r.exempt || 'pass')));
+  }
+  console.log('');
+  console.log(`     The ${SHAPE_FEATURES.length} features are ${SHAPE_FEATURES.map(f => '"' + f[0] + '"').join(', ')}, read off the RENDERED option and nothing else.`);
+  console.log(`     uKEY is "the key is the only option with this shape" and uWRONG is "all three distractors have it and the key does not" - the two directions`);
+  console.log(`     the eighth pass's kill lived between. ROUTE is the best of the four orderings the shape allows: cross out the options that have the shape (or`);
+  console.log(`     the ones that do not), then take the smallest (or the largest) of what is left. The kill was the first of those, worth 67.07% on gPatternConcept.`);
+  console.log(`     The ROUTE cap is ${Math.round(SHAPE_RULE_CAP * 100)}% (ninth pass, Call 1 - it was 60%, which was gAddConcept's structural 51.9% plus slack nothing measured). gAddConcept is`);
+  console.log(`     allowlisted BY NAME with its premise re-checked on every draw, and it is the ONLY exemption; at 60% this cap would have missed four of the`);
+  console.log(`     seven banks the ninth pass's digit-column route lit up, and at ${Math.round(SHAPE_RULE_CAP * 100)}% it would have caught all four.`);
+  if (shapeRows.every(r => !r.err)) console.log(`ok   shape ruler: ${shapeRows.length} numeric banks, no shape route past ${Math.round(SHAPE_RULE_CAP * 100)}% and no shape value unique to the key or to all three distractors past ${Math.round(SHAPE_UNIQ_CAP * 100)}%, ${Object.keys(SHAPE_EXEMPT).length} banks allowlisted by name with every premise re-checked on every draw`);
+  console.log(`${/goes red/.test(shapeControl) ? 'ok  ' : 'FAIL'} shape negative control: ${shapeControl}`);
+}
+if (colRows.length) {
+  console.log(`\nCOLUMN RULER  p3numbers, ${COL_N} draws per numeric bank  (the four options read as a right-aligned column of digits: "cross out any answer whose digit is in the minority" < ${Math.round(COL_ROUTE_CAP * 100)}% outright and worth < ${Math.round(COL_VALUE_CAP * 100)}%, and its mirror < ${Math.round(COL_LONER_CAP * 100)}%)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('ROUTE', 9) + pad('VALUE', 9) +
+    pad('LONER', 9) + pad('3-of-4 COL', 12) + 'RESULT');
+  console.log('-'.repeat(120));
+  for (const r of colRows) {
+    const f = k => (100 * r[k] / r.n).toFixed(1) + '%';
+    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) + pad(f('route'), 9) + pad(f('value'), 9) +
+      pad(f('loner'), 9) + pad(f('three'), 12) + (r.err ? 'FAIL  ' + r.err : 'pass'));
+  }
+  console.log('');
+  console.log(`     Every named slip in this topic used to be a ONE-COLUMN misreading of the key, so three of them beside it put the key's digit in three of the`);
+  console.log(`     four printed numbers in every column - the key was the column-wise CONSENSUS of its own option row, by construction, and nothing in the`);
+  console.log(`     harness could express that. VALUE is the unit that binds: 25.0% is chance, and a rule that leaves all four options - or crosses the whole`);
+  console.log(`     row out - scores exactly chance. 3-of-4 COL is REPORTED, not gated: it is the shape that hands ONE option away, and what one free`);
+  console.log(`     cross-out is worth is what VALUE already counts. LONER is the mirror, which is the only direction any earlier pass had ever looked at.`);
+  if (colRows.every(r => !r.err)) console.log(`ok   column ruler: ${colRows.length} numeric banks, no minority-elimination route past ${Math.round(COL_ROUTE_CAP * 100)}% outright, none worth ${Math.round(COL_VALUE_CAP * 100)}% to a guesser, and no loner direction past ${Math.round(COL_LONER_CAP * 100)}%`);
+  console.log(`${/goes red/.test(colControl) ? 'ok  ' : 'FAIL'} column negative control: ${colControl}`);
+}
+if (tokRows.length) {
+  console.log(`\nPHRASE RULER  p3numbers, ${TOK_N} draws per prose bank  (no contiguous phrase of <= ${PHRASE_CAP} words, and no unordered word set of <= ${SET_CAP} words, in the key alone - or in all three distractors alone - on >= ${Math.round(100 * TOK_CAP)}% of draws)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 5) + pad('N', 6) + pad('KEY-ONLY PHRASE', 26) + pad('RATE', 8) +
+    pad('KEY-ONLY WORD SET', 22) + pad('RATE', 8) + pad('ALL-WRONG', 16) + pad('RATE', 8) +
+    pad('MIN-n KEY', 11) + pad('MIN-n D min/mid/max', 21) + pad('GAP>' + GAP_CAP, 9) + pad('SUPERSET', 10) + 'RESULT');
+  console.log('-'.repeat(180));
+  for (const r of tokRows) {
+    const k = tokTop(r.keyOnly), w = tokTop(r.wrongOnly), st = tokTop(r.setOnly), d = tokDist(r);
+    console.log(pad(r.name, 18) + pad(r.lvl, 5) + pad(r.n, 6) +
+      pad('"' + k[0] + '"', 26) + pad((100 * k[1] / r.n).toFixed(1) + '%', 8) +
+      pad(st[0], 22) + pad((100 * st[1] / r.n).toFixed(1) + '%', 8) +
+      pad('"' + w[0] + '"', 16) + pad((100 * w[1] / r.n).toFixed(1) + '%', 8) +
+      pad(r.dn ? (r.kSum / r.dn).toFixed(2) : tokMinN(r), 11) +
+      pad(d.map(x => x.toFixed(2)).join(' / '), 21) +
+      pad(r.dn ? (100 * r.gap / r.dn).toFixed(1) + '%' : '-', 9) +
+      pad((100 * r.superset / r.n).toFixed(1) + '%', 10) +
+      (r.err ? 'FAIL  ' + r.err : 'pass'));
+  }
+  console.log('');
+  console.log(`     MIN-n KEY is the length in WORDS of the shortest key-only phrase, measured with NO cap: at n = the key's own length every four-option bank is`);
+  console.log(`     key-only by identity, so an uncapped failure rule on the key alone is unsatisfiable, and a bank whose MIN-n sits above ${PHRASE_CAP} is visible here.`);
+  console.log(`     MIN-n D is the SAME measurement on the three DISTRACTORS, printed min / mid / max - the mirror the sixth pass's kill lived in. GAP>${GAP_CAP} is how`);
+  console.log(`     often the key's exceeds EVERY distractor's by more than ${GAP_CAP} words, and it IS gated at ${Math.round(100 * TOK_CAP)}%: a long key-only phrase is safe, a long one beside`);
+  console.log(`     three short ones is the elimination "cross out the options that say something none of the others say". Measure every option, print the spread.`);
+  console.log(`     SUPERSET is how often some distractor holds EVERY word the key holds; at 100% no word combination of ANY size can single the key out.`);
+  if (tokRows.every(r => !r.err)) console.log(`ok   phrase ruler: ${tokRows.length} prose banks, no key-only and no all-distractor phrase or word set at or over ${Math.round(100 * TOK_CAP)}% of draws, and no key MIN-n more than ${GAP_CAP} words past every distractor's`);
+  console.log(`${/goes red/.test(tokControl) ? 'ok  ' : 'FAIL'} phrase negative control: ${tokControl}`);
+  console.log(`${/goes red/.test(gapControl) ? 'ok  ' : 'FAIL'} phrase negative control: ${gapControl}`);
+  console.log(`${/goes red/.test(explControl) ? 'ok  ' : 'FAIL'} explanation negative control: ${explControl}`);
+
+  /* ---------- OPTION-ROW GEOMETRY ---------- */
+  console.log(`\nOPTION-ROW GEOMETRY  p3numbers, ${GEO_N} draws per prose bank  (the numbers INSIDE the option strings: no rank past ${Math.round(GEO_RANK_CAP * 100)}%, no extreme past ${Math.round(GEO_EXTREME_CAP * 100)}%, the loner-names-the-symbol route and the AGREE/DISAGREE singleton each < ${Math.round(GEO_ROUTE_CAP * 100)}%, the repeat narrowing < ${Math.round(GEO_NARROW_CAP * 100)}%)\n`);
+  console.log('GENERATOR         POOL N     FIRST-RANK               LAST-RANK                LONER   SINGLETON  NARROW  PAIR-ROW  RESULT');
+  console.log('-'.repeat(140));
+  for (const r of geoRows) {
+    const f = k => r.rank[k].map(x => (100 * x / r.n).toFixed(0) + '%').join('/').padEnd(22);
+    console.log(`${r.name.padEnd(17)} ${String(r.lvl).padEnd(4)} ${String(r.n).padEnd(5)} ${f('first')}   ${f('last')}   ${(100 * r.loner / r.n).toFixed(1).padStart(5)}%  ${(100 * r.single / r.n).toFixed(1).padStart(7)}%  ${(100 * r.narrow / r.n).toFixed(1).padStart(5)}%  ${(100 * r.pairRow / r.n).toFixed(1).padStart(7)}%  ${r.err ? 'FAIL  ' + r.err : 'pass'}`);
+  }
+  console.log(`
+     PAIR-ROW is how often the row carries one number pair TWICE - the structure that makes the AGREE/DISAGREE singleton
+     impossible, because two lines are then true as written and the split is 2-2 instead of 1-3. NARROW is what that costs:
+     "keep the lines built from the numbers that repeat" is a 50% guesser and it cannot be lowered, which is why it is
+     reported against a 60% cap rather than the 40% the routes take. It is the same structural floor gBetween's straddle
+     is declared at, reached from the other side.`);
+  for (const r of geoRows) if (r.exempt) console.log(`     ${r.name}: ${r.exempt}`);
+  if (geoRows.every(r => !r.err)) console.log(`ok   option-row geometry: ${geoRows.length} prose banks, no position rank past ${Math.round(GEO_RANK_CAP * 100)}%, no loner-to-symbol route and no agree/disagree singleton past ${Math.round(GEO_ROUTE_CAP * 100)}%, and no repeat narrowing past ${Math.round(GEO_NARROW_CAP * 100)}%`);
+  console.log(`${/goes red/.test(geoControl) ? 'ok  ' : 'FAIL'} option-row geometry negative control: ${geoControl}`);
+
+  /* ---------- STEM RULER ---------- */
+  console.log(`\nSTEM RULER  p3numbers, ${STEM_N} draws per bank, fitted on the first half and scored on the second  (no cheap countable property of the printed stem names the key past ${Math.round(STEM_CAP * 100)}%)\n`);
+  console.log('GENERATOR         POOL N     ' + STEM_FEATURES.map(f => f[0].padEnd(18)).join('') + 'RESULT');
+  console.log('-'.repeat(140));
+  for (const r of stemRows) {
+    const cells = r.f.map((c, k) => ((100 * c.hit).toFixed(1) + '% /' + String(c.vals) + 'v').padEnd(18)).join('');
+    console.log(`${r.name.padEnd(17)} ${String(r.lvl).padEnd(4)} ${String(r.n).padEnd(5)} ${cells}${r.err ? 'FAIL  ' + r.err : 'pass'}`);
+  }
+  console.log(`
+     Each cell is the held-out score of "remember which answer this property value carries, and answer with it when it is on
+     the row" - 25.0% is chance - followed by how many distinct values the property took. A bank whose four option strings are
+     fixed and whose key is a function of the stem's shape scores 100%; that is what gCompareError did, twice a session, for
+     ten passes. The question's OWN WORDS are deliberately not a property here: a stem that asks for one of two named things
+     has told the child which to look for, and that is reading, not a tell.`);
+  for (const r of stemRows) if (r.exempt) console.log(`     ${r.name}: ${r.exempt}`);
+  if (stemRows.every(r => !r.err)) console.log(`ok   stem ruler: ${stemRows.length} banks, no numeral-shape or name property of the stem naming the key past ${Math.round(STEM_CAP * 100)}% on held-out draws`);
+  console.log(`${/goes red/.test(stemControl) ? 'ok  ' : 'FAIL'} stem negative control: ${stemControl}`);
+  console.log(`${/goes red/.test(stemNormControl) ? 'ok  ' : 'FAIL'} stem KEY-UNIT control: ${stemNormControl}`);
+
+  /* ---------- BOARD WORTH x EXPOSURE ---------- */
+  console.log(`\nBOARD WORTH x EXPOSURE  p3numbers, ${BOARD_N} draws per bank and ${BOARD_SESSIONS} sessions x 30 through MQI.createFeed  (a FINITE board worth >= ${Math.round(BOARD_RECALL_CAP * 100)}% to full-table recall, served >= ${BOARD_SERVED_CAP.toFixed(2)} per session, and owned inside ${BOARD_SESSIONS_CAP} sessions, FAILS)\n`);
+  console.log('GENERATOR         POOL ROWS    FINITE  RECALL   SERVED@0.80  SERVED@0.45  SESSIONS TO OWN  RESULT');
+  console.log('-'.repeat(140));
+  for (const r of boardRows.slice().sort((a, b) => b.recall - a.recall)) {
+    const served = Math.max(r.s80, r.s45);
+    const own = r.finite && served ? (r.rows / served).toFixed(0) : '-';
+    console.log(`${r.name.padEnd(17)} ${String(r.lvl).padEnd(4)} ${String(r.rows).padEnd(7)} ${(r.finite ? 'yes' : 'no').padEnd(7)} ${(100 * r.recall).toFixed(1).padStart(5)}%   ${r.s80.toFixed(2).padStart(10)}   ${r.s45.toFixed(2).padStart(10)}   ${String(own).padStart(14)}   ${r.err ? 'FAIL  ' + r.err : 'pass'}`);
+  }
+  console.log(`
+     FINITE is measured, not asserted: the distinct rows over ${BOARD_N} draws against the rows over the first half, and a board
+     that has stopped growing is one a child can own. A board still doubling with the sample is reported and not gated - it is
+     not a board. RECALL is full-table recall: remember, for each row, the answer it carries most often. 25.0% is chance.`);
+  if (boardRows.every(r => !r.err)) console.log(`ok   board gate: ${boardRows.filter(r => r.finite).length} finite boards of ${boardRows.length} banks, none worth ${Math.round(BOARD_RECALL_CAP * 100)}% to full-table recall while served ${BOARD_SERVED_CAP.toFixed(2)} per session and owned inside ${BOARD_SESSIONS_CAP} sessions`);
+  console.log(`${/go red/.test(boardControl) ? 'ok  ' : 'FAIL'} board negative control: ${boardControl}`);
+
+  /* ---------- STEM ABSTRACTION x EXPOSURE ---------- */
+  console.log(`\nSTEM ABSTRACTION x EXPOSURE  p3numbers, ${BOARD_N} draws per bank  (the stem -> key table, with every numeral of 3+ digits abstracted away: same four clauses as the option-row board)\n`);
+  console.log('GENERATOR         POOL ROWS    FINITE  RECALL   SERVED@0.80  SERVED@0.45  SESSIONS TO OWN  RESULT');
+  console.log('-'.repeat(140));
+  for (const r of stemBoardRows.slice().sort((a, b) => b.recall - a.recall)) {
+    const served = Math.max(r.s80, r.s45);
+    const own = r.finite && served ? (r.rows / served).toFixed(0) : '-';
+    console.log(`${r.name.padEnd(17)} ${String(r.lvl).padEnd(4)} ${String(r.rows).padEnd(7)} ${(r.finite ? 'yes' : 'no').padEnd(7)} ${(100 * r.recall).toFixed(1).padStart(5)}%   ${r.s80.toFixed(2).padStart(10)}   ${r.s45.toFixed(2).padStart(10)}   ${String(own).padStart(14)}   ${r.err ? 'FAIL  ' + r.err : 'pass'}`);
+  }
+  console.log(`
+     The option row is half the board a child owns; this is the other half. A stem abstraction keeps the question's words, the
+     place names and the small numbers, and throws away every numeral of three digits or more - nobody memorises those. It is
+     deliberately generous: keeping more of the stem than a child would makes the table WIDER and the gate more conservative.
+     A stem table is exempt only where the stem set IS the syllabus fact set, and that claim is written down where it is made.`);
+  if (stemBoardRows.every(r => !r.err)) console.log(`ok   stem-abstraction gate: ${stemBoardRows.filter(r => r.finite).length} finite stem tables of ${stemBoardRows.length} banks, none worth ${Math.round(BOARD_RECALL_CAP * 100)}% to full-table recall while served ${BOARD_SERVED_CAP.toFixed(2)} per session and owned inside ${BOARD_SESSIONS_CAP} sessions`);
+  console.log(`${/goes red/.test(stemBoardControl) ? 'ok  ' : 'FAIL'} stem-abstraction negative control: ${stemBoardControl}`);
+
+}
+
 console.log('');
 for (const s of setRows) console.log(`${s.ok ? 'ok  ' : 'FAIL'} buildSetFor(${s.tid})  30 x 3 levels${s.note ? '  ' + s.note : ''}`);
 

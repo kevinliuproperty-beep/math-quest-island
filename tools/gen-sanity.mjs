@@ -2916,9 +2916,38 @@ function p2Gates(q, topic, name) {
      after the word "answering" must be one of the four options. The key is an
      option, so a sentence about the right answer passes; a sentence about a slip
      that did not ship does not. Negative control: gDivGroupWord's v5
-     explanation, which names ranked()'s pool entry rather than the row. */
+     explanation, which names ranked()'s pool entry rather than the row.
+
+     WIDENED (refutation seventh pass 2026-09-16, WOUND 2). "After the word
+     answering" was too narrow by five banks. gMulP2hard, gMulP2easy, gBonds,
+     gAddSubInverse and gNearTen make the identical claim with a different verb -
+     "Stopping one count late GIVES 36", "which GIVES 16", "it LANDS ON 85" - and
+     this gate never looked at them: 74.0 / 71.3 / 28.3 / 25.4 / 25.2% off the
+     row at 20,000 draws x two seeds, 0.0% on v1 and v2 and not a point of
+     movement from v3 to v7, which is the fifth pass's own signature. The v6
+     commit's SURVIVED line, "rule 5 holds topic-wide", was true only of one
+     wording. The rule now reads EVERY answer-naming verb in the file:
+
+       answering | gives | lands on | makes | leaves | is | equals
+
+     Two clauses, because the two halves are not the same claim:
+
+     (a) "answering N" ASSERTS N is on the row, so it binds across the whole
+         explanation with no exemption, exactly as before.
+     (b) The other verbs bind on the explanation's FINAL SENTENCE - where a bank
+         names the slip it wants talked about - and a numeral the STEM PRINTS is
+         exempt. The defect being gated is "an explanation naming a value the
+         child CANNOT SEE"; a number on screen in the question is one the child
+         can see. Without that exemption the rule reds gPlaceP2's true and
+         necessary sentence "the DIGIT is 7, but what it is worth is 70", where
+         the 7 is the digit the stem prints.
+
+     Negative controls, both measured: v7's gMulP2hard ("Stopping one count late
+     gives 36") is RED under this rule on 73.2% of draws and green under the old
+     one; gDivGroupWord's v5 explanation stays red through clause (a). */
   {
     const ex = strip(q.explain || '');
+    const stemNums = new Set((strip((q.q || '') + ' ' + (q.extra || '')).match(/\d+/g) || []));
     const optNums = new Set();
     for (const c of (q.choices || [])) for (const n of (strip(String(c)).match(/\d+/g) || [])) optNums.add(n);
     let am;
@@ -2926,6 +2955,15 @@ function p2Gates(q, topic, name) {
     while ((am = re.exec(ex))) {
       if (!optNums.has(am[1])) {
         return `p2 explanation: it says "answering ${am[1]}", but ${am[1]} is not one of the four options (${[...optNums].join(', ')})`;
+      }
+    }
+    const sentences = ex.split(/(?<=[.!?])\s+/).filter(Boolean);
+    const last = sentences.length ? sentences[sentences.length - 1] : '';
+    const vre = /(gives|lands on|makes|leaves|equals|\bis)\s+(\d+)/g;
+    let vm2;
+    while ((vm2 = vre.exec(last))) {
+      if (!optNums.has(vm2[2]) && !stemNums.has(vm2[2])) {
+        return `p2 explanation: its last sentence says "${vm2[1]} ${vm2[2]}", but ${vm2[2]} is neither one of the four options (${[...optNums].join(', ')}) nor printed in the question`;
       }
     }
   }

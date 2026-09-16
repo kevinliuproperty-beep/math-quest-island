@@ -1632,10 +1632,63 @@ function oracle(q, topic) {
           return `bar compare: two options tie for the ${m[1]} one ${m[2]} than ${on}/${total}`;
         return fEq(want, keyF) ? null : `bar compare: expected ${show(want)}, key is ${show(keyF)}`;
       }
+      /* --- the equal-parts concept check, rebuilt as a PICTURE item -----------
+         SWEEP FRACTIONS REFUTATION, FIFTH PASS 2026-09-16, THE KILL (fourth
+         consecutive pass on this generator). The prose form is retired: four
+         sentences can always be told apart by some feature of the sentences, and
+         three fixes running have moved the tell rather than removed the class.
+         The row is four bare part counts now - no word to count, no frame to
+         match, nothing for a word-set complement to isolate.
+
+         The key is re-derived from the DRAWN BAR and the stem's own number: k
+         equal pieces in the picture, n equal parts cut into each of them in the
+         words, k x n equal parts in the whole. Every distractor must be one of
+         the named beliefs, re-derived the same way, so nothing arbitrary can
+         reach the row. */
+      if ((m = text.match(/cut into equal pieces, and .+'s piece is blue\. (?:She|He) then cuts every piece into (\d+) equal parts\./))) {
+        const per = Number(m[1]);
+        if (on !== 1) return `equal parts: ${on} of ${total} pieces are blue - exactly one piece is the child's`;
+        if (per < 2) return `equal parts: every piece cut into ${per} parts is not a cutting`;
+        if (total < 2) return `equal parts: ${total} piece is not a cutting either`;
+        const want = total * per;
+        if (want > 12) return `equal parts: ${total} x ${per} = ${want} is past the P3 limit of 12`;
+        const opts = (q.choices || []).map(strip);
+        if (!opts.every(o => /^\d+$/.test(o)))
+          return `equal parts: the option row is not four bare part counts (${opts.join(' | ')})`;
+        if (new Set(opts).size !== 4) return `equal parts: two options print the same number (${opts.join(' | ')})`;
+        if (opts.some(o => Number(o) < 1 || Number(o) > 12))
+          return `equal parts: an option is outside 1..12 (${opts.join(' | ')})`;
+        /* added the two numbers; cut every piece but her own; counted the new CUTS
+           in each piece; one part out either way; one part too many in every
+           piece; one piece too many; and the two numbers the child can read off
+           the screen, which are the two commonest wrong answers of all. */
+        const named = [total + per, per * (total - 1), total * (per - 1), want - 1, want + 1,
+                       total * (per + 1), (total + 1) * per, total, per];
+        for (let i = 0; i < 4; i++) {
+          if (i === q.correct) continue;
+          if (named.indexOf(Number(opts[i])) < 0)
+            return `equal parts: ${opts[i]} is not one of the misconceptions this item names (${named.join(', ')})`;
+        }
+        if (Number(strip(q.answerText)) !== want)
+          return `equal parts: ${total} pieces cut into ${per} parts each is ${want}, the key is ${strip(q.answerText)}`;
+        /* RULE 10's new clause, checked here where the figure is: another legal
+           bar - the same cutting over a different number of pieces - gives a
+           different answer, so the picture is load-bearing by construction. */
+        if ((total + 1) * per === want || (total - 1) * per === want)
+          return 'equal parts: the answer does not move when the bar does';
+        return null;
+      }
       return 'bar model: rendered a bar model but no oracle matched the stem';
     }
 
-    /* --- concept check: the parts must be EQUAL --- */
+    /* --- concept check: the parts must be EQUAL (RETIRED, v6) ----------------
+       FIFTH PASS 2026-09-16: the prose form of this item is gone and the oracle
+       for its picture rebuild lives in the bar-model block above. The branch is
+       kept, unreachable, as the record of what it could never see - it re-derived
+       the whole option set from the four named beliefs and passed a bank that was
+       answerable at 100.00% by "pick the option with no word of its own", because
+       an oracle that checks the sentences ARE the authored sentences cannot ask
+       whether being the authored sentences is itself the tell. */
     if ((m = text.match(/^(.+) cuts a (.+) into (\d+) pieces, but the pieces are not all the same size\. (?:She|He) takes 1 piece\. Why can (?:she|he) not call that piece/))) {
       const d = Number(m[3]);
       const f = parseFrac(q.q);
@@ -1727,83 +1780,55 @@ function oracle(q, topic) {
 
        It must stay ABOVE the add error-spot branch: the `sum` belief's reason
        prints "1 + 6 = 7 and 1 + 4 = 5", which that branch's regex would claim. */
-    if ((m = text.match(/^(.+?) says .+ is (greater|smaller) than .+, because (.+)\. What did (?:she|he) do wrong\?$/))) {
-      const name = m[1], rel = m[2], reason = m[3];
+    if ((m = text.match(/^(.+?) says (\d+) is (greater|smaller) than (\d+)\. (?:She|He) worked out (\d+) for (\d+) and (\d+) for (\d+), and took the larger of those two numbers to mean the larger fraction\. What did (?:she|he) do wrong\?$/))) {
+      const name = m[1], rel = m[3];
+      const X = Number(m[5]), Y = Number(m[7]);
       const fs = allFracs(q.q);
-      if (fs.length !== 2) return `compare error-spot: ${fs.length} fractions in the stem, expected 2`;
+      if (fs.length !== 4) return `compare error-spot: ${fs.length} fractions in the stem, expected 4`;
       const A = fs[0], B = fs[1];
+      /* the stem prints each fraction twice - once in the claim, once beside the
+         number the child worked out - and the oracle refuses a stem where the two
+         printings disagree, which is how "7 for 2/5" is tied to 2/5 */
+      if (fs[2][0] !== A[0] || fs[2][1] !== A[1] || fs[3][0] !== B[0] || fs[3][1] !== B[1])
+        return 'compare error-spot: the two workings are not written beside the two fractions of the claim';
+      if (m[2] !== String(A[0]) + String(A[1]) || m[4] !== String(B[0]) + String(B[1]) ||
+          m[6] !== String(A[0]) + String(A[1]) || m[8] !== String(B[0]) + String(B[1]))
+        return 'compare error-spot: the rendered claim does not read back as the two fractions';
       if (A[0] >= A[1] || B[0] >= B[1] || A[1] > 12 || B[1] > 12)
         return `compare error-spot: ${show(A)} or ${show(B)} is not a proper fraction with a denominator to 12`;
       if (A[0] * B[1] === B[0] * A[1]) return `compare error-spot: ${show(A)} and ${show(B)} are worth the same amount`;
-      const aBigger = A[0] * B[1] > B[0] * A[1];
-      if (rel === 'greater' ? aBigger : !aBigger)
+      /* the child's rule is "the bigger number I worked out is the bigger
+         fraction", so the claim follows from the two printed numbers ... */
+      if (X === Y) return 'compare error-spot: the two workings are the same number, so no claim follows from them';
+      if ((X > Y) !== (rel === 'greater'))
+        return `compare error-spot: ${X} against ${Y} does not produce the claim "${show(A)} is ${rel} than ${show(B)}"`;
+      /* ... and the claim it produces must be FALSE, or there is nothing to diagnose */
+      if ((X > Y) === (A[0] * B[1] > B[0] * A[1]))
         return `compare error-spot: the claim ${show(A)} is ${rel} than ${show(B)} is actually TRUE`;
-      const hits = [];
-      let r;
-      if ((r = reason.match(/^(\d+) is a (bigger|smaller) bottom number than (\d+)$/))) {
-        if (Number(r[1]) !== A[1] || Number(r[3]) !== B[1])
-          return `compare error-spot: the reason names bottom numbers ${r[1]} and ${r[3]}, the fractions carry ${A[1]} and ${B[1]}`;
-        if (A[0] !== B[0]) return 'compare error-spot: the two fractions do not share a top number, so the bottom-number rule does not apply';
-        if ((A[1] > B[1] ? 'bigger' : 'smaller') !== r[2])
-          return `compare error-spot: the reason calls ${r[1]} the ${r[2]} bottom number and it is not`;
-        if ((r[2] === 'bigger') !== (rel === 'greater'))
-          return 'compare error-spot: the stated reason and the stated claim do not run the same way round';
-        hits.push('bottom');
-      }
-      if ((r = reason.match(/^(\d+) is a (bigger|smaller) top number than (\d+)$/))) {
-        if (Number(r[1]) !== A[0] || Number(r[3]) !== B[0])
-          return `compare error-spot: the reason names top numbers ${r[1]} and ${r[3]}, the fractions carry ${A[0]} and ${B[0]}`;
-        if (A[1] !== B[1]) return 'compare error-spot: the two fractions do not share a bottom number, so the top-number reading does not apply';
-        if ((A[0] > B[0] ? 'bigger' : 'smaller') !== r[2])
-          return `compare error-spot: the reason calls ${r[1]} the ${r[2]} top number and it is not`;
-        /* the belief is the bottom-number rule used on the tops, so the claim must
-           run the OPPOSITE way from the adjective */
-        if ((r[2] === 'bigger') !== (rel === 'smaller'))
-          return 'compare error-spot: the top-number reason does not produce the claim it is given for';
-        hits.push('top');
-      }
-      if ((r = reason.match(/^(\d+) \+ (\d+) = (\d+) and (\d+) \+ (\d+) = (\d+)$/))) {
-        const nums = r.slice(1).map(Number);
-        if (nums[0] !== A[0] || nums[1] !== A[1] || nums[3] !== B[0] || nums[4] !== B[1])
-          return `compare error-spot: the reason adds ${nums[0]} + ${nums[1]} and ${nums[3]} + ${nums[4]}, the fractions are ${show(A)} and ${show(B)}`;
-        if (nums[0] + nums[1] !== nums[2] || nums[3] + nums[4] !== nums[5])
-          return 'compare error-spot: the reason prints a sum that is arithmetically wrong';
-        if (A[0] !== B[0]) return 'compare error-spot: the two fractions do not share a top number, so no P3 comparing rule applies';
-        if ((nums[2] > nums[5]) !== (rel === 'greater'))
-          return 'compare error-spot: the two totals do not run the same way round as the claim';
-        hits.push('sum');
-      }
-      if (hits.length !== 1)
-        return `compare error-spot: the stated reason "${reason}" matches ${hits.length} named beliefs, expected exactly 1`;
+      /* THE FINGERPRINT. Five passes fingerprinted the belief by the WORDS of the
+         child's stated reason, and every one of those was read back off the row by
+         some attack. The stem prints only the two numbers now, and which named
+         belief produced them is a fact about the two printed fractions: exactly one
+         of the four must fit, or the item does not name a single mistake. */
       const SAY = {
-        bottom: ' thought a bigger bottom number makes a bigger fraction.',
-        sum:    ' added the top number to the bottom number in each fraction.',
-        top:    ' used the bottom number rule on the top numbers instead.'
+        top:    { f: p => p[0],        s: ' compared the top numbers and left the bottom numbers out.' },
+        bottom: { f: p => p[1],        s: ' thought a bigger bottom number makes a bigger fraction.' },
+        sum:    { f: p => p[0] + p[1], s: ' added the top number to the bottom number in each fraction.' },
+        gap:    { f: p => p[1] - p[0], s: ' counted the pieces that are missing instead of the ones there.' }
       };
-      const want = name + SAY[hits[0]];
+      const hits = Object.keys(SAY).filter(id => SAY[id].f(A) === X && SAY[id].f(B) === Y);
+      if (hits.length !== 1)
+        return `compare error-spot: ${X} for ${show(A)} and ${Y} for ${show(B)} matches ${hits.length} named beliefs, expected exactly 1`;
+      const want = name + SAY[hits[0]].s;
       if (strip(q.answerText) !== want) return `compare error-spot: expected "${want}", got "${strip(q.answerText)}"`;
+      /* EVERY row is the same four sentences - the PM's wave-1 law. There is no
+         filler paired to the belief any more, which is what made the v5 row name
+         its own key on 100.00% of draws, and no option carries anything the other
+         three do not, so the row alone is worth chance and nothing else. */
       const opts = q.choices.map(strip);
-      if (opts.filter(c => c.indexOf(name) === 0).length !== 4)
-        return 'compare error-spot: not every option opens with the name, so the key is the odd one out';
-      for (const id of Object.keys(SAY))
-        if (id !== hits[0] && !opts.includes(name + SAY[id]))
-          return `compare error-spot: the "${id}" belief is not on the option list, so the key has fewer than two named rivals`;
-      if (opts.filter(c => Object.keys(SAY).some(id => c === name + SAY[id])).length !== 3)
-        return 'compare error-spot: the option set is not the three named beliefs plus exactly one never-true diagnosis';
-      /* SECOND PASS 2026-09-15, KILL 1 RELOCATED - RULE 8, THE NOUN. The stem prints
-         the child's stated reason so that the belief can be fingerprinted, and in v2
-         that reason named its belief with the same noun the KEY used while no other
-         option repeated it: "find the words the reason used and pick the option that
-         repeats them" scored 94.5% over 5,000 draws without a fraction being
-         compared. The vocabulary of the reason must not single the key out, so at
-         least two options have to repeat it - and the build fails if they do not. */
-      const noun = hits[0] === 'sum' ? null : hits[0] + ' number';
-      const repeats = o => noun ? o.indexOf(noun) >= 0 : /\badded\b|\badding\b|\btotals?\b/.test(o);
-      const n2 = opts.filter(repeats).length;
-      if (!repeats(strip(q.answerText)))
-        return `compare error-spot: the key does not name what the reason names ("${reason}")`;
-      if (n2 < 2)
-        return `compare error-spot: only the key repeats what the stated reason names ("${reason}"), so the item is answered by matching the words (${opts.join(' | ')})`;
+      const wantRow = Object.keys(SAY).map(id => name + SAY[id].s).sort();
+      if (opts.slice().sort().join(' | ') !== wantRow.join(' | '))
+        return `compare error-spot: the option row is not the four named beliefs (${opts.join(' | ')})`;
       return null;
     }
 
@@ -3430,9 +3455,30 @@ function tokFeats(s, stemIt) {
   return out;
 }
 const bump = (m2, k2) => m2.set(k2, (m2.get(k2) || 0) + 1);
+/* RULE 9's COMPLEMENT CLAUSE (FIFTH PASS 2026-09-16, THE KILL). RULE 9 as written
+   asks "is there a word unique TO the key?" and the v5 gEqualParts rewrite made the
+   answer no BY CONSTRUCTION - every token the key printed was printed by some
+   distractor. That fix is the tell, because no DISTRACTOR has the property: each
+   keeps a word of its own, so "pick the option with no word of its own" answered
+   the bank on 100.00% of 40,000 draws while RULE 9 measured it at 0.00% and passed
+   it. The rule and the defect are the same fact read from opposite ends.
+
+   So the ruler runs the complement too: the draws on which the KEY is the UNIQUE
+   option every one of whose words is printed somewhere else on the row. Same 60%
+   ceiling, same two normalisations. It fails the v5 option set at 100% and passes
+   the v4 one at 0%, so it is a new gate and not a restatement of the old one. */
+function keyHasNoPrivateWord(opts, correct) {
+  for (const stemIt of [false, true]) {
+    const W = opts.map(o => new Set(tokWords(o, stemIt)));
+    const priv = i => [...W[i]].some(t => W.every((w, j) => j === i || !w.has(t)));
+    const bare = [0, 1, 2, 3].filter(i => !priv(i));
+    if (bare.length === 1 && bare[0] === correct) return true;
+  }
+  return false;
+}
 function tokBank(draw, n) {
   const keyOnly = new Map(), wrongOnly = new Map();
-  let seen = 0, sample = null;
+  let seen = 0, sample = null, noPrivate = 0;
   for (let i = 0; i < n; i++) {
     let q;
     try { q = draw(); } catch (e) { break; }
@@ -3444,10 +3490,11 @@ function tokBank(draw, n) {
       for (const f of F[k]) if (w.every(j => !F[j].has(f))) bump(keyOnly, tag + f);
       for (const f of F[w[0]]) if (F[w[1]].has(f) && F[w[2]].has(f) && !F[k].has(f)) bump(wrongOnly, tag + f);
     }
+    if (keyHasNoPrivateWord(opts, k)) noPrivate++;
     if (!sample) sample = opts.map(strip);
     seen++;
   }
-  return { n: seen, keyOnly, wrongOnly, sample };
+  return { n: seen, keyOnly, wrongOnly, sample, noPrivate };
 }
 const tokTop = m2 => [...m2.entries()].reduce((a, e) => e[1] > a[1] ? e : a, ['-', 0]);
 function tokVerdict(row) {
@@ -3459,6 +3506,8 @@ function tokVerdict(row) {
     return `token ruler: ${shown(k[0])} is in the KEY and in no distractor on ${k[1]} of ${row.n} draws (${(100 * k[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child picks the key out by that word alone${opts}`;
   if (w[1] / row.n >= TOK_CAP)
     return `token ruler: ${shown(w[0])} is in ALL THREE distractors and not in the key on ${w[1]} of ${row.n} draws (${(100 * w[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child crosses three options off with that word alone${opts}`;
+  if ((row.noPrivate || 0) / row.n >= TOK_CAP)
+    return `token ruler, THE COMPLEMENT: the key is the UNIQUE option with no word of its own on ${row.noPrivate} of ${row.n} draws (${(100 * row.noPrivate / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - writing every key word into some distractor makes the key the only option with nothing unique${opts}`;
   return null;
 }
 const tokRows = [];
@@ -3602,6 +3651,87 @@ for (const g of GENS) {
   row.name = g.topic + '.' + g.name;
   row.err = picVerdict(row);
   picRows.push(row);
+  if (row.err) failures++;
+}
+
+/* ---------- RULE 11: THE ROW-ONLY RULE ---------------------------------------
+   SWEEP FRACTIONS REFUTATION, FIFTH PASS 2026-09-16 - the PM's wave-1 deliverable,
+   and the rule two of this file's three kills would have been caught by.
+
+   RULE 10 asks whether a fixed HEURISTIC over the option row answers a picture
+   item. That is one of the two ways a row can give itself away, and the fifth pass
+   killed on the other: gCompareError's row was three fixed belief sentences plus a
+   filler drawn from a bank PAIRED to the belief, so the odd sentence out named the
+   answer - 54 option rows, 54 (row, key) pairs, 54/54 deterministic, and the two
+   printed fractions changed the answer on 0.00% of draws. No heuristic is
+   involved. The child does not reason about the row at all; they RECOGNISE it.
+
+   THE RULER, and both halves are needed. Draw 2,000 items as a child's exposure,
+   and 2,000 more as the test. For each test draw, look its option ROW up in what
+   the first 2,000 taught - the row stripped of markup, sorted, stem discarded -
+   and answer with the key that row most often carries, guessing at chance for a
+   row never seen. That is what memory buys, measured where a child stands.
+
+   A HIGH RATE IS ONLY A DEFECT ON A ROW SPACE A CHILD CAN MEET TWICE. Every bank
+   that prints four fractions scores 85-99% on that lookup, because a row of four
+   particular fractions belongs to one question - which is not a shortcut, it is
+   what it means for an option row to be drawn from the mathematics. gSubSame has
+   616 rows and is served 1.3 times a session: a child meets the same row again
+   about once a year. gEqualParts had EIGHTEEN, served 3.5 times a session to a
+   struggling child, and had met all of them inside a week. So the gate is a
+   conjunction: a bank fails when its row space is MEMORISABLE (under 60 distinct
+   rows in 2,000 draws) AND the row names the key at or over 40%.
+
+   The 60 is calibrated on this file and printed in full on every run so that drift
+   is visible: below the line sit gAddError (6 rows, 33.3% - six rows with three
+   keys each, so the row settles nothing), gCompareWords (15, 25.0%) and the
+   rebuilt gCompareError (6, 25.0% - the same four sentences every draw, which is
+   chance exactly). The two negative controls below are the v5 rows that were
+   killed on it: gEqualParts at 18 / 100% and gCompareError at 54 / 100%. --- */
+const ROW_N = 2000, ROW_CAP = 0.40, ROW_MEMO = 60;
+const rowKeyOf = q => (q.choices || []).map(strip).slice().sort().join(' ~ ');
+function rowBank(draw, n) {
+  const seen = new Map();
+  let bad = 0;
+  const learn = () => {
+    for (let i = 0; i < n; i++) {
+      let q; try { q = draw(); } catch (e) { bad++; break; }
+      if (!q || !(q.choices || []).length || !(q.correct >= 0)) { bad++; continue; }
+      const r = rowKeyOf(q), a = strip(q.choices[q.correct]);
+      if (!seen.has(r)) seen.set(r, new Map());
+      const m = seen.get(r);
+      m.set(a, (m.get(a) || 0) + 1);
+    }
+  };
+  learn();
+  let score = 0, tested = 0;
+  for (let i = 0; i < n; i++) {
+    let q; try { q = draw(); } catch (e) { break; }
+    if (!q || !(q.choices || []).length || !(q.correct >= 0)) continue;
+    tested++;
+    const m = seen.get(rowKeyOf(q));
+    if (!m) { score += 0.25; continue; }
+    let best = -1;
+    for (const [, c] of m) if (c > best) best = c;
+    const modal = [...m].filter(([, c]) => c === best).map(([v]) => v);
+    score += modal.indexOf(strip(q.choices[q.correct])) >= 0 ? 1 / modal.length : 0;
+  }
+  return { rows: seen.size, n: tested, rate: tested ? score / tested : 0 };
+}
+function rowVerdict(row) {
+  if (!row.n) return null;
+  if (row.rows < ROW_MEMO && row.rate >= ROW_CAP)
+    return `row-only tell: the option row alone names the key on ${(100 * row.rate).toFixed(1)}% of draws over a space of only ${row.rows} distinct rows - a child who has met the bank recognises the row and never reads the stem`;
+  return null;
+}
+const rowRows = [];
+for (const g of GENS) {
+  if (!TOK_TOPICS.has(g.topic)) continue;
+  const row = rowBank(g.fn, ROW_N);
+  if (!row.n) continue;
+  row.name = g.topic + '.' + g.name;
+  row.err = rowVerdict(row);
+  rowRows.push(row);
   if (row.err) failures++;
 }
 
@@ -3802,6 +3932,81 @@ control('RULE 10 picture ruler - the v4 gCompareBar two-pair row', () => {
   return picVerdict(picBank(draw, PIC_N));
 });
 
+/* The v5 gEqualParts option set, rebuilt from its own construction: one frame,
+   one parts-word drawn for all four sentences, and every token the key prints
+   also printed by at least one distractor. It is the row RULE 9 measured at
+   0.00% and passed, and it is answerable at 100% by the complement. Both new
+   clauses are run over it below. */
+const V5_EQP = () => {
+  const P = Math.random() < 0.5 ? 'pieces' : 'parts';
+  const d = 4 + Math.floor(Math.random() * 9);
+  const frame = 'A fraction needs the whole cut into ';
+  const key = frame + P + ' of the same size.';
+  const opts = [key, frame + P + ' of one shape.', frame + d + ' ' + P + ' of any size.',
+                frame + 'an even number of ' + P + ' of the same size.'];
+  const order = opts.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { q: 'v5 gEqualParts control', extra: '', choices: order.map(i => opts[i]),
+           correct: order.indexOf(0), answerText: key };
+};
+
+/* 9. RULE 9's COMPLEMENT CLAUSE (FIFTH PASS 2026-09-16, THE KILL). The v5 fix -
+      every token in the key printed by some distractor - is exactly what makes the
+      key the only option with nothing of its own, because each distractor keeps
+      one (`an`/`even`/`number`, `one`/`shape`, the numeral and `any`). RULE 9's
+      original clause measures this row at 0.00% and passes it, which is the whole
+      finding; the complement must fail it. */
+control('RULE 9 complement - the v5 gEqualParts option set ("no word of its own")', () => {
+  const row = tokBank(V5_EQP, CTL_N);
+  if (!row.n) return null;
+  const k = tokTop(row.keyOnly);
+  if (k[1] / row.n >= TOK_CAP) return 'caught by the ORIGINAL clause, not the complement - the control is not measuring what it claims';
+  return tokVerdict(row);
+});
+
+/* 10. RULE 11, the ROW-ONLY RULE: the same v5 gEqualParts row. Eighteen option
+       sets, each with one key, on a bank served 3.5 times a session to a
+       struggling child - the row is memorised inside a week and the stem is never
+       read again. */
+control('RULE 11 row-only - the v5 gEqualParts row (18 option sets, one key each)', () =>
+  rowVerdict(rowBank(V5_EQP, ROW_N)));
+
+/* 11. RULE 11 again, on the row this pass actually killed: v5's gCompareError.
+       Three fixed belief sentences and a fourth drawn from a bank PAIRED to the
+       belief, so the odd sentence out names the key - 54 rows, 54 keys, and the
+       two printed fractions changed nothing. Rebuilt here from its own
+       construction so the control does not depend on the topic file. */
+control('RULE 11 row-only - the v5 gCompareError paired-filler row (54 rows, 54 keys)', () => {
+  const NM = ['Siti', 'Kumar', 'Mei Ling', 'Ravi', 'Aisyah', 'Wei Jie'];
+  const SAY = {
+    bottom: ' thought a bigger bottom number makes a bigger fraction.',
+    sum:    ' added the top number to the bottom number in each fraction.',
+    top:    ' used the bottom number rule on the top numbers instead.'
+  };
+  const NEVER = {
+    bottom: [' made the bottom numbers the same before comparing them.',
+             ' drew both fractions on bars with the same bottom number.',
+             ' counted each bottom number as the pieces left over.'],
+    top:    [' made the top numbers the same before comparing them.',
+             ' drew both fractions on bars with the same top number.',
+             ' counted each top number as the pieces left over.'],
+    sum:    [' added the two top numbers together and compared the totals.',
+             ' added the two bottom numbers together and compared the totals.',
+             ' added one to each top number before comparing the totals.']
+  };
+  const ids = Object.keys(SAY);
+  const draw = () => {
+    const nm = NM[Math.floor(Math.random() * NM.length)];
+    const id = ids[Math.floor(Math.random() * ids.length)];
+    const key = nm + SAY[id];
+    const opts = [key].concat(ids.filter(x => x !== id).map(x => nm + SAY[x]))
+      .concat([nm + NEVER[id][Math.floor(Math.random() * 3)]]);
+    const order = opts.map((_, i) => i).sort(() => Math.random() - 0.5);
+    return { q: 'v5 gCompareError control', extra: '', choices: order.map(i => opts[i]),
+             correct: order.indexOf(0), answerText: key };
+  };
+  return rowVerdict(rowBank(draw, ROW_N));
+});
+
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
 const setRows = [];
 for (const tid of Object.keys(TOPICS)) {
@@ -3950,18 +4155,20 @@ if (proseRows.length) {
 if (tokRows.length) {
   console.log(`\nRULE 9  TOKEN RULER  (${TOK_N} draws per prose bank, raw and stemmed: no token or two-word ` +
     `phrase in the key alone - or in all three distractors alone - on >= ${Math.round(100*TOK_CAP)}% of draws)\n`);
-  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('KEY-ONLY', 22) + pad('RATE', 9) + pad('ALL-WRONG', 20) + pad('RATE', 9) + 'RESULT');
-  console.log('-'.repeat(110));
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('KEY-ONLY', 22) + pad('RATE', 9) + pad('ALL-WRONG', 20) + pad('RATE', 9) + pad('NO-PRIVATE', 12) + 'RESULT');
+  console.log('-'.repeat(122));
   for (const r of tokRows) {
     const k = tokTop(r.keyOnly), w = tokTop(r.wrongOnly);
     console.log(pad(r.name, 26) + pad(r.n, 8) +
       pad('"' + k[0] + '"', 22) + pad((100 * k[1] / r.n).toFixed(1) + '%', 9) +
       pad('"' + w[0] + '"', 20) + pad((100 * w[1] / r.n).toFixed(1) + '%', 9) +
+      pad((100 * (r.noPrivate || 0) / r.n).toFixed(1) + '%', 12) +
       (r.err ? 'FAIL  ' + r.err : 'pass'));
   }
   console.log('');
   console.log('     a leading ~ marks the stemmed pass (a trailing s / es / ed / ing removed), where "counts" and "count" are one word.');
-  if (tokRows.every(r => !r.err)) console.log(`ok   RULE 9 token ruler: ${tokRows.length} prose banks, no key-only and no all-distractor word or phrase at or over ${Math.round(100*TOK_CAP)}% of draws`);
+  console.log('     NO-PRIVATE is the complement clause: the draws on which the KEY is the unique option with no word of its own.');
+  if (tokRows.every(r => !r.err)) console.log(`ok   RULE 9 token ruler: ${tokRows.length} prose banks, no key-only and no all-distractor word or phrase, and no key without a word of its own, at or over ${Math.round(100*TOK_CAP)}% of draws`);
 }
 
 /* RULE 10, printed in full (FOURTH PASS 2026-09-16, W1). */
@@ -3978,6 +4185,23 @@ if (picRows.length) {
   console.log('     the watch line is not a failure: the three banks that read a fraction OFF a picture share a bottom number across');
   console.log('     three of their four options by construction, which is worth a third of a row to nobody who has done the mathematics.');
   if (picRows.every(r => !r.err)) console.log(`ok   RULE 10 picture ruler: ${picRows.length} figure banks, no option-row-only policy at or over ${Math.round(100*PIC_CAP)}% - every picture in the topic is load-bearing`);
+}
+
+/* RULE 11, printed in full: the row space IS the finding, and the next lane
+   inherits a number rather than a discovery (FIFTH PASS 2026-09-16). */
+if (rowRows.length) {
+  console.log(`\nRULE 11  ROW-ONLY RULE  (${ROW_N} draws learnt + ${ROW_N} tested: the option row alone, stem discarded, ` +
+    `may not name the key on >= ${Math.round(100*ROW_CAP)}% of draws over a memorisable space of < ${ROW_MEMO} rows)\n`);
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('DISTINCT ROWS', 16) + pad('ROW NAMES KEY', 16) + 'RESULT');
+  console.log('-'.repeat(110));
+  for (const r of rowRows)
+    console.log(pad(r.name, 26) + pad(r.n, 8) + pad(r.rows, 16) + pad((100 * r.rate).toFixed(1) + '%', 16) +
+      (r.err ? 'FAIL  ' + r.err
+        : (r.rows < ROW_MEMO ? 'pass - memorisable row space, and the row settles nothing' : 'pass')));
+  console.log('');
+  console.log('     a high rate over a LARGE row space is not a tell: a row of four particular fractions belongs to one question,');
+  console.log('     which is what it means for the options to be drawn from the mathematics. The gate is the conjunction of both columns.');
+  if (rowRows.every(r => !r.err)) console.log(`ok   RULE 11 row-only rule: ${rowRows.length} banks, no memorisable option row that names its own key at or over ${Math.round(100*ROW_CAP)}%`);
 }
 
 /* The negative controls, on the record of every run (THIRD PASS 2026-09-16). */

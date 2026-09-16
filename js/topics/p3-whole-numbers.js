@@ -21,13 +21,14 @@
  *   is three tens; and a zero still has to hold its place.
  *   gStandsEasy (direct), gWhichDigit (concept check), gExpanded (expanded
  *   form), gBuildNum (inverse: build the number), gStandsCompare (compare two
- *   digit values in one number), gStandsError (error spot, diagnose),
- *   gZeroFix (error spot, correct).
+ *   digit values in one number), gStandsFix (a wrong claim, corrected),
+ *   gZeroFix (error spot, correct). No bank here asks the child to NAME a
+ *   place-value misconception any more - see gStandsFix's retirement note.
  *
  * PRINCIPLE 2 - COMPARING, ORDERING AND NUMBER PATTERNS (skills `compare`,
  *   `pattern`). Compare left to right, one place at a time, and stop at the
  *   first place where the digits differ. A pattern is the same jump made again.
- *   gGreatest, gCompareTrue, gSmallest, gBetween, gOrder, gComparePlace (compare);
+ *   gGreatest, gCompareTrue, gSmallest, gBetween, gOrder, gBetweenWorded (compare);
  *   gPatternConcept, gPattern4, gMoreLess, gPatternMissing, gPatternOdd (pattern).
  *
  * PRINCIPLE 3 - ADDING AND SUBTRACTING WITHIN 10 000, WITH REGROUPING
@@ -842,72 +843,84 @@ function gStandsCompare(){
     '. Taking ' + d[j] + ' away from ' + d[i] + ' compares the digits, not what they are worth.');
 }
 
-/* FORMAT 6 - error spotting, DIAGNOSE the mistake (pool 3, 2 steps).
-   Every claim the item prints is produced by exactly one named misconception,
-   and the harness re-derives which one from the rendered stem. */
-/* Option texts are kept within a few characters of each other on purpose. The
-   second refutation's KILL was gLPerimDiff, whose key was the only prose option
-   and the only one over four characters: a child settled it in a second with no
-   geometry. Length is the tell here, so the bank equalises it - measured spread
-   across these five strings is 39-40 characters, and no option in this file
-   exceeds the 48-character ceiling gen-sanity now enforces. */
-const STANDS_SLIPS = {
-  digit: ' wrote the digit, not what it is worth.',
-  right: ' used the column one place to the right.',
-  left:  ' used the column one place to the left.'
-};
-/* KILL 1 (Sweep p3numbers Refutation, 2026-09-15). The two "filler" options were
-   not fillers: each is a READING of the number, with arithmetic of its own, and
-   on 353 / 200,000 draws one of them reproduced the printed claim exactly - "In
-   6293, the digit 2 stands for 20" is explained equally by "one column to the
-   right" (2 tens) and by "added up all four digits" (6+2+9+3). Two true answers.
-   Both the generator and the harness walked only the three NAMED slips, so
-   neither could see it. Every reading now carries its own claim arithmetic, and
-   the draw is redrawn until EXACTLY ONE of the five reproduces the claim. */
-const STANDS_FILLER_SLIPS = {
-  sum:  ' added up all four digits of the number.',
-  next: ' wrote the digit that comes next in it.'
-};
-const STANDS_FILLERS = Object.keys(STANDS_FILLER_SLIPS).map(k => STANDS_FILLER_SLIPS[k]);
-const STANDS_READINGS = Object.keys(STANDS_SLIPS).concat(Object.keys(STANDS_FILLER_SLIPS));
-/* The claim a reading would print, or null where it cannot apply. `p` is held to
-   the thousands or hundreds column so that "one column to the right" is never the
-   ones column, where it would mean exactly the same thing as "wrote the digit
-   itself" and the item would have two defensible answers. */
-function standsClaim(k, dig, p, d){
-  if (k === 'digit') return dig;
-  if (k === 'right') return p < 3 ? dig * POW[p+1] : null;
-  if (k === 'left')  return p > 0 ? dig * POW[p-1] : null;
-  if (k === 'sum')   return digitSum(numOf(d));
-  if (k === 'next')  return p < 3 ? d[p+1] : null;
-  return null;
-}
-function gStandsError(){
-  const kid = pick(KIDS), who = kid[0], pron = kid[1];
-  const named = Object.keys(STANDS_SLIPS);
-  let d = digits4(), p = 0, dig = d[0], chosenKey = 'digit', claim = dig, g = 0;
-  do {
-    d = digits4(); p = ri(0,1); dig = d[p];
-    const val = dig * POW[p];
-    const usable = named.filter(k => { const c = standsClaim(k, dig, p, d); return c !== null && c !== val && ok(c); });
-    chosenKey = usable.length ? pick(usable) : null;
-    claim = chosenKey ? standsClaim(chosenKey, dig, p, d) : null;
-    g++;
-    /* the claim must map to exactly ONE of the five readings - no option offered
-       on this draw may be defensible under any other reading */
-  } while (g < 200 && !(chosenKey !== null &&
-           STANDS_READINGS.filter(k => standsClaim(k, dig, p, d) === claim).length === 1));
-  const n = numOf(d), val = dig * POW[p];
-  const wrongs = named.filter(k => k !== chosenKey && standsClaim(k, dig, p, d) !== claim)
-    .map(k => pron + STANDS_SLIPS[k])
-    .concat(STANDS_FILLERS.map(f => pron + f));
-  return mcText('In ' + n + ', ' + who + ' says the digit ' + dig + ' stands for ' + claim +
-    '. <b>What did ' + pron.toLowerCase() + ' do wrong?</b>', '',
-    pron + STANDS_SLIPS[chosenKey], shuffle(wrongs),
-    'Read the places from the left: ' + placeList(d) + '. The ' + dig + ' sits in the ' + PLACES[p] +
-    ' place, so it stands for ' + dig + ' × ' + POW[p] +
-    ' = ' + val + ', not ' + claim + '. ' + pron + STANDS_SLIPS[chosenKey] +
-    ' Point at the column the digit is sitting in and say its name out loud before working out the value.');
+/* FORMAT 6 - a claim that is wrong, and the worth the child has to supply
+   (pool 3, 2 steps). Registered as `gStandsFix`; it replaces `gStandsError`,
+   which was RETIRED.
+
+   RETIREMENT, ELEVENTH pass (Sweep p3numbers Refutation, 2026-09-16), and it is
+   the second bank in this topic to go for the same rule shape one version after
+   the first. `gStandsError` printed a wrong CLAIM and asked the child to name the
+   misconception that produced it, and the claim's CHARACTER COUNT was injective
+   onto the misconception: one character -> "wrote the digit", two or three -> "one
+   column right", four -> "one column left". 100.00 / 100.00% of 20,000 draws at
+   each of two seeds, on a bank served 1.51 items per 30-item session at 0.80. The
+   child never read the four-digit number, never found the named digit and never
+   named a column - which is why the tenth pass's in-skill carve-out ("locating the
+   named digit's column is the item's own work") does not survive contact with the
+   route: the route does not locate the column.
+
+   THE FIX WAS ATTEMPTED AND IT CANNOT BE AUTHORED. The PM's ruling was: draw the
+   claim so that its printed length is INDEPENDENT of the misconception - every
+   misconception reachable from every length, every cell of the length x
+   misconception table at 15% or more - and retire only if that cannot be done.
+   Four builds were measured at 20,000 draws x two seeds (seed 1 / seed 424242):
+
+     v11 as shipped, p over {thousands, hundreds}      worst cell 0.0%, route 100.00 / 100.00%
+     p over ALL FOUR places                            worst cell 0.0%, route  79.70 /  80.03%
+     ... and the claim named in WORDS on half the draws worst cell 0.0%, route  64.94 /  65.00%
+     ... and both fillers promoted to keys (5 readings) worst cell 0.0%, route  62.66 /  62.73%
+     all of it at once                                 worst cell 0.0%, route  54.33 /  54.19%
+
+   The table never fills, and it cannot: the "wrote the digit, not what it is
+   worth" claim is the digit itself - `dig` x 10^0 - so it is the SMALLEST value
+   this item can print on every draw it is the key, and no faithful rendering of a
+   number is non-monotone enough to let it reach the longest claim length. The
+   mirror holds at the other end: only "one column to the left" can print a
+   four-character claim. Two cells of the table are structurally empty whatever the
+   draw does, so a child who counts characters always has at least one length that
+   settles the item outright. RETIRED rather than shipped a third time.
+
+   WHAT REPLACES IT, and what is narrowed. The wrong claim STAYS in the stem - it
+   is the commonest P3 place-value error and a child should meet it - but the
+   question is no longer "name the mistake", it is "what is the digit really
+   worth". The claimed column is drawn UNIFORMLY over the three columns the digit
+   is not in, so the claim tells a child nothing about where the digit really sits;
+   the option row is the same four-value row `gStandsEasy` has shipped clean since
+   v1 (the digit at each of the four places), and the key's rank across it is flat
+   by construction. DECLARED NARROWING: no bank in this topic now asks a child to
+   DIAGNOSE a named place-value misconception - error spotting survives on `addsub`
+   (`gAddError`, `gSubError`) and correction survives on `place` (`gZeroFix` and
+   this bank), but the diagnose-the-place-slip demand is gone. That is a wave-2
+   authoring item, and the shape it needs is one where the claim's size is not a
+   function of which slip made it.
+
+   THE ONE ROUTE THIS BANK HANDS OVER, declared rather than hidden: the claim is
+   printed and is always one of the four options, so "cross out the number the
+   child in the stem said" is a free elimination worth 1 in 3 - 33.3% against 25%
+   chance. It is the price of keeping the misconception visible, it sits under
+   every cap in tools/gen-sanity.mjs, and the claimed column is drawn uniformly so
+   nothing composes with it: which of the three survivors is the key is
+   independent of which column was claimed. */
+function gStandsFix(){
+  const who = pick(KIDS)[0];
+  const d = digits4(), n = numOf(d);          /* four DISTINCT non-zero digits */
+  const p = ri(0, 3), dig = d[p];
+  /* the claimed column, uniform over the three the digit is NOT in: the claim
+     must not narrow where the digit really sits, which is the whole of the item */
+  const c = pick([0, 1, 2, 3].filter(k => k !== p));
+  const val = dig * POW[p], claim = dig * POW[c];
+  const cands = [0, 1, 2, 3].filter(k => k !== p).map(k => dig * POW[k]);
+  const how = c === 3 ? who + ' gave the digit itself instead of what it is worth'
+    : c === p - 1 ? who + ' read it one column to the LEFT of where it sits'
+    : c === p + 1 ? who + ' read it one column to the RIGHT of where it sits'
+    : who + ' counted the columns to the wrong place altogether';
+  return mcNum('In ' + n + ', ' + who + ' says the digit ' + dig + ' stands for ' + claim +
+    '. <b>How much does the digit ' + dig + ' really stand for?</b>', '', val, cands, '',
+    'Read the places from the left: ' + placeList(d) + '. The ' + dig + ' sits in the ' +
+    PLACES[p] + ' place, so it stands for ' + dig + ' × ' + POW[p] + ' = ' + val + ', not ' +
+    claim + ' - ' + how + ' (' + plPlace(dig, c) + ' is ' + claim + ').' +
+    ' Point at the column the digit is sitting in and say its name out loud before working out ' +
+    'the value. A digit is worth the column it is written in, and nothing else about it changes.');
 }
 
 /* FORMAT 7 - error spotting, CORRECT the mistake, then step on (pool 3, 2 steps).
@@ -1213,142 +1226,101 @@ function gOrder(){
     'numbers in an order that has nothing to do with their size.');
 }
 
-/* FORMAT 6 - the deciding place, and what it is worth (pool 3, 2 steps).
-   Registered as `gComparePlace`; it replaces `gCompareError`, which was KILLED.
+/* FORMAT 6 - between two bounds NAMED IN PLACE-VALUE WORDS (pool 3, 2 steps).
+   Registered as `gBetweenWorded`; it replaces `gComparePlace`, which was RETIRED,
+   which had itself replaced `gCompareError`, which was KILLED.
 
-   KILL, TENTH pass (Sweep p3numbers Refutation, 2026-09-16), and it was the
-   worst number ten passes have produced: 100.00 / 100.00% of 20,000 draws at
-   each of two seeds, on the BUSIEST generator in the topic (2.18 items per
-   30-item session at 0.80 accuracy, worst 4).
+   RETIREMENT, ELEVENTH pass (Sweep p3numbers Refutation, 2026-09-16). This slot
+   has now produced two 100% banks in two versions and the PM's ruling was that it
+   does not get a third. The history is worth keeping because the second failure
+   was not the first one repeated:
 
-     Xin Yi says 4403 is greater than 4812. What did she do wrong?
-       ... | She compared from the right, not the left. <- key | ... | ...
-     Farhan says 774 is greater than 1588. What did he do wrong?
-       ... | ... | He only compared the first digit of each. <- key | ...
+     v10 `gCompareError` - prose, "what did she do wrong?", KILLED at 100.00% by
+       "different digit counts -> tick 'only compared the first digit', same digit
+       counts -> tick 'compared from the right'". One boolean chose the stem shape
+       and the key sentence together.
+     v11 `gComparePlace` - numeric, "how much more is the bigger number worth at
+       the first place where the digits differ?", KILLED at 100.00 / 100.00% of
+       20,000 draws at each of two seeds by *"at the deciding place, cross out the
+       answer whose digit you can already see there"*. The generator wrote
+       `other + dg` in the bigger number and `other` in the smaller, and the option
+       row carried `dg` and `other`: so exactly one of the two digits on offer was
+       printed in the stem at the place the item named, and it was always the wrong
+       one. The subtraction the item existed for was replaced by a glance. Served
+       2.13 items per 30-item session at 0.80 (worst 4), the busiest bank in the
+       topic.
 
-   "If the two numbers in the sentence are different lengths, tick 'only compared
-   the first digit'; if they are the same length, tick 'compared from the right'."
-   No comparison, no place value, no arithmetic, and the child never decides which
-   number is bigger. One boolean - `wantDigits` - chose BOTH the stem's shape and
-   the key sentence, and the two guards that kept the item single-answered
-   (`a % 10 >= b % 10` on one branch, `a % 10 <= b % 10` on the other) were
-   exactly the two that made the leak total. Seven passes printed this bank's
-   `"only" 50.5%` and `"from" 50.0%` and read them as the item's own two-way
-   design showing through. They were - and the two-way design was keyed to a
-   feature of the stem a child can read off without counting past four.
+   THE ONE REBUILD THE PM ALLOWED WAS MEASURED AND IT FAILS. The prescription was:
+   put BOTH visible digits at the deciding place on the row, AND their difference,
+   AND one more legal value, and draw the key uniformly over those categories by
+   varying the question - "the digit in the bigger number / in the smaller / how
+   much more". Built exactly that way and measured at 20,000 draws x two seeds
+   (fit on seed 1, held out on seed 424242, and back):
 
-   WHY NO RULER SAW IT, which is the structural half. Five numeric rulers -
-   magnitude, length, width-class, shape, column - were all gated on
-   `opts.every(o => /^\d+$/.test(o))`, so every one of them returned null the
-   moment an option was a sentence; the six prose banks had ONE ruler and it read
-   words, and nothing anywhere read a STEM feature against which option is the
-   key. The v11 harness closes both gaps (STEM RULER, OPTION-ROW GEOMETRY RULER,
-   and the numeric rulers extended to place-name and mixed rows), and it carries
-   this bank's v10 stem, rebuilt from its own arithmetic, as the stem ruler's
-   negative control at 100%.
+     visible-digit EXCLUSION          16.71 / 16.90%
+     visible-digit INCLUSION          33.28 / 33.10%
+     question-word x VISIBLE x RANK   65.01 / 64.83% (54.93 / 54.64% outright)
+     RANK alone, by question word     59.73 / 59.44%
+     the child's own rule, unfitted   83.10 / 83.28%
 
-   WHY IT IS NOT REBUILT AS PROSE. The wave-1 law: a four-sentence prose concept
-   check whose flavour is chosen by one boolean is structurally tell-prone, and
-   the first-digit misconception only MISLEADS when the digit counts differ - that
-   is what the misconception is - so the two branches cannot be made to look
-   alike. The PM's ruling is a numeric rebuild or a retirement, and this is the
-   numeric rebuild.
+   where the child's rule is *"bigger number -> the larger of the two digits you
+   can see at that place; smaller number -> the smaller one; how much more -> guess
+   between the two you cannot see"*. It is forced, and no cap can save it: two of
+   the three questions ask for a digit that the stem PRINTS at the place the item
+   names, so those draws are answered by reading, and they are two thirds of the
+   bank. 83% against a 40% bar. RETIRED.
 
-   WHAT IT ASKS NOW, and why this question and not "which place decides?". The
-   place-name question ("which place decides which number is bigger?") is a
-   question ABOUT WHERE THE DIGITS DIFFER, and every strategy for it - the right
-   one and the cheap ones - is the same digit-by-digit scan. Two cheap rules sit
-   on it and they trade against each other: "the RIGHTMOST place where the digits
-   differ" is right whenever nothing to the right of the deciding place differs,
-   and "count the places where they differ, that many from the right" is right
-   whenever everything to the right of it does. Draw the low digits with any
-   probability q and one of the two is at least ~50%; the minimum of the maximum
-   is at q = 0.5 and it is 0.500. That is over the PM's 40% bar on every setting,
-   so the bank asks the PM's THIRD question instead - how much bigger at the
-   deciding place - which needs the place AND the two digits AND their worth, and
-   on which knowing the place is only half the item.
+   WHAT REPLACES IT. A `gBetween` variant - the PM's own example of a shape already
+   clean in this topic - with the two bounds named in PLACE-VALUE WORDS instead of
+   as numerals, which is the second step: the child has to build both bounds out of
+   their thousands and hundreds before either end can be checked, and then check
+   the new number against BOTH of them. The distractor geometry is `gBetween`'s
+   exactly, which has survived eight passes: a near miss and two further-out misses
+   on each side, `r = ri(1,2)` of the three wrong answers below the range, so the
+   four printed numbers always STRADDLE it and neither single bound settles the
+   item on any draw.
 
-   THE OPTION ROW IS A 2x2 GRID, and that is what makes the board worthless. The
-   four options are {two digits} x {two place values} - the difference or the
-   smaller digit, at the deciding place or at one other. Every one of the four is
-   a legal key of this bank (any digit 1-9 at any place 1 / 10 / 100 / 1000 is
-   some draw's answer), the key is drawn UNIFORMLY from the four, and the digit
-   pair and the place pair are drawn before the key is - so a child who has
-   memorised the whole option board answers at chance. Measured: 96 distinct rows,
-   every option's key share 25.0%, board worth 25.0% against `gCompareError`'s
-   ... (no board figure was ever taken on the prose bank, because no ruler read
-   it). The grid also lands every numeric ruler at exactly chance by construction:
-   the four options sort u*p < v*p < u*q < v*q whatever the draw, so magnitude
-   rank is flat; each shape feature splits the row 2-2; and the column ruler's
-   elimination kills all four.
+   THE PRICE IS THE SAME DECLARED ONE `gBetween` PAYS, and it is not a new defect:
+   with the key inside the range and every distractor outside it, the key's rank
+   among the four printed numbers is 2nd or 3rd by construction, so "pick the
+   second or third smallest" is worth ~50% against 25% chance. That is the
+   structural floor of any four-option between-item with a straddling distractor
+   set (residual 14/15, PM-accepted). tools/gen-sanity.mjs exempts this bank from
+   the flat-rank ceiling and floor BY NAME, with the same premise `gBetween`
+   carries re-checked on every draw: if the key is ever the smallest or the largest
+   of the four, the straddle has broken and the exemption is void.
 
-   DIFFERENT-LENGTH PAIRS ARE KEPT, per the PM's ruling, and they are 10% of
-   draws: they fire only when the drawn deciding place is the thousands, and the
-   second digit on the row is then the SHORT number's leading digit - which is
-   exactly the digit a child using the killed misconception ("compare the first
-   digits you see") would take. So on those draws the distractors ARE the deciding
-   place of the plausible misread, and the child who counts the digits and knows a
-   4-digit number beats a 3-digit one has the place but still owes the worth. */
-function gComparePlace(){
-  /* the digit pair and the place pair FIRST, the key uniformly from the 2x2 grid
-     they make, and only then the two numbers - so nothing about the stem can name
-     the key and nothing about the row can either. `u + v <= 9` is what lets EITHER
-     digit be the difference with the other as the smaller digit at that place. */
-  const u = ri(1, 4);
-  const v = ri(u + 1, 9 - u);
-  /* the place pair UNIFORMLY over the six, so each of thousands / hundreds / tens
-     / ones is the deciding place on exactly a quarter of draws */
-  const pp = pick([[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]]);
-  const i = pp[0], j = pp[1];
-  const grid = [[u, i], [u, j], [v, i], [v, j]];
-  const pickIdx = ri(0, 3);
-  const dg = grid[pickIdx][0], col = grid[pickIdx][1];        /* the difference, and the deciding place */
-  const other = dg === u ? v : u;                             /* the smaller digit at that place */
-  const opt = grid.map(e => e[0] * POW[e[1]]);
-  const key = dg * POW[col];
-  const cands = opt.filter(x => x !== key);
-
-  /* the two numbers, built so that the FIRST place where their digits differ is
-     `col` and the gap there is `dg`. Places left of it are shared; places right of
-     it differ on 7 draws in 10, so neither "take the rightmost difference" nor
-     "count the differences" survives. */
-  const shortOne = col === 0 && ri(0, 9) < 4;                 /* 10% of all draws */
-  let a, b;
-  if (shortOne){
-    /* a 3-digit number against a 4-digit one: 0 thousands against `dg` thousands,
-       and the short number's leading digit is `other` - the digit the killed
-       misconception reads as if it were the thousands. */
-    a = other * 100 + ri(0, 9) * 10 + ri(0, 9);
-    b = dg * 1000 + ri(0, 9) * 100 + ri(0, 9) * 10 + ri(0, 9);
-  } else {
-    const d = [0,0,0,0], e = [0,0,0,0];
-    for (let k = 0; k < col; k++){ d[k] = e[k] = (k === 0 ? ri(1,9) : ri(0,9)); }
-    d[col] = other + dg; e[col] = other;
-    for (let k = col + 1; k < 4; k++){
-      d[k] = ri(0,9);
-      e[k] = ri(0,9) < 7 ? (d[k] + ri(1,9)) % 10 : d[k];
-    }
-    a = numOf(d); b = numOf(e);
-  }
-  const hi = Math.max(a, b), lo = Math.min(a, b);
-  const first = Math.random() < 0.5 ? a : b, second = first === a ? b : a;
-  const at = shortOne
-    ? (lo + ' has no thousands at all - write it as 0 thousands - and ' + hi + ' has ' +
-       pl(dg, 'thousand') + ', so the THOUSANDS place is where they first differ. ' +
-       plPlace(dg, 0) + ' is ' + key + ' and 0 thousands is 0, so ' + hi + ' is ' + key +
-       ' more at that place. Reading the ' + other + ' at the front of ' + lo +
-       ' as if it were thousands is the slip: it is ' + pl(other, 'hundred') + ', not ' +
-       pl(other, 'thousand') + '.')
-    : ((col === 0 ? 'Start at the thousands. ' :
-        'The ' + andList(PLACES.slice(0, col)) + ' match, so they cannot settle it. ') +
-       'The first place where the digits differ is the ' + PLACES[col].toUpperCase() + ': ' +
-       (other + dg) + ' against ' + other + '. ' + plPlace(other + dg, col) + ' against ' +
-       plPlace(other, col) + ' is ' + key + ' more, so ' + hi + ' is the bigger number.');
-  return mcNum('Compare <b>' + first + '</b> and <b>' + second + '</b>. Read from the left ' +
-    'and stop at the first place where the digits are different. <b>How much more is the ' +
-    'bigger number worth at that place?</b>', '', key, cands, '',
-    at + ' Everything to the RIGHT of the place that settles it never gets a vote, however ' +
-    'big those digits look.');
+   SCOPE, DECLARED. `compare` no longer contains an error-spotting item at all -
+   the two named MOE comparison misconceptions ("compared from the right, not the
+   left", "only compared the first digit of each") are not offered anywhere in the
+   topic as things to recognise, only inside explanation cards after the child has
+   answered. A diagnose-a-comparison item is a wave-2 authoring job and it needs a
+   shape whose stem does not choose its own key. */
+function gBetweenWorded(){
+  let lo = 3400, hi = 3900, key = 3480, cands = [3300, 4000, 2900], g = 0;
+  do {
+    /* bounds ROUND TO HUNDREDS so they can be said in place-value words, and
+       inside the range that keeps every distractor a 4-digit number */
+    lo = ri(2, 8) * 1000 + ri(0, 9) * 100;
+    hi = lo + pick([100, 200, 300, 400, 500, 600, 700]);
+    key = lo + ri(10, hi - lo - 10);
+    const belows = [lo - ri(5, 150), lo - ri(160, 400), lo - ri(410, 900)];
+    const aboves = [hi + ri(5, 150), hi + ri(160, 400), hi + ri(410, 900)];
+    const r = ri(1, 2);                      /* never 0 and never 3: the row straddles */
+    cands = belows.slice(0, r).concat(aboves.slice(0, 3 - r));
+    g++;
+  } while (g < 200 && !(hi <= 9000 && lo >= 1900 && key > lo && key < hi &&
+           key % 100 !== 0 && optsOk(key, cands) &&
+           cands.every(v => v < lo || v > hi)));
+  const said = v => plPlace(Math.floor(v / 1000), 0) + ' ' + plPlace(Math.floor(v / 100) % 10, 1);
+  return mcSet('Which number is <b>greater than ' + said(lo) + '</b> and <b>smaller than ' +
+    said(hi) + '</b>?', '', key, cands,
+    said(lo) + ' is ' + lo + ' and ' + said(hi) + ' is ' + hi + ': write both of them out as ' +
+    'numbers first. ' + lo + ' is smaller than ' + key + ' and ' + key + ' is smaller than ' + hi +
+    ', so ' + key + ' sits between them. Check the new number against BOTH ends - one check is ' +
+    'never enough. Every wrong answer sits outside the range: at least one of them is below ' +
+    lo + ' and at least one is above ' + hi + ', and on each side the nearest one misses by only ' +
+    'a little.');
 }
 
 /* FORMAT 7 - concept check on a pattern: name the jump (pool 1, 1 step).
@@ -2071,8 +2043,27 @@ function gAddConcept(){
      the 1 is written above, so the child has to FIND the column that makes s
      before there is a place name to read. Exactly one column can: every column
      to the right of src is built to total under 10 and every column to its left
-     under 9, while s is 12-18. */
-  const bySum = ri(0, 4) >= 2;
+     under 9, while s is 12-18.
+
+     W6, ELEVENTH pass (2026-09-16) - AND NOW IT IS EVERY DRAW. The refutation
+     abstracted this stem the way a child does - question type x the place words
+     the stem prints x the digit it prints - and found a table of 42 rows with
+     70.81 / 71.31% recall, owned in ~55 sessions at 3.31 served per session:
+     finite, over 60%, over 1.00 a session, inside 60 sessions. Four for four
+     against the lane's own board gate, which until now read only the OPTION row
+     and never a stem abstraction. The carve-out offered for it was that the 42
+     rows are the P3 place-value fact set; they are not - `keep` runs 2..8 and the
+     carried digit is always 1 and the ones column never appears, so it is a
+     proper subset of a 36-fact set with the question type stapled on.
+
+     The widening is the honest one: the stem NEVER names the column now, so the
+     40% of draws that printed "the hundreds column makes 15" - where the stem
+     handed over both halves of the key - are gone. What is left is (question
+     type x keep), and the key is one of TWO columns on every one of them, so the
+     stem abstraction cannot pin it. The board gate below measures stem
+     abstractions from this version on, and this bank passes it on recall rather
+     than on a carve-out. */
+  const bySum = true;
   const ask = carry
     ? '<b>How much is that small 1 worth?</b>'
     : '<b>How much is the ' + keep + ' ' + pron + ' writes there worth?</b>';
@@ -2665,8 +2656,8 @@ function gBackFromTotal(){
       2:[[gExpanded,'place'],[gBuildNum,'place'],[gSmallest,'compare'],[gBetween,'compare'],
          [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
          [gMissingAddend,'addsub'],[gMentalMake,'addsub']],
-      3:[[gStandsCompare,'place'],[gStandsError,'place'],[gZeroFix,'place'],
-         [gOrder,'compare'],[gComparePlace,'compare'],
+      3:[[gStandsCompare,'place'],[gStandsFix,'place'],[gZeroFix,'place'],
+         [gOrder,'compare'],[gBetweenWorded,'compare'],
          [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],
          [gAddError,'addsub'],[gSubError,'addsub'],[gTwoStepWord,'addsub'],[gBackFromTotal,'addsub']]
     }

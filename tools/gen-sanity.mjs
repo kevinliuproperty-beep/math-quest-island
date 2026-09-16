@@ -31,9 +31,45 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+/* The negative controls, frozen at the commit that shipped them, so a control
+   cannot drift away from the generator it names. See W4 at the stem ruler. */
+import { gPatternConceptV10, gAddConceptV10, gCompareErrorV10, gStandsErrorV11, gAddConceptV11 }
+  from './fixtures/p3numbers-v10.mjs';
 
 const N = Number(process.env.SAMPLES) || 200;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+/* ---------- SEED (W2, ELEVENTH pass, 2026-09-16) ------------------------------
+   THE HARNESS HEADER SAID "deterministic" FOR ELEVEN PASSES AND IT WAS NOT. Every
+   ruler in this file samples thousands of draws through `Math.random` and every
+   number it prints moved between runs: two verbatim runs at SAMPLES=200 differed
+   on 718 of 608 printed lines. That is survivable for a cap at 0.40 read off a
+   4,000-draw sample, and it is NOT survivable for the BOARD gate, whose exposure
+   clause is a hard threshold at exactly 1.00 served per session while the SERVED
+   column drifts by ~0.14 between runs - three banks (gAddError, gSubError,
+   gTwoStepWord) sit inside that band, so which side of the gate they land on was
+   decided by the run you happened to look at.
+
+   `Math` is the SAME object the vm context below is handed, so replacing
+   `Math.random` here seeds the generators, the feed, every ruler's sampling and
+   the negative controls in one stroke - there is no second entropy source in
+   js/core.js (`ri` is the only caller) or in this file. mulberry32, the same
+   generator the refutation's own harness uses, so the two are comparable.
+
+   SEED=<n> overrides. The default is fixed, so `node tools/gen-sanity.mjs` twice
+   is byte-identical and a gate line can be quoted as a fact rather than as a
+   sample. Fitting one seed and holding out another is what the sweep does; the
+   harness's job is to be the same instrument twice. --- */
+const SEED = Number(process.env.SEED) || 20260916;
+function mulberry32(a) {
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+Math.random = mulberry32(SEED);
 
 /* ---------- load the pure layer in a DOM-less vm ---------- */
 const ctx = { Math, console, Number, Array, Set, Map, JSON, String, Object, Boolean, Error, isNaN, parseInt, parseFloat };
@@ -1027,47 +1063,30 @@ function oracle(q) {
     return null;
   }
 
-  /* PLACE VALUE - error spotting, DIAGNOSE. Re-derives which offered READING
-     produced the printed claim, fails if it is none, two, or the true value, and
-     fails if a distractor option would also explain the claim. */
-  if ((m = text.match(/^In (\d+), (\S+(?: \S+)?) says the digit (\d) stands for (\d+)\. What did (he|she) do wrong\?$/))) {
+  /* PLACE VALUE - a wrong claim, CORRECTED. `gStandsError` (name the
+     misconception) was RETIRED on the eleventh pass: the claim's character count
+     was injective onto the misconception and the bank was answered at 100.00 /
+     100.00% by counting it. Its oracle is gone with it - a "What did she do
+     wrong?" stem about a digit's worth now matches nothing here and would be
+     reported as uncovered. What is re-derived instead: the claim is a real place
+     misread of the SAME digit, it is not the true value, the option row is the
+     digit at each of the four places, and the key is the digit's own column. */
+  if ((m = text.match(/^In (\d+), (\S+(?: \S+)?) says the digit (\d) stands for (\d+)\. How much does the digit (\d) really stand for\?$/))) {
     const s = m[1], dig = Number(m[3]), claim = Number(m[4]);
-    if (s.length !== 4) return 'p3 stands-error: expected a 4-digit number, got ' + s;
-    if (s.split(m[3]).length !== 2) return 'p3 stands-error: the digit is not unique in ' + s;
+    if (s.length !== 4) return 'p3 stands-fix: expected a 4-digit number, got ' + s;
+    if (m[5] !== m[3]) return `p3 stands-fix: the stem names the digit ${m[3]} and then asks about ${m[5]}`;
+    if (s.split(m[3]).length !== 2) return 'p3 stands-fix: the digit is not unique in ' + s;
     const p = s.indexOf(m[3]), val = dig * Math.pow(10, 3 - p);
-    if (claim === val) return `p3 stands-error: the "wrong" claim ${claim} is the correct value`;
-    /* KILL 1 (Sweep p3numbers Refutation, 2026-09-15). This loop used to walk only
-       the three NAMED slips, so a "filler" option that also explained the printed
-       claim was invisible to it: the gate reported the class as impossible while
-       the generator shipped it on 353 of 200,000 draws ("In 6293 the digit 2
-       stands for 20" - one column right gives 20, and 6+2+9+3 gives 20 too).
-       Every option this item can print is a reading with arithmetic of its own,
-       and all FIVE are now checked, against the claim and against every option. */
-    const slipText = {
-      digit: ' wrote the digit, not what it is worth.',
-      right: ' used the column one place to the right.',
-      left: ' used the column one place to the left.',
-      sum: ' added up all four digits of the number.',
-      next: ' wrote the digit that comes next in it.'
-    };
-    const sd = s.split('').map(Number);
-    const claimOf = k => k === 'digit' ? dig
-      : k === 'right' ? (p < 3 ? dig * Math.pow(10, 3 - p - 1) : null)
-      : k === 'left' ? (p > 0 ? dig * Math.pow(10, 3 - p + 1) : null)
-      : k === 'sum' ? sd.reduce((x, y) => x + y, 0)
-      : (p < 3 ? sd[p + 1] : null);
-    const fired = Object.keys(slipText).filter(k => claimOf(k) === claim);
-    if (fired.length !== 1) return `p3 stands-error: ${fired.length} of the five offered readings produce ${claim}`;
-    const want = slipText[fired[0]];
-    const key = strip(q.answerText);
-    if (!key.endsWith(want)) return `p3 stands-error: claim ${claim} is the "${fired[0]}" reading but the key reads "${key}"`;
-    for (const o of p3opts(q)) {
-      if (o === key) continue;
-      for (const k of Object.keys(slipText)) {
-        if (o.endsWith(slipText[k]) && claimOf(k) === claim) return `p3 stands-error: a distractor also explains ${claim}: "${o}"`;
-      }
-    }
-    return null;
+    if (claim === val) return `p3 stands-fix: the "wrong" claim ${claim} is the correct value`;
+    const places = [1, 10, 100, 1000].map(v => dig * v);
+    if (places.indexOf(claim) < 0)
+      return `p3 stands-fix: ${claim} is not the digit ${dig} read in any column, so it is not a place misread`;
+    const opts = p3opts(q).map(Number).sort((x, y) => x - y);
+    const want = places.slice().sort((x, y) => x - y);
+    if (opts.length !== 4 || opts.some((v, i) => v !== want[i]))
+      return `p3 stands-fix: the option row is ${opts.join(', ')} and not the digit at all four places (${want.join(', ')})`;
+    if (opts.filter(v => v === val).length !== 1) return `p3 stands-fix: ${val} is not on the row exactly once`;
+    return near(val, ansNum) ? null : `p3 stands-fix: expected ${val}, got ${ansNum}`;
   }
 
   /* PLACE VALUE - error spotting, CORRECT the mistake, then step on. The stem's
@@ -1129,21 +1148,27 @@ function oracle(q) {
     return null;
   }
 
-  /* COMPARE - the deciding place and what it is worth (v11). Re-derived from the
-     two printed numbers alone: pad both to four places, walk from the left, and
-     the first place whose digits differ carries the answer. */
-  if ((m = text.match(/^Compare (\d+) and (\d+)\. Read from the left and stop at the first place where the digits are different\. How much more is the bigger number worth at that place\?$/))) {
-    const pad = n => String(n).padStart(4, '0');
-    const da = pad(m[1]), db = pad(m[2]);
-    if (da === db) return 'p3 compare-place: the two printed numbers are equal';
-    const i = [0,1,2,3].find(k => da[k] !== db[k]);
-    const want = Math.abs(Number(da[i]) - Number(db[i])) * Math.pow(10, 3 - i);
-    const opts = p3opts(q);
-    /* every option must be ONE digit at ONE place value - the 2x2 grid the board
-       balance rests on, re-checked here rather than asserted in a comment */
-    if (opts.length !== 4 || !opts.every(o => /^[1-9]0*$/.test(o)))
-      return 'p3 compare-place: an option is not a single digit at a single place value';
-    return near(want, ansNum) ? null : `p3 compare-place: expected ${want}, got ${ansNum}`;
+  /* COMPARE - between two bounds named in place-value words (v12). `gComparePlace`
+     (the deciding place and what it is worth) was RETIRED on the eleventh pass at
+     100.00 / 100.00%, so its oracle is gone with it - that stem now matches nothing
+     here and would be reported as uncovered. Both bounds are rebuilt from the WORDS
+     the child reads, never from the generator, and the straddle premise the rank
+     exemption rests on is asserted per draw. */
+  if ((m = text.match(/^Which number is greater than (\d+) thousands? (\d+) hundreds? and smaller than (\d+) thousands? (\d+) hundreds?\?$/))) {
+    const lo = Number(m[1]) * 1000 + Number(m[2]) * 100;
+    const hi = Number(m[3]) * 1000 + Number(m[4]) * 100;
+    if (!(hi > lo)) return `p3 between-worded: the stem names ${lo} and ${hi}, which are not in order`;
+    if (/\b1 thousands|\b1 hundreds/.test(text)) return 'p3 between-worded: "1 thousands" or "1 hundreds" in the stem';
+    const vals = p3opts(q).map(Number);
+    if (vals.some(v => !Number.isFinite(v))) return 'p3 between-worded: an option is not a number';
+    if (vals.some(v => v < 1000 || v > 9999)) return `p3 between-worded: an option is outside 1000-9999 (${vals.join(', ')})`;
+    const hits = vals.filter(v => v > lo && v < hi);
+    if (hits.length !== 1) return `p3 between-worded: ${hits.length} of the four options lie between ${lo} and ${hi}`;
+    /* the premise of the by-name flat-rank exemption: the wrong answers sit on
+       BOTH sides, so neither single bound settles the item */
+    if (!vals.some(v => v < lo) || !vals.some(v => v > hi))
+      return `p3 between-worded: the four options do not straddle the range, so one bound settles it (${vals.join(', ')})`;
+    return near(hits[0], ansNum) ? null : `p3 between-worded: expected ${hits[0]}, got ${ansNum}`;
   }
 
   /* COMPARE - between two numbers. Exactly one option may lie strictly between. */
@@ -2898,7 +2923,15 @@ for (const g of GENS) {
 const RANK_N = 2000;
 const RANK_CAP = 0.45, EXTREME_CAP = 0.40, RANK_FLOOR = 0.12;
 const MAGNITUDE_EXEMPT = new Set(['p3numbers.gGreatest', 'p3numbers.gSmallest']);
-const FLAT_RANK_EXEMPT = new Set(['p3numbers.gBetween']);
+/* p3numbers.gBetweenWorded joins gBetween here on the TWELFTH pass, and on the
+   same premise re-checked the same way. It is the bank that replaced the RETIRED
+   gComparePlace: the same straddling distractor set, the same "check both ends"
+   demand, the same structural rank floor - and both clauses below, which is what
+   makes this an exemption rather than an excuse. Its bounds are named in
+   place-value words, so the second step is building them before either end can be
+   checked; that changes the stem and nothing about the geometry the exemption is
+   about. */
+const FLAT_RANK_EXEMPT = new Set(['p3numbers.gBetween', 'p3numbers.gBetweenWorded']);
 const rankRows = [];
 function rankOf(q) {
   const opts = (q.choices || []).map(strip);
@@ -4303,11 +4336,53 @@ let geoControl = 'the v10 gCompareTrue option row was not rejected by the geomet
    its own arithmetic. It must come out RED at 100%. --- */
 const STEM_N = 4000, STEM_CAP = 0.40, STEM_LIFT_CAP = 0.15;
 const stemRows = [];
+const KID_NAMES = 'Aisyah|Jun Wei|Jun Hao|Kavitha|Marcus|Siti|Priya|Daryl|Xin Yi|Farhan|Mei Ling|Wei Jie|Nurul|Ryan|Hui Min';
+const KID_RE = new RegExp('\\b(' + KID_NAMES + ')\\b');
+/* THE KEY'S UNIT (W3, ELEVENTH pass, 2026-09-16). This ruler used to fit
+   stem property -> the option STRING that is most often the key, and it scored
+   the WHOLE string. gStandsError's options all begin with the pronoun of the
+   child named in the stem ("She used the column one place to the left."), so
+   "She ..." and "He ..." were two different keys for one misconception and the
+   held-out table could only ever name one of them. The route the eleventh pass
+   measured at 100.0 / 100.0% printed here as 70.3 / 69.4% - 30 points of
+   dilution bought entirely by a word the stem hands the child for free, on a
+   property (NUMERAL LENGTHS) that was already the loudest in the table. Any
+   pronoun-prefixed prose bank was diluted the same way, so a route between 40%
+   and 100% could have sat under the cap on the strength of the prefix alone.
+
+   The unit is now the option with everything the STEM ALREADY SUPPLIES stripped
+   off the front: a leading pronoun, or a leading child's name. Nothing else is
+   touched - the misconception's own words are the key. The frozen v11
+   gStandsError is carried below as the negative control for exactly this, and it
+   must come out at ~100%. */
+const stemNorm = o => String(o)
+  .replace(new RegExp('^(?:' + KID_NAMES + ')\\b[,:]?\\s*'), '')
+  .replace(/^(?:He|She|They|It|he|she|they|it)\b\s*/, '')
+  .trim();
+/* the numerals a stem prints, longest common suffix over those with 2+ digits:
+   "1240, 1340, 1440, 1540" -> "40", two places held constant. */
+function trailingConstant(s) {
+  const nums = (s.match(/\d+/g) || []).filter(x => x.length >= 2);
+  if (nums.length < 2) return '-';
+  let k = 0;
+  const lim = Math.min.apply(null, nums.map(x => x.length));
+  while (k < lim && nums.every(x => x[x.length - 1 - k] === nums[0][nums[0].length - 1 - k])) k++;
+  return String(k);
+}
 const STEM_FEATURES = [
   ['NUMERAL LENGTHS', s => (s.match(/\d+/g) || []).map(x => x.length).sort().join(',')],
   ['NUMERAL COUNT', s => String((s.match(/\d+/g) || []).length)],
   ['ROUNDNESS', s => (s.match(/\d+/g) || []).map(x => (Number(x) % 100 === 0 ? 'H' : Number(x) % 10 === 0 ? 'T' : '-')).sort().join('')],
-  ['NAME', s => (s.match(/\b(Aisyah|Jun Wei|Kavitha|Marcus|Siti|Priya|Daryl|Xin Yi|Farhan|Mei Ling|Wei Jie|Nurul|Ryan|Hui Min)\b/) || ['-'])[0]]
+  ['NAME', s => (s.match(KID_RE) || ['-'])[0]],
+  /* THE FIFTH PROPERTY (W5, ELEVENTH pass). The first four all read the stem's
+     numerals in ISOLATION - how many there are, how long they are, how round
+     they are - and every one of them reads gPatternConcept at 24-29% while a
+     child reads it at 66.7% off the relation BETWEEN them: "count how many
+     digits at the end of the printed numbers never change, and keep only the
+     options with that many zeros on the end". On the counting-anchor row that
+     answers the item outright and is never wrong; on the ladder rows it narrows
+     four to two. It is invisible to all ten of the harness's other rulers. */
+  ['TRAILING CONSTANT', trailingConstant]
 ];
 function stemBank(draw, exempt) {
   const half = STEM_N >> 1;
@@ -4318,7 +4393,9 @@ function stemBank(draw, exempt) {
     const opts = (q.choices || []).map(strip);
     if (opts.length !== 4 || !(q.correct >= 0)) continue;
     const st = strip(q.q) + ' ' + strip(q.extra || '');
-    sample.push({ stem: st, opts, key: opts[q.correct] });
+    /* the key's unit is the option with what the STEM supplies stripped off -
+       W3, and the reason the v11 gStandsError control below reads 100% */
+    sample.push({ stem: st, opts: opts.map(stemNorm), key: stemNorm(opts[q.correct]) });
   }
   let prem = 0;
   if (exempt) for (const x of sample) if (exempt[1](x.stem)) prem++;
@@ -4371,27 +4448,48 @@ function stemBank(draw, exempt) {
   }
   return out;
 }
-/* gStandsError is allowlisted from the stem cap and from nothing else, on the
-   refutation's own ruling (TENTH pass, W4). Its stem prints three numerals - the
-   4-digit number, the digit being talked about, and the VALUE the child in the
-   stem claims for it - and the item asks whether that claim is the digit's worth.
-   So the claimed value's SIZE is the question, and a property that reads it is
-   reading the item rather than its packaging: "count the digits in the value he
-   claims; if it is a single digit he wrote the digit not its worth, otherwise
-   compare that count with how many places the named digit sits from the right".
-   The refutation measured that at 100.00 / 100.00% and ruled it IN-SKILL as a P3
-   teacher - locating the named digit's column is the item's own work, and a child
-   who can do it has understood place value. This file adopts that ruling and
-   DECLARES the number rather than hiding it; the premise below is re-checked on
-   every draw, and if the stem ever stops printing the claim the exemption lapses. */
+/* THE ALLOWLIST IS ONE LINE SHORTER AND ONE LINE LONGER THAN IT WAS.
+
+   GONE - gStandsError. The tenth pass excused it from this cap because "locating
+   the named digit's column is the item's own work". The eleventh pass measured
+   the route the exemption was covering and it does not locate the column: it
+   counts the characters in the claim the stem prints, never reads the four-digit
+   number, and answers 100.00 / 100.00% of 20,000 draws at each of two seeds. The
+   premise as coded (`three numerals in the stem`) was true of any stem with three
+   numerals in it, constrained nothing about the route, and so could not lapse when
+   the route was the defect. The bank is RETIRED (see js/topics/p3-whole-numbers.js)
+   and its frozen v11 body is the negative control at the bottom of this section.
+
+   NEW - gPatternConcept, and only on the TRAILING CONSTANT property the fifth
+   feature adds. The refutation ruled the route in-skill and this file adopts that
+   ruling with the number said out loud rather than hidden: "count how many digits
+   at the end of the printed numbers never change" IS naming the jump, which is
+   the question, and it is the topic's own `pattern` tip in the topic's own words
+   ("write the difference above each gap ... then say how big it is - a jump of
+   10, 100 or 1000"). It is worth 66.71 / 66.98% to a guesser and 33.42 / 33.96%
+   outright, on a bank served 1.35 at 0.80 and 4.91 / 4.99 at 0.45.
+
+   THE PREMISE IS NARROW AND IT IS RE-CHECKED ON EVERY DRAW, which is what makes
+   this an exemption and not the gStandsError mistake repeated: the stem must
+   print four numerals that form an ARITHMETIC LADDER - each one a constant step
+   from the last. If the stem ever stops being a ladder, the trailing digits stop
+   being the jump, and the exemption is void. The exemption covers ONE property;
+   the other four are gated as they are everywhere else. */
 const STEM_EXEMPT = {
-  gStandsError: ['the stem prints the VALUE the child claims for the named digit, and whether that claim is the digit\'s worth IS the question',
-                 s => (s.match(/\d+/g) || []).length === 3]
+  gPatternConcept: ['the stem prints four terms of an arithmetic ladder and the jump between them IS the question, so the digits they hold constant are the item and not its packaging',
+                    s => {
+                      const n = (s.match(/\d+/g) || []).map(Number);
+                      if (n.length !== 4) return false;
+                      const d = n[1] - n[0];
+                      return d > 0 && n[2] - n[1] === d && n[3] - n[2] === d;
+                    },
+                    'TRAILING CONSTANT']
 };
-function stemVerdict(row) {
+function stemVerdict(row, only) {
   if (!row.n || row.n < 200) return null;
   for (let k = 0; k < STEM_FEATURES.length; k++) {
     if (row.f[k].vals < 2) continue;
+    if (only && STEM_FEATURES[k][0] === only) continue;
     if (row.f[k].hit > STEM_CAP && row.f[k].hit - row.base > STEM_LIFT_CAP)
       return `the stem's ${STEM_FEATURES[k][0]} names the key on ${(100 * row.f[k].hit).toFixed(1)}% of held-out draws, ${(100 * (row.f[k].hit - row.base)).toFixed(1)} points over the best answer that reads no stem at all`;
   }
@@ -4403,41 +4501,57 @@ for (const g of GENS) {
   const row = stemBank(g.fn, ex);
   if (!row.n) continue;
   row.name = g.name; row.lvl = g.level;
+  /* an exemption that covers ONE property leaves the other four gated, so the
+     verdict is still taken - with that property skipped - and the declaration is
+     printed beside it */
   if (ex) {
-    if (row.premise === row.n) row.exempt = `exempt by name: ${ex[0]}, re-checked on all ${row.n} draws`;
+    if (row.premise === row.n) row.exempt = `${ex[2]} exempt by name: ${ex[0]}, re-checked on all ${row.n} draws`;
     else row.err = `allowlisted by name, but the premise FAILED - ${ex[0]} on only ${(100 * row.premise / row.n).toFixed(1)}% of draws`;
   }
-  if (!row.err && !row.exempt) row.err = stemVerdict(row);
+  if (!row.err) row.err = stemVerdict(row, ex ? ex[2] : null);
   stemRows.push(row);
   if (row.err) failures++;
 }
+/* TWO NEGATIVE CONTROLS, and both are now FAITHFUL REPLICAS rather than
+   rebuilds-from-memory (W4, ELEVENTH pass). The v11 controls were re-derived
+   inside this file from their own arithmetic, and two of the three had drifted
+   from the generator they named - the board control printed gPatternConcept as
+   203 rows worth 77.8% where live v10 measures 139 rows / 78.2%, gAddConcept at
+   68.2% against 73.1%, and this section's v10CompareError replica dropped BOTH of
+   the real generator's ones-digit guards, which were the two guards that made its
+   leak total. A control that has drifted from the item it names has stopped
+   testing that item. Every control in this file now runs the FROZEN generator
+   itself, lifted verbatim out of the commit that shipped it and parked in
+   tools/fixtures/p3numbers-v10.mjs where no lane fix can reach it.
+
+     v10 gCompareError (91b1178) - must go red on NUMERAL LENGTHS: the two numbers
+       in its stem have different digit counts on exactly the draws whose key is
+       "only compared the first digit of each".
+     v11 gStandsError (21e2417) - must go red at ~100%: this is the bank the
+       eleventh pass killed by counting the characters in the claim, and it is
+       here to prove the W3 normalisation above is doing its job. Scored on the
+       raw option strings it reads ~70%; scored on the normalised key it reads
+       what the route is actually worth. If this control ever falls back towards
+       70%, the pronoun is being counted as part of the misconception again. */
 let stemControl = 'the v10 gCompareError stem was not rejected by the stem ruler';
 {
-  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
-  const FIRST = 'She only compared the first digit of each.';
-  const RIGHT = 'She compared from the right, not the left.';
-  const F1 = 'She counted the odd digits in each instead.';
-  const F2 = 'She added the digits up and compared those.';
-  const v10CompareError = () => {
-    const wantDigits = Math.random() < 0.5;
-    let a, b, g = 0;
-    do {
-      if (wantDigits) { a = rnd(100, 999); b = rnd(1000, 9999); }
-      else { const th = rnd(1, 9); a = th * 1000 + rnd(0, 999); b = th * 1000 + rnd(0, 999); }
-      g++;
-    } while (g < 400 && !(b > a));
-    if (!(b > a)) { a = 968; b = 1024; }
-    const key = wantDigits ? FIRST : RIGHT;
-    const opts = shuf([key, wantDigits ? RIGHT : FIRST, F1, F2]);
-    return { q: 'Xin Yi says ' + a + ' is greater than ' + b + '. What did she do wrong?', extra: '',
-             choices: opts, answerText: key, correct: opts.indexOf(key) };
-  };
-  const ctl = stemBank(v10CompareError);
+  const ctl = stemBank(gCompareErrorV10);
   const verdict = stemVerdict(ctl);
   if (verdict && /NUMERAL LENGTHS/.test(verdict))
     stemControl = `the v10 gCompareError stem goes red - ${verdict}`;
   else failures++;
+}
+let stemNormControl = 'the v11 gStandsError stem was not rejected by the normalised stem ruler';
+{
+  const ctl = stemBank(gStandsErrorV11);
+  const verdict = stemVerdict(ctl);
+  const hit = ctl.f[0].hit;
+  if (verdict && /NUMERAL LENGTHS/.test(verdict) && hit >= 0.95)
+    stemNormControl = `the v11 gStandsError stem goes red at the route's real worth - ${verdict}`;
+  else {
+    stemNormControl = `the v11 gStandsError control reads only ${(100 * hit).toFixed(1)}% on NUMERAL LENGTHS - the key's unit is being diluted by something the stem supplies, which is the W3 defect`;
+    failures++;
+  }
 }
 
 /* ---------- BOARD WORTH x EXPOSURE (tenth-pass KILL, v11) ---------------------
@@ -4554,87 +4668,111 @@ for (const g of GENS) {
   boardRows.push(row);
   if (row.err) failures++;
 }
+/* THE TWO BOARD CONTROLS ARE THE FROZEN v10 GENERATORS THEMSELVES (W4, ELEVENTH
+   pass). They used to be rebuilt here from their own arithmetic, and both had
+   drifted from the item they name: gPatternConcept came out as 203 rows worth
+   77.8% where live v10 is 139 rows / 78.2%, and gAddConcept as 68.2% where live
+   v10 is 73.1% - a row count 46% high on one and a recall 5 points low on the
+   other. Both still went red, so no gate was compromised, but a control that no
+   longer reproduces the defect it is named for has stopped testing for it. The
+   two generators now run verbatim out of tools/fixtures/p3numbers-v10.mjs.
+   Their SERVED figures are the measured v10 exposures and are pinned here,
+   because the v10 feed no longer exists to measure. */
 let boardControl = 'the v10 option boards were not rejected by the board gate';
 {
-  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
-  const okv = v => Number.isInteger(v) && v >= 1 && v <= 9999;
-  /* the v10 gPatternConcept board: the anchor a third of the time, and otherwise
-     three members of famOf(step) - a family derived from the step, so each row
-     belongs to exactly one key. */
-  const W = v => String(v).length;
-  const hiPart = s => { const p = Math.pow(10, W(s) - 1); return p * Math.floor(s / p); };
-  const famOf = s => {
-    const seen = new Set([s]), f = [];
-    for (const v of [2*s, 3*s, s + 10, s - 10, hiPart(s), s - hiPart(s), s >= 100 ? s/10 : s*10, 2*s - 10]) {
-      if (!okv(v) || seen.has(v)) continue;
-      seen.add(v); f.push(v);
-    }
-    return f;
-  };
-  const v10PatternConcept = () => {
-    let step, wrong;
-    if (rnd(0, 2) === 0) { step = [10, 100, 1000][rnd(0, 2)]; wrong = [1, 10, 100, 1000].filter(v => v !== step); }
-    else { step = [15, 25, 150, 250][rnd(0, 3)]; wrong = shuf(famOf(step)).slice(0, 3); }
-    const opts = shuf([step].concat(wrong)).map(String);
-    return { q: 'v10 gPatternConcept control', choices: opts, answerText: String(step), correct: opts.indexOf(String(step)) };
-  };
-  /* the v10 gAddConcept board: the key is POW[col], a power of ten, and the three
-     distractors come from a family built out of the same column's digits. */
-  const POWV = [1000, 100, 10, 1];
-  /* the v10 gAddConcept board: the key is POW[col] - the worth of a carried 1, so
-     always a power of ten - and the three distractors are the 3-subset of that
-     column's named slip family that is WIDTH-FREE first and then holds the MOST
-     place values, which is exactly the narrowing that took the board to 64 rows. */
-  const v10AddConcept = () => {
-    const s = rnd(12, 18), keep = s % 10;
-    const r0 = rnd(0, 3);
-    let col = rnd(0, 2);
-    /* v10 draws the RANK first and then picks a COLUMN that can supply it; doing
-       it the other way round loosens the board and understates the defect */
-    for (const c of shuf([0, 1, 2])) {
-      const kk = POWV[c], f2 = [1, keep, s, POWV[c + 1], keep * POWV[c + 1], s * POWV[c + 1]];
-      if (c > 0) f2.push(keep * kk);
-      f2.push(s * kk, 1, 10, 100, 1000);
-      const sn = new Set([kk]), ff = [];
-      for (const v of f2) { if (!okv(v) || sn.has(v)) continue; sn.add(v); ff.push(v); }
-      let any = false;
-      for (let i = 0; i < ff.length && !any; i++) for (let j = i + 1; j < ff.length && !any; j++) for (let k = j + 1; k < ff.length && !any; k++)
-        if ([ff[i], ff[j], ff[k]].filter(v => v < kk).length === r0) any = true;
-      if (any) { col = c; break; }
-    }
-    const src = col + 1, key = POWV[col];
-    const raw = [1, keep, s, POWV[src], keep * POWV[src], s * POWV[src]];
-    if (col > 0) raw.push(keep * POWV[col]);
-    raw.push(s * POWV[col], 1, 10, 100, 1000);
-    const seen = new Set([key]), fam = [];
-    for (const v of raw) { if (!okv(v) || seen.has(v)) continue; seen.add(v); fam.push(v); }
-    const kw = String(key).length; let sets = [];
-    for (let i = 0; i < fam.length; i++) for (let j = i + 1; j < fam.length; j++) for (let k = j + 1; k < fam.length; k++) {
-      const t = [fam[i], fam[j], fam[k]];
-      if (Math.max.apply(null, t.map(v => String(v).length)) * 1.4 < kw) continue;
-      sets.push(t);
-    }
-    if (!sets.length) sets.push(fam.slice(0, 3));
-    /* the RANK is drawn FIRST, exactly as v10 draws it, and it is what keeps the
-       all-powers-of-ten subset off most rows - without it the board collapses to
-       one row and the control measures nothing. */
-    const atRank = sets.filter(t => t.filter(v => v < key).length === r0);
-    if (atRank.length) sets = atRank;
-    const free = sets.filter(t => t.every(v => String(v).length !== kw));
-    const live = free.length ? free : sets;
-    const pv = t => t.filter(v => /^10*$/.test(String(v))).length;
-    const best = Math.max.apply(null, live.map(pv));
-    const chosen = live.filter(t => pv(t) === best);
-    const wrong = chosen[rnd(0, chosen.length - 1)];
-    const opts = shuf([key].concat(wrong)).map(String);
-    return { q: 'v10 gAddConcept control', choices: opts, answerText: String(key), correct: opts.indexOf(String(key)) };
-  };
-  const a = boardBank(v10PatternConcept), b = boardBank(v10AddConcept);
+  const a = boardBank(gPatternConceptV10), b = boardBank(gAddConceptV10);
   a.s45 = 5.00; a.s80 = 1.28; a.name = 'v10 gPatternConcept';
   b.s45 = 3.37; b.s80 = 0.75; b.name = 'v10 gAddConcept';
   const va = boardVerdict(a), vb = boardVerdict(b);
-  if (va && vb) boardControl = `the v10 option boards go red - gPatternConcept: ${va}; gAddConcept: ${vb}`;
+  if (va && vb) boardControl = `the frozen v10 option boards go red - gPatternConcept: ${va}; gAddConcept: ${vb}`;
+  else failures++;
+}
+
+/* ---------- STEM ABSTRACTION x EXPOSURE (W6, ELEVENTH pass) -------------------
+   THE BOARD GATE ABOVE READS THE OPTION ROW AND NOTHING ELSE, AND THAT IS HALF
+   OF THE BOARD A CHILD ACTUALLY OWNS. gAddConcept's option-row board is 7 rows
+   at 25.9 / 26.2% - chance, exactly as the v11 rebuild claims. Abstract its STEM
+   the way a child does, though - the question it asks x the place words it
+   prints x the small digits it prints, with the big numerals thrown away because
+   nobody memorises those - and the table was 42 rows with 70.81 / 71.31% recall,
+   served 3.31 per session, owned in ~55 sessions. Finite, over 60%, over 1.00 a
+   session, inside 60 sessions: all four clauses of this file's own gate, on a
+   surface the gate could not see. It is the same blind spot the v11 option-row
+   board was built to close, one layer up.
+
+   THE ABSTRACTION, and why it is this one. Every numeral of THREE OR MORE digits
+   is replaced by `#`; everything else survives - the question's words, the place
+   names, the one- and two-digit numbers a child can hold. That is deliberately
+   generous to the bank: it keeps more of the stem than a child would, so the
+   table it builds is WIDER than the real one and the gate is conservative. A
+   bank fails on the same four clauses as the option-row board.
+
+   THE CARVE-OUT, written down so it can be checked rather than asserted: a stem
+   table is exempt only where the stem set IS the syllabus fact set - where owning
+   the table means owning the facts the topic exists to teach, and there is
+   nothing left over. gAddConcept was offered that carve-out on its 42 rows and
+   does not get it: `keep` ran 2..8 and the carried digit was always 1 and the
+   ones column never appeared, so the 42 rows were a proper subset of the P3
+   digit x column fact set with a question type stapled on - not the fact set. The
+   bank was widened instead (see js/topics/p3-whole-numbers.js): the stem no
+   longer names the column on any draw, so the abstraction cannot pin the key.
+
+   Negative control: the frozen v11 gAddConcept - the bank this gate was built
+   for, whose option row is worth exactly chance and whose stem table the eleventh
+   pass measured at 42 rows / 70.8%. It must come out RED. --- */
+const stemBoardRows = [];
+/* the child's NAME and the pronoun that follows from it are not part of what a
+   child memorises - they are the same ten names on every bank in the topic - so
+   they are abstracted away with the big numerals. Leaving them in multiplies
+   every table by ten and hides a 42-row board inside a 420-row one, which is
+   exactly how a finite table escapes a finiteness test. */
+const KID_RE_G = new RegExp('\\b(?:' + KID_NAMES + ')\\b', 'g');
+const stemAbstract = s => strip(s)
+  .replace(KID_RE_G, '@')
+  .replace(/\b(?:He|She|he|she|His|Her|his|her)\b/g, '@')
+  .replace(/\d{3,}/g, '#');
+function stemBoardBank(draw) {
+  const half = BOARD_N >> 1;
+  const rowsHalf = new Set(), tab = new Map();
+  let n = 0;
+  for (let i = 0; i < BOARD_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return { n: 0, threw: e.message }; }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !(q.correct >= 0)) continue;
+    const row = stemAbstract(strip(q.q) + ' ' + strip(q.extra || ''));
+    if (i < half) rowsHalf.add(row);
+    if (!tab.has(row)) tab.set(row, new Map());
+    const t = tab.get(row);
+    const key = stemNorm(opts[q.correct]);
+    t.set(key, (t.get(key) || 0) + 1);
+    n++;
+  }
+  let worth = 0;
+  for (const [, t] of tab) worth += Math.max.apply(null, [...t.values()]);
+  return { n, rows: tab.size, half: rowsHalf.size, recall: n ? worth / n : 0,
+           finite: rowsHalf.size ? tab.size / rowsHalf.size <= BOARD_GROWTH : false };
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = stemBoardBank(g.fn);
+  if (!row.n) continue;
+  row.name = g.name; row.lvl = g.level;
+  row.s80 = served80.get(g.name) || 0;
+  row.s45 = served45.get(g.name) || 0;
+  row.err = boardVerdict(row);
+  stemBoardRows.push(row);
+  if (row.err) failures++;
+}
+let stemBoardControl = 'the v11 gAddConcept stem table was not rejected by the stem-abstraction gate';
+{
+  const c = stemBoardBank(gAddConceptV11);
+  c.s45 = 3.31; c.s80 = 0.78; c.name = 'v11 gAddConcept';
+  const v = boardVerdict(c);
+  /* the option-row board of the SAME generator is the other half of the control:
+     it must stay at chance, or this gate is just the board gate wearing a hat */
+  const row = boardBank(gAddConceptV11);
+  if (v && row.recall < 0.35) stemBoardControl = `the frozen v11 gAddConcept stem table goes red while its option row stays at chance (${(100 * row.recall).toFixed(1)}%) - ${v}`;
   else failures++;
 }
 
@@ -4764,7 +4902,7 @@ if (rankRows.length) {
   }
   const gated = rankRows.filter(r => !r.exempt && !r.flat).length;
   console.log('');
-  if (rankRows.every(r => !r.err)) console.log(`ok   magnitude rank: ${gated} numeric banks inside ${Math.round(RANK_FLOOR * 100)}-${Math.round(RANK_CAP * 100)}% / ${Math.round(EXTREME_CAP * 100)}%, ${rankRows.filter(r => r.exempt).length} comparison anchors and ${rankRows.filter(r => r.flat).length} straddle bank exempt by name, every premise re-checked`);
+  if (rankRows.every(r => !r.err)) console.log(`ok   magnitude rank: ${gated} numeric banks inside ${Math.round(RANK_FLOOR * 100)}-${Math.round(RANK_CAP * 100)}% / ${Math.round(EXTREME_CAP * 100)}%, ${rankRows.filter(r => r.exempt).length} comparison anchors and ${rankRows.filter(r => r.flat).length} straddle bank${rankRows.filter(r => r.flat).length === 1 ? '' : 's'} exempt by name, every premise re-checked`);
   console.log(`${/goes red/.test(rankControl) ? 'ok  ' : 'FAIL'} magnitude negative control: ${rankControl}`);
   console.log(`${/goes red/.test(betweenControl) ? 'ok  ' : 'FAIL'} magnitude negative control: ${betweenControl}`);
 }
@@ -4939,6 +5077,7 @@ if (tokRows.length) {
   for (const r of stemRows) if (r.exempt) console.log(`     ${r.name}: ${r.exempt}`);
   if (stemRows.every(r => !r.err)) console.log(`ok   stem ruler: ${stemRows.length} banks, no numeral-shape or name property of the stem naming the key past ${Math.round(STEM_CAP * 100)}% on held-out draws`);
   console.log(`${/goes red/.test(stemControl) ? 'ok  ' : 'FAIL'} stem negative control: ${stemControl}`);
+  console.log(`${/goes red/.test(stemNormControl) ? 'ok  ' : 'FAIL'} stem KEY-UNIT control: ${stemNormControl}`);
 
   /* ---------- BOARD WORTH x EXPOSURE ---------- */
   console.log(`\nBOARD WORTH x EXPOSURE  p3numbers, ${BOARD_N} draws per bank and ${BOARD_SESSIONS} sessions x 30 through MQI.createFeed  (a FINITE board worth >= ${Math.round(BOARD_RECALL_CAP * 100)}% to full-table recall, served >= ${BOARD_SERVED_CAP.toFixed(2)} per session, and owned inside ${BOARD_SESSIONS_CAP} sessions, FAILS)\n`);
@@ -4955,6 +5094,23 @@ if (tokRows.length) {
      not a board. RECALL is full-table recall: remember, for each row, the answer it carries most often. 25.0% is chance.`);
   if (boardRows.every(r => !r.err)) console.log(`ok   board gate: ${boardRows.filter(r => r.finite).length} finite boards of ${boardRows.length} banks, none worth ${Math.round(BOARD_RECALL_CAP * 100)}% to full-table recall while served ${BOARD_SERVED_CAP.toFixed(2)} per session and owned inside ${BOARD_SESSIONS_CAP} sessions`);
   console.log(`${/go red/.test(boardControl) ? 'ok  ' : 'FAIL'} board negative control: ${boardControl}`);
+
+  /* ---------- STEM ABSTRACTION x EXPOSURE ---------- */
+  console.log(`\nSTEM ABSTRACTION x EXPOSURE  p3numbers, ${BOARD_N} draws per bank  (the stem -> key table, with every numeral of 3+ digits abstracted away: same four clauses as the option-row board)\n`);
+  console.log('GENERATOR         POOL ROWS    FINITE  RECALL   SERVED@0.80  SERVED@0.45  SESSIONS TO OWN  RESULT');
+  console.log('-'.repeat(140));
+  for (const r of stemBoardRows.slice().sort((a, b) => b.recall - a.recall)) {
+    const served = Math.max(r.s80, r.s45);
+    const own = r.finite && served ? (r.rows / served).toFixed(0) : '-';
+    console.log(`${r.name.padEnd(17)} ${String(r.lvl).padEnd(4)} ${String(r.rows).padEnd(7)} ${(r.finite ? 'yes' : 'no').padEnd(7)} ${(100 * r.recall).toFixed(1).padStart(5)}%   ${r.s80.toFixed(2).padStart(10)}   ${r.s45.toFixed(2).padStart(10)}   ${String(own).padStart(14)}   ${r.err ? 'FAIL  ' + r.err : 'pass'}`);
+  }
+  console.log(`
+     The option row is half the board a child owns; this is the other half. A stem abstraction keeps the question's words, the
+     place names and the small numbers, and throws away every numeral of three digits or more - nobody memorises those. It is
+     deliberately generous: keeping more of the stem than a child would makes the table WIDER and the gate more conservative.
+     A stem table is exempt only where the stem set IS the syllabus fact set, and that claim is written down where it is made.`);
+  if (stemBoardRows.every(r => !r.err)) console.log(`ok   stem-abstraction gate: ${stemBoardRows.filter(r => r.finite).length} finite stem tables of ${stemBoardRows.length} banks, none worth ${Math.round(BOARD_RECALL_CAP * 100)}% to full-table recall while served ${BOARD_SERVED_CAP.toFixed(2)} per session and owned inside ${BOARD_SESSIONS_CAP} sessions`);
+  console.log(`${/goes red/.test(stemBoardControl) ? 'ok  ' : 'FAIL'} stem-abstraction negative control: ${stemBoardControl}`);
 
 }
 

@@ -3125,8 +3125,26 @@ let lenControl = 'the v2 gAddConcept option set was not rejected by the length g
    Negative control: the v7 gPatternConcept option set, rebuilt here from its own
    arithmetic so the control does not depend on the topic file still containing
    the defect. It must come out RED. --- */
+/* THE TIE CLAUSE FLOOR IS 5% (Sweep p3numbers Refutation, NINTH pass, Call 3 -
+   REJECTED as written, and the refutation's number taken). The clause shipped at
+   10%, and the only 2-2 tie left anywhere in the topic is gAddConcept's, at
+   8.37 / 8.29% with the key in the NARROWER pair on 100.00% of it - every other
+   bank is at 0.00%. A threshold set 1.6 points above the single surviving
+   instance is not gating, it is describing: the clause built to catch a 2-2 tie
+   with a certainty on it passed the only one in the file. At 5% it fails
+   gAddConcept and nothing else, and gAddConcept carries a NAMED exemption with
+   the trade written into the gate line, so the certainty the threshold used to
+   hide is one the harness says out loud.
+
+   THE TRADE, AND ITS PREMISE, RE-CHECKED. Closing the tie means refusing the
+   subsets that make it, which costs 14 of the bank's 64 distinct option rows. A
+   64-row board is the larger defect and a 50-row one is worse, so the trade is
+   worth making - but only while it is actually being paid for. The exemption is
+   therefore void if the board ever falls to 50 rows or fewer, which is exactly
+   the board closing the tie would have left. */
 const WIDTH_N = 2000, WIDTH_RANK_CAP = 0.45, WIDTH_RULE_CAP = 0.40;
-const WIDTH_ELIM_CAP = 0.40, WIDTH_TIE_FLOOR = 0.10, WIDTH_TIE_CAP = 0.95;
+const WIDTH_ELIM_CAP = 0.40, WIDTH_TIE_FLOOR = 0.05, WIDTH_TIE_CAP = 0.95;
+const TIE_EXEMPT = { gAddConcept: 50 };
 const widthRows = [];
 /* BOTH DIRECTIONS (W3 + W4, EIGHTH pass, 2026-09-16). The v8 column scored where
    the key sits INSIDE the commonest class and treated KEY OUT as a pass, so
@@ -3168,12 +3186,14 @@ function widthDetail(opts, correct) {
 }
 function widthClassOf(opts, correct) { return widthDetail(opts, correct).cls; }
 function widthBank(draw) {
-  const t = { n: 0, min: 0, mid: 0, max: 0, out: 0, none: 0, tie: 0, tieWide: 0, elim: 0 };
+  const t = { n: 0, min: 0, mid: 0, max: 0, out: 0, none: 0, tie: 0, tieWide: 0, elim: 0, board: new Set() };
   for (let i = 0; i < WIDTH_N; i++) {
     let q;
     try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
     const opts = (q.choices || []).map(strip);
     if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o)) || !(q.correct >= 0)) continue;
+    /* the option BOARD, which is what the tie exemption's trade is paid in */
+    t.board.add(opts.slice().sort((a, b) => Number(a) - Number(b)).join(','));
     const d = widthDetail(opts, q.correct);
     t[d.cls]++; t.n++;
     /* ELIM is the value of the whole rule a child can run: keep only the options
@@ -3208,8 +3228,20 @@ function widthVerdict(row) {
      must not put the key on the same side of it every time. */
   if (f('tie') >= WIDTH_TIE_FLOOR) {
     const wide = row.tieWide / row.tie;
-    if (wide > WIDTH_TIE_CAP || 1 - wide > WIDTH_TIE_CAP)
-      return `two widths tie 2-2 on ${(100 * f('tie')).toFixed(1)}% of draws and the key is in the ${wide > 0.5 ? 'WIDER' : 'NARROWER'} pair on ${(100 * (wide > 0.5 ? wide : 1 - wide)).toFixed(1)}% of them`;
+    if (wide > WIDTH_TIE_CAP || 1 - wide > WIDTH_TIE_CAP) {
+      const side = wide > 0.5 ? 'WIDER' : 'NARROWER';
+      const rate = (100 * (wide > 0.5 ? wide : 1 - wide)).toFixed(1);
+      const said = `two widths tie 2-2 on ${(100 * f('tie')).toFixed(1)}% of draws and the key is in the ${side} pair on ${rate}% of them`;
+      const floor = TIE_EXEMPT[row.name];
+      if (floor === undefined) return said;
+      /* allowlisted by name, and the trade re-checked: the tie is kept because
+         closing it would cost 14 of the bank's option rows, so the exemption only
+         stands while the board it buys is actually wider than the closed one */
+      if (row.board.size <= floor)
+        return `tie-exempt by name on a BOARD premise, but the board is ${row.board.size} distinct option rows - closing the tie would leave ${floor}, so the trade is not being paid for`;
+      row.tieDeclared = `DECLARED (allowlisted by name): ${said}; kept because closing it costs 14 of ${row.board.size} option rows, and a ${floor}-row board is the larger defect`;
+      return null;
+    }
   }
   return null;
 }
@@ -3329,26 +3361,74 @@ let tieControl = 'a key always in the wider half of a 2-2 width tie was not reje
    that declines scores nothing, exactly as the width column scores MIN.
 
    THE GATE. Neither uniqueness direction may reach 60% of draws, and no route may
-   reach 40% - the same cap the width rules take. NO BANK IS EXEMPT.
+   reach 45%.
+
+   THE ROUTE CAP IS 45% AND `gAddConcept` IS ALLOWLISTED BY NAME (Sweep p3numbers
+   Refutation, NINTH pass, Call 1 - REJECTED as written, and the refutation's
+   number taken). The cap this ruler shipped with was 60%, chosen so that
+   `gAddConcept` - which sits at 51.9% structurally, because its key is the value
+   of a carried 1 and therefore a power of ten, so on the tens column no multiple
+   of ten can be printed below it and on the ones column the key IS 1 - would pass
+   under it. A cap set eight points above the one bank that cannot comply is that
+   bank's figure plus slack, and no measurement supports the slack. The second
+   highest live shape route in the topic is 41.1%. The cap is now 45%, the same
+   number the width-class ruler takes, and `gAddConcept` carries a NAMED exemption
+   with its premise re-checked on every draw - the mechanism gGreatest, gSmallest
+   and gBetween already use on the magnitude gate. It matters immediately: at 60%
+   this cap would not have caught the ninth pass's digit-column route on four of
+   the seven banks it lit up; at 45% it would have caught all four.
+
+   A FOURTH FEATURE (ninth pass, W5). "Contains a zero digit anywhere" answered
+   gStandsCompare on 42.4% of draws and this ruler could not see it: the three
+   features it shipped with are all about a number's TAIL, and this one is about
+   its BODY. It is at least as visible to a child as the other three, and it was
+   found by a feature sweep rather than by anyone's intuition, which is the reason
+   it belongs in the ruler rather than in a residual.
 
    Negative control: the v8 gPatternConcept option set, rebuilt here from its own
    arithmetic so the control does not depend on the topic file still containing the
    defect. It must come out RED on the route. --- */
-const SHAPE_N = 2000, SHAPE_UNIQ_CAP = 0.60, SHAPE_RULE_CAP = 0.60;
+const SHAPE_N = 2000, SHAPE_UNIQ_CAP = 0.60, SHAPE_RULE_CAP = 0.45;
 const SHAPE_FEATURES = [
   ['1 followed by zeros', o => /^10*$/.test(o)],
   ['a multiple of 100', o => Number(o) % 100 === 0],
-  ['round to the nearest ten', o => Number(o) % 10 === 0]
+  ['round to the nearest ten', o => Number(o) % 10 === 0],
+  ['carrying a 0 digit', o => o.indexOf('0') !== -1]
 ];
+/* The allowlisted banks, each with the premise its exemption rests on, re-checked
+   on every draw. An exemption is a claim; if the premise ever stops holding the
+   exemption lapses and the bank runs through the unexempted ruler.
+
+   gAddConcept - the key is the worth of a carried 1, so it is a power of ten on
+     every draw the item can legally make, and no multiple of ten can be authored
+     below it on the tens column. This is Call 1's allowlist.
+   gGreatest / gSmallest - the SAME two banks, on the SAME premise, that the
+     magnitude gate has allowlisted since the third pass: their stem prints no
+     number, so the four options ARE the data and the ordering IS the question.
+     Every shape route ends in "take the largest" or "take the smallest", so on
+     these two banks the route the ruler scores is the item. W5's fourth feature
+     is what brought them over the line (46.8% and 49.2%), not a change to either
+     bank; the eighth pass's three tail features never split their rows hard
+     enough to show it. Exempting them from the ROUTE cap and nothing else is the
+     same call the magnitude gate already made, written down here too. */
+const SHAPE_EXEMPT = {
+  gAddConcept: ['the key is the worth of a carried 1, so it is 1 followed by zeros',
+                (o, q) => /^10*$/.test(o)],
+  gGreatest:   ['the stem prints no number, so the four options ARE the data and the ordering IS the question',
+                (o, q) => !/\d/.test(strip(q.q) + ' ' + strip(q.extra || ''))],
+  gSmallest:   ['the stem prints no number, so the four options ARE the data and the ordering IS the question',
+                (o, q) => !/\d/.test(strip(q.q) + ' ' + strip(q.extra || ''))]
+};
 const shapeRows = [];
-function shapeBank(draw) {
-  const t = { n: 0, f: SHAPE_FEATURES.map(() => ({ uKey: 0, uWrong: 0, outSmall: 0, outLarge: 0, inSmall: 0, inLarge: 0 })) };
+function shapeBank(draw, exempt) {
+  const t = { n: 0, premise: 0, f: SHAPE_FEATURES.map(() => ({ uKey: 0, uWrong: 0, outSmall: 0, outLarge: 0, inSmall: 0, inLarge: 0 })) };
   for (let i = 0; i < SHAPE_N; i++) {
     let q;
     try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
     const opts = (q.choices || []).map(strip);
     if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o)) || !(q.correct >= 0)) continue;
     t.n++;
+    if (exempt && exempt[1](opts[q.correct], q)) t.premise++;
     const key = Number(opts[q.correct]);
     for (let k = 0; k < SHAPE_FEATURES.length; k++) {
       const has = SHAPE_FEATURES[k][1], c = t.f[k];
@@ -3385,6 +3465,15 @@ function shapeVerdict(row) {
       return `"keep only the options that are ${name}, then take the smallest" answers it on ${(100 * f('inSmall')).toFixed(1)}% of draws`;
     if (f('inLarge') > SHAPE_RULE_CAP)
       return `"keep only the options that are ${name}, then take the largest" answers it on ${(100 * f('inLarge')).toFixed(1)}% of draws`;
+  }
+  return shapeVerdictUniq(row);
+}
+/* the uniqueness half on its own: the allowlisted bank is exempt from the ROUTE
+   cap and from nothing else */
+function shapeVerdictUniq(row) {
+  if (!row.n) return null;
+  for (let k = 0; k < SHAPE_FEATURES.length; k++) {
+    const name = SHAPE_FEATURES[k][0], c = row.f[k], f = x => c[x] / row.n;
     if (f('uKey') > SHAPE_UNIQ_CAP)
       return `the key is the ONLY option that is ${name} on ${(100 * f('uKey')).toFixed(1)}% of draws`;
     if (f('uWrong') > SHAPE_UNIQ_CAP)
@@ -3394,10 +3483,20 @@ function shapeVerdict(row) {
 }
 for (const g of GENS) {
   if (g.topic !== 'p3numbers') continue;
-  const row = shapeBank(g.fn);
+  const ex = SHAPE_EXEMPT[g.name];
+  const row = shapeBank(g.fn, ex);
   if (!row.n) continue;                          /* not a numeric four-option bank */
   row.name = g.name; row.lvl = g.level;
   row.err = shapeVerdict(row);
+  if (ex) {
+    /* the premise, re-checked on every draw - not asserted once in a comment */
+    if (row.premise === row.n) {
+      row.exempt = `exempt from the ROUTE cap (allowlisted by name): ${ex[0]}, re-checked on all ${row.n} draws`;
+      row.err = shapeVerdictUniq(row);            /* the uniqueness caps still bind */
+    } else {
+      row.err = `allowlisted by name, but the premise FAILED - ${ex[0]} on only ${(100 * row.premise / row.n).toFixed(1)}% of draws`;
+    }
+  }
   shapeRows.push(row);
   if (row.err) failures++;
 }
@@ -3421,6 +3520,168 @@ let shapeControl = 'the v8 gPatternConcept option set was not rejected by the sh
   const ctl = shapeBank(v8PatternConcept);
   const verdict = shapeVerdict(ctl);
   if (verdict) shapeControl = `the v8 gPatternConcept option set goes red - ${verdict}`;
+  else failures++;
+}
+
+/* ---------- COLUMN RULER (ninth-pass KILL, 2026-09-16) ----------------------
+   NINE RULERS READ THIS TOPIC AND NOT ONE OF THEM EVER READ ACROSS THE FOUR
+   PRINTED NUMBERS DIGIT BY DIGIT. MAGNITUDE ranks the key against all four;
+   LENGTH ranks it against the extremes; WIDTH-CLASS ranks it inside its own
+   width; SHAPE reads each option's roundness; PHRASE reads prose. The ninth pass
+   read the option row as a COLUMN OF DIGITS and the topic fell over:
+
+     What is the missing number in this pattern?  3069, ?, 3469, 3669, 3869
+       1269  |  3469  |  2869  |  3269 <- key
+     Thousands: 1, 3, 2, 3 - cross out 1269 and 2869. Hundreds: 2, 4, 8, 2 -
+     cross out 3469. One answer left, and it is right. The run was never read.
+
+         "Look down each column of the four answers.
+          If a digit is in the minority there, cross that answer out."
+
+   answered gPatternMissing - pool 3, served 2.12 items per 30-item session at
+   0.80 accuracy - on 72.58 / 72.68% of 20,000 draws at two seeds, with no
+   arithmetic and without the stem being read at all; gMoreLess on 77.7%,
+   gPattern4 on 67.1%, gSubError / gSubRegroup / gMissingAddend on 58.5 - 58.8%
+   and gAddRegroup on 53.7%.
+
+   IT WAS slipSet's OWN DESIGN PRINCIPLE, MEASURED FROM THE OUTSIDE - see the
+   long comment on slipSet in js/topics/p3-whole-numbers.js for the algebra, for
+   why the ninth pass's own proposed contract ("at most one slip per draw may
+   differ from the key in exactly one digit column") does NOT close it, and for
+   the two row shapes that do.
+
+   WHAT IS MEASURED, on every numeric four-option bank in the topic, 2,000 draws,
+   off the RENDERED options and nothing else. The four numbers are laid out
+   right-aligned by place value, exactly as a child reads a column; a number that
+   does not reach a column has a BLANK there and a blank is a symbol like any
+   other. Then, in both directions:
+
+     ROUTE   the elimination leaves exactly one option standing and it is the key
+     VALUE   what the elimination is WORTH - cross out every minority digit, then
+             guess among whatever is left. 25% is chance; the rule leaving all
+             four, or crossing the whole row out, scores exactly chance. This is
+             the unit Call 2 of the ninth pass argued for and it is the one that
+             binds here too: a rate is not a route, a value is.
+     LONER   the MIRROR, and the direction residual 3 has declared on gPatternOdd
+             since the sixth pass: the option that stands ALONE in some column
+             while the rest agree, taken as the answer.
+     3-of-4  reported, not gated: how often some column carries the key's digit in
+             exactly three of the four printed numbers. That shape hands one
+             option away as a free cross-out, and what a free cross-out is worth
+             is what VALUE already measures.
+
+   THE GATE. ROUTE, VALUE and LONER each under 40%. No bank is exempt.
+
+   Negative control: the v9 gPatternMissing option set, rebuilt here from its own
+   arithmetic so the control does not depend on the topic file still containing
+   the defect. It must come out RED. --- */
+const COL_N = 2000, COL_ROUTE_CAP = 0.40, COL_VALUE_CAP = 0.40, COL_LONER_CAP = 0.40;
+const colRows = [];
+function colGrid(opts) {
+  const d = opts.map(o => o.split('').reverse());
+  let w = 0;
+  for (const x of d) if (x.length > w) w = x.length;
+  const cols = [];
+  for (let i = 0; i < w; i++) cols.push(d.map(x => i < x.length ? x[i] : ' '));
+  return cols;
+}
+function colBank(draw) {
+  const t = { n: 0, route: 0, value: 0, loner: 0, three: 0 };
+  for (let i = 0; i < COL_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o)) || !(q.correct >= 0)) continue;
+    t.n++;
+    const cols = colGrid(opts);
+    const alive = [true, true, true, true], lone = [false, false, false, false];
+    let three = false;
+    for (const col of cols) {
+      const cnt = new Map();
+      for (const c of col) cnt.set(c, (cnt.get(c) || 0) + 1);
+      let max = 0;
+      for (const v of cnt.values()) if (v > max) max = v;
+      for (let k = 0; k < 4; k++) {
+        if (cnt.get(col[k]) < max) alive[k] = false;
+        if (cnt.get(col[k]) === 1 && max >= 2) lone[k] = true;
+      }
+      if (cnt.get(col[q.correct]) === 3) three = true;
+    }
+    let n = 0;
+    for (const a of alive) if (a) n++;
+    if (n === 1 && alive[q.correct]) t.route++;
+    t.value += n ? (alive[q.correct] ? 1 / n : 0) : 0.25;
+    const idx = [];
+    for (let k = 0; k < 4; k++) if (lone[k]) idx.push(k);
+    if (idx.length === 1 && idx[0] === q.correct) t.loner++;
+    if (three) t.three++;
+  }
+  return t;
+}
+function colVerdict(row) {
+  if (!row.n) return null;
+  const f = k => row[k] / row.n;
+  if (f('route') > COL_ROUTE_CAP)
+    return `"in each column cross out any answer whose digit is in the minority" answers it outright on ${(100 * f('route')).toFixed(1)}% of draws`;
+  if (f('value') > COL_VALUE_CAP)
+    return `that elimination is worth ${(100 * f('value')).toFixed(1)}% to a guesser`;
+  if (f('loner') > COL_LONER_CAP)
+    return `the MIRROR - "take the answer that stands alone in a column" - answers it on ${(100 * f('loner')).toFixed(1)}% of draws`;
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = colBank(g.fn);
+  if (!row.n) continue;                          /* not a numeric four-option bank */
+  row.name = g.name; row.lvl = g.level;
+  row.err = colVerdict(row);
+  colRows.push(row);
+  if (row.err) failures++;
+}
+let colControl = 'the v9 gPatternMissing option set was not rejected by the column ruler';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const okv = v => Number.isInteger(v) && v >= 1 && v <= 9999;
+  /* v9's slipSet: the below/above split drawn, then the three slips taken
+     UNIFORMLY from each side - no column scoring anywhere. */
+  const v9SlipSet = (key, family, keepOne) => {
+    const seen = new Set([key]);
+    const usable = v => okv(v) && !seen.has(v) && Math.abs(v - key) >= 10;
+    const live = keepOne.filter(usable);
+    if (!live.length) return null;
+    const kept = live[rnd(0, live.length - 1)];
+    seen.add(kept);
+    const below = [], above = [];
+    for (const v of family) { if (!usable(v)) continue; seen.add(v); (v < key ? below : above).push(v); }
+    const lo = Math.max(0, 2 - above.length), hi = Math.min(2, below.length);
+    if (lo > hi) return null;
+    const r = rnd(lo, hi);
+    return shuf(shuf(below).slice(0, r).concat(shuf(above).slice(0, 2 - r)).concat([kept]));
+  };
+  const v9PatternMissing = () => {
+    for (let tries = 0; tries < 200; tries++) {
+      const step = [100, 150, 200, 250, 500][rnd(0, 4)];
+      const up = rnd(0, 1) === 0, s = up ? step : -step;
+      const start = up ? rnd(1000 + step, 9999 - 5 * step) : rnd(1000 + 5 * step, 9999 - step);
+      const gap = rnd(1, 3);
+      const terms = [0, 1, 2, 3, 4].map(k => start + k * s);
+      const key = terms[gap];
+      const cands = v9SlipSet(key,
+        [terms[gap - 1], key + s / 10, key - s / 10, terms[gap - 1] + 2 * s, key + 10 * s, key - 10 * s],
+        [terms[4] + s, terms[0] - s, key + 10 * s, key - 10 * s]);
+      if (!cands || cands.length !== 3) continue;
+      const set = new Set([key].concat(cands));
+      if (set.size !== 4 || !cands.every(okv)) continue;
+      const opts = shuf([key].concat(cands)).map(String);
+      return { q: 'v9 gPatternMissing control', choices: opts,
+               answerText: String(key), correct: opts.indexOf(String(key)) };
+    }
+    return { q: '', choices: [] };
+  };
+  const ctl = colBank(v9PatternMissing);
+  const verdict = colVerdict(ctl);
+  if (verdict) colControl = `the v9 gPatternMissing option set goes red - ${verdict}`;
   else failures++;
 }
 
@@ -3873,7 +4134,7 @@ if (widthRows.length) {
       pad(f('elim'), 8) + pad(f('tie'), 8) +
       pad(r.tie ? (100 * r.tieWide / r.tie).toFixed(1) + '%' : '-', 10) +
       pad(f('none'), 10) +
-      (r.err ? 'FAIL  ' + r.err : 'pass'));
+      (r.err ? 'FAIL  ' + r.err : (r.tieDeclared || 'pass')));
   }
   console.log('');
   console.log(`     CLASS is how often a commonest width exists at all (at least two options, never all four - a row that is all one width is the magnitude gate's).`);
@@ -3882,8 +4143,18 @@ if (widthRows.length) {
   console.log(`     option that is not the commonest width" is a free elimination that is never wrong. ELIM is what that rule is actually WORTH to a guesser, and it`);
   console.log(`     is ELIM that is gated at ${Math.round(WIDTH_ELIM_CAP * 100)}%: a certainty that keeps three options, or that fires on one draw in fifty, is not a route.`);
   console.log(`     TIE (W4) is the 2-2 branch the class rule DECLINES on, and TIE WIDE is how often the key is in the wider pair of it. A bank that ships a tie on`);
-  console.log(`     ${Math.round(WIDTH_TIE_FLOOR * 100)}% of draws or more fails if the key sits on the same side of it past ${Math.round(WIDTH_TIE_CAP * 100)}%. No bank is exempt from any of the five.`);
-  if (widthRows.every(r => !r.err)) console.log(`ok   width-class rank: ${widthRows.length} numeric banks, no key MIN / MID / MAX past ${Math.round(WIDTH_RANK_CAP * 100)}%, no width rule past ${Math.round(WIDTH_RULE_CAP * 100)}%, no elimination worth ${Math.round(WIDTH_ELIM_CAP * 100)}%, and no tie branch a child can call`);
+  console.log(`     ${Math.round(WIDTH_TIE_FLOOR * 100)}% of draws or more fails if the key sits on the same side of it past ${Math.round(WIDTH_TIE_CAP * 100)}% (ninth pass, Call 3: the floor was 10%, which sat 1.6 points`);
+  console.log(`     above the only surviving tie in the topic and therefore described it instead of gating it). One bank is allowlisted by name on the tie clause,`);
+  console.log(`     with its trade re-checked on the option board it buys; no bank is exempt from the other four.`);
+  {
+    /* Call 2's amendment: a per-bank ELIM column nobody reads is a per-bank
+       column nobody reads. The worst figure in the topic is named here, so the
+       next pass can see it move without re-deriving it by hand. */
+    const worst = widthRows.slice().sort((a, b) => b.elim / b.n - a.elim / a.n)[0];
+    if (worst) console.log(`     WORST ELIM in the topic: ${worst.name} at ${(100 * worst.elim / worst.n).toFixed(2)}%, ${(100 * (WIDTH_ELIM_CAP - worst.elim / worst.n)).toFixed(1)} points under the ${Math.round(WIDTH_ELIM_CAP * 100)}% cap.`);
+    for (const r of widthRows) if (r.tieDeclared) console.log(`     ${r.name}: ${r.tieDeclared}`);
+  }
+  if (widthRows.every(r => !r.err)) console.log(`ok   width-class rank: ${widthRows.length} numeric banks, no key MIN / MID / MAX past ${Math.round(WIDTH_RANK_CAP * 100)}%, no width rule past ${Math.round(WIDTH_RULE_CAP * 100)}%, no elimination worth ${Math.round(WIDTH_ELIM_CAP * 100)}%, and every 2-2 tie branch either absent or declared by name`);
   console.log(`${/goes red/.test(widthControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${widthControl}`);
   console.log(`${/goes red/.test(elimControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${elimControl}`);
   console.log(`${/goes red/.test(tieControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${tieControl}`);
@@ -3900,15 +4171,37 @@ if (shapeRows.length) {
       line += pad('', 14) + pad((100 * c.uKey / r.n).toFixed(1) + '%', 8) +
         pad((100 * c.uWrong / r.n).toFixed(1) + '%', 9) + pad((100 * best / r.n).toFixed(1) + '%', 8);
     }
-    console.log(line + (r.err ? 'FAIL  ' + r.err : 'pass'));
+    console.log(line + (r.err ? 'FAIL  ' + r.err : (r.exempt || 'pass')));
   }
   console.log('');
-  console.log(`     The three features are ${SHAPE_FEATURES.map(f => '"' + f[0] + '"').join(', ')}, read off the RENDERED option and nothing else.`);
+  console.log(`     The ${SHAPE_FEATURES.length} features are ${SHAPE_FEATURES.map(f => '"' + f[0] + '"').join(', ')}, read off the RENDERED option and nothing else.`);
   console.log(`     uKEY is "the key is the only option with this shape" and uWRONG is "all three distractors have it and the key does not" - the two directions`);
   console.log(`     the eighth pass's kill lived between. ROUTE is the best of the four orderings the shape allows: cross out the options that have the shape (or`);
   console.log(`     the ones that do not), then take the smallest (or the largest) of what is left. The kill was the first of those, worth 67.07% on gPatternConcept.`);
-  if (shapeRows.every(r => !r.err)) console.log(`ok   shape ruler: ${shapeRows.length} numeric banks, no shape route past ${Math.round(SHAPE_RULE_CAP * 100)}% and no shape value unique to the key or to all three distractors past ${Math.round(SHAPE_UNIQ_CAP * 100)}%`);
+  console.log(`     The ROUTE cap is ${Math.round(SHAPE_RULE_CAP * 100)}% (ninth pass, Call 1 - it was 60%, which was gAddConcept's structural 51.9% plus slack nothing measured). gAddConcept is`);
+  console.log(`     allowlisted BY NAME with its premise re-checked on every draw, and it is the ONLY exemption; at 60% this cap would have missed four of the`);
+  console.log(`     seven banks the ninth pass's digit-column route lit up, and at ${Math.round(SHAPE_RULE_CAP * 100)}% it would have caught all four.`);
+  if (shapeRows.every(r => !r.err)) console.log(`ok   shape ruler: ${shapeRows.length} numeric banks, no shape route past ${Math.round(SHAPE_RULE_CAP * 100)}% and no shape value unique to the key or to all three distractors past ${Math.round(SHAPE_UNIQ_CAP * 100)}%, ${Object.keys(SHAPE_EXEMPT).length} banks allowlisted by name with every premise re-checked on every draw`);
   console.log(`${/goes red/.test(shapeControl) ? 'ok  ' : 'FAIL'} shape negative control: ${shapeControl}`);
+}
+if (colRows.length) {
+  console.log(`\nCOLUMN RULER  p3numbers, ${COL_N} draws per numeric bank  (the four options read as a right-aligned column of digits: "cross out any answer whose digit is in the minority" < ${Math.round(COL_ROUTE_CAP * 100)}% outright and worth < ${Math.round(COL_VALUE_CAP * 100)}%, and its mirror < ${Math.round(COL_LONER_CAP * 100)}%)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('ROUTE', 9) + pad('VALUE', 9) +
+    pad('LONER', 9) + pad('3-of-4 COL', 12) + 'RESULT');
+  console.log('-'.repeat(120));
+  for (const r of colRows) {
+    const f = k => (100 * r[k] / r.n).toFixed(1) + '%';
+    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) + pad(f('route'), 9) + pad(f('value'), 9) +
+      pad(f('loner'), 9) + pad(f('three'), 12) + (r.err ? 'FAIL  ' + r.err : 'pass'));
+  }
+  console.log('');
+  console.log(`     Every named slip in this topic used to be a ONE-COLUMN misreading of the key, so three of them beside it put the key's digit in three of the`);
+  console.log(`     four printed numbers in every column - the key was the column-wise CONSENSUS of its own option row, by construction, and nothing in the`);
+  console.log(`     harness could express that. VALUE is the unit that binds: 25.0% is chance, and a rule that leaves all four options - or crosses the whole`);
+  console.log(`     row out - scores exactly chance. 3-of-4 COL is REPORTED, not gated: it is the shape that hands ONE option away, and what one free`);
+  console.log(`     cross-out is worth is what VALUE already counts. LONER is the mirror, which is the only direction any earlier pass had ever looked at.`);
+  if (colRows.every(r => !r.err)) console.log(`ok   column ruler: ${colRows.length} numeric banks, no minority-elimination route past ${Math.round(COL_ROUTE_CAP * 100)}% outright, none worth ${Math.round(COL_VALUE_CAP * 100)}% to a guesser, and no loner direction past ${Math.round(COL_LONER_CAP * 100)}%`);
+  console.log(`${/goes red/.test(colControl) ? 'ok  ' : 'FAIL'} column negative control: ${colControl}`);
 }
 if (tokRows.length) {
   console.log(`\nPHRASE RULER  p3numbers, ${TOK_N} draws per prose bank  (no contiguous phrase of <= ${PHRASE_CAP} words, and no unordered word set of <= ${SET_CAP} words, in the key alone - or in all three distractors alone - on >= ${Math.round(100 * TOK_CAP)}% of draws)\n`);

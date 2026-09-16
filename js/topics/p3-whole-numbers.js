@@ -273,6 +273,35 @@
     return null;
   }
 
+  /* ---- THE SAME SLIPS, MADE TWO AT A TIME -----------------------------
+     (Sweep p3numbers Refutation, NINTH pass, KILL - see slipSet.)
+
+     A family of one-column slips hands the item away column by column: three
+     one-column misreadings beside the key means every column carries the key's
+     digit three times out of four, so crossing out each column's minority digit
+     leaves the key alone and the stem is never read. What stops it is two slips
+     that carry the SAME wrong digit in the same column, and the cheapest honest
+     source of those is the file's own misconceptions COMPOUNDED - a child who
+     forgets the carry out of the tens column and also invents one into the
+     hundreds makes both of this bank's named slips at once, and the two errors
+     sit on the row sharing a digit where they agree.
+
+     Takes the single slips as [offset-from-the-key, why] pairs and returns the
+     singles plus every in-scope pair of them as [value, why] pairs in
+     preference order, so slipWhy still names the first one that shipped and
+     RULE E still binds. Offsets that cancel (a carry lost and the same carry
+     invented) land back on the key and are dropped. */
+  function twoAtATime(key, ones){
+    const out = [], seen = new Set([key]);
+    const add = (v, w) => { if (!ok(v) || seen.has(v)) return; seen.add(v); out.push([v, w]); };
+    for (const p of ones) add(key + p[0], p[1]);
+    for (let i = 0; i < ones.length; i++)
+      for (let j = i + 1; j < ones.length; j++)
+        add(key + ones[i][0] + ones[j][0],
+            ones[i][1] + ' and then ' + ones[j][1].charAt(0).toLowerCase() + ones[j][1].slice(1));
+    return out;
+  }
+
   /* ---- MAGNITUDE RANK (second-pass KILL, 2026-09-15) -------------------
      The v2 gSubError rebuild was answered on 97.67% of draws by "pick the
      smallest number on the screen": all three of its named slips sat ABOVE the
@@ -319,6 +348,127 @@
      NAME and re-checks the premise of the exemption on every draw. gBetween used
      to be exempt by a stem-word regex and was answered by "pick the third
      smallest" on 100.00% of draws. */
+
+  /* ---- THE COLUMN RULE (ninth-pass KILL, 2026-09-16) -------------------
+     Nine rulers read this file and not one of them ever read ACROSS the four
+     printed numbers digit by digit. The ninth pass did, and the topic fell over:
+
+         "Look down each column of the four answers.
+          If a digit is in the minority there, cross that answer out."
+
+     answered gPatternMissing outright on 72.6% of 20,000 draws, gMoreLess on
+     77.7%, gPattern4 on 67.1%, gSubError / gSubRegroup / gMissingAddend on 58.5
+     - 58.8% and gAddRegroup on 53.7%, with no arithmetic anywhere and without
+     the stem being read at all.
+
+     IT IS slipSet's OWN DESIGN PRINCIPLE, MEASURED FROM THE OUTSIDE. Every
+     named slip in this file is a ONE-COLUMN misreading of the key - key +-
+     POW[c]*10, a printed term one jump out, one digit slid. Three of those
+     beside the key means that in every column three of the four printed numbers
+     carry the key's digit and one does not, so the key is the column-wise
+     CONSENSUS of its own option row by construction. It arrived at c099275 /
+     4e50301 with the third and fourth passes' magnitude-rank fixes - a
+     symmetric +- POW[c] cloud is exactly what flattens the rank AND exactly
+     what makes the key the consensus.
+
+     THE ALGEBRA, because the note's own proposed fix does not close it. The
+     ninth pass asked for "at most one slip per draw may differ from the key in
+     exactly one digit column". That is not sufficient and the counterexample is
+     one line: key 3269 against 4179, 3369, 3258 - two slips differing in three
+     and two columns - still crosses out to the key alone, because a slip that
+     differs from the key in a column is a MINORITY in that column whether it
+     differs in one column or four. What crosses a row out is not how many
+     columns a slip moves, it is whether its digit is ALONE where it moved. So
+     the closing condition is DIGIT COINCIDENCE, and there are exactly two
+     shapes that satisfy it:
+
+       - the 2-2 column: two slips carry the SAME wrong digit in a column, so
+         that column splits two-two and crosses nobody out. A slip and the same
+         slip with a second error compounded on top of it do this by
+         construction, which is why the families below now carry compounds:
+         key+d, key+e, key+d+e is a LATTICE and the column rule crosses out
+         NOTHING on it, whichever corner the key sits in.
+       - the 1-1-1-1 column: all four digits in a column differ, so there is no
+         majority to be in the minority of. Three slips that all move the SAME
+         column by different amounts do this - which is what a counting bank's
+         +-step, +-2*step family already is.
+
+     Both shapes are free of the magnitude tell, and that is the answer to the
+     tension the ninth pass flagged: the two signs of a lattice are drawn
+     independently, so the key is the smallest of the four a quarter of the
+     time, the largest a quarter, and a middle the rest. Consensus-safe and
+     rank-flat at once; nothing has to be traded.
+
+     slipSet now SCORES the row it is about to ship. It draws the triple the way
+     it always did (the below/above split first, so the magnitude rank stays
+     exactly as designed), measures what the column rule would be worth on it,
+     and redraws up to COL_TRIES times inside the same split, keeping the best
+     row it saw and stopping early on a row the column rule cannot touch. The
+     ranking is lexicographic, four terms:
+
+       1. DISTANCE FROM CHANCE of the column rule's value. The target is 0.25,
+          not 0. A row on which the rule reliably crosses the KEY out is as much
+          a tell as one on which it crosses everything else out - it is the same
+          tell read backwards, and it is the direction residual 3 has been
+          declaring on gPatternOdd since the sixth pass.
+       2. the caller's own `prefer` shape, where it passes one. Closing this
+          route moved two DECLARED ones (see gPattern4 and gPatternMissing), so
+          a bank can name the shape it needs kept and have it honoured inside
+          the rows that already clear term 1.
+       3. no column holding the key's digit in exactly three of the four.
+       4. at least one slip differing from the key in two columns or more.
+
+     `reject` is the caller's HARD filter and runs before all of it - the row
+     conditions gStandsCompare, gZeroFix and gMentalMake used to apply in their
+     own redraw loops, moved inside so that a row slipSet likes and the caller
+     throws away no longer takes the drawn rank with it.
+
+     Gated by the COLUMN RULER in tools/gen-sanity.mjs over every numeric bank
+     in the topic, in both directions (cross out the minority, and its mirror -
+     pick the option that stands ALONE in a column), with the v9 gPatternMissing
+     option row as its negative control at 72.6%. */
+  const COL_TRIES = 24;
+  const colDigits = n => String(n).split('').reverse();      /* index 0 = ones */
+  /* one right-aligned column of four printed numbers; a number that does not
+     reach a column has a BLANK there, and a blank is a symbol like any other */
+  function colCell(d, k, i){ return i < d[k].length ? d[k][i] : ' '; }
+  function colWidth(d){ let w = 0; for (const x of d) if (x.length > w) w = x.length; return w; }
+  /* what the column rule is WORTH on this row: the chance a child who crosses
+     out every minority digit and then guesses among whatever is left lands on
+     the key. A rule that leaves all four (or crosses the whole row out) is
+     worth chance, 0.25; a rule that leaves the key alone is worth 1. */
+  function colValue(d){
+    const w = colWidth(d), alive = [true, true, true, true];
+    for (let i = 0; i < w; i++){
+      const cnt = new Map();
+      for (let k = 0; k < 4; k++){ const c = colCell(d, k, i); cnt.set(c, (cnt.get(c) || 0) + 1); }
+      let max = 0;
+      for (const v of cnt.values()) if (v > max) max = v;
+      for (let k = 0; k < 4; k++) if (cnt.get(colCell(d, k, i)) < max) alive[k] = false;
+    }
+    let n = 0;
+    for (const a of alive) if (a) n++;
+    return n ? (alive[0] ? 1 / n : 0) : 0.25;
+  }
+  /* a column holding the KEY's digit in exactly three of the four printed
+     numbers - the shape that hands the fourth away as a free cross-out */
+  function colThree(d){
+    const w = colWidth(d);
+    for (let i = 0; i < w; i++){
+      const ch = colCell(d, 0, i);
+      let c = 0;
+      for (let k = 0; k < 4; k++) if (colCell(d, k, i) === ch) c++;
+      if (c === 3) return true;
+    }
+    return false;
+  }
+  /* how many place-value columns separate two printed numbers */
+  function colSpan(A, B){
+    const w = Math.max(A.length, B.length);
+    let n = 0;
+    for (let i = 0; i < w; i++) if ((A[i] || ' ') !== (B[i] || ' ')) n++;
+    return n;
+  }
   function slipSet(key, family, opt){
     opt = opt || {};
     const minGap = opt.minGap || 0;
@@ -343,9 +493,72 @@
     const lo = Math.max(0, need - above.length), hi = Math.min(need, below.length);
     if (lo > hi) return null;
     const r = ri(lo, hi);                       /* how many slips land below the key */
-    const out = shuffle(below).slice(0, r).concat(shuffle(above).slice(0, need - r));
-    if (kept !== null) out.push(kept);
-    return shuffle(out);
+    /* THE COLUMN RULE, scored inside the split the magnitude gate just fixed.
+       The rank is drawn first and never moves; all that is chosen here is WHICH
+       slips fill it, and they are chosen so the four printed numbers do not
+       hand the key over column by column. */
+    const kd = colDigits(key);
+    /* `reject` is the CALLER's own row filter - gStandsCompare and gZeroFix both
+        redraw a row whose printed widths tie 2-2, and gStandsCompare also
+        requires a distractor at the key's width or wider. Those used to run in
+        the generator's do-while, AFTER slipSet had chosen: a row slipSet liked
+        and the caller threw away took the whole draw with it, including the rank
+        the magnitude gate had just fixed, and the rejected rows are not a
+        uniform sample of ranks (the eighth pass measured rank 3 falling to 11.8%
+        on gStandsCompare from exactly this). The filter runs INSIDE the search
+        now, so the rank drawn above is the rank shipped. */
+    const bad = opt.reject || (() => false);
+    /* `prefer` is the caller's SOFT criterion, and it exists because closing the
+       column rule reopened two declared ones. The compounds that flatten a
+       column are further from the key than the singles they replace, so on the
+       three counting banks they emptied the window between the key and the last
+       printed term - and "the smallest option above the biggest number on the
+       page" went from 32% to 41% on gPattern4, while gPatternMissing's straddle
+       went from 25% to 53%. A bank hands slipSet the shape it needs to keep
+       (here: at least one slip inside its own printed run) and it is honoured
+       AFTER the column value and before everything else, so the kill is closed
+       first and the residual is held where the ninth pass measured it. Where no
+       row can do both, the column value wins and the residual is declared. */
+    const want = opt.prefer || (() => true);
+    let bestOut = null, bv = 2, bp = 0, bt = 0, bm = 0, any = null;
+    for (let t = 0; t < COL_TRIES; t++){
+      const out = shuffle(below).slice(0, r).concat(shuffle(above).slice(0, need - r));
+      if (kept !== null) out.push(kept);
+      if (any === null) any = out;
+      if (bad(out)) continue;
+      const d = [kd].concat(out.map(colDigits));
+      /* CHANCE, not zero. The target is a row on which the column rule is worth
+         exactly what guessing is worth - 0.25 - and NOT a row on which it is
+         worth less. A rule that reliably crosses the key OUT is as much a tell
+         as one that crosses everything else out; it is the same tell read
+         backwards, and it is the direction residual 3 has been declaring on
+         gPatternOdd since the sixth pass. Distance from chance is the score. */
+      const v = Math.abs(colValue(d) - 0.25), three = colThree(d) ? 0 : 1;
+      const pr = want(out) ? 1 : 0;
+      let multi = 0;
+      for (let k = 1; k < 4; k++) if (colSpan(d[k], kd) >= 2) { multi = 1; break; }
+      if (bestOut === null || v < bv ||
+          (v === bv && (pr > bp ||
+          (pr === bp && (three > bt || (three === bt && multi > bm)))))){
+        bestOut = out; bv = v; bp = pr; bt = three; bm = multi;
+      }
+      if (bv < 1e-9 && bp && bt && bm) break;   /* a row the column rule cannot touch */
+    }
+    /* no row at this rank clears the caller's filter: hand back one it will
+       throw away, which is the redraw the generator's own do-while performs */
+    return shuffle(bestOut === null ? any : bestOut);
+  }
+
+  /* The two mirror regrouping slips, per column, as [offset-from-the-key, why]
+     pairs - the input twoAtATime compounds for the three subtraction banks. A
+     regrouping kept that was not needed lands ABOVE the answer and one lost
+     lands below it, which is what keeps the magnitude rank flat; compounded,
+     they are what keeps the column rule off the row. */
+  function borrowOnes(cols){
+    return cols.map(c => [POW[c] * 10, 'Forgetting to take one away from the ' + PLACES[c - 1] +
+             ' column after borrowing from it'])
+      .concat([1, 2, 3].map(c => [-POW[c] * 10, 'Borrowing from the ' + PLACES[c - 1] +
+             ' column when that column could already take away']));
   }
 
   /* Numeric MC whose three distractors are all AUTHORED misconceptions. Stamps
@@ -591,7 +804,7 @@ function gStandsCompare(){
       vi + vj,                    /* added the two values instead of comparing them */
       vi - 2*vj,                  /* took the second value off a second time */
       vi - d[j]                   /* took the digit off the value */
-    ]) : null;
+    ], { reject: c => !sameWidth(vi - vj, c) || widthTie(vi - vj, c) }) : null;
     g++;
   } while (g < 200 && !(d[i] > d[j] && cands && optsOk(d[i]*POW[i] - d[j]*POW[j], cands) &&
            sameWidth(d[i]*POW[i] - d[j]*POW[j], cands) &&
@@ -717,7 +930,7 @@ function gZeroFix(){
       n0 + sg*2*step,       /* took the step twice */
       n0 + sg*(step/10),    /* stepped in the column to the RIGHT of the one named */
       n0 + sg*step*10       /* stepped in the column to the LEFT of the one named */
-    ]) : null;
+    ], { reject: c => widthTie(a0, c) }) : null;
     /* W4, EIGHTH pass: the 2-2 width tie is the branch the width ruler declines on,
        and the key was in the wider pair on 100% of this bank's 1.08 / 0.91% of
        them. It is redrawn below rather than declared - see widthTie. */
@@ -1112,7 +1325,27 @@ function gPatternConcept(){
   let live = bank.filter(e => e.r === r);
   if (!live.length) live = bank;
   const p = pick([...new Set(live.map(e => e.p))]);
-  const e0 = pick(live.filter(e => e.p === p));
+  /* NINTH pass, KILL - the column rule, read LAST inside the cell the rank and
+     the width class have already fixed, so neither of those gates moves. The four
+     printed numbers here are the jump values themselves rather than a slip cloud,
+     so the rows this bank can build are fixed and the only choice is which of
+     them to ship. See slipSet for what the rule is.
+
+     A THRESHOLD, NOT AN ARGMIN. Taking the FLATTEST row in the cell cut the option
+     board from 191 distinct rows to 18 - trading a 43.7% route for a board a child
+     could memorise, which is the worse deal and is what residual 23 is about. The
+     bar is instead "the column rule does not leave the key standing alone", which
+     every cell can meet often, and the pick stays uniform over everything that
+     clears it: 139 distinct rows, the column route 0.00% outright and 30.4% to a
+     guesser against v9's 19.8% / 43.7%, and the board worth 78.17% either way. */
+  const cell = live.filter(e => e.p === p);
+  const cv = e => colValue([colDigits(e.s)].concat(e.t.map(colDigits)));
+  let fit = cell.filter(e => cv(e) <= 0.5 + 1e-9);
+  if (!fit.length){
+    const flat = Math.min.apply(null, cell.map(cv));
+    fit = cell.filter(e => cv(e) === flat);
+  }
+  const e0 = pick(fit);
   return patternJump(e0.s, shuffle(e0.t.slice()));
 }
 function patternJump(step, wrong){
@@ -1185,7 +1418,21 @@ function gPattern4(){
              ans + step/10,     /* took the jump, then one more in the smaller column */
              ans - step/10);    /* took the jump, then one back in the smaller column */
   }
-  const cands = slipSet(ans, fam, { minGap: Math.max(10, step/10) });
+  /* NINTH pass, KILL - the jump miscounted AND made in the wrong column, both at
+     once. One-column slips alone hand the row to "cross out each column's
+     minority digit"; compounded, they share a digit where they agree and the
+     crossing-out stops. See slipSet and gMoreLess. */
+  for (const x of [s, -s, 2*s, -2*s])
+    for (const y of (step >= 100 ? [10*s, -10*s, s/10, -s/10] : [10*s, -10*s]))
+      fam.push(ans + x + y);
+  /* residual 15's two directions - "the smallest option above the biggest number
+     on the page" and its mirror - are held where the eighth pass measured them by
+     keeping a slip in the window between the last printed term and the key. On
+     the step === 10 branch the window is `step` wide and minGap is 10, so nothing
+     can be authored into it at all; that branch is the residual's floor and it is
+     declared rather than closed. */
+  const cands = slipSet(ans, fam, { minGap: Math.max(10, step/10),
+    prefer: c => c.some(v => (v - terms[4]) * s > 0 && (ans - v) * s > 0) });
   return mcNum('Count ' + (up ? 'on' : 'back') + ' in <b>' + STEP_WORD[step] +
     '</b>. What number comes next? <b>' + terms.join(', ') + ', ?</b>', '', ans, cands, '',
     'Each jump ' + (up ? 'adds' : 'takes away') + ' ' + step + ': ' + terms[3] + ' ' + (up ? '+' : '−') +
@@ -1217,7 +1464,22 @@ function gMoreLess(){
   if (step >= 100){     /* the column to the RIGHT is still a whole place value */
     fam.push(ans + step/10, ans - step/10);
   }
-  const cands = slipSet(ans, fam, { minGap: Math.max(10, step/10) });
+  /* NINTH pass, KILL - THE COLUMN RULE, and this bank was its worst number in
+     the topic at 77.7%. Every slip above moves ONE column, so three of them
+     beside the key put the key's digit in three of the four printed numbers in
+     every column and "cross out each column's minority digit" answered the item
+     outright with no counting at all. The two errors COMPOUNDED - the step
+     miscounted AND taken in the wrong column - are a real slip (a child who has
+     lost which column the step belongs in has usually lost the count as well),
+     and they are what stops the crossing-out: key, key+d, key+e and key+d+e is
+     a lattice, and every column of it splits two-two. */
+  for (const x of [step, -step, 2*step, -2*step])
+    for (const y of (step >= 100 ? [10*step, -10*step, step/10, -step/10] : [10*step, -10*step]))
+      fam.push(ans + x + y);
+  /* the window between the number the stem prints and the key, kept occupied for
+     the same reason as gPattern4's - and empty for the same reason on step 10 */
+  const cands = slipSet(ans, fam, { minGap: Math.max(10, step/10),
+    prefer: c => c.some(v => (v - n) * sg > 0 && (ans - v) * sg > 0) });
   return mcNum('What number is ' + step + ' ' + dir + ' than ' + n + '?', '', ans, cands, '',
     n + ' ' + (dir === 'more' ? '+ ' : '− ') + step + ' = ' + ans + '. Only the ' + STEP_WORD[step] +
     ' digit changes, unless it rolls over and takes the digit on its left with it.');
@@ -1282,19 +1544,33 @@ function gPatternMissing(){
      printed term. Two of its four candidates are in scope on every draw - the
      term after the end of the run and the term before its start - and they sit on
      opposite sides of the key, so the guarantee does not pin the rank. */
-  const cands = slipSet(terms[gap], [
+  const fam = [
     terms[gap-1],            /* copied the number just before the gap */
     terms[gap] + s/10,       /* added the jump one column to the right */
     terms[gap] - s/10,       /* the same slip, taken off instead of added */
     terms[gap-1] + 2*s,      /* took two jumps instead of one */
     terms[gap] + 10*s,       /* made the jump one column too far to the left */
     terms[gap] - 10*s        /* the same slip, the other way */
-  ], { minGap: 10, keepOne: [
+  ];
+  /* NINTH pass, KILL - THE COLUMN RULE, and this bank was the kill: 72.6%
+     outright, 2.12 items a session, the stem never read. The jump miscounted AND
+     made in the wrong column, both at once, is a real slip and is the digit
+     coincidence that stops a column of four crossing itself out. See slipSet. */
+  for (const x of [s, -s, 2*s, -2*s])
+    for (const y of [10*s, -10*s, s/10, -s/10]) fam.push(terms[gap] + x + y);
+  const cands = slipSet(terms[gap], fam, { minGap: 10, keepOne: [
     terms[4] + s,            /* carried the pattern PAST the end instead of filling the gap */
     terms[0] - s,            /* counted back BEFORE the start instead of on to the gap */
     terms[gap] + 10*s,       /* the jump one column too far to the left */
     terms[gap] - 10*s        /* the same slip, the other way */
-  ] });
+  ],
+  /* the EIGHTH pass's declared straddle - "keep the options that sit between the
+     first and last printed terms and are not themselves printed" - is held where
+     it was measured by keeping a second such option on the row. The compounds
+     that flatten the column are mostly outside the run, so without this the
+     straddle went from 25% outright to 53%. */
+  prefer: c => c.filter(v => (v - terms[0]) * s > 0 && (terms[4] - v) * s > 0 &&
+                             terms.indexOf(v) === -1).length >= 1 });
   return mcNum('What is the <b>missing number</b> in this pattern? <b>' + shown.join(', ') + '</b>',
     '', terms[gap], cands, '',
     'Nobody tells you the jump, so find it from two numbers that sit next to each other: ' +
@@ -1689,25 +1965,34 @@ function gAddConcept(){
    Named distractors: never carried anything; forgot one carry; carried a ten
    that was not there. */
 function gAddRegroup(){
-  let a = 3456, b = 1278, cols = [], key = 4734, cands = null, g = 0;
+  let a = 3456, b = 1278, cols = [], key = 4734, cands = null, fam = [], g = 0;
   do {
     a = ri(1000, 7000); b = ri(1000, MAXN - a);
     key = a + b; cols = carryCols(a, b);
     /* every slip that drops a carry lands BELOW the true sum and every slip that
        invents one lands above it, so a family built only out of the first kind
-       pins the key at one rank - it sat at rank 2 on 100% of draws. */
-    cands = cols.length >= 2 ? slipSet(key,
-      [noCarry(a, b)].concat(cols.map(c => addCols(a, b, c)))
-                     .concat([1, 2, 3].map(c => key + POW[c] * 10))) : null;
+       pins the key at one rank - it sat at rank 2 on 100% of draws.
+
+       NINTH pass, KILL: and a family built only out of ONE-COLUMN slips hands
+       the row to the column rule whichever side they land on. The per-column
+       slips are now offered two at a time as well (see twoAtATime), which is
+       both a real P3 slip - a child who drops one carry drops two - and the
+       digit coincidence that stops the column rule resolving. `noCarry` stays a
+       single: "wrote every column total straight down" is already every carry
+       at once and does not compound with a named carry. */
+    fam = cols.length >= 2
+      ? [[noCarry(a, b), 'Writing every column total straight down without carrying']].concat(
+          twoAtATime(key,
+            cols.map(c => [addCols(a, b, c) - key, 'Forgetting the carry out of the ' + PLACES[c] + ' column'])
+              .concat([1, 2, 3].map(c => [POW[c] * 10,
+                'Carrying a ten into the ' + PLACES[c - 1] + ' column that was never there']))))
+      : [];
+    cands = fam.length ? slipSet(key, fam.map(p => p[0])) : null;
     g++;
   } while (g < 200 && !(cols.length >= 2 && ok(key) && cands && optsOk(key, cands)));
   /* W5, SIXTH pass: this sentence used to name noCarry(a, b) whatever the draw
      did, and slipSet left that value off the options row on 49.15% of draws. */
-  const why = slipWhy(cands,
-    [[noCarry(a, b), 'Writing every column total straight down without carrying']]
-      .concat(cols.map(c => [addCols(a, b, c), 'Forgetting the carry out of the ' + PLACES[c] + ' column']))
-      .concat([1, 2, 3].map(c => [key + POW[c] * 10,
-        'Carrying a ten into the ' + PLACES[c - 1] + ' column that was never there'])));
+  const why = slipWhy(cands, fam);
   return mcNum('What is ' + a + ' + ' + b + '?', '', key, cands, '',
     'Line the numbers up and add from the right. ' + a + ' + ' + b + ' = ' + key + '. The ' +
     PLACES[cols[0]] + ' column makes ten or more, so a ten moves into the column on its left; this ' +
@@ -1716,7 +2001,7 @@ function gAddRegroup(){
 
 /* FORMAT 3 - direct compute, subtraction with regrouping (pool 2, 1 step) */
 function gSubRegroup(){
-  let a = 5042, b = 1867, cols = [], key = 3175, cands = null, g = 0;
+  let a = 5042, b = 1867, cols = [], key = 3175, cands = null, fam = [], g = 0;
   do {
     a = ri(3000, MAXN); b = ri(1000, a - 2000);   /* key >= 2000, so key - 1000 is still a 4-digit option */
     key = a - b; cols = borrowCols(a, b);
@@ -1731,23 +2016,25 @@ function gSubRegroup(){
        below-the-key slip is now drawn for EVERY column, not only the borrowing
        ones: taking one from the column on the left in a column that could already
        take away is the mirror misconception of forgetting to reduce the column
-       you did borrow from, and it is just as common on paper. */
-    cands = cols.length >= 2 ? slipSet(key,
-      [smallFromBig(a, b)].concat(cols.map(c => key + POW[c] * 10))
-                          .concat([1, 2, 3].map(c => key - POW[c] * 10))) : null;
+       you did borrow from, and it is just as common on paper.
+
+       NINTH pass, KILL: both sides is not enough if every slip still moves ONE
+       column - the column rule crossed this bank out to the key alone on 58.8%
+       of draws. The per-column slips are now offered two at a time as well (see
+       twoAtATime); a child who forgets to reduce after borrowing forgets it in
+       two columns as readily as in one. */
+    fam = cols.length >= 2
+      ? [[smallFromBig(a, b), 'Taking the smaller digit away from the bigger one in every column ' +
+          'instead - the commonest slip -']].concat(twoAtATime(key, borrowOnes(cols)))
+      : [];
+    cands = fam.length ? slipSet(key, fam.map(p => p[0])) : null;
     g++;
   } while (g < 200 && !(cols.length >= 2 && ok(key) && smallFromBig(a, b) !== key &&
            cands && optsOk(key, cands)));
   /* W5, SIXTH pass: this sentence used to name smallFromBig(a, b) whatever the
      draw did, and slipSet left that value off the options row on 52.98% of
      draws - the largest of the four sites, on a pool-2 fluency anchor. */
-  const why = slipWhy(cands,
-    [[smallFromBig(a, b), 'Taking the smaller digit away from the bigger one in every column ' +
-      'instead - the commonest slip -']]
-      .concat(cols.map(c => [key + POW[c] * 10, 'Forgetting to take one away from the ' +
-        PLACES[c - 1] + ' column after borrowing from it']))
-      .concat([1, 2, 3].map(c => [key - POW[c] * 10, 'Borrowing from the ' + PLACES[c - 1] +
-        ' column when that column could already take away'])));
+  const why = slipWhy(cands, fam);
   return mcNum('What is ' + a + ' − ' + b + '?', '', key, cands, '',
     a + ' − ' + b + ' = ' + key + '. In the ' + PLACES[cols[0]] + ' column you cannot take away ' +
     'enough, so you take one from the column on its left and turn it into ten. ' +
@@ -1760,9 +2047,9 @@ function gMissingAddend(){
   do {
     total = ri(3000, MAXN); a = ri(1000, total - 2000);   /* key >= 2000: see gSubRegroup */
     key = total - a; cols = borrowCols(total, a);
-    cands = cols.length >= 2 ? slipSet(key,          /* both sides, per column: see gSubRegroup */
-      [smallFromBig(total, a)].concat(cols.map(c => key + POW[c] * 10))
-                              .concat([1, 2, 3].map(c => key - POW[c] * 10))) : null;
+    /* both sides and two at a time, per column: see gSubRegroup */
+    cands = cols.length >= 2 ? slipSet(key,
+      [smallFromBig(total, a)].concat(twoAtATime(key, borrowOnes(cols)).map(p => p[0]))) : null;
     g++;
   } while (g < 200 && !(cols.length >= 2 && ok(key) && smallFromBig(total, a) !== key &&
            cands && optsOk(key, cands)));
@@ -1844,7 +2131,41 @@ function gMentalMake(){
        35.67%, and the high direction - which nobody had measured, the lane or the
        refutation - 66.69% -> 48.10 / 48.55%. Both are declared; the second is the
        bigger number and it is the one this bank is now on the record for. */
-    b = ri(Math.max(21, 2*mv + 3), 89);
+    /* W1, NINTH pass - THE PRINTED ROUND-UP NAMES THE ADDEND THE DRAWN ORDER WAS
+       HIDING. The eighth pass unpinned `b` from its position, and the ninth pass
+       showed that bought nothing: `round` is printed, `round` is `a + mv` with
+       `mv` in 4..9, so the rounded addend is simply the one sitting within nine
+       BELOW the printed round number. It was identified uniquely on 88.1 / 88.9%
+       of draws and "find that addend, then take the largest option below the
+       OTHER one" was worth 52.1% outright and 59.1 / 59.8% as a guesser value -
+       not the 37.5% the v9 note declared.
+
+       The floor is drawn shut instead. On half the draws the OTHER addend is
+       drawn into the same nine-below band, so BOTH printed addends round up to
+       the printed number and there is nothing in the stem that says which one was
+       moved. The item is unharmed, and that is not luck: the key is
+       `x + y - round` on every reading, so rounding either addend and
+       compensating off the other lands on the same answer - the relaxed premise
+       the eighth pass argued for and the ninth pass verified at 100.00% over
+       40,000 draws. What the child cannot recover is which addend to hold still,
+       and that is the half of the rule the drawn order was supposed to take.
+
+       `round - 4` rather than `round - 1` as the top of that band: the window
+       between the key and the nearer printed addend is `round - b` wide, so a
+       band running right up to the ten leaves nothing that can be authored into
+       it and BOTH readings of the rule land on the key. Four is the floor that
+       keeps one in-gap slip in scope (minGap is 3).
+
+       Measured, 20,000 x two seeds: the addend is identified uniquely on 55.0 /
+       54.7% of draws (from 88.1 / 88.9), the rule answers the item outright on
+       26.5 / 27.0% (from 49.97 / 50.02) and is worth 46.1 / 47.3% to a child who
+       tries both readings and guesses between the two answers (from 57.5 / 57.2).
+       Its two halves as singles come down with it: "the largest option below the
+       biggest number on the page" 41.7 -> 33.6 / 34.1%, and below the smallest
+       30.4 -> 33.0 / 33.9%. The 46% is DECLARED - see residual 15. */
+    const lo = Math.max(21, 2*mv + 3);
+    const both = Math.random() < 0.5 && round - 4 >= Math.max(lo, round - 9);
+    b = both ? ri(Math.max(lo, round - 9), round - 4) : ri(lo, 89);
     key = b - mv;
     /* "forgot to compensate" and "compensated the wrong way" both land above the
        key, which is why it was the second-smallest of the four on 97.8% of draws.
@@ -1910,15 +2231,28 @@ function gMentalMake(){
        no longer drawn at all - see the W3 note above - so the floor it restores
        is now paid for twice. The rank band is re-measured at 25.1 / 25.6 / 25.2 /
        24.3 and 25.2 / 24.9 / 25.5 / 24.4.) */
+    /* W1, NINTH pass, the other half. Hiding WHICH addend was rounded is only
+       the first half of the rule; the second half is "then take the largest
+       option below the other one", and that half is an option-row property. The
+       smallest number the stem prints above the key is the reference EVERY
+       version of the rule reduces to - below it, and the key is the largest
+       option left. One slip inside that window is what stops it, and the window
+       is `round - b` or `mv` wide with a floor of 3 under it, so it cannot always
+       be filled: it is a preference, and what it cannot reach is declared. */
+    const above = [a, b, round].filter(v => v > key);
+    const ref = above.length ? Math.min.apply(null, above) : key;
     cands = slipSet(key, [b, b + mv, mv, b - 2*mv, b - 10, key - 10,
                           b - (a % 10), b - (10 - (b % 10)), b - 2*mv + 10,
-                          b - (b % 10)], { minGap: 3 });
+                          b - (b % 10)],
+                    { minGap: 3, reject: c => !sameWidth(key, c) || widthTie(key, c),
+                      prefer: c => c.some(v => v > key && v < ref) });
     g++;
   /* `b !== round` closes residual 12's commutativity draw (1.1% of v7 draws): with
      b equal to the round-up the stem reads "43 + 50 = 50 + ?" and the key is `a`
      itself, so the item is answered by symmetry with no mental arithmetic at all.
      It was declared rather than fixed for six passes; it is one condition. */
-  } while (g < 200 && !(a % 10 !== 0 && a % 10 <= 6 && key >= 2 && (round - a) !== key && b !== round &&
+  } while (g < 200 && !(a % 10 !== 0 && a % 10 <= 6 && key >= 2 && (round - a) !== key &&
+           b !== round && b !== a &&
            cands && optsOk(key, cands) && sameWidth(key, cands) && !widthTie(key, cands)));
   const moved = round - a;
   /* W1, EIGHTH pass. The v8 note measured the two directions of the same rule
@@ -1944,7 +2278,10 @@ function gMentalMake(){
     'To get from ' + a + ' up to ' + round + ' you need ' + moved + ', so ' + moved + ' is moved ' +
     'across from the ' + b + '. That leaves ' + b + ' − ' + moved + ' = ' + key + ', and ' + round +
     ' + ' + key + ' = ' + (a + b) + '. Whatever you give to one number you must take off the other, ' +
-    'or the total changes.');
+    'or the total changes.' + (b >= round - 9 && b < round
+      ? ' You could have rounded the ' + b + ' up to ' + round + ' instead and taken that amount off ' +
+        'the ' + a + ': it is the same total either way, so it lands on the same answer.'
+      : ''));
 }
 
 /* FORMAT 6 - error spotting, DIAGNOSE (pool 3, 2 steps). The claim is produced
@@ -2006,9 +2343,9 @@ function gSubError(){
   do {
     a = ri(3000, MAXN); b = ri(1000, a - 2000);   /* key >= 2000: see gSubRegroup */
     key = a - b; claim = smallFromBig(a, b); cols = borrowCols(a, b);
+    /* both sides and two at a time, per column: see gSubRegroup */
     cands = cols.length >= 2 ? slipSet(key,
-      [claim].concat(cols.map(c => key + POW[c] * 10))
-             .concat([1, 2, 3].map(c => key - POW[c] * 10))) : null;
+      [claim].concat(twoAtATime(key, borrowOnes(cols)).map(p => p[0]))) : null;
     g++;
   } while (g < 200 && !(cols.length >= 2 && ok(key) && ok(claim) && claim !== key &&
            cands && optsOk(key, cands)));

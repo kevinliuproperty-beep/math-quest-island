@@ -1038,10 +1038,41 @@ function gPatternOdd(){
     }
     return hit;
   };
-  const step = pick([150, 250]);
+  /* KILL (Sweep p3numbers Refutation, FIFTH pass, 2026-09-15). The v3-v5 run
+     counted in 150s or 250s and broke by +-50. A step that is a multiple of 50
+     but not of 100 moves the TENS DIGIT by exactly five every term, so the tens
+     column alternates between two values and only two - A B A B A B - and a +-50
+     break flips the odd term's tens digit into its NEIGHBOURS' class. That left
+     exactly one interior position in the printed run where three tens digits in a
+     row agree, and it was the answer on 20,000 / 20,000 draws at two seeds. Read
+     one digit column, find the three-in-a-row, done: no jump, no step, no
+     arithmetic of any kind. v3 killed the NAIVE "odd tens digit out" scan and
+     opened this one in the same edit; v3, the third pass and the fourth pass all
+     certified the class closed.
+
+     v6 takes the alternation away rather than the break. The step is now 15, 25
+     or 35 - not a multiple of 10, so the ONES digit alternates between two values
+     and the TENS digit advances by one, two or three (plus the carry out of the
+     ones) and does not repeat inside six terms. The break is a multiple of TEN
+     and strictly smaller than the step, which does three things at once:
+
+       - the odd term keeps its place in the ones-column alternation, so the one
+         column that IS regular stays regular through the break and says nothing;
+       - the tens column has no majority class to disagree with, so "the odd tens
+         digit" and "the tens digit that matches both neighbours" both stop
+         resolving to a single term (measured, both directions, in the note);
+       - the run stays monotonic, because |off| < step keeps every jump positive,
+         so "the numbers turn round here" is not a tell either.
+
+     What is left is the step rule itself: the jump into the odd term and the jump
+     out of it are both wrong, by |off| in opposite directions, and nothing else
+     in the printing distinguishes it. */
+  const step = pick([15, 25, 35]);
   const up = Math.random() < 0.5;
   const s = up ? step : -step;
-  const off = pick([1, -1]) * 50;
+  /* a multiple of ten (the ones column survives the break) and smaller than the
+     step (the run never doubles back) */
+  const off = pick([1, -1]) * pick([10, 20, 30].filter(v => v < step));
   let start = 2000, terms = [], bi = 2, g = 0;
   do {
     start = up ? ri(1000, MAXN - 6*step) : ri(1000 + 6*step, MAXN);
@@ -1068,29 +1099,26 @@ function gPatternOdd(){
   const rLo = Math.max(0, 3 - upper.length), rHi = Math.min(3, lower.length);
   const nBelow = ri(rLo, rHi);
   /* W4, FOURTH pass - the free elimination on an axis the rank floor does not
-     look along. The run counts in 150s or 250s, so the printed terms alternate
-     between exactly TWO tens digits, and the +-50 break flips the odd term out of
-     its own class and into the other one. That leaves 2 terms in the minority
-     class and 4 (the odd term among them) in the majority. Draw three distractors
-     blind and you get exactly ONE minority-class term on 65.02% of draws - an
-     option visibly alone in its tens column, which is NEVER the answer (0.00% of
-     20,000 draws). Crossing it out takes a guesser from 25% to 33.3% with no
-     arithmetic, which is the same argument the rank floor is built on, one axis
-     over.
+     look along. Under the old 150s/250s run the printed terms alternated between
+     exactly TWO tens digits, so a blind draw of three distractors left exactly
+     ONE option visibly alone in its tens column on 65.02% of draws, and that
+     option was NEVER the answer: crossing it out took a guesser from 25% to 33.3%
+     with no arithmetic. The v5 guard preferred distractor sets in which no option
+     stood alone, and got the rate to ~16.7%.
 
-     So the tens class is now chosen as deliberately as the side is. Of the ten
-     three-from-five distractor sets, only those with the drawn `nBelow` are
-     eligible - that keeps the magnitude rank exactly where the third pass put it
-     - and among those, sets in which no option stands alone in its tens class are
-     preferred. Two break positions out of eight leave no such set (the sides and
-     the classes disagree there), and on those the blind draw stands; the rate
-     falls 65.02% -> ~16.7% rather than to zero, which is the honest cost of
-     keeping the rank flat. The odd term's own tens class is shared with at least
-     one distractor on 100% of draws either way. */
+     The v6 step (15 / 25 / 35) removes the two-class world the guard was written
+     for: the tens digits of six terms no longer repeat, so on most draws EVERY
+     option stands alone in its tens column and the elimination has nothing to
+     bite on. The guard is therefore re-stated in the form the wound actually
+     asks for - it is not "nobody stands alone", it is "not EXACTLY ONE stands
+     alone", which is the only shape a child can cross out. Sets where the count
+     of tens-column loners is 1 are avoided where the drawn `nBelow` allows it;
+     `nBelow` still wins, so the magnitude rank stays exactly where the third pass
+     put it. Both directions are measured in the note. */
   const sideOk = t => t.filter(v => v < odd).length === nBelow;
   const noLoner = t => {
     const four = t.concat([odd]).map(v => Math.floor(v / 10) % 10);
-    return four.every(c => four.filter(x => x === c).length > 1);
+    return four.filter(c => four.filter(x => x === c).length === 1).length !== 1;
   };
   const pool = terms.filter((v, i) => i !== bi);
   const sets = [];
@@ -1161,28 +1189,65 @@ function gAddConcept(){
      arithmetic and no idea what a carry is. Every ruler in the harness counted
      characters or numbers; nothing read the words.
 
-     So the four options are now built the other way round: the wording is fixed
-     first and the lengths fall where they fall. Every content phrase in the key
-     appears in at least two options - "carry 1", "1 ten", "ten into" and "into
-     the" are shared with the hundreds distractor, "the tens" and "tens column"
-     with the write-the-carry distractor, "write" and "column" with all three -
-     so no token and no two-word phrase singles the key out, in either direction.
-     The four lengths are 42 / 42 / 46 / 46 on every draw: that spends the old
-     two-character spread to buy the four characters "hundreds column" needs over
-     "tens column", which is the squeeze that forced the preposition change in
-     the first place. tools/gen-sanity.mjs now carries the TOKEN RULER that
-     measures this over every four-option prose bank in the topic, at a 60%
-     ceiling, with the v4 option set as its negative control. */
-  const key = 'Write ' + keep + ', carry 1 ten into the tens column.';
+     KILL (Sweep p3numbers Refutation, FIFTH pass, 2026-09-15). The v5 rewrite
+     shared every one- and two-word phrase across at least two options - which is
+     exactly and only what the v5 token ruler asked of it - and left the FOUR-word
+     phrase "ten into the tens" in the key and nowhere else, on 20,000 / 20,000
+     draws at two seeds. The unordered form was simpler still: the key was the
+     only option holding both the singular "ten" and the plural "tens", so a child
+     scanning for "ten ... tens" did not even need the phrase in order. The same
+     rewrite took the four lengths from 47/47/48/48 to 42/42/46/46 - a four-
+     character step on the pool-1 flagship (W1, fifth pass).
+
+     v6 fixes the SHAPE rather than the wording, so the next n cannot reopen it.
+     Two facts about a four-option prose bank decide everything here:
+
+       (1) A key-only phrase of length n is IMPOSSIBLE to eliminate at every n.
+           The whole key is a phrase, and no distractor may equal the key. So the
+           question is never "is there a key-only phrase" but "how SHORT is the
+           shortest one" - a child scans for a short distinctive phrase, not for
+           the option's own last nine words.
+       (2) A key-only WORD SET can be eliminated at every size, and in one move:
+           if some distractor holds every word the key holds, then no combination
+           of key words - of any size, ordered or not - is absent from all three
+           distractors. That axis goes to zero by construction, not by tuning.
+
+     So the bank is built to two rules. The SWAP distractor is a rearrangement of
+     the key's own words (same multiset, different order), which kills the whole
+     word-set axis including the {"ten","tens"} conjunction that answered v5. And
+     the other two distractors differ from the key at OPPOSITE ENDS of the
+     sentence: "Write 14" changes the second word and nothing else, "on its right"
+     changes the last word and nothing else. A phrase that is key-only must
+     therefore span from the second word to the last - n = 10 of 11 - because any
+     shorter phrase lies wholly inside one distractor's agreement region. The
+     shortest key-only phrase is a measured 10 words, against 4 at cfa2da8.
+
+     The direction word carries the concept the hundreds distractor used to carry:
+     "to the column on its left" is the regrouping rule itself, and "on its right"
+     is the misconception that the ten stays where it was written or drifts the
+     wrong way. That swap is also what buys the length: "hundreds" is four
+     characters longer than "tens" and nothing else in the sentence differs, so a
+     tens/hundreds pair CANNOT be brought inside a two-character spread. left and
+     right differ by one. The four lengths are 47 / 47 / 48 / 48 on every draw -
+     a one-character step, which is the margin residual 2 declares and defends,
+     rather than the four-character one the fifth pass caught.
+
+     tools/gen-sanity.mjs carries the generalised PHRASE RULER for this: every
+     contiguous n-gram at every n, on raw, lightly stemmed and digit-normalised
+     tokens, plus unordered word-set uniqueness, over every four-option prose bank
+     in the topic, at a 60% ceiling, with the v5 option set as its negative
+     control. */
+  const key = 'Write ' + keep + ', carry 1 ten to the column on its left.';
   return mcText('When you add ' + a + ' + ' + b + ', the ones column makes ' + s +
     '. <b>What happens next?</b>', '', key, shuffle([
-      'Write ' + s + ' in the ones column, carry no ten.',
-      'Write ' + keep + ', carry 1 ten into the hundreds column.',
-      'Write 1 and carry ' + keep + ' tens into the tens column.'
+      'Write ' + s + ', carry 1 ten to the column on its left.',
+      'Write ' + keep + ', carry 1 ten to the column on its right.',
+      'Write 1 ten, carry ' + keep + ' to the column on its left.'
     ]),
     s + ' is ' + keep + ' ones and 1 ten. The ones column only has room for ones, so the ' + keep +
-    ' stays there and the ten moves one place to the LEFT, into the tens column. That move is what ' +
-    '"regrouping" means: ten of something small becomes one of the next size up.');
+    ' stays there and the ten moves one place to the LEFT, into the tens column - the column ' +
+    'next to the ones column. That move is what "regrouping" means: ten of something small ' +
+    'becomes one of the next size up.');
 }
 
 /* FORMAT 2 - direct compute, addition with at least two regroupings
@@ -1269,8 +1334,11 @@ function gMentalMake(){
     const mv = round - a;
     /* b is drawn past twice the amount moved so that "compensated twice" is a
        whole number and the family always has two slips below the key as well as
-       three above it - see slipSet. */
-    b = ri(Math.max(11, 2*mv + 1), 89);
+       three above it - see slipSet. The floor of 21 (and of 2*mv + 3) is the
+       fifth pass's minGap 3: it keeps "the amount moved" at least three away from
+       the key and keeps the key above 11, so the off-by-a-ten slip is always in
+       scope. */
+    b = ri(Math.max(21, 2*mv + 3), 89);
     key = b - mv;
     /* "forgot to compensate" and "compensated the wrong way" both land above the
        key, which is why it was the second-smallest of the four on 97.8% of draws.
@@ -1293,8 +1361,35 @@ function gMentalMake(){
        smallest place value the item tests - and this bank tests ONES, so its
        floor is 2. It costs `b - 10` on the `mv = 9` branch and `b`, `b - 2*mv` on
        the `mv = 1` branch; both sides still carry at least two usable slips on
-       every draw, so the key's rank stays inside the gate's 12-45% band. */
-    cands = slipSet(key, [b, b + mv, b + 2*mv, mv, b - 2*mv, b - 10], { minGap: 2 });
+       every draw, so the key's rank stays inside the gate's 12-45% band.
+
+       W2, FIFTH pass. That floor was written as `minGap: 2` and slipSet admits a
+       slip whose distance is `>= minGap`, so distance EXACTLY 2 was still legal
+       and still drawn: the v5 note claimed "within 2: 32.05% -> 0.00%" and the
+       true after-figure was 23.80%. The exactly-1 half was real. The floor is now
+       3, which is what "no slip closer to the key than the place value this item
+       tests" meant - a slip two away from a two-digit key is the same
+       proofreading trap one away from a four-digit key was.
+
+       Raising the floor to 3 culls `b`, `b + mv` and `b - 2*mv` on the `mv = 1`
+       branch and `b`, `b - 2*mv` on the `mv = 2` branch, and that left the small-
+       `mv` draws with two usable slips below the key and one above - so slipSet
+       had no choice about the side balance and rank 3 fell to 10.4%, under the
+       12% floor the third pass put in, and `b - 10` itself is culled at the other
+       end (`mv` 8 or 9 puts it two or one away). Two slips restore both ends, and
+       both are the missing halves of pairs the family already had:
+
+         `b + 10`  the mirror of `b - 10` - a whole ten moved across and added
+                   back the wrong way round. Distance `10 + mv`, so no floor
+                   reaches it, and it refills the ABOVE side at mv = 1 and 2.
+         `key - 10` the answer found correctly and written a ten out, which is the
+                   commonest place slip a child makes on a two-digit answer.
+                   Distance exactly 10 on every draw, always below the key, so it
+                   refills the BELOW side at mv = 8 and 9.
+
+       Every branch now carries at least three usable slips below the key and two
+       above it, and the rank band is back inside 12-45% on all four ranks. */
+    cands = slipSet(key, [b, b + mv, b + 2*mv, b + 10, mv, b - 2*mv, b - 10, key - 10], { minGap: 3 });
     g++;
   } while (g < 200 && !(a % 10 !== 0 && key >= 2 && (round - a) !== key &&
            cands && optsOk(key, cands) && sameWidth(key, cands)));
@@ -1438,7 +1533,26 @@ function gBackFromTotal(){
   const thing = pick(KEEP_CTX);
   let gave = 1240, got = 350, now = 2765, key = 3655, cands = null, g = 0;
   do {
-    gave = ri(300, 2200); got = ri(150, 1200); now = ri(2500, 5000);
+    /* W3, FIFTH pass. "Pick the smallest option that is bigger than the biggest
+       number printed in the stem" answered this item on 62.52% of 20,000 draws
+       against 25% chance, because the start is bigger than the total (more was
+       given away than was bought back) and every distractor that also beat the
+       total sat ABOVE the key. The first half of that rule is the item's own
+       reasoning and is not a bypass; the second half is an accident of which
+       misconceptions happened to land where. `now + gave - 2*got` - taking the
+       bought ones off twice over - is the one named slip that lands strictly
+       BETWEEN the total and the key, and it only does so when `gave` beats twice
+       `got`, which the old draw left to chance. It is now guaranteed, so the
+       blocker is in scope on every draw, and it goes into `keepOne` PAIRED WITH
+       an above-key slip: exactly one of the two is always offered, so the blocker
+       appears about two draws in three (it is still in the family as well) while
+       the side it lands on is a coin toss rather than a constant. It is NOT
+       forced on its own: a distractor below the key on 100% of draws would mean
+       the key is never the smallest of the four, and the two-sided rank floor v3
+       added exists to forbid exactly that - it would trade a 62% surface rule for
+       a 100% cross-out. What remains is declared in the note. */
+    gave = ri(600, 2200); got = ri(150, Math.min(1200, Math.floor(gave / 2) - 1));
+    now = ri(2500, 5000);
     key = now + gave - got;
     /* "undid the buying only" and "took both away" land below the start, "undid
        nothing" and "undid both the wrong way" land above it.
@@ -1456,7 +1570,7 @@ function gBackFromTotal(){
       now - got,               /* undid the buying and stopped */
       now + gave - 2*got,      /* took the bought ones off twice over */
       now - got - gave         /* took both away instead of undoing them */
-    ]);
+    ], { keepOne: [now + gave - 2*got, now + gave] });
     g++;
   } while (g < 300 && !(ok(key) && gave !== got && 2*gave !== got && cands && optsOk(key, cands)));
   return mcNum(who + ' had some ' + thing + '. ' + pron + ' gave away ' + gave + ' of them, then ' +

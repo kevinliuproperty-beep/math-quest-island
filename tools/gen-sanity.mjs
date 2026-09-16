@@ -1263,7 +1263,7 @@ function oracle(q) {
     const a = Number(m[1]), b = Number(m[2]), s = Number(m[3]);
     if (a % 10 + b % 10 !== s) return `p3 add-concept: ${a} and ${b} give ${a % 10 + b % 10} in the ones column, not ${s}`;
     if (s < 10) return `p3 add-concept: ${s} does not regroup, so there is nothing to carry`;
-    const want = `Write ${s % 10}, carry 1 ten into the tens column.`;
+    const want = `Write ${s % 10}, carry 1 ten to the column on its left.`;
     const key = strip(q.answerText);
     if (key !== want) return `p3 add-concept: expected "${want}", got "${key}"`;
     /* W4, third pass: the key used to be the uniquely SHORTEST of the four
@@ -1277,14 +1277,19 @@ function oracle(q) {
        place-value idea, and that made "ten into" a phrase the KEY alone contained
        on every draw. "hundreds column" is four characters wider than "tens
        column" and the bank ceiling is 48, so a two-character span and a shared
-       preposition cannot both be had. The span assertion is 4, and the property it
-       was standing in for is asserted directly instead: on this draw the key is
-       neither the uniquely shortest nor the uniquely longest option. The TOKEN
-       RULER below carries the other half - no token or two-word phrase may single
-       the key out - with the v4 option set as its negative control. */
+       preposition cannot both be had; the span assertion was relaxed to 4.
+
+       FIFTH pass, KILL and W1. The v5 rewrite paid that four-character span AND
+       still left "ten into the tens" key-only, because the tens/hundreds pair is
+       the thing that costs four characters and it was the only place-value
+       contrast on offer. v6 moves the contrast to left/right, which costs ONE,
+       so the span assertion goes back to 2 and holds by construction: the four
+       options are 47 / 47 / 48 / 48 on every draw. The PHRASE RULER below carries
+       the other half - no contiguous phrase up to six words and no word set up to
+       three may single the key out - with the v5 option set as its control. */
     const lens = (q.choices || []).map(c => strip(c).length);
     const lo = Math.min.apply(null, lens), hi = Math.max.apply(null, lens);
-    if (hi - lo > 4) {
+    if (hi - lo > 2) {
       return `p3 add-concept: the four options span ${lo}-${hi} characters, so length separates them`;
     }
     if (lens[q.correct] === lo && lens.filter(x => x === lo).length === 1)
@@ -2939,10 +2944,10 @@ let betweenControl = 'the v3 gBetween option set was not rejected by the rank ga
 const LEN_N = 2000, LEN_CAP = 0.90;
 const lenRows = [];
 function lenBank(draw) {
-  let n = 0, uShort = 0, uLong = 0, pShort = 0, pLong = 0;
+  let n = 0, uShort = 0, uLong = 0, pShort = 0, pLong = 0, step = 0, stepHi = 0, spread = 0;
   for (let i = 0; i < LEN_N; i++) {
     let q;
-    try { q = draw(); } catch (e) { return { n, uShort, uLong, pShort, pLong, threw: e.message }; }
+    try { q = draw(); } catch (e) { return { n, uShort, uLong, pShort, pLong, step, stepHi, spread, threw: e.message }; }
     const opts = (q.choices || []).map(strip);
     if (opts.length !== 4 || !(q.correct >= 0)) continue;
     const L = opts.map(o => o.length);
@@ -2952,9 +2957,17 @@ function lenBank(draw) {
     if (nHi === 1 && L[q.correct] === hi) uLong++;
     if (L[q.correct] === lo) pShort += 1 / nLo;
     if (L[q.correct] === hi) pLong += 1 / nHi;
+    /* fifth pass, W1: the value of "pick one of the shortest" says nothing about
+       whether the eye can SEE which options those are. That is the STEP from the
+       shortest option to the next length up - 1 character at 4e50301, 4 at
+       cfa2da8 on this bank, and the number no column in this gate printed. */
+    const up = L.filter(x => x > lo), dn = L.filter(x => x < hi);
+    step += up.length ? Math.min.apply(null, up) - lo : 0;
+    stepHi += dn.length ? hi - Math.max.apply(null, dn) : 0;
+    spread += hi - lo;
     n++;
   }
-  return { n, uShort, uLong, pShort, pLong };
+  return { n, uShort, uLong, pShort, pLong, step, stepHi, spread };
 }
 function lenVerdict(row) {
   if (!row.n) return null;
@@ -2990,83 +3003,148 @@ let lenControl = 'the v2 gAddConcept option set was not rejected by the length g
   else failures++;
 }
 
-/* ---------- TOKEN RULER (fourth-pass KILL, 2026-09-15) ----------------------
-   NOTHING IN THIS HARNESS HAS EVER READ THE WORDS. RULE C and RULE D count
-   characters; the LENGTH RANK gate counts characters in the other direction; the
-   MAGNITUDE RANK gate counts numbers. The options are sentences, and every one of
-   the four kills in this topic's history arrived on the axis the newest gate was
-   not built to measure - magnitude after form, character length after magnitude,
-   and now a WORD after character length.
+/* ---------- PHRASE RULER (fifth-pass KILL, 2026-09-16) ----------------------
+   NOTHING IN THIS HARNESS READ THE WORDS UNTIL v5, AND THEN IT READ TWO OF THEM.
+   RULE C and RULE D count characters; the LENGTH RANK gate counts characters in
+   the other direction; the MAGNITUDE RANK gate counts numbers. The v5 TOKEN
+   RULER read tokens and ADJACENT PAIRS - and the fifth pass answered the pool-1
+   flagship with a FOUR-word phrase, "ten into the tens", on 20,000 / 20,000
+   draws at two seeds, while the gate printed 0.00% at n = 1 and n = 2 and
+   reported the bank clean. Its negative control could not save it either: the
+   control rebuilt the v4 option set, whose tell was a BIGRAM, so it certified
+   the ruler against the defect the ruler was built from rather than against the
+   class it names. Five kills, five axes, and each new gate was built exactly one
+   notch short of the next one: magnitude after form, character length after
+   magnitude, a word after character length, and now a PHRASE after a word.
 
-   The fourth pass's kill: gAddConcept's v4 rewrite hit its fixed 47/48/47/48
-   lengths by writing "carry 1 ten TO the hundreds column" in the one distractor
-   that carries the place-value idea, which left "ten into" a phrase the KEY alone
-   contained. "Pick the option that says 'ten into'" answered the pool-1 flagship
-   of this topic on 20,000 / 20,000 draws - 100.00%, no arithmetic, no place
-   value, no idea what a carry is - against 0.00% for the same rule at c099275.
+   This ruler is built so there is no next notch on this axis. It reads
 
-   THE RULER. For every four-option bank in the topic whose options are not all
-   bare numbers, draw 2,000 items. Strip the markup, lowercase, and cut each
-   option into tokens (runs of letters and digits) plus every adjacent PAIR of
-   tokens. For each draw, tally
-     (a) every feature present in the KEY and in none of the three distractors;
-     (b) every feature present in all THREE distractors and absent from the key.
-   A bank fails when any single feature clears 60% of its draws in either
-   direction. (a) is a child picking the key out by a word; (b) is a child
-   crossing three options out by one. 60% is well clear of the honest structural
-   halves this bank has: gCompareError's two flavours put "only" in the key and
-   nowhere else on 50.2% of draws, gAddError's "forgot" on 50.1%, gStandsError's
-   "not" on 42.6% - each is the item's own two- or three-way design showing
-   through, not a shortcut past it, and each is reported rather than failed.
+     PHRASES OF EVERY LENGTH.  Not tokens and pairs: every contiguous n-gram at
+       every n from one word to the whole option, over THREE token streams - raw,
+       lightly stemmed ("tens" -> "ten", so a plural cannot hide a repeat), and
+       digit-normalised-plus-stemmed (every run of digits -> "#", so a phrase is
+       not diluted by the draw's own numbers changing under it, which was the v5
+       ruler's other written-down blind spot).
 
-   Numbers dilute themselves: the digits change from draw to draw, so a feature
-   like "8 then" is only ever drawn on the draws where `keep` is 8 and cannot
-   reach the ceiling. That is deliberate - a token ruler is for WORDS - but it is
-   also this ruler's blind spot, and it is written down here rather than left to
-   be found. gAddConcept's new option set is clean under a digit-normalised ruler
-   too, checked by hand at every value of `keep`.
+     WORD SETS, UNORDERED.  Every combination of the key's words up to size
+       three, present in the key and absent from all three distractors. This is
+       the axis that answered v5 in its simplest form: the key was the only
+       option holding both "ten" and "tens", so a child scanning for "ten ...
+       tens" did not even need them in order. Raw and stemmed.
 
-   Negative control: the v4 gAddConcept option set, rebuilt here from its own
+   TWO BOUNDS, AND WHY THEY ARE THERE RATHER THAN HIDDEN.
+
+     (a) A key-only phrase cannot be eliminated at EVERY n. The whole key is one
+         of its own n-grams and no distractor may equal the key, so at n = the
+         key's own length every four-option bank in the game is "100% key-only"
+         and an uncapped phrase FAILURE rule is unsatisfiable by construction.
+         What a child can actually use is a SHORT distinctive phrase, so the
+         failure rule is capped at PHRASE_CAP words - and the SHORTEST key-only
+         phrase length is measured with no cap at all and printed for every bank
+         on every run, so a tell sitting just above the cap is visible rather
+         than absent. gAddConcept at cfa2da8 printed 4; at HEAD it prints 10.
+
+     (b) The same is true of word sets - the key's FULL word set is key-only
+         unless some distractor holds every word it holds - so the failure rule
+         is capped at three words, and the uncapped fact is printed instead: the
+         SUPERSET column says how often a distractor holds every word the key
+         holds, which is the only construction that kills the word-set axis at
+         every size at once. A bank at 100% there cannot be answered by any word
+         combination, ordered or not, of any size.
+
+   A bank fails when one feature inside those bounds clears 60% of its draws in
+   either direction - (a) key-only, a child picking the key out by a phrase; or
+   (b) present in all three distractors and absent from the key, a child crossing
+   three options out by one. 60% is well clear of the honest structural halves
+   this bank has: gCompareError's two flavours put "only" in the key and nowhere
+   else on ~50% of draws, gAddError's "forgot" on ~50%, gStandsError's "not" on
+   ~43% - each is the item's own two- or three-way design showing through, not a
+   shortcut past it, and each is reported rather than failed.
+
+   Negative control: the v5 gAddConcept option set, rebuilt here from its own
    strings so the control does not depend on the topic file still containing the
-   defect. It must come out RED, naming "ten into". --- */
-const TOK_N = 2000, TOK_CAP = 0.60;
+   defect. It must come out RED - and it must come out red on a FOUR-word phrase
+   and on the two-word SET, neither of which the v5 ruler could see. --- */
+const TOK_N = 2000, TOK_CAP = 0.60, PHRASE_CAP = 6, SET_CAP = 3;
 const tokRows = [];
-const tokFeats = s => {
-  const t = strip(s).toLowerCase().match(/[a-z0-9]+/g) || [];
-  const out = new Set(t);
-  for (let i = 0; i + 1 < t.length; i++) out.add(t[i] + ' ' + t[i + 1]);
+const stemTok = w => (w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) ? w.slice(0, -1) : w;
+const tokenise = s => (strip(s).toLowerCase().match(/[a-z0-9]+/g) || []);
+/* feature -> phrase length in words, over the three streams */
+function phraseFeats(t) {
+  const out = new Map();
+  const streams = [['r', t], ['s', t.map(stemTok)], ['#', t.map(w => /^\d+$/.test(w) ? '#' : stemTok(w))]];
+  for (const [tag, arr] of streams)
+    for (let n = 1; n <= arr.length; n++)
+      for (let i = 0; i + n <= arr.length; i++) out.set(tag + ':' + arr.slice(i, i + n).join(' '), n);
   return out;
-};
+}
+function setsUpTo(words, k) {
+  const out = [];
+  const rec = (start, cur) => {
+    if (cur.length) out.push(cur.slice());
+    if (cur.length === k) return;
+    for (let i = start; i < words.length; i++) { cur.push(words[i]); rec(i + 1, cur); cur.pop(); }
+  };
+  rec(0, []);
+  return out;
+}
 function tokBank(draw) {
-  const keyOnly = new Map(), wrongOnly = new Map();
-  let n = 0, sample = null;
+  const keyOnly = new Map(), wrongOnly = new Map(), setOnly = new Map(), shortest = new Map();
+  let n = 0, sample = null, superset = 0;
   for (let i = 0; i < TOK_N; i++) {
     let q;
-    try { q = draw(); } catch (e) { return { n, keyOnly, wrongOnly, sample, threw: e.message }; }
+    try { q = draw(); } catch (e) { return { n, keyOnly, wrongOnly, setOnly, shortest, superset, sample, threw: e.message }; }
     const opts = (q.choices || []).map(strip);
     if (opts.length !== 4 || !(q.correct >= 0)) continue;
     if (opts.every(o => /^\d+$/.test(o))) continue;      /* bare-number banks: the magnitude ruler owns those */
-    const F = opts.map(tokFeats);
+    const T = opts.map(tokenise);
+    const F = T.map(phraseFeats);
     const k = q.correct, w = [0, 1, 2, 3].filter(j => j !== k);
-    for (const f of F[k]) if (w.every(j => !F[j].has(f))) {
-      keyOnly.set(f, (keyOnly.get(f) || 0) + 1);
-      if (!sample) sample = opts.slice();
+    let minN = Infinity;
+    for (const [f, len] of F[k]) if (w.every(j => !F[j].has(f))) {
+      if (len < minN) minN = len;
+      if (len <= PHRASE_CAP) {
+        keyOnly.set(f, (keyOnly.get(f) || 0) + 1);
+        if (!sample) sample = opts.slice();
+      }
     }
-    for (const f of F[w[0]]) if (F[w[1]].has(f) && F[w[2]].has(f) && !F[k].has(f)) {
+    shortest.set(minN, (shortest.get(minN) || 0) + 1);
+    for (const [f, len] of F[w[0]]) if (len <= PHRASE_CAP && F[w[1]].has(f) && F[w[2]].has(f) && !F[k].has(f)) {
       wrongOnly.set(f, (wrongOnly.get(f) || 0) + 1);
       if (!sample) sample = opts.slice();
     }
+    /* unordered word sets, raw and stemmed. The two streams overlap on every
+       word a stem does not change, so the hits are deduped INSIDE the draw
+       before they are tallied: a feature found twice in one draw is still one
+       draw, not two. */
+    {
+      const hit = new Set();
+      let sup = false;
+      for (const st of [x => x, stemTok]) {
+        const S = T.map(t => new Set(t.map(st)));
+        const kw = [...new Set(T[k].map(st))];
+        if (w.some(j => kw.every(x => S[j].has(x)))) sup = true;
+        for (const c of setsUpTo(kw, SET_CAP))
+          if (w.every(j => !c.every(x => S[j].has(x)))) hit.add('{' + c.slice().sort().join(' + ') + '}');
+      }
+      if (sup) superset++;
+      for (const f of hit) setOnly.set(f, (setOnly.get(f) || 0) + 1);
+      if (hit.size && !sample) sample = opts.slice();
+    }
     n++;
   }
-  return { n, keyOnly, wrongOnly, sample };
+  return { n, keyOnly, wrongOnly, setOnly, shortest, superset, sample };
 }
 const tokTop = m => [...m.entries()].reduce((a, e) => e[1] > a[1] ? e : a, ['-', 0]);
+const tokMinN = row => [...row.shortest.entries()].reduce((a, e) => e[1] > a[1] ? e : a, [0, 0])[0];
 function tokVerdict(row) {
   if (!row.n) return null;
-  const k = tokTop(row.keyOnly), w = tokTop(row.wrongOnly);
+  const k = tokTop(row.keyOnly), w = tokTop(row.wrongOnly), s = tokTop(row.setOnly);
   const opts = row.sample ? `  (${row.sample.join(' | ')})` : '';
   if (k[1] / row.n >= TOK_CAP)
     return `"${k[0]}" is in the KEY and in no distractor on ${k[1]} of ${row.n} draws (${(100 * k[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child picks the key out by that phrase alone${opts}`;
+  if (s[1] / row.n >= TOK_CAP)
+    return `the word set ${s[0]} is in the KEY and in no distractor on ${s[1]} of ${row.n} draws (${(100 * s[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child picks the key out by those words in any order${opts}`;
   if (w[1] / row.n >= TOK_CAP)
     return `"${w[0]}" is in ALL THREE distractors and not in the key on ${w[1]} of ${row.n} draws (${(100 * w[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child crosses three options out by that phrase alone${opts}`;
   return null;
@@ -3080,22 +3158,28 @@ for (const g of GENS) {
   tokRows.push(row);
   if (row.err) failures++;
 }
-let tokControl = 'the v4 gAddConcept option set was not rejected by the token ruler';
+let tokControl = 'the v5 gAddConcept option set was not rejected by the phrase ruler';
 {
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-  const v4AddConcept = () => {
+  const v5AddConcept = () => {
     const s = rnd(12, 18), keep = s % 10;
     const opts = [
-      'Write ' + keep + ', then carry 1 ten into the tens column.',
-      'Write ' + s + ' in the ones column, then carry nothing.',
-      'Write ' + keep + ' and carry 1 ten to the hundreds column.',
-      'Write 1, then carry ' + keep + ' tens into the tens column.'
+      'Write ' + keep + ', carry 1 ten into the tens column.',
+      'Write ' + s + ' in the ones column, carry no ten.',
+      'Write ' + keep + ', carry 1 ten into the hundreds column.',
+      'Write 1 and carry ' + keep + ' tens into the tens column.'
     ];
-    return { q: 'v4 gAddConcept control', choices: opts, answerText: opts[0], correct: 0 };
+    return { q: 'v5 gAddConcept control', choices: opts, answerText: opts[0], correct: 0 };
   };
-  const ctl = tokBank(v4AddConcept);
+  const ctl = tokBank(v5AddConcept);
   const verdict = tokVerdict(ctl);
-  if (verdict) tokControl = `the v4 gAddConcept option set goes red - ${verdict}`;
+  const phrase = tokTop(ctl.keyOnly), set = tokTop(ctl.setOnly);
+  /* the control is only doing its job if BOTH new axes fire: the four-word
+     phrase the v5 ruler was one notch short of, and the unordered pair */
+  const phraseOk = phrase[1] / ctl.n >= TOK_CAP && /ten into the ten/.test(phrase[0]);
+  const setOk = set[1] / ctl.n >= TOK_CAP && /ten \+ tens/.test(set[0]);
+  if (verdict && phraseOk && setOk)
+    tokControl = `the v5 gAddConcept option set goes red - "${phrase[0]}" key-only on ${(100 * phrase[1] / ctl.n).toFixed(1)}% (a FOUR-word phrase, which the v5 ruler could not see) and the word set ${set[0]} key-only on ${(100 * set[1] / ctl.n).toFixed(1)}%; shortest key-only phrase ${tokMinN(ctl)} words`;
   else failures++;
 }
 
@@ -3231,34 +3315,44 @@ if (rankRows.length) {
 if (lenRows.length) {
   console.log(`\nLENGTH RANK  p3numbers, ${LEN_N} draws per bank  (the key uniquely shortest OR uniquely longest on < ${Math.round(LEN_CAP * 100)}% of draws)\n`);
   console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('uSHORTEST', 12) + pad('uLONGEST', 11) +
-    pad('PICK-SHORT', 12) + pad('PICK-LONG', 11) + 'RESULT');
-  console.log('-'.repeat(100));
+    pad('PICK-SHORT', 12) + pad('PICK-LONG', 11) + pad('LO-STEP', 9) + pad('HI-STEP', 9) + pad('SPREAD', 9) + 'RESULT');
+  console.log('-'.repeat(120));
   for (const r of lenRows) {
     console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) +
       pad((100 * r.uShort / r.n).toFixed(1) + '%', 12) + pad((100 * r.uLong / r.n).toFixed(1) + '%', 11) +
       pad((100 * r.pShort / r.n).toFixed(1) + '%', 12) + pad((100 * r.pLong / r.n).toFixed(1) + '%', 11) +
+      pad((r.step / r.n).toFixed(2), 9) + pad((r.stepHi / r.n).toFixed(2), 9) + pad((r.spread / r.n).toFixed(2), 9) +
       (r.err ? 'FAIL  ' + r.err : 'pass'));
   }
   console.log('');
   console.log(`     PICK-SHORT / PICK-LONG are the value of "pick one of the shortest (longest) options", counted 1/k over the k options tied at that extreme.`);
-  console.log(`     They are REPORTED, not gated: every margin in this topic is one character. 25.0% is chance. A key tied with one other option reads 50.0% here and 0.0% under "uniquely".`);
+  console.log(`     LO-STEP / HI-STEP (fifth pass, W1) are the gap in CHARACTERS from the shortest option up to the next length, and from the longest option down to`);
+  console.log(`     the next, and SPREAD is shortest to longest. A key tied at one extreme is read off the step at THAT end: gAddConcept's is LO-STEP. PICK-SHORT`);
+  console.log(`     measures the value of the rule and uSHORTEST measures uniqueness; only MIN-STEP says whether the eye can see which options the rule points at.`);
+  console.log(`     All REPORTED, not gated: 25.0% is chance, and a key tied with one other option reads 50.0% under PICK-SHORT and 0.0% under "uniquely".`);
   if (lenRows.every(r => !r.err)) console.log(`ok   length rank: ${lenRows.length} banks, no key uniquely shortest or uniquely longest on ${Math.round(LEN_CAP * 100)}% of draws`);
   console.log(`${/goes red/.test(lenControl) ? 'ok  ' : 'FAIL'} length negative control: ${lenControl}`);
 }
 if (tokRows.length) {
-  console.log(`\nTOKEN RULER  p3numbers, ${TOK_N} draws per prose bank  (no token or two-word phrase in the key alone - or in all three distractors alone - on >= ${Math.round(100 * TOK_CAP)}% of draws)\n`);
-  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('KEY-ONLY PHRASE', 24) + pad('RATE', 9) + pad('ALL-WRONG PHRASE', 20) + pad('RATE', 9) + 'RESULT');
-  console.log('-'.repeat(110));
+  console.log(`\nPHRASE RULER  p3numbers, ${TOK_N} draws per prose bank  (no contiguous phrase of <= ${PHRASE_CAP} words, and no unordered word set of <= ${SET_CAP} words, in the key alone - or in all three distractors alone - on >= ${Math.round(100 * TOK_CAP)}% of draws)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 5) + pad('N', 6) + pad('KEY-ONLY PHRASE', 26) + pad('RATE', 8) +
+    pad('KEY-ONLY WORD SET', 22) + pad('RATE', 8) + pad('ALL-WRONG', 16) + pad('RATE', 8) + pad('MIN-n', 7) + pad('SUPERSET', 10) + 'RESULT');
+  console.log('-'.repeat(150));
   for (const r of tokRows) {
-    const k = tokTop(r.keyOnly), w = tokTop(r.wrongOnly);
-    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) +
-      pad('"' + k[0] + '"', 24) + pad((100 * k[1] / r.n).toFixed(1) + '%', 9) +
-      pad('"' + w[0] + '"', 20) + pad((100 * w[1] / r.n).toFixed(1) + '%', 9) +
+    const k = tokTop(r.keyOnly), w = tokTop(r.wrongOnly), st = tokTop(r.setOnly);
+    console.log(pad(r.name, 18) + pad(r.lvl, 5) + pad(r.n, 6) +
+      pad('"' + k[0] + '"', 26) + pad((100 * k[1] / r.n).toFixed(1) + '%', 8) +
+      pad(st[0], 22) + pad((100 * st[1] / r.n).toFixed(1) + '%', 8) +
+      pad('"' + w[0] + '"', 16) + pad((100 * w[1] / r.n).toFixed(1) + '%', 8) +
+      pad(tokMinN(r), 7) + pad((100 * r.superset / r.n).toFixed(1) + '%', 10) +
       (r.err ? 'FAIL  ' + r.err : 'pass'));
   }
   console.log('');
-  if (tokRows.every(r => !r.err)) console.log(`ok   token ruler: ${tokRows.length} prose banks, no key-only and no all-distractor phrase at or over ${Math.round(100 * TOK_CAP)}% of draws`);
-  console.log(`${/goes red/.test(tokControl) ? 'ok  ' : 'FAIL'} token negative control: ${tokControl}`);
+  console.log(`     MIN-n is the length in WORDS of the shortest key-only phrase, measured with NO cap and REPORTED, not gated: at n = the key's own length every`);
+  console.log(`     four-option bank is key-only by identity, so an uncapped failure rule is unsatisfiable. A bank whose MIN-n sits above ${PHRASE_CAP} is visible here.`);
+  console.log(`     SUPERSET is how often some distractor holds EVERY word the key holds; at 100% no word combination of ANY size can single the key out.`);
+  if (tokRows.every(r => !r.err)) console.log(`ok   phrase ruler: ${tokRows.length} prose banks, no key-only and no all-distractor phrase or word set at or over ${Math.round(100 * TOK_CAP)}% of draws`);
+  console.log(`${/goes red/.test(tokControl) ? 'ok  ' : 'FAIL'} phrase negative control: ${tokControl}`);
 }
 
 console.log('');

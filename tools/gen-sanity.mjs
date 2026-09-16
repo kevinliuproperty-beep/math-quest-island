@@ -1300,6 +1300,35 @@ function oracle(q) {
     return null;
   }
 
+  /* W2, SEVENTH pass. On three draws in five the stem describes the carry by the
+     column TOTAL and never names the column, so the child has to find the column
+     before there is a place name to translate. The oracle finds it the same way -
+     by adding the columns of the RENDERED addends - and asserts the premise that
+     makes the stem answerable at all: exactly ONE column can make the printed
+     total. Nothing here reads the generator's answerText. */
+  if ((m = text.match(/^(\S+(?: \S+)?) works out (\d+) \+ (\d+) in columns\. One column makes (\d+), so (?:he|she) writes (\d+) in that column and a small 1 above the column on its left\. How much is that small 1 worth\?$/))) {
+    const a = Number(m[2]), b = Number(m[3]), s = Number(m[4]), keep = Number(m[5]);
+    if (String(a).length !== 4 || String(b).length !== 4) return `p3 add-concept (by total): expected two 4-digit addends, got ${a} + ${b}`;
+    if (a + b > 9999) return `p3 add-concept (by total): ${a} + ${b} = ${a + b} is past the 10 000 ceiling`;
+    if (s < 10) return `p3 add-concept (by total): ${s} does not regroup, so there is nothing to carry`;
+    if (s > 19) return `p3 add-concept (by total): two digits cannot make ${s}`;
+    if (keep !== s % 10) return `p3 add-concept (by total): ${s} leaves ${s % 10} in the column, not ${keep}`;
+    const A = p3dig(a), B = p3dig(b);
+    const made = [];
+    for (let i = 3; i >= 0; i--) if (A[i] + B[i] === s) made.push(i);
+    if (made.length !== 1) return `p3 add-concept (by total): ${made.length} columns of ${a} + ${b} make ${s}, so "one column makes ${s}" does not point at one column`;
+    const src = made[0];
+    if (src === 0) return 'p3 add-concept (by total): the thousands column has no column on its left';
+    for (let i = 3; i > src; i--) {
+      if (A[i] + B[i] >= 10) return `p3 add-concept (by total): the ${P3_PLACES[i]} column carries into the ${P3_PLACES[src]} column, so it does not make ${s} on its own`;
+    }
+    const want = P3_POW[src - 1];
+    if (!near(want, ansNum)) return `p3 add-concept (by total): the small 1 above the ${P3_PLACES[src - 1]} column is worth ${want}, got ${ansNum}`;
+    const hits = p3opts(q).filter(o => Number(o) === want).length;
+    if (hits !== 1) return `p3 add-concept (by total): ${hits} of the four options are ${want}`;
+    return null;
+  }
+
   /* ADD/SUB - direct compute. Also asserts the item is genuinely a REGROUPING
      item, which is the principle this whole skill exists to teach. */
   if ((m = text.match(/^What is (\d+) \+ (\d+)\?$/))) {
@@ -3047,6 +3076,120 @@ let lenControl = 'the v2 gAddConcept option set was not rejected by the length g
   else failures++;
 }
 
+/* ---------- WIDTH-CLASS RANK GATE (seventh-pass KILL, 2026-09-16) -----------
+   THREE RULERS POINTED AT THIS OPTION ROW AND ALL THREE MISSED IT. MAGNITUDE
+   RANK ranks the key against ALL FOUR options; LENGTH RANK ranks it against the
+   EXTREMES (uniquely shortest, uniquely longest, and the value of picking one of
+   those); RULES C and D cap its width. Nothing ranked the key against the
+   options it is CONFUSABLE WITH - the ones printed at the same width - and that
+   is the cell the seventh pass's KILL lived in:
+
+     In this number pattern, what is the jump?  9103, 9203, 9303, 9403
+       1000 (4)  |  100 (3) <- key  |  200 (3)  |  10 (2)
+
+   Two options are three characters long; the answer is the smaller of those two.
+   No arithmetic, no subtraction, no reading of the run - 69.63% / 69.48% of
+   20,000 draws at each of two seeds on gPatternConcept, pool 1's busiest
+   generator, while MAGNITUDE RANK printed 16.6 / 31.4 / 35.2 / 16.9 pass and
+   LENGTH RANK printed uSHORTEST 0.0% PICK-SHORT 8.4% pass. Both were true.
+
+   THE MECHANISM IS THE HOUSE CONSTRUCTION, NOT ONE BANK. Slip families here are
+   built by MULTIPLYING the key - 2*step, keep*POW[col], s*POW[src] - and a small
+   multiple of a number is printed at that number's own width, ABOVE it. So
+   wherever such a slip ships, the key is the MINIMUM of its own width class by
+   construction. The rule fired on six banks of this topic (69.6 / 45.8 / 25.4 /
+   23.3 / 9.0 / 6.8%) and it will fire on any slipSet-shaped family in the game.
+
+   WHAT IS MEASURED. Every numeric four-option bank in the topic, 2,000 draws.
+   The options are grouped by printed character width; the COMMONEST class is the
+   width with the strictly greatest count, and it must hold at least two options
+   and must NOT hold all four (a row that is all one width is the magnitude
+   gate's business, and "the smallest of all four" is already gated there). If
+   there is no such class the rule declines. Otherwise the key is MIN, MID or MAX
+   inside that class, or OUT of it - and OUT is a pass, because a rule that fires
+   and points at a wrong answer is worse than useless to a child.
+
+   THE GATE. Each of MIN / MID / MAX must stay under 45% of draws, and the two
+   rules a child can actually run - "commonest width, then the smallest" and
+   "commonest width, then the largest" - must each stay under 40%. NO BANK IS
+   EXEMPT and none needs to be: the three comparison anchors print four options
+   of one width, so the rule declines on 100% of their draws.
+
+   Negative control: the v7 gPatternConcept option set, rebuilt here from its own
+   arithmetic so the control does not depend on the topic file still containing
+   the defect. It must come out RED. --- */
+const WIDTH_N = 2000, WIDTH_RANK_CAP = 0.45, WIDTH_RULE_CAP = 0.40;
+const widthRows = [];
+function widthClassOf(opts, correct) {
+  const w = opts.map(o => o.length);
+  const cnt = new Map();
+  for (const x of w) cnt.set(x, (cnt.get(x) || 0) + 1);
+  let best = -1, bestW = null, tie = false;
+  for (const [ww, c] of cnt) {
+    if (c > best) { best = c; bestW = ww; tie = false; }
+    else if (c === best) tie = true;
+  }
+  if (best < 2 || best === opts.length || tie) return 'none';
+  if (w[correct] !== bestW) return 'out';
+  const group = opts.filter((o, i) => w[i] === bestW).map(Number);
+  const key = Number(opts[correct]);
+  if (key === Math.min.apply(null, group)) return 'min';
+  if (key === Math.max.apply(null, group)) return 'max';
+  return 'mid';
+}
+function widthBank(draw) {
+  const t = { n: 0, min: 0, mid: 0, max: 0, out: 0, none: 0 };
+  for (let i = 0; i < WIDTH_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o)) || !(q.correct >= 0)) continue;
+    t[widthClassOf(opts, q.correct)]++; t.n++;
+  }
+  return t;
+}
+function widthVerdict(row) {
+  if (!row.n) return null;
+  const f = k => row[k] / row.n;
+  if (f('min') > WIDTH_RULE_CAP)
+    return `"take the commonest printed width, then the smallest number in it" answers it on ${(100 * f('min')).toFixed(1)}% of draws`;
+  if (f('max') > WIDTH_RULE_CAP)
+    return `"take the commonest printed width, then the largest number in it" answers it on ${(100 * f('max')).toFixed(1)}% of draws`;
+  for (const k of ['min', 'mid', 'max']) {
+    if (f(k) > WIDTH_RANK_CAP)
+      return `the key is the ${k.toUpperCase()} of its own printed-width class on ${(100 * f(k)).toFixed(1)}% of draws`;
+  }
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = widthBank(g.fn);
+  if (!row.n) continue;                          /* not a numeric four-option bank */
+  row.name = g.name; row.lvl = g.level;
+  row.err = widthVerdict(row);
+  widthRows.push(row);
+  if (row.err) failures++;
+}
+let widthControl = 'the v7 gPatternConcept option set was not rejected by the width-class gate';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const v7PatternConcept = () => {
+    const step = [10, 100, 1000][rnd(0, 2)];
+    const fam = [1, 10, 100, 1000, 2 * step].filter(v => v !== step);
+    const below = fam.filter(v => v < step), above = fam.filter(v => v > step);
+    const lo = Math.max(0, 3 - above.length), hi = Math.min(3, below.length);
+    const r = rnd(lo, hi);
+    const opts = shuf(shuf(below).slice(0, r).concat(shuf(above).slice(0, 3 - r)).concat([step]));
+    return { q: 'v7 gPatternConcept control', choices: opts.map(String),
+             answerText: String(step), correct: opts.indexOf(step) };
+  };
+  const ctl = widthBank(v7PatternConcept);
+  const verdict = widthVerdict(ctl);
+  if (verdict) widthControl = `the v7 gPatternConcept option set goes red - ${verdict}`;
+  else failures++;
+}
+
 /* ---------- PHRASE RULER (fifth-pass KILL, 2026-09-16) ----------------------
    NOTHING IN THIS HARNESS READ THE WORDS UNTIL v5, AND THEN IT READ TWO OF THEM.
    RULE C and RULE D count characters; the LENGTH RANK gate counts characters in
@@ -3479,6 +3622,25 @@ if (lenRows.length) {
   console.log(`     All REPORTED, not gated: 25.0% is chance, and a key tied with one other option reads 50.0% under PICK-SHORT and 0.0% under "uniquely".`);
   if (lenRows.every(r => !r.err)) console.log(`ok   length rank: ${lenRows.length} banks, no key uniquely shortest or uniquely longest on ${Math.round(LEN_CAP * 100)}% of draws`);
   console.log(`${/goes red/.test(lenControl) ? 'ok  ' : 'FAIL'} length negative control: ${lenControl}`);
+}
+if (widthRows.length) {
+  console.log(`\nWIDTH-CLASS RANK  p3numbers, ${WIDTH_N} draws per numeric bank  (the key's place INSIDE the commonest printed-width class: each of MIN / MID / MAX < ${Math.round(WIDTH_RANK_CAP * 100)}%, and "commonest width, then smallest / largest" < ${Math.round(WIDTH_RULE_CAP * 100)}%)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('CLASS', 8) + pad('KEY MIN', 9) +
+    pad('KEY MID', 9) + pad('KEY MAX', 9) + pad('KEY OUT', 9) + pad('NO CLASS', 10) + 'RESULT');
+  console.log('-'.repeat(100));
+  for (const r of widthRows) {
+    const f = k => (100 * r[k] / r.n).toFixed(1) + '%';
+    console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) +
+      pad((100 * (r.min + r.mid + r.max + r.out) / r.n).toFixed(1) + '%', 8) +
+      pad(f('min'), 9) + pad(f('mid'), 9) + pad(f('max'), 9) + pad(f('out'), 9) + pad(f('none'), 10) +
+      (r.err ? 'FAIL  ' + r.err : 'pass'));
+  }
+  console.log('');
+  console.log(`     CLASS is how often a commonest width exists at all (at least two options, never all four - a row that is all one width is the magnitude gate's).`);
+  console.log(`     KEY OUT means the rule fires and points at a WRONG option, which is why it is a pass and not a failure; NO CLASS means the rule declines.`);
+  console.log(`     MIN is the rule the seventh pass killed this topic with. No bank is exempt: the comparison anchors print four options of one width and decline.`);
+  if (widthRows.every(r => !r.err)) console.log(`ok   width-class rank: ${widthRows.length} numeric banks, no key MIN / MID / MAX of its own printed-width class past ${Math.round(WIDTH_RANK_CAP * 100)}%, and no width rule past ${Math.round(WIDTH_RULE_CAP * 100)}%`);
+  console.log(`${/goes red/.test(widthControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${widthControl}`);
 }
 if (tokRows.length) {
   console.log(`\nPHRASE RULER  p3numbers, ${TOK_N} draws per prose bank  (no contiguous phrase of <= ${PHRASE_CAP} words, and no unordered word set of <= ${SET_CAP} words, in the key alone - or in all three distractors alone - on >= ${Math.round(100 * TOK_CAP)}% of draws)\n`);

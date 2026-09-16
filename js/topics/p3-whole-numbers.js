@@ -79,6 +79,23 @@
  * smallest" and "pick the largest" are still gated and both measure 0.00%; the
  * premise re-check fails the gate the moment the key is ever an extreme.
  *
+ * AND SO IS WIDTH, INSIDE THE CLASS (seventh pass, 2026-09-16). The magnitude
+ * gate ranks the key against all four printed numbers and the length gate ranks
+ * it against the extremes; neither ranks it against the options it is CONFUSABLE
+ * with, which are the ones printed at the same width. Every slip family in this
+ * file is built by MULTIPLYING the key, a small multiple prints at the key's own
+ * width and always ABOVE it, so wherever such a slip shipped the key was the
+ * minimum of its own width class by construction - and "take the commonest
+ * printed width, then the smaller number" answered gPatternConcept, pool 1's
+ * busiest generator, on 69.63% of draws with no arithmetic at all. tools/
+ * gen-sanity.mjs now carries a WIDTH-CLASS RANK column over every numeric bank
+ * in the topic: the key's place inside its own width class must stay under 45%
+ * at each of MIN / MID / MAX, and the two rules a child can run - commonest
+ * width then smallest, commonest width then largest - under 40%. NO BANK IS
+ * EXEMPT; the three comparison anchors print four options of one width, so the
+ * rule declines on them rather than being waived. Its negative control is the v7
+ * gPatternConcept option set, which goes red at ~70%.
+ *
  * SCOPE (MOE Oct 2025, P3 p.35). Numbers up to 10 000: 1.1 counting in hundreds
  * and thousands, 1.2 number notation / representations / place values,
  * 1.4 comparing and ordering, 1.5 patterns in number sequences. Addition and
@@ -90,11 +107,17 @@
  * FENCE against `heuristics` (Puzzle Caves, which also owns a `pattern` skill):
  * Puzzle Caves draws 1- and 2-digit typed sequences ("What comes next? 3, 6, 9,
  * 12, ?"). This file's patterns are 4-digit and MC, and the step set is, in full:
- * 10 / 100 / 1000 for the counting anchors (gPatternConcept, gPattern4,
- * gMoreLess; MOE P3 1.1), 100 / 150 / 200 / 250 / 500 for gPatternMissing, and
- * 15 / 25 / 35 for gPatternOdd - both of the last two being items where the jump
- * has to be FOUND rather than read, which is MOE P3 1.5, patterns in number
- * sequences, and which 1.5 does not restrict to multiples of ten.
+ * 10 / 100 / 1000 for the counting anchors (gPattern4, gMoreLess; MOE P3 1.1),
+ * 100 / 150 / 200 / 250 / 500 for gPatternMissing, and 15 / 25 / 35 for
+ * gPatternOdd - both of the last two being items where the jump has to be FOUND
+ * rather than read, which is MOE P3 1.5, patterns in number sequences, and which
+ * 1.5 does not restrict to multiples of ten. gPatternConcept draws 10 / 100 /
+ * 1000 on one draw in three and 15 / 25 / 150 / 250 / 1500 / 2500 on the other
+ * two (SEVENTH pass, and the reason is at the generator: while the jump is a
+ * power of ten the key is the smallest number of its own printed width by
+ * definition, and counting characters answered the item on 69.6% of draws). Its
+ * question is "what is the jump", so it is a 1.5 item on every draw and a 1.1
+ * item on the anchor third.
  *
  * W2, SIXTH pass. This paragraph used to read "jump by a whole number of tens -
  * counting in tens, hundreds and thousands for the anchors, and 150s and 250s
@@ -868,22 +891,103 @@ function gCompareError(){
     why + ' Compare left to right, one place at a time, and stop at the first place where the digits differ.');
 }
 
-/* FORMAT 7 - concept check on a pattern: name the jump (pool 1, 1 step) */
+/* FORMAT 7 - concept check on a pattern: name the jump (pool 1, 1 step).
+
+   KILL, SEVENTH pass (2026-09-16), and it had been here since v1. The family was
+   `[1, 10, 100, 1000, 2*step]` and the key was always a POWER OF TEN. The four
+   powers of ten have pairwise distinct printed widths, so the only family member
+   that could ever share the key's width was `2*step` - which is exactly twice the
+   key, and therefore always ABOVE it. Whenever it shipped, the four options held
+   one pair at the same width and the key was the smaller of that pair; whenever
+   it did not, all four widths were distinct and the rule declined. So
+
+       "count the characters in each option, take the commonest length,
+        pick the smaller number"
+
+   answered pool 1's busiest generator - 4.94 items per 30-item session at 0.45
+   accuracy - on 69.63% / 69.48% of 20,000 draws at each of two seeds, with no
+   arithmetic, no subtraction and without reading the run at all, and it is never
+   wrong when it fires. MAGNITUDE RANK ranks the key against all four (16.6 /
+   31.4 / 35.2 / 16.9, pass); LENGTH RANK ranks it against the extremes
+   (uSHORTEST 0.0%, PICK-SHORT 8.4%, pass). Nothing ranked the key INSIDE its own
+   width class, which is the cell the defect lived in. The WIDTH-CLASS RANK
+   column in tools/gen-sanity.mjs is that ruler, and it now gates this file.
+
+   THE FIX IS THE STEP SET, NOT ANOTHER DISTRACTOR. A power of ten is the
+   SMALLEST number of its own width by definition, so no same-width slip below it
+   exists to author: while the jump is 10, 100 or 1000, the key is the minimum of
+   its width class on every draw where that class is not a singleton. The step set
+   therefore gains the IN-BETWEEN jumps this file already draws elsewhere (100 /
+   150 / 200 / 250 / 500 in gPatternMissing, 15 / 25 / 35 in gPatternOdd; MOE P3
+   1.5 does not restrict a sequence's jump to a multiple of ten), and for those
+   the ladder's own next power DOWN sits at the key's width and below it - 10
+   under 15 and 25, 100 under 150 and 250, 1000 under 1500 and 2500 - while
+   2*step and 3*step sit at the key's width and above it. The key can then be the
+   smallest, the middle or the largest of its class, and which one is DRAWN.
+
+   One draw in three is still a counting anchor (10 / 100 / 1000, MOE P3 1.1). On
+   those the family is the place-value ladder alone - every option a different
+   width - so the class is a singleton and the rule has nothing to point at. */
 function gPatternConcept(){
-  const step = pick([10, 100, 1000]);
-  /* the jump read in the wrong column, either way, plus "took two jumps at once".
-     The old fixed table put the key at rank 1 on two of the three steps and rank
-     2 on the third, so 66.9% of draws printed the answer in the same position
-     among the four. */
-  const wrong = slipSet(step, [1, 10, 100, 1000, 2*step].filter(v => v !== step));
-  let start = 2380, g = 0;
-  do { start = ri(1000, MAXN - 4*step); g++; } while (g < 200 && !(start >= 1000));
+  const W = v => String(v).length;
+  /* the named slips: the jump read in the wrong COLUMN (the place-value ladder),
+     two jumps taken at once, and the whole run measured first term to last. */
+  const famOf = s => {
+    const seen = new Set([s]), f = [];
+    for (const v of [1, 10, 100, 1000, 2*s, 3*s]){
+      if (!ok(v) || seen.has(v)) continue;
+      seen.add(v); f.push(v);
+    }
+    return f;
+  };
+  /* where the key sits INSIDE its own printed-width class - the seventh pass's
+     KILL, measured the way tools/gen-sanity.mjs measures it */
+  const posOf = (s, t) => {
+    const same = t.filter(v => W(v) === W(s));
+    if (!same.length) return 'none';
+    const below = same.filter(v => v < s).length;
+    return below && below < same.length ? 'mid' : below ? 'max' : 'min';
+  };
+  /* THE COUNTING ANCHOR, one draw in three: the ladder alone, four widths, no
+     class to rank the key inside. The step fixes the rank (10 -> 1, 100 -> 2,
+     1000 -> 3), which is why the anchor cannot supply rank 0 and the in-between
+     branch below draws its own rank uniformly. */
+  if (ri(0, 2) === 0){
+    const step = pick([10, 100, 1000]);
+    const wrong = [1, 10, 100, 1000].filter(v => v !== step);
+    return patternJump(step, shuffle(wrong));
+  }
+  /* every 3-subset of every in-between step's family, labelled by the key's rank
+     among the four printed numbers AND by its position in its own width class.
+     Rank is drawn FIRST so the magnitude gate stays flat, then the width-class
+     position uniformly from what that rank allows, so neither ruler can run away
+     from the other. */
+  const bank = [];
+  for (const s of [15, 25, 150, 250, 1500, 2500]){
+    const fam = famOf(s), kw = W(s);
+    for (let i = 0; i < fam.length; i++)
+      for (let j = i + 1; j < fam.length; j++)
+        for (let k = j + 1; k < fam.length; k++){
+          const t = [fam[i], fam[j], fam[k]];
+          if (Math.max.apply(null, t.map(W)) * 1.4 < kw) continue;   /* RULE C */
+          bank.push({ s: s, t: t, r: t.filter(v => v < s).length, p: posOf(s, t) });
+        }
+  }
+  const r = ri(0, 3);
+  let live = bank.filter(e => e.r === r);
+  if (!live.length) live = bank;
+  const p = pick([...new Set(live.map(e => e.p))]);
+  const e0 = pick(live.filter(e => e.p === p));
+  return patternJump(e0.s, shuffle(e0.t.slice()));
+}
+function patternJump(step, wrong){
+  const start = ri(1000, MAXN - 3*step);
   const terms = [start, start+step, start+2*step, start+3*step];
   return mcNum('In this number pattern, what is the <b>jump</b> from one number to the next? <b>' +
     terms.join(', ') + '</b>', '', step, wrong, '',
     terms[1] + ' − ' + terms[0] + ' = ' + step + ', and the same jump works every time: ' +
     terms[2] + ' − ' + terms[1] + ' = ' + step + '. So the pattern counts on in ' +
-    (step === 10 ? 'tens' : step === 100 ? 'hundreds' : 'thousands') +
+    (STEP_WORD[step] || 'jumps of ' + step) +
     '. Write the difference above each gap and check that they all match.');
 }
 
@@ -1231,6 +1335,7 @@ function gPatternOdd(){
             keep * POW[src]     the part that stays, at its real value
             s   * POW[src]      the whole column, not just the part that carries
             keep * POW[col]     the stayed digit pushed into the carry's column
+            s   * POW[col]      the WHOLE total pushed into the carry's column
 
    THE KEY'S RANK IS DRAWN UNIFORMLY AND SO IS THE COLUMN, both by construction
    rather than by luck. The rank is drawn FIRST - ri(0,3) - and the column is
@@ -1258,7 +1363,50 @@ function gPatternOdd(){
    zeros", worth about 31% against 25% chance - the option set is a place-value
    ladder on roughly half the draws and the key is always on it. Declared and
    measured rather than authored away: the sets are chosen to hold as MANY place
-   values as the drawn rank allows, precisely so that rule cannot narrow. */
+   values as the drawn rank allows, precisely so that rule cannot narrow.
+
+   W1, SEVENTH pass (2026-09-16) - AND THE RESIDUAL ABOVE WAS WRONG ABOUT ITS OWN
+   CEILING. The key is a power of ten, so it is the SMALLEST number of its printed
+   width by construction; `keep * POW[col]` and `s * POW[src]` were the only two
+   family members that could share that width, and both are larger than the key.
+   The key was therefore the minimum of its own width class whenever that class
+   was not a singleton, and "take the commonest printed width, then the smallest
+   number in it" answered the item on 45.83% / 45.94% of draws - 57.3% as a
+   guesser value, and 63.2% composed with "cross out the numbers the stem has
+   already printed". The residual named both halves of that composition itself
+   ("pick the option that is 1 followed by zeros" 31.6%, "keep the majority digit
+   count" 32.3%) and asserted the sets were chosen so the rule could not narrow
+   further. It does narrow further, because THE ONLY OPTION THAT IS BOTH A POWER
+   OF TEN AND AT THE KEY'S WIDTH IS THE KEY - the other powers of ten all print at
+   different widths, by definition.
+
+   Nothing can be authored below a power of ten at its own width, so the fix is
+   the other way round: every subset is now labelled by whether it puts ANY
+   distractor at the key's width, and a width-free subset is preferred wherever
+   the drawn (rank, column) cell has one. Two cells have none - rank 0 at the
+   hundreds column and rank 2 at the thousands column, where every in-scope slip
+   above the key is at the key's own width - and those are the draws where the key
+   is still its class's minimum. `s * POW[col]` is added to the family for that
+   reason as well as its own: it is the one named slip ABOVE a tens or hundreds
+   key at a DIFFERENT width, and it is what lets rank 0 and rank 1 be width-free
+   at the tens column. Measured after: 20.6% / 20.9% outright, against 45.8%
+   before, with rank and column both still flat.
+
+   W2, SEVENTH pass. The item no longer requires any `addsub` knowledge: the key
+   was a deterministic function of one phrase - "a small 1 above the <place>
+   column" - on 100% of draws, so a, b, the column total and the digit written
+   were decoration and the demand had drifted to place-name -> numeral
+   translation. On three draws in five the stem now describes the carry by the
+   column TOTAL instead of naming its column ("One column makes 14, so he writes 4
+   there and a small 1 above the column on its left"), which puts the column
+   addition back inside the item: the child has to find the column that makes 14
+   before the place name exists to translate. The stem is true as printed on every
+   draw - no other column can total 12-18, because every column right of the
+   source is built to sum under 10 and every column left of it under 9 - and the
+   explanation names the column it found. Measured: the phrase-only route
+   resolves on 40% of draws and is worth 55% as a guesser, against the 60%
+   ceiling. The bank stays registered under `addsub` because the majority of its
+   draws now demand it. */
 function gAddConcept(){
   const s = ri(12, 18), keep = s % 10;
   /* the slip family for a given carry column, as [value, why] pairs in the
@@ -1275,12 +1423,18 @@ function gAddConcept(){
       [s * POW[src], 'Carrying all ' + s + ' ' + PLACES[src] + ' instead of just the ' + plPlace(1, col)]
     ];
     if (col > 0) f.push([keep * POW[col], 'Writing the ' + keep + ' above the ' + PLACES[col] + ' column']);
+    /* W1, seventh pass: the one named slip ABOVE a tens or hundreds key that is
+       NOT printed at the key's own width, which is what lets those columns reach
+       ranks 0 and 1 without putting a same-width number over the key. */
+    f.push([s * POW[col], 'Writing the whole ' + s + ' above the ' + PLACES[col] + ' column']);
     for (let j = 0; j < 4; j++) f.push([POW[j], 'Counting it as ' + plPlace(1, j)]);
     const seen = new Set([POW[col]]);
     return f.filter(p => { if (!ok(p[0]) || seen.has(p[0])) return false; seen.add(p[0]); return true; });
   };
   /* every 3-subset of every column's family, grouped by how many slips land
-     BELOW the key - which IS the key's rank among the four printed numbers. */
+     BELOW the key - which IS the key's rank among the four printed numbers - and
+     labelled (W1, seventh pass) by whether any of them is printed at the key's
+     OWN WIDTH, which is the axis the KILL was measured on. */
   const bank = [0, 1, 2].map(col => {
     const key = POW[col], fam = famFor(col), kw = String(key).length, byR = new Map();
     for (let i = 0; i < fam.length; i++)
@@ -1292,13 +1446,20 @@ function gAddConcept(){
           if (!byR.has(r)) byR.set(r, []);
           byR.get(r).push(t);
         }
-    return { col: col, key: key, fam: fam, byR: byR };
+    return { col: col, key: key, fam: fam, byR: byR, kw: kw };
   });
   const r = ri(0, 3);
   const live = bank.filter(b => b.byR.has(r));
   const b0 = pick(live.length ? live : bank.filter(b => b.byR.size));
   const col = b0.col, src = col + 1, key = b0.key;
-  const sets = b0.byR.get(b0.byR.has(r) ? r : [...b0.byR.keys()][0]);
+  let sets = b0.byR.get(b0.byR.has(r) ? r : [...b0.byR.keys()][0]);
+  /* WIDTH-FREE FIRST. A subset with no distractor at the key's width leaves the
+     key's width class a singleton, so "the smallest of the commonest width" has
+     nothing to point at. Two cells have no such subset - rank 0 at the hundreds
+     column and rank 2 at the thousands column - and those are the draws the
+     width-class gate still counts. */
+  const free = sets.filter(t => t.every(p => String(p[0]).length !== b0.kw));
+  if (free.length) sets = free;
   /* among the sets at that rank, the ones holding the MOST place values: the
      fewer non-ladder options on the row, the less "pick the round one" is worth */
   const pv = t => t.filter(p => /^10*$/.test(String(p[0]))).length;
@@ -1318,11 +1479,25 @@ function gAddConcept(){
 
   const kid = pick(KIDS), who = kid[0], pron = kid[1].toLowerCase();
   const why = slipWhy(cands, b0.fam);
-  return mcNum(who + ' works out ' + a + ' + ' + b + ' in columns. The ' + PLACES[src] +
-    ' column makes ' + s + ', so ' + pron + ' writes ' + keep + ' in the ' + PLACES[src] +
-    ' column and a small 1 above the ' + PLACES[col] +
-    ' column. <b>How much is that small 1 worth?</b>', '', key, cands, '',
-    s + ' ' + PLACES[src] + ' is ' + plPlace(1, col) + ' and ' + plPlace(keep, src) + ', so the ' +
+  /* W2, seventh pass: on three draws in five the stem does not name the column
+     the 1 is written above, so the child has to FIND the column that makes s
+     before there is a place name to read. Exactly one column can: every column
+     to the right of src is built to total under 10 and every column to its left
+     under 9, while s is 12-18. */
+  const bySum = ri(0, 4) >= 2;
+  const stem = bySum
+    ? who + ' works out ' + a + ' + ' + b + ' in columns. One column makes ' + s + ', so ' + pron +
+      ' writes ' + keep + ' in that column and a small 1 above the column on its left. ' +
+      '<b>How much is that small 1 worth?</b>'
+    : who + ' works out ' + a + ' + ' + b + ' in columns. The ' + PLACES[src] + ' column makes ' + s +
+      ', so ' + pron + ' writes ' + keep + ' in the ' + PLACES[src] + ' column and a small 1 above the ' +
+      PLACES[col] + ' column. <b>How much is that small 1 worth?</b>';
+  const found = bySum
+    ? 'The column that makes ' + s + ' is the ' + PLACES[src] + ' column: ' + A[src] + ' + ' + B[src] +
+      ' = ' + s + ', and no other column reaches ten. '
+    : '';
+  return mcNum(stem, '', key, cands, '',
+    found + s + ' ' + PLACES[src] + ' is ' + plPlace(1, col) + ' and ' + plPlace(keep, src) + ', so the ' +
     keep + ' stays in the ' + PLACES[src] + ' column and the small 1 is ' + plPlace(1, col) +
     ' - worth ' + key + '. A carried mark is worth the column it is written ABOVE, not the digit ' +
     'it looks like: that is what regrouping means, ten of something small becoming one of the next ' +
@@ -1431,7 +1606,64 @@ function gMentalMake(){
        three above it - see slipSet. The floor of 21 (and of 2*mv + 3) is the
        fifth pass's minGap 3: it keeps "the amount moved" at least three away from
        the key and keeps the key above 11, so the off-by-a-ten slip is always in
-       scope. */
+       scope.
+
+       W3, SEVENTH pass (2026-09-16), AND ITS OTHER HALF, WHICH NOBODY HAD
+       MEASURED. Residual 15 declares "the smallest option ABOVE the biggest
+       number in the stem" on three banks (37.4 / 41.5 / 41.2%). Its mirror -
+       "the largest option BELOW the SMALLEST number in the stem" - was worth
+       55.0% here and answered the item outright on 49.0%, higher than every row
+       the residual names, and it was declared nowhere.
+
+       The two directions on this bank are COMPLEMENTARY, and that is the finding.
+       The key is `b - mv`, so it sits just under `b`, and `b` is printed in the
+       stem. Nothing can be authored into that gap by luck: it is `mv` wide, `mv`
+       is at most 9, and minGap forbids any slip within 3 of the key. So the key
+       is the largest option below `b` on EVERY draw, and the only question is
+       whether `b` is the smallest number the stem prints or the largest:
+
+         b < round  ->  the key is under every stem number: "largest option below
+                        the SMALLEST" fires (and its twin cannot);
+         b > round  ->  b is the biggest stem number: "largest option below the
+                        BIGGEST" fires (and the first cannot).
+
+       One of the two therefore fires on essentially every draw, and the sum of
+       the pair is the structural floor of an item whose answer is one adjustment
+       away from a printed number - the same shape as gBetween's declared 50%
+       (residual 14), reached from the other side. Biasing the draw only moves the
+       weight from one of the pair to the other: taking b past the round-up on
+       four draws in five sent the first to 22% and the second to 86%, which is
+       worse than the 49 / 51 the balanced draw gives. The draw is therefore left
+       balanced, and what is added is the only thing that actually helps - three
+       named slips that can land strictly BETWEEN the key and `b`, so that on the
+       draws where one of them ships neither direction resolves to the key:
+
+         b - (a % 10)   moved the ones digit of `a` across instead of the amount
+                        `a` still needs to reach the next ten - the commonest
+                        confusion about WHICH gap to measure. Distance from the
+                        key is |2*mv - 10|, so slipSet can use it when mv >= 7.
+         b - (10 - b%10) topped up the WRONG number: moved what `b` needs to
+                        reach its own next ten. Distance mv - (10 - b%10).
+
+         b - 2*mv + 10  compensated twice AND wrote the answer a ten out - two
+                        slips the family already names, made together. Distance
+                        10 - mv, so it is usable when mv is 6 or 7.
+
+       All three are culled automatically when they fall inside minGap, which is
+       what keeps them from becoming a proofreading trap, and NONE of them is
+       forced, which is what keeps "the SECOND largest option below the biggest
+       stem number" from inheriting the item the way a guaranteed guard slip
+       would. Two things pay for them. `a % 10` is capped at 6 (so mv >= 4): the
+       window between the key and `b` is mv wide and minGap is 3, so on an mv <= 3
+       draw nothing can be authored into it at all and both directions fire by
+       arithmetic. And `b + 2*mv` leaves the family - the weakest of its members,
+       "compensated the wrong way, twice" - so three in-gap slips compete with
+       three above-side slips rather than four, and actually ship.
+
+       Measured, 20,000 draws x two seeds: the low direction 49.37% -> 36.05 /
+       35.67%, and the high direction - which nobody had measured, the lane or the
+       refutation - 66.69% -> 48.10 / 48.55%. Both are declared; the second is the
+       bigger number and it is the one this bank is now on the record for. */
     b = ri(Math.max(21, 2*mv + 3), 89);
     key = b - mv;
     /* "forgot to compensate" and "compensated the wrong way" both land above the
@@ -1482,10 +1714,19 @@ function gMentalMake(){
                    refills the BELOW side at mv = 8 and 9.
 
        Every branch now carries at least three usable slips below the key and two
-       above it, and the rank band is back inside 12-45% on all four ranks. */
-    cands = slipSet(key, [b, b + mv, b + 2*mv, b + 10, mv, b - 2*mv, b - 10, key - 10], { minGap: 3 });
+       above it, and the rank band is back inside 12-45% on all four ranks.
+       (SEVENTH pass: the mv = 1, 2 and 3 branches this paragraph argues about are
+       no longer drawn at all - see the W3 note above - so the floor it restores
+       is now paid for twice. The rank band is re-measured at 25.1 / 25.6 / 25.2 /
+       24.3 and 25.2 / 24.9 / 25.5 / 24.4.) */
+    cands = slipSet(key, [b, b + mv, b + 10, mv, b - 2*mv, b - 10, key - 10,
+                          b - (a % 10), b - (10 - (b % 10)), b - 2*mv + 10], { minGap: 3 });
     g++;
-  } while (g < 200 && !(a % 10 !== 0 && key >= 2 && (round - a) !== key &&
+  /* `b !== round` closes residual 12's commutativity draw (1.1% of v7 draws): with
+     b equal to the round-up the stem reads "43 + 50 = 50 + ?" and the key is `a`
+     itself, so the item is answered by symmetry with no mental arithmetic at all.
+     It was declared rather than fixed for six passes; it is one condition. */
+  } while (g < 200 && !(a % 10 !== 0 && a % 10 <= 6 && key >= 2 && (round - a) !== key && b !== round &&
            cands && optsOk(key, cands) && sameWidth(key, cands)));
   const moved = round - a;
   return mcNum(who + ' works out ' + a + ' + ' + b + ' in ' + (pron === 'He' ? 'his' : 'her') +

@@ -149,6 +149,80 @@ function twinSideOk(key, sel, wantBigger) {
   if (twins.length !== 1) return true;
   return (key.dp < twins[0].dp) === wantBigger;
 }
+/* ===== THE WHOLE / FRACTION SEAT (refutation v8 @ f0cbe38, KILL 1) ============
+   The eighth pass killed the five odd-one-out routes on gDecQuotient and the bank
+   got WORSE, by twenty points, because the route MOVED rather than died. Removing
+   ÷ 10 left `quotCore`'s must-shipped remainder slip carrying floor(a / b) - which
+   IS the key's own whole-number part - on 100.00% of draws, so *"take the biggest
+   option that shares its whole number with another option, else the second
+   biggest"* read 79.08% at 94.47%, E 79.94% against a 25% floor.
+
+   The defect is not the slip and it is not the route: it is that the key's
+   MEMBERSHIP of the whole-part family was CONSTANT across draws. A child cannot
+   use a feature the key wears half the time, so this is the twin coin's mirror on
+   the whole-number axis, drawn per item exactly the same way:
+
+     heads  the key shares its whole ones with another option - and, when exactly
+            one option shares them, it is the bigger of the pair on half of those
+            draws and the smaller on the other half, so "of the two starting with
+            the same whole number, take the bigger" is a coin too.
+     tails  the key shares its whole ones with NOBODY, and a DISTRACTOR PAIR
+            carries a shared whole part instead. The pair is required: without it
+            "the option that shares a whole part with another" names nobody on a
+            tails row, and the child reads the key off the complement - which is
+            the same free elimination wearing the other badge.
+
+   THE SAME COIN RUNS ON THE FRACTIONAL COLUMNS, because the two halves of the
+   whole / fraction cross are one reading to a child and the eighth pass's own
+   worst surviving pair on this bank was the MIRROR of the clause `oddOneOutOnKey`
+   already carried: *"shares its digits after the point with another option AND
+   shares its whole ones with nobody"*, E 47.84%. Refusing that cell per draw as
+   well costs the rank picker its freedom - all four cells bound took "2nd largest"
+   to 43.05% against a 45% ceiling - so it is SEATED instead: the key carries each
+   family membership on about half the draws, and neither sign of either axis is a
+   badge the key wears every time.
+
+   Unreachable on a draw is not fatal: the seat sits in the SAME tier as the twin
+   shape (a row that satisfies neither still ships ahead of one a v6/v7 route
+   reads), so a bank whose candidates cannot reach it loses a preference, not an
+   item. */
+function famSeatOk(keyOf, sel, key, mayShare, wantBigger) {
+  const kw = keyOf(key);
+  if (kw === null || mayShare === null) return true;
+  const mates = sel.filter(c => keyOf(c) === kw);
+  if (!mayShare) {
+    if (mates.length) return false;
+    for (let i = 0; i < sel.length; i++)
+      for (let j = i + 1; j < sel.length; j++)
+        if (keyOf(sel[i]) !== null && keyOf(sel[i]) === keyOf(sel[j])) return true;
+    return false;
+  }
+  if (!mates.length) return false;
+  if (wantBigger === null) return true;
+  /* the key's SLOT inside its own family is drawn, not left to whatever the
+     candidate bank happens to offer. Coining only the two-member case left the key
+     the biggest of its whole-part family on 81.33% of the draws that carried one,
+     because every slip wearing the key's whole ones - the remainder slip, the
+     dropped-whole slip - sits below it; "the biggest option that shares its whole
+     number" then still read the key four times in five. */
+  return (mates.every(c => dcmp(c, key) < 0)) === wantBigger;
+}
+/* and the CELL of the whole x fraction cross the key sits in. The seat above draws
+   the key's whole-part membership; `oddOneOutOnKey` refuses the cell where the key
+   is the unique option sharing BOTH. Neither reaches the eighth pass's own worst
+   surviving pair on gDecQuotient, which is the cell next door - "shares its digits
+   after the point with another option AND shares its whole ones with nobody",
+   42.73% at 85.80%. A row on which at least one WRONG answer sits in the key's own
+   cell cannot be read by any of the four, whichever signs they wear. */
+function crossSeatOk(key, sel) {
+  const all = [key].concat(sel);
+  const ws = all.map(dwhole), fs = all.map(dfracStr);
+  const sW = i => ws.filter((w, j) => j !== i && w === ws[i]).length > 0;
+  const sF = i => fs[i] !== null && fs.filter((f, j) => j !== i && f === fs[i]).length > 0;
+  const kw = sW(0), kf = sF(0);
+  for (let i = 1; i < all.length; i++) if (sW(i) === kw && sF(i) === kf) return true;
+  return false;
+}
 /* ===== THE ODD ONE OUT, ON THREE MORE AXES (refutation v7 @ ed2c0dc, THE KILL) ==
    The v6 clause above killed the point-placement twin by refusing any row on which
    EXACTLY ONE option both had a twin and had a depth-mate. On `gDecQuotient` the
@@ -222,12 +296,91 @@ function oddOneOutOnKey(key, sel, st) {
   if (onlyOne(all, (c, i) => !shareFam(i)) === 0) return true;
   const ws = all.map(dwhole), fs = all.map(dfracStr);
   const shareFrac = i => fs[i] !== null && fs.filter((f, j) => j !== i && f === fs[i]).length > 0;
-  if (onlyOne(all, (c, i) => shareFrac(i) &&
-      ws.filter((w, j) => j !== i && w === ws[i]).length > 0) === 0) return true;
+  const shareWhole = i => ws.filter((w, j) => j !== i && w === ws[i]).length > 0;
+  /* THE KILL (refutation v8 @ f0cbe38). This clause used to refuse ONE of the four
+     cells of the whole x fraction cross - the key as the unique option sharing
+     BOTH - and the eighth pass's own worst surviving pair on this bank was its
+     MIRROR: *"the option that shares its digits after the point with another and
+     shares its whole ones with nobody"*, E 47.84%. "Shares with another" and
+     "shares with nobody" are the same reading to the child; a route that names the
+     key is a route whichever sign it wears.
+     It is answered by SEATING and not by refusing, because refusing the other
+     cells too leaves so few clean selections that the magnitude-rank draw cannot
+     be honoured - "2nd largest" went to 43.05% against a 45% ceiling the first
+     time all four cells bound, which trades this pass's kill for last pass's. The
+     fix is crossSeatOk below: the key's membership of the whole-part family AND of
+     the fractional-string family are each drawn per item, so neither sign of
+     either axis is a feature the key wears every time. */
+  if (onlyOne(all, (c, i) => shareFrac(i) && shareWhole(i)) === 0) return true;
   const printed = all.map(dtext);
   if (onlyOne(all, (c, i) => !st.nums.has(printed[i]) && shareFam(i)) === 0) return true;
   const sortD = i => printed[i].replace('.', '').split('').sort().join('');
   if (st.sorted.size && onlyOne(all, (c, i) => shareFrac(i) && st.sorted.has(sortD(i))) === 0) return true;
+  return subsetSplitOnKey(all, printed, fams, st);
+}
+/* ===== THE SUB-ROW (refutation v8 @ f0cbe38, KILL 2) =========================
+   Every clause above asks whether a feature picks out ONE option from FOUR. The
+   eighth pass's second kill did not live there. `gFracToDec`'s key is the question's
+   own numerator with the point put in, so its digit string IS a stem number's on
+   100.00% of draws and it is BELOW ONE on 100.00% of draws - both structural. The
+   v6 cure then guarantees a SECOND option carrying that digit family, which is what
+   makes `stemFamRoute`'s onlyOne() pass, and the child reads:
+
+     "Two of these are the question's own digits with the point in different places.
+      Take the one that starts with a nought."
+
+   63.59% of draws, 100.00% right, on a pool-1 bank served 1.95 items a session, and
+   declared at E 35.9% for two passes.
+
+   The missing axis is the SUBSET. A child who can pick 2 or 3 options out of 4 by a
+   shared feature is looking at a smaller row, and every cue that names nobody on the
+   full four can name the key on the sub-row. So each k-of-4 subset a shared feature
+   carves out - the stem's digit family, and each digit family with more than one
+   member - is scored against the cues that read off the page with no arithmetic:
+   which one starts with a nought, which one is a whole number, which one is written
+   to more or to fewer places than the rest of the subset. MAGNITUDE inside a subset
+   is deliberately NOT a cue here: on a two-member subset the key is the bigger or
+   the smaller by definition, so refusing it per draw refuses every such row - that
+   axis is seated by the coins in famSeatOk instead. */
+function subsetSplitOnKey(all, printed, fams, st) {
+  const groups = [];
+  /* the sub-row a child picks out FROM THE STEM - "the ones made of the question's
+     own digits" - is scored at two members as well as at three, because it is the
+     one the stem itself hands over. A bare digit-family pair is the v6 twin and is
+     seated by a coin in mcDec instead. */
+  if (st.bare.size) groups.push({ g: all.map((c, i) => st.bare.has(fams[i])), min: 2 });
+  const seen = {};
+  for (let i = 0; i < all.length; i++) {
+    if (seen[fams[i]]) continue;
+    seen[fams[i]] = 1;
+    const g = all.map((c, j) => fams[j] === fams[i]);
+    if (g.filter(Boolean).length > 1) groups.push({ g: g, min: 3 });
+  }
+  const cues = [
+    i => printed[i].charAt(0) === '0',            /* it starts with a nought */
+    i => all[i].dp === 0,                         /* it is a whole number */
+    i => all[i].dp                                /* ... written to its own depth */
+  ];
+  for (const grp of groups) {
+    if (!grp.g[0]) continue;                      /* only sub-rows the key is on */
+    const idx = [];
+    for (let i = 0; i < all.length; i++) if (grp.g[i]) idx.push(i);
+    if (idx.length === 1) return true;            /* the key alone IS the sub-row */
+    /* a bare digit-family sub-row needs THREE members for any of these to be a cue
+       at all: on a two-member one the key is the deeper or the shallower, the
+       nought-leading or the not, BY DEFINITION, and refusing that pair costs
+       gDecBar and gDecShareMass their magnitude-rank ceiling (47.5% and 46.3% at
+       one rank against a 45% ceiling) - neither bank has a named slip above the key
+       that is not a whole number, so their clean rows all live at one rank. */
+    if (idx.length < grp.min || idx.length > 3) continue;
+    for (let c = 0; c < cues.length; c++) {
+      const vals = idx.map(cues[c]);
+      if (c < 2) { if (vals.filter(v => v).length === 1 && vals[idx.indexOf(0)]) return true; continue; }
+      if (idx.length < 3) continue;               /* the depth cue needs three */
+      for (const want of [Math.max.apply(null, vals), Math.min.apply(null, vals)])
+        if (vals.filter(v => v === want).length === 1 && vals[idx.indexOf(0)] === want) return true;
+    }
+  }
   return false;
 }
 /* W2's route, which is a tier of its own (refutation v7 @ ed2c0dc). "The option
@@ -330,6 +483,7 @@ function assemble(keyStr, wrongStrs, stem, extra, explain) {
    finisher, the money finisher (integer cents) and the count finisher. That is
    the shape the integrator lifts into the shared harness. */
 const must = c => (c ? { n: c.n, dp: c.dp, must: true } : c);
+const RANK_TOP = 9;                     /* a selection scoring this ships at once */
 /* the same discipline for a finishNum item, whose answers are plain counts */
 function rankInts(key, cands) {
   const pool = [];
@@ -341,14 +495,26 @@ function rankInts(key, cands) {
   const sel = rankPick(pool, c => c.n - key, () => null, null) || pool.slice(0, 3);
   return shuffle(sel).map(v => v.n);
 }
-/* `rank` is the KILL's clause. It scores a candidate selection on FIVE tiers, and
-   the picker takes the best the bank's candidates can reach on the draw:
+/* `rank` is the KILL's clause. It scores a candidate selection on a TEN-POINT
+   ladder, and the picker takes the best the bank's candidates can reach:
 
-     4  take it - no row-only route names the key and the row is the preferred shape
-     3  acceptable - every route is blind, but the row is not the preferred shape
-     2  only the one-digit route names the key (W2's × 5 / ÷ 5 shape)
-     1  a v7 odd-one-out route names the key; the v6 twin route does not
-     0  the v6 twin route names the key: never ship it if anything else is available
+     9    take it at once - no row-only route names the key and every seat the draw
+          asked for is filled. The whole-part seat is worth 3 (it is the eighth
+          pass's kill); the whole x fraction cell, the v6 twin shape and the
+          fractional seat are worth 1 apiece.
+     4-8  acceptable, one or more seats short of the preferred shape
+     3    acceptable - every route is blind, but no seat the draw asked for is filled
+     2    only the one-digit route names the key (W2's × 5 / ÷ 5 shape)
+     1    a v7 odd-one-out route names the key; the v6 twin route does not
+     0    the v6 twin route names the key: never ship it if anything else is there
+
+   THE KILL (refutation v8 @ f0cbe38) widened the top of the ladder from one tier to
+   six. At v8 "preferred" was a single all-or-nothing tier, so the moment a third
+   seat was added to it the whole-part seat stopped being reached on rows that could
+   have carried it - the key was the biggest of its own whole-part family on 84.31%
+   of the draws that carried one, against 74.66% with the whole seat scored alone.
+   A partial seat now outranks no seat, so adding a discipline can no longer cost
+   one that is already paid for.
 
    Ranked tiers rather than a pass/fail because each pass's KILL must never be closed
    by REOPENING an earlier one: a bank that can reach no fully clean row still ships
@@ -367,7 +533,7 @@ function rankPick(pool, cmp, dpOf, keyDp, rank) {
   const hi = Math.min(need, above.length), lo = Math.max(0, need - below.length);
   if (lo > hi) return null;
   let fallback = null, d1only = null;
-  const tier = [null, null, null, null];    /* by score, 1 to 3; 4 returns at once */
+  const tier = new Array(RANK_TOP).fill(null);   /* by score, 1 to RANK_TOP-1 */
   /* WOUND 1's discipline comes FIRST and the KILL clauses come second, because the
      rank ceiling is the harder gate. The number of options above the key is drawn
      ONCE and held for the first half of the search, so the clean rows the clauses
@@ -377,8 +543,8 @@ function rankPick(pool, cmp, dpOf, keyDp, rank) {
      bound - 52.3% against a 45% ceiling - because its clean selections lived at one
      end. Only if no clean row exists at the drawn rank is `a` let go. */
   const want = ri(lo, hi);
-  for (let t = 0; t < 160; t++) {
-    const a = t < 80 ? want : ri(lo, hi);
+  for (let t = 0; t < 200; t++) {
+    const a = t < 170 ? want : ri(lo, hi);
     const sel = musts.concat(shuffle(above).slice(0, a), shuffle(below).slice(0, need - a));
     if (sel.length !== 3) continue;
     if (!fallback) fallback = sel;
@@ -387,13 +553,51 @@ function rankPick(pool, cmp, dpOf, keyDp, rank) {
     if (!(keyDp == null || sel.some(c => dpOf(c) === keyDp))) continue;
     if (!d1only) d1only = sel;
     if (!rank) return sel;
-    const r = rank(sel);
-    if (r >= 4) return sel;
+    /* a row found AFTER the drawn rank is let go costs a point, so it has to beat
+       the best row at the rank the draw asked for before it takes the item's
+       magnitude rank away from the discipline above. Without the penalty
+       gDecQuotient's clean selections pulled "2nd largest" to 39.99% of 20,000
+       draws against a 45% ceiling. */
+    const r = rank(sel) - (t < 170 ? 0 : 1);
+    if (r >= RANK_TOP) return sel;
     if (r > 0 && !tier[r]) tier[r] = sel;
   }
-  return tier[3] || tier[2] || tier[1] || d1only || fallback;
+  for (let r = RANK_TOP - 1; r >= 1; r--) if (tier[r]) return tier[r];
+  return d1only || fallback;
 }
 
+/* the row scorer, lifted out of mcDec so the MONEY finisher runs the identical
+   clauses (refutation v8 @ f0cbe38, W5 / residual 12). `mcMoney` called rankPick
+   with four arguments and no rank clause at all, so none of the tiers and none of
+   the seats ever ran on a money row - the same defect class the seventh and eighth
+   passes killed on the decimal finisher, on the finisher the mandate did not reach.
+   Cents are integers, so a money option IS a two-place decimal: D(cents, 2) makes
+   the whole-part family the DOLLARS and the fractional-string family the CENTS, and
+   every clause below reads a money row exactly as it reads a decimal one. */
+function keyRouteRank(key, stemMarks, keyMayTwin, keyTwinBigger, keyMayShareWhole, keyWholeBigger, keyMayShareFrac, keyFracBigger) {
+  return sel => {
+    const on = twinRouteOn(key, sel);
+    if (on === 0) return 0;                          /* the v6 KILL: never, if avoidable */
+    if (oddOneOutOnKey(key, sel, stemMarks)) return 1; /* the v7 KILL: only if nothing better */
+    if (lastDigitOnKey(key, sel, stemMarks)) return 2; /* W2's × 5 / ÷ 5 route */
+    const keyed = sel.some(c => c.n === key.n);
+    /* RESIDUAL 8 (refutation v7 @ ed2c0dc W4), and the one thing that pass tried and
+       PUT BACK. Forcing a DISTRACTOR pair onto the row whenever the coin says the key
+       ships no twin looks like the fix for "the pair contains the key on 100.00% of
+       the rows that carry one" - it took gFracToDec's 100.00% down and every other
+       bank to 5-23%. It is worse, and the measurement says so: it also takes the
+       PAIR-ROW RATE from 16-44% to 59-69%, and a rare unfair coin beats a common one.
+       "Eliminate the two that are the same digits" then read E 40.4% on gDecQuotient
+       against 32.1% with this line out. The rows stay as the v6 coin leaves them and
+       the numbers are declared instead.
+       `on > 0` is the v6 route landing on a WRONG answer, which is a row a child
+       cannot use - the twin seat is already paid for on those draws. */
+    const twinOk = on > 0 ? true : (keyMayTwin ? twinSideOk(key, sel, keyTwinBigger) : !keyed);
+    const wholeOk = famSeatOk(dwhole, sel, key, keyMayShareWhole, keyWholeBigger);
+    const fracOk = famSeatOk(dfracStr, sel, key, keyMayShareFrac, keyFracBigger);
+    return 3 + (wholeOk ? 3 : 0) + (crossSeatOk(key, sel) ? 1 : 0) + (twinOk ? 1 : 0) + (fracOk ? 1 : 0);
+  };
+}
 function mcDec(stem, extra, key, cands, unit, explain) {
   const u = unit ? (' ' + unit) : '';
   const pool = [];
@@ -418,27 +622,23 @@ function mcDec(stem, extra, key, cands, unit, explain) {
      the row belongs to two wrong answers, so "the answer is one of the two that are
      the same digits" is not a free elimination either. */
   const keyMayTwin = Math.random() < 0.5, keyTwinBigger = Math.random() < 0.5;
+  /* THE KILL (refutation v8 @ f0cbe38): the same coin on the two halves of the
+     whole / fraction cross, each with its own SLOT draw. The slot is what the
+     coupling gate's new cascade arm reads - "keep the options that share their
+     digits after the point, then take the 2nd biggest" settled 60.80% of
+     gDecShareMass at 93.4% with the fractional slot left to the candidate bank -
+     so both families draw where the key sits inside them, not just whether it is
+     in one. The side is drawn at 0.35 rather than 0.5 because the slips that
+     carry the key's own whole ones almost all sit BELOW it (the remainder slip,
+     the dropped-whole slip), so asking for the harder side more often is what
+     brings the realised split back to even. */
+  const keyMayShareWhole = Math.random() < 0.5, keyWholeBigger = Math.random() < 0.35;
+  const keyMayShareFrac = Math.random() < 0.5, keyFracBigger = Math.random() < 0.5;
   /* the v7 KILL: the five odd-one-out routes, three of which read the stem */
   const stemMarks = stemMarksOf(stem, extra);
-  let kept = rankPick(pool, c => dcmp(c, key), c => c.dp, key.dp, sel => {
-    const on = twinRouteOn(key, sel);
-    if (on === 0) return 0;                          /* the v6 KILL: never, if avoidable */
-    if (oddOneOutOnKey(key, sel, stemMarks)) return 1; /* the v7 KILL: only if nothing better */
-    if (lastDigitOnKey(key, sel, stemMarks)) return 2; /* W2's × 5 / ÷ 5 route */
-    if (on > 0) return 3;                            /* it picks a wrong answer: usable */
-    const keyed = sel.some(c => c.n === key.n);
-    /* RESIDUAL 8 (refutation v7 @ ed2c0dc W4), and the one thing this pass tried and
-       PUT BACK. Forcing a DISTRACTOR pair onto the row whenever the coin says the key
-       ships no twin looks like the fix for "the pair contains the key on 100.00% of
-       the rows that carry one" - it took gFracToDec's 100.00% down and every other
-       bank to 5-23%. It is worse, and the measurement says so: it also takes the
-       PAIR-ROW RATE from 16-44% to 59-69%, and a rare unfair coin beats a common one.
-       "Eliminate the two that are the same digits" then read E 40.4% on gDecQuotient
-       against 32.1% with this line out. The rows stay as the v6 coin leaves them and
-       the numbers are declared instead. */
-    if (!keyMayTwin) return keyed ? 3 : 4;
-    return twinSideOk(key, sel, keyTwinBigger) ? 4 : 3;
-  }) || pool.slice(0, 3);
+  let kept = rankPick(pool, c => dcmp(c, key), c => c.dp, key.dp,
+    keyRouteRank(key, stemMarks, keyMayTwin, keyTwinBigger, keyMayShareWhole, keyWholeBigger, keyMayShareFrac, keyFracBigger))
+    || pool.slice(0, 3);
   kept = shuffle(kept);
   const authored = kept.length === 3;
   let t = 1;
@@ -459,15 +659,35 @@ function mcDec(stem, extra, key, cands, unit, explain) {
   return q;
 }
 function mcMoney(stem, extra, keyCents, candCents, explain) {
-  /* cents are already integers, so the rank picker runs on { n } alone and the
-     decimal-place rule does not apply (every money option prints two places). */
+  /* THE KILL (refutation v8 @ f0cbe38, W5 / residual 12). This line used to read
+     `rankPick(pool, cmp, () => null, null)` - four arguments, no rank clause - so
+     the five tiers, the v6 twin coin and the v7 odd-one-out clauses ran on every
+     decimal row in the file and on NO money row. Measured on the v8 file:
+     gDecMoneyMore E 67.95%, gDecStartAmount E 61.29%, gDecPetrol E 60.38% at 1.44
+     items a session on the 80% table, against a declaration of 40.4% and 29.0%.
+     Cents ARE a two-place decimal, so the money pool is carried as D(cents, 2) and
+     scored by the identical clause: the dollars are the whole-part family and the
+     cents are the fractional-string family. */
+  const key = D(keyCents, 2);
   const pool = [];
   for (const c of candCents) {
     const v = (c && typeof c === 'object') ? c : { n: c };
     if (!Number.isInteger(v.n) || v.n <= 0 || v.n === keyCents || pool.some(k => k.n === v.n)) continue;
-    pool.push(v);
+    pool.push(v.must ? must(D(v.n, 2)) : D(v.n, 2));
   }
-  let keptV = rankPick(pool, c => c.n - keyCents, () => null, null) || pool.slice(0, 3);
+  const stemMarks = stemMarksOf(stem, extra);
+  const keptV = rankPick(pool, c => c.n - keyCents, c => c.dp, 2,
+    /* the DOLLARS seat is switched OFF on a money row and the CENTS seat is not.
+       Measured both ways on all four mcMoney banks, 20,000 draws x 2 seeds: with
+       the dollars seated, gDecMoneyMore went 48.47% -> 41.68% and gDecStartAmount
+       52.34% -> 44.29%, but gDecMulConcept went the WRONG way, 37.90% -> 48.01%,
+       because on a price list the dollars are a coarse thing to share and the
+       seat's tails branch - the key sharing its dollars with nobody while a
+       distractor pair shares theirs - is itself the readable half of "the option
+       whose dollars stand alone, and not the smallest of those". Cents are fine
+       grained and carry no such shadow. */
+    keyRouteRank(key, stemMarks, Math.random() < 0.5, Math.random() < 0.5,
+      null, null, Math.random() < 0.5, Math.random() < 0.5)) || pool.slice(0, 3);
   const kept = shuffle(keptV).map(v => v.n);
   const authored = kept.length === 3;
   let t = 5;
@@ -634,16 +854,28 @@ function gDecBuild() {
      on every draw), so the explanation is written off the row instead: whichever
      named slip actually shipped is the one it calls out, and each carries its own
      sentence so the diagnosis still matches the number. */
+  /* THE KILL (refutation v8 @ f0cbe38, W4): only two named slips sat below the key
+     with any reliability, so the key was the largest of four on 11.8% of 2,000
+     draws against a 12% floor while "2nd largest" carried 44.3%. Leaving the LAST
+     part out is the mirror of leaving the middle one out, and it lands below the
+     key on every draw by construction. */
+  const noLast = dnat(D(w * 1000 + d1 * P10[3 - p1], 3));
+  /* and one more ABOVE it, so the key is not pinned off the bottom either: the
+     first part written one place too shallow, which at the tenths draw is the child
+     who adds the tenths into the whole ones. */
+  const shallowPart = p1 === 1 ? D((w + d1) * 1000 + d2, 3) : D(w * 1000 + d1 * 100 + d2, 3);
   const named = [
     [packed, 'Writing the digits in a row with no zero gives '],
     [packedSwapped, 'Writing the digits in a row with no zero and the wrong way round gives '],
     [swapped, 'Putting each of the two digits in the other one\'s place gives '],
     [noMiddle, 'Leaving the middle part out altogether gives '],
+    [noLast, 'Leaving the last part out altogether gives '],
+    [shallowPart, 'Writing the ' + PLACE_WORD[p1] + ' one place too far to the left gives '],
     [noWhole, 'Forgetting the whole number gives '],
     [noPoint, 'Ignoring the decimal point gives ']
   ];
   const q = mcDec('Which number is made up of <b>' + parts + '</b>?', '',
-    key, [packed, swapped, packedSwapped, noWhole, noMiddle, noPoint], '', '');
+    key, [packed, swapped, packedSwapped, noWhole, noMiddle, noLast, shallowPart, noPoint], '', '');
   const on = slipFor(q, named, dtext) || named[0];
   q.explain = parts + ' is written ' + dtext(key) + '. There are no ' + PLACE_WORD[p1 === 1 ? 2 : 1] +
     ', so a zero holds that place open. ' + on[1] + dtext(on[0]) + ', which is a different number.';
@@ -725,7 +957,15 @@ function gDecHowMany() {
                 digitsOnly,     /* forgot the whole ones */
                 V * 10,         /* counted one place too deep */
                 V * 100,        /* counted two places too deep */
-                pointOut];
+                pointOut,
+                /* THE KILL (refutation v8 @ f0cbe38, W4): wherever the asked place
+                   is one deeper than the number's own (which is most draws) the
+                   "one place too shallow" slip IS the point rubbed out, so only TWO
+                   distinct candidates sat below the key and it could never be the
+                   largest of four - 9.6% of 2,000 draws against a 12% floor. The
+                   digits after the point counted into the asked place, with the
+                   whole ones still forgotten, is the third. */
+                digitsOnly * P10[j - dp]];
   if (String(digitsAsWholes).length !== String(V).length) bank.push(digitsAsWholes);
   const wrongs = rankInts(V, bank);
   const q = finishNum('How many <b>' + PLACE_WORD[j] + '</b> are there in <b>' + dtext(val) + '</b>?', '',
@@ -1125,7 +1365,15 @@ function gDecRound() {
       dp > to + 1 ? D(base + (d2 >= 5 ? 1 : 0), to) : null,  /* looked at the LAST digit */
       dround(val, to === 0 ? 1 : to - 1),                    /* rounded to the place next door */
       dround(val, Math.min(3, to + 1)),                      /* rounded one place too many */
-      val                                                    /* did not round at all */
+      val,                                                   /* did not round at all */
+      /* THE KILL (refutation v8 @ f0cbe38, W4). Every slip above sits within one
+         unit of the key, so the key was the largest or the smallest of four on
+         75.7% of draws and the two middle ranks read 11.6% and 12.7% against a 12%
+         floor. Rounding but writing the 1 into the WRONG COLUMN - 3.268 to 2 places
+         read as 4.27 - is a named place-value slip that lands a whole one away,
+         which is the candidate the picker needs to seat the key in the middle. */
+      to >= 1 ? D(key.n + P10[to], to) : null,
+      to >= 1 && key.n > P10[to] ? D(key.n - P10[to], to) : null
     ];
     cands = [];
     for (const c of bank) {
@@ -1464,35 +1712,76 @@ function gDecRoundSum() {
    PRINCIPLE 3 - DECIMALS AND FRACTIONS ARE ONE NUMBER WRITTEN TWO WAYS
    ========================================================================== */
 
-/* FORMAT 3a - direct: a fraction over 10, 100 or 1000 as a decimal (pool 1) */
+/* FORMAT 3a - direct: a fraction over 10, 100 or 1000 as a decimal (pool 1)
+
+   THE KILL (refutation v8 @ f0cbe38, KILL 2). *"Two of these are the question's own
+   digits with the point in different places. Take the one that starts with a
+   nought."* 63.59% of draws, 100.00% right, on a pool-1 bank a struggling child
+   meets 1.95 times a session - and declared at E 35.9% since the sixth pass,
+   which is 36 points low. It is not a route the row shape can close, because BOTH
+   halves of it were arithmetic facts about this item:
+
+     the key's digit string IS the numerator's           on 100.00% of draws
+     the key is BELOW ONE                                on 100.00% of draws
+
+   and the v6 cure guarantees a SECOND option carrying that digit family, which is
+   what let `stemFamRoute`'s onlyOne() pass the row. The rule is never WRONG; it is
+   right or silent, so no ceiling on accuracy can catch it. The only way to cut it is
+   to make the first fact FALSE on a fair share of draws, and the arithmetic offers
+   exactly one honest way to do that: a numerator that ends in a zero.
+
+     620 / 1000 = 0.62   - the key's digits are 62, and 620 is not on the row at all
+
+   That is MOE 3.1's own content (a decimal written in its natural form, the way a
+   child must write $0.60 as 0.6 in a measures answer) and it is drawn as one of
+   three shapes:
+
+     tail    the numerator ends in a nought, so the key's digit string is NOT the
+             stem's and "the option made of the question's digits" names nobody -
+             or a wrong answer.
+     short   at thousandths, a TWO-digit numerator, so the key (0.0xy) is not the
+             only placement of those digits that is below one: 0.xy is on the row
+             too, and "the one that starts with a nought" names two.
+     full    the v7 shape, which the rule still settles. One draw in nine.
+
+   The residual is declared rather than hidden: at three places with a three-digit
+   numerator ending in a non-zero digit, the key IS the only sub-one way to write
+   those digits, and the v7 stem-family clause requires a second stem-digit option
+   on the row. Those two facts cannot both be satisfied, so that shape is drawn
+   one time in nine instead of one time in three. */
 function gFracToDec() {
   let den = 10, dp = 1, n = 3, key = D(3, 1), guard = 0;
   let shallow = D(30, 1), complement = D(7, 1), tacked = D(13, 1);
   do {
     guard++;
     dp = ri(1, 3); den = P10[dp];
-    /* WOUND 1: at three places the numerator now always has three digits, so the
-       "dropped a digit" slips below the key exist on every draw. 7/1000 was a fair
-       item but it left the key with nothing named beneath it. */
-    n = ri(dp === 3 ? 101 : 1, den - 1);
-    key = D(n, dp);
+    const shape = dp === 1 ? 2 : ri(0, 2);
+    if (shape === 0) n = 10 * ri(dp === 3 ? 11 : 1, den / 10 - 1);   /* tail  */
+    else if (shape === 1 && dp === 3) n = ri(11, 99);                /* short */
+    /* WOUND 1: at three places a three-digit numerator is what puts the "dropped a
+       digit" slips BELOW the key. 7/1000 was a fair item but it left the key with
+       nothing named beneath it. */
+    else n = ri(dp === 3 ? 101 : 1, den - 1);                        /* full  */
+    key = dnat(D(n, dp));
     shallow = dnat(D(n * 10, dp));                 /* read hundredths as tenths */
-    complement = D(den - n, dp);                   /* took it away from the whole */
-    tacked = D(den + n, dp);                       /* wrote the denominator and the numerator side by side */
-    /* n must not end in 0, or the key prints a trailing zero ("0.540" for 540/1000)
-       and so does every distractor built from it. */
-  } while (guard < 300 && !(n % 10 !== 0 && dallDistinct([key, shallow, complement, tacked])));
+    complement = dnat(D(den - n, dp));             /* took it away from the whole */
+    tacked = dnat(D(den + n, dp));                 /* wrote the denominator and the numerator side by side */
+    /* the key is never a whole number and never zero, and the four named values
+       must differ. dnat() is what takes the trailing zeros off, so a numerator
+       ending in a nought is now a SHAPE rather than a rejected draw. */
+  } while (guard < 300 && !(n > 0 && key.dp > 0 &&
+           dallDistinct([key, shallow, complement, tacked])));
   /* WOUND 1: shallow and tacked are above the key on every draw and complement is
      usually above it too, so the key was the smallest or the third biggest and
      never anything else. The point-one-column-out slips and the dropped digits are
      the named candidates underneath it. */
   const deeper1 = pRight(key);
-  const deeper2 = dp + 2 <= 3 ? D(n, dp + 2) : null;
+  const deeper2 = key.dp + 2 <= 3 ? D(key.n, key.dp + 2) : null;
   /* W5 (refutation v7 @ ed2c0dc): "dropped the last digit" is the one candidate here
      that can end in a zero - 305 thousandths drops to 30, and "0.030" is an option
-     the key is never on. It is dropped on those draws rather than printed. */
-  const dropLast = (n >= 10 && Math.floor(n / 10) % 10 !== 0) ? D(Math.floor(n / 10), dp) : null;
-  const dropFirst = dp === 3 && n % 100 !== 0 ? D(n % 100, dp) : null;
+     the key is never on. dnat() takes the zero off rather than dropping the draw. */
+  const dropLast = n >= 10 ? dnat(D(Math.floor(n / 10), dp)) : null;
+  const dropFirst = dp === 3 && n % 100 !== 0 ? dnat(D(n % 100, dp)) : null;
   /* THE KILL (refutation v6): "took it away from the whole" carries its own
      point-one-column-out pair, so the twins on the row need not be the key's. */
   /* THE KILL (refutation v7 @ ed2c0dc), the magnitude rank's side of it. D1's mirror
@@ -1502,13 +1791,22 @@ function gFracToDec() {
      digits with no point at all" and the tacked-on slip's own point-out pair are
      three more candidates ABOVE the key, which is where the bank was thin. */
   const noPoint = pLeft(key);
+  /* every OTHER place the numerator's own digits could sit, which is the sub-strand's
+     misconception and, on the shapes above, the thing that keeps "the option made of
+     the question's digits" from being a badge only the key wears. */
+  /* how MANY of them are offered is drawn as well: a stem-digit family that is the
+     same size on every draw lets "of the options made of the question's own digits,
+     take the one that is not the smallest" read a fixed slot. */
+  const places = shuffle([0, 1, 2, 3]).slice(0, ri(1, 4))
+    .map(k => dnat(D(n, k))).filter(c => c.n > 0);
   return mcDec('Write ' + fr(n, den) + ' as a decimal.', '',
     key, [shallow, complement, tacked, deeper1, deeper2, dropLast, dropFirst,
           pRight(complement), pLeft(complement), noPoint,
-          pRight(tacked), pLeft(tacked)], '',
+          pRight(tacked), pLeft(tacked)].concat(places), '',
     n + ' out of ' + den + ' means ' + qty(n, dp) + '. The ' + PLACE_WORD[dp] +
     ' place is number ' + dp + ' after the decimal point, so ' + qty(n, dp) +
-    ' is written ' + dtext(key) + '.');
+    (key.dp === dp ? ' is written ' + dtext(key) + '.'
+      : ' is the same as ' + qty(key.n, key.dp) + ', which is written ' + dtext(key) + '.'));
 }
 
 /* FORMAT 3b - the same idea as a PICTURE (pool 1). The bar is a q.figure spec;
@@ -1860,7 +2158,13 @@ function gDecStartAmount() {
      side and the key's rank moves. */
   return mcMoney(who + ' spends <b>' + money(spent) + '</b> at ' + pick(SHOPS) + ' and has <b>' + money(left) +
     '</b> left. <b>How much money did ' + who + ' have at first?</b>', '',
-    key, [subtracted, noCarry, dropped, 2 * spent, 2 * left],
+    /* THE KILL (refutation v8 @ f0cbe38, W4). Only `dropped` and the larger of the
+       two doubles ever sat above the key, so two named candidates above it was the
+       most this bank could offer and the key was NEVER the smallest of four -
+       0.00% of 40,000 draws, a free one-of-four elimination the rank gate had no
+       floor to catch. "Counted one amount twice and kept the other as well" is the
+       third and fourth, both above the key by construction. */
+    key, [subtracted, noCarry, dropped, 2 * spent, 2 * left, key + spent, key + left],
     'Work backwards: the money at the start is the money spent plus the money left over. Line the decimal points up and add: ' +
     money(spent) + ' + ' + money(left) + ' = ' + money(key) + '. Taking one amount from the other answers a different question.');
 }
@@ -1890,7 +2194,14 @@ function gDecMoneyMore() {
      guarantees a difference of at least $1.60 so the second of them stays positive. */
   return mcMoney('At NTUC ' + goods[0] + ' costs <b>' + money(hi) + '</b> and ' + goods[1] + ' costs <b>' +
     money(lo) + '</b>. <b>How much more does ' + goods[0].replace(/^an? /, 'the ') + ' cost?</b>', '',
-    key, [total, noBorrow, wholeOnly, centsOnly, oneDollarOut],
+    /* THE KILL (refutation v8 @ f0cbe38, W4): the key was the largest option on
+       0.09% of 40,000 draws, because only two named slips (centsOnly and the
+       dollar already exchanged) reliably sat below it and the rank gate had a
+       ceiling but no floor. Two more that land below by construction: the cents of
+       the dearer price dropped before subtracting, and the cheaper price rounded up
+       to the next dollar first. */
+    key, [total, noBorrow, wholeOnly, centsOnly, oneDollarOut, key + 100,
+          Math.floor(hi / 100) * 100 - lo, hi - Math.ceil(lo / 100) * 100],
     'Step 1: line the decimal points up. Step 2: subtract, exchanging a dollar for 100 cents when the cents will not go: ' +
     money(hi) + ' − ' + money(lo) + ' = ' + money(key) + '. Adding the two prices tells you what both cost together, which is a different question.');
 }
@@ -2227,8 +2538,22 @@ const quot = (a, b) => dnat(D(a * (1000 / b), 3));
 function quotCore(a, b, key) {
   const floor = Math.floor(a / b), unit = P10[key.dp];
   return [
-    /* the slip the whole sub-strand exists to kill, so it ships on every draw */
-    must(D(floor * 10 + (a % b), 1)),
+    /* THE KILL (refutation v8 @ f0cbe38). This is the slip the whole sub-strand
+       exists to kill and it USED to ship on every draw, marked must(). Its whole
+       ones are floor(a / b), which IS the key's own whole ones, because a % b is
+       under b and b is at most 8 - so must()-ing it handed the child *"the answer
+       always shares its whole number with something"* on 100.00% of draws, and at
+       v7 only the ÷ 10 mode (where the slip EQUALS the key and is dropped) held
+       the share down to 77.4%. Removing ÷ 10 removed the exception and the bank
+       went twenty points backwards.
+       The must() comes OFF. The slip is still authored and still ships on about
+       half the draws - the whole-part seat above draws which half - and the
+       explanation names it through slipFor() only when it is actually on the row,
+       which is the discipline must() existed to enforce in the first place. It
+       also frees the key's magnitude rank: with a candidate below the key pinned
+       to every row the key could never be the smallest of four, and "smallest"
+       read 0.00% of 40,000 draws. */
+    D(floor * 10 + (a % b), 1),
     floor > 0 ? D(key.n - floor * unit, key.dp) : null,  /* dropped the whole ones */
     D(key.n + unit, key.dp),                        /* a whole one that is not there */
     /* WOUND 6 (refutation v2 @ 0157aa1): at b = 2 "shared ONE whole and stopped"
@@ -2239,6 +2564,18 @@ function quotCore(a, b, key) {
        distinct slip at all, and the other five still bracket the key. */
     (a > 1 && b !== 2) ? quot(1, b) : null,         /* shared ONE whole and stopped */
     D(a * b, 0),                                    /* multiplied instead of dividing */
+    /* THE KILL (refutation v8 @ f0cbe38), the other half. Every slip above that
+       carries the key's own whole ones sits BELOW the key - the remainder slip is
+       floor.(a % b) and the dropped-whole slip has no whole ones at all - so on a
+       row where the key shared a whole part it was ALWAYS the bigger of the pair,
+       and "of the two starting with the same whole number, take the bigger" was
+       free. These two are the off-by-one on the dividend ("shared 23 kg, not 22"),
+       the same counting slip gDecTrack has shipped as ± one lap since v1, and one
+       of them lands ABOVE the key with the key's own whole ones whenever the
+       fractional part has room - which is what gives the whole-part seat a
+       key-is-the-SMALLER selection to reach. */
+    a + 1 <= 6 * b ? quot(a + 1, b) : null,         /* shared one whole too many */
+    a - 1 >= 1 ? quot(a - 1, b) : null,             /* shared one whole too few */
     pRight(key), pLeft(key)                         /* the point one column out, each way */
   ];
 }
@@ -2274,14 +2611,28 @@ function gDecQuotient() {
          dallDistinct([quot(a, b)].concat(quotCore(a, b, quot(a, b)).filter(Boolean)))));
   const key = quot(a, b);
   const remAfterPoint = D(Math.floor(a / b) * 10 + (a % b), 1);   /* wrote the remainder after the point */
-  return mcDec('<b>' + a + ' ÷ ' + b + ' = ?</b>', '',
+  const q = mcDec('<b>' + a + ' ÷ ' + b + ' = ?</b>', '',
     key, quotCands(a, b, key), '',
     b + ' does not go into ' + a + ' a whole number of times, so the answer carries on after the decimal point. ' +
     'One whole shared into ' + b + ' is ' + dtext(quot(1, b)) + ', so ' + many(a, 'whole', 'wholes') +
     ' shared into ' + b + ' is ' +
     a + ' × ' + dtext(quot(1, b)) + ' = ' + dtext(key) + '. Check it by multiplying back: ' + dtext(key) + ' × ' + b +
-    ' = ' + a + '. The remainder is not written after the point: ' + a + ' ÷ ' + b +
-    ' is not ' + dtext(remAfterPoint) + '.');
+    ' = ' + a + '.');
+  return withQuotSlip(q, a, b, key, remAfterPoint);
+}
+/* the diagnosis sentence, now that the remainder slip is no longer must()-ed onto
+   every row: name the slip the row actually carries, or say the rule with no
+   number at all. Numbers in an explanation must be numbers the child can see. */
+function withQuotSlip(q, a, b, key, remAfterPoint, unit) {
+  const u = unit ? (' ' + unit) : '';
+  const moved = v => (v ? [v, 'The point does not slide: ' + a + ' ÷ ' + b + ' is not ' + dtext(v) + '.'] : [null, '']);
+  const slip = slipFor(q, [
+    [remAfterPoint, 'The remainder is not written after the point: ' + a + ' ÷ ' + b +
+      ' is not ' + dtext(remAfterPoint) + '.'],
+    moved(pLeft(key)), moved(pRight(key))
+  ], v => dtext(v) + u);
+  q.explain += ' ' + (slip ? slip[1] : 'A remainder is never written after the decimal point.');
+  return q;
 }
 
 /* the same sub-strand as a measures word problem (pool 2) */
@@ -2293,14 +2644,14 @@ function gDecQuotientWord() {
          dallDistinct([quot(a, b)].concat(quotCore(a, b, quot(a, b)).filter(Boolean)))));
   const key = quot(a, b);
   const goods = pick([['flour', 'bags'], ['rice', 'packets'], ['sugar', 'tins'], ['dried shrimp', 'tubs']]);
-  return mcDec('At the provision shop ' + who + ' splits <b>' + a + ' kg</b> of ' + goods[0] +
+  const q = mcDec('At the provision shop ' + who + ' splits <b>' + a + ' kg</b> of ' + goods[0] +
     ' equally into <b>' + b + '</b> ' + goods[1] + '. <b>How much ' + goods[0] + ' is in each ' +
     goods[1].replace(/e?s$/, '') + '?</b>', '',
     key, quotCands(a, b, key), 'kg',
     'Share the ' + a + ' kg into ' + b + ' equal ' + goods[1] + ': one kilogram shared into ' + b + ' is ' +
     dtext(quot(1, b)) + ' kg, so ' + many(a, 'kilogram', 'kilograms') + ' shared into ' + b + ' is ' + a + ' × ' + dtext(quot(1, b)) +
-    ' = ' + dtext(key) + ' kg. Check it by multiplying back: ' + dtext(key) + ' × ' + b + ' = ' + a +
-    '. A remainder is not written after the decimal point.');
+    ' = ' + dtext(key) + ' kg. Check it by multiplying back: ' + dtext(key) + ' × ' + b + ' = ' + a + '.');
+  return withQuotSlip(q, a, b, key, D(Math.floor(a / b) * 10 + (a % b), 1), 'kg');
 }
 
 /* FORMAT 4i - word problem, SG running track (pool 2, measures) */
@@ -2377,7 +2728,19 @@ function gDecPetrol() {
              oneLitreOut = 350; oneDollarOut = 525; centsOnly = 25; }
   return mcMoney('At the petrol kiosk ' + who + ' pumps <b>' + litres + ' litres</b> of petrol at <b>' +
     money(rate) + ' per litre</b> and pays with a <b>$' + note + '</b> note. <b>How much change is there?</b>', '',
-    key, [stopped, ratePaid, noBorrow, oneLitreOut, oneDollarOut, centsOnly],
+    /* THE KILL (refutation v8 @ f0cbe38, W4): with a $50 note the cost is SMALLER
+       than the change, so "stopped after step 1" flips to the wrong side of the key
+       and only one named candidate was left above it - the key was the smallest of
+       four on 7.8% of 2,000 draws against a 12% floor. Adding instead of
+       subtracting, and paying for one litre too few, both land above it whichever
+       note the draw takes. */
+    /* and the mirror of "a dollar lost in the exchange": every named slip that
+       carries the change's own CENTS sat BELOW it (the dollar lost, the cents
+       counted alone), so "of the options with the same cents, take the biggest"
+       read 92.95% of draws at 57.46%, E 55.18%. A dollar too MANY in the exchange
+       is the same slip the other way and lands above. */
+    key, [stopped, ratePaid, noBorrow, oneLitreOut, oneDollarOut, centsOnly,
+          note * 100 + stopped, key + rate, key + 100],
     'Step 1: ' + litres + ' litres at ' + money(rate) + ' each costs ' + money(rate) + ' × ' + litres + ' = ' +
     money(rate * litres) + '. Step 2: $' + note + ' − ' + money(rate * litres) + ' = ' + money(key) +
     '. Stopping after step 1 gives the cost of the petrol, not the change.');
@@ -2407,22 +2770,31 @@ function gDecShareMass() {
   const key = per * want;
   const goods = pick([['prawns', 'trays'], ['fishballs', 'packets'], ['chicken wings', 'boxes'], ['kang kong', 'bundles']]);
   /* WOUND 1 (100% "second smallest"): per < key < total - per < total x want on every
-     draw. The stop-after-dividing answer STILL ships on every draw - the oracle
-     requires it, so it is marked must() - but it is now the only fixture, and the
-     picker varies how many of the other three sit above the key. */
+     draw. THE KILL (refutation v8 @ f0cbe38, W4): the stop-after-dividing answer
+     used to be must()-ed onto every row, and a fixture BELOW the key is exactly why
+     the key could never be the smallest of four - "smallest" read 0.00% of 40,000
+     draws, a free one-of-four elimination, and the magnitude-rank gate had a ceiling
+     but no floor so it printed `ok`. The fixture comes off: the slip still rides on
+     most draws, the oracle still refuses a row that carries it twice, and the
+     explanation's step 1 computes it either way. The ± one-tray slips are added in
+     the same sitting, so the bank has named candidates ABOVE the key as well and
+     the picker can put the answer at every rank. */
   return mcDec('A stall at the wet market packs <b>' + dtext(D(total, 1)) + ' kg</b> of ' + goods[0] +
     ' equally into <b>' + trays + '</b> ' + goods[1] + '. <b>How much do ' + want + ' of the ' + goods[1] +
     ' hold altogether?</b>', '',
     /* THE KILL (refutation v6): "took one tray off the total" carries its own
        point-out pair, so the row's twins are not always the key's. */
-    D(key, 1), [must(D(per, 1)), D(total * want, 1), D(total - per, 1),
+    D(key, 1), [D(per, 1), D(total * want, 1), D(total - per, 1),
                 D(per * want, 2), D(per * want, 0), D(per + want, 1),
-                D(total - per, 2), D(total - per, 0)], 'kg',
+                D(total - per, 2), D(total - per, 0),
+                D(per * (want + 1), 1), want > 1 ? D(per * (want - 1), 1) : null,
+                D(per * (want + 1), 2), D(per * (want + 1), 0)], 'kg',
     'Step 1: share the ' + dtext(D(total, 1)) + ' kg into ' + trays + ' equal ' + goods[1] + ': ' + total +
     ' ÷ ' + trays + ' = ' + per + ' tenths, so one ' + goods[1].replace(/e?s$/, '') + ' holds ' + dtext(D(per, 1)) +
     ' kg. Step 2: ' + want + ' of them hold ' + dtext(D(per, 1)) + ' × ' + want + ' = ' + dtext(D(key, 1)) +
     ' kg. Stopping after the sharing gives one ' + goods[1].replace(/e?s$/, '') + ' only.');
 }
+
 
 
   MQI.registerTopic({
@@ -2528,6 +2900,45 @@ function gDecShareMass() {
           [gDecToFrac, 'convert'], [gFracEquivDec, 'convert'],
           [gDecStartAmount, 'addsub'], [gDecMoneyMore, 'addsub'],
           [gDecMulWhole, 'muldiv'], [gDecDivWhole, 'muldiv'], [gDecTrack, 'muldiv'],
+          /* THE PM's RULING ON ÷ 10 (refutation v8 @ f0cbe38, section 5.2), and the
+             answer is NO - with the measurement, not with an argument.
+             The ruling was that "26 ÷ 10" is P4 syllabus and, since the eighth pass
+             took the divisor out of gDecQuotient and js/topics/p5-decimals.js refuses
+             a whole dividend in its own source comment, it now lives in no topic in
+             this app. A dedicated bank was built for it here (gDecTenShift): the
+             place-value shift family of the question's own number, with two
+             DIGIT-ALTERED shift families riding so that the key's depth-mate and its
+             magnitude-mates are not always made of its own digits, both directions
+             drawn, measured on its own shape key with cplFrame now carrying the
+             OPERATOR so ÷ 10 and × 10 cannot hide in each other's average. It passed
+             shape, integrity, its own oracle, RULE D1, the magnitude-rank ceiling AND
+             the new 12% floor, the prose gate and the named-distractor contract.
+             It FAILS the stem-option coupling gate inside the ÷ 10 shape, and the
+             failure is structural rather than a row that was not found:
+
+               both directions  "NOT repeats a number printed in the stem" AND "its
+                                digit multiset is a stem number's"  67.68% at 100.0%
+               ÷ 10 alone       "NOT its whole-number part is a stem number's" AND
+                                "its digit multiset is a stem number's"  67.70% at 99.1%
+               × 10 alone       clean on every arm in this harness
+
+             The cause is the arithmetic. Dividing by ten changes no digit, so the key
+             IS the question's numeral with the point moved, and the shifts of those
+             digits that carry no extra zero are exactly three - 284, 28.4, 2.84 -
+             with the key the MIDDLE one on every draw, for ever. The unshifted number
+             repeats the stem numeral and is thrown out of the pair, which leaves the
+             key alone in it unless 2.84 also ships; and when 2.84 does ship, "of the
+             options made of the question's own digits, take the second biggest" reads
+             the row instead. RULE D1 needs the third slot for a depth-mate, so no row
+             closes both. That is the seventh pass's finding and the eighth-pass
+             refuter's exhaustive search arriving at the same wall from a third side.
+             So it is NOT SHIPPED and the scope gap is DECLARED instead: as of this
+             commit `26 ÷ 10 = 2.6` is in no topic in this app. Shipping the × 10 half
+             alone was measured too and rejected - it passes every arm, but "26 × 10 =
+             260" prints no decimal anywhere and belongs in whole numbers, not in
+             Decimal Bay. What is left is a PM question this lane may not answer by
+             shipping: whether "the second biggest of the question's own digits" is a
+             TELL at all on an item whose entire content is that shift. */
           [gDecQuotientWord, 'muldiv']],
       /* WOUND 4: `compare` owned exactly one pool-3 slot, and buildCarousel
          round-robins skills, so that whole sixth of the pool landed on

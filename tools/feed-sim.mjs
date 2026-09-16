@@ -201,21 +201,23 @@ function measure(grade) {
 const SKILL_TID = argOf('--skills') || 'decimals';
 function skillTable(tid, acc, seeds) {
   const bySkill = new Map(), byGen = new Map();
-  const worst = new Map();
+  const worst = new Map(), worstGen = new Map();
   const keepAcc = ACC;
   for (let s = 0; s < seeds; s++) {
     setSeed(2000003 + s * 7919);
     const items = sessionAt(tid, acc);
-    const here = new Map();
+    const here = new Map(), hereGen = new Map();
     for (const q of items) {
       bySkill.set(q.skill, (bySkill.get(q.skill) || 0) + 1);
       byGen.set(q.gen, (byGen.get(q.gen) || 0) + 1);
       here.set(q.skill, (here.get(q.skill) || 0) + 1);
+      hereGen.set(q.gen, (hereGen.get(q.gen) || 0) + 1);
     }
     for (const [k, v] of here) worst.set(k, Math.max(worst.get(k) || 0, v));
+    for (const [k, v] of hereGen) worstGen.set(k, Math.max(worstGen.get(k) || 0, v));
   }
   void keepAcc;
-  return { bySkill, byGen, worst, seeds };
+  return { bySkill, byGen, worst, worstGen, seeds };
 }
 /* the same session loop as above with the accuracy passed in rather than global */
 function sessionAt(tid, acc) {
@@ -260,6 +262,23 @@ if (TOPICS[SKILL_TID]) {
   const gens = [...lo.byGen.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   console.log(`  busiest six generators at ${label(0.45)}: ` +
     gens.map(([id, n]) => `${(GEN_OF.get(id) || {}).name || id} ${(n / lo.seeds).toFixed(2)}`).join(', '));
+  /* --gen-table prints EVERY generator's items-per-session at each accuracy. The
+     refutation notes quote per-bank service numbers - "2.02 items a session at
+     45%", "1.44 at 80%" - and a lane that can only see its busiest six has to
+     rebuild the feed to check one, which is how two passes ended up quoting a
+     number nobody could reproduce from the repo's own harness. */
+  if (argv.includes('--gen-table')) {
+    const ids = [...new Set(tables.flatMap(([, t]) => [...t.byGen.keys()]))];
+    const name = id => (GEN_OF.get(id) || {}).name || id;
+    ids.sort((a, b) => String(name(a)).localeCompare(String(name(b))));
+    console.log(`\nGENERATOR SERVICE  (${SKILL_TID}, ${SEEDS} seeds x ${LEN} questions, items per session)`);
+    console.log(`generator          | ` + accs.map(a => `at ${label(a)}  worst`).join(' | '));
+    for (const id of ids) {
+      const cells = tables.map(([, t]) =>
+        `${((t.byGen.get(id) || 0) / t.seeds).toFixed(2).padStart(5)}  ${String((t.worstGen && t.worstGen.get(id)) || 0).padStart(5)}`);
+      console.log(`${String(name(id)).padEnd(18)} | ` + cells.join(' | '));
+    }
+  }
 }
 
 if (!GATE) process.exit(0);

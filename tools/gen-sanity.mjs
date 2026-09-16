@@ -35,8 +35,29 @@ import { fileURLToPath } from 'node:url';
 const N = Number(process.env.SAMPLES) || 200;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+/* ---------- SEEDED RNG (refutation v8 @ f0cbe38, W7) ------------------------
+   The eighth-pass refuter ran this harness twice, verbatim, in a clean tree and got
+   `worst three: gDecDivWhole 52.28%` and then `gDecDivWhole 43.84%`. A gate whose
+   ceiling is 60% and whose worst bank is observed anywhere between 43.8% and 52.3%
+   run to run cannot tell a regression of under ten points from noise, and the
+   number quoted in the lane's own note was one sample of that spread.
+   Every ruler below is now deterministic given SEED: the vm gets a DELEGATING Math
+   whose random() is this generator (Math is passed by reference into the context,
+   so cloning is what keeps the host's Math untouched), and the harness's own
+   negative controls draw from the same stream. `SEED=n node tools/gen-sanity.mjs`
+   re-rolls it; with no SEED the run is byte-identical to the last one. ------- */
+const SEED = Number(process.env.SEED || 20260916);
+let _s = SEED >>> 0;
+function rnd() {
+  _s |= 0; _s = (_s + 0x6D2B79F5) | 0;
+  let t = Math.imul(_s ^ (_s >>> 15), 1 | _s);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
 /* ---------- load the pure layer in a DOM-less vm ---------- */
-const ctx = { Math, console, Number, Array, Set, Map, JSON, String, Object, Boolean, Error, isNaN, parseInt, parseFloat };
+const SeededMath = Object.create(Math);
+SeededMath.random = rnd;
+const ctx = { Math: SeededMath, console, Number, Array, Set, Map, JSON, String, Object, Boolean, Error, isNaN, parseInt, parseFloat };
 ctx.globalThis = ctx;
 vm.createContext(ctx);
 
@@ -1022,7 +1043,22 @@ function decimalsOracle(q) {
        on those draws, and this branch does not demand one. */
     const rem = DV(Math.floor(A / B) * 10 + (A % B), 1);
     if (B !== 10 && DEQ(rem, ans)) return `${what}: the key is what writing the remainder after the point gives`;
-    if (B !== 10 && decCountWhere(q, x => DEQ(x, rem)) !== 1) return `${what}: the remainder-after-the-point slip is missing or doubled`;
+    /* THE KILL (refutation v8 @ f0cbe38). This used to demand the slip on EVERY
+       draw, and that demand was the defect: the remainder slip's whole ones are
+       floor(A / B), which is the key's own whole ones, so requiring it handed the
+       child "the answer always shares its whole number with something" on 100.00%
+       of draws and "the biggest option that shares its whole number, else the
+       second biggest" read E 79.94% against a 25% floor. The slip may now ride or
+       not - the whole-part seat in mcDec draws which - and what this arm checks is
+       that it is never DOUBLED, and that the explanation names it only when it is
+       actually on the row (the same discipline slipFor() enforces in the file). */
+    if (B !== 10 && decCountWhere(q, x => DEQ(x, rem)) > 1) return `${what}: the remainder-after-the-point slip is doubled`;
+    {
+      const names = DTXT(rem);
+      const onRow = decCountWhere(q, x => DEQ(x, rem)) === 1;
+      const said = new RegExp('is not ' + names.replace('.', '\\.') + '(?![\\d])').test(strip(q.explain || ''));
+      if (said && !onRow) return `${what}: the explanation names ${names} and it is not on the row`;
+    }
     return null;
   };
   if ((m = text.match(/^(\d+) ÷ (\d+) = \?$/))) return decQuotient(m[1], m[2], 'whole / whole');
@@ -1133,7 +1169,12 @@ function decimalsOracle(q) {
     const key = DV(per * want, total.dp);
     if (!ans || !DEQ(ans, key)) return `share: ${m[1]} ÷ ${trays} × ${want} = ${DTXT(key)}, key says ${strip(q.answerText)}`;
     if (decCountWhere(q, x => DEQ(x, key)) !== 1) return 'share: two options are the correct answer';
-    if (decCountWhere(q, x => DEQ(x, DV(per, total.dp))) !== 1) return 'share: the stop-after-dividing distractor is missing or doubled';
+    /* THE KILL (refutation v8 @ f0cbe38, W4): this arm used to demand the
+       stop-after-dividing slip on EVERY draw, and that demand pinned a candidate
+       BELOW the key on every row, so the key was never the smallest of four -
+       0.00% of 40,000 draws, a free one-of-four elimination the rank gate's
+       missing FLOOR could not see. Doubled is still a failure; absent is not. */
+    if (decCountWhere(q, x => DEQ(x, DV(per, total.dp))) > 1) return 'share: the stop-after-dividing distractor is doubled';
     return null;
   }
 
@@ -3187,6 +3228,18 @@ for (const tid of Object.keys(TOPICS)) {
 const RANK_LABELS = ['largest', '2nd largest', '3rd largest', 'smallest'];
 const RANK_DRAWS = Number(process.env.RANK_SAMPLES || 2000);
 const RANK_CEILING = 0.45;
+/* THE KILL (refutation v8 @ f0cbe38, W4). A ceiling with no FLOOR only measures
+   half the axis. A rank the key occupies on 0.00% of draws is a free one-of-four
+   elimination - "the smallest option is never the answer" takes the floor from
+   25.0% to 33.3% before any arithmetic - and this gate printed `ok` on THREE banks
+   sitting at exactly zero (gDecQuotient, gDecQuotientWord, gDecShareMass), because
+   every one of them had a slip pinned BELOW the key on every draw. Both ends now
+   bind: no rank over 45% and no rank under 12%. 12% and not 25% because the banks
+   whose candidates genuinely cannot bracket the key four ways (a key that is a
+   fraction of one, with the whole-number misreadings all above it) should lose a
+   preference, not the item - and an 8-point edge is worth catching while a
+   3-point one is inside the noise of a 2,000-draw sample. */
+const RANK_MIN_SHARE = 0.12;
 const RANK_FLOOR = 200;                 /* below this many measurable draws, no verdict */
 /* how many options are strictly bigger than the key: 0 = key largest, 3 = smallest.
    -1 when the item is not rank-measurable (not four plain numbers, or a tie). */
@@ -3220,8 +3273,9 @@ function decRankScan(gens, draws) {
       hist[r]++; n++; bank[r]++;
       if (!exempt) gatedTally[r]++;
     }
-    const top = n ? Math.max(...hist) : 0;
-    out.push({ name: g.name, n, hist, exempt, worst: n ? top / n : 0, rank: hist.indexOf(top) });
+    const top = n ? Math.max(...hist) : 0, bot = n ? Math.min(...hist) : 0;
+    out.push({ name: g.name, n, hist, exempt, worst: n ? top / n : 0, rank: hist.indexOf(top),
+               thinnest: n ? bot / n : 1, thinRank: hist.indexOf(bot) });
   }
   const best = arr => {
     const t = arr.reduce((a, b) => a + b, 0);
@@ -3237,8 +3291,8 @@ let rankReport = null;
   rankReport = decRankScan(decGens, RANK_DRAWS);
   for (const r of rankReport.rows) {
     if (r.exempt || r.n < RANK_FLOOR) { rankRows.push({ ...r, ok: true }); continue; }
-    const ok = r.worst <= RANK_CEILING;
-    rankRows.push({ ...r, ok });
+    const ok = r.worst <= RANK_CEILING && r.thinnest >= RANK_MIN_SHARE;
+    rankRows.push({ ...r, ok, under: r.thinnest < RANK_MIN_SHARE });
     if (!ok) failures++;
   }
 }
@@ -3507,10 +3561,10 @@ function decRoundScan(fn, draws) {
    negative control: the same draw predicate, the same four options, scanned by the
    same defensibility rule, which must find two defensible answers on every draw. */
 function ctlV3RoundError() {
-  const shuffle4 = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const shuffle4 = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   for (let guard = 0; guard < 900; guard++) {
-    const wlen = 1 + Math.floor(Math.random() * 2), dp = 4 - wlen;
-    const to = Math.floor(Math.random() * 2), ci = wlen + to;
+    const wlen = 1 + Math.floor(rnd() * 2), dp = 4 - wlen;
+    const to = Math.floor(rnd() * 2), ci = wlen + to;
     if (ci > 3 || to >= dp) continue;
     const digits = shuffle4([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 4);
     const dc = digits[ci];
@@ -3623,10 +3677,21 @@ const cplCounts = c => [...String(c).matchAll(/(?<![$\d.])\d+(?![\d.])/g)].map(x
 /* everything the rendered stem offers an option to match itself against */
 function cplStem(q) {
   const t = strip(q.q) + ' ' + strip(q.extra || '');
+  /* a rendered fraction strips to its two numbers RUN TOGETHER - fr(72, 100) reads
+     "72100" - so every relation that asks "is this option's digit string a stem
+     number's" was blind on the four banks whose stems print a fraction. That is
+     half of the eighth pass's KILL 2 (refutation v8 @ f0cbe38): the key of
+     gFracToDec IS the numerator with the point put in, on 100.00% of draws, and
+     this gate could not see the numerator. The two parts are read off the markup
+     and added to the numeral sets; `text` is left alone so the shape key does not
+     move under the banks it already groups. */
+  const fparts = [...(String(q.q) + ' ' + String(q.extra || ''))
+    .matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]
+    .reduce((a, m) => a.concat([m[1], m[2]]), []);
   /* the rounding phrase prints a lone "1" or "2" of its own ("1 decimal place");
      those are not digits the stem NAMES, so they are cut before the digit scan */
   const bare = t.replace(/\b[12] decimal places?\b/g, ' ');
-  const numerals = cplNums(t);
+  const numerals = cplNums(t).concat(fparts);
   const ph = t.match(/(the nearest whole number|1 decimal place|2 decimal places)/);
   const named = cplLone(bare);
   const adj = new Set();
@@ -3776,7 +3841,31 @@ const CPL_PREDS = [
       const bare = c => { const v = cplNums(c); if (!v.length) return null;
         return v[v.length - 1].replace('.', '').replace(/^0+(?=\d)/, ''); };
       const mine = bare(o); if (mine === null) return false;
-      return all.filter(x => bare(x) === mine).length > 1; } }
+      return all.filter(x => bare(x) === mine).length > 1; } },
+  /* ---- the relation the EIGHTH pass found the gate blind to (KILL 2) -----------
+     "Two of these are the question's own digits with the point in different places.
+     Take the one that STARTS WITH A NOUGHT." 63.59% of gFracToDec's draws, 100.00%
+     right, for at least two passes. The gate carried "its digit string is shared
+     with another option" and nothing at all for the cue that splits such a pair -
+     whether the option is a whole number or a part of one - which is the single
+     most readable thing on a decimals row and needs no arithmetic whatever. */
+  { k: 'it is less than one', of: (o, st, all) => {
+      if (!all.every(x => DEC_PURE.test(x))) return false;
+      const v = cplNums(o); if (!v.length) return false;
+      return Number(v[v.length - 1]) < 1; } },
+  /* and the other half of KILL 2, which is the one the gate could not say at all.
+     "its digit multiset is a stem number's" compares SORTED digits INCLUDING the
+     leading zero, so "0.72" sorts to 027 and the stem's 72 sorts to 27 and the two
+     never matched; "repeats a number printed in the stem" wants the numeral back
+     verbatim, which a point move never is. The relation the topic file has used
+     since v7 - the printed digits with the point taken out AND the leading zeros
+     dropped, which is exactly what a child sees - had no expression here. */
+  { k: "its digit string is a stem number's", of: (o, st, all) => {
+      if (!all.every(x => DEC_PURE.test(x))) return false;
+      const v = cplNums(o); if (!v.length) return false;
+      const bare = s => s.replace('.', '').replace(/^0+(?=\d)/, '');
+      const mine = bare(v[v.length - 1]);
+      return st.numerals.some(u => bare(u) === mine); } }
 ];
 const CPL_FEATS = [
   { k: 'the operand-and-operator shape it is written in', of: o => { const sh = cplShape(o); return sh.length > 1 ? sh : null; } },
@@ -3814,17 +3903,37 @@ const cplFrame = t => {
   const cls = toks.map((v, i) => v[0] === '$' ? 'M'
     : (v.indexOf('.') >= 0 ? 'D' : (i === last ? 'C' + v : 'C'))).join('');
   const ph = String(t).match(/(the nearest whole number|1 decimal place|2 decimal places)/);
-  return cls + (ph ? '|' + ph[1] : '');
+  /* THE PM's RULING (refutation v8 @ f0cbe38, section 5.2). The key carried every
+     numeral's class and the rounding phrase and NOT THE OPERATOR, so "26 ÷ 10 = ?"
+     and "26 × 10 = ?" were the same stem shape and each could hide inside the
+     other's average - which is the blur that hid ÷ 10 for six passes, one axis
+     over. The seventh pass fixed the operand VALUE; this fixes the sign. */
+  const ops = [...new Set(String(t).match(/[+×÷−]/g) || [])].sort().join('');
+  return cls + (ops ? '|' + ops : '') + (ph ? '|' + ph[1] : '');
 };
 const cplLabel = i => (i % 2 ? 'NOT ' : '') + CPL_PREDS[i >> 1].k;
+/* THE KILL (refutation v8 @ f0cbe38, KILL 1). The PAIR arm intersects two relations
+   and asks whether ONE option survives. Its vocabulary cannot express a CASCADE -
+   keep the options a relation names, THEN take the biggest of what is left - and
+   that is the whole of the route that took gDecQuotient twenty points backwards:
+   *"the biggest option that shares its whole number with another option, else the
+   second biggest"*, 79.08% of draws at 94.47%. The gate printed
+   `ok  worst: gDecQuotient 41.0%` while a child was reading the answer off the row.
+   MAGNITUDE-RANK measures where the key sits among four; the coupling gate measures
+   which relation names it; nothing measured the two COMPOSED, and this arm does.
+   Bare-number option rows only - "the biggest of these calculations" is not a
+   reading a child has. */
+const CPL_RANKS = ['the biggest', 'the 2nd biggest', 'the 3rd biggest', 'the smallest'];
 const cplRule = r => r.feat !== undefined
   ? `the key is the ONLY option with its value of ${CPL_FEATS[r.feat].k}`
-  : (r.a === r.b ? `"${cplLabel(r.a)}"` : `"${cplLabel(r.a)}" AND "${cplLabel(r.b)}"`);
+  : (r.k !== undefined ? `keep "${cplLabel(r.a)}", then take ${CPL_RANKS[r.k]}`
+    : (r.a === r.b ? `"${cplLabel(r.a)}"` : `"${cplLabel(r.a)}" AND "${cplLabel(r.b)}"`));
 function decCouplingScan(gens, draws) {
   const P = CPL_PREDS.length, S = 2 * P, F = CPL_FEATS.length;
   const out = [];
   for (const g of gens) {
-    const mk = () => ({ n: 0, fires: new Int32Array(S * S), right: new Int32Array(S * S), feat: new Int32Array(F) });
+    const mk = () => ({ n: 0, fires: new Int32Array(S * S), right: new Int32Array(S * S), feat: new Int32Array(F),
+                        casc: new Int32Array(S * 4), cascRight: new Int32Array(S * 4) });
     const bank = mk(), groups = new Map();
     for (let i = 0; i < draws; i++) {
       let q;
@@ -3856,6 +3965,26 @@ function decCouplingScan(gens, draws) {
         bank.fires[idx]++; grp.fires[idx]++;
         if (mm === kb) { bank.right[idx]++; grp.right[idx]++; }
       }
+      /* the CASCADE arm: a relation, then a magnitude rank inside what it keeps */
+      if (opts.every(o => DEC_PURE.test(o))) {
+        const vals = opts.map(decOf);
+        if (vals.every(v => v)) {
+          const order = [0, 1, 2, 3].sort((x, y) => DCMP(vals[y], vals[x]));
+          let tie = false;
+          for (let i = 0; i < 3; i++) if (DEQ(vals[order[i]], vals[order[i + 1]])) tie = true;
+          if (!tie) for (let a = 0; a < S; a++) {
+            const m = masks[a];
+            let seen = 0;
+            for (let i = 0; i < 4; i++) {
+              if (!((m >> order[i]) & 1)) continue;
+              const idx = a * 4 + seen;
+              bank.casc[idx]++; grp.casc[idx]++;
+              if (order[i] === q.correct) { bank.cascRight[idx]++; grp.cascRight[idx]++; }
+              seen++;
+            }
+          }
+        }
+      }
     }
     const best = t => {
       if (!t.n) return null;
@@ -3870,6 +3999,13 @@ function decCouplingScan(gens, draws) {
         const acc = t.right[idx] / fr2, settle = fr2 / t.n;
         if (acc < CPL_ACC) continue;
         if (!o || settle > o.settle) o = { a, b, settle, acc };
+      }
+      for (let a = 0; a < S; a++) for (let k = 0; k < 4; k++) {
+        const idx = a * 4 + k, fr2 = t.casc[idx];
+        if (!fr2) continue;
+        const acc = t.cascRight[idx] / fr2, settle = fr2 / t.n;
+        if (acc < CPL_ACC) continue;
+        if (!o || settle > o.settle) o = { a, k, settle, acc };
       }
       return o;
     };
@@ -3890,7 +4026,7 @@ function decCouplingScan(gens, draws) {
    find each of them, or it is measuring nothing. Both were green on every other arm
    in this harness on the day they were killed. */
 function ctlV4RoundError() {
-  const rand = n => Math.floor(Math.random() * n);
+  const rand = n => Math.floor(rnd() * n);
   const sh = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   for (let guard = 0; guard < 900; guard++) {
     const wlen = 1 + rand(2), dp = 4 - wlen, to = rand(dp), ci = wlen + to;
@@ -3927,7 +4063,7 @@ function ctlV4RoundError() {
   return null;
 }
 function ctlV4MulConcept() {
-  const rand = n => Math.floor(Math.random() * n);
+  const rand = n => Math.floor(rnd() * n);
   const sh = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const M = c => '$' + DTXT(DV(c, 2));
   const XS = [105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195];
@@ -3958,7 +4094,7 @@ function ctlV4MulConcept() {
    the fifth pass killed both on relations this gate did not score, and the six added
    above are the fix. If these two do not go red the arm is still blind. */
 function ctlV5MulConcept() {
-  const rand = n => Math.floor(Math.random() * n);
+  const rand = n => Math.floor(rnd() * n);
   const sh = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const M = c => '$' + DTXT(DV(c, 2));
   const XS = [105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195];
@@ -3989,7 +4125,7 @@ function ctlV5MulConcept() {
   return null;
 }
 function ctlV5DigitValue() {
-  const rand = n => Math.floor(Math.random() * n);
+  const rand = n => Math.floor(rnd() * n);
   const sh = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const nat = d => { let n = d.n, dp = d.dp; while (dp > 0 && n % 10 === 0) { n /= 10; dp--; } return DV(n, dp); };
   const dp = 1 + rand(3);
@@ -4009,7 +4145,7 @@ function ctlV5DigitValue() {
    D1's single preference, with NOTHING steering the point-placement twin. Both
    were green on every arm in this file on the day they were killed, so if the
    digit-string relation above does not turn both red, it is measuring nothing. */
-function v6Rand(n) { return Math.floor(Math.random() * n); }
+function v6Rand(n) { return Math.floor(rnd() * n); }
 function v6Sh(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = v6Rand(i + 1); [b[i], b[j]] = [b[j], b[i]]; } return b; }
 const v6Ri = (a, b) => a + v6Rand(b - a + 1);
 function v6RankPick(pool, cmp, dpOf, keyDp) {
@@ -4061,7 +4197,7 @@ function ctlV6AddSub() {
     }
     return out;
   };
-  const dp = v6Ri(1, 2), scale = TEN(dp), addMode = Math.random() < 0.5;
+  const dp = v6Ri(1, 2), scale = TEN(dp), addMode = rnd() < 0.5;
   let a = 0, b = 0, key = 0, noCarry = 0, other = 0, overCarry = 0, rounded = 0, guard = 0;
   do {
     guard++;
@@ -4135,7 +4271,7 @@ function v7TwinRouteOn(key, sel) {
   }
   return count === 1 ? only : -1;
 }
-function ctlV7Quotient(fixedB) {
+function ctlV7Quotient(fixedB, dens) {
   const DNAT = d => { let n = d.n, dp = d.dp; while (dp > 0 && n % 10 === 0) { n /= 10; dp--; } return DV(n, dp); };
   const PL = d => DV(d.n, Math.max(0, d.dp - 1));
   const PR = d => (d.dp < 3 ? DV(d.n, d.dp + 1) : null);
@@ -4150,9 +4286,9 @@ function ctlV7Quotient(fixedB) {
       DV(a * b, 0), PR(key), PL(key)
     ];
   };
-  const DENS = [2, 4, 5, 8, 10];
+  const DENS = dens || [2, 4, 5, 8, 10];
   let a = 3, b = 4, guard = 0;
-  do { b = fixedB || DENS[v6Rand(5)]; a = v6Ri(2, 6 * b - 1); guard++; }
+  do { b = fixedB || DENS[v6Rand(DENS.length)]; a = v6Ri(2, 6 * b - 1); guard++; }
   while (guard < 300 && !(a % b !== 0 && (() => {
     const list = [quot(a, b)].concat(cands(a, b, quot(a, b)).filter(Boolean));
     for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) if (DEQ(list[i], list[j])) return false;
@@ -4165,7 +4301,7 @@ function ctlV7Quotient(fixedB) {
     if (DEQ(c, key) || pool.some(k => DEQ(k, c))) continue;
     pool.push(c);
   }
-  const keyMayTwin = Math.random() < 0.5, keyTwinBigger = Math.random() < 0.5;
+  const keyMayTwin = rnd() < 0.5, keyTwinBigger = rnd() < 0.5;
   let kept = v7RankPick(pool, c => DCMP(c, key), c => c.dp, key.dp, sel => {
     const on = v7TwinRouteOn(key, sel);
     if (on === 0) return 0;
@@ -4180,6 +4316,70 @@ function ctlV7Quotient(fixedB) {
   const all = v6Sh([keyStr].concat(kept.slice(0, 3).map(DTXT)));
   return { q: `<b>${a} ÷ ${b} = ?</b>`, extra: '', choices: all, correct: all.indexOf(keyStr),
            answerText: keyStr, explain: 'A negative control.' };
+}
+
+/* ---- the EIGHTH pass's two KILLS, rebuilt as the banks shipped at f0cbe38. Both
+   were green on every arm in this file on the day they were killed, THIS gate
+   included, so if the cascade arm and the below-one relation do not turn both red
+   the ninth pass's work is unmeasured.
+
+   KILL 1 is ctlV7Quotient with the ÷ 10 mode taken out and nothing else changed:
+   that is exactly what v8 did, and it is what made `quotCore`'s must()-ed remainder
+   slip carry the key's own whole ones on 100.00% of draws instead of 77.4%. The
+   route the cascade arm has to find is "the biggest option that shares its whole
+   number with another option".
+   KILL 2 is the v8 gFracToDec candidate list under the v7 picker: the key's digit
+   string is the numerator's and the key is below one, both on every draw, and the
+   point-moves put a second member of that family on the row - so "of the options
+   made of the question's own digits, take the one that is less than one". */
+function ctlV8QuotientNoTen() { return ctlV7Quotient(null, [2, 4, 5, 8]); }
+function ctlV8FracToDec() {
+  const DNAT = d => { let n = d.n, dp = d.dp; while (dp > 0 && n % 10 === 0) { n /= 10; dp--; } return DV(n, dp); };
+  const PL = d => DV(d.n, Math.max(0, d.dp - 1));
+  const PR = d => (d.dp < 3 ? DV(d.n, d.dp + 1) : null);
+  let den = 10, dp = 1, n = 3, key = DV(3, 1), guard = 0;
+  let shallow = DV(30, 1), complement = DV(7, 1), tacked = DV(13, 1);
+  do {
+    guard++;
+    dp = v6Ri(1, 3); den = TEN(dp);
+    n = v6Ri(dp === 3 ? 101 : 1, den - 1);
+    key = DV(n, dp);
+    shallow = DNAT(DV(n * 10, dp));
+    complement = DV(den - n, dp);
+    tacked = DV(den + n, dp);
+    const list = [key, shallow, complement, tacked];
+    let bad = n % 10 === 0;
+    for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) if (DEQ(list[i], list[j])) bad = true;
+    if (!bad) break;
+  } while (guard < 300);
+  const noZero = c => (c && c.n > 0 && !(c.dp > 0 && c.n % 10 === 0) ? c : null);
+  const cands = [shallow, complement, tacked, PR(key), dp + 2 <= 3 ? DV(n, dp + 2) : null,
+    (n >= 10 && Math.floor(n / 10) % 10 !== 0) ? DV(Math.floor(n / 10), dp) : null,
+    dp === 3 && n % 100 !== 0 ? DV(n % 100, dp) : null,
+    noZero(PR(complement)), noZero(PL(complement)), PL(key),
+    noZero(PR(tacked)), noZero(PL(tacked))];
+  const pool = [];
+  for (const c of cands) {
+    if (!c || !Number.isFinite(c.n) || c.n <= 0) continue;
+    if (DEQ(c, key) || pool.some(k => DEQ(k, c))) continue;
+    pool.push(c);
+  }
+  const keyMayTwin = rnd() < 0.5, keyTwinBigger = rnd() < 0.5;
+  const kept = v7RankPick(pool, c => DCMP(c, key), c => c.dp, key.dp, sel => {
+    const on = v7TwinRouteOn(key, sel);
+    if (on === 0) return 0;
+    if (on > 0) return 1;
+    const keyed = sel.some(c => c.n === key.n);
+    if (!keyMayTwin) return keyed ? 1 : 2;
+    const twins = sel.filter(c => c.n === key.n);
+    if (twins.length !== 1) return 2;
+    return ((key.dp < twins[0].dp) === keyTwinBigger) ? 2 : 1;
+  }) || pool.slice(0, 3);
+  const keyStr = DTXT(key);
+  const all = v6Sh([keyStr].concat(kept.slice(0, 3).map(DTXT)));
+  return { q: `Write <span class="frac"><span class="n">${n}</span><span class="d">${den}</span></span> as a decimal.`,
+           extra: '', choices: all, correct: all.indexOf(keyStr), answerText: keyStr,
+           explain: 'A negative control.' };
 }
 
 const couplingRows = [];
@@ -4273,7 +4473,7 @@ const negRows = [];
         gDecAlignError and gDecShareMass all had. Every individual item is clean; it
         is only visible across draws, which is what decRankScan is for. */
   const secondBiggest = () => {
-    const k = 200 + Math.floor(Math.random() * 600);
+    const k = 200 + Math.floor(rnd() * 600);
     const opts = [DTXT(DV(k, 2)), DTXT(DV(k - 100, 2)), DTXT(DV(k - 50, 2)), DTXT(DV(k + 100, 2))];
     return { q: 'A negative control.', extra: '', choices: opts, correct: 0, answerText: opts[0],
              explain: 'A negative control.' };
@@ -4288,7 +4488,7 @@ const negRows = [];
   /* 6. and the control on the control: a generator that DOES spread its key's rank
         must pass, or the ceiling is just failing everything. */
   const spread = () => {
-    const k = 400, a = Math.floor(Math.random() * 4);
+    const k = 400, a = Math.floor(rnd() * 4);
     const others = [];
     for (let i = 0; i < a; i++) others.push(k + 100 * (i + 1));
     for (let i = others.length; i < 3; i++) others.push(k - 100 * (i + 1));
@@ -4332,8 +4532,8 @@ const negRows = [];
   /* KILL 1 as it shipped: the key is the only option naming a direction, the only
      one carrying "but", and the only one outside three never-correct frames. */
   proseCtl('SECOND-PASS KILL 1 - v2 gDecRoundError, the key is the only option with a direction', () => {
-    const up = Math.random() < 0.5, lo = up ? 1 : 5, hi = up ? 4 : 9;
-    const roll = () => lo + Math.floor(Math.random() * (hi - lo + 1));
+    const up = rnd() < 0.5, lo = up ? 1 : 5, hi = up ? 4 : 9;
+    const roll = () => lo + Math.floor(rnd() * (hi - lo + 1));
     let d0, d1, d2;
     do { d0 = roll(); d1 = roll(); d2 = roll(); } while (new Set([d0, d1, d2]).size !== 3);
     const who = 'Priya', went = up ? 'up' : 'down', right = up ? 'down' : 'up';
@@ -4344,9 +4544,9 @@ const negRows = [];
       `${who} rounded to 1 decimal place first and then rounded that answer again.`
     ];
     const order = opts.slice(1);
-    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
     const all = order.slice();
-    const at = Math.floor(Math.random() * 4);
+    const at = Math.floor(rnd() * 4);
     all.splice(at, 0, opts[0]);
     return { q: `${who} rounds <b>${d0}.${d1}${d2}</b> to <b>the nearest whole number</b>. <b>What went wrong?</b>`,
              extra: '', choices: all, correct: at, answerText: opts[0], explain: 'A negative control.' };
@@ -4354,8 +4554,8 @@ const negRows = [];
   /* KILL 2 as it shipped: three never-correct frames, one of them a literal
      constant, and the key's frame never appears as a distractor. */
   proseCtl('SECOND-PASS KILL 2 - v2 gDecCmpError, three never-correct frames on every draw', () => {
-    const t = 3 + Math.floor(Math.random() * 7);
-    let h; do { h = 11 + Math.floor(Math.random() * (t * 10 - 12)); } while (h % 10 === 0);
+    const t = 3 + Math.floor(rnd() * 7);
+    let h; do { h = 11 + Math.floor(rnd() * (t * 10 - 12)); } while (h % 10 === 0);
     const small = DTXT(DV(h, 2)), big = DTXT(DV(t, 1));
     const key = `${small} is ${DECQTY(Math.floor(h / 10), 1)} and ${DECQTY(h % 10, 2)}, which is less than ` +
       `${DECQTY(t, 1)}, so ${big} is the greater one.`;
@@ -4363,7 +4563,7 @@ const negRows = [];
       `Nothing is wrong. ${h} is greater than ${t}, so ${small} is greater than ${big}.`,
       `${big} should have been written as ${DTXT(DV(t, 2))} first, and then ${small} would be the greater one.`,
       'The digits after the point should have been counted, because the number with more digits is always the greater one.'];
-    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
+    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
     return { q: `Jun Hao says <b>${small}</b> is greater than <b>${big}</b>. <b>What is wrong with that?</b>`,
              extra: '', choices: all, correct: all.indexOf(key), answerText: key, explain: 'A negative control.' };
   });
@@ -4380,7 +4580,7 @@ const negRows = [];
     const all = ['Siti counted up to 6789 and stopped.', 'Siti counted up to 23456 and stopped.',
                  'Siti counted up to 12 and stopped.', 'Siti counted up to 345 and stopped.'];
     const key = all[0];
-    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
+    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
     return { q: 'A negative control.', extra: '', choices: all, correct: all.indexOf(key),
              answerText: key, explain: 'A negative control.' };
   });
@@ -4389,9 +4589,9 @@ const negRows = [];
      over the magnitude-rank gate's own ceiling on the axis it cannot see. Every
      individual item is clean and every rank is spread; only the answer repeats. */
   proseCtl('WOUND 4 - a generator whose key is the same number on half its draws', () => {
-    const k = Math.random() < 0.5 ? 5 : 4 + Math.floor(Math.random() * 4);
+    const k = rnd() < 0.5 ? 5 : 4 + Math.floor(rnd() * 4);
     const all = [`${k} kg`, `${k + 1} kg`, `${k - 1} kg`, `${k + 2} kg`];
-    const at = Math.floor(Math.random() * 4);
+    const at = Math.floor(rnd() * 4);
     const opts = all.slice(1);
     opts.splice(at, 0, all[0]);
     return { q: 'A negative control.', extra: '', choices: opts, correct: at, answerText: all[0],
@@ -4427,16 +4627,23 @@ const negRows = [];
      26.62% was hiding, and this lane has removed the mode rather than shipped it. */
   couplingCtl('SEVENTH-PASS KILL - v7 gDecQuotient at ÷ 10, the option made of the question\'s own digits',
     () => ctlV7Quotient(10), 'the stem-option coupling ceiling');
+  /* the EIGHTH pass's two kills. KILL 1 is the control on the CASCADE ARM - every
+     relation in this gate read under 45% on the v8 bank and a child was answering
+     79% of it - and KILL 2 is the control on the below-one relation. */
+  couplingCtl('EIGHTH-PASS KILL 1 - v8 gDecQuotient, the remainder slip on every row once ÷ 10 is gone',
+    ctlV8QuotientNoTen, 'the stem-option coupling ceiling');
+  couplingCtl('EIGHTH-PASS KILL 2 - v8 gFracToDec, the question\'s own digits, the one below one',
+    ctlV8FracToDec, 'the stem-option coupling ceiling');
   /* and the control on those controls: a generator that borrows nothing from its
      stem must pass, or the ceiling is just failing every bank that prints a number */
   {
     const fn = () => {
-      const k = 200 + Math.floor(Math.random() * 600), a = Math.floor(Math.random() * 4);
+      const k = 200 + Math.floor(rnd() * 600), a = Math.floor(rnd() * 4);
       const others = [];
       for (let i = 0; i < a; i++) others.push(k + 17 * (i + 1));
       for (let i = others.length; i < 3; i++) others.push(k - 17 * (i + 1));
       const all = [DTXT(DV(k, 2))].concat(others.map(v => DTXT(DV(v, 2))));
-      const at = Math.floor(Math.random() * 4), rest = all.slice(1);
+      const at = Math.floor(rnd() * 4), rest = all.slice(1);
       rest.splice(at, 0, all[0]);
       return { q: `A negative control asks for <b>${DTXT(DV(k * 3, 2))}</b> shared into <b>3</b>.`,
                extra: '', choices: rest, correct: at, answerText: all[0], explain: 'A negative control.' };
@@ -4455,10 +4662,10 @@ const negRows = [];
     const ORD = ['first', 'second', 'third', 'fourth'];
     const fn = () => {
       const ds = [1, 2, 3, 4, 5, 6, 7, 8, 9].slice();
-      for (let i = ds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ds[i], ds[j]] = [ds[j], ds[i]]; }
-      const d = ds.slice(0, 4), dir = Math.random() < 0.5 ? 'up' : 'down';
+      for (let i = ds.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [ds[i], ds[j]] = [ds[j], ds[i]]; }
+      const d = ds.slice(0, 4), dir = rnd() < 0.5 ? 'up' : 'down';
       const all = [0, 1, 2, 3].map(i => `Siti rounded ${dir} after looking at the ${ORD[i]} digit, ${d[i]}.`);
-      const at = Math.floor(Math.random() * 4);
+      const at = Math.floor(rnd() * 4);
       return { q: 'A negative control.', extra: '', choices: all, correct: at, answerText: all[at],
                explain: 'A negative control.' };
     };
@@ -4555,7 +4762,8 @@ else console.log(`ok   index.html manifest: all ${manifestRows.length} topic fil
 /* ---------- decimals: magnitude rank, contract coverage, negative controls ---------- */
 if (rankReport) {
   console.log('');
-  console.log(`MAGNITUDE-RANK  (${RANK_DRAWS} draws x ${rankReport.rows.length} decimals generators, ceiling ${(RANK_CEILING * 100).toFixed(0)}% per rank)`);
+  console.log(`MAGNITUDE-RANK  (${RANK_DRAWS} draws x ${rankReport.rows.length} decimals generators, ` +
+    `ceiling ${(RANK_CEILING * 100).toFixed(0)}% and FLOOR ${(RANK_MIN_SHARE * 100).toFixed(0)}% per rank)`);
   console.log(`  bank-wide best rank strategy : "always pick the ${RANK_LABELS[rankReport.bank.rank]}" wins ` +
     `${(rankReport.bank.share * 100).toFixed(1)}%  (${rankReport.bank.n} numeric-option draws, floor 25.0%)`);
   console.log(`  gated generators only        : "always pick the ${RANK_LABELS[rankReport.gated.rank]}" wins ` +
@@ -4563,14 +4771,19 @@ if (rankReport) {
   const badRank = rankRows.filter(r => !r.ok);
   if (badRank.length) {
     for (const r of badRank) {
-      console.log(`FAIL rank  ${r.name}  key is the ${RANK_LABELS[r.rank]} on ${(r.worst * 100).toFixed(1)}% of ${r.n} draws ` +
+      console.log(`FAIL rank  ${r.name}  ` +
+        (r.under ? `key is the ${RANK_LABELS[r.thinRank]} on only ${(r.thinnest * 100).toFixed(1)}% of ${r.n} draws, floor ${(RANK_MIN_SHARE * 100).toFixed(0)}% `
+                 : `key is the ${RANK_LABELS[r.rank]} on ${(r.worst * 100).toFixed(1)}% of ${r.n} draws `) +
         `[${r.hist.map((h, i) => RANK_LABELS[i] + ' ' + (r.n ? (h / r.n * 100).toFixed(1) : '0.0') + '%').join(', ')}]`);
     }
   } else {
     const gatedRows = rankRows.filter(r => !r.exempt && r.n >= RANK_FLOOR).sort((a, b) => b.worst - a.worst);
     const w = gatedRows[0];
+    const t = gatedRows.slice().sort((a, b) => a.thinnest - b.thinnest)[0];
     console.log(`  ok   no gated generator's key sits at one rank on more than ${(RANK_CEILING * 100).toFixed(0)}% of its draws` +
       (w ? `  (worst: ${w.name} ${(w.worst * 100).toFixed(1)}% "${RANK_LABELS[w.rank]}")` : ''));
+    console.log(`  ok   and none leaves a rank emptier than ${(RANK_MIN_SHARE * 100).toFixed(0)}%` +
+      (t ? `  (thinnest: ${t.name} ${(t.thinnest * 100).toFixed(1)}% "${RANK_LABELS[t.thinRank]}")` : ''));
   }
 }
 if (proseRows.length) {

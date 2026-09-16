@@ -3250,13 +3250,13 @@ let elimControl = 'a key always inside a two-member width class was not rejected
   const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
   const twoWide = () => {
     const key = rnd(2000, 8000);
-    /* 22 draws in 100 print four distinct widths and the rule declines; on the
-       other 78 one distractor sits at the key's own width and two are narrower, so
+    /* 30 draws in 100 print four distinct widths and the rule declines; on the
+       other 70 one distractor sits at the key's own width and two are narrower, so
        the elimination keeps TWO options and the key is always one of them. The key
        is the smaller of the pair half the time and the larger half the time, which
        keeps MIN and MAX under their own caps: the only column that can see this
        row is the value of the elimination itself. */
-    const opts = rnd(1, 100) <= 22
+    const opts = rnd(1, 100) <= 30
       ? [String(key), String(rnd(100, 999)), String(rnd(10, 99)), String(rnd(1, 9))]
       : [String(key), String(rnd(0, 1) ? key + rnd(1, 900) : key - rnd(1, 900)),
          String(rnd(10, 99)), String(rnd(100, 999))];

@@ -249,6 +249,25 @@ function mcText(stem, extra, correctText, wrongs, explain) {
 }
 const fig = (q, figure) => (q.figure = figure, q);
 
+/* ===== THE EXPLANATION MAY ONLY NAME A NUMBER THAT IS ON THE ROW ==============
+   (the p2 sweep's explanation gate, lifted here as one helper - refutation v4
+   WOUND 2 on gDecBuild, refutation v5 WOUND 2 on gDecRoundSum.)
+
+   An explanation that calls out a named slip BY NUMBER, while that slip is one of
+   six candidates of which three ship, sends the child hunting the option row for a
+   number that is not on it - and in both generators a LOOKALIKE one unit away was
+   on the row every time. Marking the slip `must()` fixes it and pins the key's
+   magnitude rank, which is the defect the rank discipline above exists to stop.
+
+   `slipFor` is the other fix: hand it the built item and the [value, sentence]
+   pairs in priority order, and it returns the first pair whose value is actually
+   printed on the row, so the diagnosis always matches a number the child can see.
+   `textOf` renders a value the way its option is written ("5 kg", "1.87"). */
+function slipFor(q, named, textOf) {
+  const on = (q.choices || []).map(c => String(c));
+  return named.find(p => p[0] !== null && p[0] !== undefined && on.indexOf(textOf(p[0])) >= 0) || null;
+}
+
 /* ---- draw helper: distinct digits 1..9, so the digit a stem names appears in
    exactly one place and "which place is it in" has exactly one answer ---- */
 function distinctDigits(k) { return shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, k); }
@@ -259,33 +278,47 @@ function distinctDigits(k) { return shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0
    ========================================================================== */
 
 /* FORMAT 1a - direct compute: what is one digit worth? (pool 1)
-   Every option prints at the ASKED place's own dp, so the three named slips
-   ("read it one place left", "looked at the wrong digit", "used the ones digit")
-   are all exactly representable. The recovered generator printed them at a single
-   dp and shipped 0.07 as "0.1". */
+
+   THE KILL (refutation v5 @ 8cf212b). The v5 row was the named digit at the asked
+   place, the same digit one place shallower, the ONES digit at the asked place and
+   a second decimal digit at the asked place - so THREE options printed at the asked
+   depth and, because `distinctDigits` guarantees the digits differ, exactly one of
+   those three ended in the digit the question names. "Of the options written to the
+   commonest number of decimal places, take the one ending in the named digit"
+   settled 100.00% of draws and was right 100.00% of them, on 80,000 draws without a
+   miss, and the numeral in the stem was never read. Structural on both branches of
+   the draw, on the pool-1 `place` anchor a struggling child meets twice a session.
+
+   THE REBUILD, and it is the PM's own: the row is now the SAME digit at ALL FOUR
+   PLACES - ones, tenths, hundredths, thousandths - so the ONLY token that differs
+   between the options is the place, which is the mathematics. Every option ends in
+   the named digit (the refuter's second half keeps 4 and settles nothing), every
+   option is written to its own depth so there is no commonest depth to read (the
+   first half keeps 4 as well), no option carries a trailing zero, and the four
+   lengths, magnitudes and depths are one apiece, so every formatting and rank rule
+   is a flat 1-in-4. The number carries three decimal places on every draw and the
+   place asked for is uniform over the four, which is what keeps "pick the option
+   written to as many places as the number" at chance instead of at 46%.
+
+   RULE D1 is refined in tools/gen-sanity.mjs in the same sitting: a key alone at its
+   own decimal-place count is a tell only when some OTHER pair shares one. Where all
+   four options differ, the odd one out does not exist and the depth names nobody. */
 function gDecDigitValue() {
-  const dp = ri(1, 3);
-  const ds = distinctDigits(dp + 1);
+  const ds = distinctDigits(4);
   const whole = ds[0], dec = ds.slice(1);
   const numStr = whole + '.' + dec.join('');
-  const place = ri(1, dp);
-  const d = dec[place - 1];
+  const place = ri(0, 3);                                  /* the ones place is a place too */
+  const d = place === 0 ? whole : dec[place - 1];
   const key = D(d, place);
-  /* WOUND 3 (refutation v4 @ 7ec7919): written as D(d * 10, place) this printed
-     "0.40", and a trailing zero after the point is a badge no key in this bank can
-     ever wear - "delete the option ending in a zero" was a free elimination on
-     100% of draws. The VALUE is unchanged; it is now written the way a child
-     writes it, which is also the way the misconception reads. */
-  const leftSlip = dnat(D(d * 10, place));                 /* read one place too far left */
-  const onesDigit = D(whole, place);                       /* used the ones digit instead */
-  /* "looked at the wrong digit" needs a second decimal digit; a one-place number
-     has none, so it offers "one place too deep" there instead. */
-  const third = dp > 1 ? D(dec[place % dp], place) : D(d, Math.min(3, place + 1));
+  /* the three named slips ARE the other three places: counted one place too few,
+     one too many, or forgot to count past the point at all. */
+  const wrongs = [0, 1, 2, 3].filter(p => p !== place).map(p => D(d, p));
   return mcDec('What is the value of the digit <b>' + d + '</b> in <b>' + numStr + '</b>?', '',
-    key, [leftSlip, onesDigit, third], '',
+    key, wrongs, '',
     'In ' + numStr + ', count the places after the decimal point: tenths, then hundredths, then thousandths. ' +
-    'The digit ' + d + ' is number ' + place + ' after the point, so it sits in the ' + PLACE_WORD[place] +
-    ' place and it is worth ' + qty(d, place) + ', which is ' + dtext(key) + '.');
+    'The digit ' + d + ' is ' + (place === 0 ? 'before the point, so it sits in the ones place'
+      : 'number ' + place + ' after the point, so it sits in the ' + PLACE_WORD[place] + ' place') +
+    ' and it is worth ' + qty(d, place) + ', which is ' + dtext(key) + '.');
 }
 /* --- (gDecNamePlace follows) --- */
 
@@ -363,7 +396,7 @@ function gDecBuild() {
   ];
   const q = mcDec('Which number is made up of <b>' + parts + '</b>?', '',
     key, [packed, swapped, packedSwapped, noWhole, noMiddle, noPoint], '', '');
-  const on = named.find(c => c[0] && q.choices.indexOf(dtext(c[0])) >= 0) || named[0];
+  const on = slipFor(q, named, dtext) || named[0];
   q.explain = parts + ' is written ' + dtext(key) + '. There are no ' + PLACE_WORD[p1 === 1 ? 2 : 1] +
     ', so a zero holds that place open. ' + on[1] + dtext(on[0]) + ', which is a different number.';
   q.answerText = dtext(key);
@@ -377,7 +410,15 @@ function gDecHowMany() {
   do {
     guard++;
     dp = Math.random() < 0.65 ? 1 : 2;
-    j = dp === 1 ? pick([1, 2]) : pick([2, 3]);
+    /* WOUND 4 (refutation v5 @ 8cf212b). `j` was the number's OWN last place on
+       50.0% of draws, and there the key is the stem's digits with the point rubbed
+       out - "How many hundredths are there in 4.68?" -> 468 - so "the option whose
+       digit multiset is the stem number's" settled those draws 100.00% and was
+       right every time, with no place counted. The shape is the MOE question and it
+       is kept, but it is now one draw in four instead of one in two, and on the
+       other three `j` runs DEEPER than the number, where the option carrying the
+       stem's digits is `shallow`, a named slip, and the rule walks into it. */
+    j = Math.random() < 0.25 ? dp : (dp === 1 ? pick([2, 3]) : 3);
     const ds = distinctDigits(dp + 1);
     w = ds[0];
     val = D(w * P10[dp] + ds.slice(1).reduce((a, x, i) => a + x * P10[dp - 1 - i], 0), dp);
@@ -762,7 +803,20 @@ function gDecRound() {
     const d1 = Math.floor((val.n - base * cut) / P10[dp - to - 1]);
     const d2 = val.n % 10;
     key = dround(val, to);
-    if (dp > to + 1 && (d1 >= 5) === (d2 >= 5)) continue;
+    /* WOUND 1 (refutation v5 @ 8cf212b). A line here rejected any draw whose
+       rounding digit and LAST digit sat on the same side of 5, so that "looked at
+       the last digit" could not collide with the key and always shipped as a
+       distinct slip. It fired on every to = 0 and to = 1 draw - 56.5% of the bank -
+       and could not fire at to = 2, where the two digits are the same digit. That
+       made the last digit a PERFECT predictor, inverted below and direct above: one
+       two-branch rule selected by reading the rounding phrase settled 100.00% of
+       draws and was right 100.00% of them, on a bank whose own skill tip is "look at
+       ONE digit only - the very next one". The line is gone. The two digits are now
+       independent, so at to = 0 and to = 1 the last digit decides nothing better
+       than a coin; the candidate list is deduplicated by value and a draw survives
+       on any three of five slips, so when the two digits do fall on the same side
+       the "last digit" slip simply collides with the key and is dropped, which is
+       the right outcome and is also what restores the rounding-place mix to even. */
     if (key.n <= 0) continue;
     /* REGRESSION, found by the v5 trailing-zero work (WOUND 3) and not by any pass:
        `to` was drawn over 0, 1 and 2 and the generator shipped `2 decimal places`
@@ -1082,15 +1136,32 @@ function gDecRoundSum() {
   if (!ok) { a = D(267, 2); b = D(18, 1); total = D(447, 2); key = 4; doubleRound = 5; chopped = 3; subtracted = 1; twiceA = 5; twiceB = 4; twiceBoth = 9; }
   const fruit = pick([['papaya', 'pineapple'], ['bag of rice', 'bag of onions'], ['bunch of bananas', 'watermelon']]);
   const wrongs = rankInts(key, [doubleRound, chopped, subtracted, twiceA, twiceB, twiceBoth]);
+  /* WOUND 2 (refutation v5 @ 8cf212b): the last sentence named `doubleRound` by
+     number, and `doubleRound` is one of six candidates of which `rankInts` ships
+     three - so on 50.0% of draws the child re-read the explanation, hunted the row
+     for the trap it named and did not find it, with a lookalike one kilogram away
+     sitting on the row every one of those times. This is the v4 WOUND 2 class,
+     fixed in gDecBuild at v5 and left standing in the only other generator that
+     does the same thing. Whichever named slip actually SHIPPED is the one the
+     explanation calls out now, each with its own diagnosis, so the sentence always
+     points at a number the child can see. */
+  const named = [
+    [doubleRound, 'rounding ' + dtext(total) + ' to 1 decimal place first and then again gives '],
+    [chopped, 'dropping the bit after the point on each mass before adding gives '],
+    [twiceBoth, 'weighing the pair twice over gives '],
+    [twiceA, 'weighing the ' + fruit[0] + ' twice and forgetting the ' + fruit[1] + ' gives '],
+    [twiceB, 'weighing the ' + fruit[1] + ' twice and forgetting the ' + fruit[0] + ' gives '],
+    [subtracted, 'taking one mass away from the other gives ']
+  ];
   const q = finishNum('At the wet market ' + who + ' buys a ' + fruit[0] + ' weighing <b>' + dtext(a) +
     ' kg</b> and a ' + fruit[1] + ' weighing <b>' + dtext(b) + ' kg</b>. <b>Rounded to the nearest kilogram</b>, ' +
     'what is the total mass of the two together?', '',
-    key, wrongs, 'kg',
-    'Step 1: add the two masses. ' + dtext(a) + ' + ' + dtext(b) + ' = ' + dtext(total) +
+    key, wrongs, 'kg', '');
+  const on = slipFor(q, named, v => v + ' kg') || named[0];
+  q.explain = 'Step 1: add the two masses. ' + dtext(a) + ' + ' + dtext(b) + ' = ' + dtext(total) +
     ' kg. Step 2: round ' + dtext(total) + ' to the nearest whole number. The digit just after the ones place is ' +
     Math.floor((total.n % 100) / 10) + ', which is 4 or less, so it rounds down to ' + key +
-    ' kg. Add first and round ONCE: rounding ' + dtext(total) + ' to 1 decimal place first and then again gives ' +
-    doubleRound + ' kg, which is not the same thing.');
+    ' kg. Add first and round ONCE: ' + on[1] + on[0] + ' kg, which is not the same thing.';
   q.decAuthored = wrongs.map(v => v + ' kg');
   q.authored = wrongs.slice();
   return q;
@@ -1455,31 +1526,35 @@ function gDecMoneyMore() {
 function gDecAlignError() {
   const who = pick(NAMES);
   let a = D(375, 2), b = D(46, 1), guard = 0, ok = false;
-  /* the shape is drawn ONCE, outside the redraw loop. Drawn inside it, the rejected
-     carry-less shape-B draws would have been re-rolled into shape A and the carry
-     rate would have come out at 72%, not at the coin it was written to be. */
-  const twoSided = Math.random() < 0.88;
+  /* WOUND (refutation v6, this lane's own measurement). This generator used to draw
+     a SECOND shape on 12% of its draws - a whole number plus a tenth, "2 + 0.6" -
+     and that shape asks no arithmetic at all: the answer IS the two printed numbers
+     written side by side, so any relation that reads "the option ending in the digit
+     the stem names" finds the key for nothing. Three passes in a row found a route
+     through it (v4's "whole ones from one stem number, digits after the point from
+     the other" at 83%, v5's 53.6% residual, and, once the coupling gate could see a
+     last digit, "of the two options sharing a whole number take the one ending in a
+     digit the stem names" at 85.46% @ 100.0% inside that shape on 6,000 draws). It
+     cannot be fixed, because every sum with a whole-number addend is a
+     concatenation. The shape is gone; the item keeps the shape that carries a real
+     carry, where the misalignment is the whole lesson. */
   do {
     guard++;
-    if (twoSided) {
-      const A = ri(101, 899), B = ri(11, 89);
-      if (A % 10 === 0 || B % 10 === 0) continue;             /* the last digits must be real digits */
-      if ((A % 100) + (B % 10) * 10 < 100) continue;          /* the fractions must carry into the ones */
-      a = D(A, 2); b = D(B, 1);
-    } else {
-      a = D(ri(1, 9), 0); b = D(ri(1, 9), 1);
-    }
-    const m0 = Math.max(a.dp, b.dp);
-    const t0 = a.n * P10[m0 - a.dp] + b.n * P10[m0 - b.dp];
-    const df = Math.abs(a.n * P10[m0 - a.dp] - b.n * P10[m0 - b.dp]);
+    const A = ri(101, 899), B = ri(11, 89);
+    if (A % 10 === 0 || B % 10 === 0) continue;             /* the last digits must be real digits */
+    if ((A % 100) + (B % 10) * 10 < 100) continue;          /* the fractions must carry into the ones */
+    a = D(A, 2); b = D(B, 1);
+    const m0 = 2;
+    const t0 = a.n + b.n * 10;
+    const df = Math.abs(a.n - b.n * 10);
     if (t0 - P10[m0] <= 0 || df <= 0) continue;
     /* "writes the 9 underneath the 9" reads as a riddle; the two last digits differ */
     if (a.n % 10 === b.n % 10) continue;
-    const patched0 = Math.floor(t0 / P10[m0]) * P10[m0] + (a.n + b.n) % P10[m0];
-    if (!twoSided && (patched0 <= 0 || patched0 === t0)) continue;
+    /* "got the whole ones right and kept the misaligned rest" may not come out as the
+       printed slip itself, or RULE D5 would offer the declared-wrong number back */
+    if (Math.floor(t0 / P10[m0]) === Math.floor((a.n + b.n) / P10[m0])) continue;
     if (!dallDistinct([D(t0, m0), D(a.n + b.n, m0), D(a.n + b.n, 0), D(t0 + P10[m0], m0),
-                       D(df, m0), D(t0 - P10[m0], m0), D(t0, m0 + 1), D(t0, m0 - 1)]
-                      .concat(twoSided ? [] : [D(patched0, m0)]))) continue;
+                       D(df, m0), D(t0 - P10[m0], m0), D(t0, m0 + 1), D(t0, m0 - 1)])) continue;
     ok = true;
     break;
   } while (guard < 400);
@@ -1493,15 +1568,14 @@ function gDecAlignError() {
   const diff = D(Math.abs(a.n * P10[m - a.dp] - b.n * P10[m - b.dp]), m);   /* subtracted instead */
   const overCarry = D(trueN + P10[m], m);            /* carried where there was nothing to carry */
   const lostCarry = D(trueN - P10[m], m);            /* wrote the carried ten down and lost it */
-  /* COUPLING GATE (refutation v4 @ 7ec7919, the gate's own finding). On the "7 + 0.6"
-     picture the KEY is made of the two numbers in the stem - 7 from one and .6 from
-     the other - and on 83% of those draws it was the ONLY option whose whole ones
-     came from one stem number and whose digits after the point came from another.
-     This candidate carries the key's own whole ones with the digits after the point
-     of the wrong answer the stem prints - "got the whole ones right and kept the
-     rest of the misaligned sum" - so it matches the key on every whole-part reading
-     there is, on BOTH shapes, and it ships on every draw. */
-  const patched = twoSided ? null : must(D(Math.floor(trueN / P10[m]) * P10[m] + claim.n % P10[m], m));
+  /* COUPLING GATE (refutation v4 @ 7ec7919, the gate's own finding), kept: "got the
+     whole ones right and kept the rest of the misaligned sum" carries the key's own
+     whole ones with the digits after the point of the wrong answer the stem prints,
+     so the key is never the only option whose whole part reads correctly. It was a
+     must() while the one-sided shape existed and is an ordinary candidate now - the
+     rank picker is free to leave it out, which is what stops "of the two options
+     sharing a whole number, take the one ending in a named digit" from settling. */
+  const patched = D(Math.floor(trueN / P10[m]) * P10[m] + claim.n % P10[m], m);
   return mcDec(who + ' works out <b>' + dtext(a) + ' + ' + dtext(b) + '</b>. ' + who +
     ' writes the ' + lastB + ' underneath the ' + lastA + ' and gets <b>' + dtext(claim) +
     '</b>. <b>What is the correct answer?</b>', '',
@@ -1537,97 +1611,108 @@ function gDecMoneyChange() {
   return q;
 }
 
-/* FORMAT 4f - concept check: WHICH calculation? (pool 1, muldiv anchor)
+/* FORMAT 4f - direct compute in money: the cost of n of one thing (pool 1, muldiv
+   anchor).
 
-   WOUND 2 (refutation v2 @ 0157aa1). The key was ALWAYS `n × $x` and the three
-   distractor frames `n + $x`, `$x ÷ n` and `n ÷ $x` were the key on 0% of draws,
-   for ever: "pick the multiplication" answered this on 20,000 / 20,000 draws
-   without a decimal being read, and at 45% accuracy the item is the 4th
-   most-served in the topic - the child who needs the anchor most meets it four
-   times as often and scores on it for free.
+   THIS FORMAT HAS NOW BEEN KILLED THREE TIMES AS A "WHICH CALCULATION" CONCEPT
+   CHECK, EACH TIME ON A DIFFERENT PROPERTY OF THE OPTION ROW.
 
-   THE FIX is the one the refuter named: vary the DEMAND so the key's operation
-   varies. Three questions are drawn over the same two-price, one-count
-   furniture - the cost of n of one item, the cost of one of each, and the cost
-   of a single item out of a box price - and the key is a ×, a + or a ÷
-   accordingly. Every draw ships TWO options carrying the key's operator, so the
-   operator alone never singles it out, and the key wears three different frames
-   across draws instead of one. */
+     v2 @ 0157aa1  the key was always the ×, and the three distractor frames were
+                   the key on 0% of draws: "pick the multiplication" answered it on
+                   20,000 / 20,000 draws without a decimal being read.
+     v4 @ 7ec7919  the key was the only option naming two different money amounts
+                   (mode 1) and the only one shaped "a price shared into a count"
+                   (mode 2): the OPERAND SHAPE settled 66.83% of draws.
+     v5 @ 8cf212b  the key was the only option built on the CHEAP price - the two
+                   price lists never overlapped - and in the box mode the only ÷
+                   whose divisor was the count printed three times on the row.
+                   100.00% of draws, 100% right, no stem read and no arithmetic.
+
+   THE FIFTH PASS'S MANDATE was to make every option on the row carry the SAME
+   operand set, so that only the operation could discriminate. That cannot be done
+   on this demand, and the reason is structural rather than a matter of effort:
+
+     over an operand set of {price, count} exactly TWO arrangements can ever be the
+     key - `$p × n` and `$p ÷ n`. Addition and subtraction of a price and a count
+     are not answers to any question, so they are permanently dead frames. With two
+     live keys, "always pick the multiplication" wins P(the key is the ×) - 50% by
+     construction, whatever the row does, twice chance and over the 40% bar. The
+     only way to a third live key is two operands of the SAME KIND (two prices,
+     where +, − and ÷ are all live), and that would make two thirds of a generator
+     tagged `muldiv` an addition-and-subtraction concept check.
+
+   Measured, not just argued: a prototype of the mandated design - one price list,
+   a constant four-arrangement row (`$p × n`, `$p ÷ n`, `n ÷ $p`, `$p + n`) and the
+   demand alone deciding - reads "always pick the ×" at 50.0% and "always pick the
+   ÷" at 50.0% on 20,000 draws. Every other row rule is flat, exactly as intended.
+   The floor is the two-key arithmetic, not the row.
+
+   THE REBUILD is therefore the PM's second instruction, the wave-1 law: ask for the
+   TOTAL AS A NUMBER and carry named misconceptions as the option values. There is
+   then no option row to read at all - four money amounts, each the answer to a
+   named wrong method - and every arm of the harness binds on it the way it binds on
+   the rest of the bank: the magnitude-rank picker spreads the key over all four
+   positions, `q.decAuthored` binds the distractor contract, the coupling gate scores
+   the stem against the options, and the oracle re-derives the key from the rendered
+   price and count. The item still asks the muldiv question it was written for - how
+   many groups of this price - and now a child has to do it. */
 /* [with its article, plural, bare singular] - so every stem below reads as English */
 const BOOKSHOP_ITEMS = [['a pen', 'pens', 'pen'], ['an exercise book', 'exercise books', 'exercise book'],
   ['a ruler', 'rulers', 'ruler'], ['a glue stick', 'glue sticks', 'glue stick'],
   ['a pencil', 'pencils', 'pencil'], ['an eraser', 'erasers', 'eraser']];
 function gDecMulConcept() {
-  let x = 115, y = 240, n = 7, m = 4, z = 150, z2 = 310, guard = 0, ok = false;
+  /* ONE price list (the v5 kill was two lists that never overlapped, so "cheap"
+     was a badge). Every price carries cents, because the cents are the lesson. */
+  let x = 115, n = 7, guard = 0, ok = false, cands = [];
+  let dollars = 1, cents = 15;
   do {
     guard++;
-    x = pick([105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195]);
-    y = pick([210, 220, 240, 250, 265, 280, 295, 310, 325, 350, 375, 420]);
+    x = pick([105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195,
+              210, 220, 240, 250, 265, 280, 295, 310, 325, 350, 375, 420]);
     n = ri(3, 9);
-    /* the SECOND box, for mode 2 - a different count at a different price, so the
-       option that divides the wrong box price is a real slip and not a shape */
-    m = ri(3, 9); z = pick([105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195]);
-    /* the THIRD price, for mode 1 - so a second two-price addition can be offered */
-    z2 = pick([210, 220, 240, 250, 265, 280, 295, 310, 325, 350, 375, 420]);
-    /* every option must evaluate to a DIFFERENT amount, so exactly one of them can
-       be the answer to the question actually asked, whichever question it is */
-    if (new Set([n * x, n * y, x + y, y + z2, x + x, n * (n * x)]).size !== 6) continue;
-    if (m === n || z === x || m * z === n * x || z2 === x || z2 === y) continue;
+    dollars = Math.floor(x / 100); cents = x % 100;
+    /* the cents must CARRY into the dollars, or "forgot to carry" is not a slip and
+       the item is two separate one-digit multiplications */
+    if (n * cents < 100) continue;
+    cands = [
+      { n: (n + 1) * x },                          /* one group too many */
+      { n: n * (dollars + 1) * 100 },              /* rounded the price up to a whole dollar first */
+      { n: n * x + 100 },                          /* carried a dollar that was not there */
+      { n: (n - 1) * x },                          /* one group too few */
+      { n: n * dollars * 100 + cents },            /* multiplied the dollars, copied the cents */
+      { n: dollars * 100 + n * cents },            /* multiplied the cents, copied the dollars */
+      { n: n * dollars * 100 + (n * cents) % 100 } /* never carried the cents into the dollars */
+    ];
+    if (new Set([n * x].concat(cands.map(c => c.n))).size !== 8) continue;
+    if (cands.some(c => c.n <= 0)) continue;
     ok = true;
     break;
-  } while (guard < 900);
-  if (!ok) { x = 115; y = 240; n = 7; m = 4; z = 150; z2 = 310; }
-  const items = shuffle(BOOKSHOP_ITEMS).slice(0, 3);
-  const total = n * x, other = m * z;
-  const mode = ri(0, 2);
-  const mul = (a, b) => a + ' × ' + b, div = (a, b) => a + ' ÷ ' + b,
-        add = (a, b) => a + ' + ' + b, sub = (a, b) => a + ' − ' + b;
-  let stem, key, wrongs, explain;
-  if (mode === 0) {
-    stem = 'At the school bookshop ' + items[0][0] + ' costs <b>' + money(x) + '</b> and ' + items[1][0] +
-      ' costs <b>' + money(y) + '</b>. <b>Which calculation</b> gives the cost of <b>' + n + ' ' + items[0][1] + '</b>?';
-    /* two × and two +, so RULE D6's masked tails split 2-2 and neither operator
-       narrows the set on its own; and the key names only the first price, which
-       one distractor does too, so the OPERAND LIST does not narrow it either. */
-    key = mul(n, money(x));
-    wrongs = [mul(n, money(y)), add(money(x), money(y)), add(money(x), money(x))];
-    explain = 'Buying ' + n + ' of the same thing means ' + n + ' equal groups of ' + money(x) +
-      ', so you multiply: ' + n + ' × ' + money(x) + ' = ' + money(n * x) + '. ' + money(y) +
-      ' is the price of ' + items[1][0] + ', and adding the price to itself buys two of them, not ' + n + '.';
-  } else if (mode === 1) {
-    stem = 'At the school bookshop ' + items[0][0] + ' costs <b>' + money(x) + '</b>, ' + items[1][0] +
-      ' costs <b>' + money(y) + '</b> and ' + items[2][0] + ' costs <b>' + money(z2) +
-      '</b>. <b>Which calculation</b> gives the cost of <b>one ' + items[0][2] + ' and one ' +
-      items[1][2] + '</b>?';
-    /* KILL 2 (refutation v4 @ 7ec7919): the key used to be the ONLY option naming
-       two different money amounts, so the operand list answered the item on 100% of
-       this mode's draws without the operation ever being considered. A third price
-       puts a SECOND two-price addition on the row - the right method on the wrong
-       pair - so the operand shape is shared, RULE D6's masked tails still split
-       2-2, and what is left to decide is which two prices and which operation. */
-    key = add(money(x), money(y));
-    wrongs = [add(money(y), money(z2)), mul(n, money(x)), mul(n, money(y))];
-    explain = 'One of each means the two prices put together, so you add the price of ' + items[0][0] +
-      ' and the price of ' + items[1][0] + ': ' + money(x) + ' + ' + money(y) + ' = ' + money(x + y) +
-      '. ' + money(z2) + ' is the price of ' + items[2][0] + ', which nobody asked about, and multiplying by ' +
-      n + ' buys ' + n + ' of one thing instead of one of two.';
-  } else {
-    stem = 'At the school bookshop a box of <b>' + n + ' ' + items[0][1] + '</b> costs <b>' + money(total) +
-      '</b>, and a box of <b>' + m + ' ' + items[1][1] + '</b> costs <b>' + money(other) +
-      '</b>. <b>Which calculation</b> gives the cost of <b>one ' + items[0][2] + '</b>?';
-    /* KILL 2, the other half: the key used to be the ONLY option shaped "a price
-       shared into a count", so its operand shape alone answered the item. Both
-       boxes are now priced, three of the four options share a price into a count,
-       and the work is choosing WHICH price and WHICH count - not spotting the
-       division. */
-    key = div(money(total), n);
-    wrongs = [div(money(other), m), mul(n, money(total)), mul(n, money(other))];
-    explain = 'One box holds ' + n + ' ' + items[0][1] + ' for ' + money(total) +
-      ', so you share THAT price into ' + n + ' equal parts: ' + money(total) + ' ÷ ' + n + ' = ' +
-      money(x) + '. ' + money(other) + ' ÷ ' + m + ' is the cost of one ' + items[1][2] +
-      ', and multiplying a box price makes it dearer instead of sharing it out.';
+  } while (guard < 400);
+  if (!ok) {
+    x = 175; n = 6; dollars = 1; cents = 75;
+    cands = [{ n: 7 * 175 }, { n: 6 * 200 }, { n: 6 * 175 + 100 }, { n: 5 * 175 },
+             { n: 600 + 75 }, { n: 100 + 6 * 75 }, { n: 600 + (6 * 75) % 100 }];
   }
-  return mcText(stem, '', key, wrongs, explain);
+  const item = pick(BOOKSHOP_ITEMS), key = n * x;
+  const q = mcMoney('At the school bookshop ' + item[0] + ' costs <b>' + money(x) +
+    '</b>. <b>How much do ' + n + ' ' + item[1] + ' cost altogether?</b>', '',
+    key, cands, '');
+  /* the explanation names a slip that is ON THE ROW (slipFor), never one that is not */
+  const named = [
+    [n * dollars * 100 + (n * cents) % 100, 'Multiplying the cents and forgetting to carry them into the dollars gives '],
+    [n * dollars * 100 + cents, 'Multiplying the dollars and copying the cents across gives '],
+    [dollars * 100 + n * cents, 'Multiplying the cents and copying the dollars across gives '],
+    [n * (dollars + 1) * 100, 'Rounding ' + money(x) + ' up to a whole dollar first gives '],
+    [(n + 1) * x, 'Counting one ' + item[2] + ' too many gives '],
+    [(n - 1) * x, 'Counting one ' + item[2] + ' too few gives '],
+    [n * x + 100, 'Carrying a dollar that was never there gives ']
+  ];
+  const on = slipFor(q, named, money) || named[0];
+  q.explain = n + ' ' + item[1] + ' at ' + money(x) + ' each is ' + n + ' equal groups of ' + money(x) +
+    ', so multiply: ' + n + ' × ' + money(x) + ' = ' + money(key) + '. The cents are multiplied too - ' +
+    n + ' × ' + cents + ' cents is ' + (n * cents) + ' cents, which is ' + money(n * cents) +
+    ', and those whole dollars carry across into the dollars column. ' + on[1] + money(on[0]) + '.';
+  return q;
 }
 
 /* FORMAT 4g - direct compute: a decimal times a 1-digit whole number (pool 2) */

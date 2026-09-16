@@ -581,12 +581,30 @@ function decimalsOracle(q) {
 
   /* --- PRINCIPLE 1: place value ------------------------------------------- */
   if ((m = text.match(/^What is the value of the digit (\d) in (\d+\.\d+)\?$/))) {
-    const dec = m[2].split('.')[1];
-    const hits = [...dec].filter(c => c === m[1]).length;
+    /* KILL 2 (refutation v5 @ 8cf212b): the row is now the named digit at ALL FOUR
+       places, so the ONES place is askable and the digit may sit before the point.
+       The re-derivation reads the whole numeral, not just its tail. */
+    const [w, dec] = m[2].split('.');
+    const all = w + dec;
+    const hits = [...all].filter(c => c === m[1]).length;
     if (hits !== 1) return `digit value: "${m[1]}" appears ${hits} times in ${m[2]} - the question has no single answer`;
-    const place = dec.indexOf(m[1]) + 1;
+    const place = w.indexOf(m[1]) >= 0 ? 0 : dec.indexOf(m[1]) + 1;
+    if (place === 0 && w.length !== 1) return `digit value: ${m[2]} has more than one whole-number digit`;
     const want = DV(Number(m[1]), place);
-    return ans && DEQ(ans, want) ? null : `digit value: ${m[1]} in ${m[2]} is ${DTXT(want)}, key says ${strip(q.answerText)}`;
+    if (!ans || !DEQ(ans, want)) return `digit value: ${m[1]} in ${m[2]} is ${DTXT(want)}, key says ${strip(q.answerText)}`;
+    if (decCountWhere(q, v => DEQ(v, want)) !== 1) return 'digit value: two options are the same quantity as the key';
+    /* and the KILL's own rule, asserted on every draw: the four options must be the
+       named digit at four DIFFERENT depths, so neither "the commonest depth on the
+       row" nor "the one ending in the digit the question names" can single one out. */
+    const raw = q.choices.map(strip), vals = raw.map(decOf);
+    if (vals.some(v => !v)) return 'digit value: an option is not a plain number';
+    if (new Set(vals.map(v => v.dp)).size !== 4) {
+      return `digit value: two options are written to the same depth (${raw.join(' | ')}) - "the commonest depth, ending in the named digit" reads the key off the row`;
+    }
+    if (vals.some(v => v.n !== Number(m[1]))) {
+      return `digit value: an option is not the digit ${m[1]} at a place (${raw.join(' | ')}) - only the place may differ`;
+    }
+    return null;
   }
   if ((m = text.match(/^In (\d+\.\d+), which place is the digit (\d) in\?$/))) {
     const [w, dec] = m[1].split('.');
@@ -1047,6 +1065,10 @@ function decimalsOracle(q) {
     if (!a || !b) return 'align error: an operand is not a decimal';
     if (m[5] !== m[2].slice(-1) || m[4] !== m[3].slice(-1)) return 'align error: the digits named are not the LAST digits of the two numbers';
     if (Math.abs(a.dp - b.dp) !== 1) return `align error: ${m[2]} and ${m[3]} are ${Math.abs(a.dp - b.dp)} columns apart - the slip slides by exactly one`;
+    /* v6: the whole-number-plus-a-tenth shape is gone. Its answer was the two printed
+       numbers written side by side, so it asked no arithmetic and three passes found
+       a route through it; a draw that brings it back fails the build. */
+    if (a.dp === 0 || b.dp === 0) return `align error: "${m[2]} + ${m[3]}" has a whole-number addend, so the answer is the two printed numbers side by side`;
     if (m[4] === m[5]) return `align error: "writes the ${m[4]} underneath the ${m[5]}" names the same digit twice`;
     const d = Math.max(a.dp, b.dp);
     const want = DV(a.n * TEN(d - a.dp) + b.n * TEN(d - b.dp), d);
@@ -1068,62 +1090,25 @@ function decimalsOracle(q) {
     if (strip(q.answerText) !== '$' + DTXT(DV(want, 2))) return `change: answerText "${strip(q.answerText)}" is not the money form`;
     return null;
   }
-  /* WOUND 2 (refutation v2 @ 0157aa1). The key was ALWAYS `n × $x` and the three
-     distractor frames were the key on 0% of draws, so "pick the multiplication"
-     answered the pool-1 muldiv anchor on 20,000 / 20,000 draws - and at 45%
-     accuracy it is the 4th most-served item in the topic. The DEMAND is now drawn
-     three ways over the same furniture, so the key is a ×, a + or a ÷; every draw
-     ships TWO options carrying the key's operator, and this branch asserts both. */
-  {
-    const many = text.match(/^At the school bookshop (.+?) costs \$(\d+\.\d\d) and (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of (\d+) (.+)\?$/);
-    const each = text.match(/^At the school bookshop (.+?) costs \$(\d+\.\d\d), (.+?) costs \$(\d+\.\d\d) and (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of one (.+?) and one (.+?)\?$/);
-    const box = text.match(/^At the school bookshop a box of (\d+) (.+?) costs \$(\d+\.\d\d), and a box of (\d+) (.+?) costs \$(\d+\.\d\d)\. Which calculation gives the cost of one (.+)\?$/);
-    if (many || each || box) {
-      let want, prices;
-      if (many) {
-        want = `${many[5]} × $${many[2]}`;
-        prices = [many[2], many[4]];
-        if (many[2] === many[4]) return 'which calculation: the two prices are the same amount';
-      } else if (each) {
-        want = `$${each[2]} + $${each[4]}`;
-        prices = [each[2], each[4], each[6]];
-        if (new Set(prices).size !== 3) return 'which calculation: two of the three prices are the same amount';
-      } else {
-        want = `$${box[3]} ÷ ${box[1]}`;
-        prices = [box[3], box[6]];
-        for (const [c, k] of [[box[3], box[1]], [box[6], box[4]]]) {
-          if (Math.round(Number(c) * 100) % Number(k) !== 0) return `which calculation: $${c} does not share equally into ${k}`;
-        }
-        if (box[1] === box[4]) return 'which calculation: the two boxes hold the same number';
-        if (box[3] === box[6]) return 'which calculation: the two boxes cost the same';
-      }
-      const raw = q.choices.map(strip);
-      if (raw[keyIdx] !== want) return `which calculation: expected "${want}", key says "${raw[keyIdx]}"`;
-      if (raw.filter(c => c === want).length !== 1) return 'which calculation: the true calculation is offered twice';
-      /* KILL 2 (refutation v4 @ 7ec7919). The v3 contract asserted only that two
-         options carried the key's OPERATOR. That was true and it was not what gave
-         the item away: in two of the three modes the key was the only option with
-         the key's OPERAND SHAPE - the only one naming two different money amounts,
-         or the only one shaped "a price shared into a count" - so the operand list
-         answered the item before the operation was considered at all. Both axes are
-         asserted now, and a third: the key may not be the only option naming the
-         same COUNT of the stem's prices that it names. */
-      const opOf = c => { const mm = c.match(/[+×÷−]/); return mm ? mm[0] : null; };
-      const shapeOf = c => c.replace(/\$\d+\.\d\d/g, 'M').replace(/\d+/g, 'C').replace(/[^MC]/g, '');
-      const pricesIn = c => (c.match(/\$\d+\.\d\d/g) || []).map(t => t.slice(1)).filter(t => prices.indexOf(t) >= 0);
-      const kOp = opOf(want), kShape = shapeOf(want), kPrices = new Set(pricesIn(want)).size;
-      if (!kOp) return 'which calculation: the key carries no operator';
-      if (raw.filter(c => opOf(c) === kOp).length < 2) {
-        return `which calculation: only the key carries "${kOp}" - "pick the ${kOp}" answers the item with no arithmetic`;
-      }
-      if (raw.filter(c => shapeOf(c) === kShape).length < 2) {
-        return `which calculation: only the key is shaped "${kShape}" - the operand list answers the item before the operation does`;
-      }
-      if (raw.filter(c => new Set(pricesIn(c)).size === kPrices).length < 2) {
-        return `which calculation: only the key names ${kPrices} of the stem's prices - the operand list answers the item on its own`;
-      }
-      return null;
-    }
+  /* gDecMulConcept, rebuilt NUMERIC at v6 (refutation v5 @ 8cf212b, KILL 1). The
+     "which calculation" demand was killed on the operator (v2), on the operand
+     shape (v4) and on the operand SET (v5), and it cannot be saved: over {price,
+     count} only two arrangements can ever be the key, so "pick the multiplication"
+     wins 50% of draws whatever the row does. The item now asks for the total as a
+     NUMBER, with the named misconceptions as its values, so this branch re-derives
+     the money key from the rendered price and count in exact cents. */
+  if ((m = text.match(/^At the school bookshop (?:a|an) (.+?) costs \$(\d+\.\d\d)\. How much do (\d+) (.+?) cost altogether\?$/))) {
+    const p = DP(m[2]), n = Number(m[3]);
+    if (!p || p.dp !== 2) return `bookshop total: "$${m[2]}" is not a money amount`;
+    if (n < 2 || n > 9) return `bookshop total: ${n} is not a 1-digit count`;
+    if (p.n % 100 === 0) return `bookshop total: $${m[2]} carries no cents, so nothing is multiplied past the point`;
+    const want = DV(p.n * n, 2);
+    if (!ans || !DEQ(ans, want)) return `bookshop total: ${n} × $${m[2]} = ${DTXT(want)}, key says ${strip(q.answerText)}`;
+    if (decCountWhere(q, x => DEQ(x, want)) !== 1) return 'bookshop total: two options are the correct answer';
+    /* the cents must carry, or the item is two separate one-digit multiplications
+       and the named "forgot to carry" slip is the key */
+    if (n * (p.n % 100) < 100) return `bookshop total: ${n} × ${p.n % 100} cents does not carry, so "forgot to carry" is not a wrong answer`;
+    return null;
   }
   if ((m = text.match(/^One lap of the running track at .+ is (\d+\.\d+) km\. .+ runs (\d+) laps\./))) {
     const lap = DP(m[1]);
@@ -1337,7 +1322,15 @@ function decGates(q, topic) {
     }
     return null;
   }
-  if (dps.filter(d => d === keyDp).length === 1) {
+  /* RULE D1, refined at v6 (KILL 2 on gDecDigitValue). "The key is alone at its own
+     decimal-place count" is a tell only when some OTHER options SHARE a count: the
+     child's move is "three of these look alike and one does not". Where all four
+     options are written to four DIFFERENT depths the odd one out does not exist,
+     the depth names nobody, and every depth rule is a flat 1-in-4 - the same
+     principle the coupling gate's feature arm already applies (a value every option
+     differs on carries no information). The negative control still reds the real
+     tell, 0.5 / 0.45 / 0.62 / 0.38, whose depths are 1-2-2-2. */
+  if (dps.filter(d => d === keyDp).length === 1 && new Set(dps).size < 4) {
     return `decimal-place tell: the key is the only option written to ${keyDp} decimal place(s) (${raw.join(' | ')})`;
   }
   return null;
@@ -3624,6 +3617,9 @@ const cplOperands = c => cplShape(c).replace(/[^MC]/g, '');
 const cplOperator = c => { const mm = String(c).match(/[+×÷−]/g); return mm ? [...new Set(mm)].sort().join('') : null; };
 /* a single digit an option NAMES, as opposed to a number it prints */
 const cplLone = c => [...String(c).matchAll(/(?<![\d.])(\d)(?![\d.])/g)].map(x => Number(x[1]));
+/* the BARE COUNTS an option carries - a whole number with no money sign and no
+   decimal point, which is what a child reads as "how many", not "how much" */
+const cplCounts = c => [...String(c).matchAll(/(?<![$\d.])\d+(?![\d.])/g)].map(x => x[0]);
 /* everything the rendered stem offers an option to match itself against */
 function cplStem(q) {
   const t = strip(q.q) + ' ' + strip(q.extra || '');
@@ -3641,7 +3637,8 @@ function cplStem(q) {
       if (i < ds.length - 1) adj.add(ds[i + 1]);
     }
   }
-  return { text: t, numerals, set: new Set(numerals), roundTo: ph ? DEC_ROUND_TO[ph[1]] : null,
+  return { text: t, numerals, set: new Set(numerals), named: new Set(named),
+    roundTo: ph ? DEC_ROUND_TO[ph[1]] : null,
     fracs: new Set(numerals.map(cplFrac).filter(x => x !== null)),
     wholes: new Set(numerals.map(cplWhole)), dps: new Set(numerals.map(cplDp)),
     money: new Set(cplMoney(t)), adj,
@@ -3694,7 +3691,73 @@ const CPL_PREDS = [
       return all.filter(x => { const u = cplNums(x); return u.length && cplFrac(u[0]) === f; }).length > 1; } },
   { k: 'its operand shape is shared with another option', of: (o, st, all) => {
       const sh = cplOperands(o); if (sh.length < 2) return false;
-      return all.filter(x => cplOperands(x) === sh).length > 1; } }
+      return all.filter(x => cplOperands(x) === sh).length > 1; } },
+  /* ---- the SIX relations the fifth pass found the gate blind to (W3) ------------
+     Each one is named here with the finding it was built from, so a later pass can
+     tell what the arm is for. Four of them settled a live generator outright:
+
+       repeats the SMALLEST stem number        the v5 gDecMulConcept kill, mode 0 -
+                                               the gate had "the largest" and not
+                                               its mirror, and the demand was always
+                                               about the cheaper of two prices.
+       its last digit is a digit the stem
+         prints                                the v5 gDecDigitValue kill, half of
+                                               it: "of the options at the commonest
+                                               depth, take the one ending in the
+                                               named digit", 100.00% at 100%.
+       its decimal depth is the commonest
+         on the row                            the other half of the same kill, and
+                                               the first option-to-option relation
+                                               here that is about FORMAT rather than
+                                               about a numeral's parts.
+       a bare count it names also appears
+         in another option                     the whole of the v5 gDecMulConcept
+                                               mode-2 kill: the first box's count
+                                               was printed three times on the row and
+                                               the second box's once.
+       its digit string is a proper prefix
+         of a stem number's                    gDecRound's "nearest whole number"
+                                               shape, 56.75% at 100%.
+       its digit multiset is a stem
+         number's                              gDecHowMany asked for the number's own
+                                               last place on half its draws, and the
+                                               key was then the stem's digits with
+                                               the point rubbed out. 100% at 100%. */
+  { k: 'repeats the smallest number printed in the stem', of: (o, st) => {
+      if (!st.numerals.length) return false;
+      const mn = Math.min(...st.numerals.map(Number));
+      return cplNums(o).some(v => Number(v) === mn); } },
+  /* these four read a NUMERAL's own shape - its last digit, its depth, its digits -
+     so like the two option-to-option relations above they mean nothing on a row of
+     calculations or of prose, where the last token is an operand or a word. Bare-
+     number option sets only, which is where all four of the findings lived. */
+  { k: 'its last digit is the digit the stem names', of: (o, st, all) => {
+      if (!all.every(x => DEC_PURE.test(x))) return false;
+      const v = cplNums(o); if (!v.length || !st.named.size) return false;
+      const t = v[v.length - 1].replace('.', '');
+      return st.named.has(Number(t[t.length - 1])); } },
+  { k: 'its decimal depth is the commonest on the row', of: (o, st, all) => {
+      if (!all.every(x => DEC_PURE.test(x))) return false;
+      const dpOf = c => { const v = cplNums(c); return v.length ? cplDp(v[v.length - 1]) : null; };
+      const mine = dpOf(o); if (mine === null) return false;
+      const tally = new Map();
+      for (const c of all) { const d = dpOf(c); if (d !== null) tally.set(d, (tally.get(d) || 0) + 1); }
+      let best = -1, bestN = 0, tie = false;
+      for (const [d, k2] of tally) { if (k2 > bestN) { best = d; bestN = k2; tie = false; } else if (k2 === bestN) tie = true; }
+      return !tie && bestN > 1 && mine === best; } },
+  { k: 'a bare count it names also appears in another option', of: (o, st, all) => {
+      const mine = cplCounts(o); if (!mine.length) return false;
+      return all.some(x => x !== o && cplCounts(x).some(v => mine.indexOf(v) >= 0)); } },
+  { k: "its digit string is a proper prefix of a stem number's", of: (o, st, all) => {
+      if (!all.every(x => DEC_PURE.test(x))) return false;
+      const v = cplNums(o); if (!v.length) return false;
+      return v.some(x => { const s = x.replace('.', '');
+        return st.numerals.some(u => { const t = u.replace('.', ''); return t.length > s.length && t.indexOf(s) === 0; }); }); } },
+  { k: "its digit multiset is a stem number's", of: (o, st, all) => {
+      if (!all.every(x => DEC_PURE.test(x))) return false;
+      const v = cplNums(o); if (!v.length) return false;
+      const sorted = s => s.replace('.', '').split('').sort().join('');
+      return v.some(x => st.numerals.some(u => sorted(u) === sorted(x))); } }
 ];
 const CPL_FEATS = [
   { k: 'the operand-and-operator shape it is written in', of: o => { const sh = cplShape(o); return sh.length > 1 ? sh : null; } },
@@ -3848,6 +3911,56 @@ function ctlV4MulConcept() {
   }
   const all = sh([key].concat(wrongs));
   return { q: stem, extra: '', choices: all, correct: all.indexOf(key), answerText: key, explain: 'A negative control.' };
+}
+
+/* gDecMulConcept and gDecDigitValue AS THEY SHIPPED AT 8cf212b, for the same reason:
+   the fifth pass killed both on relations this gate did not score, and the six added
+   above are the fix. If these two do not go red the arm is still blind. */
+function ctlV5MulConcept() {
+  const rand = n => Math.floor(Math.random() * n);
+  const sh = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const M = c => '$' + DTXT(DV(c, 2));
+  const XS = [105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195];
+  const YS = [210, 220, 240, 250, 265, 280, 295, 310, 325, 350, 375, 420];
+  for (let guard = 0; guard < 900; guard++) {
+    const x = XS[rand(XS.length)], y = YS[rand(YS.length)], n = 3 + rand(7);
+    const m = 3 + rand(7), z = XS[rand(XS.length)], z2 = YS[rand(YS.length)];
+    if (new Set([n * x, n * y, x + y, y + z2, x + x, n * (n * x)]).size !== 6) continue;
+    if (m === n || z === x || m * z === n * x || z2 === x || z2 === y) continue;
+    const total = n * x, other = m * z, mode = rand(3);
+    let stem, key, wrongs;
+    if (mode === 0) {
+      stem = `At the school bookshop a pen costs <b>${M(x)}</b> and a ruler costs <b>${M(y)}</b>. <b>Which calculation</b> gives the cost of <b>${n} pens</b>?`;
+      key = `${n} × ${M(x)}`;
+      wrongs = [`${n} × ${M(y)}`, `${M(x)} + ${M(y)}`, `${M(x)} + ${M(x)}`];
+    } else if (mode === 1) {
+      stem = `At the school bookshop a pen costs <b>${M(x)}</b>, a ruler costs <b>${M(y)}</b> and an eraser costs <b>${M(z2)}</b>. <b>Which calculation</b> gives the cost of <b>one pen and one ruler</b>?`;
+      key = `${M(x)} + ${M(y)}`;
+      wrongs = [`${M(y)} + ${M(z2)}`, `${n} × ${M(x)}`, `${n} × ${M(y)}`];
+    } else {
+      stem = `At the school bookshop a box of <b>${n} pens</b> costs <b>${M(total)}</b>, and a box of <b>${m} rulers</b> costs <b>${M(other)}</b>. <b>Which calculation</b> gives the cost of <b>one pen</b>?`;
+      key = `${M(total)} ÷ ${n}`;
+      wrongs = [`${M(other)} ÷ ${m}`, `${n} × ${M(total)}`, `${n} × ${M(other)}`];
+    }
+    const all = sh([key].concat(wrongs));
+    return { q: stem, extra: '', choices: all, correct: all.indexOf(key), answerText: key, explain: 'A negative control.' };
+  }
+  return null;
+}
+function ctlV5DigitValue() {
+  const rand = n => Math.floor(Math.random() * n);
+  const sh = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const nat = d => { let n = d.n, dp = d.dp; while (dp > 0 && n % 10 === 0) { n /= 10; dp--; } return DV(n, dp); };
+  const dp = 1 + rand(3);
+  const ds = sh([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, dp + 1);
+  const whole = ds[0], dec = ds.slice(1), place = 1 + rand(dp), d = dec[place - 1];
+  const key = DV(d, place);
+  const opts = [key, nat(DV(d * 10, place)), DV(whole, place),
+                dp > 1 ? DV(dec[place % dp], place) : DV(d, Math.min(3, place + 1))].map(DTXT);
+  const all = sh(opts.slice());
+  return { q: `What is the value of the digit <b>${d}</b> in <b>${whole}.${dec.join('')}</b>?`,
+           extra: '', choices: all, correct: all.indexOf(opts[0]), answerText: opts[0],
+           explain: 'A negative control.' };
 }
 
 const couplingRows = [];
@@ -4079,6 +4192,10 @@ const negRows = [];
     ctlV4RoundError, 'the stem-option coupling ceiling');
   couplingCtl('FOURTH-PASS KILL 2 - v4 gDecMulConcept, the operand shape of the option list',
     ctlV4MulConcept, 'the stem-option coupling ceiling');
+  couplingCtl('FIFTH-PASS KILL 1 - v5 gDecMulConcept, the price list that never overlaps',
+    ctlV5MulConcept, 'the stem-option coupling ceiling');
+  couplingCtl('FIFTH-PASS KILL 2 - v5 gDecDigitValue, the commonest depth ending in the named digit',
+    ctlV5DigitValue, 'the stem-option coupling ceiling');
   /* and the control on those controls: a generator that borrows nothing from its
      stem must pass, or the ceiling is just failing every bank that prints a number */
   {

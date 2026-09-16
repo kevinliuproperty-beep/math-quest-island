@@ -1163,9 +1163,18 @@ function oracle(q) {
            remaining unlike product" was the key in 20,000 of 20,000 draws on two
            seeds. Every numeral now appears in at least two options; the p2 TOKEN
            RULER below asserts that class for every p2 bank, with this option set
-           as its negative control. */
+           as its negative control.
+
+           REFUTATION FIX (fifth pass 2026-09-16, WOUND 1): n × n is now v × v,
+           keeping w × n. Closing the odd token had left exactly ONE square in
+           the list whose base was n - the numeral the stem does not print - so
+           "take the option that is a number times itself; that number times the
+           stem's number is the answer" was the key in 20,000 of 20,000 draws on
+           two seeds, with all three feature scores and the token ruler at 0.0%
+           because no numeral was unique. The square is based on v now, which the
+           stem prints, so it points at nothing. */
         const n = addends.length, v = addends[0];
-        const setFor = w => [`${n} × ${v}`, `${w} × ${v}`, `${n} × ${n}`, `${w} × ${n}`];
+        const setFor = w => [`${n} × ${v}`, `${w} × ${v}`, `${v} × ${v}`, `${w} × ${n}`];
         if (!sameSet(setFor(n + 1), opts) && !(n > 1 && sameSet(setFor(n - 1), opts))) {
           return `p2 repeated addition: option set is not the four named readings - want [${setFor(n + 1).join(' | ')}] or [${setFor(n - 1).join(' | ')}], got [${opts.join(' | ')}]`;
         }
@@ -1316,51 +1325,86 @@ function oracle(q) {
       return null;
     }
     /* REFUTATION FIX (fourth pass 2026-09-16, WOUND 2 - the DECIDING-PLACE
-       REDESIGN). v4 fixed the hundreds as the deciding place on every draw, so
-       "start with the hundreds" AND "name the other number" together found the
-       key in 100% of draws with no digit compared, and the ones distractor was
-       the stem's own reason with "more" flipped to "less" - a free elimination.
-       The deciding place now varies one third each, which needs two stems: the
-       character quotes the misleading ones digits when the hundreds decide, and
-       claims the two numbers are the SAME when two places tie.
+       REDESIGN) and (fifth pass 2026-09-16, KILL 1 - THE CLAIM STEM VARIES).
+       v4 fixed the hundreds as the deciding place on every draw. v5 varied the
+       deciding place but drew the CLAIM stem only on the hundreds third, and the
+       character always named the LOSER as the greater, so the true winner was
+       always the SECOND number printed: "a hundreds option that ends on the
+       second number" was the key in 6,632 of 6,632 claim draws with no digit
+       compared, and the bank's floor was 66.7%, not the 41.7% the note recorded.
 
-       Nothing below trusts a template until it has re-derived the draw: the
-       deciding place is found from the digits, the stem's premise is checked
-       against it, every option must quote a's digit and then b's digit at the
-       place it names and must name the number its own comparison implies, and
-       EXACTLY ONE option must state a true comparison at the place that really
-       decides - which must be the key. A ones-comparison may not ship on a draw
-       whose stem quotes the ones, in either direction, so the stem's reason can
-       never reappear as an option with a word flipped. */
+       The stem shape and the deciding place are drawn independently now, and the
+       same wrong claim is phrased either way round ("665 is greater than 933" or
+       "933 is smaller than 665"), so neither the stem shape nor the print order
+       carries the answer.
+
+       Nothing below trusts a template until it has re-derived the draw from the
+       two printed numbers: the deciding place is the LEFTMOST place whose digits
+       differ; the character's claim must be WRONG; every OTHER place that
+       differs must point at the LOSER (so a reading there is a false sentence,
+       not a true one with a bad conclusion, and no single digit settles the
+       item); every option must quote the FIRST number's digit and then the
+       SECOND's at the place it names and must name the number its own comparison
+       implies; EXACTLY ONE option must state a true comparison at the place that
+       really decides, and it must be the key; the four options must name each
+       number the same number of times; and the whole option set is rebuilt from
+       the digits - four readings over TWO places, every place shipping BOTH of
+       its readings or neither, so the stem's own reason can never be a lone free
+       elimination. */
     {
-      const cmpStem = text.match(/^[A-Za-z ]+ says (\d+) is greater than (\d+), because (\d+) is more than (\d+)\. What went wrong\?$/);
-      const tieStem = text.match(/^[A-Za-z ]+ says (\d+) and (\d+) are the same, because the hundreds and the (tens|ones) are the same\. What went wrong\?$/);
-      if (cmpStem || tieStem) {
-        const s = cmpStem || tieStem;
-        const a = Number(s[1]), b = Number(s[2]);
-        if (!(a >= 100 && a <= 999 && b >= 100 && b <= 999)) {
-          return `p2 compare error: ${a} and ${b} are not both three-digit numbers`;
+      const claimA = text.match(/^[A-Za-z ]+ says (\d+) is (greater|smaller) than (\d+), because (\d+) is (more|less) than (\d+)\. What went wrong\?$/);
+      const claimB = text.match(/^[A-Za-z ]+ says the ones cannot change which of (\d+) and (\d+) is greater, because the hundreds and the tens are the same\. What went wrong\?$/);
+      const tieStem = text.match(/^[A-Za-z ]+ says (\d+) and (\d+) are the same, because the (hundreds|tens|ones) are the same\. What went wrong\?$/);
+      if (claimA || claimB || tieStem) {
+        const P = Number(claimA ? claimA[1] : claimB ? claimB[1] : tieStem[1]);
+        const Q = Number(claimA ? claimA[3] : claimB ? claimB[2] : tieStem[2]);
+        if (!(P >= 100 && P <= 999 && Q >= 100 && Q <= 999)) {
+          return `p2 compare error: ${P} and ${Q} are not both three-digit numbers`;
         }
-        if (a === b) return `p2 compare error: ${a} and ${b} are the same number, so the claim is not wrong`;
+        if (P === Q) return `p2 compare error: ${P} and ${Q} are the same number, so the claim is not wrong`;
         const digitAt = (n, place) => place === 'hundreds' ? Math.floor(n / 100)
                                     : place === 'tens' ? Math.floor(n / 10) % 10 : n % 10;
         const PLACES = ['hundreds', 'tens', 'ones'];
-        const decide = PLACES.find(p => digitAt(a, p) !== digitAt(b, p));
-        const win = digitAt(a, decide) > digitAt(b, decide) ? a : b;
-        if (cmpStem) {
-          if (decide !== 'hundreds') return `p2 compare error: the stem quotes the ones, but the ${decide} decide this draw`;
-          if (win !== b) return `p2 compare error: ${a} really is greater than ${b}, so nothing went wrong`;
-          if (Number(s[3]) !== a % 10 || Number(s[4]) !== b % 10) return 'p2 compare error: the printed reason does not quote the two ones digits';
-          if (!((a % 10) > (b % 10) && digitAt(a, 'tens') > digitAt(b, 'tens'))) {
-            return 'p2 compare error: the ones or the tens already point the right way, so one digit settles the item';
+        const decide = PLACES.find(p => digitAt(P, p) !== digitAt(Q, p));
+        const win = P > Q ? P : Q, lose = win === P ? Q : P;
+        /* every differing place other than the deciding one points at the LOSER */
+        for (const p of PLACES) {
+          if (p === decide) continue;
+          const dp = digitAt(P, p), dq = digitAt(Q, p);
+          if (dp === dq) continue;
+          if ((dp > dq ? P : Q) === win) {
+            return `p2 compare error: the ${p} already point at ${win}, so one digit settles the item`;
+          }
+        }
+        if (claimA) {
+          const said = claimA[2] === 'greater' ? P : Q;
+          if (said !== lose) return `p2 compare error: ${said} really is the greater number, so nothing went wrong`;
+          const x = Number(claimA[4]), word = claimA[5], y = Number(claimA[6]);
+          if ((claimA[2] === 'greater') !== (word === 'more')) {
+            return `p2 compare error: the claim and the reason it gives run in opposite directions`;
+          }
+          if ((word === 'more') !== (x > y)) {
+            return `p2 compare error: the reason states "${x} is ${word} than ${y}", which is not true`;
+          }
+          const at = PLACES.filter(p => digitAt(P, p) === x && digitAt(Q, p) === y);
+          if (!at.length) {
+            return `p2 compare error: the reason quotes ${x} and ${y}, which are not the two numbers' digits at any one place`;
+          }
+          if (!at.some(p => p !== decide)) {
+            return `p2 compare error: the reason quotes the ${decide}, which is the place that really decides`;
+          }
+        } else if (claimB) {
+          /* the last-digit claim names NO winner on purpose: on an ones-decide
+             draw the two tied places can only carry tie sentences, so the key
+             would be the only option disagreeing with the character. */
+          if (digitAt(P, 'hundreds') !== digitAt(Q, 'hundreds') || digitAt(P, 'tens') !== digitAt(Q, 'tens')) {
+            return 'p2 compare error: the stem says the hundreds and the tens are the same, and they are not';
           }
         } else {
-          const tied = s[3];                       /* the stem names hundreds + this one as tied */
-          if (digitAt(a, 'hundreds') !== digitAt(b, 'hundreds') || digitAt(a, tied) !== digitAt(b, tied)) {
-            return `p2 compare error: the stem says the hundreds and the ${tied} are the same, and they are not`;
+          const z = tieStem[3];
+          if (digitAt(P, z) !== digitAt(Q, z)) {
+            return `p2 compare error: the stem says the ${z} are the same, and they are not (${digitAt(P, z)}, ${digitAt(Q, z)})`;
           }
-          const want = tied === 'ones' ? 'tens' : 'ones';
-          if (decide !== want) return `p2 compare error: the stem ties the hundreds and the ${tied}, so the ${want} must decide, not the ${decide}`;
         }
         const sound = [], named = [];
         for (const o of opts) {
@@ -1369,24 +1413,21 @@ function oracle(q) {
           if (!p && !t) return `p2 compare error: an option is not a place-value reading ("${o}")`;
           if (t) {
             const place = t[1];
-            if (digitAt(a, place) !== digitAt(b, place)) {
-              return `p2 compare error: "${o}" says the ${place} are the same, and they are not (${digitAt(a, place)}, ${digitAt(b, place)})`;
+            if (digitAt(P, place) !== digitAt(Q, place)) {
+              return `p2 compare error: "${o}" says the ${place} are the same, and they are not (${digitAt(P, place)}, ${digitAt(Q, place)})`;
             }
-            if (!((Number(t[2]) === a && Number(t[3]) === b) || (Number(t[2]) === b && Number(t[3]) === a))) {
+            if (!((Number(t[2]) === P && Number(t[3]) === Q) || (Number(t[2]) === Q && Number(t[3]) === P))) {
               return `p2 compare error: "${o}" does not name the stem's two numbers`;
             }
             named.push(null);
             continue;
           }
           const place = p[1], x = Number(p[2]), word = p[3], y = Number(p[4]), ends = Number(p[5]);
-          if (cmpStem && place === 'ones') {
-            return `p2 compare error: "${o}" states a ones comparison on a draw whose stem quotes the ones - that is the stem's own reason, flipped or repeated`;
+          if (x !== digitAt(P, place) || y !== digitAt(Q, place)) {
+            return `p2 compare error: "${o}" does not quote the ${place} digit of ${P} and then of ${Q} (${digitAt(P, place)}, ${digitAt(Q, place)})`;
           }
-          if (x !== digitAt(a, place) || y !== digitAt(b, place)) {
-            return `p2 compare error: "${o}" does not quote the ${place} digit of ${a} and then of ${b} (${digitAt(a, place)}, ${digitAt(b, place)})`;
-          }
-          if (ends !== a && ends !== b) return `p2 compare error: "${o}" names ${ends}, which is not one of the two numbers`;
-          if ((word === 'less') !== (ends === b)) {
+          if (ends !== P && ends !== Q) return `p2 compare error: "${o}" names ${ends}, which is not one of the two numbers`;
+          if ((word === 'less') !== (ends === Q)) {
             return `p2 compare error: "${o}" states a comparison and then names the other number - no child makes that mistake`;
           }
           if (place === decide && (word === 'less' ? x < y : x > y)) sound.push(o);
@@ -1400,15 +1441,16 @@ function oracle(q) {
         if (forWin !== forLose) {
           return `p2 compare error: ${forWin} options name ${win} and ${forLose} name the other number, so the conclusion alone narrows the item (${opts.join(' | ')})`;
         }
-        const cmp = (place, word) => `The ${place} decide: ${digitAt(a, place)} is ${word} than ${digitAt(b, place)}, so ${word === 'less' ? b : a} is greater.`;
-        const tie = place => `The ${place} are the same, so ${a} and ${b} are the same size.`;
-        const right = digitAt(a, decide) > digitAt(b, decide) ? 'more' : 'less';
-        const wantSet = decide === 'hundreds'
-          ? [cmp('hundreds', 'less'), cmp('hundreds', 'more'), cmp('tens', 'more'), cmp('tens', 'less')]
-          : [cmp(decide, right), cmp(decide, right === 'more' ? 'less' : 'more'),
-             tie('hundreds'), tie(decide === 'tens' ? 'ones' : 'tens')];
-        if (!sameSet(wantSet, opts)) {
-          return `p2 compare error: option set is not the four named readings - want [${wantSet.join(' | ')}], got [${opts.join(' | ')}]`;
+        const cmp = (place, word) => `The ${place} decide: ${digitAt(P, place)} is ${word} than ${digitAt(Q, place)}, so ${word === 'less' ? Q : P} is greater.`;
+        const tie = place => `The ${place} are the same, so ${P} and ${Q} are the same size.`;
+        const pair = place => [cmp(place, 'more'), cmp(place, 'less')];
+        const others = PLACES.filter(p => p !== decide);
+        const diff = others.filter(p => digitAt(P, p) !== digitAt(Q, p));
+        const tiedP = others.filter(p => digitAt(P, p) === digitAt(Q, p));
+        const wants = diff.map(qq => pair(decide).concat(pair(qq)));
+        if (tiedP.length === 2) wants.push(pair(decide).concat([tie(tiedP[0]), tie(tiedP[1])]));
+        if (!wants.some(w => sameSet(w, opts))) {
+          return `p2 compare error: option set is not one of the named readings - want [${wants.map(w => w.join(' | ')).join('] or [')}], got [${opts.join(' | ')}]`;
         }
         return null;
       }
@@ -2829,6 +2871,36 @@ function p2Gates(q, topic, name) {
       }
     }
   }
+  /* RULE 5, AN EXPLANATION MAY ONLY NAME A WRONG ANSWER THAT IS ON THE ROW
+     (refutation fifth pass 2026-09-16, WOUND 2). Five two-step banks ended their
+     explanation by naming the stop-after-step-one slip and its value -
+     "Answering 482 means the giving-away step was forgotten". That value is one
+     entry in the POOL ranked() picks three slips from, so in 22.4%-41.4% of
+     draws the sentence discussed a number that is not on the screen: 0.0% on v1
+     and v2, appearing at v3 when the named triple became a pool to flatten the
+     key's value rank, and 23.8% of every served session by v5. Nothing is
+     arithmetically false and nothing leaks while the child is choosing, which is
+     why three passes walked over it - but it is the first pass's own WOUND 4
+     class, an explanation asserting a property of the option list that the draw
+     does not deliver, and no gate looked at it.
+
+     The rule is the narrowest one that binds: every number an explanation names
+     after the word "answering" must be one of the four options. The key is an
+     option, so a sentence about the right answer passes; a sentence about a slip
+     that did not ship does not. Negative control: gDivGroupWord's v5
+     explanation, which names ranked()'s pool entry rather than the row. */
+  {
+    const ex = strip(q.explain || '');
+    const optNums = new Set();
+    for (const c of (q.choices || [])) for (const n of (strip(String(c)).match(/\d+/g) || [])) optNums.add(n);
+    let am;
+    const re = /[Aa]nswering (\d+)/g;
+    while ((am = re.exec(ex))) {
+      if (!optNums.has(am[1])) {
+        return `p2 explanation: it says "answering ${am[1]}", but ${am[1]} is not one of the four options (${[...optNums].join(', ')})`;
+      }
+    }
+  }
   return null;
 }
 
@@ -2995,6 +3067,44 @@ function p2OddTokenHit(opts, keyOpt, stemNums) {
   return null;
 }
 
+/* ---------- p2 COMPARE-ERROR SPREAD GATE (refutation fifth pass 2026-09-16, KILL 1)
+   The per-draw oracle below checks everything about ONE gCompareError draw and
+   could not see the kill, because the kill was a property of the DISTRIBUTION:
+   the "A is greater than B" stem was only ever drawn when the hundreds decide,
+   and the character always named the loser, so the true winner was always the
+   SECOND number printed. Two free text observations then found the key in 100%
+   of those draws. That is the pattern every pass has now hit twice - a gate
+   narrower than the claim it is taken to support - so the claim gets a gate.
+
+   Three sampled rules over a whole generator's sample, all of them distribution
+   claims and none of them checkable on one draw:
+     a  each deciding place holds between 15% and 55% of the draws (a third
+        each by design; at 200 samples a true third sits 5+ standard errors
+        inside both bounds, so the gate does not flap);
+     b  among the draws whose stem CLAIMS one number is greater or smaller, no
+        single deciding place holds more than 80% - the claim stem must carry
+        every deciding place, which is exactly what v5 did not do;
+     c  among those same claim draws, the true winner is the SECOND number
+        printed in between 20% and 80% of them - print order independent of the
+        truth, which is the other half of the kill.
+   Negative controls: v5's own draw restored (claim stem on the hundreds only)
+   goes red on rules a and b; the true winner pinned to second place goes red on
+   rule c. */
+const P2_CE_PLACE_LO = 0.15, P2_CE_PLACE_HI = 0.55;
+const P2_CE_CLAIM_HI = 0.80, P2_CE_SECOND_LO = 0.20, P2_CE_SECOND_HI = 0.80;
+function p2CompareErrorDraw(q) {
+  const st = strip(q.q);
+  const m = st.match(/^[A-Za-z ]+ says (?:the ones cannot change which of )?(\d{3}) (?:is (greater|smaller) than|and) (\d{3})/);
+  if (!m || !/What went wrong\?$/.test(st)) return null;
+  const P = Number(m[1]), Q = Number(m[3]);
+  if (P === Q) return null;
+  const digitAt = (n, place) => place === 'hundreds' ? Math.floor(n / 100)
+                              : place === 'tens' ? Math.floor(n / 10) % 10 : n % 10;
+  const place = ['hundreds', 'tens', 'ones'].find(p => digitAt(P, p) !== digitAt(Q, p));
+  if (!place) return null;
+  return { place, claim: !!m[2], winnerSecond: Q > P };
+}
+
 /* ---------- collect every registered generator ---------- */
 const GENS = []; // { topic, skill, level, name, fn }
 for (const [tid, t] of Object.entries(TOPICS)) {
@@ -3023,6 +3133,8 @@ for (const g of GENS) {
   const featHit = P2_FEATURES.map(() => 0);
   const featSample = P2_FEATURES.map(() => null);
   let featN = 0, tokN = 0, tokHit = 0, tokSample = null;
+  const cePlace = { hundreds: 0, tens: 0, ones: 0 }, ceClaim = { hundreds: 0, tens: 0, ones: 0 };
+  let ceN = 0, ceClaimN = 0, ceSecond = 0;
   for (let i = 0; i < N; i++) {
     let q;
     try { q = g.fn(); } catch (e) { err = 'threw: ' + e.message; break; }
@@ -3068,6 +3180,13 @@ for (const g of GENS) {
         }
       }
     }
+    if (g.topic === 'p2') {
+      const ce = p2CompareErrorDraw(q);
+      if (ce) {
+        ceN++; cePlace[ce.place]++;
+        if (ce.claim) { ceClaimN++; ceClaim[ce.place]++; if (ce.winnerSecond) ceSecond++; }
+      }
+    }
     distinct.add(g.topic === 'p2' ? qKey(q) : qSetKey(q));
     const o = oracle(q);
     if (o === false) continue;
@@ -3110,6 +3229,41 @@ for (const g of GENS) {
             `the ${(100 * P2_FEATURE_CEILING).toFixed(0)}% ceiling - a child can pick the key out by ` +
             `that alone, with no mathematics (key value "${s.kv}", options: ${s.opts.join(' | ')})`;
       break;
+    }
+  }
+  if (!err && ceN >= 50) {
+    const spread = ['hundreds', 'tens', 'ones'].map(p => `${p} ${(100 * cePlace[p] / ceN).toFixed(0)}%`).join(' / ');
+    for (const p of ['hundreds', 'tens', 'ones']) {
+      const f = cePlace[p] / ceN;
+      if (f > P2_CE_PLACE_HI || f < P2_CE_PLACE_LO) {
+        err = `p2 compare error spread: the ${p} decide in ${cePlace[p]} of ${ceN} draws ` +
+              `(${(100 * f).toFixed(1)}%), outside the ${(100 * P2_CE_PLACE_LO).toFixed(0)}-` +
+              `${(100 * P2_CE_PLACE_HI).toFixed(0)}% band - a deciding place a child can predict makes ` +
+              `"start with that place" most of the answer (${spread})`;
+        break;
+      }
+    }
+    if (!err && ceClaimN >= 25) {
+      for (const p of ['hundreds', 'tens', 'ones']) {
+        if (ceClaim[p] / ceClaimN > P2_CE_CLAIM_HI) {
+          err = `p2 compare error spread: the stem that CLAIMS one number is greater is drawn on the ` +
+                `${p} third in ${ceClaim[p]} of ${ceClaimN} claim draws ` +
+                `(${(100 * ceClaim[p] / ceClaimN).toFixed(1)}%), over the ` +
+                `${(100 * P2_CE_CLAIM_HI).toFixed(0)}% ceiling - the stem shape then announces the ` +
+                `deciding place before a digit is read (v5's KILL 1)`;
+          break;
+        }
+      }
+      if (!err) {
+        const f = ceSecond / ceClaimN;
+        if (f > P2_CE_SECOND_HI || f < P2_CE_SECOND_LO) {
+          err = `p2 compare error spread: the true winner is the SECOND number printed in ${ceSecond} of ` +
+                `${ceClaimN} claim draws (${(100 * f).toFixed(1)}%), outside the ` +
+                `${(100 * P2_CE_SECOND_LO).toFixed(0)}-${(100 * P2_CE_SECOND_HI).toFixed(0)}% band - ` +
+                `print order that follows the truth hands the key over with no digit compared ` +
+                `(v5's KILL 1, other half)`;
+        }
+      }
     }
   }
   const cov = Math.round((matched / N) * 100);

@@ -1349,7 +1349,14 @@ function oracle(q) {
     const a = Number(m[1]), b = Number(m[2]), r = Number(m[3]);
     if (Number(m[4]) !== a || Number(m[5]) !== b || Number(m[6]) !== r) return 'p3 mental: the stem restates different numbers on its second line';
     if (a < 10 || a > 99 || b < 10 || b > 99) return `p3 mental: MOE 2.2 is two 2-digit numbers, got ${a} and ${b}`;
-    if (r % 10 !== 0 || r <= a || r - a >= 10) return `p3 mental: ${r} is not the next ten up from ${a}`;
+    /* W1, EIGHTH pass: the two addends are printed in a drawn order now, so the
+       number that was rounded up is the FIRST on one draw in two and the SECOND on
+       the other. `a + b - r` is the key either way (that is why the item has one
+       answer whichever addend the child rounds), so the premise the oracle holds
+       the stem to is the weaker, true one: r is the next ten up from one of them. */
+    const nextTen = v => r > v && r - v < 10;
+    if (r % 10 !== 0 || !(nextTen(a) || nextTen(b)))
+      return `p3 mental: ${r} is not the next ten up from ${a} or from ${b}`;
     const e = a + b - r;
     if (e < 1) return `p3 mental: the adjusted part ${e} is not positive`;
     return near(e, ansNum) ? null : `p3 mental: expected ${e}, got ${ansNum}`;
@@ -3119,8 +3126,21 @@ let lenControl = 'the v2 gAddConcept option set was not rejected by the length g
    arithmetic so the control does not depend on the topic file still containing
    the defect. It must come out RED. --- */
 const WIDTH_N = 2000, WIDTH_RANK_CAP = 0.45, WIDTH_RULE_CAP = 0.40;
+const WIDTH_ELIM_CAP = 0.40, WIDTH_TIE_FLOOR = 0.10, WIDTH_TIE_CAP = 0.95;
 const widthRows = [];
-function widthClassOf(opts, correct) {
+/* BOTH DIRECTIONS (W3 + W4, EIGHTH pass, 2026-09-16). The v8 column scored where
+   the key sits INSIDE the commonest class and treated KEY OUT as a pass, so
+   nothing measured the other direction - "the key is IN the class, so cross out
+   every option that is not the commonest width". On eight banks that elimination
+   was a CERTAINTY (KEY IN 100.00% of the draws where a class exists:
+   gPatternConcept, gBuildNum, gStandsCompare, gMentalMake, gPattern4, gMoreLess,
+   gPatternMissing, gBackFromTotal; gZeroFix 99.83 / 99.78%). And where two widths
+   tied 2-2 the ruler DECLINED by design, which is where the tell was loudest:
+   gStandsCompare tied on 17.61 / 17.23% of draws with the key in the WIDER pair on
+   100.00% of them, gAddConcept on 8.37 / 8.29% with the key in the NARROWER pair on
+   100.00%. The column now reads both directions and the tie branch, and gates the
+   VALUE of the elimination a child can actually run. */
+function widthDetail(opts, correct) {
   const w = opts.map(o => o.length);
   const cnt = new Map();
   for (const x of w) cnt.set(x, (cnt.get(x) || 0) + 1);
@@ -3129,22 +3149,43 @@ function widthClassOf(opts, correct) {
     if (c > best) { best = c; bestW = ww; tie = false; }
     else if (c === best) tie = true;
   }
-  if (best < 2 || best === opts.length || tie) return 'none';
-  if (w[correct] !== bestW) return 'out';
-  const group = opts.filter((o, i) => w[i] === bestW).map(Number);
   const key = Number(opts[correct]);
-  if (key === Math.min.apply(null, group)) return 'min';
-  if (key === Math.max.apply(null, group)) return 'max';
-  return 'mid';
+  /* the 2-2 branch: two widths hold the same, largest count, and it is at least
+     two - so there is a pair to keep and a pair to cross out, and no commonest
+     class for the rank columns to read. Four distinct widths is not this: there
+     the rule declines because there is no class at all. */
+  if (tie && best >= 2) {
+    const widest = Math.max.apply(null, w);
+    const keep = opts.filter((o, i) => w[i] === widest).map(Number);
+    return { cls: 'none', tie: true, wide: w[correct] === widest, keep: keep };
+  }
+  if (best < 2 || best === opts.length) return { cls: 'none', tie: false };
+  const group = opts.filter((o, i) => w[i] === bestW).map(Number);
+  if (w[correct] !== bestW) return { cls: 'out', tie: false, group: group };
+  if (key === Math.min.apply(null, group)) return { cls: 'min', tie: false, group: group };
+  if (key === Math.max.apply(null, group)) return { cls: 'max', tie: false, group: group };
+  return { cls: 'mid', tie: false, group: group };
 }
+function widthClassOf(opts, correct) { return widthDetail(opts, correct).cls; }
 function widthBank(draw) {
-  const t = { n: 0, min: 0, mid: 0, max: 0, out: 0, none: 0 };
+  const t = { n: 0, min: 0, mid: 0, max: 0, out: 0, none: 0, tie: 0, tieWide: 0, elim: 0 };
   for (let i = 0; i < WIDTH_N; i++) {
     let q;
     try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
     const opts = (q.choices || []).map(strip);
     if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o)) || !(q.correct >= 0)) continue;
-    t[widthClassOf(opts, q.correct)]++; t.n++;
+    const d = widthDetail(opts, q.correct);
+    t[d.cls]++; t.n++;
+    /* ELIM is the value of the whole rule a child can run: keep only the options
+       printed at the commonest width, and on a 2-2 tie keep the wider pair; guess
+       inside what is left, or across all four when the rule declines. */
+    if (d.tie) {
+      t.tie++;
+      if (d.wide) t.tieWide++;
+      t.elim += d.wide ? 1 / d.keep.length : 0;
+    } else if (d.cls === 'none') t.elim += 0.25;
+    else if (d.cls === 'out') t.elim += 0;
+    else t.elim += 1 / d.group.length;
   }
   return t;
 }
@@ -3158,6 +3199,17 @@ function widthVerdict(row) {
   for (const k of ['min', 'mid', 'max']) {
     if (f(k) > WIDTH_RANK_CAP)
       return `the key is the ${k.toUpperCase()} of its own printed-width class on ${(100 * f(k)).toFixed(1)}% of draws`;
+  }
+  /* W3: the KEY IN direction, scored by the VALUE of the elimination rather than
+     by the bare rate, because a certainty that cannot fire is not a route. */
+  if (f('elim') > WIDTH_ELIM_CAP)
+    return `"cross out every option that is not the commonest printed width" is worth ${(100 * f('elim')).toFixed(1)}% to a guesser`;
+  /* W4: the tie branch the ruler used to decline on. A bank that ships one often
+     must not put the key on the same side of it every time. */
+  if (f('tie') >= WIDTH_TIE_FLOOR) {
+    const wide = row.tieWide / row.tie;
+    if (wide > WIDTH_TIE_CAP || 1 - wide > WIDTH_TIE_CAP)
+      return `two widths tie 2-2 on ${(100 * f('tie')).toFixed(1)}% of draws and the key is in the ${wide > 0.5 ? 'WIDER' : 'NARROWER'} pair on ${(100 * (wide > 0.5 ? wide : 1 - wide)).toFixed(1)}% of them`;
   }
   return null;
 }
@@ -3187,6 +3239,188 @@ let widthControl = 'the v7 gPatternConcept option set was not rejected by the wi
   const ctl = widthBank(v7PatternConcept);
   const verdict = widthVerdict(ctl);
   if (verdict) widthControl = `the v7 gPatternConcept option set goes red - ${verdict}`;
+  else failures++;
+}
+/* W3's own control: a row whose key is always inside a TWO-member commonest class
+   and never outside it - the elimination is then worth 50% on every draw, which is
+   what KEY IN at 100% buys a child when the class is small. */
+let elimControl = 'a key always inside a two-member width class was not rejected by the KEY IN direction';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const twoWide = () => {
+    const key = rnd(2000, 8000);
+    /* 22 draws in 100 print four distinct widths and the rule declines; on the
+       other 78 one distractor sits at the key's own width and two are narrower, so
+       the elimination keeps TWO options and the key is always one of them. The key
+       is the smaller of the pair half the time and the larger half the time, which
+       keeps MIN and MAX under their own caps: the only column that can see this
+       row is the value of the elimination itself. */
+    const opts = rnd(1, 100) <= 22
+      ? [String(key), String(rnd(100, 999)), String(rnd(10, 99)), String(rnd(1, 9))]
+      : [String(key), String(rnd(0, 1) ? key + rnd(1, 900) : key - rnd(1, 900)),
+         String(rnd(10, 99)), String(rnd(100, 999))];
+    const sh = shuf(opts);
+    return { q: 'two-member width class control', choices: sh,
+             answerText: String(key), correct: sh.indexOf(String(key)) };
+  };
+  const ctl = widthBank(twoWide);
+  const verdict = widthVerdict(ctl);
+  if (verdict) elimControl = `a key always inside a two-member width class goes red - ${verdict}`;
+  else failures++;
+}
+/* W4's own control: the v8 gStandsCompare tie shape - two widths tying 2-2 on a
+   fifth of draws with the key always in the wider pair. */
+let tieControl = 'a key always in the wider half of a 2-2 width tie was not rejected';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const tied = () => {
+    /* one draw in five ties 2-2 with the key in the wider pair; the rest print
+       four distinct widths and decline, so the elimination is worth only 30% and
+       the tie clause is the one column that can fail this row. */
+    if (rnd(1, 5) > 1) {
+      const key = rnd(1000, 9999);
+      const sh = shuf([String(key), String(rnd(100, 999)), String(rnd(10, 99)), String(rnd(1, 9))]);
+      return { q: '2-2 width tie control', choices: sh,
+               answerText: String(key), correct: sh.indexOf(String(key)) };
+    }
+    const key = rnd(100, 499);
+    const sh = shuf([String(key), String(key + rnd(100, 400)), String(rnd(10, 49)), String(rnd(50, 99))]);
+    return { q: '2-2 width tie control', choices: sh,
+             answerText: String(key), correct: sh.indexOf(String(key)) };
+  };
+  const ctl = widthBank(tied);
+  const verdict = widthVerdict(ctl);
+  if (verdict) tieControl = `a key always in the wider half of a 2-2 width tie goes red - ${verdict}`;
+  else failures++;
+}
+
+/* ---------- SHAPE RULER (eighth-pass KILL, 2026-09-16) ----------------------
+   TWO KILLS IN TWO PASSES ON AN AXIS NOTHING IN THIS HARNESS HAD EVER READ. The
+   seventh pass killed gPatternConcept on WIDTH; the v8 fix took the key off the
+   power-of-ten ladder and left the ladder in the distractor family, and the
+   eighth pass killed the same bank again on SHAPE:
+
+     In this number pattern, what is the jump?  1314, 3814, 6314, 8814
+       10  |  1  |  2500 <- key  |  100
+
+   Three options are 1-followed-by-zeros and one is not. "Cross out 1, 10, 100 and
+   1000, then take the smallest of what is left" answered pool 1's busiest
+   generator on 67.07% / 66.44% of 20,000 draws at two seeds, was NEVER wrong when
+   it fired (0 exceptions in 40,000), needed no arithmetic and never read the four
+   printed terms. MAGNITUDE RANK printed 17.0 / 28.1 / 27.2 / 27.7 pass, LENGTH
+   RANK passed, and the WIDTH-CLASS column - added one pass earlier for exactly
+   this class of defect - printed 25.6% MIN and passed. All three were true.
+
+   WHAT IS MEASURED. Every numeric four-option bank in the topic, 2,000 draws, and
+   three per-option features a child can see without arithmetic:
+
+     "is 1 followed by zeros"      1, 10, 100, 1000
+     "is a multiple of 100"        100, 300, 1000, 2500
+     "is round to the nearest ten" 10, 20, 150, 250
+
+   Two things are scored for each feature. UNIQUENESS, both directions: the key is
+   the only option that HAS it (a pure odd-one-out), or the only option that has it
+   NOT (equivalently, all three distractors have it and the key does not). And the
+   ROUTE, which is what the kill actually was: cross out every option that has the
+   feature - or every option that does not - and then take the smallest or the
+   largest of what survives. A route is scored OUTRIGHT over every draw, so a rule
+   that declines scores nothing, exactly as the width column scores MIN.
+
+   THE GATE. Neither uniqueness direction may reach 60% of draws, and no route may
+   reach 40% - the same cap the width rules take. NO BANK IS EXEMPT.
+
+   Negative control: the v8 gPatternConcept option set, rebuilt here from its own
+   arithmetic so the control does not depend on the topic file still containing the
+   defect. It must come out RED on the route. --- */
+const SHAPE_N = 2000, SHAPE_UNIQ_CAP = 0.60, SHAPE_RULE_CAP = 0.60;
+const SHAPE_FEATURES = [
+  ['1 followed by zeros', o => /^10*$/.test(o)],
+  ['a multiple of 100', o => Number(o) % 100 === 0],
+  ['round to the nearest ten', o => Number(o) % 10 === 0]
+];
+const shapeRows = [];
+function shapeBank(draw) {
+  const t = { n: 0, f: SHAPE_FEATURES.map(() => ({ uKey: 0, uWrong: 0, outSmall: 0, outLarge: 0, inSmall: 0, inLarge: 0 })) };
+  for (let i = 0; i < SHAPE_N; i++) {
+    let q;
+    try { q = draw(); } catch (e) { return Object.assign(t, { threw: e.message }); }
+    const opts = (q.choices || []).map(strip);
+    if (opts.length !== 4 || !opts.every(o => /^\d+$/.test(o)) || !(q.correct >= 0)) continue;
+    t.n++;
+    const key = Number(opts[q.correct]);
+    for (let k = 0; k < SHAPE_FEATURES.length; k++) {
+      const has = SHAPE_FEATURES[k][1], c = t.f[k];
+      const yes = opts.filter(o => has(o)).map(Number);
+      const no = opts.filter(o => !has(o)).map(Number);
+      if (yes.length === 1 && yes[0] === key) c.uKey++;
+      if (no.length === 1 && no[0] === key) c.uWrong++;
+      /* A ROUTE only counts where the shape actually SPLITS the row. If every
+         option has the feature, or none does, then "cross out the ones that have
+         it and take the largest" IS "take the largest", which is the MAGNITUDE
+         RANK gate's business - and that gate allowlists the two comparison
+         anchors by name with their premise re-checked, because there the ordering
+         is the question. Scoring it here would fail gGreatest and gSmallest on
+         the very thing they ask. */
+      if (yes.length && no.length) {
+        if (Math.min.apply(null, no) === key) c.outSmall++;
+        if (Math.max.apply(null, no) === key) c.outLarge++;
+        if (Math.min.apply(null, yes) === key) c.inSmall++;
+        if (Math.max.apply(null, yes) === key) c.inLarge++;
+      }
+    }
+  }
+  return t;
+}
+function shapeVerdict(row) {
+  if (!row.n) return null;
+  for (let k = 0; k < SHAPE_FEATURES.length; k++) {
+    const name = SHAPE_FEATURES[k][0], c = row.f[k], f = x => c[x] / row.n;
+    if (f('outSmall') > SHAPE_RULE_CAP)
+      return `"cross out every option that is ${name}, then take the smallest of the rest" answers it on ${(100 * f('outSmall')).toFixed(1)}% of draws`;
+    if (f('outLarge') > SHAPE_RULE_CAP)
+      return `"cross out every option that is ${name}, then take the largest of the rest" answers it on ${(100 * f('outLarge')).toFixed(1)}% of draws`;
+    if (f('inSmall') > SHAPE_RULE_CAP)
+      return `"keep only the options that are ${name}, then take the smallest" answers it on ${(100 * f('inSmall')).toFixed(1)}% of draws`;
+    if (f('inLarge') > SHAPE_RULE_CAP)
+      return `"keep only the options that are ${name}, then take the largest" answers it on ${(100 * f('inLarge')).toFixed(1)}% of draws`;
+    if (f('uKey') > SHAPE_UNIQ_CAP)
+      return `the key is the ONLY option that is ${name} on ${(100 * f('uKey')).toFixed(1)}% of draws`;
+    if (f('uWrong') > SHAPE_UNIQ_CAP)
+      return `all three distractors are ${name} and the key is not, on ${(100 * f('uWrong')).toFixed(1)}% of draws`;
+  }
+  return null;
+}
+for (const g of GENS) {
+  if (g.topic !== 'p3numbers') continue;
+  const row = shapeBank(g.fn);
+  if (!row.n) continue;                          /* not a numeric four-option bank */
+  row.name = g.name; row.lvl = g.level;
+  row.err = shapeVerdict(row);
+  shapeRows.push(row);
+  if (row.err) failures++;
+}
+let shapeControl = 'the v8 gPatternConcept option set was not rejected by the shape ruler';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+  const v8PatternConcept = () => {
+    let step, fam;
+    if (rnd(0, 2) === 0) {                       /* the counting anchor, one draw in three */
+      step = [10, 100, 1000][rnd(0, 2)];
+      fam = [1, 10, 100, 1000].filter(v => v !== step);
+    } else {                                     /* the v8 in-between branch */
+      step = [15, 25, 150, 250, 1500, 2500][rnd(0, 5)];
+      fam = [1, 10, 100, 1000, 2 * step, 3 * step].filter(v => v !== step && v <= 9999);
+    }
+    const opts = shuf(shuf(fam).slice(0, 3).concat([step])).map(String);
+    return { q: 'v8 gPatternConcept control', choices: opts,
+             answerText: String(step), correct: opts.indexOf(String(step)) };
+  };
+  const ctl = shapeBank(v8PatternConcept);
+  const verdict = shapeVerdict(ctl);
+  if (verdict) shapeControl = `the v8 gPatternConcept option set goes red - ${verdict}`;
   else failures++;
 }
 
@@ -3624,23 +3858,57 @@ if (lenRows.length) {
   console.log(`${/goes red/.test(lenControl) ? 'ok  ' : 'FAIL'} length negative control: ${lenControl}`);
 }
 if (widthRows.length) {
-  console.log(`\nWIDTH-CLASS RANK  p3numbers, ${WIDTH_N} draws per numeric bank  (the key's place INSIDE the commonest printed-width class: each of MIN / MID / MAX < ${Math.round(WIDTH_RANK_CAP * 100)}%, and "commonest width, then smallest / largest" < ${Math.round(WIDTH_RULE_CAP * 100)}%)\n`);
+  console.log(`\nWIDTH-CLASS RANK  p3numbers, ${WIDTH_N} draws per numeric bank  (both directions: each of MIN / MID / MAX < ${Math.round(WIDTH_RANK_CAP * 100)}%, "commonest width, then smallest / largest" < ${Math.round(WIDTH_RULE_CAP * 100)}%, the KEY IN elimination worth < ${Math.round(WIDTH_ELIM_CAP * 100)}%, and no 2-2 tie branch on >= ${Math.round(WIDTH_TIE_FLOOR * 100)}% of draws with the key on one side past ${Math.round(WIDTH_TIE_CAP * 100)}%)\n`);
   console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) + pad('CLASS', 8) + pad('KEY MIN', 9) +
-    pad('KEY MID', 9) + pad('KEY MAX', 9) + pad('KEY OUT', 9) + pad('NO CLASS', 10) + 'RESULT');
-  console.log('-'.repeat(100));
+    pad('KEY MID', 9) + pad('KEY MAX', 9) + pad('KEY OUT', 9) + pad('KEY IN', 9) + pad('ELIM', 8) +
+    pad('TIE', 8) + pad('TIE WIDE', 10) + pad('NO CLASS', 10) + 'RESULT');
+  console.log('-'.repeat(150));
   for (const r of widthRows) {
     const f = k => (100 * r[k] / r.n).toFixed(1) + '%';
+    const cls = r.min + r.mid + r.max + r.out;
     console.log(pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7) +
-      pad((100 * (r.min + r.mid + r.max + r.out) / r.n).toFixed(1) + '%', 8) +
-      pad(f('min'), 9) + pad(f('mid'), 9) + pad(f('max'), 9) + pad(f('out'), 9) + pad(f('none'), 10) +
+      pad((100 * cls / r.n).toFixed(1) + '%', 8) +
+      pad(f('min'), 9) + pad(f('mid'), 9) + pad(f('max'), 9) + pad(f('out'), 9) +
+      pad(cls ? (100 * (r.min + r.mid + r.max) / cls).toFixed(1) + '%' : '-', 9) +
+      pad(f('elim'), 8) + pad(f('tie'), 8) +
+      pad(r.tie ? (100 * r.tieWide / r.tie).toFixed(1) + '%' : '-', 10) +
+      pad(f('none'), 10) +
       (r.err ? 'FAIL  ' + r.err : 'pass'));
   }
   console.log('');
   console.log(`     CLASS is how often a commonest width exists at all (at least two options, never all four - a row that is all one width is the magnitude gate's).`);
-  console.log(`     KEY OUT means the rule fires and points at a WRONG option, which is why it is a pass and not a failure; NO CLASS means the rule declines.`);
-  console.log(`     MIN is the rule the seventh pass killed this topic with. No bank is exempt: the comparison anchors print four options of one width and decline.`);
-  if (widthRows.every(r => !r.err)) console.log(`ok   width-class rank: ${widthRows.length} numeric banks, no key MIN / MID / MAX of its own printed-width class past ${Math.round(WIDTH_RANK_CAP * 100)}%, and no width rule past ${Math.round(WIDTH_RULE_CAP * 100)}%`);
+  console.log(`     KEY OUT means the rule fires and points at a WRONG option; NO CLASS means it declines. MIN is the rule the seventh pass killed this topic with.`);
+  console.log(`     KEY IN (W3, eighth pass) is the OTHER direction: of the draws where a class exists, how often the key is inside it - at 100% "cross out every`);
+  console.log(`     option that is not the commonest width" is a free elimination that is never wrong. ELIM is what that rule is actually WORTH to a guesser, and it`);
+  console.log(`     is ELIM that is gated at ${Math.round(WIDTH_ELIM_CAP * 100)}%: a certainty that keeps three options, or that fires on one draw in fifty, is not a route.`);
+  console.log(`     TIE (W4) is the 2-2 branch the class rule DECLINES on, and TIE WIDE is how often the key is in the wider pair of it. A bank that ships a tie on`);
+  console.log(`     ${Math.round(WIDTH_TIE_FLOOR * 100)}% of draws or more fails if the key sits on the same side of it past ${Math.round(WIDTH_TIE_CAP * 100)}%. No bank is exempt from any of the five.`);
+  if (widthRows.every(r => !r.err)) console.log(`ok   width-class rank: ${widthRows.length} numeric banks, no key MIN / MID / MAX past ${Math.round(WIDTH_RANK_CAP * 100)}%, no width rule past ${Math.round(WIDTH_RULE_CAP * 100)}%, no elimination worth ${Math.round(WIDTH_ELIM_CAP * 100)}%, and no tie branch a child can call`);
   console.log(`${/goes red/.test(widthControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${widthControl}`);
+  console.log(`${/goes red/.test(elimControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${elimControl}`);
+  console.log(`${/goes red/.test(tieControl) ? 'ok  ' : 'FAIL'} width-class negative control: ${tieControl}`);
+}
+if (shapeRows.length) {
+  console.log(`\nSHAPE RULER  p3numbers, ${SHAPE_N} draws per numeric bank  (per-option SHAPE: no route past ${Math.round(SHAPE_RULE_CAP * 100)}%, and no shape value unique to the key or to all three distractors on ${Math.round(SHAPE_UNIQ_CAP * 100)}% of draws)\n`);
+  console.log(pad('GENERATOR', 18) + pad('POOL', 6) + pad('N', 7) +
+    SHAPE_FEATURES.map(f => pad(f[0].slice(0, 12).toUpperCase(), 14) + pad('uKEY', 8) + pad('uWRONG', 9) + pad('ROUTE', 8)).join('') + 'RESULT');
+  console.log('-'.repeat(170));
+  for (const r of shapeRows) {
+    let line = pad(r.name, 18) + pad(r.lvl, 6) + pad(r.n, 7);
+    for (let k = 0; k < SHAPE_FEATURES.length; k++) {
+      const c = r.f[k], best = Math.max(c.outSmall, c.outLarge, c.inSmall, c.inLarge);
+      line += pad('', 14) + pad((100 * c.uKey / r.n).toFixed(1) + '%', 8) +
+        pad((100 * c.uWrong / r.n).toFixed(1) + '%', 9) + pad((100 * best / r.n).toFixed(1) + '%', 8);
+    }
+    console.log(line + (r.err ? 'FAIL  ' + r.err : 'pass'));
+  }
+  console.log('');
+  console.log(`     The three features are ${SHAPE_FEATURES.map(f => '"' + f[0] + '"').join(', ')}, read off the RENDERED option and nothing else.`);
+  console.log(`     uKEY is "the key is the only option with this shape" and uWRONG is "all three distractors have it and the key does not" - the two directions`);
+  console.log(`     the eighth pass's kill lived between. ROUTE is the best of the four orderings the shape allows: cross out the options that have the shape (or`);
+  console.log(`     the ones that do not), then take the smallest (or the largest) of what is left. The kill was the first of those, worth 67.07% on gPatternConcept.`);
+  if (shapeRows.every(r => !r.err)) console.log(`ok   shape ruler: ${shapeRows.length} numeric banks, no shape route past ${Math.round(SHAPE_RULE_CAP * 100)}% and no shape value unique to the key or to all three distractors past ${Math.round(SHAPE_UNIQ_CAP * 100)}%`);
+  console.log(`${/goes red/.test(shapeControl) ? 'ok  ' : 'FAIL'} shape negative control: ${shapeControl}`);
 }
 if (tokRows.length) {
   console.log(`\nPHRASE RULER  p3numbers, ${TOK_N} draws per prose bank  (no contiguous phrase of <= ${PHRASE_CAP} words, and no unordered word set of <= ${SET_CAP} words, in the key alone - or in all three distractors alone - on >= ${Math.round(100 * TOK_CAP)}% of draws)\n`);

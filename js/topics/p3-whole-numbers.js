@@ -96,6 +96,24 @@
  * rule declines on them rather than being waived. Its negative control is the v7
  * gPatternConcept option set, which goes red at ~70%.
  *
+ * AND SO IS SHAPE (eighth pass, 2026-09-16). The seventh pass's fix took the KEY
+ * off the power-of-ten ladder on two draws in three and left the ladder in the
+ * DISTRACTOR family on every draw, which made the key the only number on the row
+ * that is not 1-followed-by-zeros - and the smallest of those where there was
+ * more than one. "Cross out 1, 10, 100 and 1000, then take the smallest of what is
+ * left" answered gPatternConcept on 67.07% / 66.44% of 20,000 draws at two seeds,
+ * was never wrong when it fired, and never read the four printed terms. The
+ * magnitude, length and width columns all printed pass, and all three were true:
+ * nothing in the harness had ever read the SHAPE of an option. tools/gen-sanity.mjs
+ * now carries a SHAPE RULER over every numeric bank in the topic - "is 1 followed
+ * by zeros", "is a multiple of 100", "is round to the nearest ten" - scored in both
+ * directions (unique to the key, unique to all three distractors) and as a ROUTE
+ * (cross out the options that have the shape, or the ones that do not, then take
+ * the smallest or the largest of what is left), capped at 60% with no bank exempt.
+ * Its negative control is the v8 gPatternConcept option set, which goes red at
+ * ~67%. The power-of-ten ladder is retired as a slip family for jump items: a
+ * fixed set of round numbers beside a non-round key IS the answer.
+ *
  * SCOPE (MOE Oct 2025, P3 p.35). Numbers up to 10 000: 1.1 counting in hundreds
  * and thousands, 1.2 number notation / representations / place values,
  * 1.4 comparing and ordering, 1.5 patterns in number sequences. Addition and
@@ -112,12 +130,14 @@
  * gPatternOdd - both of the last two being items where the jump has to be FOUND
  * rather than read, which is MOE P3 1.5, patterns in number sequences, and which
  * 1.5 does not restrict to multiples of ten. gPatternConcept draws 10 / 100 /
- * 1000 on one draw in three and 15 / 25 / 150 / 250 / 1500 / 2500 on the other
- * two (SEVENTH pass, and the reason is at the generator: while the jump is a
- * power of ten the key is the smallest number of its own printed width by
- * definition, and counting characters answered the item on 69.6% of draws). Its
- * question is "what is the jump", so it is a 1.5 item on every draw and a 1.1
- * item on the anchor third.
+ * 1000 on one draw in three and 15 / 25 / 150 / 250 on the other two (SEVENTH
+ * pass, and the reason is at the generator: while the jump is a power of ten the
+ * key is the smallest number of its own printed width by definition, and counting
+ * characters answered the item on 69.6% of draws). 1500 and 2500 were dropped in
+ * the EIGHTH pass: three to five times the largest jump anywhere else in the
+ * topic, and `start = ri(1000, MAXN - 3*step)` pinned every step-2500 item's first
+ * term into [1000, 2499] on 100% of its draws. Its question is "what is the jump",
+ * so it is a 1.5 item on every draw and a 1.1 item on the anchor third.
  *
  * W2, SIXTH pass. This paragraph used to read "jump by a whole number of tens -
  * counting in tens, hundreds and thousands for the anchors, and 150s and 250s
@@ -185,10 +205,47 @@
      numbers and cannot trip either. The two banks whose named slips can collapse
      to one or two digits (gStandsCompare's "compared the digits" family,
      gMentalMake's "the amount moved") check here that at least one distractor is
-     printed at the key's own width, so the key is never the only wide option. */
+     printed at the key's own width, so the key is never the only wide option.
+
+     W4, EIGHTH pass - AND THE CHECK ITSELF WAS PINNING A CERTAINTY. Requiring a
+     distractor at the key's EXACT width is stronger than RULE C needs, and it
+     made the key's own width class impossible to leave: that width always held at
+     least two options, so wherever two widths tied 2-2 the key was in the WIDER
+     pair - 100.00% of gStandsCompare's 17.6% of tie draws, and 100% of
+     gMentalMake's and gZeroFix's smaller ones. That is a certainty sitting in the
+     one branch the width-class ruler declines to read. RULE C only fails a key
+     printed MORE than 1.4x the longest distractor, so the honest floor is "the
+     key is never the widest option on its own": at least one distractor at the
+     key's width OR WIDER. The narrow-key rows that admits are exactly the ones
+     that can put the key in the NARROWER half of a tie. */
   function sameWidth(correct, cands){
     const w = String(correct).length;
-    return cands.some(c => String(c).length === w);
+    return cands.some(c => String(c).length >= w);
+  }
+  /* W4 (Sweep p3numbers Refutation, EIGHTH pass, 2026-09-16). The WIDTH-CLASS
+     RANK gate reads the COMMONEST printed width and declines when two widths tie
+     2-2 - by design, because there is then no commonest class to rank the key
+     inside. Where it declines, the answer was a certainty: gStandsCompare tied on
+     17.61 / 17.23% of draws and the key was in the WIDER pair on 100.00% of them,
+     gAddConcept tied on 8.37 / 8.29% with the key in the NARROWER pair on 100.00%,
+     gMentalMake and gZeroFix ~1-2% each, all 100%. "Two lengths, two of each -
+     take the long pair" halves the row for nothing.
+     The fix is not to break the certainty (on gStandsCompare the key is `vi - vj`
+     with `vj < POW[i] <= vi`, so the key is printed at `vi`'s width on every draw
+     the item can legally make and NO authoring can put it in the narrow half) but
+     to stop drawing the branch: a four-option row whose widths have no strict mode
+     is redrawn. The ruler declines on a shape the bank no longer ships. */
+  function widthTie(correct, cands){
+    const c = new Map();
+    for (const v of [correct].concat(cands)){
+      const w = String(v).length;
+      c.set(w, (c.get(w) || 0) + 1);
+    }
+    const n = [...c.values()].sort((x, y) => y - x);
+    /* only a tie for a class of TWO OR MORE is the branch in question. Four
+       distinct widths (counts 1,1,1,1) is the ruler declining because there is no
+       class at all - the shape the counting anchors ship on every draw. */
+    return n.length > 1 && n[0] >= 2 && n[0] === n[1];
   }
 
   /* ---- NAME A SLIP THE CHILD CAN ACTUALLY SEE -------------------------
@@ -508,7 +565,20 @@ function gStandsCompare(){
        collapse onto each other whenever the two columns are adjacent. Comparing
        the digits and then reading the answer back in EITHER column is two more
        genuine slips below the key, and reading the second digit one column to its
-       RIGHT is one more above. */
+       RIGHT is one more above.
+
+       W4, EIGHTH pass. Two widths tied 2-2 on 17.61 / 17.23% of draws and the key
+       was in the WIDER pair on 100.00% of them - a free halving of the row in the
+       one branch the width ruler declines to read. The key is `vi - vj` with
+       `vj < POW[i] <= vi`, so it is printed at `vi`'s width on every draw the item
+       can legally make and no distractor can be authored to put it in the narrow
+       half; the tie is therefore not drawn at all (`widthTie` in the redraw
+       condition). Rejecting it alone cost the magnitude gate - rank 3 fell to
+       11.8%, under the 12% floor, because the rejected rows are the ones with
+       three narrow slips below the key - so `vi - 2*vj`, the second value taken off
+       a second time, joins the family as a below-key slip printed at the KEY's
+       width. Measured: tie 17.61% -> 0.00%, ranks 27.9 / 28.2 / 25.3 / 18.6, and
+       the option board widens from 5,925 to 7,508 distinct rows. */
     cands = d[i] > d[j] ? slipSet(vi - vj, [
       d[i] - d[j],                /* compared the digits, not what they are worth */
       (d[i] - d[j])*POW[i],       /* ...then read that in the FIRST digit's column */
@@ -519,11 +589,13 @@ function gStandsCompare(){
       vj,                         /* gave the second value on its own */
       vi,                         /* gave the first value on its own */
       vi + vj,                    /* added the two values instead of comparing them */
+      vi - 2*vj,                  /* took the second value off a second time */
       vi - d[j]                   /* took the digit off the value */
     ]) : null;
     g++;
   } while (g < 200 && !(d[i] > d[j] && cands && optsOk(d[i]*POW[i] - d[j]*POW[j], cands) &&
-           sameWidth(d[i]*POW[i] - d[j]*POW[j], cands)));
+           sameWidth(d[i]*POW[i] - d[j]*POW[j], cands) &&
+           !widthTie(d[i]*POW[i] - d[j]*POW[j], cands)));
   const n = numOf(d), vi = d[i]*POW[i], vj = d[j]*POW[j], ans = vi - vj;
   return mcNum('In ' + n + ', how much more does the digit ' + d[i] + ' stand for than the digit ' +
     d[j] + '?', '', ans, cands, '',
@@ -646,8 +718,12 @@ function gZeroFix(){
       n0 + sg*(step/10),    /* stepped in the column to the RIGHT of the one named */
       n0 + sg*step*10       /* stepped in the column to the LEFT of the one named */
     ]) : null;
+    /* W4, EIGHTH pass: the 2-2 width tie is the branch the width ruler declines on,
+       and the key was in the wider pair on 100% of this bank's 1.08 / 0.91% of
+       them. It is redrawn below rather than declared - see widthTie. */
     g++;
-  } while (g < 400 && !(cands && optsOk(th*1000 + t*10 + o + sg*step, cands)));
+  } while (g < 400 && !(cands && optsOk(th*1000 + t*10 + o + sg*step, cands) &&
+           !widthTie(th*1000 + t*10 + o + sg*step, cands)));
   const n = th*1000 + t*10 + o, squashed = th*100 + t*10 + o, ans = n + sg*step;
   const dir = sg === 1 ? 'more' : 'less';
   return mcNum(who + ' writes ' + pl(th,'thousand') + ', 0 hundreds, ' + pl(t,'ten') + ' and ' +
@@ -913,28 +989,77 @@ function gCompareError(){
    width class, which is the cell the defect lived in. The WIDTH-CLASS RANK
    column in tools/gen-sanity.mjs is that ruler, and it now gates this file.
 
-   THE FIX IS THE STEP SET, NOT ANOTHER DISTRACTOR. A power of ten is the
-   SMALLEST number of its own width by definition, so no same-width slip below it
-   exists to author: while the jump is 10, 100 or 1000, the key is the minimum of
-   its width class on every draw where that class is not a singleton. The step set
-   therefore gains the IN-BETWEEN jumps this file already draws elsewhere (100 /
-   150 / 200 / 250 / 500 in gPatternMissing, 15 / 25 / 35 in gPatternOdd; MOE P3
-   1.5 does not restrict a sequence's jump to a multiple of ten), and for those
-   the ladder's own next power DOWN sits at the key's width and below it - 10
-   under 15 and 25, 100 under 150 and 250, 1000 under 1500 and 2500 - while
-   2*step and 3*step sit at the key's width and above it. The key can then be the
-   smallest, the middle or the largest of its class, and which one is DRAWN.
+   THE v8 FIX MOVED THE TELL INSTEAD OF REMOVING IT - KILL, EIGHTH PASS
+   (2026-09-16). v8 took the KEY off the power-of-ten ladder on two draws in three
+   and left the ladder in the DISTRACTOR family on every draw. That made the key
+   the only number on the row that is not 1-followed-by-zeros, and the smallest of
+   those whenever there was more than one:
 
-   One draw in three is still a counting anchor (10 / 100 / 1000, MOE P3 1.1). On
-   those the family is the place-value ladder alone - every option a different
-   width - so the class is a singleton and the rule has nothing to point at. */
+       "cross out 1, 10, 100 and 1000; the answer is the smallest of what is left"
+
+   answered the bank on 67.07% / 66.44% of 20,000 draws at two seeds, was NEVER
+   wrong when it fired (0 exceptions in 40,000), needed no arithmetic and never
+   read the four printed terms at all. It is the seventh pass's kill on a new
+   axis - SHAPE instead of WIDTH - and the width ruler was built not to see it.
+
+   THE LADDER IS RETIRED AS A SLIP FAMILY (PM ruling, 2026-09-16). A fixed set of
+   round numbers beside a non-round key IS the answer, however the key is drawn
+   inside it. The in-between family is now built out of the item's OWN arithmetic,
+   every member a misreading of THIS run, and it carries at most ONE round number:
+
+     2*step        two jumps counted as one - the child measured t0 to t2;
+     3*step        the whole run measured, first term to last;
+     step + 10     the jump found correctly and written a ten out;
+     step - 10     the same slip the other way;
+     hiPart        the jump read in its LEADING column only - the tens that
+                   changed, and not the ones (15 -> 10, 150 -> 100);
+     step - hiPart the mirror - the ones counted and the tens left behind
+                   (15 -> 5, 150 -> 50);
+     step x/ 10    the jump read one whole column out (15 -> 150, 150 -> 15).
+
+   hiPart is the ONLY member that can be a power of ten (10 under 15, 100 under
+   150), it is at the key's width and BELOW it - which is the same-width slip the
+   seventh pass needed and the ladder could not supply - and on the 25 and 250
+   branches even that one is not round. So on every in-between draw the row holds
+   at most one of 1 / 10 / 100 / 1000, the key is never the odd non-round number,
+   and "cross out the round ones and take the smallest" degenerates into "take the
+   smallest of the four", which the MAGNITUDE RANK gate has capped since v2.
+
+   SCOPE. Steps are 15 / 25 / 150 / 250 - in scope on this file's own precedent
+   (100 / 150 / 200 / 250 / 500 in gPatternMissing, 15 / 25 / 35 in gPatternOdd;
+   MOE P3 1.5 does not restrict a sequence's jump to a multiple of ten). 1500 and
+   2500 are DROPPED: they are three to five times the largest jump anywhere else
+   in the topic, three of them eat 4500-7500 of the 1..9999 range, and
+   `start = ri(1000, MAXN - 3*step)` pinned every step-2500 item's first term into
+   [1000, 2499] on 100% of its draws.
+
+   One draw in three is still a counting anchor (10 / 100 / 1000, MOE P3 1.1). The
+   row there is four powers of ten because the JUMP ITSELF is a power of ten, so
+   the ladder is the arithmetic and not a slip family: every option is
+   1-followed-by-zeros, no shape value singles the key or the three distractors
+   out, every width is distinct so the class declines, and the only rules left
+   ("the smallest that is not 1", "the largest") are each worth exactly one draw
+   in three. The SHAPE RULER in tools/gen-sanity.mjs scores that column now.
+
+   W7, EIGHTH pass - THE OPTION BOARD IS SMALL ENOUGH TO LEARN, AND THAT IS
+   DECLARED, NOT FIXED. Four in-between steps and one anchor cannot make many
+   distinct option rows: 191 of them over 20,000 draws at each of two seeds (121 at
+   v8), and the row alone pins the key on every one, because each row comes from
+   exactly one step. That is the price of a closed step set inside MOE P3 1.5's
+   1..9999, and the eighth family member (`2*step - 10`, two jumps taken at once and
+   then written a ten out) is in partly to widen the board from 116 to 191.
+   DECLARED with its exposure: 1.37 items per 30-item session at 0.80 accuracy
+   (worst 6) and 4.90 at 0.45 (worst 7). */
 function gPatternConcept(){
   const W = v => String(v).length;
-  /* the named slips: the jump read in the wrong COLUMN (the place-value ladder),
-     two jumps taken at once, and the whole run measured first term to last. */
+  /* the leading place value of the jump: 15 -> 10, 250 -> 200. The jump read in
+     its biggest column only, which is the same-width slip BELOW the key that the
+     seventh pass asked for and the place-value ladder could not author. */
+  const hiPart = s => { const p = Math.pow(10, W(s) - 1); return p * Math.floor(s / p); };
   const famOf = s => {
     const seen = new Set([s]), f = [];
-    for (const v of [1, 10, 100, 1000, 2*s, 3*s]){
+    for (const v of [2*s, 3*s, s + 10, s - 10, hiPart(s), s - hiPart(s),
+                     s >= 100 ? s/10 : s*10, 2*s - 10]){
       if (!ok(v) || seen.has(v)) continue;
       seen.add(v); f.push(v);
     }
@@ -948,6 +1073,15 @@ function gPatternConcept(){
     const below = same.filter(v => v < s).length;
     return below && below < same.length ? 'mid' : below ? 'max' : 'min';
   };
+  /* W4, EIGHTH pass: a 2-2 width tie is the one branch the width ruler declines
+     to read, and where it declines the tell is a CERTAINTY - on gStandsCompare the
+     key was in the wider pair on 100.00% of its 17.6% tie draws. The two members
+     below the key here are both narrower than it (the ones left behind, and the
+     jump read a column out), so every tie this bank could draw would put the key
+     in the wider pair. It does not draw one: a row whose width histogram has no
+     strict mode never enters the bank, so the branch is empty rather than
+     certain. Measured 13.16% / 12.62% of draws at v9-draft, now 0.00%. */
+
   /* THE COUNTING ANCHOR, one draw in three: the ladder alone, four widths, no
      class to rank the key inside. The step fixes the rank (10 -> 1, 100 -> 2,
      1000 -> 3), which is why the anchor cannot supply rank 0 and the in-between
@@ -963,13 +1097,14 @@ function gPatternConcept(){
      position uniformly from what that rank allows, so neither ruler can run away
      from the other. */
   const bank = [];
-  for (const s of [15, 25, 150, 250, 1500, 2500]){
+  for (const s of [15, 25, 150, 250]){
     const fam = famOf(s), kw = W(s);
     for (let i = 0; i < fam.length; i++)
       for (let j = i + 1; j < fam.length; j++)
         for (let k = j + 1; k < fam.length; k++){
           const t = [fam[i], fam[j], fam[k]];
           if (Math.max.apply(null, t.map(W)) * 1.4 < kw) continue;   /* RULE C */
+          if (widthTie(s, t)) continue;                              /* W4, no tie branch */
           bank.push({ s: s, t: t, r: t.filter(v => v < s).length, p: posOf(s, t) });
         }
   }
@@ -992,7 +1127,19 @@ function patternJump(step, wrong){
 }
 
 /* FORMAT 8 - counting on or back in tens, hundreds, thousands (pool 2, 1 step).
-   MOE P3 1.1. The step is NAMED in the stem, so this is the pattern anchor. */
+   MOE P3 1.1. The step is NAMED in the stem, so this is the pattern anchor.
+
+   W5, EIGHTH pass (2026-09-16) - THE TWO DIRECTIONS COMPOSE AND RESIDUAL 15 DID
+   NOT SAY SO. Residual 15 lists this bank TWICE, at 31.75 / 31.73% ("the largest
+   option below the smallest number in the stem") and 32.24 / 31.90% ("the smallest
+   option above the biggest"), as separate rows. They are not independent: the run
+   is printed, so on an UP run the key is above every printed term and one of them
+   fires, and on a DOWN run the key is below every printed term and the other does.
+   A child running BOTH is worth 53.56 / 53.10% as a guesser value (guessing between
+   the two options the pair names when both fire; the refutation's own composed
+   figure, scored the stricter way, is 43.77 / 42.52%), against a best single of
+   32.24%. DECLARED, not fixed: the key of a counting item is on the same side of a
+   printed run as the direction the stem names, and that is the arithmetic. */
 const STEP_WORD = { 10: 'tens', 100: 'hundreds', 1000: 'thousands' };
 function gPattern4(){
   const step = pick([10, 100, 1000]);
@@ -1077,7 +1224,19 @@ function gMoreLess(){
 }
 
 /* FORMAT 10 - working backwards inside a pattern: the gap is in the MIDDLE and
-   the jump is NOT given, so the child must find the jump first (pool 3, 2 steps) */
+   the jump is NOT given, so the child must find the jump first (pool 3, 2 steps)
+
+   W6, EIGHTH pass (2026-09-16) - THE STRADDLE, AND RESIDUAL 15 DECLARED ONLY ONE
+   SIDE OF IT. The gap is in the middle by construction, so the key is ALWAYS
+   strictly inside the printed run. "Keep the options that sit between the first
+   and last printed terms and are not themselves printed, then guess among them" is
+   worth 61.69 / 61.49% as a guesser value and answers the item OUTRIGHT on 25.12 /
+   24.74% of draws - above the 60% this file uses as its prose ceiling, on a bank
+   served 2.04 times a session at 0.80 accuracy. Residual 15 declares only the
+   one-sided version ("the largest option below the biggest stem number", 46.55 /
+   46.40%). DECLARED at the higher figure: a missing MIDDLE term is inside its own
+   run, and narrowing the straddle would mean moving the gap to an end, which is
+   gPattern4's item and not this one. */
 function gPatternMissing(){
   /* Steps are multiples of 100 so that a "jump added one column out" distractor
      (key + step/10) is a visible slip rather than an off-by-one that would read as
@@ -1379,6 +1538,27 @@ function gPatternOdd(){
    further. It does narrow further, because THE ONLY OPTION THAT IS BOTH A POWER
    OF TEN AND AT THE KEY'S WIDTH IS THE KEY - the other powers of ten all print at
    different widths, by definition.
+
+   W2, EIGHTH pass (2026-09-16) - AND THE CEILING WAS STILL WRONG, FOR THE THIRD
+   TIME. The residual above was corrected in v8 to "12.25 / 12.98% outright and
+   33.7 / 34.5% as a guesser". Both halves it names compose without any width step:
+   "the smallest option that is 1-followed-by-zeros and is not 1" - identically,
+   "cross out every number the stem printed, then take the smallest" - is worth
+   51.88 / 51.91% OUTRIGHT, firing on 100% of draws. It is structural and it is not
+   authorable away: the key is `POW[col]` for col in 0..2, so on the tens column
+   there is no multiple of ten below the key to print, and on the ones column the
+   key is 1. DECLARED at 51.9%, which is this bank's true shape ceiling, and it is
+   why the SHAPE RULER's route cap is 60% rather than the 40% the width rules take.
+
+   W7, EIGHTH pass. The option board here is 64 distinct rows over 20,000 draws at
+   each of two seeds, and the row alone pins the key on 73.11 / 73.14% of them.
+   Three columns times a family of powers of ten and small multiples of them cannot
+   make more; DECLARED, with exposure 0.82 items per session at 0.80 accuracy and
+   3.28 at 0.45. The v8 note declared row repetition for gPatternConcept's anchor
+   third only; it is the whole of both banks. The 2-2 width tie this bank ships on
+   8.37 / 8.29% of draws, with the key in the NARROWER pair on 100.00% of them, is
+   declared for the same reason: filtering it out costs 14 of the 64 rows, and a
+   smaller board is the worse trade.
 
    Nothing can be authored below a power of ten at its own width, so the fix is
    the other way round: every subset is now labelled by whether it puts ANY
@@ -1715,22 +1895,51 @@ function gMentalMake(){
 
        Every branch now carries at least three usable slips below the key and two
        above it, and the rank band is back inside 12-45% on all four ranks.
+
+       W1, EIGHTH pass. `b + 10` is GONE and a fourth in-gap slip is in. The
+       paragraph above added `b + 10` to refill the ABOVE side at mv = 1 and 2, and
+       the seventh pass then stopped drawing mv = 1, 2 and 3 at all - so it had been
+       dead weight for a pass, and every draw of it crowded out one of the three
+       slips that can land between the key and `b`. Removing it, and adding
+         `b - (b % 10)`  the ones digit taken OFF `b` instead of the amount the
+                         round-up actually needed - "move across" read as "drop the
+                         ones", in gap whenever 3 <= b%10 < mv,
+       took the structural rule from 68.47 / 67.96% to 37.48 / 37.27% with the
+       printed order drawn, and the rank band holds at 23.5 / 25.8 / 26.0 / 24.7.
        (SEVENTH pass: the mv = 1, 2 and 3 branches this paragraph argues about are
        no longer drawn at all - see the W3 note above - so the floor it restores
        is now paid for twice. The rank band is re-measured at 25.1 / 25.6 / 25.2 /
        24.3 and 25.2 / 24.9 / 25.5 / 24.4.) */
-    cands = slipSet(key, [b, b + mv, b + 10, mv, b - 2*mv, b - 10, key - 10,
-                          b - (a % 10), b - (10 - (b % 10)), b - 2*mv + 10], { minGap: 3 });
+    cands = slipSet(key, [b, b + mv, mv, b - 2*mv, b - 10, key - 10,
+                          b - (a % 10), b - (10 - (b % 10)), b - 2*mv + 10,
+                          b - (b % 10)], { minGap: 3 });
     g++;
   /* `b !== round` closes residual 12's commutativity draw (1.1% of v7 draws): with
      b equal to the round-up the stem reads "43 + 50 = 50 + ?" and the key is `a`
      itself, so the item is answered by symmetry with no mental arithmetic at all.
      It was declared rather than fixed for six passes; it is one condition. */
   } while (g < 200 && !(a % 10 !== 0 && a % 10 <= 6 && key >= 2 && (round - a) !== key && b !== round &&
-           cands && optsOk(key, cands) && sameWidth(key, cands)));
+           cands && optsOk(key, cands) && sameWidth(key, cands) && !widthTie(key, cands)));
   const moved = round - a;
-  return mcNum(who + ' works out ' + a + ' + ' + b + ' in ' + (pron === 'He' ? 'his' : 'her') +
-    ' head. ' + pron + ' makes ' + round + ' first. ' + a + ' + ' + b + ' = ' + round + ' + ?', '',
+  /* W1, EIGHTH pass. The v8 note measured the two directions of the same rule
+     separately - "the largest option below the SMALLEST stem number" 36.3% and
+     "...below the BIGGEST" 47.9% - as if a child had to choose between them. They
+     do not have to: `b` was not an anonymous stem number, it was THE NUMBER AFTER
+     THE `+`, printed twice and always second, and the key is `b - mv`. So "take
+     the second number in the sum and pick the largest option below it" answered
+     the bank on 68.47 / 67.96% of draws, firing on 100% of them, with no mental
+     arithmetic at all.
+     `b` is now unpinned: the two addends are printed in a DRAWN order, so the
+     number that was rounded up is first on one draw in two and second on the
+     other. Nothing about the mathematics moves - `a + b` is the same sum either
+     way and the key is `a + b - round` on every reading, which is exactly why the
+     item stays single-answered - but the child can no longer find `b` by its
+     position, and the harness's oracle now checks that `round` is the next ten up
+     from ONE of the two printed addends rather than from the first. */
+  const flip = Math.random() < 0.5;
+  const x = flip ? b : a, y = flip ? a : b;
+  return mcNum(who + ' works out ' + x + ' + ' + y + ' in ' + (pron === 'He' ? 'his' : 'her') +
+    ' head. ' + pron + ' makes ' + round + ' first. ' + x + ' + ' + y + ' = ' + round + ' + ?', '',
     key, cands, '',
     'To get from ' + a + ' up to ' + round + ' you need ' + moved + ', so ' + moved + ' is moved ' +
     'across from the ' + b + '. That leaves ' + b + ' − ' + moved + ' = ' + key + ', and ' + round +

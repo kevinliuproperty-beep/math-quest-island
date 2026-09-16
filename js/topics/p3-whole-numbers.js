@@ -2036,6 +2036,29 @@ function gAddConcept(){
   for (let i = src + 1; i < 4; i++){ A[i] = ri(0, 4); B[i] = ri(0, 9 - A[i]); }
   for (let i = 1; i < src; i++){ A[i] = ri(0, 4); B[i] = ri(0, 4); }
   A[0] = ri(1, 4); B[0] = ri(1, 4);
+  /* W2, EIGHTH pass (2026-09-16) - THE BIG-DIGIT SCAN. The stem stopped naming
+     the column at the seventh pass, so the child has to find the one that makes
+     s. The seating above handed that search away for free: s is 12-18, so the
+     src column ALWAYS holds a digit of 6 or more, while every column to its left
+     was drawn from 0..4. "Read left to right, take the first column with a digit
+     of 5 or more" therefore landed on src on 100.00% of draws, measured - the
+     child never added anything, and the find the stem asks for was a scan.
+
+     The seating is now the fix rather than the leak: on 55% of draws ONE column
+     to the left of src carries a digit of 5 or more, so the scan's first hit is
+     a decoy and the route lands on src on 45%. The big pair is drawn to sum to 8
+     or less, so that column still cannot reach ten even after the carry lands on
+     it, and at index 0 both digits stay 1 or more so neither number grows a
+     leading zero - the legal big pairs there are (5,1) (5,2) (5,3) (6,1) (6,2)
+     (7,1) and their mirrors. The stem's two claims hold as printed on every
+     draw: exactly one column reaches ten, and it makes s. The src column and the
+     columns to its right are untouched. */
+  if (ri(1, 100) <= 55){
+    const j = ri(0, src - 1);
+    const big = j === 0 ? ri(5, 7) : ri(5, 8);
+    const small = j === 0 ? ri(1, 8 - big) : ri(0, 8 - big);
+    if (ri(0, 1)){ A[j] = big; B[j] = small; } else { A[j] = small; B[j] = big; }
+  }
   const a = numOf(A), b = numOf(B);
 
   const kid = pick(KIDS), who = kid[0], pron = kid[1].toLowerCase();

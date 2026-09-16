@@ -167,11 +167,77 @@
  *     more negative controls, all red: the v5 gEqualParts row on both new clauses
  *     and the v5 gCompareError row on RULE 11.
  *
+ * REFUTATION FIXES, v7 2026-09-16 (SIXTH PASS: 2 KILLED, 4 WOUNDED). THE PM'S
+ * RULING, and it is final for these two banks: gEqualParts and gCompareError have
+ * each now been killed on EVERY AXIS THIS FILE HAS A RULER FOR, across six passes
+ * - sentence frame, noun overlap, single word, word-set complement, paired filler,
+ * the stem's one numeral, the printed glyphs of the arithmetic - and each fix
+ * moved the tell rather than removing it. BOTH ARE RETIRED FROM THE TOPIC. Five
+ * passes on one generator and four on another are a structural finding about the
+ * FORMAT, not a wording defect, and the seventh rewrite would be the seventh new
+ * regularity. The two slots are refilled, the generator count is unchanged at 27,
+ * and the two retirement sites carry the whole argument and the measured numbers.
+ *   - KILL 1, gEqualParts, RETIRED (fifth consecutive pass). The v6 numeric
+ *     rebuild closed the lexical axis completely and correctly and opened a
+ *     STEM-RECALL axis the file had no ruler for: the stem printed exactly ONE
+ *     numeral and, under the declared k x n <= 10 cap, a FOUR-LINE TABLE over that
+ *     numeral (2->8, 3->6, 4->8, 5->10) answered the declared pool-1 concept
+ *     anchor on 65.52% / 66.42% of 20,000 draws on two seeds. The bar was never
+ *     counted. Its pool-1 `identify` slot goes to FORMAT 1b, gPicTakeAway: a
+ *     fraction read off the bar after one step, with the bar's part count - the
+ *     key's bottom number - in no word of the stem, and TWO numerals in the stem
+ *     so that no single one can name the key.
+ *   - KILL 2, gCompareError, RETIRED (fourth pass on this generator). The v6
+ *     rebuild moved the fingerprint onto the two numbers the child's mistake
+ *     prints, and for two of the four beliefs that output is a numeral already on
+ *     the screen - so a FOUR-CLAUSE RULE WITH NO ARITHMETIC IN IT (numeral
+ *     identity, then digit count) answered it on 91.84% / 91.19% of 20,000 draws
+ *     on two seeds. An error-spotting item must print the evidence it asks about,
+ *     so the surface can be moved but not removed. Its pool-3 `compare` slot goes
+ *     to FORMAT 3e, gBetween: "which of these is between X and Y" over related
+ *     bottom numbers, two steps, rank-gated, numeric - no sentence to recognise.
+ *   - THE THREE NEW GATES, which are the deliverable. tools/gen-sanity.mjs gains
+ *     RULE 12, THE STEM-ONLY RULE (a bank that draws a PICTURE may not be answered
+ *     from the numerals of its stem alone on >= 60% of draws, row and figure
+ *     discarded; the six-row stem table is measured on every bank and declared);
+ *     RULE 13, THE GLYPH RULE (no key may be SETTLED on >= 60% by numeral
+ *     identity, numeral membership and digit count, with no arithmetic anywhere);
+ *     and RULE 11's SHAPE CLAUSE (the memorisable test counts masked row SHAPES,
+ *     not rows). Negative controls: the v6 gEqualParts stem, the v6 gCompareError
+ *     row and the v6 gAddSame row, all three red.
+ *   - W1, THE ROW-SHAPE CLASS. gAddSame - 677 rows, exempt under the old rule -
+ *     had EIGHTEEN masked shapes, every one naming the key's slot on 100.0% of
+ *     held-out draws at 5.18 served items a session. Its candidate bank is widened
+ *     over bottom numbers d-2 .. d+2 and the coupling seat goes in: 18 shapes ->
+ *     31, 100.0% -> ~90%, and the rest of the class is declared with its numbers
+ *     on RULE 11's printed 40% watch line (twelve banks, 4 to 123 shapes).
+ *   - W3, gEquivFromBar printed "1 of them ARE blue" on 22.8% of draws. Fixed with
+ *     a ternary, and the harness gains a PROSE AGREEMENT clause that reads every
+ *     rendered stem, option and teaching card in the topic - the first grammar
+ *     ruler in this repo - with that sentence as its control.
+ *   - W2, OUT OF LANE AND FOR THE INTEGRATOR, one line: js/core.js line 387,
+ *     `qIdentity` builds `q.q + '|' + extra + '|' + q.choices.join('')` with the
+ *     choices in DISPLAY order, and every mc* helper shuffles - so the same stem
+ *     with the same four options reshuffled is a different key to the feed's
+ *     `seen` set and the same question to the child. The fix is `.slice().sort()`
+ *     inside qIdentity and it changes every topic in the game, which is why this
+ *     lane does not make it. Measured here through the real createFeed and the
+ *     app's own climb, 500 sessions x 30 items on each of two seeds: 0 / 15,000
+ *     under the feed's own identity, and 33 / 35 per 15,000 at 80% accuracy and
+ *     56 / 54 at 45% once the option row is compared as a SET. The residual list
+ *     has carried this as "closed" for two passes; it is not.
+ *   - RULE 13 also caught gAddError at 76.8% on its first run: `bottoms` was the
+ *     one belief whose claim was not written over the stem's own bottom number, so
+ *     ONE glyph test split the three beliefs before a fraction was read. It comes
+ *     off the claim bank and stays on the row as a never-true sentence; `gap`
+ *     takes its place; two never-true fillers now rotate independently of the
+ *     belief. 76.8% -> 50.7%, row space 6 -> 12.
+ *
  * THE FOUR PRINCIPLES
  *  1. WHAT A FRACTION NAMES. A fraction names equal parts of one whole: the
  *     bottom number says how many EQUAL parts the whole was cut into, the top
  *     number how many of them you have.
- *       gPicIdentify, gEqualParts, gPicUnshaded
+ *       gPicIdentify, gPicTakeAway, gPicUnshaded
  *  2. EQUIVALENCE AND SIMPLEST FORM ARE ONE IDEA. Multiplying top and bottom by
  *     the same number cuts every part into smaller ones; dividing them groups
  *     parts back together. The amount never changes. Simplest form is that idea
@@ -182,7 +248,7 @@
  *     so compare the tops. Same top number -> the bigger the bottom number, the
  *     more parts the whole was cut into and the SMALLER each piece.
  *       gCompareUnit, gCompareBar, gCompareSameD, gCompareWords,
- *       gCompareError, gGreatest4, gOrderThree, gOrderGap
+ *       gBetween, gGreatest4, gOrderThree, gOrderGap
  *  4. ADDING AND SUBTRACTING WITHIN ONE WHOLE. The bottom number is the SIZE of
  *     the piece, so it does not move; only the tops are counted. When the pieces
  *     are different sizes (related fractions), change one fraction into an
@@ -198,7 +264,7 @@
  *   improper fractions (all MOE P4, and js/topics/p4-fractions.js already carries
  *   them — the second depth-pilot refutation killed exactly this kind of leak in
  *   the other direction). The one deliberate look BACKWARDS is gPicIdentify /
- *   gEqualParts, naming a fraction of a whole from a picture: that is P2 content,
+ *   gPicTakeAway, naming a fraction of a whole from a picture: that is P2 content,
  *   kept as the declared pool-1 fluency anchor for this topic.
  *
  * DEFECT CLASSES PRE-EMPTED (Depth Pilot Refutation 2026-09-05, both passes):
@@ -737,59 +803,110 @@ function gPicIdentify(){
    largest of four on 100% of those draws and the shape would name the rank. Seven
    (k, n) shapes survive, 3 question forms and 18 contexts on top, and the
    option-row space is drawn rather than fixed. */
-const EQP_ASK = [
-  c => 'Into how many <b>equal parts</b> is the whole ' + c + ' cut now?',
-  c => 'How many <b>equal parts</b> does the whole ' + c + ' have now?',
-  c => 'The whole ' + c + ' is now cut into how many <b>equal parts</b>?'
-];
-/* k equal pieces, each cut into n equal parts. Both at least 2 - one piece is not
-   a cutting and one part is not a cut - and k x n <= 10, which is the rank cost
-   declared above. */
-const EQP_SHAPES = [];
-for (let kk = 2; kk <= 6; kk++) for (let nn = 2; nn <= 6; nn++) if (kk*nn <= 10 && kk*nn >= 6) EQP_SHAPES.push([kk, nn]);
-function gEqualParts(){
-  const kid = pick(KIDS), cake = pick(CAKES), form = ri(0, EQP_ASK.length - 1);
-  /* RULE 7: the rank first, then a shape that can seat it. */
+/* SIXTH PASS 2026-09-16, THE KILL, for the FIFTH consecutive time - and the
+   GENERATOR IS RETIRED. THE PM'S RULING, final for this bank: gEqualParts has now
+   been killed on every axis this file has a ruler for, across six passes -
+   sentence matching (v3), a single word (v4), the word-set complement (v5) and
+   now the stem's ONE numeral (v6) - and each fix moved the tell rather than
+   removing it. It is off the topic.
+
+   WHAT THE SIXTH PASS MEASURED. The v6 rebuild took the lexical axis away
+   completely and correctly: four bare part counts, no sentence to match, nothing
+   for RULE 6, 8, 9 or 11 to bite on. It opened a STEM-RECALL axis instead. The
+   stem printed exactly ONE numeral, `n`, and under the declared `k x n <= 10` cap
+   that numeral names the key: the four-line table `2->8, 3->6, 4->8, 5->10`
+   answered the declared pool-1 concept anchor on 65.52% / 66.42% of 20,000 draws
+   on each of two seeds, and the recalled number was on the row and right on
+   61.46% / 62.43%. On `n = 4` and `n = 5` the picture is redundant BY
+   CONSTRUCTION, because the cap leaves exactly one `k` for each. The bar was never
+   counted.
+
+   THE DECLARED COST WAS THE KILL. The cap was declared as a RANK cost ("at 12
+   nothing legal sits above the key") and it is also a DEPENDENCY cost: it
+   collapses the (k, n) grid to seven cells in which `n` is nearly a function of
+   the answer, and the seven are not even served evenly (10.7% against 16.8%),
+   which sharpens the table further.
+
+   WHAT REPLACES IT, and why this shape rather than another rebuild. The slot is
+   pool 1 / `identify`, so the refill is a second READING-A-FRACTION-OFF-A-PICTURE
+   format - FORMAT 1b below - built to the two conditions the PM set: the picture
+   is load-bearing (the bar's part count is the key's bottom number and appears
+   NOWHERE in the words), and the stem prints TWO numerals, so no single numeral
+   can name the key and the four-line table has nothing to be a table over.
+   RULE 12 in tools/gen-sanity.mjs is the general form of the gate and the v6
+   gEqualParts row is its negative control. */
+/* FORMAT 1b - reading a fraction off a picture after a one-step change (pool 1,
+   1 step). The bar shows the child's pieces blue; she eats some; what is left is
+   still counted over the SAME bottom number, which is Principle 1 stated where a
+   P3 child most often loses it - the bottom number is the size of the piece, and
+   eating a piece does not re-cut the cake.
+
+   THE TWO RULERS THIS FORMAT IS BUILT AGAINST, both of them gates rather than
+   wording:
+     - RULE 12, THE STEM-ONLY RULE. The stem prints the child's piece count `a`
+       and the number she eats `g`, and the answer is (a - g) over the bar's own
+       part count `d`. `d` is in the PICTURE and in no word of the stem, so no
+       table over the stem's numerals - and no arithmetic of them either - can
+       name the key. Measured: the six-row stem table is worth chance.
+     - RULE 10, THE PICTURE RULER, and the load-bearing clause in the oracle:
+       another legal bar (the same pieces over a different part count) changes the
+       answer on every draw, because `d` IS the key's bottom number.
+   The coupling seat and the digit-overlap ban both apply as they do everywhere
+   else in the file: one or two of the three slips are written over the bar's own
+   part count (sameDen), and the key may not be the unique option both of whose
+   numerals are printed elsewhere on the row (digitIsolatesKey). */
+function gPicTakeAway(){
+  const kid = pick(KIDS), cake = pick(CAKES);
+  /* RULE 7: the value rank is drawn FIRST and sided() is forced to seat it. */
   const rank = ri(1,4);
-  let k = 2, n = 3, key = 6, opts = null, g = 0;
+  let d = 8, a = 5, g2 = 2, key = [3,8], slips = [[5,8],[2,8],[3,7]], g = 0;
   do {
-    const s = pick(EQP_SHAPES); k = s[0]; n = s[1];
-    key = k*n;
-    /* One of the two numbers a child can read off the screen is offered, never
-       both: the picture's piece count and the question's own number are the two
-       commonest wrong answers here AND the two stem-option coupling rules, so
-       seating one of them turns both rules into distractor-pickers without ever
-       making the key the unique number that is not on the screen. */
-    const seen = Math.random() < 0.5 ? k : n;
-    opts = sidedNum(key, [
-      k + n,          /* added the two numbers instead of cutting every piece */
-      n*(k - 1),      /* cut every piece except her own */
-      k*(n - 1),      /* counted the new CUTS in each piece, not the parts */
-      key - 1,        /* one part miscounted */
-      key + 1,
-      k*(n + 1),      /* one part too many in every piece */
-      (k + 1)*n,      /* one piece too many */
-      seen
-    ], 12, 4 - rank);
+    /* RULE 12 again, and it took a measurement to see it: with `a` allowed to run
+       to d - 1 the bar's part count was the child's piece count plus one on a
+       seventh of all draws, and "(a - g) over (a + 1)" - one subtraction and one
+       addition, both of them on numerals the STEM prints - named the key on 47.3%
+       of 4,000 draws without the bar being looked at. `a` stops two short of the
+       whole now and `d` starts at 6, so no arithmetic of the stem's two numerals
+       reaches the bottom number: measured 18.7%, which is the coincidence rate. */
+    d = ri(6,12);
+    a = ri(3, d-2);          /* her pieces: at least three, never all but one */
+    g2 = ri(1, Math.min(2, a-1));
+    key = [a-g2, d];
+    const cands = [
+      [a, d],                          /* answered the blue part as drawn, forgetting the bite */
+      [g2, d],                         /* answered the pieces she ate */
+      [d-a, d],                        /* answered the pieces that were never hers */
+      (d-a+g2 < d ? [d-a+g2, d] : null), /* answered the pieces that are not hers NOW */
+      (a-g2+1 < d ? [a-g2+1, d] : null), /* one piece miscounted, one too many */
+      (a-g2-1 >= 1 ? [a-g2-1, d] : null),/* one piece miscounted, one too few */
+      (a-g2 < d-1 ? [a-g2, d-1] : null), /* took the eaten piece off the whole as well */
+      (d+1 <= 12 ? [a-g2, d+1] : null),  /* counted a part that is not there */
+      (a-g2 < d-2 && d-2 >= 2 ? [a-g2, d-2] : null),
+      /* WOUND 1, THE ROW-SHAPE CLASS (sixth pass). A row written over two bottom
+         numbers has few masked shapes and a child learns the picture rather than
+         the fraction; the miscounts below are the ones the card already names,
+         each over a bottom number the row would not otherwise reach, so the shape
+         moves with the numbers. sameDen() below still holds a seat over the bar's
+         own part count, which is what keeps RULE 13 off the row. */
+      (d+2 <= 12 ? [a-g2, d+2] : null),
+      (a-g2+1 < d-1 ? [a-g2+1, d-1] : null),
+      (a-g2-1 >= 1 && d+1 <= 12 ? [a-g2-1, d+1] : null),
+      (a < d-1 ? [a, d-1] : null),
+      (d+1 <= 12 ? [g2, d+1] : null)
+    ].filter(Boolean);
+    slips = sided(key, cands, sameDen(cands, d, key), 4 - rank) || [];
     g++;
-  } while (g < 200 && !(opts && numsOk(key, opts)));
-  if (!(opts && numsOk(key, opts))){ k = 2; n = 3; key = 6; opts = [5, 4, 7]; }
-  const onRow = v => v === key || opts.indexOf(v) >= 0;
-  return fig(mcNum('The bar below shows a ' + cake + ' cut into equal pieces, and ' + kid[0] +
-    "'s piece is blue. " + kid[1] + ' then cuts <b>every</b> piece into ' + n + ' equal parts. ' +
-    EQP_ASK[form](cake),
-    key, opts,
-    'The bar is cut into ' + k + ' equal pieces, and every one of them is cut into ' + n +
-    ' equal parts - the blue one as well. ' +
-    k + ' × ' + n + ' = ' + key + ', so the whole ' + cake + ' is cut into ' + key +
-    ' equal parts, and because they are all the same size each one is ' + fr(1,key) + ' of it. ' +
-    /* WOUND 4 (fifth pass): a card may not name a wrong answer the child cannot
-       find on the row. The adding slip is named with its number where it is
-       offered and in words where it is not. */
-    (onRow(k + n)
-      ? 'Adding the two numbers gives ' + (k + n) + ', which counts the pieces once and the parts once instead of counting the parts in every piece.'
-      : 'Adding the two numbers instead of multiplying them counts the pieces once and the parts once, instead of counting the parts in every piece.')),
-    bar(k, 1));
+  } while (g < 200 && !(slipsOk(key, slips) && !digitIsolatesKey(key, slips)));
+  if (!slipsOk(key, slips)){ d = 8; a = 5; g2 = 2; key = [3,8]; slips = [[5,8],[2,8],[3,7]]; }
+  return fig(mcFrac('The bar below shows a ' + cake + ' cut into equal pieces, and ' + kid[0] + "'s " +
+    a + ' pieces are blue. ' + kid[1] + ' eats ' + g2 + ' of ' + (kid[2] === 'she' ? 'her' : 'his') +
+    ' pieces. What fraction of the ' + cake + ' is <b>still ' + kid[0] + "'s</b>?", key, slips,
+    'Count all the parts on the bar first: the ' + cake + ' is cut into ' + d + ' equal parts, and ' +
+    a + ' of them ' + (a === 1 ? 'is' : 'are') + ' blue, so ' + kid[0] + ' had ' + fr(a,d) + '. ' +
+    kid[1] + ' eats ' + g2 + ', so ' + a + ' − ' + g2 + ' = ' + (a-g2) + ' ' +
+    ((a-g2) === 1 ? 'piece is' : 'pieces are') + ' left, out of the same ' + d + ' parts: ' + fr(a-g2,d) +
+    '. Eating a piece does not re-cut the ' + cake + ', so the bottom number never moves - it stays ' + d + '.'),
+    bar(d, a));
 }
 
 /* FORMAT 1c - the complement, off the same picture (pool 2, 2 steps: read the
@@ -889,8 +1006,16 @@ function gEquivFromBar(){
   } while (g < 200 && !slipsOk(key, slips));
   if (!slipsOk(key, slips)){ n = 3; d = 4; k = 2; up = false; key = [3,4]; slips = [[5,6],[3,8],[7,8]]; }
   const parts = up ? d : k*d, blue = up ? n : k*n;
+  /* SIXTH PASS 2026-09-16, W3. ' of them are blue.' was hard-coded, so the pool-1
+     equivalence anchor printed "1 of them ARE blue" on 22.81% / 22.68% of draws -
+     served 1.30 per session at 80% accuracy and 5.09 at 45%, so a struggling child
+     met the error about once a sitting. gPicUnshaded twenty lines up has always
+     done this correctly. Nothing in the harness read prose for agreement; the
+     PROSE AGREEMENT clause in tools/gen-sanity.mjs now does, over every rendered
+     stem and teaching card in the topic, with this sentence as its control. */
   return fig(mcFrac('The bar below is cut into ' + parts + ' equal parts, and ' + blue +
-    ' of them are blue. Which fraction is <b>equivalent</b> to the blue fraction?', key, slips,
+    (blue === 1 ? ' of them is blue' : ' of them are blue') +
+    '. Which fraction is <b>equivalent</b> to the blue fraction?', key, slips,
     'The blue part is ' + blue + ' out of ' + parts + ' parts, which is ' + fr(blue, parts) + '. ' +
     (up
       ? 'Cut every one of those ' + d + ' parts into ' + k + ' smaller ones: ' + n + ' × ' + k + ' = ' + (k*n) +
@@ -1599,73 +1724,133 @@ function gCompareWords(){
    eliminated one option: 33% rather than 25%, under every ceiling in this file,
    and it is bought by READING THE FRACTIONS, which is the thing the v5 item never
    required. */
-const CMP_BELIEFS = [
-  /* the top numbers compared on their own */
-  { id:'top',    f: p => p[0],        say: nm => nm + ' compared the top numbers and left the bottom numbers out.' },
-  /* the backwards bottom-number rule - the misconception the brief names */
-  { id:'bottom', f: p => p[1],        say: nm => nm + ' thought a bigger bottom number makes a bigger fraction.' },
-  /* a fraction read as an adding sum */
-  { id:'sum',    f: p => p[0] + p[1], say: nm => nm + ' added the top number to the bottom number in each fraction.' },
-  /* the pieces that are missing counted instead of the pieces there */
-  { id:'gap',    f: p => p[1] - p[0], say: nm => nm + ' counted the pieces that are missing instead of the ones there.' }
-];
-function gCompareError(){
-  const kid = pick(KIDS), nm = kid[0];
-  const belief = pick(CMP_BELIEFS);
-  /* The `top` belief cannot err where the top numbers are equal, so it always
-     takes the related-fraction shape; the other three take either. */
-  let A = [2,12], B = [1,3], m = 4, rel = true, X = 2, Y = 1, greater = true, ok = false, g = 0;
+/* SIXTH PASS 2026-09-16, THE KILL, for the FOURTH consecutive time - and the
+   GENERATOR IS RETIRED. THE PM'S RULING, final for this bank: every axis this
+   file can measure has now killed gCompareError - the sentence frame (v1), the
+   noun overlap (v2), the paired filler naming its own key (v5) and now the
+   GLYPHS of the numbers the rebuild printed (v6). It is off the topic.
+
+   WHAT THE SIXTH PASS MEASURED. The v6 rebuild moved the fingerprint off the
+   WORDS of the child's reason and onto the two numbers it prints, which name a
+   belief only in the light of the two printed fractions. Row-only fell to 25.1%,
+   exactly chance, and the printed fractions became load-bearing on 88%. All of
+   that reproduces. And the item is answered by a FOUR-CLAUSE RULE WITH NO
+   ARITHMETIC IN ANY CLAUSE on 91.84% / 91.19% of 20,000 draws on each of two
+   seeds:
+
+     are the two worked-out numbers the same two numerals as the two TOP numbers?
+       -> "compared the top numbers"
+     as the two BOTTOM numbers?              -> "bigger bottom number"
+     otherwise, does either have TWO DIGITS? -> "added them"
+     otherwise                               -> "counted what is missing"
+
+   Clauses 1 and 2 are pure numeral matching, fire on 50.5% of draws and never
+   misfire; clause 3 counts glyphs in a numeral, which is how a P3 child tells 14
+   from 4. The rebuild printed the belief's own arithmetic OUTPUT, and for two of
+   the four beliefs that output is literally a numeral already on the screen - so
+   copying a numeral, which is not a fraction operation, names the misconception.
+   A second, independent regularity the v6 note declared only in its weak half:
+   "if the two fractions do not share a top number, answer compared-the-tops" is
+   worth 44.12% / 43.70% overall, not the declared 33% on one shape.
+
+   WHY NOT A FIFTH REWRITE. An error-spotting item MUST print the evidence it asks
+   the child to diagnose, and the evidence is numbers; every rewrite of this bank
+   has moved the fingerprint to a different surface of the same printed evidence.
+   The PM's ruling is the same one that retired the prose concept check: four
+   passes on one generator is a structural finding about the FORMAT, not a wording
+   defect. gAddError remains this topic's error-spotting format and is gated by
+   RULE 13 like everything else.
+
+   WHAT REPLACES IT. The slot is pool 3 / `compare`, two steps, so the refill is
+   the PM's own named design - FORMAT 3e below, "which of these four is between X
+   and Y" over related denominators, rank-gated. It is numeric, so there is no
+   sentence to recognise; the two bounds must both be converted before any option
+   can be judged, so it is genuinely two-step; and the key is one interior value
+   out of several, so no extreme of the row names it. */
+/* FORMAT 3e - which fraction lies BETWEEN two printed ones (pool 3, 2 steps).
+   Step 1: cut both bounds into the smaller pieces the options are written in.
+   Step 2: read which single option lands strictly between them.
+
+   THE DESIGN CONSTRAINTS, each one a gate this file already carries:
+     - RULE 7: the key's value rank is drawn FIRST and sided() is forced to seat
+       it, so the key is not the extreme of the row and "pick the middle one" is
+       worth nothing. The two bounds are themselves offered - a child who has not
+       understood "between" picks an end - and they sit on opposite sides.
+     - THE COUPLING BAN: the stem's own bottom number is on the row (the two
+       converted bounds are not, the printed ones are), so "keep the bottom number
+       the question gives you" picks a DISTRACTOR.
+     - RULE 12: the stem prints four numerals and the key's bottom number is the
+       scaled one, which is in no word of the stem, so no six-row table over the
+       stem's numerals names the key.
+     - RULE 13: every option is a fraction and the key's numerals are not the
+       stem's, so numeral membership leaves at least two options standing.
+   The bounds are ADJACENT b-ths, so exactly the interior d-ths lie between them
+   and the item has one answer by construction rather than by filtering. */
+/* The two ends are RELATED, which is the only comparison P3 owns: one is written
+   over `b` and the other over `d = m x b`, so exactly one conversion is needed
+   before the row can be read at all. The ends are drawn to leave AT LEAST TWO
+   d-ths strictly between them, which is what keeps the stem from naming the key:
+   a child who memorises the pair of ends still has to choose between two or more
+   interior values, so the six-row stem table of RULE 12 is worth nothing here. */
+const BTW_SHAPES = [];
+for (let d2 = 4; d2 <= 12; d2++)
+  for (let b2 = 2; b2 < d2; b2++) if (d2 % b2 === 0)
+    for (let x2 = 1; x2 < b2; x2++)
+      for (let y2 = 1; y2 < d2; y2++) {
+        const lo2 = Math.min(x2*(d2/b2), y2), hi2 = Math.max(x2*(d2/b2), y2);
+        if (hi2 - lo2 >= 3) BTW_SHAPES.push([d2, b2, x2, y2]);
+      }
+function gBetween(){
+  const rank = ri(1,4);
+  let d = 12, b = 3, m = 4, x = 1, y = 9, lo = 4, hi = 9, key = [6,12], slips = [[3,12],[1,3],[10,12]], g = 0;
   do {
-    rel = belief.id === 'top' || Math.random() < 0.5;
-    if (rel){
-      /* related: B's whole is cut finer to make A's, so one P3 step compares them */
-      const b = pick(SCALABLE); m = pick(scalesFor(b[1]));
-      B = [b[0], b[1]];
-      A = [ri(1, m*b[1] - 1), m*b[1]];
-    } else {
-      /* the same top number, so the bottom numbers decide */
-      const n = ri(1,3);
-      const d1 = ri(n+1,12), d2 = ri(n+1,12);
-      A = [n, d1]; B = [n, d2]; m = 0;
-    }
-    X = belief.f(A); Y = belief.f(B);
-    greater = X > Y;
-    ok = legalFrac(A) && legalFrac(B) && !sameVal(A,B) && X !== Y && X >= 1 && Y >= 1 &&
-         /* the printed claim must be FALSE, or the item has nothing to diagnose */
-         greater !== (A[0]*B[1] > B[0]*A[1]) &&
-         /* and exactly one of the four beliefs can have produced the two numbers,
-            or the stem does not name a single mistake */
-         CMP_BELIEFS.filter(s => s.f(A) === X && s.f(B) === Y).length === 1;
+    const s = pick(BTW_SHAPES);
+    d = s[0]; b = s[1]; m = d/b; x = s[2]; y = s[3];
+    lo = Math.min(x*m, y); hi = Math.max(x*m, y);
+    const inside = [];
+    for (let t = lo+1; t <= hi-1; t++) inside.push(t);
+    key = [pick(inside), d];
+    const t0 = key[0];
+    /* NOTHING in the candidate bank may lie strictly between the two ends, or the
+       item has two right answers; every entry is a named belief. */
+    const between = p => lo*p[1] < p[0]*d && p[0]*d < hi*p[1];
+    const cands = [
+      [lo, d], [hi, d],                     /* took one of the two ends */
+      [x, b], [y, d],                       /* took an end exactly as the stem prints it */
+      (lo-1 >= 1 ? [lo-1, d] : null),       /* just under the lower end */
+      (hi+1 < d ? [hi+1, d] : null),        /* just over the upper end */
+      [x, d],                               /* kept the top number, changed only the bottom */
+      (y < b ? [y, b] : null),              /* read the second end in the FIRST end's pieces */
+      (t0 < b ? [t0, b] : null),            /* the right top number over the wrong bottom */
+      (x+y < d ? [x+y, d] : null),          /* added the two printed top numbers */
+      (lo+hi < d ? [lo+hi, d] : null),      /* added the two converted top numbers */
+      (Math.abs(y-x) >= 1 && Math.abs(y-x) < b ? [Math.abs(y-x), b] : null)
+    ].filter(Boolean).filter(p => legalFrac(p) && !between(p) && !sameVal(p, key));
+    slips = sided(key, cands, sameDen(cands, b, key), 4 - rank) || [];
     g++;
-  } while (g < 200 && !ok);
-  if (!ok){
-    /* The fallback carries every belief: 2/12 against 1/3 gives a unique, false
-       claim for all four of them. */
-    A = [2,12]; B = [1,3]; m = 4; rel = true;
-    X = belief.f(A); Y = belief.f(B); greater = X > Y;
+    /* THE MIRROR OF THE COUPLING BAN, and this format is the one place in the file
+       where it bites the other way round. sameDen() deliberately seats an option
+       written over the STEM'S first bottom number so that "keep the bottom number
+       the question gives you" cannot isolate the key - and the key here is written
+       over the SCALED bottom number, so seating two or three of those would leave
+       the key the unique option NOT over `b`, which is the same rule read
+       backwards. At least one slip shares the key's own bottom number as well, so
+       neither direction of the rule is ever alone on the row. */
+  } while (g < 200 && !(slipsOk(key, slips) && !digitIsolatesKey(key, slips) &&
+                        slips.filter(s2 => s2[1] === d).length >= 1 &&
+                        slips.filter(s2 => s2[1] === b).length >= 1));
+  if (!slipsOk(key, slips)){
+    d = 12; b = 3; m = 4; x = 1; y = 9; lo = 4; hi = 9; key = [6,12]; slips = [[3,12],[1,3],[10,12]];
   }
-  const truth = greater ? 'SMALLER' : 'GREATER';
-  const where = belief.id === 'top'
-      ? X + ' and ' + Y + ' are just the two TOP numbers, and a top number on its own says nothing about how big the pieces are.'
-    : belief.id === 'bottom'
-      ? X + ' and ' + Y + ' are the two BOTTOM numbers, and a bottom number says how many parts the whole was cut into - the MORE parts, the SMALLER each one.'
-    : belief.id === 'sum'
-      ? X + ' and ' + Y + ' are the top number added to the bottom number (' + A[0] + ' + ' + A[1] + ' and ' +
-        B[0] + ' + ' + B[1] + '), and adding them does not measure a fraction at all.'
-      : X + ' and ' + Y + ' count the pieces that are MISSING (' + A[1] + ' − ' + A[0] + ' and ' + B[1] + ' − ' +
-        B[0] + '), not the pieces you have.';
-  const how = rel
-    ? 'Cut ' + fr(B[0],B[1]) + ' into smaller pieces first: ' + B[0] + ' × ' + m + ' = ' + (m*B[0]) + ' and ' +
-      B[1] + ' × ' + m + ' = ' + A[1] + ', so ' + fr(B[0],B[1]) + ' is the same amount as ' + fr(m*B[0], A[1]) +
-      '. Now both are in ' + A[1] + 'ths, so just count: ' + A[0] + ' against ' + (m*B[0]) + '.'
-    : 'Both fractions have the same top number, ' + A[0] + ', so the bottom number decides: cutting a whole into ' +
-      Math.max(A[1],B[1]) + ' parts makes smaller pieces than cutting it into ' + Math.min(A[1],B[1]) + ' parts.';
-  return mcText(nm + ' says ' + fr(A[0],A[1]) + ' is <b>' + (greater ? 'greater' : 'smaller') + '</b> than ' +
-    fr(B[0],B[1]) + '. ' + kid[1] + ' worked out ' + X + ' for ' + fr(A[0],A[1]) + ' and ' + Y + ' for ' +
-    fr(B[0],B[1]) + ', and took the larger of those two numbers to mean the larger fraction. ' +
-    '<b>What did ' + kid[2] + ' do wrong?</b>',
-    belief.say(nm), CMP_BELIEFS.filter(s => s !== belief).map(s => s.say(nm)),
-    where + ' ' + how + ' So ' + fr(A[0],A[1]) + ' is actually ' + truth + ' than ' + fr(B[0],B[1]) + '.');
+  const A = x*m < y ? [x, b] : [y, d], B = x*m < y ? [y, d] : [x, b];
+  return mcFrac('Which of these fractions is <b>between</b> ' + fr(A[0],A[1]) + ' and ' + fr(B[0],B[1]) + '?',
+    key, slips,
+    'Step 1: the two ends are not written in the same size of piece, so cut ' + fr(x,b) + ' into ' + d +
+    'ths first: ' + x + ' × ' + m + ' = ' + (x*m) + ' and ' + b + ' × ' + m + ' = ' + d + ', so ' + fr(x,b) +
+    ' is the same amount as ' + fr(x*m,d) + '. ' +
+    'Step 2: now every fraction is in ' + d + 'ths, so just count the tops - the answer has to be more than ' +
+    lo + ' of them and fewer than ' + hi + '. That is ' + fr(key[0], key[1]) + '. ' +
+    fr(A[0],A[1]) + ' and ' + fr(B[0],B[1]) + ' are the two ends themselves, so neither of them is between them.');
 }
 
 /* FORMAT 3f - mixed comparing, no rule named (pool 3, 1 step). DECLARED ANCHOR:
@@ -1867,7 +2052,7 @@ function gAddSame(){
        front of a P3 child as something to choose. legalFrac refuses it now; it is
        left in the list, commented, so the next lane can see what was taken out and
        why rather than finding a gap. */
-    slips = sided(key, [
+    const cands = [
       /* [a+b, 2*d] - added the bottom numbers as well; bottom number past 12 */
       [Math.abs(a-b), d],               /* subtracted the top numbers instead */
       [a+b+1, d],                       /* counted one piece too many */
@@ -1881,8 +2066,41 @@ function gAddSame(){
          land on. Both are the real classroom slip of answering one of the two
          fractions instead of adding them. */
       [a, d], [b, d],
-      (d+1 <= 12 ? [Math.abs(a-b), d+1] : null)   /* subtracted, and the pieces miscounted */
-    ].filter(Boolean), null, 4 - rank) || [];
+      (d+1 <= 12 ? [Math.abs(a-b), d+1] : null),  /* subtracted, and the pieces miscounted */
+      /* SIXTH PASS 2026-09-16, WOUND 1 - THE ROW-SHAPE CLASS, and this bank is the
+         finding. RULE 11 exempted it on 677 distinct ROWS, and a child does not
+         memorise rows, they memorise a row SHAPE - which printed numerals repeat
+         and where, with the four options put in order of their bottom number.
+         Masked that way the bank had EIGHTEEN shapes and every one of the eighteen
+         named the key's slot on 100.0% of held-out draws, at 5.18 served items a
+         session to a struggling child. The plainest case: four options over ONE
+         bottom number, where the key is the biggest top on 100% of those draws -
+         which happens because every candidate over `d` except [a+b+1, d] sits
+         BELOW the key, and sided() prefers a small bottom number when it reaches
+         above it, so an all-one-bottom row could only be an all-below seating.
+         RULE 7's flat 25/25/25/25 here is an AVERAGE over shapes each of which
+         pins the rank at 100%.
+         The cure is the one the PM named: widen the shape space until it is past
+         the memorisable line. Every miscount below is one the teaching card
+         already names, written over a bottom number the row did not previously
+         reach, so the masked pattern moves with the numbers instead of with the
+         key. 18 shapes -> see the lane note for the measured figure. */
+      (a+b < d-2 && d-2 >= 2 ? [a+b, d-2] : null),      /* the pieces miscounted, two short */
+      (d+2 <= 12 ? [a+b, d+2] : null),                  /* ... and two over */
+      (a+b+1 < d-1 ? [a+b+1, d-1] : null),              /* one piece too many, one part too few */
+      (d+1 <= 12 ? [a+b-1, d+1] : null),                /* one piece too few, one part too many */
+      (d-1 > a ? [a, d-1] : null), (d+1 <= 12 ? [b, d+1] : null)  /* one addend, pieces miscounted */
+    ].filter(Boolean);
+    /* SIXTH PASS 2026-09-16, RULE 13, and it is the price of the widening above.
+       Spreading the bottom numbers to d-2 .. d+2 is what breaks the shape lookup,
+       and it also made the key the UNIQUE option still written over the bottom
+       number the stem prints - so "pick the option whose bottom number is on the
+       question and whose top number is not" settled the bank on 73.3% of draws
+       with nothing added. sameDen() is the fix this file already owns: one or two
+       of the three seats go to a named belief over the stem's own bottom number,
+       which is the same seat gPicUnshaded, gSubSame and gMakeOne hold for the
+       coupling ban read the other way round. */
+    slips = sided(key, cands, sameDen(cands, d, key), 4 - rank) || [];
     g++;
     /* a + b + 1 < d keeps an OVERSHOOT reachable: at a + b = d - 1 every candidate
        above the key is improper, and the key was the largest of four on 64.6% of
@@ -2047,6 +2265,21 @@ function gMakeOne(){
    ways, which is how a teacher would rotate it and takes the space past 60.
    WOUND 1: the three slips were fixed in order, which pinned the key to 2nd of
    four on 72% of draws; sided() picks them now. */
+/* SIXTH PASS 2026-09-16, W4 - DECLARED, NOT FIXED, and declared here rather than
+   found later. The v6 pass narrowed this bank's OPTION-ROW space from 392 distinct
+   rows to 190, a halving, in a bank served 1.78 items a session - the one
+   narrowing in a file whose other six movements were widenings (gPicIdentify
+   327 -> 592, gAddSame 453 -> 771, gPicUnshaded 412 -> 827, gSubFromOne 284 -> 526,
+   gSubSame 540 -> 927, gMakeOne 789 -> 1337). It is a side-effect of the coupling
+   seat: holding one or two of the three places for a belief written over the
+   stem's own bottom number removes exactly the rows that had none. The v5 note's
+   own lesson - "the note declared the stem cost of the cap and never the
+   option-row cost" - applies in the other direction, so the number is on record.
+   It is also the file's smallest ROW-SHAPE space: FOUR masked shapes, naming the
+   key's slot on 74.5% of held-out draws. That is the wave-2 class RULE 11's shape
+   watch line now prints on every run; this bank is its floor and, at 1.78 items a
+   session, its worst case by exposure. Widening it needs (d, k, a) room the 12 cap
+   does not have, which is why it is handed on rather than patched. */
 const MAKE_ONE_IN = [
   (A, B) => A + ' + ? = 1',
   (A, B) => '? + ' + A + ' = 1',
@@ -2256,17 +2489,50 @@ function gSubRelated(){
    x six names), and the generator as a whole falls from 558 distinct stems to 486.
    That is the price of taking an off-syllabus bottom number off a P3 option row,
    and it is on the record in the lane note rather than left to be found. */
+/* SIXTH PASS 2026-09-16, RULE 13 - THE GLYPH RULE, and this bank is the second
+   thing it caught. The refutation's own residual list already said so: gAddError
+   "is now the third bank in this topic answerable at >= 90% with no fraction
+   mathematics". Measured on the new gate, a learned rule over NUMERAL IDENTITY
+   and DIGIT COUNT alone settled the item on 76.8% of 4,000 draws, and the reason
+   is one line of the design: `bottoms` was the only belief whose claim was NOT
+   written over the stem's own bottom number, so "is the claim's bottom number the
+   one the question prints?" split the three beliefs one against two before a
+   fraction had been read. The v4 note declared the cause without seeing the
+   consequence: "the 12 cap makes the three beliefs DISJOINT in (a, b, d)".
+
+   THE FIX, and it is the cap's own logic run forwards. `bottoms` prints 2d, which
+   is why it needed d <= 6 and why its glyphs are different; it comes off the
+   CLAIM bank and stays on the OPTION ROW as a never-true sentence, where it is
+   still the misconception a P3 child most needs to meet and is now diagnosable
+   from the screen (the printed claim's bottom number is d, so the bottom numbers
+   were plainly not added). Its place in the claim bank goes to `gap` - counting
+   the pieces that are MISSING - which is a real P3 belief, legal over the whole
+   (a, b, d) range, and written over d like the other two. All three claims now
+   share the stem's bottom number, so no glyph test separates them.
+
+   The two never-true sentences are drawn INDEPENDENTLY of the belief, which is
+   the fifth pass's own requirement (a filler PAIRED to the belief is what killed
+   v5's gCompareError on RULE 11): the row space doubles from 6 to 12 and the
+   fourth option indexes nothing. */
 const ADD_ERR = [
-  { id:'bottoms', claim:(a2,b2,d2) => [a2+b2, 2*d2],
-    say: nm => nm + ' added both bottom numbers as well as the top ones.' },
   { id:'minus',   claim:(a2,b2,d2) => [a2-b2, d2],
     say: nm => nm + ' subtracted the top numbers instead of adding them.' },
   { id:'times',   claim:(a2,b2,d2) => [a2*b2, d2],
-    say: nm => nm + ' multiplied the top numbers instead of adding them.' }
+    say: nm => nm + ' multiplied the top numbers instead of adding them.' },
+  { id:'gap',     claim:(a2,b2,d2) => [d2-a2-b2, d2],
+    /* written to the same 51 characters after the name as the other two, and as
+       the two never-true sentences: RULE 6 reads both directions and nothing on
+       this row is the uniquely longest or the uniquely shortest option. */
+    say: nm => nm + ' counted the empty pieces instead of the full ones.' }
 ];
 /* Never true of any stem this generator draws: both fractions are already written
-   over the same bottom number, so there is nothing to make the same. */
-const ADD_ERR_NEVER = nm => nm + ' should have made the bottom numbers the same first.';
+   over the same bottom number, so there is nothing to make the same - and every
+   printable claim is written over that same bottom number, so the bottom numbers
+   were never added either. Drawn independently of the belief. */
+const ADD_ERR_NEVER = [
+  nm => nm + ' should have made the bottom numbers the same first.',
+  nm => nm + ' added both bottom numbers as well as the top ones.'
+];
 /* FOURTH PASS 2026-09-16, W3. The v4 fix reproduces exactly - the belief rotates
    33.1 / 33.3 / 33.7 and the key is never the uniquely shortest option - but the
    NUMBERS then fingerprinted the belief it was drawn to hide. `b` was drawn AFTER
@@ -2316,7 +2582,7 @@ function gAddError(){
   const k = pick(KIDS);
   const s = { claim: ADD_ERR[w].claim(a, b, d), text: ADD_ERR[w].say(k[0]) };
   const wrongs = ADD_ERR.filter((_, i) => i !== w).map(x => x.say(k[0]))
-    .concat([ADD_ERR_NEVER(k[0])]);
+    .concat([pick(ADD_ERR_NEVER)(k[0])]);
   return mcText(k[0] + ' says ' + fr(a,d) + ' + ' + fr(b,d) + ' = ' + fr(s.claim[0], s.claim[1]) +
     '. <b>What did ' + k[2] + ' do wrong?</b>', s.text, wrongs,
     'Both fractions are already ' + d + 'ths, so the pieces are the same size and only the top numbers ' +
@@ -2418,13 +2684,13 @@ function gAddWords(){
        format (gOrderGap, gMakeOneIn) rather than being left as hogs. Pool 3 now
        reads wholes 2, simplest 2, compare 2, order 2, addsub 4. */
     pools:{
-      1:[[gPicIdentify,'identify'],[gEqualParts,'identify'],[gEquivFromBar,'equivalent'],
+      1:[[gPicIdentify,'identify'],[gPicTakeAway,'identify'],[gEquivFromBar,'equivalent'],
          [gCompareUnit,'compare'],[gCompareBar,'compare'],[gAddSame,'addsub']],
       2:[[gPicUnshaded,'wholes'],[gSubFromOne,'wholes'],[gEqMissing,'equivalent'],
          [gEqMissingDen,'equivalent'],[gPickEquiv,'equivalent'],[gSimplest,'simplest'],
          [gCompareSameD,'compare'],[gCompareWords,'compare'],[gSubSame,'addsub']],
       3:[[gMakeOne,'wholes'],[gMakeOneIn,'wholes'],[gAlreadySimplest,'simplest'],
-         [gSimplestError,'simplest'],[gCompareError,'compare'],[gGreatest4,'compare'],
+         [gSimplestError,'simplest'],[gBetween,'compare'],[gGreatest4,'compare'],
          [gOrderThree,'order'],[gOrderGap,'order'],
          [gAddRelated,'addsub'],[gSubRelated,'addsub'],[gAddError,'addsub'],[gAddWords,'addsub']]
     }

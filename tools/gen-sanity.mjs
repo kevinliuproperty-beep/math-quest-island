@@ -1561,8 +1561,12 @@ function oracle(q, topic) {
         return near((total - on) / total, fVal(keyF)) ? null
           : `bar complement: ${total - on}/${total} is not blue but the key is ${show(keyF)}`;
       }
-      if ((m = text.match(/^The bar below is cut into (\d+) equal parts, and (\d+) of them are blue\. Which fraction is equivalent to the blue fraction\?$/))) {
+      /* SIXTH PASS 2026-09-16, W3: the singular is generated now, so the oracle
+         reads both and asserts the agreement rather than assuming the plural. */
+      if ((m = text.match(/^The bar below is cut into (\d+) equal parts, and (\d+) of them (is|are) blue\. Which fraction is equivalent to the blue fraction\?$/))) {
         const p = Number(m[1]), b = Number(m[2]);
+        if (m[3] !== (b === 1 ? 'is' : 'are'))
+          return `bar equivalence: the stem prints "${b} of them ${m[3]} blue"`;
         if (p !== total || b !== on) return `bar equivalence: the stem says ${b} of ${p} but the picture shows ${on} of ${total}`;
         if (!keyF) return 'bar equivalence: the key is not a rendered fraction';
         if (!near(on / total, fVal(keyF))) return `bar equivalence: key ${show(keyF)} is not worth ${on}/${total}`;
@@ -1676,6 +1680,40 @@ function oracle(q, topic) {
            different answer, so the picture is load-bearing by construction. */
         if ((total + 1) * per === want || (total - 1) * per === want)
           return 'equal parts: the answer does not move when the bar does';
+        return null;
+      }
+      /* --- the pool-1 refill: a fraction read off the bar after one step -----
+         SWEEP FRACTIONS REFUTATION, SIXTH PASS 2026-09-16, KILL 1. gEqualParts is
+         retired (its oracle is the branch above, now unreachable) and this is the
+         format that takes its slot. Everything is re-derived from the DRAWN bar
+         and the stem's OWN two numerals: the bar's part count is the key's bottom
+         number and appears in no word of the stem, which is what RULE 12 gates,
+         and the blue count must be the piece count the stem prints. */
+      if ((m = text.match(/^The bar below shows an? (.+?) cut into equal pieces, and (.+?)'s (\d+) pieces are blue\. (?:She|He) eats (\d+) of (?:her|his) pieces\. What fraction of the \1 is still \2's\?$/))) {
+        const a = Number(m[3]), g2 = Number(m[4]);
+        if (on !== a) return `take away: the stem says ${a} pieces are blue and the bar draws ${on}`;
+        if (a < 2) return `take away: ${a} piece is not a share to take from`;
+        if (g2 < 1 || g2 >= a) return `take away: eating ${g2} of ${a} pieces leaves nothing to name`;
+        if (total > 12) return `take away: ${total} parts exceeds the P3 denominator limit of 12`;
+        if (a >= total) return `take away: ${a} blue pieces out of ${total} is the whole bar or more`;
+        const want = [a - g2, total];
+        if (!keyF) return 'take away: the key is not a rendered fraction';
+        if (!(keyF[0] === want[0] && keyF[1] === want[1]))
+          return `take away: ${a} pieces less ${g2} is ${want[0]} out of the bar's own ${total} parts, and the key is ${show(keyF)}`;
+        /* RULE 12's load-bearing half, checked here where the figure is: the
+           bottom number is the BAR's part count, so another legal bar changes the
+           answer on every draw and no reading of the two printed numerals can
+           reach it. */
+        if (total < a + 2)
+          return `take away: the bar has ${total} parts and ${a} of them blue, so the part count is the stem's own numeral plus one and the picture can be skipped`;
+        const named = [[a, total], [g2, total], [total - a, total], [total - a + g2, total],
+                       [want[0] + 1, total], [want[0] - 1, total],
+                       [want[0], total - 1], [want[0], total + 1], [want[0], total - 2], [want[0], total + 2],
+                       [want[0] + 1, total - 1], [want[0] - 1, total + 1], [a, total - 1], [g2, total + 1]];
+        const badT = fromList('take away', named);
+        if (badT) return badT;
+        if (!fOpts.some((o, i) => i !== q.correct && o && o[1] === total))
+          return 'take away: the key is the only option written over the bar\'s own part count, so the coupling rule isolates it';
         return null;
       }
       return 'bar model: rendered a bar model but no oracle matched the stem';
@@ -2098,6 +2136,45 @@ function oracle(q, topic) {
         : `related fractions: expected ${top}/${B[1]}, got ${show(keyF)}`;
     }
 
+    /* --- the pool-3 refill: which fraction lies BETWEEN two printed ones -----
+       SWEEP FRACTIONS REFUTATION, SIXTH PASS 2026-09-16, KILL 2. gCompareError is
+       retired and this is the format that takes its pool-3 `compare` slot. The
+       oracle re-derives the whole item from the two RENDERED bounds: the two ends
+       must be related (one bottom number a multiple of the other, which is the
+       only comparison P3 owns), exactly ONE option may lie strictly between them,
+       that option must be the key, and at least two values must lie between the
+       ends so that the stem cannot name the key by itself - which is the RULE 12
+       condition written where the numbers are. */
+    if ((m = text.match(/^Which of these fractions is between (.+) and (.+)\?$/))) {
+      const fs = allFracs(q.q);
+      if (fs.length !== 2) return `between: ${fs.length} fractions in the stem, expected 2`;
+      const L = fs[0], U = fs[1];
+      if (!fOpts.every(o => o)) return 'between: an option is not a rendered fraction';
+      if (L[1] > 12 || U[1] > 12) return `between: a printed bottom number exceeds the P3 limit of 12`;
+      if (L[0] >= L[1] || U[0] >= U[1]) return 'between: a printed end is not a proper fraction';
+      if (L[0] * U[1] >= U[0] * L[1]) return `between: the ends ${show(L)} and ${show(U)} are not printed smallest first`;
+      const big = Math.max(L[1], U[1]), small = Math.min(L[1], U[1]);
+      if (big % small !== 0) return `between: ${L[1]} and ${U[1]} are not related bottom numbers, so comparing them is not a P3 step`;
+      if (big === small) return 'between: both ends are written over the same bottom number, so no conversion is needed and the item is one step';
+      /* how many bottom-number-`big` fractions lie strictly between the ends */
+      const inside = [];
+      for (let t = 1; t < big; t++)
+        if (L[0] * big < t * L[1] && t * U[1] < U[0] * big) inside.push(t);
+      if (inside.length < 2)
+        return `between: only ${inside.length} fraction(s) in ${big}ths lie between ${show(L)} and ${show(U)}, so the stem alone names the key`;
+      const strictly = p => L[0] * p[1] < p[0] * L[1] && p[0] * U[1] < U[0] * p[1];
+      const hits = fOpts.map((o, i) => strictly(o) ? i : -1).filter(i => i >= 0);
+      if (hits.length !== 1) return `between: ${hits.length} options lie strictly between ${show(L)} and ${show(U)}`;
+      if (hits[0] !== q.correct)
+        return `between: the option strictly between the ends is ${show(fOpts[hits[0]])}, and the key is ${show(keyF)}`;
+      if (keyF[1] !== big) return `between: the key ${show(keyF)} is not written in the smaller pieces the conversion produces (${big}ths)`;
+      if (!fOpts.some((o, i) => i !== q.correct && o[1] === keyF[1]))
+        return 'between: the key is the only option over its own bottom number, so "pick the odd bottom number" answers it';
+      if (!fOpts.some((o, i) => i !== q.correct && o[1] === small))
+        return 'between: no option is written over the smaller bottom number the stem prints, so the coupling rule isolates the key';
+      return null;
+    }
+
     /* --- error spotting 2 of 3: DIAGNOSE the added-denominators mistake ------ */
     if ((m = text.match(/^(.+?) says .+ \+ .+ = .+\. What did (?:she|he) do wrong\?$/))) {
       const name = m[1];
@@ -2115,11 +2192,27 @@ function oracle(q, topic) {
          ("she forgot the second one") not on the option list. */
       if (claim[0] * A[1] === A[0] * claim[1] || claim[0] * B[1] === B[0] * claim[1])
         return `add error-spot: the "wrong" claim ${show(claim)} is worth one of the two addends, so the named belief leaves no trace`;
+      /* SIXTH PASS 2026-09-16, RULE 13. `bottoms` was the only belief whose claim
+         was NOT written over the stem's own bottom number, so one glyph test -
+         "is the claim's bottom number the one the question prints?" - split the
+         three beliefs one against two and settled the item on 76.8% of draws with
+         no fraction read. It comes off the CLAIM bank and stays on the option row
+         as a never-true sentence (the printed claim is always over d, so the
+         bottom numbers were plainly not added). `gap`, over d like the other two,
+         takes its place. See js/topics/p3-fractions.js FORMAT 4g. */
       const SLIPS = [
-        [[A[0] + B[0], 2 * A[1]], name + ' added both bottom numbers as well as the top ones.'],
         [[A[0] - B[0], A[1]], name + ' subtracted the top numbers instead of adding them.'],
-        [[A[0] * B[0], A[1]], name + ' multiplied the top numbers instead of adding them.']
+        [[A[0] * B[0], A[1]], name + ' multiplied the top numbers instead of adding them.'],
+        [[A[1] - A[0] - B[0], A[1]], name + ' counted the empty pieces instead of the full ones.']
       ];
+      const NEVER = [name + ' should have made the bottom numbers the same first.',
+                     name + ' added both bottom numbers as well as the top ones.'];
+      if (claim[1] !== A[1])
+        return `add error-spot: the claim ${show(claim)} is not written over the stem's own bottom number ${A[1]}, so one glyph test separates the beliefs`;
+      if (!q.choices.some(c => NEVER.indexOf(strip(c)) >= 0))
+        return 'add error-spot: neither never-true sentence is on the row, so the fourth option is not drawn from the filler bank';
+      if (q.choices.filter(c => NEVER.indexOf(strip(c)) >= 0).length !== 1)
+        return 'add error-spot: two never-true sentences on one row, so a named belief has been dropped';
       const hits = SLIPS.filter(s => s[0][0] === claim[0] && s[0][1] === claim[1]);
       if (hits.length !== 1) return `add error-spot: the printed claim ${show(claim)} matches ${hits.length} named misconceptions for ${show(A)} + ${show(B)}`;
       if (strip(q.answerText) !== hits[0][1]) return `add error-spot: expected "${hits[0][1]}", got "${strip(q.answerText)}"`;
@@ -3688,10 +3781,69 @@ for (const g of GENS) {
    rebuilt gCompareError (6, 25.0% - the same four sentences every draw, which is
    chance exactly). The two negative controls below are the v5 rows that were
    killed on it: gEqualParts at 18 / 100% and gCompareError at 54 / 100%. --- */
+/* ---------- RULE 11's SHAPE CLAUSE -------------------------------------------
+   SWEEP FRACTIONS REFUTATION, SIXTH PASS 2026-09-16, WOUND 1 - the correction to
+   the rule written one pass earlier, and the largest un-gated class in the topic.
+
+   RULE 11 as first written exempts a bank with 60 or more distinct ROWS, on the
+   reasoning that a child meets the same row about once a year. A CHILD DOES NOT
+   MEMORISE ROWS. They memorise a row SHAPE: put the four options in order of the
+   bottom number they print and note which numerals repeat and where, and
+   `7/8 5/9 7/9 5/10` and `3/5 3/6 4/6 4/7` are the same picture. Masked that way,
+   gAddSame - 677 distinct rows, comfortably exempt - had EIGHTEEN shapes, and
+   every one of the eighteen named the key's SLOT on 100.0% of held-out draws, at
+   5.18 served items a session to a struggling child. RULE 7 reports its value
+   ranks as a flat 25/25/25/25; that flatness is an AVERAGE over shapes each of
+   which pins the rank at 100%.
+
+   THE RULER. The same learn-2,000 / test-2,000 lookup RULE 11 already runs, with
+   two substitutions: the signature is the masked SHAPE rather than the row, and
+   the answer looked up is the key's SLOT in the ordered row rather than its text.
+   Numerals are masked by order of first appearance, so nothing of the arithmetic
+   survives - only the pattern of repeats a child can see without reading a value.
+
+   WHERE THE LINE SITS, and this is the honest part. Twelve banks in this topic
+   score 73-98% on that lookup over 4 to 123 shapes. Failing all twelve would fail
+   the topic, and the refutation that found the class called it a WOUND and wave-2
+   work for exactly that reason: putting four bottom numbers in order is
+   whole-number work standing in for fraction work, not NO mathematics. So the
+   clause gates the one thing that is not a heuristic at all - A SIGHT RULE THAT IS
+   NEVER WRONG. A bank fails when its shape space is memorisable (under 60 shapes)
+   and the shape names the key's slot on 100% of held-out draws: at that point the
+   child is not guessing better, they are reading the answer off the picture. Every
+   bank at or over the 40% WATCH LINE is printed with its numbers on every run and
+   carried in the lane note as the declared row-shape class. The negative control
+   below is the v6 gAddSame row, rebuilt from its own construction, at 18 / 100%. */
 const ROW_N = 2000, ROW_CAP = 0.40, ROW_MEMO = 60;
+const SHAPE_CAP = 1.0, SHAPE_WATCH = 0.40, SHAPE_MEMO = 60;
 const rowKeyOf = q => (q.choices || []).map(strip).slice().sort().join(' ~ ');
-function rowBank(draw, n) {
+/* a rendered fraction is two numerals with no separator once the markup is gone,
+   so it is opened out BEFORE stripping or the two collapse into one number */
+const openFrac = s => String(s).replace(/<span class="n">([\d?]+)<\/span><span class="d">([\d?]+)<\/span>/g, ' $1 / $2 ');
+const numsOfHtml = s => (strip(openFrac(s)).match(/\d+/g) || []).map(Number);
+/* the row ordered by the bottom number each option prints, then masked: every
+   numeral becomes the order in which it first appears. */
+function orderedRow(q) {
+  const opts = (q.choices || []);
+  const withN = opts.map((o, i) => ({ i, n: numsOfHtml(o) }));
+  if (withN.some(w => !w.n.length)) return null;          /* a prose row: no shape */
+  withN.sort((a, b) => (a.n[a.n.length - 1] - b.n[b.n.length - 1]) || (a.n[0] - b.n[0]));
+  return withN;
+}
+function shapeKeyOf(q) {
+  const r = orderedRow(q);
+  if (!r) return (q.choices || []).map(strip).slice().sort().join(' ~ ');
   const seen = new Map();
+  const mask = v => { if (!seen.has(v)) seen.set(v, seen.size); return seen.get(v); };
+  return r.map(w => w.n.map(mask).join('/')).join(' ');
+}
+function shapeSlotOf(q) {
+  const r = orderedRow(q);
+  if (!r) return strip(q.choices[q.correct]);
+  return String(r.findIndex(w => w.i === q.correct));
+}
+function rowBank(draw, n) {
+  const seen = new Map(), shapes = new Map();
   let bad = 0;
   const learn = () => {
     for (let i = 0; i < n; i++) {
@@ -3701,27 +3853,38 @@ function rowBank(draw, n) {
       if (!seen.has(r)) seen.set(r, new Map());
       const m = seen.get(r);
       m.set(a, (m.get(a) || 0) + 1);
+      const sh = shapeKeyOf(q), sl = shapeSlotOf(q);
+      if (!shapes.has(sh)) shapes.set(sh, new Map());
+      const m2 = shapes.get(sh);
+      m2.set(sl, (m2.get(sl) || 0) + 1);
     }
   };
   learn();
-  let score = 0, tested = 0;
+  const modalOf = (m, a) => {
+    let best = -1;
+    for (const [, c] of m) if (c > best) best = c;
+    const modal = [...m].filter(([, c]) => c === best).map(([v]) => v);
+    return modal.indexOf(a) >= 0 ? 1 / modal.length : 0;
+  };
+  let score = 0, sScore = 0, tested = 0;
   for (let i = 0; i < n; i++) {
     let q; try { q = draw(); } catch (e) { break; }
     if (!q || !(q.choices || []).length || !(q.correct >= 0)) continue;
     tested++;
     const m = seen.get(rowKeyOf(q));
-    if (!m) { score += 0.25; continue; }
-    let best = -1;
-    for (const [, c] of m) if (c > best) best = c;
-    const modal = [...m].filter(([, c]) => c === best).map(([v]) => v);
-    score += modal.indexOf(strip(q.choices[q.correct])) >= 0 ? 1 / modal.length : 0;
+    score += m ? modalOf(m, strip(q.choices[q.correct])) : 0.25;
+    const m2 = shapes.get(shapeKeyOf(q));
+    sScore += m2 ? modalOf(m2, shapeSlotOf(q)) : 0.25;
   }
-  return { rows: seen.size, n: tested, rate: tested ? score / tested : 0 };
+  return { rows: seen.size, n: tested, rate: tested ? score / tested : 0,
+           shapes: shapes.size, sRate: tested ? sScore / tested : 0 };
 }
 function rowVerdict(row) {
   if (!row.n) return null;
   if (row.rows < ROW_MEMO && row.rate >= ROW_CAP)
     return `row-only tell: the option row alone names the key on ${(100 * row.rate).toFixed(1)}% of draws over a space of only ${row.rows} distinct rows - a child who has met the bank recognises the row and never reads the stem`;
+  if (row.shapes < SHAPE_MEMO && row.sRate >= SHAPE_CAP)
+    return `row-SHAPE tell: the masked shape of the option row names the key's SLOT on ${(100 * row.sRate).toFixed(1)}% of held-out draws over only ${row.shapes} shapes - a sight rule that is never wrong is not a heuristic, it is the answer printed in a pattern`;
   return null;
 }
 const rowRows = [];
@@ -3732,6 +3895,264 @@ for (const g of GENS) {
   row.name = g.topic + '.' + g.name;
   row.err = rowVerdict(row);
   rowRows.push(row);
+  if (row.err) failures++;
+}
+
+/* ---------- RULE 12: THE STEM-ONLY RULE --------------------------------------
+   SWEEP FRACTIONS REFUTATION, SIXTH PASS 2026-09-16, KILL 1 - the PM's wave-1
+   deliverable, and RULE 11's mirror.
+
+   Nothing in this file had ever asked whether THE STEM ALONE NAMES THE KEY.
+   RULE 8 asks whether the key echoes a WORD of the stem; RULE 9 reads the row's
+   words; RULE 10 reads the row against a picture; RULE 11 reads the row on its
+   own. The sixth pass killed on the one surface none of them covers: v6's
+   gEqualParts printed exactly ONE numeral in its stem, and under its declared
+   `k x n <= 10` cap a FOUR-LINE TABLE over that numeral (2->8, 3->6, 4->8, 5->10)
+   answered the declared pool-1 concept anchor on 65.52% / 66.42% of 20,000 draws
+   on each of two seeds. The bar was never counted, and on two of the seven shapes
+   the picture was redundant by construction.
+
+   TWO CLAUSES, and the second one is the gate.
+
+   (a) THE RECALL CLAUSE, measured on every bank and printed in full. Learn a
+   table over the stem's NUMERAL SIGNATURE - the stem's numerals in order, the row
+   and the figure discarded - keep only the SIX commonest signatures, which is what
+   a child carries, and test on held-out draws: where the table names a value, take
+   it off the row; where it does not, guess. Six banks in this topic sit over 60%
+   on that clause, and every one of them is the SMALL-STEM-SPACE residual this file
+   has carried since the first refutation: the stem determines the key because the
+   stem IS the whole question, and the defect is that there are only 7 to 36
+   distinct stems to meet. Gating it would fail six honest banks and close nothing,
+   so it is DECLARED with its numbers rather than hidden - the same treatment
+   RULE 10's watch line gets - and handed on as the stem-space class.
+
+   (b) THE FIGURE CLAUSE, gated. A bank that RENDERS A PICTURE may not be
+   answerable from the numerals of its stem alone on 60% or more of draws. That is
+   the precise thing v6's gEqualParts did: it claimed the bar was load-bearing and
+   the stem's one numeral answered it anyway. RULE 10 asks the same question of the
+   option row; this asks it of the words. The two together say a picture item must
+   need its picture. The best of the six-row table and a library of one-expression
+   arithmetic over the stem's numerals (each numeral, each one more and one less,
+   and every pairwise sum, difference and product, alone or as a fraction) is
+   scored, because a recalled table and a memorised formula are the same shortcut.
+
+   Measured on this file: the five figure banks sit at 25.5, 26.0, 25.6, 39.4 and
+   43.8% on clause (b) against 25% for a guess. The negative control below is the
+   v6 gEqualParts stem, rebuilt from its own construction, and it goes red. --- */
+const STEM_N = 2000, STEM_CAP = 0.60, STEM_ROWS = 6;
+const stemSigOf = q => numsOfHtml(q.q).join(',');
+const optText = o => {
+  const m = String(o).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
+  return m ? m[1] + '/' + m[2] : strip(o);
+};
+function stemBank(draw, n) {
+  const seen = new Map();
+  let drew = 0, figs = 0;
+  for (let i = 0; i < n; i++) {
+    let q; try { q = draw(); } catch (e) { break; }
+    if (!q || !(q.correct >= 0) || !(q.choices || []).length) continue;
+    drew++;
+    if (q.figure) figs++;
+    const s = stemSigOf(q), a = optText(q.choices[q.correct]);
+    if (!seen.has(s)) seen.set(s, new Map());
+    const m = seen.get(s); m.set(a, (m.get(a) || 0) + 1);
+  }
+  if (!drew) return { n: 0 };
+  const tot = s => { let t = 0; for (const [, c] of seen.get(s)) t += c; return t; };
+  const table = new Map();
+  for (const s of [...seen.keys()].sort((a, b) => tot(b) - tot(a)).slice(0, STEM_ROWS)) {
+    const m = seen.get(s);
+    let best = -1; for (const [, c] of m) if (c > best) best = c;
+    table.set(s, [...m].filter(([, c]) => c === best).map(([v]) => v));
+  }
+  /* the arithmetic library, learnt over the same draws: which single expression
+     over the stem's numerals names the key most often */
+  const hit = new Map();
+  const exprs = q => {
+    const ns = numsOfHtml(q.q), lab = [];
+    ns.forEach((v, i) => lab.push(['n' + i, v], ['n' + i + '+1', v + 1], ['n' + i + '-1', v - 1]));
+    for (let x = 0; x < ns.length; x++) for (let y = 0; y < ns.length; y++) if (x !== y)
+      lab.push(['n' + x + '+n' + y, ns[x] + ns[y]], ['n' + x + '-n' + y, ns[x] - ns[y]],
+               ['n' + x + '*n' + y, ns[x] * ns[y]]);
+    return lab;
+  };
+  let score = 0, tested = 0;
+  for (let i = 0; i < n; i++) {
+    let q; try { q = draw(); } catch (e) { break; }
+    if (!q || !(q.correct >= 0) || !(q.choices || []).length) continue;
+    tested++;
+    const a = optText(q.choices[q.correct]);
+    const t = table.get(stemSigOf(q));
+    if (!t) score += 0.25;
+    else {
+      const named = t[0];
+      const sel = q.choices.map(optText).map((o, j) => o === named ? j : -1).filter(j => j >= 0);
+      score += sel.length ? (sel.indexOf(q.correct) >= 0 ? 1 / sel.length : 0) : 0.25;
+    }
+    const lab = exprs(q), names = new Set();
+    for (const [nm, v] of lab) if (String(v) === a) names.add(nm);
+    for (const [n1, v1] of lab) for (const [n2, v2] of lab)
+      if (v1 > 0 && v2 > 0 && v1 + '/' + v2 === a) names.add(n1 + '/' + n2);
+    for (const nm of names) hit.set(nm, (hit.get(nm) || 0) + 1);
+  }
+  let best = ['-', 0];
+  for (const e of hit) if (e[1] > best[1]) best = e;
+  return { n: tested, sigs: seen.size, rate: tested ? score / tested : 0,
+           arith: tested ? best[1] / tested : 0, expr: best[0], fig: figs > drew / 2 };
+}
+function stemVerdict(row) {
+  if (!row.n) return null;
+  const worst = Math.max(row.rate, row.arith);
+  if (row.fig && worst >= STEM_CAP)
+    return `stem-only tell: this bank draws a PICTURE and is answered from the numerals of its stem alone - ${row.arith > row.rate ? `the expression "${row.expr}"` : `a ${STEM_ROWS}-row table over ${row.sigs} stem signature(s)`} names the key on ${(100 * worst).toFixed(1)}% of draws with the row and the figure discarded, at or over the ${Math.round(100 * STEM_CAP)}% ceiling, so the picture is not load-bearing in the one direction RULE 10 cannot see`;
+  return null;
+}
+const stemRows = [];
+for (const g of GENS) {
+  if (!TOK_TOPICS.has(g.topic)) continue;
+  const row = stemBank(g.fn, STEM_N);
+  if (!row.n) continue;
+  row.name = g.topic + '.' + g.name;
+  row.err = stemVerdict(row);
+  stemRows.push(row);
+  if (row.err) failures++;
+}
+
+/* ---------- RULE 13: THE GLYPH RULE ------------------------------------------
+   SWEEP FRACTIONS REFUTATION, SIXTH PASS 2026-09-16, KILL 2 - the second wave-1
+   deliverable, and the one rule in this file that reads a numeral as a SHAPE ON
+   THE PAGE rather than as a value.
+
+   v6's gCompareError was rebuilt so that the child's mistake is named by the two
+   numbers it prints "only in the light of the two printed fractions". Row-only
+   fell to chance and the printed fractions became load-bearing on 88% - all true,
+   and the item is still answered by a four-clause rule with NO ARITHMETIC IN ANY
+   CLAUSE on 91.84% / 91.19% of 20,000 draws on each of two seeds: are the two
+   worked-out numbers the same NUMERALS as the two top numbers? as the two bottom
+   numbers? does either have TWO DIGITS? The belief's arithmetic output was
+   PRINTED, and for two of the four beliefs that output is a numeral already on the
+   screen - so copying a numeral, which is not a fraction operation, names the
+   misconception.
+
+   THE RULER, and every ingredient is a glyph: numeral IDENTITY, numeral
+   MEMBERSHIP and DIGIT COUNT, across the rendered stem and the rendered row.
+     - the stem's signature is the EQUALITY PARTITION of its numerals in order
+       (which position repeats which) plus the digit count of each - no value, no
+       ordering, no arithmetic;
+     - each option's tag is, for a numeric option, whether each of its numerals
+       appears in the stem and how many digits it has; for an option that prints no
+       numeral at all, the words it does NOT share with the stem, which is a fixed
+       sentence RECOGNISED rather than read (that is what the child does with a
+       four-sentence bank, and it is the only way this ruler can reach a prose row).
+   Learn the modal key TAG per stem signature over 2,000 draws, test on 2,000 more,
+   and score the draws on which the rule SETTLES - names exactly one option, and
+   that option is the key. Ties do not settle and are not counted: leaving a child
+   with two options is not answering the item.
+
+   60% is the PM's own termination bar and RULE 9's, 10's and 12's number. It fails
+   the v6 gCompareError row at 91.5% (the negative control below, rebuilt from its
+   own construction) and passes every live bank in this topic, the widest of which
+   is 38%. It also caught the rebuilt gAddError at 76.8% on its first run - the
+   only belief whose claim was not written over the stem's own bottom number was
+   separated from the other two by one glyph test - which is fixed at the site and
+   measured at 50.5%. --- */
+const GLY_N = 2000, GLY_CAP = 0.60;
+function glyphSigOf(q) {
+  const sn = numsOfHtml(q.q);
+  if (!sn.length) return null;
+  const first = new Map();
+  const part = sn.map(v => { if (!first.has(v)) first.set(v, first.size); return first.get(v); }).join('.');
+  return part + '|' + sn.map(v => String(v).length).join('.');
+}
+function glyphTagOf(q, i) {
+  const on = numsOfHtml(q.choices[i]);
+  const sn = new Set(numsOfHtml(q.q));
+  if (on.length) return 'N:' + on.map(v => (sn.has(v) ? 'in' : 'out') + String(v).length).join('.') + ':' + on.length;
+  const st = new Set(strip(q.q).toLowerCase().match(/[a-z]+/g) || []);
+  return 'T:' + (strip(q.choices[i]).toLowerCase().match(/[a-z]+/g) || []).filter(w => !st.has(w)).join(' ');
+}
+function glyphBank(draw, n) {
+  const seen = new Map();
+  for (let i = 0; i < n; i++) {
+    let q; try { q = draw(); } catch (e) { break; }
+    if (!q || (q.choices || []).length !== 4 || !(q.correct >= 0)) continue;
+    const s = glyphSigOf(q); if (s === null) continue;
+    if (!seen.has(s)) seen.set(s, new Map());
+    const m = seen.get(s), t = glyphTagOf(q, q.correct);
+    m.set(t, (m.get(t) || 0) + 1);
+  }
+  let settle = 0, tested = 0, sample = null;
+  for (let i = 0; i < n; i++) {
+    let q; try { q = draw(); } catch (e) { break; }
+    if (!q || (q.choices || []).length !== 4 || !(q.correct >= 0)) continue;
+    const s = glyphSigOf(q); if (s === null) continue;
+    tested++;
+    if (!sample) sample = q.choices.map(strip);
+    const m = seen.get(s);
+    if (!m) continue;
+    let best = -1; for (const [, c] of m) if (c > best) best = c;
+    const modal = new Set([...m].filter(([, c]) => c === best).map(([v]) => v));
+    const sel = [0, 1, 2, 3].filter(j => modal.has(glyphTagOf(q, j)));
+    if (sel.length === 1 && sel[0] === q.correct) settle++;
+  }
+  return { n: tested, sigs: seen.size, rate: tested ? settle / tested : 0, sample };
+}
+function glyphVerdict(row) {
+  if (!row.n) return null;
+  return row.rate >= GLY_CAP
+    ? `glyph tell: a rule built only from numeral identity, numeral membership and digit count - ${row.sigs} stem signature(s), no arithmetic anywhere in it - SETTLES the item on exactly one option, and that option is the key, on ${(100 * row.rate).toFixed(1)}% of draws, at or over the ${Math.round(100 * GLY_CAP)}% ceiling (${(row.sample || []).join(' | ')})`
+    : null;
+}
+const glyRows = [];
+for (const g of GENS) {
+  if (!TOK_TOPICS.has(g.topic)) continue;
+  const row = glyphBank(g.fn, GLY_N);
+  if (!row.n || row.n < GLY_N / 2) continue;
+  row.name = g.topic + '.' + g.name;
+  row.err = glyphVerdict(row);
+  glyRows.push(row);
+  if (row.err) failures++;
+}
+
+/* ---------- THE PROSE AGREEMENT CLAUSE ---------------------------------------
+   SWEEP FRACTIONS REFUTATION, SIXTH PASS 2026-09-16, W3. NOTHING IN THIS HARNESS
+   HAS EVER READ PROSE FOR GRAMMAR. gEquivFromBar - the pool-1 equivalence anchor,
+   served 1.30 per session at 80% accuracy and 5.09 at 45% - hard-coded
+   " of them are blue.", so it printed "1 of them ARE blue" on 22.81% / 22.68% of
+   draws, while gPicUnshaded twenty lines away handled the singular correctly. A
+   generated sentence is read by a child; the harness now reads it too.
+
+   The clause is deliberately the smallest one that is NEVER WRONG, which means it
+   only reads the two constructions these banks actually generate: "<n> of them
+   <verb>" and "<n> <pieces|parts> <verb>". It does NOT read a bare "<n> ... is",
+   because "4 out of 9 equal parts is 4/9" and "2/4 is the same amount as 6/12" are
+   both correct English with a plural numeral in front of a singular verb - the
+   first run of this clause failed seven honest banks on exactly those two
+   sentences, which is the calibration and is why the pattern is narrow. --- */
+const AGREE_N = 500;
+const AGREE_BAD = [
+  [/\b1 of (?:them|these|those|the \w+|the \w+ \w+) (?:are|were|have)\b/i, '"1 of them ARE"'],
+  [/\b(?!1\b)\d+ of (?:them|these|those|the \w+|the \w+ \w+) (?:is|was|has)\b/i, '"<more than one> of them IS"'],
+  [/\b1 (?:pieces|parts|slices) (?:are|were|have)\b/i, '"1 pieces ARE"'],
+  [/\b(?!1\b)\d+ (?:piece|part|slice) (?:is|was|has)\b/i, '"<more than one> piece IS"']
+];
+const agreeRows = [];
+for (const g of GENS) {
+  if (!TOK_TOPICS.has(g.topic)) continue;
+  let bad = 0, n = 0, sample = null;
+  for (let i = 0; i < AGREE_N; i++) {
+    let q; try { q = g.fn(); } catch (e) { break; }
+    if (!q) continue;
+    n++;
+    const text = strip(openFrac(q.q)) + ' ' + strip(openFrac(q.explain || '')) + ' ' +
+      (q.choices || []).map(o => strip(openFrac(o))).join(' ');
+    for (const [re, lab] of AGREE_BAD)
+      if (re.test(text)) { bad++; if (!sample) sample = lab + ' in: ' + text.slice(0, 150); break; }
+  }
+  if (!n) continue;
+  const row = { name: g.topic + '.' + g.name, n, bad, rate: bad / n, sample };
+  row.err = bad ? `prose agreement: a number disagrees with its verb on ${bad} of ${n} draws - ${sample}` : null;
+  agreeRows.push(row);
   if (row.err) failures++;
 }
 
@@ -4007,6 +4428,143 @@ control('RULE 11 row-only - the v5 gCompareError paired-filler row (54 rows, 54 
   return rowVerdict(rowBank(draw, ROW_N));
 });
 
+/* ---------- NEGATIVE CONTROLS for the SIXTH pass's three new gates -----------
+   SWEEP FRACTIONS REFUTATION, SIXTH PASS 2026-09-16. Each rebuilds the ACTUAL v6
+   defect from its own construction, so nothing here depends on the topic file
+   still containing the generator that was killed - both of them are retired. */
+
+/* 12. RULE 12, THE STEM-ONLY RULE: v6's gEqualParts. A bar of k equal pieces with
+       one blue, the stem naming only `n` (the parts each piece is cut into), the
+       key k x n, and the declared k x n <= 10 cap collapsing the (k, n) grid to
+       seven cells. A four-line table over the ONE numeral the stem prints answers
+       it, and the bar is never counted. The row is four bare part counts, so
+       RULE 9, RULE 10 and RULE 11 are all quiet on it - which is the finding. */
+/* The seven (k, n) shapes are NOT served evenly by the v6 generator: it draws the
+   key's value rank first and retries until a shape can seat it, and (2,5), (3,3)
+   and (5,2) are rejected more often - measured at 10.7% against 16.8% for the
+   other four. That skew is part of the defect, because it is what makes the n = 3
+   row of the table decisive rather than a coin, so the control reproduces it
+   rather than drawing the seven uniformly. */
+const V6_EQP = () => {
+  const SH = [[2,3],[2,3],[2,4],[2,4],[3,2],[3,2],[4,2],[4,2],[2,5],[3,3],[5,2]];
+  const s = SH[Math.floor(Math.random() * SH.length)], k = s[0], n = s[1], key = k * n;
+  const bank = [k + n, n * (k - 1), k * (n - 1), key - 1, key + 1, k * (n + 1), (k + 1) * n,
+                Math.random() < 0.5 ? k : n];
+  const opts = [];
+  for (const c of bank) { if (opts.length >= 3) break; if (c >= 1 && c <= 12 && c !== key && opts.indexOf(c) < 0) opts.push(c); }
+  while (opts.length < 3) { const c = 1 + Math.floor(Math.random() * 12); if (c !== key && opts.indexOf(c) < 0) opts.push(c); }
+  const row = [key].concat(opts);
+  const order = row.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { q: 'The bar below shows a cake cut into equal pieces, and her piece is blue. She then cuts every piece into ' +
+             n + ' equal parts. Into how many equal parts is the whole cake cut now?',
+           extra: '', figure: { type: 'fractionBar', parts: k, filled: 1 },
+           choices: order.map(i => String(row[i])), correct: order.indexOf(0), answerText: String(key) };
+};
+control('RULE 12 stem-only - the v6 gEqualParts stem (one numeral, four-line table)', () => {
+  const row = stemBank(V6_EQP, STEM_N);
+  if (!row.n) return null;
+  if (!row.fig) return 'the control does not render a figure, so the gated clause cannot see it';
+  if (process.env.CTL_DEBUG) console.log(`    [debug] v6 gEqualParts control: ${row.sigs} stem signature(s), table ${(100 * row.rate).toFixed(2)}%, arithmetic ${(100 * row.arith).toFixed(2)}%`);
+  return stemVerdict(row);
+});
+
+/* 13. RULE 13, THE GLYPH RULE: v6's gCompareError. Four beliefs, each printing the
+       number its own mistake produces for each of the two fractions - and for two
+       of the four that number is a numeral already on the screen, which is what a
+       rule with no arithmetic in it reads. Rebuilt from its own construction. */
+const V6_CE = () => {
+  const NM = ['Siti', 'Kumar', 'Mei Ling', 'Ravi', 'Aisyah', 'Wei Jie'];
+  const B = [
+    { id: 'top',    f: p => p[0],        say: n => n + ' compared the top numbers and left the bottom numbers out.' },
+    { id: 'bottom', f: p => p[1],        say: n => n + ' thought a bigger bottom number makes a bigger fraction.' },
+    { id: 'sum',    f: p => p[0] + p[1], say: n => n + ' added the top number to the bottom number in each fraction.' },
+    { id: 'gap',    f: p => p[1] - p[0], say: n => n + ' counted the pieces that are missing instead of the ones there.' }
+  ];
+  const nm = NM[Math.floor(Math.random() * NM.length)];
+  const bel = B[Math.floor(Math.random() * B.length)];
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  let A = [2, 12], C = [1, 3], ok = false;
+  for (let t = 0; t < 200 && !ok; t++) {
+    if (bel.id === 'top' || Math.random() < 0.5) {
+      const bb = [[1,2],[1,3],[2,3],[1,4],[3,4],[1,6],[5,6]][Math.floor(Math.random() * 7)];
+      const m = rnd(2, Math.floor(12 / bb[1]));
+      if (m < 2) continue;
+      C = bb; A = [rnd(1, m * bb[1] - 1), m * bb[1]];
+    } else {
+      const n0 = rnd(1, 3);
+      A = [n0, rnd(n0 + 1, 12)]; C = [n0, rnd(n0 + 1, 12)];
+    }
+    const X = bel.f(A), Y = bel.f(C);
+    ok = A[0] < A[1] && C[0] < C[1] && A[1] <= 12 && C[1] <= 12 && A[0] * C[1] !== C[0] * A[1] &&
+         X !== Y && X >= 1 && Y >= 1 && (X > Y) !== (A[0] * C[1] > C[0] * A[1]) &&
+         B.filter(s => s.f(A) === X && s.f(C) === Y).length === 1;
+  }
+  const X = bel.f(A), Y = bel.f(C);
+  const key = bel.say(nm);
+  const opts = [key].concat(B.filter(s => s !== bel).map(s => s.say(nm)));
+  const order = opts.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { q: nm + ' says ' + FR(A[0], A[1]) + ' is greater than ' + FR(C[0], C[1]) + '. She worked out ' + X +
+             ' for ' + FR(A[0], A[1]) + ' and ' + Y + ' for ' + FR(C[0], C[1]) +
+             ', and took the larger of those two numbers to mean the larger fraction. What did she do wrong?',
+           extra: '', choices: order.map(i => opts[i]), correct: order.indexOf(0), answerText: key };
+};
+control('RULE 13 glyph - the v6 gCompareError row (numeral identity + digit count, no arithmetic)', () =>
+  glyphVerdict(glyphBank(V6_CE, GLY_N)));
+
+/* 14. RULE 11's SHAPE CLAUSE: v6's gAddSame row. 677 distinct rows and EIGHTEEN
+       masked shapes, each of which named the key's slot on 100% of draws - the
+       exemption the row count granted and the shape count refuses. Rebuilt from
+       the v6 candidate bank (before this pass widened it). */
+const V6_ADDSAME = () => {
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  let d = 9, a = 4, b = 3, key = [7, 9], slips = [];
+  for (let t = 0; t < 200; t++) {
+    d = rnd(4, 12); a = rnd(1, d - 2); b = rnd(1, d - a - 1);
+    if (a === b || a + b + 1 >= d) continue;
+    key = [a + b, d];
+    const cands = [[Math.abs(a - b), d], [a + b + 1, d], [a + b - 1, d],
+                   (a + b < d - 1 ? [a + b, d - 1] : null), (d + 1 <= 12 ? [a + b, d + 1] : null),
+                   [a + b + 1, d + 1], [a, d], [b, d],
+                   (d + 1 <= 12 ? [Math.abs(a - b), d + 1] : null)]
+      .filter(Boolean).filter(p => p[0] >= 1 && p[1] >= 2 && p[0] < p[1] && p[1] <= 12 &&
+                                   p[0] * key[1] !== key[0] * p[1]);
+    const u = rnd(0, 3);
+    /* sided()'s own ordering, which is the mechanism: candidates written over a
+       SMALLER bottom number than the key's are seated first, so an all-one-bottom
+       row can only ever be an all-below seating - which is what pins the key to
+       the biggest top on 100% of those draws. */
+    const small = arr => arr.filter(c => c[1] < key[1]).concat(arr.filter(c => c[1] >= key[1]));
+    const above = small(cands.filter(c => c[0] * key[1] > key[0] * c[1]).sort(() => Math.random() - 0.5));
+    const below = small(cands.filter(c => c[0] * key[1] < key[0] * c[1]).sort(() => Math.random() - 0.5));
+    if (u > above.length || 3 - u > below.length) continue;
+    slips = above.slice(0, u).concat(below.slice(0, 3 - u));
+    const vals = new Set([key[0] / key[1]].concat(slips.map(s => s[0] / s[1])));
+    if (vals.size === 4) break;
+    slips = [];
+  }
+  if (slips.length !== 3) { key = [7, 9]; slips = [[1, 9], [8, 9], [7, 8]]; }
+  const row = [key].concat(slips);
+  const order = row.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { q: FR(a, d) + ' + ' + FR(b, d) + ' = ?', extra: '',
+           choices: order.map(i => FR(row[i][0], row[i][1])), correct: order.indexOf(0),
+           answerText: FR(key[0], key[1]) };
+};
+control('RULE 11 shape clause - the v6 gAddSame row (677 rows, 18 shapes, key slot 100%)', () => {
+  const row = rowBank(V6_ADDSAME, ROW_N);
+  if (!row.n) return null;
+  if (row.rows < ROW_MEMO) return 'the control has fewer than ' + ROW_MEMO + ' rows, so the ROW clause catches it and the shape clause is not what is being measured';
+  if (process.env.CTL_DEBUG) console.log(`    [debug] v6 gAddSame control: ${row.rows} rows, ${row.shapes} shapes, shape names the key's slot on ${(100 * row.sRate).toFixed(2)}%`);
+  return rowVerdict(row);
+});
+
+/* 15. THE PROSE AGREEMENT CLAUSE: the v6 gEquivFromBar sentence, with its
+       hard-coded plural verb. */
+control('prose agreement - the v6 gEquivFromBar sentence ("1 of them are blue")', () => {
+  const text = 'The bar below is cut into 5 equal parts, and 1 of them are blue. Which fraction is equivalent to the blue fraction?';
+  for (const [re, lab] of AGREE_BAD) if (re.test(text)) return 'prose agreement: ' + lab + ' caught';
+  return null;
+});
+
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
 const setRows = [];
 for (const tid of Object.keys(TOPICS)) {
@@ -4190,18 +4748,72 @@ if (picRows.length) {
 /* RULE 11, printed in full: the row space IS the finding, and the next lane
    inherits a number rather than a discovery (FIFTH PASS 2026-09-16). */
 if (rowRows.length) {
-  console.log(`\nRULE 11  ROW-ONLY RULE  (${ROW_N} draws learnt + ${ROW_N} tested: the option row alone, stem discarded, ` +
-    `may not name the key on >= ${Math.round(100*ROW_CAP)}% of draws over a memorisable space of < ${ROW_MEMO} rows)\n`);
-  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('DISTINCT ROWS', 16) + pad('ROW NAMES KEY', 16) + 'RESULT');
-  console.log('-'.repeat(110));
+  console.log(`\nRULE 11  ROW-ONLY RULE + THE SHAPE CLAUSE  (${ROW_N} draws learnt + ${ROW_N} tested. The option row alone, ` +
+    `stem discarded,\n         may not name the key on >= ${Math.round(100*ROW_CAP)}% over < ${ROW_MEMO} distinct rows; ` +
+    `and its MASKED SHAPE may not name the key's slot on ${Math.round(100*SHAPE_CAP)}% over < ${SHAPE_MEMO} shapes)\n`);
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 7) + pad('ROWS', 8) + pad('ROW>KEY', 10) +
+    pad('SHAPES', 8) + pad('SHAPE>SLOT', 12) + 'RESULT');
+  console.log('-'.repeat(118));
   for (const r of rowRows)
-    console.log(pad(r.name, 26) + pad(r.n, 8) + pad(r.rows, 16) + pad((100 * r.rate).toFixed(1) + '%', 16) +
+    console.log(pad(r.name, 26) + pad(r.n, 7) + pad(r.rows, 8) + pad((100 * r.rate).toFixed(1) + '%', 10) +
+      pad(r.shapes, 8) + pad((100 * r.sRate).toFixed(1) + '%', 12) +
       (r.err ? 'FAIL  ' + r.err
-        : (r.rows < ROW_MEMO ? 'pass - memorisable row space, and the row settles nothing' : 'pass')));
+        : (r.sRate >= SHAPE_WATCH ? 'pass - over the ' + Math.round(100*SHAPE_WATCH) + '% shape watch line, declared residual'
+          : (r.rows < ROW_MEMO ? 'pass - memorisable row space, and the row settles nothing' : 'pass'))));
   console.log('');
-  console.log('     a high rate over a LARGE row space is not a tell: a row of four particular fractions belongs to one question,');
+  console.log('     a high ROW rate over a LARGE row space is not a tell: a row of four particular fractions belongs to one question,');
   console.log('     which is what it means for the options to be drawn from the mathematics. The gate is the conjunction of both columns.');
-  if (rowRows.every(r => !r.err)) console.log(`ok   RULE 11 row-only rule: ${rowRows.length} banks, no memorisable option row that names its own key at or over ${Math.round(100*ROW_CAP)}%`);
+  console.log('     the SHAPE watch line is the row-shape class (sixth pass, wound 1): ordering four bottom numbers by sight is');
+  console.log('     whole-number work standing in for fraction work, so it is declared with its numbers, and only a sight rule that is');
+  console.log('     NEVER WRONG over a memorisable shape space is failed. Every bank listed over 40% is carried in the lane note.');
+  if (rowRows.every(r => !r.err)) console.log(`ok   RULE 11 row-only rule: ${rowRows.length} banks, no memorisable option row that names its own key at or over ${Math.round(100*ROW_CAP)}%, and no masked row shape that names the key's slot every time`);
+}
+
+/* RULE 12, printed in full: the recall clause is a declared residual for six banks
+   and the number is the deliverable (SIXTH PASS 2026-09-16). */
+if (stemRows.length) {
+  console.log(`\nRULE 12  STEM-ONLY RULE  (${STEM_N} draws learnt + ${STEM_N} tested, option row and figure discarded.\n` +
+    `         (a) a ${STEM_ROWS}-row table over the stem's numerals, and (b) one arithmetic expression over them.\n` +
+    `         GATED on banks that draw a PICTURE at ${Math.round(100*STEM_CAP)}%; measured and declared on every other)\n`);
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 7) + pad('STEM SIGS', 11) + pad('TABLE', 9) +
+    pad('ARITHMETIC', 12) + pad('BEST EXPR', 14) + pad('FIG', 5) + 'RESULT');
+  console.log('-'.repeat(122));
+  for (const r of stemRows)
+    console.log(pad(r.name, 26) + pad(r.n, 7) + pad(r.sigs, 11) + pad((100 * r.rate).toFixed(1) + '%', 9) +
+      pad((100 * r.arith).toFixed(1) + '%', 12) + pad(r.expr, 14) + pad(r.fig ? 'yes' : '-', 5) +
+      (r.err ? 'FAIL  ' + r.err
+        : (r.rate >= STEM_CAP ? 'pass - over the table line, the STEM-SPACE residual, declared'
+          : (r.arith >= STEM_CAP ? 'pass - the stem IS the whole question here; no picture is claimed' : 'pass'))));
+  console.log('');
+  console.log('     an arithmetic expression over the stem naming the key is the item WORKING for a bank with no picture -');
+  console.log('     "add the two tops, keep the bottom" is the whole of gAddSame. The gate is therefore the FIGURE clause:');
+  console.log('     a bank that draws a picture may not be answered from its words alone. The table column over 60% is the');
+  console.log('     small-stem-space class the first refutation named (7 to 36 distinct stems), declared in the lane note.');
+  if (stemRows.every(r => !r.err)) console.log(`ok   RULE 12 stem-only rule: ${stemRows.filter(r => r.fig).length} picture banks, none answerable from the numerals of its stem alone at or over ${Math.round(100*STEM_CAP)}%`);
+}
+
+/* RULE 13, printed in full (SIXTH PASS 2026-09-16). */
+if (glyRows.length) {
+  console.log(`\nRULE 13  GLYPH RULE  (${GLY_N} draws learnt + ${GLY_N} tested: numeral identity, numeral membership and digit\n` +
+    `         count across the rendered stem and row, no arithmetic anywhere - may not SETTLE the key on >= ${Math.round(100*GLY_CAP)}%)\n`);
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('STEM SIGS', 12) + pad('SETTLES ON KEY', 17) + 'RESULT');
+  console.log('-'.repeat(110));
+  for (const r of glyRows)
+    console.log(pad(r.name, 26) + pad(r.n, 8) + pad(r.sigs, 12) + pad((100 * r.rate).toFixed(1) + '%', 17) +
+      (r.err ? 'FAIL  ' + r.err : 'pass'));
+  console.log('');
+  console.log('     a rule that leaves two options standing does not settle anything, so ties are not counted: this column is the');
+  console.log('     draws on which the glyphs name exactly one option and that option is the key. A bank of four fractions cannot');
+  console.log('     reach far past chance here unless one option is the unique one carrying the stem\'s own numerals.');
+  if (glyRows.every(r => !r.err)) console.log(`ok   RULE 13 glyph rule: ${glyRows.length} banks, no key settled by numeral identity, membership and digit count at or over ${Math.round(100*GLY_CAP)}%`);
+}
+
+/* THE PROSE AGREEMENT CLAUSE, printed only when it has something to say. */
+if (agreeRows.length) {
+  const bad = agreeRows.filter(r => r.err);
+  console.log('');
+  if (bad.length) for (const r of bad) console.log(`FAIL prose agreement  ${r.name}  ${r.err}`);
+  else console.log(`ok   prose agreement: ${agreeRows.length} banks x ${AGREE_N} draws, no numeral disagreeing with its verb in any stem, option or teaching card`);
 }
 
 /* The negative controls, on the record of every run (THIRD PASS 2026-09-16). */

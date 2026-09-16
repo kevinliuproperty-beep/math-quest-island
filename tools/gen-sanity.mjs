@@ -1257,45 +1257,46 @@ function oracle(q) {
     return near(e, ansNum) ? null : `p3 odd-one-out: expected ${e}, got ${ansNum}`;
   }
 
-  /* ADD/SUB - concept check on regrouping. The column total the stem prints must
-     really be the sum of the two ones digits, and the key must say what happens. */
-  if ((m = text.match(/^When you add (\d+) \+ (\d+), the ones column makes (\d+)\. What happens next\?$/))) {
-    const a = Number(m[1]), b = Number(m[2]), s = Number(m[3]);
-    if (a % 10 + b % 10 !== s) return `p3 add-concept: ${a} and ${b} give ${a % 10 + b % 10} in the ones column, not ${s}`;
-    if (s < 10) return `p3 add-concept: ${s} does not regroup, so there is nothing to carry`;
-    const want = `Write ${s % 10}, carry 1 ten to the column on its left.`;
-    const key = strip(q.answerText);
-    if (key !== want) return `p3 add-concept: expected "${want}", got "${key}"`;
-    /* W4, third pass: the key used to be the uniquely SHORTEST of the four
-       options on 100% of draws. The four strings are fixed-width by construction
-       (the ones total is always two digits and what stays in the column always
-       one), so the property is asserted here per draw as well as measured across
-       the bank by the LENGTH RANK gate below.
+  /* ADD/SUB - concept check: what the carried 1 is WORTH. The prose form of this
+     item was retired by the PM on the SIXTH pass's kill (five lexical axes, five
+     passes, the last one answered by the key being the ONLY option with no
+     private phrase of its own), and the concept check is now numeric, so this
+     oracle re-derives the key from the RENDERED column addition rather than
+     matching a sentence. Everything the stem asserts is re-checked:
 
-       FOURTH pass, KILL. The v4 wording bought its two-character span by writing
-       "carry 1 ten TO the hundreds column" in the one distractor that carries the
-       place-value idea, and that made "ten into" a phrase the KEY alone contained
-       on every draw. "hundreds column" is four characters wider than "tens
-       column" and the bank ceiling is 48, so a two-character span and a shared
-       preposition cannot both be had; the span assertion was relaxed to 4.
-
-       FIFTH pass, KILL and W1. The v5 rewrite paid that four-character span AND
-       still left "ten into the tens" key-only, because the tens/hundreds pair is
-       the thing that costs four characters and it was the only place-value
-       contrast on offer. v6 moves the contrast to left/right, which costs ONE,
-       so the span assertion goes back to 2 and holds by construction: the four
-       options are 47 / 47 / 48 / 48 on every draw. The PHRASE RULER below carries
-       the other half - no contiguous phrase up to six words and no word set up to
-       three may single the key out - with the v5 option set as its control. */
-    const lens = (q.choices || []).map(c => strip(c).length);
-    const lo = Math.min.apply(null, lens), hi = Math.max.apply(null, lens);
-    if (hi - lo > 2) {
-      return `p3 add-concept: the four options span ${lo}-${hi} characters, so length separates them`;
+       - the named source column really does make the printed total, which means
+         the columns to its RIGHT must not carry into it;
+       - the printed total really does regroup (>= 10) and the digit the stem
+         says stays behind really is its ones digit;
+       - the column the small 1 is written above is the one immediately LEFT of
+         the source column;
+       - both addends and their sum are inside the 10 000 ceiling;
+       - and the key is that column's place value, re-derived here and never
+         read from answerText. */
+  if ((m = text.match(/^(\S+(?: \S+)?) works out (\d+) \+ (\d+) in columns\. The (\w+) column makes (\d+), so (?:he|she) writes (\d+) in the (\w+) column and a small 1 above the (\w+) column\. How much is that small 1 worth\?$/))) {
+    const a = Number(m[2]), b = Number(m[3]), s = Number(m[5]), keep = Number(m[6]);
+    const src = P3_PLACES.indexOf(m[4]), col = P3_PLACES.indexOf(m[8]);
+    if (src < 0) return `p3 add-concept: "${m[4]}" is not a column name`;
+    if (col < 0) return `p3 add-concept: "${m[8]}" is not a column name`;
+    if (m[7] !== m[4]) return `p3 add-concept: the digit stays in the ${m[7]} column but the total was the ${m[4]} column's`;
+    if (col !== src - 1) return `p3 add-concept: a carry out of the ${m[4]} column goes to the ${P3_PLACES[src - 1]} column, not the ${m[8]} column`;
+    if (String(a).length !== 4 || String(b).length !== 4) return `p3 add-concept: expected two 4-digit addends, got ${a} + ${b}`;
+    if (a + b > 9999) return `p3 add-concept: ${a} + ${b} = ${a + b} is past the 10 000 ceiling`;
+    const A = p3dig(a), B = p3dig(b);
+    for (let i = 3; i > src; i--) {
+      if (A[i] + B[i] >= 10) return `p3 add-concept: the ${P3_PLACES[i]} column carries into the ${m[4]} column, so it does not make ${s} on its own`;
     }
-    if (lens[q.correct] === lo && lens.filter(x => x === lo).length === 1)
-      return `p3 add-concept: the key is the uniquely shortest option (${lens.join('/')})`;
-    if (lens[q.correct] === hi && lens.filter(x => x === hi).length === 1)
-      return `p3 add-concept: the key is the uniquely longest option (${lens.join('/')})`;
+    if (A[src] + B[src] !== s) return `p3 add-concept: the ${m[4]} column of ${a} + ${b} makes ${A[src] + B[src]}, not ${s}`;
+    if (s < 10) return `p3 add-concept: ${s} does not regroup, so there is nothing to carry`;
+    if (s > 19) return `p3 add-concept: two digits cannot make ${s}`;
+    if (keep !== s % 10) return `p3 add-concept: ${s} leaves ${s % 10} in the column, not ${keep}`;
+    const want = P3_POW[col];
+    if (!near(want, ansNum)) return `p3 add-concept: the small 1 above the ${m[8]} column is worth ${want}, got ${ansNum}`;
+    /* the four options are bare numbers, so the magnitude rank gate and RULES
+       A-D below own the rest; what is asserted per draw is that exactly one of
+       them is the value the carry is worth. */
+    const hits = p3opts(q).filter(o => Number(o) === want).length;
+    if (hits !== 1) return `p3 add-concept: ${hits} of the four options are ${want}`;
     return null;
   }
 
@@ -2635,6 +2636,49 @@ function sweepGates(q, topic) {
       return 'distractor contract: a question declared both q.authored and q.optionSet';
     }
   }
+  /* RULE E, AN EXPLANATION MAY ONLY NAME A WRONG ANSWER THAT IS ON THE ROW
+     (Sweep p3numbers Refutation, SIXTH pass, W5 - and the same class the p2 lane
+     closed one pass earlier, where it is rule 5). Four banks ended their
+     explanation by naming ONE misconception and its value while the three
+     printed distractors are drawn by slipSet out of a LARGER family, so the
+     number the sentence blamed was not on the options row on `gSubRegroup`
+     52.98%, `gTwoStepWord` 49.95%, `gAddRegroup` 49.15% and `gBuildNum` 38.06%
+     of draws. No arithmetic in any of them is wrong and nothing leaks while the
+     child is choosing - which is why six passes walked over it - but it is an
+     explanation asserting something about the option list that the draw did not
+     deliver, and it sends the reader to look for a number that is not on the
+     screen. No gate read explanations for this.
+
+     The rule is the narrowest one that binds: every number an explanation names
+     immediately after an ANSWER-NAMING verb - "gives", "give you", "you get",
+     "answers", "leaves you with", "would give" - must be one of the four printed
+     options. A sentence about the key passes, because the key is an option; a
+     sentence about a slip that did not ship does not.
+
+     The number must also be TERMINAL - not followed by an operator - because an
+     answer is a value and working is a sum. Two pattern banks write "One more
+     jump gives 5777 + 100 = 5877", where the number after the verb opens the
+     working and the ANSWER is the key at the far end of it; without that
+     lookahead the rule fires on both of them and catches neither's defect.
+     Everything else a p3numbers explanation prints ("1 thousand = 1000",
+     "4739 + 100 = 4839") never follows one of the verbs at all.
+
+     Negative control: the v6 `gSubRegroup` explanation and its own option row,
+     rebuilt from their own strings, which must come out RED. */
+  {
+    const ex = strip(q.explain || '');
+    const optNums = new Set();
+    for (const o of opts) for (const t of (o.match(/\d+/g) || [])) optNums.add(t);
+    let em;
+    /* (?!\d) forces the whole digit run to be taken before the operator test, so
+       the engine cannot backtrack to a PREFIX of the number and slip past it */
+    const re = /\b(gives you|give you|gives|you get|answers|leaves you with|would give) (\d+)(?!\d)(?!\s*[-+−×÷=])/g;
+    while ((em = re.exec(ex))) {
+      if (!optNums.has(em[2])) {
+        return `explanation names an absent answer: "${em[1]} ${em[2]}", but ${em[2]} is not one of the four options (${[...optNums].join(', ')})`;
+      }
+    }
+  }
   return null;
 }
 
@@ -3065,7 +3109,32 @@ let lenControl = 'the v2 gAddConcept option set was not rejected by the length g
    strings so the control does not depend on the topic file still containing the
    defect. It must come out RED - and it must come out red on a FOUR-word phrase
    and on the two-word SET, neither of which the v5 ruler could see. --- */
-const TOK_N = 2000, TOK_CAP = 0.60, PHRASE_CAP = 6, SET_CAP = 3;
+/* THE MIRROR COLUMN (sixth-pass KILL, 2026-09-16). Every column the v6 ruler
+   printed was a fact about the KEY - key-only phrase, key-only word set,
+   all-wrong phrase, the key's MIN-n, and how often a distractor is a superset of
+   the key. The v6 `gAddConcept` rebuild lifted the key's MIN-n to 10 words and
+   left the three distractors at 1, 1 and 2 ("14", "right", "Write 1"), so the
+   key became the only option in the bank with nothing of its own: "cross out the
+   three options that say something none of the others say and take the one that
+   is left" answered the pool-1 flagship on 100.00% of 20,000 draws at each of
+   two seeds. The row printed `MIN-n 10 ... pass`, and the evidence of safety and
+   the mechanism of the defect were the same number read from opposite ends.
+
+   The ruler now measures EVERY option the same way and gates the SPREAD. For
+   each draw the shortest private phrase of all four options is computed - a
+   phrase present in that option and absent from the other three - and the bank
+   FAILS when the key's exceeds EVERY distractor's by more than GAP_CAP words on
+   60% or more of draws. A key-only phrase that is long is not a defect on its
+   own; a key-only phrase that is long while every distractor's is short IS one,
+   because the difference is what a child eliminates on. The three distractor
+   values are printed as min / mid / max on every run next to the key's, so the
+   comparison that answers the item is visible in the row that certifies it.
+
+   The general lesson, which this ruler is the fix for: a ruler that measures
+   only the key is measuring half the item. Every option on a four-option row is
+   a choice the child compares against the others, so the property worth gating
+   is a property of the spread across four, never of one of them. */
+const TOK_N = 2000, TOK_CAP = 0.60, PHRASE_CAP = 6, SET_CAP = 3, GAP_CAP = 2;
 const tokRows = [];
 const stemTok = w => (w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) ? w.slice(0, -1) : w;
 const tokenise = s => (strip(s).toLowerCase().match(/[a-z0-9]+/g) || []);
@@ -3091,9 +3160,14 @@ function setsUpTo(words, k) {
 function tokBank(draw) {
   const keyOnly = new Map(), wrongOnly = new Map(), setOnly = new Map(), shortest = new Map();
   let n = 0, sample = null, superset = 0;
+  /* the mirror column: the key's own MIN-n summed, the three distractors' summed
+     as min / mid / max, and how often the key's exceeds all three by > GAP_CAP */
+  let dn = 0, kSum = 0, dLo = 0, dMid = 0, dHi = 0, gap = 0, gapSample = null;
+  const out = () => ({ n, keyOnly, wrongOnly, setOnly, shortest, superset, sample,
+                       dn, kSum, dLo, dMid, dHi, gap, gapSample });
   for (let i = 0; i < TOK_N; i++) {
     let q;
-    try { q = draw(); } catch (e) { return { n, keyOnly, wrongOnly, setOnly, shortest, superset, sample, threw: e.message }; }
+    try { q = draw(); } catch (e) { const r = out(); r.threw = e.message; return r; }
     const opts = (q.choices || []).map(strip);
     if (opts.length !== 4 || !(q.correct >= 0)) continue;
     if (opts.every(o => /^\d+$/.test(o))) continue;      /* bare-number banks: the magnitude ruler owns those */
@@ -3109,6 +3183,20 @@ function tokBank(draw) {
       }
     }
     shortest.set(minN, (shortest.get(minN) || 0) + 1);
+    /* the same measurement, run on the three DISTRACTORS (sixth-pass KILL) */
+    {
+      const privMin = idx => {
+        const others = [0, 1, 2, 3].filter(j => j !== idx);
+        let mn = Infinity;
+        for (const [f, len] of F[idx]) if (len < mn && others.every(j => !F[j].has(f))) mn = len;
+        return mn;
+      };
+      const dm = w.map(privMin).sort((x, y) => x - y);
+      if (Number.isFinite(minN) && dm.every(Number.isFinite)) {
+        dn++; kSum += minN; dLo += dm[0]; dMid += dm[1]; dHi += dm[2];
+        if (minN - dm[2] > GAP_CAP) { gap++; if (!gapSample) gapSample = opts.slice(); }
+      }
+    }
     for (const [f, len] of F[w[0]]) if (len <= PHRASE_CAP && F[w[1]].has(f) && F[w[2]].has(f) && !F[k].has(f)) {
       wrongOnly.set(f, (wrongOnly.get(f) || 0) + 1);
       if (!sample) sample = opts.slice();
@@ -3133,14 +3221,23 @@ function tokBank(draw) {
     }
     n++;
   }
-  return { n, keyOnly, wrongOnly, setOnly, shortest, superset, sample };
+  return out();
 }
 const tokTop = m => [...m.entries()].reduce((a, e) => e[1] > a[1] ? e : a, ['-', 0]);
 const tokMinN = row => [...row.shortest.entries()].reduce((a, e) => e[1] > a[1] ? e : a, [0, 0])[0];
+const tokDist = row => row.dn ? [row.dLo / row.dn, row.dMid / row.dn, row.dHi / row.dn] : [0, 0, 0];
 function tokVerdict(row) {
   if (!row.n) return null;
   const k = tokTop(row.keyOnly), w = tokTop(row.wrongOnly), s = tokTop(row.setOnly);
   const opts = row.sample ? `  (${row.sample.join(' | ')})` : '';
+  /* THE MIRROR RULE (sixth-pass KILL): the key has no phrase of its own and each
+     distractor does, so the child crosses out the three that say something none
+     of the others say and takes the one that is left. */
+  if (row.dn && row.gap / row.dn >= TOK_CAP) {
+    const d = tokDist(row).map(x => x.toFixed(2));
+    const g = row.gapSample ? `  (${row.gapSample.join(' | ')})` : opts;
+    return `the KEY's shortest private phrase is more than ${GAP_CAP} words longer than EVERY distractor's on ${row.gap} of ${row.dn} draws (${(100 * row.gap / row.dn).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - MIN-n key ${(row.kSum / row.dn).toFixed(2)} against distractors ${d[0]} / ${d[1]} / ${d[2]}; a child crosses out the three options that say something none of the others say${g}`;
+  }
   if (k[1] / row.n >= TOK_CAP)
     return `"${k[0]}" is in the KEY and in no distractor on ${k[1]} of ${row.n} draws (${(100 * k[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child picks the key out by that phrase alone${opts}`;
   if (s[1] / row.n >= TOK_CAP)
@@ -3180,6 +3277,56 @@ let tokControl = 'the v5 gAddConcept option set was not rejected by the phrase r
   const setOk = set[1] / ctl.n >= TOK_CAP && /ten \+ tens/.test(set[0]);
   if (verdict && phraseOk && setOk)
     tokControl = `the v5 gAddConcept option set goes red - "${phrase[0]}" key-only on ${(100 * phrase[1] / ctl.n).toFixed(1)}% (a FOUR-word phrase, which the v5 ruler could not see) and the word set ${set[0]} key-only on ${(100 * set[1] / ctl.n).toFixed(1)}%; shortest key-only phrase ${tokMinN(ctl)} words`;
+  else failures++;
+}
+/* the THIRD negative control, for the mirror rule: the v6 gAddConcept option
+   set, which every column the v6 ruler printed reported as `pass`. It must come
+   out red, and it must come out red ON THE GAP - a key MIN-n of 10 words against
+   distractors at 1 / 1 / 2 - because none of the v6 axes can see it. */
+let gapControl = 'the v6 gAddConcept option set was not rejected by the mirror rule';
+{
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const v6AddConcept = () => {
+    const s = rnd(12, 18), keep = s % 10;
+    const opts = [
+      'Write ' + keep + ', carry 1 ten to the column on its left.',
+      'Write ' + s + ', carry 1 ten to the column on its left.',
+      'Write ' + keep + ', carry 1 ten to the column on its right.',
+      'Write 1 ten, carry ' + keep + ' to the column on its left.'
+    ];
+    return { q: 'v6 gAddConcept control', choices: opts, answerText: opts[0], correct: 0 };
+  };
+  const ctl = tokBank(v6AddConcept);
+  const verdict = tokVerdict(ctl);
+  const d = tokDist(ctl), keyMin = ctl.dn ? ctl.kSum / ctl.dn : 0;
+  /* the control is only doing its job if the MIRROR rule is what fires: the v6
+     set is clean on every axis the v6 ruler carried, so a red on one of those
+     would mean the control had drifted off the class it exists to certify. */
+  const mirrorFired = !!verdict && /shortest private phrase/.test(verdict);
+  const shape = ctl.dn && keyMin >= 8 && d[2] <= 3 && ctl.gap / ctl.dn >= TOK_CAP;
+  const oldAxesQuiet = tokTop(ctl.keyOnly)[1] / ctl.n < TOK_CAP &&
+                       tokTop(ctl.setOnly)[1] / ctl.n < TOK_CAP &&
+                       tokTop(ctl.wrongOnly)[1] / ctl.n < TOK_CAP;
+  if (mirrorFired && shape && oldAxesQuiet)
+    gapControl = `the v6 gAddConcept option set goes red on the MIRROR rule - MIN-n key ${keyMin.toFixed(2)} words against distractors ${d[0].toFixed(2)} / ${d[1].toFixed(2)} / ${d[2].toFixed(2)} on ${(100 * ctl.gap / ctl.dn).toFixed(1)}% of draws - while every axis the v6 ruler carried reports it clean (key-only phrase ${(100 * tokTop(ctl.keyOnly)[1] / ctl.n).toFixed(1)}%, key-only word set ${(100 * tokTop(ctl.setOnly)[1] / ctl.n).toFixed(1)}%, all-wrong ${(100 * tokTop(ctl.wrongOnly)[1] / ctl.n).toFixed(1)}%, SUPERSET ${(100 * ctl.superset / ctl.n).toFixed(1)}%)`;
+  else failures++;
+}
+/* the negative control for RULE E: the v6 gSubRegroup explanation on its own
+   option row, with the "commonest slip" value left off the row exactly as
+   slipSet left it off on 52.98% of draws. */
+let explControl = 'the v6 gSubRegroup explanation was not rejected by RULE E';
+{
+  const ctlQ = {
+    q: 'What is 5042 − 1867?', extra: '',
+    choices: ['3175', '3275', '3165', '4175'], correct: 0, answerText: '3175',
+    authored: [3275, 3165, 4175],
+    explain: '5042 − 1867 = 3175. In the ones column you cannot take away enough, so you take one ' +
+      'from the column on its left and turn it into ten. Taking the smaller digit away from the ' +
+      'bigger one in every column instead - which is the commonest slip - gives 3182.'
+  };
+  const hit = sweepGates(ctlQ, 'p3numbers');
+  if (hit && /explanation names an absent answer/.test(hit) && /3182/.test(hit))
+    explControl = `the v6 gSubRegroup explanation goes red - ${hit}`;
   else failures++;
 }
 
@@ -3327,7 +3474,7 @@ if (lenRows.length) {
   console.log('');
   console.log(`     PICK-SHORT / PICK-LONG are the value of "pick one of the shortest (longest) options", counted 1/k over the k options tied at that extreme.`);
   console.log(`     LO-STEP / HI-STEP (fifth pass, W1) are the gap in CHARACTERS from the shortest option up to the next length, and from the longest option down to`);
-  console.log(`     the next, and SPREAD is shortest to longest. A key tied at one extreme is read off the step at THAT end: gAddConcept's is LO-STEP. PICK-SHORT`);
+  console.log(`     the next, and SPREAD is shortest to longest. A key tied at one extreme is read off the step at THAT end: gCompareError's is LO-STEP. PICK-SHORT`);
   console.log(`     measures the value of the rule and uSHORTEST measures uniqueness; only MIN-STEP says whether the eye can see which options the rule points at.`);
   console.log(`     All REPORTED, not gated: 25.0% is chance, and a key tied with one other option reads 50.0% under PICK-SHORT and 0.0% under "uniquely".`);
   if (lenRows.every(r => !r.err)) console.log(`ok   length rank: ${lenRows.length} banks, no key uniquely shortest or uniquely longest on ${Math.round(LEN_CAP * 100)}% of draws`);
@@ -3336,23 +3483,32 @@ if (lenRows.length) {
 if (tokRows.length) {
   console.log(`\nPHRASE RULER  p3numbers, ${TOK_N} draws per prose bank  (no contiguous phrase of <= ${PHRASE_CAP} words, and no unordered word set of <= ${SET_CAP} words, in the key alone - or in all three distractors alone - on >= ${Math.round(100 * TOK_CAP)}% of draws)\n`);
   console.log(pad('GENERATOR', 18) + pad('POOL', 5) + pad('N', 6) + pad('KEY-ONLY PHRASE', 26) + pad('RATE', 8) +
-    pad('KEY-ONLY WORD SET', 22) + pad('RATE', 8) + pad('ALL-WRONG', 16) + pad('RATE', 8) + pad('MIN-n', 7) + pad('SUPERSET', 10) + 'RESULT');
-  console.log('-'.repeat(150));
+    pad('KEY-ONLY WORD SET', 22) + pad('RATE', 8) + pad('ALL-WRONG', 16) + pad('RATE', 8) +
+    pad('MIN-n KEY', 11) + pad('MIN-n D min/mid/max', 21) + pad('GAP>' + GAP_CAP, 9) + pad('SUPERSET', 10) + 'RESULT');
+  console.log('-'.repeat(180));
   for (const r of tokRows) {
-    const k = tokTop(r.keyOnly), w = tokTop(r.wrongOnly), st = tokTop(r.setOnly);
+    const k = tokTop(r.keyOnly), w = tokTop(r.wrongOnly), st = tokTop(r.setOnly), d = tokDist(r);
     console.log(pad(r.name, 18) + pad(r.lvl, 5) + pad(r.n, 6) +
       pad('"' + k[0] + '"', 26) + pad((100 * k[1] / r.n).toFixed(1) + '%', 8) +
       pad(st[0], 22) + pad((100 * st[1] / r.n).toFixed(1) + '%', 8) +
       pad('"' + w[0] + '"', 16) + pad((100 * w[1] / r.n).toFixed(1) + '%', 8) +
-      pad(tokMinN(r), 7) + pad((100 * r.superset / r.n).toFixed(1) + '%', 10) +
+      pad(r.dn ? (r.kSum / r.dn).toFixed(2) : tokMinN(r), 11) +
+      pad(d.map(x => x.toFixed(2)).join(' / '), 21) +
+      pad(r.dn ? (100 * r.gap / r.dn).toFixed(1) + '%' : '-', 9) +
+      pad((100 * r.superset / r.n).toFixed(1) + '%', 10) +
       (r.err ? 'FAIL  ' + r.err : 'pass'));
   }
   console.log('');
-  console.log(`     MIN-n is the length in WORDS of the shortest key-only phrase, measured with NO cap and REPORTED, not gated: at n = the key's own length every`);
-  console.log(`     four-option bank is key-only by identity, so an uncapped failure rule is unsatisfiable. A bank whose MIN-n sits above ${PHRASE_CAP} is visible here.`);
+  console.log(`     MIN-n KEY is the length in WORDS of the shortest key-only phrase, measured with NO cap: at n = the key's own length every four-option bank is`);
+  console.log(`     key-only by identity, so an uncapped failure rule on the key alone is unsatisfiable, and a bank whose MIN-n sits above ${PHRASE_CAP} is visible here.`);
+  console.log(`     MIN-n D is the SAME measurement on the three DISTRACTORS, printed min / mid / max - the mirror the sixth pass's kill lived in. GAP>${GAP_CAP} is how`);
+  console.log(`     often the key's exceeds EVERY distractor's by more than ${GAP_CAP} words, and it IS gated at ${Math.round(100 * TOK_CAP)}%: a long key-only phrase is safe, a long one beside`);
+  console.log(`     three short ones is the elimination "cross out the options that say something none of the others say". Measure every option, print the spread.`);
   console.log(`     SUPERSET is how often some distractor holds EVERY word the key holds; at 100% no word combination of ANY size can single the key out.`);
-  if (tokRows.every(r => !r.err)) console.log(`ok   phrase ruler: ${tokRows.length} prose banks, no key-only and no all-distractor phrase or word set at or over ${Math.round(100 * TOK_CAP)}% of draws`);
+  if (tokRows.every(r => !r.err)) console.log(`ok   phrase ruler: ${tokRows.length} prose banks, no key-only and no all-distractor phrase or word set at or over ${Math.round(100 * TOK_CAP)}% of draws, and no key MIN-n more than ${GAP_CAP} words past every distractor's`);
   console.log(`${/goes red/.test(tokControl) ? 'ok  ' : 'FAIL'} phrase negative control: ${tokControl}`);
+  console.log(`${/goes red/.test(gapControl) ? 'ok  ' : 'FAIL'} phrase negative control: ${gapControl}`);
+  console.log(`${/goes red/.test(explControl) ? 'ok  ' : 'FAIL'} explanation negative control: ${explControl}`);
 }
 
 console.log('');

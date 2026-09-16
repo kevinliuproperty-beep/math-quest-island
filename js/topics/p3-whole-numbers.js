@@ -89,10 +89,21 @@
  *
  * FENCE against `heuristics` (Puzzle Caves, which also owns a `pattern` skill):
  * Puzzle Caves draws 1- and 2-digit typed sequences ("What comes next? 3, 6, 9,
- * 12, ?"). This file's patterns are 4-digit, MC, and jump by a whole number of
- * tens - counting in tens, hundreds and thousands (MOE P3 1.1) for the anchors,
- * and 150s and 250s where the item needs the jump to be found rather than read
- * (gPatternMissing, gPatternOdd; MOE P3 1.5, patterns in number sequences).
+ * 12, ?"). This file's patterns are 4-digit and MC, and the step set is, in full:
+ * 10 / 100 / 1000 for the counting anchors (gPatternConcept, gPattern4,
+ * gMoreLess; MOE P3 1.1), 100 / 150 / 200 / 250 / 500 for gPatternMissing, and
+ * 15 / 25 / 35 for gPatternOdd - both of the last two being items where the jump
+ * has to be FOUND rather than read, which is MOE P3 1.5, patterns in number
+ * sequences, and which 1.5 does not restrict to multiples of ten.
+ *
+ * W2, SIXTH pass. This paragraph used to read "jump by a whole number of tens -
+ * counting in tens, hundreds and thousands for the anchors, and 150s and 250s
+ * where the item needs the jump to be found", and it named gPatternOdd as one of
+ * the two. v6 moved gPatternOdd to 15 / 25 / 35 to close the fifth pass's tens-
+ * column kill and left this sentence false about that generator on 100% of its
+ * draws, along with the `pattern` skill tip a parent reads (which told the child
+ * to say whether the jump is "tens, hundreds or thousands"). Both are corrected
+ * here; the mathematics did not move and neither did the scope.
  * Puzzle Caves reaches neither range. Different stems, different range, no
  * overlap - and this sentence is a note, not a gate, which is what the refutation
  * said about it.
@@ -155,6 +166,31 @@
   function sameWidth(correct, cands){
     const w = String(correct).length;
     return cands.some(c => String(c).length === w);
+  }
+
+  /* ---- NAME A SLIP THE CHILD CAN ACTUALLY SEE -------------------------
+     W5 (Sweep p3numbers Refutation, SIXTH pass, 2026-09-16), and the same class
+     the p2 lane closed one pass earlier. Four banks ended their explanation by
+     naming ONE misconception and its value - "which is the commonest slip -
+     gives 3182" - while the three printed distractors are drawn by slipSet from
+     a LARGER family, so the named number was not on the options row on 52.98%
+     (gSubRegroup), 49.95% (gTwoStepWord), 49.15% (gAddRegroup) and 38.06%
+     (gBuildNum) of draws. Nothing is arithmetically false and nothing leaks
+     while the child is choosing; it is an explanation asserting something about
+     the option list that the draw did not deliver, and the child is sent to look
+     for a number that is not on the screen.
+
+     Every one of those banks now hands slipWhy() its WHOLE family as
+     [value, why] pairs in PREFERENCE order, and the sentence names the first
+     pair that actually shipped. The bank's own headline misconception is still
+     first, so nothing changes on the draws where it is on the row. Asserted by
+     RULE E of tools/gen-sanity.mjs: every number an explanation names after an
+     answer-naming verb ("gives", "you get", "answers", "leaves you with") must
+     be one of the four printed options. Its negative control is the v6
+     gSubRegroup sentence. */
+  function slipWhy(cands, pairs){
+    for (const p of pairs) if (cands.indexOf(p[0]) !== -1) return p;
+    return null;
   }
 
   /* ---- MAGNITUDE RANK (second-pass KILL, 2026-09-15) -------------------
@@ -416,12 +452,23 @@ function gBuildNum(){
     cands = slipSet(n, [squashed, swapped, reversed, zeroEnd, endsSwap]);
     g++;
   } while (g < 200 && !(cands && optsOk(n, cands)));
+  /* W5, SIXTH pass: the closing sentence used to name `squashed` whatever the
+     draw did, and slipSet left it off the options row on 38.06% of draws. The
+     zero's job is still the teaching point; the number the sentence blames is
+     now one the child can point at. */
+  const why = slipWhy(cands, [
+    [squashed, 'Leaving the 0 out'],
+    [th*1000 + t*100 + h*10 + o, 'Swapping the hundreds part and the tens part'],
+    [th*1000 + (h || t)*100 + o*10, 'Writing the 0 at the end instead'],
+    [o*1000 + t*100 + h*10 + th, 'Reading the four parts back to front'],
+    [o*1000 + h*100 + t*10 + th, 'Swapping the first part and the last part']
+  ]);
   return mcNum('Which number has ' + pl(th,'thousand') + ', ' + pl(h,'hundred') + ', ' + pl(t,'ten') +
     ' and ' + pl(o,'one') + '?', '', n, cands, '',
     pl(th,'thousand') + ' = ' + th*1000 + ', ' + pl(h,'hundred') + ' = ' + h*100 + ', ' +
     pl(t,'ten') + ' = ' + t*10 + ', ' + pl(o,'one') + ' = ' + o +
     '. Add them and you get ' + n + '. The 0 is doing a job: it holds the ' +
-    'empty place open. Leave it out and you get ' + squashed + ', a much smaller number.');
+    'empty place open. ' + why[1] + ' gives ' + why[0] + '.');
 }
 
 /* FORMAT 5 - compare two digit values inside ONE number (pool 3, 2 steps).
@@ -1147,107 +1194,139 @@ function gPatternOdd(){
    PRINCIPLE 3 - ADDING AND SUBTRACTING WITHIN 10 000, WITH REGROUPING
    ========================================================================= */
 
-/* FORMAT 1 - concept check: what actually happens when a column makes ten or
-   more? (pool 1, 1 step). No arithmetic at all; this is the idea itself. */
+/* FORMAT 1 - concept check: what is the carried 1 actually WORTH? (pool 1,
+   1 step). No column arithmetic to do; this is the place-value idea itself.
+
+   THE PROSE FORM IS RETIRED (PM ruling on the SIXTH pass's KILL, 2026-09-16).
+   A four-sentence prose concept check was killed on five successive lexical
+   axes in five successive passes - form (v2), character length (v3), a bigram
+   (v4), a four-word phrase (v5), and finally, at v6, the ABSENCE of a phrase:
+   the v6 option set gave the key a shortest private phrase of TEN words and
+   left the three distractors at ONE, ONE and TWO ("14", "right", "Write 1"),
+   so "cross out the three options that say something none of the others say"
+   answered the pool-1 flagship on 100.00% of 20,000 draws at each of two seeds,
+   with no arithmetic and no idea what a carry is. Each rewrite closed the axis
+   it was given and opened the next one, because on four prose options every
+   word is a feature and the key cannot be made featureless and unremarkable at
+   the same time. The ruling: a four-option prose concept check cannot be made
+   tell-free by authoring, so stop authoring one.
+
+   THE LEARNING OBJECTIVE IS UNCHANGED - what the small carried 1 stands for -
+   and it is now asked NUMERICALLY, which puts the bank under the magnitude rank
+   gate (two-sided, 12-45%, "smallest"/"largest" under 40%) that owns the other
+   twenty numeric banks in this file, instead of under a word ruler that has now
+   been one notch short five times. The stem prints the two numbers, the column
+   that made ten or more, the digit that stays and the column the small 1 is
+   written above; the child says how much that 1 is worth.
+
+   THE FOUR OPTIONS ARE PLACE VALUES AND THE NAMED SLIPS AROUND THEM.
+   key      POW[col]            1 ten / 1 hundred / 1 thousand, by the column it
+                                is written above - the whole idea of the item
+   slips    1                   the mark read as the digit it looks like
+            POW[j], j != col    the WRONG column's value (the PM's named slip)
+            POW[src]            left in the column it came from - "a ten carried
+                                out of the tens column is still ten"
+            keep                the digit that STAYED, swapped with the carried 1
+            s                   the whole column total
+            keep * POW[src]     the part that stays, at its real value
+            s   * POW[src]      the whole column, not just the part that carries
+            keep * POW[col]     the stayed digit pushed into the carry's column
+
+   THE KEY'S RANK IS DRAWN UNIFORMLY AND SO IS THE COLUMN, both by construction
+   rather than by luck. The rank is drawn FIRST - ri(0,3) - and the column is
+   then drawn uniformly from the columns that can realise it out of this draw's
+   own family, which is enumerated rather than assumed. That is the only order
+   that makes both axes flat at once, and it is forced by arithmetic that no
+   wording can move: the key is 10, 100 or 1000, so a tens key has only two
+   in-scope wrong answers beneath it and can never be the largest of four, and a
+   thousands key has only one above it (10 000 is out of scope) and can never be
+   the smallest. Drawing the column first and the rank second gives
+   19.4 / 19.4 / 36.1 / 25.0 and "pick one of the two middle options" at 55.5%;
+   drawing the rank first gives 25 / 25 / 25 / 25, columns 1/3 each, and the
+   middle pair at exactly the 50.0% structural floor of a four-option row.
+
+   Two constructor rules pay for that, and both are declared:
+     - `keep * POW[col]` is NOT drawn when the carry lands in the thousands
+       column. There it would be the second in-scope slip above a thousands key,
+       which lets that column reach rank 2 - and the aggregate then lands with
+       the middle pair at 61.1%, over the refutation's own 60% ceiling.
+     - at least one distractor must be wide enough for RULE C in
+       tools/gen-sanity.mjs, which fails a key printed more than 1.4x the
+       longest distractor. This is why a hundreds key is never the largest of
+       four: everything in scope below 100 is one or two digits wide.
+   The residual the shape leaves is "pick the option that is 1 followed by
+   zeros", worth about 31% against 25% chance - the option set is a place-value
+   ladder on roughly half the draws and the key is always on it. Declared and
+   measured rather than authored away: the sets are chosen to hold as MANY place
+   values as the drawn rank allows, precisely so that rule cannot narrow. */
 function gAddConcept(){
-  let a = 2647, b = 1385, g = 0;
-  do { a = ri(1000, 8000); b = ri(1000, MAXN - a); g++; }
-  while (g < 200 && !((a % 10) + (b % 10) >= 10 && ((a % 10) + (b % 10)) % 10 !== 1 &&
-         (a % 10) + (b % 10) !== 10));
-  const s = (a % 10) + (b % 10), keep = s % 10;
-  /* §6 of the refutation: the old key ran to 68 characters against a bank maximum
-     of 48, and this is a pool-1 item every child meets. Every option was brought
-     inside 42-46 characters with the concept intact, and gen-sanity caps
-     p3numbers options at 48.
+  const s = ri(12, 18), keep = s % 10;
+  /* the slip family for a given carry column, as [value, why] pairs in the
+     order the explanation prefers to name them (W5: slipWhy names the first one
+     that actually shipped, so the sentence never discusses an absent number). */
+  const famFor = col => {
+    const src = col + 1;
+    const f = [
+      [1, 'Reading the mark as the digit it looks like'],
+      [keep, 'Carrying the ' + keep + ' that stays behind instead'],
+      [s, 'Carrying the whole column total'],
+      [POW[src], 'Leaving it in the ' + PLACES[src] + ' column it came from'],
+      [keep * POW[src], 'Carrying the part that stays, ' + plPlace(keep, src) + ','],
+      [s * POW[src], 'Carrying all ' + s + ' ' + PLACES[src] + ' instead of just the ' + plPlace(1, col)]
+    ];
+    if (col > 0) f.push([keep * POW[col], 'Writing the ' + keep + ' above the ' + PLACES[col] + ' column']);
+    for (let j = 0; j < 4; j++) f.push([POW[j], 'Counting it as ' + plPlace(1, j)]);
+    const seen = new Set([POW[col]]);
+    return f.filter(p => { if (!ok(p[0]) || seen.has(p[0])) return false; seen.add(p[0]); return true; });
+  };
+  /* every 3-subset of every column's family, grouped by how many slips land
+     BELOW the key - which IS the key's rank among the four printed numbers. */
+  const bank = [0, 1, 2].map(col => {
+    const key = POW[col], fam = famFor(col), kw = String(key).length, byR = new Map();
+    for (let i = 0; i < fam.length; i++)
+      for (let j = i + 1; j < fam.length; j++)
+        for (let k = j + 1; k < fam.length; k++){
+          const t = [fam[i], fam[j], fam[k]];
+          if (Math.max.apply(null, t.map(p => String(p[0]).length)) * 1.4 < kw) continue;
+          const r = t.filter(p => p[0] < key).length;
+          if (!byR.has(r)) byR.set(r, []);
+          byR.get(r).push(t);
+        }
+    return { col: col, key: key, fam: fam, byR: byR };
+  });
+  const r = ri(0, 3);
+  const live = bank.filter(b => b.byR.has(r));
+  const b0 = pick(live.length ? live : bank.filter(b => b.byR.size));
+  const col = b0.col, src = col + 1, key = b0.key;
+  const sets = b0.byR.get(b0.byR.has(r) ? r : [...b0.byR.keys()][0]);
+  /* among the sets at that rank, the ones holding the MOST place values: the
+     fewer non-ladder options on the row, the less "pick the round one" is worth */
+  const pv = t => t.filter(p => /^10*$/.test(String(p[0]))).length;
+  const best = Math.max.apply(null, sets.map(pv));
+  const chosen = pick(sets.filter(t => pv(t) === best));
+  const cands = chosen.map(p => p[0]);
 
-     W4 (Sweep p3numbers Refutation, THIRD pass, 2026-09-15). That rewrite left
-     the key the UNIQUELY SHORTEST of the four options on 20,000 / 20,000 draws -
-     42 characters against 43, 43 and 46 - on the flagship pool-1 item, in the one
-     direction nothing in the harness measured (RULE C fails a key more than 1.4x
-     the longest distractor; the ceiling caps the maximum; neither looks down).
-     The margin was one character, so it was not readable today - it was one word
-     away from being readable, and deterministic.
+  /* the two numbers, built column by column so the stem's claim is true as
+     printed: the columns to the RIGHT of src carry nothing into it, so the src
+     column really does make s on its own. */
+  const A = [0,0,0,0], B = [0,0,0,0];
+  A[src] = ri(Math.max(3, s - 9), Math.min(9, s - 3)); B[src] = s - A[src];
+  for (let i = src + 1; i < 4; i++){ A[i] = ri(0, 4); B[i] = ri(0, 9 - A[i]); }
+  for (let i = 1; i < src; i++){ A[i] = ri(0, 4); B[i] = ri(0, 4); }
+  A[0] = ri(1, 4); B[0] = ri(1, 4);
+  const a = numOf(A), b = numOf(B);
 
-     `keep` is always one digit and `s` always two, so these four lengths are
-     fixed on every draw. The key ties one distractor at the minimum, so it is
-     never the uniquely shortest option and never the uniquely longest one.
-     tools/gen-sanity.mjs measures both directions across the bank and fails a
-     key that is uniquely shortest (or uniquely longest) on 90% of draws, with
-     the old option set as its negative control - and since the FOURTH pass it
-     also PRINTS the tied share, because "uniquely" is what that ruler counts and
-     a key tied at the minimum is worth double chance to a child who picks one of
-     the shortest options. On this bank that share is 100%: a declared residual,
-     at a margin the whole bank shares, and now a printed number rather than a
-     0.0% the gate could not see.
-
-     KILL (Sweep p3numbers Refutation, FOURTH pass, 2026-09-15). The v4 option
-     set hit its fixed 47/48/47/48 lengths by writing "carry 1 ten TO the
-     hundreds column" in the one distractor that carries the place-value idea,
-     and that dropped preposition made "ten into" a phrase the KEY alone
-     contained, on 20,000 / 20,000 draws. "Pick the option that says 'ten into'"
-     answered the pool-1 flagship of this topic 100.00% of the time, with no
-     arithmetic and no idea what a carry is. Every ruler in the harness counted
-     characters or numbers; nothing read the words.
-
-     KILL (Sweep p3numbers Refutation, FIFTH pass, 2026-09-15). The v5 rewrite
-     shared every one- and two-word phrase across at least two options - which is
-     exactly and only what the v5 token ruler asked of it - and left the FOUR-word
-     phrase "ten into the tens" in the key and nowhere else, on 20,000 / 20,000
-     draws at two seeds. The unordered form was simpler still: the key was the
-     only option holding both the singular "ten" and the plural "tens", so a child
-     scanning for "ten ... tens" did not even need the phrase in order. The same
-     rewrite took the four lengths from 47/47/48/48 to 42/42/46/46 - a four-
-     character step on the pool-1 flagship (W1, fifth pass).
-
-     v6 fixes the SHAPE rather than the wording, so the next n cannot reopen it.
-     Two facts about a four-option prose bank decide everything here:
-
-       (1) A key-only phrase of length n is IMPOSSIBLE to eliminate at every n.
-           The whole key is a phrase, and no distractor may equal the key. So the
-           question is never "is there a key-only phrase" but "how SHORT is the
-           shortest one" - a child scans for a short distinctive phrase, not for
-           the option's own last nine words.
-       (2) A key-only WORD SET can be eliminated at every size, and in one move:
-           if some distractor holds every word the key holds, then no combination
-           of key words - of any size, ordered or not - is absent from all three
-           distractors. That axis goes to zero by construction, not by tuning.
-
-     So the bank is built to two rules. The SWAP distractor is a rearrangement of
-     the key's own words (same multiset, different order), which kills the whole
-     word-set axis including the {"ten","tens"} conjunction that answered v5. And
-     the other two distractors differ from the key at OPPOSITE ENDS of the
-     sentence: "Write 14" changes the second word and nothing else, "on its right"
-     changes the last word and nothing else. A phrase that is key-only must
-     therefore span from the second word to the last - n = 10 of 11 - because any
-     shorter phrase lies wholly inside one distractor's agreement region. The
-     shortest key-only phrase is a measured 10 words, against 4 at cfa2da8.
-
-     The direction word carries the concept the hundreds distractor used to carry:
-     "to the column on its left" is the regrouping rule itself, and "on its right"
-     is the misconception that the ten stays where it was written or drifts the
-     wrong way. That swap is also what buys the length: "hundreds" is four
-     characters longer than "tens" and nothing else in the sentence differs, so a
-     tens/hundreds pair CANNOT be brought inside a two-character spread. left and
-     right differ by one. The four lengths are 47 / 47 / 48 / 48 on every draw -
-     a one-character step, which is the margin residual 2 declares and defends,
-     rather than the four-character one the fifth pass caught.
-
-     tools/gen-sanity.mjs carries the generalised PHRASE RULER for this: every
-     contiguous n-gram at every n, on raw, lightly stemmed and digit-normalised
-     tokens, plus unordered word-set uniqueness, over every four-option prose bank
-     in the topic, at a 60% ceiling, with the v5 option set as its negative
-     control. */
-  const key = 'Write ' + keep + ', carry 1 ten to the column on its left.';
-  return mcText('When you add ' + a + ' + ' + b + ', the ones column makes ' + s +
-    '. <b>What happens next?</b>', '', key, shuffle([
-      'Write ' + s + ', carry 1 ten to the column on its left.',
-      'Write ' + keep + ', carry 1 ten to the column on its right.',
-      'Write 1 ten, carry ' + keep + ' to the column on its left.'
-    ]),
-    s + ' is ' + keep + ' ones and 1 ten. The ones column only has room for ones, so the ' + keep +
-    ' stays there and the ten moves one place to the LEFT, into the tens column - the column ' +
-    'next to the ones column. That move is what "regrouping" means: ten of something small ' +
-    'becomes one of the next size up.');
+  const kid = pick(KIDS), who = kid[0], pron = kid[1].toLowerCase();
+  const why = slipWhy(cands, b0.fam);
+  return mcNum(who + ' works out ' + a + ' + ' + b + ' in columns. The ' + PLACES[src] +
+    ' column makes ' + s + ', so ' + pron + ' writes ' + keep + ' in the ' + PLACES[src] +
+    ' column and a small 1 above the ' + PLACES[col] +
+    ' column. <b>How much is that small 1 worth?</b>', '', key, cands, '',
+    s + ' ' + PLACES[src] + ' is ' + plPlace(1, col) + ' and ' + plPlace(keep, src) + ', so the ' +
+    keep + ' stays in the ' + PLACES[src] + ' column and the small 1 is ' + plPlace(1, col) +
+    ' - worth ' + key + '. A carried mark is worth the column it is written ABOVE, not the digit ' +
+    'it looks like: that is what regrouping means, ten of something small becoming one of the next ' +
+    'size up. ' + why[1] + ' gives ' + why[0] + '.');
 }
 
 /* FORMAT 2 - direct compute, addition with at least two regroupings
@@ -1267,11 +1346,17 @@ function gAddRegroup(){
                      .concat([1, 2, 3].map(c => key + POW[c] * 10))) : null;
     g++;
   } while (g < 200 && !(cols.length >= 2 && ok(key) && cands && optsOk(key, cands)));
+  /* W5, SIXTH pass: this sentence used to name noCarry(a, b) whatever the draw
+     did, and slipSet left that value off the options row on 49.15% of draws. */
+  const why = slipWhy(cands,
+    [[noCarry(a, b), 'Writing every column total straight down without carrying']]
+      .concat(cols.map(c => [addCols(a, b, c), 'Forgetting the carry out of the ' + PLACES[c] + ' column']))
+      .concat([1, 2, 3].map(c => [key + POW[c] * 10,
+        'Carrying a ten into the ' + PLACES[c - 1] + ' column that was never there'])));
   return mcNum('What is ' + a + ' + ' + b + '?', '', key, cands, '',
     'Line the numbers up and add from the right. ' + a + ' + ' + b + ' = ' + key + '. The ' +
     PLACES[cols[0]] + ' column makes ten or more, so a ten moves into the column on its left; this ' +
-    'sum regroups in ' + cols.length + ' of its four columns. Writing every column total straight ' +
-    'down without carrying gives ' + noCarry(a, b) + ', which is the usual slip.');
+    'sum regroups in ' + cols.length + ' of its four columns. ' + why[1] + ' gives ' + why[0] + '.');
 }
 
 /* FORMAT 3 - direct compute, subtraction with regrouping (pool 2, 1 step) */
@@ -1298,11 +1383,20 @@ function gSubRegroup(){
     g++;
   } while (g < 200 && !(cols.length >= 2 && ok(key) && smallFromBig(a, b) !== key &&
            cands && optsOk(key, cands)));
+  /* W5, SIXTH pass: this sentence used to name smallFromBig(a, b) whatever the
+     draw did, and slipSet left that value off the options row on 52.98% of
+     draws - the largest of the four sites, on a pool-2 fluency anchor. */
+  const why = slipWhy(cands,
+    [[smallFromBig(a, b), 'Taking the smaller digit away from the bigger one in every column ' +
+      'instead - the commonest slip -']]
+      .concat(cols.map(c => [key + POW[c] * 10, 'Forgetting to take one away from the ' +
+        PLACES[c - 1] + ' column after borrowing from it']))
+      .concat([1, 2, 3].map(c => [key - POW[c] * 10, 'Borrowing from the ' + PLACES[c - 1] +
+        ' column when that column could already take away'])));
   return mcNum('What is ' + a + ' − ' + b + '?', '', key, cands, '',
     a + ' − ' + b + ' = ' + key + '. In the ' + PLACES[cols[0]] + ' column you cannot take away ' +
-    'enough, so you take one from the column on its left and turn it into ten. Taking the smaller ' +
-    'digit away from the bigger one in every column instead - which is the commonest slip - gives ' +
-    smallFromBig(a, b) + '.');
+    'enough, so you take one from the column on its left and turn it into ten. ' +
+    why[1] + ' gives ' + why[0] + '.');
 }
 
 /* FORMAT 4 - inverse: the missing part (pool 2, 2 steps) */
@@ -1518,12 +1612,23 @@ function gTwoStepWord(){
     g++;
   } while (g < 200 && !(ok(key) && ok(first + more) && cands && optsOk(key, cands)));
   const second = first + more;
+  /* W5, SIXTH pass: the sentence used to tell the child that stopping after
+     step 1 gives `second`, and slipSet left `second` off the options row on
+     49.95% of draws - a two-step word problem sending the reader to look for a
+     number that is not on the screen. */
+  const why = slipWhy(cands, [
+    [second, 'Stopping after step 1'],
+    [first * 2, 'Forgetting that this month sold more'],
+    [first + 2 * more, 'Adding the difference on top of this month instead of adding the two months'],
+    [key + more, 'Counting the extra ' + more + ' a second time'],
+    [key + first, 'Counting last month twice over'],
+    [key + first + more, 'Adding this month on top of the two-month answer']
+  ]);
   return mcNum('The ' + c[0] + ' sold ' + first + ' ' + c[1] + ' last month. This month it sold ' +
     more + ' more ' + c[1] + ' than last month. <b>How many ' + c[1] +
     ' altogether in the two months?</b>', '', key, cands, '',
     'Step 1 - this month: ' + first + ' + ' + more + ' = ' + second + ' ' + c[1] + '. Step 2 - the two ' +
-    'months together: ' + first + ' + ' + second + ' = ' + key + '. Stopping after step 1 answers only ' +
-    'this month, and ' + second + ' is a different question from the one asked.');
+    'months together: ' + first + ' + ' + second + ' = ' + key + '. ' + why[1] + ' gives ' + why[0] + '.');
 }
 
 /* FORMAT 9 - working backwards from the end (pool 3, 2 steps) */
@@ -1593,7 +1698,12 @@ function gBackFromTotal(){
       compare:{label:'Comparing numbers',
                tip:'Compare left to right, one place at a time, and stop at the first place where the digits differ. Count the digits first: a 4-digit number always beats a 3-digit one.'},
       pattern:{label:'Number patterns',
-               tip:'Write the difference above each gap. If all the gaps match you have found the jump; then say whether it is a jump of tens, hundreds or thousands.'},
+               /* W2, SIXTH pass: this tip is RENDERED in the parent dashboard, and
+                  it used to end "say whether it is a jump of tens, hundreds or
+                  thousands" - impossible on 100% of gPatternOdd draws, whose step
+                  is 15, 25 or 35. The jump the child has to name is now the SIZE,
+                  which is what every pattern generator in this file actually asks. */
+               tip:'Write the difference above each gap. If all the gaps match you have found the jump; then say how big it is - a jump of 10, 100 or 1000, or an in-between jump like 15, 25 or 250.'},
       addsub: {label:'Adding & subtracting',
                tip:'Line the columns up and work from the right. Ten in a column moves one place LEFT; if you cannot take away, take one from the left and turn it into ten. Check a subtraction by adding the answer back.'}
     },

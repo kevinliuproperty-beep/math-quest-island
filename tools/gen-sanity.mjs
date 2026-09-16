@@ -481,6 +481,73 @@ const DEC_MISCOUNT = k => 'counted ' + (Math.abs(k) === 1 ? 'one place' : 'two p
 /* every number token an option prints, as exact { n, dp } pairs */
 const decTokens = s => [...String(strip(s)).matchAll(/\d+(?:\.\d+)?/g)].map(x => DP(x[0])).filter(Boolean);
 
+/* ---------- DEFENSIBILITY ORACLE, the rounding-diagnosis family ------------------
+   THE KILL, THIRD PASS (refutation v3 @ c9d26fb). gDecRoundError shipped TWO
+   defensible answers on 40,000 of 40,000 draws, and no gate in any lane could see
+   it: there was no tell to find. The item asked which digit the child had looked
+   at, keyed the unique OTHER digit that justifies the direction under a correctly
+   applied rule, and shipped the option naming the ROUNDING digit as wrong - even
+   though a child who reads the right digit and applies "4 or less rounds up"
+   produces the claimed answer exactly, which is the commonest P4 rounding error.
+
+   THE RULE NOBODY HAD: every option of an error-diagnosis item must be REFUTED BY
+   SOMETHING THE STEM ACTUALLY STATES. So this re-derives the defensibility of all
+   four options from the rendered stem and the build FAILS unless exactly one
+   survives. It parses both shapes on purpose - the shipped one and the killed one
+   - so the killed shape is a live negative control rather than a frozen string.
+
+   v4 (shipped): the stem pins the method (which digit the child read, and that the
+   5-or-more rule was applied to it correctly), and the options are a 2 x 2 grid
+   over the right digit and the right answer. An option is defensible only if BOTH
+   halves are right.
+   v3 (killed, control only): nothing is pinned, and an option is defensible under
+   the single-error reading if the child either read the right digit and applied
+   the rule backwards, or read a wrong digit and applied the rule correctly. That
+   is two options on every draw, which is the kill. --------------------------- */
+const DEC_ORD4 = ['first', 'second', 'third', 'fourth'];
+const DEC_V4_STEM = /^(.+?) rounds (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places)\. \1 looks at the (\d), says that (\d) is (5 or more|4 or less), rounds (up|down), and gives the answer (\d+(?:\.\d+)?)\. Which digit should \1 have looked at, and what is the correct answer\?$/;
+const DEC_V3_STEM = /^(.+?) rounds (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places) and says the answer is (\d+(?:\.\d+)?)\. Which digit did \1 look at\?$/;
+const DEC_V4_OPT = /^(.+?) should have looked at the digit (\d), and the answer is (\d+(?:\.\d+)?)\.$/;
+const DEC_V3_OPT = /^(.+?) rounded (up|down) after looking at the (first|second|third|fourth) digit, (\d)\.$/;
+/* the facts a rounding-diagnosis stem states, re-derived from the rendered text */
+function decRoundDiagnosis(text) {
+  let m, shape = null;
+  if ((m = text.match(DEC_V4_STEM))) shape = 'v4';
+  else if ((m = text.match(DEC_V3_STEM))) shape = 'v3';
+  else return null;
+  const who = m[1], v = DP(m[2]), to = DEC_ROUND_TO[m[3]];
+  const digs = (m[2].replace('.', '').match(/\d/g) || []).map(Number);
+  const wlen = m[2].indexOf('.');
+  const said = DP(shape === 'v4' ? m[8] : m[4]);
+  const f = { shape, who, v, to, digs, wlen, ci: wlen + to, said, truth: DROUND(v, to) };
+  f.dc = f.digs[f.ci];
+  if (shape === 'v4') { f.dx = Number(m[4]); f.dxSaid = Number(m[5]); f.rule = m[6]; f.dir = m[7]; }
+  return f;
+}
+/* the direction the stem's own claim says the child went */
+const decWentUp = f => DCMP(f.said, f.truth) > 0;
+/* is this option consistent with everything the stem states? null = unparsed. */
+function decRoundDefensible(f, optText) {
+  let m;
+  if (f.shape === 'v4') {
+    if (!(m = optText.match(DEC_V4_OPT))) return null;
+    const r = DP(m[3]);
+    if (!r) return null;
+    /* the stem pins the digit AND the rule, so the only live question is which
+       digit rounding is allowed to look at - and what that digit then gives */
+    return Number(m[2]) === f.dc && DEQ(r, f.truth);
+  }
+  if (!(m = optText.match(DEC_V3_OPT))) return null;
+  const i = DEC_ORD4.indexOf(m[3]), d = Number(m[4]);
+  if (i < 0 || f.digs[i] !== d) return false;          /* it misdescribes the number */
+  const went = decWentUp(f) ? 'up' : 'down';
+  if (m[2] !== went) return false;                     /* it contradicts the stem's claim */
+  const correctly = d >= 5 ? 'up' : 'down';
+  /* ONE error, which is the most generous reading a marker would allow: the right
+     digit with the rule backwards, or a wrong digit with the rule applied right */
+  return i === f.ci ? correctly !== went : correctly === went;
+}
+
 function decimalsOracle(q) {
   const text = strip(q.q);
   const ans = decOf(strip(q.answerText));
@@ -667,54 +734,69 @@ function decimalsOracle(q) {
     if (!opts[keyIdx] || !DEQ(DROUND(opts[keyIdx], to), target)) return 'round back: the key does not round to the target';
     return null;
   }
-  if ((m = text.match(/^(.+?) rounds (\d+\.\d+) to (the nearest whole number|1 decimal place|2 decimal places) and says the answer is (\d+(?:\.\d+)?)\. Which digit did \1 look at\?$/))) {
-    const v = DP(m[2]), to = DEC_ROUND_TO[m[3]], said = DP(m[4]);
-    const truth = DROUND(v, to);
-    if (DEQ(said, truth)) return `round error: the printed claim ${m[4]} is CORRECT - the stem contradicts itself`;
-    if (said.dp !== to) return `round error: the claim ${m[4]} is not even written to ${m[3]}`;
-    /* THE KILL, second pass (refutation v2 @ 0157aa1). The v1 mechanism - two
-       answer-bearing tails, one printing the declared-wrong number - is gone and
-       stays gone. What replaced it was a FRAME tell: the key was the only option
-       naming a direction, the only one carrying "but", and the 3rd longest on
-       every draw. All four options are now the same sentence over a different
-       digit of the printed number, and this branch re-derives which digit the
-       child must have used. */
-    const digs = (m[2].replace('.', '').match(/\d/g) || []).map(Number);
-    if (digs.length !== 4) return `round error: ${m[2]} prints ${digs.length} digits - the draw must print exactly four`;
-    if (new Set(digs).size !== 4) return `round error: ${m[2]} repeats a digit, so two options would print the same numeral`;
-    const wlen = m[2].indexOf('.');
-    const ci = wlen + to;                       /* the digit rounding is allowed to look at */
-    if (ci < 0 || ci > 3) return `round error: rounding ${m[2]} to ${m[3]} looks past the four printed digits`;
-    const dc = digs[ci];
-    const up = dc < 5;                          /* the way the child ACTUALLY went */
-    if (said.n !== truth.n + (up ? 1 : -1)) {
-      return `round error: the claim ${m[4]} is not the wrong-way answer (${DTXT(DV(truth.n + (up ? 1 : -1), to))})`;
+  {
+    const f = decRoundDiagnosis(text);
+    if (f) {
+      /* THE KILL, third pass: the killed shape had two defensible answers, so its
+         stem may not ship at all. It is kept parseable only as a negative control. */
+      if (f.shape !== 'v4') {
+        return 'round error: this is the v3 stem ("Which digit did X look at?"), which has two defensible answers - ' +
+               'the stem must pin the method it is diagnosing';
+      }
+      const { v, to, digs, wlen, ci, dc, dx, said, truth } = f;
+      if (digs.length !== 4) return `round error: ${DTXT(v)} prints ${digs.length} digits - the draw must print exactly four`;
+      if (new Set(digs).size !== 4) return `round error: ${DTXT(v)} repeats a digit, so the digit the stem names is ambiguous`;
+      if (ci < 0 || ci > 3) return `round error: rounding ${DTXT(v)} to ${DEC_ROUND_PHRASE[to]} looks past the four printed digits`;
+      if (said.dp !== to) return `round error: the claim ${DTXT(said)} is not even written to ${DEC_ROUND_PHRASE[to]}`;
+      if (DEQ(said, truth)) return `round error: the printed claim ${DTXT(said)} is CORRECT - the stem contradicts itself`;
+      /* the stem's own account of the child's method has to hold together: the
+         digit it names must be a digit of the number, must not be the one rounding
+         points at, and the rule and the direction it prints must be that digit's */
+      if (f.dxSaid !== dx) return 'round error: the stem names two different digits for the one the child read';
+      if (digs.indexOf(dx) < 0) return `round error: the stem says the child read ${dx}, which is not a digit of ${DTXT(v)}`;
+      if (dx === dc) return 'round error: the stem says the child read the very digit rounding points at, so nothing went wrong';
+      if (f.rule !== (dx >= 5 ? '5 or more' : '4 or less')) return `round error: the stem reads the 5-or-more rule wrongly on ${dx}`;
+      if (f.dir !== (dx >= 5 ? 'up' : 'down')) return `round error: the stem's direction is not what ${dx} gives`;
+      const cut = TEN(v.dp - to), base = Math.floor(v.n / cut);
+      const wantSaid = DV(base + (dx >= 5 ? 1 : 0), to);
+      if (!DEQ(said, wantSaid)) {
+        return `round error: the claim ${DTXT(said)} is not what reading ${dx} gives (${DTXT(wantSaid)})`;
+      }
+      if (!DEQ(truth, DV(base + (dc >= 5 ? 1 : 0), to))) return 'round error: the correct answer does not re-derive';
+      /* THE DEFENSIBILITY GATE. Every option is re-derived against the stem and
+         exactly one may survive - the rule that the third pass's kill needed and
+         that nothing in any lane expressed. */
+      const raw = q.choices.map(strip);
+      const verdicts = raw.map(o => decRoundDefensible(f, o));
+      if (verdicts.some(x => x === null)) {
+        return `round error: an option is not in the diagnosis frame ("${raw[verdicts.indexOf(null)]}")`;
+      }
+      const live = verdicts.filter(Boolean).length;
+      if (live !== 1) return `round error: ${live} defensible options - every distractor must be refuted by something the stem states`;
+      if (!verdicts[keyIdx]) return `round error: the key is not the defensible option ("${raw[keyIdx]}")`;
+      /* the 2 x 2 contract that makes the option set unreadable: two digits and two
+         answers, each printed by exactly two of the four options, so no token, no
+         length and no value singles one option out */
+      const parsed = raw.map(o => o.match(DEC_V4_OPT));
+      const dSet = new Map(), rSet = new Map();
+      for (const p of parsed) {
+        dSet.set(p[2], (dSet.get(p[2]) || 0) + 1);
+        rSet.set(p[3], (rSet.get(p[3]) || 0) + 1);
+      }
+      if (dSet.size !== 2 || [...dSet.values()].some(c => c !== 2)) {
+        return `round error: the option set is not a 2 x 2 grid - digits ${[...dSet.keys()].join(', ')}`;
+      }
+      if (rSet.size !== 2 || [...rSet.values()].some(c => c !== 2)) {
+        return `round error: the option set is not a 2 x 2 grid - answers ${[...rSet.keys()].join(', ')}`;
+      }
+      if (!dSet.has(String(dc))) return 'round error: the digit rounding points at is not among the options';
+      if (![...rSet.keys()].some(r => DEQ(DP(r), truth))) return 'round error: the correct answer is not among the options';
+      /* and nothing may hand the child the number the stem declares wrong */
+      for (const c of q.choices) {
+        if (decTokens(c).some(t => DEQ(t, said))) return `round error: an option repeats ${DTXT(said)}, the number the stem declares wrong ("${strip(c)}")`;
+      }
+      return null;
     }
-    /* EXACTLY ONE of the other three digits sends it the way she went, or the
-       diagnosis is not unique */
-    const just = [];
-    for (let i = 0; i < 4; i++) if (i !== ci && (up ? digs[i] >= 5 : digs[i] <= 4)) just.push(i);
-    if (just.length !== 1) {
-      return `round error: ${just.length} of the other three digits would have rounded ${up ? 'up' : 'down'} - exactly one must`;
-    }
-    const ORD = ['first', 'second', 'third', 'fourth'];
-    const dir = up ? 'up' : 'down';
-    const offered = [0, 1, 2, 3].map(i => `${m[1]} rounded ${dir} after looking at the ${ORD[i]} digit, ${digs[i]}.`);
-    for (const o of offered) {
-      if (q.choices.filter(c => strip(c) === o).length !== 1) return `round error: "${o}" is not offered exactly once`;
-    }
-    const want = offered[just[0]];
-    if (strip(q.choices[keyIdx]) !== want) return `round error: expected key "${want}", got "${strip(q.choices[keyIdx])}"`;
-    /* every option states the SAME direction, so the direction word cannot single
-       the key out - the frame gate measures this across draws, this asserts it here */
-    if (q.choices.some(c => !new RegExp(`rounded ${dir} after looking`).test(strip(c)))) {
-      return 'round error: an option states a direction other than the one the stem\'s claim implies';
-    }
-    /* and nothing may hand the child the number the stem declares wrong */
-    for (const c of q.choices) {
-      if (decTokens(c).some(t => DEQ(t, said))) return `round error: an option repeats ${m[4]}, the number the stem declares wrong ("${strip(c)}")`;
-    }
-    return null;
   }
   if ((m = text.match(/weighing (\d+\.\d+) kg .* weighing (\d+\.\d+) kg\. Rounded to the nearest kilogram, what is the total mass/))) {
     const a = DP(m[1]), b = DP(m[2]);
@@ -1023,7 +1105,8 @@ function decimalsOracle(q) {
 const DEC_PURE = /^\$?\d+(\.\d+)?( (kg|km|cm|mm|m|g|ℓ|ml|l))?$/;
 /* the number a decimals stem declares wrong, when it declares one at all */
 function decDeclaredWrong(t) {
-  const mm = t.match(/ and says the answer is (\d+(?:\.\d+)?)\./) || t.match(/ and gets (\d+(?:\.\d+)?)\./);
+  const mm = t.match(/ and says the answer is (\d+(?:\.\d+)?)\./) || t.match(/ and gets (\d+(?:\.\d+)?)\./) ||
+             t.match(/ and gives the answer (\d+(?:\.\d+)?)\./);
   return mm ? DP(mm[1]) : null;
 }
 /* the last k words of an option with every number masked, so "so the answer is
@@ -1045,10 +1128,20 @@ const DEC_NOT_PLURAL = new Set(['is', 'was', 'has', 'as', 'its', 'this', 'thus',
   'gives', 'rounds', 'slides', 'makes', 'means', 'shows', 'holds', 'costs', 'weighs', 'needs',
   'takes', 'comes', 'puts', 'writes', 'reads', 'leaves', 'adds', 'says', 'runs', 'buys',
   'spends', 'shares', 'splits', 'packs', 'pumps', 'pays', 'sits', 'lies', 'stays', 'keeps']);
+/* WOUND 1 (refutation v3 @ c9d26fb): gDecBetween printed "1 whole ones" on 12.55%
+   of its draws and walked straight through, because the rule looked for the plural
+   in the word IMMEDIATELY after the numeral and here it sits one word to the right.
+   The pattern now allows a single intervening word - the adjective a counted noun
+   takes ("1 whole ones", "1 equal parts") - and the verb list still carries the
+   second word, which is what keeps "the 1 slides 4.6 one whole column" out. */
 function decPluralSlip(s) {
   const t = strip(s);
-  let mm; const re = /(?<![\d.])\b1 ([a-z]+)s\b/g;
-  while ((mm = re.exec(t))) if (!DEC_NOT_PLURAL.has(mm[1] + 's')) return `1 ${mm[1]}s`;
+  let mm; const re = /(?<![\d.])\b1 (?:([a-z]+) )?([a-z]+)s\b/g;
+  while ((mm = re.exec(t))) {
+    if (DEC_NOT_PLURAL.has(mm[2] + 's')) continue;
+    if (mm[1] && DEC_NOT_PLURAL.has(mm[1])) continue;    /* "1 is ...s" is a verb, not a count */
+    return '1 ' + (mm[1] ? mm[1] + ' ' : '') + mm[2] + 's';
+  }
   return null;
 }
 function decGates(q, topic) {
@@ -3223,6 +3316,145 @@ const proseRows = [];
   }
 }
 
+/* ---------- ROUND-ERROR DEFENSIBILITY + OPTION-LIST SCAN (third-pass KILL) --------
+   Two measurements the third pass asked for by name, on the generator it killed,
+   at 20,000 draws of its own - printed on every run so the numbers are in the gate
+   output and not only in a note.
+
+   (a) DEFENSIBILITY. Every option re-derived against the rendered stem; exactly one
+       may survive. At c9d26fb two did, on 40,000 of 40,000 draws, and no tell gate
+       could see it because there was no tell - the defect was that a distractor was
+       TRUE. The killed generator is rebuilt below and scanned by the same rule as a
+       negative control, where it must report 2.
+   (b) THE OPTION LIST WITH THE STEM UNREAD. Nine rules a ten-year-old can apply to
+       four option strings and nothing else. A rule counts only when it picks ONE
+       option; it settles only when that option is the key. The two the third pass
+       measured are in the list by name ("the digit alone on its side of 5", which
+       was 100.00%, and "the smallest of the four digits", which was 60.56%), and
+       both must now come in under 40%. --------------------------------------- */
+const ROUND_DRAWS = Number(process.env.ROUND_SAMPLES || 20000);
+const ROUND_CEILING = 0.40;
+/* the single digit an option names, as opposed to a number it prints: not part of a
+   longer numeral and not either side of a decimal point, but a full stop right
+   after it is just the end of the sentence ("... the third digit, 6.") */
+const decLoneDigit = o => { const mm = String(o).match(/(?<![\d.])\d(?!\.?\d)/); return mm ? Number(mm[0]) : null; };
+const decAllNums = o => (String(o).match(/\d+(?:\.\d+)?/g) || []).map(Number);
+const decWords = o => String(o).toLowerCase().replace(/[^a-z0-9.]+/g, ' ').split(' ').filter(Boolean);
+function decUniqueBy(opts, score, want) {
+  const vs = opts.map(score);
+  if (vs.some(v => v === null || v === undefined || Number.isNaN(v))) return -1;
+  const best = want === 'max' ? Math.max(...vs) : Math.min(...vs);
+  const hits = [];
+  vs.forEach((v, i) => { if (v === best) hits.push(i); });
+  return hits.length === 1 ? hits[0] : -1;
+}
+const DEC_OPT_RULES = [
+  { name: 'pick the longest option', of: o => decUniqueBy(o, s => s.length, 'max') },
+  { name: 'pick the shortest option', of: o => decUniqueBy(o, s => s.length, 'min') },
+  { name: 'pick the smallest of the four digits', of: o => decUniqueBy(o, decLoneDigit, 'min') },
+  { name: 'pick the largest of the four digits', of: o => decUniqueBy(o, decLoneDigit, 'max') },
+  { name: 'pick the digit alone on its side of 5', of: o => {
+      const ds = o.map(decLoneDigit);
+      if (ds.some(d => d === null)) return -1;
+      const hi = ds.map(d => d >= 5), up = hi.filter(Boolean).length;
+      if (up === 1) return hi.indexOf(true);
+      if (up === 3) return hi.indexOf(false);
+      return -1;
+    } },
+  { name: 'pick the option whose direction word agrees with its own digit', of: o => {
+      const hits = [];
+      o.forEach((s, i) => {
+        const d = decLoneDigit(s), up = /\bup\b/.test(s), down = /\bdown\b/.test(s);
+        if (d === null || up === down) return;
+        if ((up && d >= 5) || (down && d <= 4)) hits.push(i);
+      });
+      return hits.length === 1 ? hits[0] : -1;
+    } },
+  { name: 'pick the option with a word no other option uses', of: o => {
+      const sets = o.map(s => new Set(decWords(s))), hits = [];
+      sets.forEach((s, i) => { for (const w of s) if (sets.every((t, j) => j === i || !t.has(w))) { hits.push(i); return; } });
+      return hits.length === 1 ? hits[0] : -1;
+    } },
+  { name: 'pick the option printing the smallest number',
+    of: o => decUniqueBy(o, s => { const v = decAllNums(s); return v.length ? Math.min(...v) : null; }, 'min') },
+  { name: 'pick the option printing the largest number',
+    of: o => decUniqueBy(o, s => { const v = decAllNums(s); return v.length ? Math.max(...v) : null; }, 'max') }
+];
+function decRoundScan(fn, draws) {
+  const settle = DEC_OPT_RULES.map(() => 0), fires = DEC_OPT_RULES.map(() => 0);
+  const live = new Map();
+  let n = 0, unparsed = 0;
+  for (let i = 0; i < draws; i++) {
+    let q;
+    try { q = fn(); } catch (e) { continue; }
+    if (!q || !Array.isArray(q.choices) || q.choices.length !== 4 || !Number.isInteger(q.correct)) continue;
+    n++;
+    const opts = q.choices.map(strip);
+    for (let r = 0; r < DEC_OPT_RULES.length; r++) {
+      const at = DEC_OPT_RULES[r].of(opts);
+      if (at < 0) continue;
+      fires[r]++;
+      if (at === q.correct) settle[r]++;
+    }
+    const f = decRoundDiagnosis(strip(q.q));
+    if (!f) { unparsed++; continue; }
+    const verdicts = opts.map(o => decRoundDefensible(f, o));
+    if (verdicts.some(x => x === null)) { unparsed++; continue; }
+    const c = verdicts.filter(Boolean).length;
+    live.set(c, (live.get(c) || 0) + 1);
+  }
+  const best = settle.map((s, i) => ({ name: DEC_OPT_RULES[i].name, settle: n ? s / n : 0, fires: n ? fires[i] / n : 0 }))
+    .sort((a, b) => b.settle - a.settle)[0];
+  const smallest = { name: DEC_OPT_RULES[2].name, settle: n ? settle[2] / n : 0, fires: n ? fires[2] / n : 0 };
+  const lone = { name: DEC_OPT_RULES[4].name, settle: n ? settle[4] / n : 0, fires: n ? fires[4] / n : 0 };
+  return { n, unparsed, live, best, smallest, lone };
+}
+/* gDecRoundError as it shipped at c9d26fb, rebuilt here so the kill is a LIVE
+   negative control: the same draw predicate, the same four options, scanned by the
+   same defensibility rule, which must find two defensible answers on every draw. */
+function ctlV3RoundError() {
+  const shuffle4 = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  for (let guard = 0; guard < 900; guard++) {
+    const wlen = 1 + Math.floor(Math.random() * 2), dp = 4 - wlen;
+    const to = Math.floor(Math.random() * 2), ci = wlen + to;
+    if (ci > 3 || to >= dp) continue;
+    const digits = shuffle4([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 4);
+    const dc = digits[ci];
+    const val = DV(digits.reduce((a, d) => a * 10 + d, 0), dp);
+    const truth = DROUND(val, to), up = dc < 5;
+    const said = DV(truth.n + (up ? 1 : -1), to);
+    if (said.n <= 0 || truth.n <= 0 || DEQ(said, truth)) continue;
+    if (to > 0 && (said.n % 10 === 0 || truth.n % 10 === 0)) continue;
+    const just = [];
+    for (let i = 0; i < 4; i++) if (i !== ci && (up ? digits[i] >= 5 : digits[i] <= 4)) just.push(i);
+    if (just.length !== 1) continue;
+    if (said.dp === 0 && said.n < 10 && digits.indexOf(said.n) !== -1) continue;
+    const dir = up ? 'up' : 'down';
+    const all = [0, 1, 2, 3].map(i => `Siti rounded ${dir} after looking at the ${DEC_ORD4[i]} digit, ${digits[i]}.`);
+    const key = all[just[0]];
+    shuffle4(all);
+    return { q: `Siti rounds <b>${DTXT(val)}</b> to <b>${DEC_ROUND_PHRASE[to]}</b> and says the answer is <b>${DTXT(said)}</b>. ` +
+                `<b>Which digit did Siti look at?</b>`,
+             extra: '', choices: all, correct: all.indexOf(key), answerText: key, explain: 'A negative control.' };
+  }
+  return null;
+}
+let roundScan = null, roundCtl = null;
+{
+  const g = GENS.find(x => x.topic === 'decimals' && x.name === 'gDecRoundError');
+  if (g) {
+    roundScan = decRoundScan(g.fn, ROUND_DRAWS);
+    roundCtl = decRoundScan(ctlV3RoundError, 2000);
+    const notOne = [...roundScan.live.entries()].filter(([c]) => c !== 1).reduce((a, [, k]) => a + k, 0);
+    if (roundScan.unparsed || notOne) failures++;
+    if (roundScan.best.settle >= ROUND_CEILING || roundScan.smallest.settle >= ROUND_CEILING) failures++;
+    /* the control has to come back red, or the rule above is measuring nothing */
+    const ctlTwo = (roundCtl.live.get(2) || 0) === roundCtl.n;
+    if (!ctlTwo) failures++;
+    roundCtl.two = ctlTwo;
+  }
+}
+
 /* ---------- NAMED-DISTRACTOR CONTRACT COVERAGE (refutation WOUND 2) ---------------
    The lane's note claimed the contract bound on 29 of 32 generators. It bound on 27:
    gDecCompare and gDecCmpMixed stamped nothing at all and were not in the exemption
@@ -3574,13 +3806,50 @@ if (proseRows.length) {
       `and every multi-frame key wears >= ${DEC_KEY_FRAMES} sentences  (thinnest: ` +
       `${judged.filter(r => r.frames >= DEC_KEY_FRAMES).sort((a, b) => a.keyFrames - b.keyFrames)[0].name} ` +
       `${judged.filter(r => r.frames >= DEC_KEY_FRAMES).sort((a, b) => a.keyFrames - b.keyFrames)[0].keyFrames})`);
+    /* WOUND 4 (refutation v3 @ c9d26fb): this line read "no generator spans that
+       far" while three prose banks did - they are excluded upstream as not-
+       sentences, and MAGNITUDE-RANK cannot measure them either, so they sit in the
+       gap between the two gates. The arm is KEPT (its negative control proves it,
+       and it is the rule that catches the next generator to widen its options) but
+       the line now says plainly that it runs on no live generator and names what it
+       does not reach, because an arm nobody re-checks is an arm nobody maintains. */
+    const skipped = proseRows.filter(r => r.n >= DEC_PROSE_FLOOR && r.lenN < DEC_PROSE_FLOOR).map(r => r.name);
     console.log(`  ok   no prose key sits at one length rank on more than ${(DEC_LEN_CEILING * 100).toFixed(0)}% of the draws ` +
       `whose options span more than ${DEC_LEN_SPREAD} characters` +
-      (lenRows ? `  (worst: ${lenRows.name} ${(lenRows.v * 100).toFixed(1)}%)` : '  (no generator spans that far)'));
+      (lenRows ? `  (worst: ${lenRows.name} ${(lenRows.v * 100).toFixed(1)}%)`
+               : `  -- the arm RUNS ON NO LIVE GENERATOR: all ${skipped.length} word-answer banks keep their options ` +
+                 `inside ${DEC_LEN_SPREAD} characters or are not four sentences, so only its negative control exercises it`));
     const modalWorst = proseRows.filter(r => r.allN >= DEC_PROSE_FLOOR).sort((a, b) => b.modalShare - a.modalShare)[0];
     console.log(`  ok   no generator's key is the same answer on more than ${(DEC_MODAL_CEILING * 100).toFixed(0)}% of its draws` +
       (modalWorst ? `  (worst: ${modalWorst.name} ${(modalWorst.modalShare * 100).toFixed(1)}% "${modalWorst.modalText}")` : ''));
   }
+}
+
+if (roundScan) {
+  console.log('');
+  console.log(`ROUND-ERROR DEFENSIBILITY  (${roundScan.n} draws x gDecRoundError, every option re-derived from the rendered stem; ` +
+    `option-list ceiling ${(ROUND_CEILING * 100).toFixed(0)}%)`);
+  const counts = [...roundScan.live.entries()].sort((a, b) => a[0] - b[0]);
+  const notOne = counts.filter(([c]) => c !== 1);
+  if (roundScan.unparsed) {
+    console.log(`FAIL round-error  ${roundScan.unparsed} of ${roundScan.n} draws could not be re-derived from the stem`);
+  } else if (notOne.length) {
+    console.log(`FAIL round-error  ${notOne.map(([c, k]) => `${k} draws with ${c} defensible options`).join(', ')}` +
+      ` - exactly one option may survive the stem`);
+  } else {
+    console.log(`  ok   exactly ONE defensible option on ${roundScan.n} of ${roundScan.n} draws  ` +
+      `(the third-pass kill was two, on 40,000 of 40,000)`);
+  }
+  const line = r => `"${r.name}" settles ${(r.settle * 100).toFixed(1)}%  (picks one option on ${(r.fires * 100).toFixed(1)}% of draws)`;
+  const verdict = r => (r.settle >= ROUND_CEILING ? 'FAIL round-error  ' : '  ok   ');
+  console.log(`${verdict(roundScan.best)}best of ${DEC_OPT_RULES.length} stem-free option-list rules: ${line(roundScan.best)}`);
+  console.log(`${verdict(roundScan.smallest)}${line(roundScan.smallest)}  [was 60.56% at c9d26fb]`);
+  console.log(`${verdict(roundScan.lone)}${line(roundScan.lone)}  [was 100.00% at c9d26fb]`);
+  console.log(`  ${roundCtl.two ? 'ok  ' : 'FAIL'} control, gDecRoundError as it shipped at c9d26fb: ` +
+    `${[...roundCtl.live.entries()].sort((a, b) => a[0] - b[0]).map(([c, k]) => `${k}/${roundCtl.n} draws with ${c} defensible options`).join(', ')}`);
+  console.log(`         ... and on the same control the same two rules read ` +
+    `"${roundCtl.lone.name}" ${(roundCtl.lone.settle * 100).toFixed(1)}%, ` +
+    `"${roundCtl.smallest.name}" ${(roundCtl.smallest.settle * 100).toFixed(1)}%`);
 }
 
 const badContract = contractRows.filter(r => !r.ok);

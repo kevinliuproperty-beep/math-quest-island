@@ -27,7 +27,7 @@
  * PRINCIPLE 2 - COMPARING, ORDERING AND NUMBER PATTERNS (skills `compare`,
  *   `pattern`). Compare left to right, one place at a time, and stop at the
  *   first place where the digits differ. A pattern is the same jump made again.
- *   gGreatest, gCompareTrue, gSmallest, gBetween, gOrder, gCompareError (compare);
+ *   gGreatest, gCompareTrue, gSmallest, gBetween, gOrder, gComparePlace (compare);
  *   gPatternConcept, gPattern4, gMoreLess, gPatternMissing, gPatternOdd (pattern).
  *
  * PRINCIPLE 3 - ADDING AND SUBTRACTING WITHIN 10 000, WITH REGROUPING
@@ -187,6 +187,13 @@
   const plPlace = (v, i) => pl(v, PLACE1[i]);
   /* "2 thousands, 9 hundreds, 1 ten, 8 ones" - the read-it-out-loud line */
   const placeList = d => d.map(plPlace).join(', ');
+  /* W7 (Sweep p3numbers Refutation, TENTH pass, 2026-09-16): gAddError's
+     explanation printed "2 of the four columns do that: the tens, hundreds" - a
+     comma list with no conjunction - on EVERY draw, because the generator
+     requires two or more carry columns. Every list of words in this file now goes
+     through here. */
+  const andList = a => a.length < 2 ? (a[0] || '') :
+    a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
   function allDistinct(list){
     const s = new Set();
     for (const v of list){ if (s.has(v)) return false; s.add(v); }
@@ -711,18 +718,36 @@ function gExpanded(){
   while (g < 200 && !(th !== o && t !== o && th !== t));
   const n = th*1000 + t*10 + o;
   const key = th*1000 + ' + ' + t*10 + ' + ' + o;
+  /* W1 (Sweep p3numbers Refutation, v11 OPTION-ROW GEOMETRY ruler, 2026-09-16).
+     The v10 row's three wrong answers had first terms `th`, `o*1000` and
+     `th*100`, so the only one that could out-rank the key's `th*1000` was the
+     read-from-the-right slip: "take the line whose FIRST number is the biggest"
+     answered the item on 51.9% of draws, and the key was NEVER the line with the
+     two smallest first terms - a free cross-out worth another elimination. No
+     ruler in this harness could see it, because every numeric ruler was gated on
+     the options being bare numerals and an expanded form is not one. The fix is a
+     second thousands-sized slip: the thousands and tens digits SWAPPED, which is
+     the same confusion the item is about read the other way round. The key's first
+     term is now `th*1000` against `t*1000` and `o*1000`, and `th`, `t` and `o` are
+     drawn distinct and uniform, so the key's first-term rank is 1, 2 or 3 with
+     equal weight and never 0. */
+  const dropped = th*100 + ' + ' + t*10 + ' + ' + o;     /* dropped the empty hundreds place */
+  const digits  = th + ' + ' + t + ' + ' + o;            /* wrote the digits, not their values */
+  const third = pick([digits, dropped]);
   const wrongs = [
-    th + ' + ' + t + ' + ' + o,                          /* wrote the digits, not their values */
     o*1000 + ' + ' + t*10 + ' + ' + th,                  /* read the number from the right */
-    th*100 + ' + ' + t*10 + ' + ' + o                    /* dropped the empty hundreds place */
+    t*1000 + ' + ' + th*10 + ' + ' + o,                  /* thousands and tens digits swapped */
+    third
   ];
-  return mcText('Which of these shows ' + n + ' in <b>expanded form</b>?', '', key, wrongs,
+  return mcText('Which of these shows ' + n + ' in <b>expanded form</b>?', '', key, shuffle(wrongs),
     'Expanded form writes what each digit is worth and adds them up. ' + n + ' is ' +
     pl(th,'thousand') + ', 0 hundreds, ' + pl(t,'ten') + ' and ' + pl(o,'one') +
-    ', so it is ' + th*1000 + ' + ' + t*10 +
-    ' + ' + o + '. The hundreds place is empty, so nothing is written for it - but the 0 still holds ' +
-    'the place, which is why ' + th*100 + ' + ' + t*10 + ' + ' + o + ' is a different number (' +
-    (th*100 + t*10 + o) + ').');
+    ', so it is ' + th*1000 + ' + ' + t*10 + ' + ' + o + '. The hundreds place is empty, so nothing ' +
+    'is written for it - but the 0 still holds the place.' +
+    (third === dropped
+      ? ' That is why ' + dropped + ' is a different number (' + (th*100 + t*10 + o) + ').'
+      : ' And a digit is not its worth: the ' + th + ' at the front is ' + pl(th,'thousand') +
+        ', not ' + pl(th,'one') + '.'));
 }
 
 /* FORMAT 4 - inverse: build the number from its parts (pool 2, 1 step)
@@ -982,46 +1007,100 @@ function gGreatest(){
    3.64 that justified writing gPatternOdd, and on the child who can least afford
    it.
 
-   The four options are comparison STATEMENTS, not numbers, so the two ways a
-   child could win without comparing are both closed by construction: exactly two
-   statements print ">" and two print "<", so the sign is never the odd one out;
-   and both the true statement and one false one live on each side of the
-   number, so "the biggest number wins" settles nothing. */
+   KILL, TENTH pass (Sweep p3numbers Refutation, 2026-09-16), and the PM's ruling
+   on it (v11, 2026-09-16). The v10 comment above is the argument this bank died
+   on, and both of its clauses were true and neither was the defect.
+
+     Which of these is true?
+       2678 > 2849  |  2678 > 2504 <- key  |  2678 < 2521  |  2678 < 2522
+
+   Every line started with the SAME number, so the child covered it and read the
+   four numbers on the right: 2849, 2504, 2521, 2522 - three bunched and one off
+   on its own. The loner's line carried a ">", so "take the OTHER > line" was the
+   key on 79.22 / 79.14% of 20,000 draws at each of two seeds (84.25 / 84.16%
+   composed), on a bank served 3.07 times per 30-item session at 0.45 accuracy.
+   The draw did it: three companions on one side of n and one on the other, with
+   the key taken from the three, makes the lone companion the extreme of the four
+   and pairs its sign with the key's.
+
+   AND THE CONTROL THAT SETTLED WHAT THE DEFECT WAS. Relabel the two symbols -
+   hand the rule to a child who thinks "<" means greater - and the score is
+   79.22 / 79.14%, identical to four decimal places, because the rule never uses
+   what either symbol MEANS. The item could not tell a child who knows "<" from
+   ">" apart from one who does not, on four draws in five.
+
+   THE GENERAL RESULT, which is why this is a rebuild and not a patch. Take any
+   four-option "which of these is true?" row over four DIFFERENT number pairs with
+   exactly one true statement. A child compares each pair (real work, no symbol
+   knowledge needed) and asks of each line only "does the symbol agree with the
+   order I found?". Exactly one line agrees - the true one - so the agree/disagree
+   split is 1-3 and the singleton is the key. The child never has to know which
+   way round the split means: the odd one out IS the answer. That is 100%, on any
+   such bank, and it is the class the v10 draw was a weak instance of. The ONLY
+   way to break it is to put the SAME number pair on the row with BOTH symbols,
+   so that two lines agree and two disagree and the singleton deduction dies.
+
+   THE REBUILD, and its declared floor. The stem now names the pair, and the row
+   carries that pair with both symbols plus a second pair with both symbols:
+
+     Which line compares 4567 and 4123 correctly?
+       4567 > 4123 <- key | 4567 < 4123 | 2318 < 2764 | 2318 > 2764
+
+   Exactly TWO lines are true as written (the key, and one line of the second
+   pair), so the agree/disagree split is 2-2 and the singleton deduction is gone.
+   Both pairs are doubled, so "the pair that repeats" names nothing. Both pairs
+   are written in the same left-to-right order in both of their lines, so "the
+   two lines with the numbers the same way round" names nothing. The signs come
+   out 2 and 2, and the key's sign is ">" on half the draws and "<" on the other
+   half. All four numbers are drawn from one thousands-family with the gaps
+   levelled, so no number sits apart.
+
+   What is left is the floor, and it is DECLARED rather than claimed away: the
+   child reads the stem, keeps the two lines that use the stem's two numbers, and
+   is then one symbol away - a 50% guesser value with no further mathematics. It
+   cannot be lowered. Any row that carries the stem's pair with both symbols
+   gives that pair exactly one true and one false line, and any THIRD line about
+   the same pair forces the key into the doubled writing-order (a pair's two true
+   statements are "p > q" and "q < p", its two false ones "p < q" and "q > p", so
+   a 3-subset with one true always takes one order whole and the key sits in it).
+   50% is therefore what a four-option item costs when the last step it demands is
+   one binary symbol decision, and it is the same structural floor gBetween's
+   straddle is declared at (residual 14). The half it buys is the half the v10
+   item did not have at all: the relabelled child now scores 0.00%. */
 function gCompareTrue(){
-  let n = 4567, others = [3210, 4102, 4890, 4500], keyIdx = 0, g = 0;
+  /* four numbers from ONE thousands-family, with the gaps levelled so that no
+     member is further from its nearest neighbour than any other - the "sits
+     apart" detector the tenth pass killed this bank with has nothing to find. */
+  let fam = [4567, 4123, 4890, 4300], g = 0;
   do {
-    const th = ri(1,9);
-    n = th*1000 + ri(120, 879);
-    /* three companions on one side of n and one on the other; the key is one of
-       the three, so the printed signs always come out 2 and 2 */
-    const keyBelow = Math.random() < 0.5;
-    const many = [], one = [];
-    let guard = 0;
-    while (many.length < 3 && guard++ < 200){
-      const v = keyBelow ? th*1000 + ri(0, (n % 1000) - 1) : th*1000 + ri((n % 1000) + 1, 999);
-      if (v !== n && !many.includes(v)) many.push(v);
-    }
-    guard = 0;
-    while (one.length < 1 && guard++ < 200){
-      const v = keyBelow ? th*1000 + ri((n % 1000) + 1, 999) : th*1000 + ri(0, (n % 1000) - 1);
-      if (v !== n && !many.includes(v)) one.push(v);
-    }
-    others = many.concat(one);
-    keyIdx = ri(0, 2);
+    const th = ri(1,9), gap = ri(150, 230);
+    fam = [ri(40, 180)];
+    for (let i = 0; i < 3; i++) fam.push(fam[i] + gap + ri(-25, 25));
+    fam = shuffle(fam.map(v => th*1000 + v));
     g++;
-  } while (g < 200 && !(others.length === 4 && allDistinct(others.concat([n])) &&
-           others.every(v => ok(v))));
-  const key = n + (others[keyIdx] < n ? ' > ' : ' < ') + others[keyIdx];
-  /* a false statement is the same pair with the sign the digits do not support */
-  const wrongs = others.filter((_, i) => i !== keyIdx)
-    .map(v => n + (v < n ? ' < ' : ' > ') + v);
-  const k = others[keyIdx], hi = Math.max(n, k), lo = Math.min(n, k);
+  } while (g < 200 && !(allDistinct(fam) && fam.every(v => ok(v) && v % 1000 <= 950)));
+  /* the stem's pair and the second pair, each printed in ONE drawn order in both
+     of its lines, so the writing order never separates the live pair from the
+     decoy */
+  const [p, q, r, s] = fam;
+  const pFirst = Math.random() < 0.5, rFirst = Math.random() < 0.5;
+  const line = (x, y, sign) => x + ' ' + sign + ' ' + y;
+  const px = pFirst ? p : q, py = pFirst ? q : p;
+  const rx = rFirst ? r : s, ry = rFirst ? s : r;
+  const key = line(px, py, px > py ? '>' : '<');
+  const wrongs = [line(px, py, px > py ? '<' : '>'),
+                  line(rx, ry, '>'), line(rx, ry, '<')];
+  const hi = Math.max(p, q), lo = Math.min(p, q);
   const col = String(hi).split('').findIndex((c, i) => c !== String(lo)[i]);
-  return mcText('Which of these is <b>true</b>?', '', key, shuffle(wrongs),
+  return mcText('Which line compares <b>' + px + '</b> and <b>' + py +
+    '</b> correctly?', '', key, shuffle(wrongs),
     'Compare left to right, one place at a time, and stop at the first place where the digits differ. ' +
     hi + ' and ' + lo + ' first differ in the ' + PLACES[col] + ' place: ' + String(hi)[col] +
     ' against ' + String(lo)[col] + ', so ' + hi + ' is the bigger number and ' + key +
-    ' is the true one. The other three say the opposite of what the digits show.');
+    ' is the line that says so. The ' + rx + ' and ' + ry + ' lines are about two other ' +
+    'numbers, so neither of them answers the question however the symbol falls - and one of ' +
+    'the two ' + px + ' lines has the symbol pointing the wrong way. The small end of the ' +
+    'symbol always points at the smaller number.');
 }
 
 /* FORMAT 3 - direct compare, smallest, every number sharing a thousands digit
@@ -1134,50 +1213,142 @@ function gOrder(){
     'numbers in an order that has nothing to do with their size.');
 }
 
-/* FORMAT 6 - error spotting on a comparison, DIAGNOSE (pool 3, 2 steps).
-   Two flavours, and every filler option is checked against this draw so no
-   second explanation is ever defensible. */
-/* Same length discipline as STANDS_SLIPS: 39-40 characters across all four, so
-   every rendered option lands inside the 48-character ceiling. */
-const CMP_FIRST  = ' only compared the first digit of each.';
-const CMP_RIGHT  = ' compared from the right, not the left.';
-const CMP_FILL1  = ' counted the odd digits in each instead.';
-const CMP_FILL2  = ' added the digits up and compared those.';
-function oddCount(n){ return digitsOf(n).filter(d => d % 2 === 1).length; }
-function gCompareError(){
-  const kid = pick(KIDS), who = kid[0], pron = kid[1];
-  const wantDigits = Math.random() < 0.5;
-  let a = 968, b = 1024, g = 0;
-  do {
-    if (wantDigits){
-      a = ri(100, 999);
-      b = ri(1000, MAXN);
-      g++;
-      if (Math.floor(a/100) <= Math.floor(b/1000)) continue;          /* the first-digit slip must fire */
-      if (a % 10 >= b % 10) continue;                                 /* ...and the ones-digit slip must NOT */
-    } else {
-      const th = ri(1,9);
-      a = th*1000 + ri(0,999);
-      b = th*1000 + ri(0,999);
-      g++;
-      if (!(b > a)) continue;
-      if (a % 10 <= b % 10) continue;                                 /* the right-to-left slip must fire */
-      if (Math.floor(a/100) % 10 === Math.floor(b/100) % 10) continue;/* hundreds must settle it */
+/* FORMAT 6 - the deciding place, and what it is worth (pool 3, 2 steps).
+   Registered as `gComparePlace`; it replaces `gCompareError`, which was KILLED.
+
+   KILL, TENTH pass (Sweep p3numbers Refutation, 2026-09-16), and it was the
+   worst number ten passes have produced: 100.00 / 100.00% of 20,000 draws at
+   each of two seeds, on the BUSIEST generator in the topic (2.18 items per
+   30-item session at 0.80 accuracy, worst 4).
+
+     Xin Yi says 4403 is greater than 4812. What did she do wrong?
+       ... | She compared from the right, not the left. <- key | ... | ...
+     Farhan says 774 is greater than 1588. What did he do wrong?
+       ... | ... | He only compared the first digit of each. <- key | ...
+
+   "If the two numbers in the sentence are different lengths, tick 'only compared
+   the first digit'; if they are the same length, tick 'compared from the right'."
+   No comparison, no place value, no arithmetic, and the child never decides which
+   number is bigger. One boolean - `wantDigits` - chose BOTH the stem's shape and
+   the key sentence, and the two guards that kept the item single-answered
+   (`a % 10 >= b % 10` on one branch, `a % 10 <= b % 10` on the other) were
+   exactly the two that made the leak total. Seven passes printed this bank's
+   `"only" 50.5%` and `"from" 50.0%` and read them as the item's own two-way
+   design showing through. They were - and the two-way design was keyed to a
+   feature of the stem a child can read off without counting past four.
+
+   WHY NO RULER SAW IT, which is the structural half. Five numeric rulers -
+   magnitude, length, width-class, shape, column - were all gated on
+   `opts.every(o => /^\d+$/.test(o))`, so every one of them returned null the
+   moment an option was a sentence; the six prose banks had ONE ruler and it read
+   words, and nothing anywhere read a STEM feature against which option is the
+   key. The v11 harness closes both gaps (STEM RULER, OPTION-ROW GEOMETRY RULER,
+   and the numeric rulers extended to place-name and mixed rows), and it carries
+   this bank's v10 stem, rebuilt from its own arithmetic, as the stem ruler's
+   negative control at 100%.
+
+   WHY IT IS NOT REBUILT AS PROSE. The wave-1 law: a four-sentence prose concept
+   check whose flavour is chosen by one boolean is structurally tell-prone, and
+   the first-digit misconception only MISLEADS when the digit counts differ - that
+   is what the misconception is - so the two branches cannot be made to look
+   alike. The PM's ruling is a numeric rebuild or a retirement, and this is the
+   numeric rebuild.
+
+   WHAT IT ASKS NOW, and why this question and not "which place decides?". The
+   place-name question ("which place decides which number is bigger?") is a
+   question ABOUT WHERE THE DIGITS DIFFER, and every strategy for it - the right
+   one and the cheap ones - is the same digit-by-digit scan. Two cheap rules sit
+   on it and they trade against each other: "the RIGHTMOST place where the digits
+   differ" is right whenever nothing to the right of the deciding place differs,
+   and "count the places where they differ, that many from the right" is right
+   whenever everything to the right of it does. Draw the low digits with any
+   probability q and one of the two is at least ~50%; the minimum of the maximum
+   is at q = 0.5 and it is 0.500. That is over the PM's 40% bar on every setting,
+   so the bank asks the PM's THIRD question instead - how much bigger at the
+   deciding place - which needs the place AND the two digits AND their worth, and
+   on which knowing the place is only half the item.
+
+   THE OPTION ROW IS A 2x2 GRID, and that is what makes the board worthless. The
+   four options are {two digits} x {two place values} - the difference or the
+   smaller digit, at the deciding place or at one other. Every one of the four is
+   a legal key of this bank (any digit 1-9 at any place 1 / 10 / 100 / 1000 is
+   some draw's answer), the key is drawn UNIFORMLY from the four, and the digit
+   pair and the place pair are drawn before the key is - so a child who has
+   memorised the whole option board answers at chance. Measured: 96 distinct rows,
+   every option's key share 25.0%, board worth 25.0% against `gCompareError`'s
+   ... (no board figure was ever taken on the prose bank, because no ruler read
+   it). The grid also lands every numeric ruler at exactly chance by construction:
+   the four options sort u*p < v*p < u*q < v*q whatever the draw, so magnitude
+   rank is flat; each shape feature splits the row 2-2; and the column ruler's
+   elimination kills all four.
+
+   DIFFERENT-LENGTH PAIRS ARE KEPT, per the PM's ruling, and they are 10% of
+   draws: they fire only when the drawn deciding place is the thousands, and the
+   second digit on the row is then the SHORT number's leading digit - which is
+   exactly the digit a child using the killed misconception ("compare the first
+   digits you see") would take. So on those draws the distractors ARE the deciding
+   place of the plausible misread, and the child who counts the digits and knows a
+   4-digit number beats a 3-digit one has the place but still owes the worth. */
+function gComparePlace(){
+  /* the digit pair and the place pair FIRST, the key uniformly from the 2x2 grid
+     they make, and only then the two numbers - so nothing about the stem can name
+     the key and nothing about the row can either. `u + v <= 9` is what lets EITHER
+     digit be the difference with the other as the smaller digit at that place. */
+  const u = ri(1, 4);
+  const v = ri(u + 1, 9 - u);
+  /* the place pair UNIFORMLY over the six, so each of thousands / hundreds / tens
+     / ones is the deciding place on exactly a quarter of draws */
+  const pp = pick([[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]]);
+  const i = pp[0], j = pp[1];
+  const grid = [[u, i], [u, j], [v, i], [v, j]];
+  const pickIdx = ri(0, 3);
+  const dg = grid[pickIdx][0], col = grid[pickIdx][1];        /* the difference, and the deciding place */
+  const other = dg === u ? v : u;                             /* the smaller digit at that place */
+  const opt = grid.map(e => e[0] * POW[e[1]]);
+  const key = dg * POW[col];
+  const cands = opt.filter(x => x !== key);
+
+  /* the two numbers, built so that the FIRST place where their digits differ is
+     `col` and the gap there is `dg`. Places left of it are shared; places right of
+     it differ on 7 draws in 10, so neither "take the rightmost difference" nor
+     "count the differences" survives. */
+  const shortOne = col === 0 && ri(0, 9) < 4;                 /* 10% of all draws */
+  let a, b;
+  if (shortOne){
+    /* a 3-digit number against a 4-digit one: 0 thousands against `dg` thousands,
+       and the short number's leading digit is `other` - the digit the killed
+       misconception reads as if it were the thousands. */
+    a = other * 100 + ri(0, 9) * 10 + ri(0, 9);
+    b = dg * 1000 + ri(0, 9) * 100 + ri(0, 9) * 10 + ri(0, 9);
+  } else {
+    const d = [0,0,0,0], e = [0,0,0,0];
+    for (let k = 0; k < col; k++){ d[k] = e[k] = (k === 0 ? ri(1,9) : ri(0,9)); }
+    d[col] = other + dg; e[col] = other;
+    for (let k = col + 1; k < 4; k++){
+      d[k] = ri(0,9);
+      e[k] = ri(0,9) < 7 ? (d[k] + ri(1,9)) % 10 : d[k];
     }
-    if (b > a && oddCount(a) <= oddCount(b) && digitSum(a) <= digitSum(b)) break;
-  } while (g < 400);
-  if (!(b > a)) { a = 968; b = 1024; }
-  const key = pron + (wantDigits ? CMP_FIRST : CMP_RIGHT);
-  const wrongs = [pron + (wantDigits ? CMP_RIGHT : CMP_FIRST), pron + CMP_FILL1, pron + CMP_FILL2];
-  const why = wantDigits
-    ? (b + ' has four digits and ' + a + ' has only three, so ' + b + ' is the bigger number however ' +
-       'the first digits look. A 4-digit number is always bigger than a 3-digit one.')
-    : ('Both numbers start with ' + pl(Math.floor(a/1000), 'thousand') + ', so compare the HUNDREDS next: ' +
-       Math.floor(a/100)%10 + ' against ' + Math.floor(b/100)%10 + '. That settles it - ' + b +
-       ' is the bigger number. The ones digit never gets a vote until everything to its left is equal.');
-  return mcText(who + ' says ' + a + ' is greater than ' + b + '. <b>What did ' + pron.toLowerCase() +
-    ' do wrong?</b>', '', key, shuffle(wrongs),
-    why + ' Compare left to right, one place at a time, and stop at the first place where the digits differ.');
+    a = numOf(d); b = numOf(e);
+  }
+  const hi = Math.max(a, b), lo = Math.min(a, b);
+  const first = Math.random() < 0.5 ? a : b, second = first === a ? b : a;
+  const at = shortOne
+    ? (lo + ' has no thousands at all - write it as 0 thousands - and ' + hi + ' has ' +
+       pl(dg, 'thousand') + ', so the THOUSANDS place is where they first differ. ' +
+       plPlace(dg, 0) + ' is ' + key + ' and 0 thousands is 0, so ' + hi + ' is ' + key +
+       ' more at that place. Reading the ' + other + ' at the front of ' + lo +
+       ' as if it were thousands is the slip: it is ' + pl(other, 'hundred') + ', not ' +
+       pl(other, 'thousand') + '.')
+    : ((col === 0 ? 'Start at the thousands. ' :
+        'The ' + andList(PLACES.slice(0, col)) + ' match, so they cannot settle it. ') +
+       'The first place where the digits differ is the ' + PLACES[col].toUpperCase() + ': ' +
+       (other + dg) + ' against ' + other + '. ' + plPlace(other + dg, col) + ' against ' +
+       plPlace(other, col) + ' is ' + key + ' more, so ' + hi + ' is the bigger number.');
+  return mcNum('Compare <b>' + first + '</b> and <b>' + second + '</b>. Read from the left ' +
+    'and stop at the first place where the digits are different. <b>How much more is the ' +
+    'bigger number worth at that place?</b>', '', key, cands, '',
+    at + ' Everything to the RIGHT of the place that settles it never gets a vote, however ' +
+    'big those digits look.');
 }
 
 /* FORMAT 7 - concept check on a pattern: name the jump (pool 1, 1 step).
@@ -1263,90 +1434,57 @@ function gCompareError(){
    then written a ten out) is in partly to widen the board from 116 to 191.
    DECLARED with its exposure: 1.37 items per 30-item session at 0.80 accuracy
    (worst 6) and 4.90 at 0.45 (worst 7). */
+/* THE OPTION BOARD IS THE MECHANISM (Sweep p3numbers Refutation, TENTH pass,
+   2026-09-16, section 3, and the PM's ruling on it, v11). Residual 23 and
+   residual 6 sat in this file for three passes in different sections and nobody
+   multiplied them. The v10 bank drew its three distractors from `famOf(step)` -
+   a family derived from the step - so the four printed numbers were very nearly
+   a function of the key: 139 distinct option rows over 20,000 draws, the row
+   ALONE pinning the key on 67.08 / 66.44% of them, and the whole board worth
+   78.17 / 77.90% to a child who remembers which answer each row carries. At
+   5.00 items per 30-item session at 0.45 accuracy - the busiest bank in pool 1,
+   on the child the mastery climb keeps there - that clears the termination rule
+   on both of its clauses, and the PM ruled the kill STANDS by the letter of it.
+
+   THE FIX IS THE BOARD, NOT A CAP. A row is worth something only when it names
+   its own key. Every row this bank can print is now a set of four jumps EVERY
+   ONE of which is a legal key of this bank, and the key is drawn UNIFORMLY from
+   the four AFTER the row is drawn. So each option string is the key on 25.0% of
+   the draws it appears in and a distractor on 75.0% - the 1:3 the PM asked for -
+   and full-table recall of the board is worth exactly chance. The board is 33
+   rows rather than 139, and that is now the right trade rather than the wrong
+   one: the ninth pass's argument that a smaller board is worse only holds while
+   the rows PIN, and these do not.
+
+   THE ROWS. One counting anchor - 1, 10, 100, 1000, the four jumps MOE P3 1.1
+   names, with any of the four as the key (a jump of 1 is counting on in ones and
+   is drawn as often as the other three; the v10 anchor never keyed 1, which is
+   an option string at a 0% key share and is the other half of what a balanced
+   board means). And two ladders of four CONSECUTIVE rungs - fives from 5 to 95,
+   fifties from 50 to 950 - 16 windows each. Every distractor on a ladder row is
+   a jump one, two or three rungs off the one the run actually makes, which is
+   what a child gets by measuring the gap in the wrong column or counting a rung
+   wrong; and because the window is four consecutive rungs, the key sits at each
+   of the four magnitude ranks a quarter of the time, each shape feature splits
+   the row 2-2, and the column elimination crosses out all four. The rank, width,
+   shape and column gates are therefore satisfied by the SHAPE of the board
+   rather than by a search inside it, and the v9 threshold search, the v10
+   `colValue` pick, the width-class `posOf` labelling and the `famOf` family are
+   all gone with it. */
+const JUMP_ROWS = (function(){
+  const rows = [[1, 10, 100, 1000]];
+  for (const d of [5, 50]){
+    const lad = [];
+    for (let v = d; v <= 19 * d; v += d) lad.push(v);
+    for (let i = 0; i + 3 < lad.length; i++) rows.push(lad.slice(i, i + 4));
+  }
+  return rows;
+})();
 function gPatternConcept(){
-  const W = v => String(v).length;
-  /* the leading place value of the jump: 15 -> 10, 250 -> 200. The jump read in
-     its biggest column only, which is the same-width slip BELOW the key that the
-     seventh pass asked for and the place-value ladder could not author. */
-  const hiPart = s => { const p = Math.pow(10, W(s) - 1); return p * Math.floor(s / p); };
-  const famOf = s => {
-    const seen = new Set([s]), f = [];
-    for (const v of [2*s, 3*s, s + 10, s - 10, hiPart(s), s - hiPart(s),
-                     s >= 100 ? s/10 : s*10, 2*s - 10]){
-      if (!ok(v) || seen.has(v)) continue;
-      seen.add(v); f.push(v);
-    }
-    return f;
-  };
-  /* where the key sits INSIDE its own printed-width class - the seventh pass's
-     KILL, measured the way tools/gen-sanity.mjs measures it */
-  const posOf = (s, t) => {
-    const same = t.filter(v => W(v) === W(s));
-    if (!same.length) return 'none';
-    const below = same.filter(v => v < s).length;
-    return below && below < same.length ? 'mid' : below ? 'max' : 'min';
-  };
-  /* W4, EIGHTH pass: a 2-2 width tie is the one branch the width ruler declines
-     to read, and where it declines the tell is a CERTAINTY - on gStandsCompare the
-     key was in the wider pair on 100.00% of its 17.6% tie draws. The two members
-     below the key here are both narrower than it (the ones left behind, and the
-     jump read a column out), so every tie this bank could draw would put the key
-     in the wider pair. It does not draw one: a row whose width histogram has no
-     strict mode never enters the bank, so the branch is empty rather than
-     certain. Measured 13.16% / 12.62% of draws at v9-draft, now 0.00%. */
-
-  /* THE COUNTING ANCHOR, one draw in three: the ladder alone, four widths, no
-     class to rank the key inside. The step fixes the rank (10 -> 1, 100 -> 2,
-     1000 -> 3), which is why the anchor cannot supply rank 0 and the in-between
-     branch below draws its own rank uniformly. */
-  if (ri(0, 2) === 0){
-    const step = pick([10, 100, 1000]);
-    const wrong = [1, 10, 100, 1000].filter(v => v !== step);
-    return patternJump(step, shuffle(wrong));
-  }
-  /* every 3-subset of every in-between step's family, labelled by the key's rank
-     among the four printed numbers AND by its position in its own width class.
-     Rank is drawn FIRST so the magnitude gate stays flat, then the width-class
-     position uniformly from what that rank allows, so neither ruler can run away
-     from the other. */
-  const bank = [];
-  for (const s of [15, 25, 150, 250]){
-    const fam = famOf(s), kw = W(s);
-    for (let i = 0; i < fam.length; i++)
-      for (let j = i + 1; j < fam.length; j++)
-        for (let k = j + 1; k < fam.length; k++){
-          const t = [fam[i], fam[j], fam[k]];
-          if (Math.max.apply(null, t.map(W)) * 1.4 < kw) continue;   /* RULE C */
-          if (widthTie(s, t)) continue;                              /* W4, no tie branch */
-          bank.push({ s: s, t: t, r: t.filter(v => v < s).length, p: posOf(s, t) });
-        }
-  }
-  const r = ri(0, 3);
-  let live = bank.filter(e => e.r === r);
-  if (!live.length) live = bank;
-  const p = pick([...new Set(live.map(e => e.p))]);
-  /* NINTH pass, KILL - the column rule, read LAST inside the cell the rank and
-     the width class have already fixed, so neither of those gates moves. The four
-     printed numbers here are the jump values themselves rather than a slip cloud,
-     so the rows this bank can build are fixed and the only choice is which of
-     them to ship. See slipSet for what the rule is.
-
-     A THRESHOLD, NOT AN ARGMIN. Taking the FLATTEST row in the cell cut the option
-     board from 191 distinct rows to 18 - trading a 43.7% route for a board a child
-     could memorise, which is the worse deal and is what residual 23 is about. The
-     bar is instead "the column rule does not leave the key standing alone", which
-     every cell can meet often, and the pick stays uniform over everything that
-     clears it: 139 distinct rows, the column route 0.00% outright and 30.4% to a
-     guesser against v9's 19.8% / 43.7%, and the board worth 78.17% either way. */
-  const cell = live.filter(e => e.p === p);
-  const cv = e => colValue([colDigits(e.s)].concat(e.t.map(colDigits)));
-  let fit = cell.filter(e => cv(e) <= 0.5 + 1e-9);
-  if (!fit.length){
-    const flat = Math.min.apply(null, cell.map(cv));
-    fit = cell.filter(e => cv(e) === flat);
-  }
-  const e0 = pick(fit);
-  return patternJump(e0.s, shuffle(e0.t.slice()));
+  /* the counting anchor keeps its third of the draws; the ladders share the rest */
+  const row = ri(0, 2) === 0 ? JUMP_ROWS[0] : pick(JUMP_ROWS.slice(1));
+  const step = pick(row);
+  return patternJump(step, shuffle(row.filter(v => v !== step)));
 }
 function patternJump(step, wrong){
   const start = ri(1000, MAXN - 3*step);
@@ -1373,7 +1511,7 @@ function patternJump(step, wrong){
    figure, scored the stricter way, is 43.77 / 42.52%), against a best single of
    32.24%. DECLARED, not fixed: the key of a counting item is on the same side of a
    printed run as the direction the stem names, and that is the arithmetic. */
-const STEP_WORD = { 10: 'tens', 100: 'hundreds', 1000: 'thousands' };
+const STEP_WORD = { 1: 'ones', 10: 'tens', 100: 'hundreds', 1000: 'thousands' };
 function gPattern4(){
   const step = pick([10, 100, 1000]);
   const up = Math.random() < 0.5;
@@ -1863,69 +2001,64 @@ function gPatternOdd(){
    resolves on 40% of draws and is worth 55% as a guesser, against the 60%
    ceiling. The bank stays registered under `addsub` because the majority of its
    draws now demand it. */
+/* THE OPTION BOARD IS THE MECHANISM, AND THE KEY SET IS WIDENED (Sweep p3numbers
+   Refutation, TENTH pass, 2026-09-16, section 3, and the PM's ruling on it, v11).
+   The v10 bank's key was `POW[col]` on every draw - the worth of a carried 1, so
+   always 1 followed by zeros, and only ever one of three values. That did two
+   things at once. It put the board at 64 distinct rows worth 73.11 / 73.14% to a
+   child who remembers which answer each row carries, on a bank served 3.37 times
+   per 30-item session at 0.45 accuracy - a kill on both clauses of the
+   termination rule. And it put "the smallest option that is 1-followed-by-zeros
+   and is not 1" at 51.88 / 51.91% OUTRIGHT, which is why this bank carried a
+   NAMED exemption from the shape ruler's route cap and a NAMED exemption from the
+   width-class tie branch. Both exemptions are now GONE, because the thing they
+   were exempting is gone.
+
+   THE ITEM NOW ASKS TWO QUESTIONS OFF ONE COLUMN, and that is the widening. The
+   stem is unchanged - a column of a 4-digit sum makes 12 to 18, so a digit stays
+   and a small 1 goes above the column on its left - and the question is either
+   "how much is that small 1 worth?" (the v10 question, key `POW[col]`) or "how
+   much is the digit that stays worth?" (key `keep * POW[src]`). Both are MOE P3
+   2.1 regrouping and both are answered from the same reading of the same column;
+   what changes is that the key set is no longer three powers of ten but the whole
+   2x2 grid of {the carried 1, the digit that stays} x {the column it is written
+   above, the column it came from}.
+
+   THE ROW IS THAT GRID: `{10, 100, 10*keep, 100*keep}`. Every one of the four is
+   a legal key of this bank - 100 and 10 as a carried 1 above the hundreds or the
+   tens, `10*keep` and `100*keep` as the digit that stays in the tens or the
+   hundreds - and the key is drawn UNIFORMLY from the four AFTER the row is drawn.
+   Each option string is therefore the key on 25.0% of the draws it appears in,
+   full-table recall of the board is worth exactly chance, and every distractor is
+   one of the two named slips this item has always been about: the right digit in
+   the wrong column, or the wrong digit in the right column. The grid also lands
+   the numeric rulers at chance by construction - the row sorts 10 < 10*keep <
+   100 < 100*keep on every draw so magnitude rank is flat; "1 followed by zeros"
+   splits it 2-2 so the 51.9% shape route is gone; the two printed widths tie 2-2
+   with the key in the wider pair on exactly half the draws; and the column
+   elimination crosses out all four.
+
+   The board is 7 rows rather than 64. That is the right trade here for the same
+   reason it is in gPatternConcept: a row is worth something only when it names
+   its own key, and these do not. W7's and W5's declared row repetition, and
+   residual 23's and residual 6's figures, are closed with it. */
 function gAddConcept(){
-  const s = ri(12, 18), keep = s % 10;
-  /* the slip family for a given carry column, as [value, why] pairs in the
-     order the explanation prefers to name them (W5: slipWhy names the first one
-     that actually shipped, so the sentence never discusses an absent number). */
-  const famFor = col => {
-    const src = col + 1;
-    const f = [
-      [1, 'Reading the mark as the digit it looks like'],
-      [keep, 'Carrying the ' + keep + ' that stays behind instead'],
-      [s, 'Carrying the whole column total'],
-      [POW[src], 'Leaving it in the ' + PLACES[src] + ' column it came from'],
-      [keep * POW[src], 'Carrying the part that stays, ' + plPlace(keep, src) + ','],
-      [s * POW[src], 'Carrying all ' + s + ' ' + PLACES[src] + ' instead of just the ' + plPlace(1, col)]
-    ];
-    if (col > 0) f.push([keep * POW[col], 'Writing the ' + keep + ' above the ' + PLACES[col] + ' column']);
-    /* W1, seventh pass: the one named slip ABOVE a tens or hundreds key that is
-       NOT printed at the key's own width, which is what lets those columns reach
-       ranks 0 and 1 without putting a same-width number over the key. */
-    f.push([s * POW[col], 'Writing the whole ' + s + ' above the ' + PLACES[col] + ' column']);
-    for (let j = 0; j < 4; j++) f.push([POW[j], 'Counting it as ' + plPlace(1, j)]);
-    const seen = new Set([POW[col]]);
-    return f.filter(p => { if (!ok(p[0]) || seen.has(p[0])) return false; seen.add(p[0]); return true; });
-  };
-  /* every 3-subset of every column's family, grouped by how many slips land
-     BELOW the key - which IS the key's rank among the four printed numbers - and
-     labelled (W1, seventh pass) by whether any of them is printed at the key's
-     OWN WIDTH, which is the axis the KILL was measured on. */
-  const bank = [0, 1, 2].map(col => {
-    const key = POW[col], fam = famFor(col), kw = String(key).length, byR = new Map();
-    for (let i = 0; i < fam.length; i++)
-      for (let j = i + 1; j < fam.length; j++)
-        for (let k = j + 1; k < fam.length; k++){
-          const t = [fam[i], fam[j], fam[k]];
-          if (Math.max.apply(null, t.map(p => String(p[0]).length)) * 1.4 < kw) continue;
-          const r = t.filter(p => p[0] < key).length;
-          if (!byR.has(r)) byR.set(r, []);
-          byR.get(r).push(t);
-        }
-    return { col: col, key: key, fam: fam, byR: byR, kw: kw };
-  });
-  const r = ri(0, 3);
-  const live = bank.filter(b => b.byR.has(r));
-  const b0 = pick(live.length ? live : bank.filter(b => b.byR.size));
-  const col = b0.col, src = col + 1, key = b0.key;
-  let sets = b0.byR.get(b0.byR.has(r) ? r : [...b0.byR.keys()][0]);
-  /* WIDTH-FREE FIRST. A subset with no distractor at the key's width leaves the
-     key's width class a singleton, so "the smallest of the commonest width" has
-     nothing to point at. Two cells have no such subset - rank 0 at the hundreds
-     column and rank 2 at the thousands column - and those are the draws the
-     width-class gate still counts. */
-  const free = sets.filter(t => t.every(p => String(p[0]).length !== b0.kw));
-  if (free.length) sets = free;
-  /* among the sets at that rank, the ones holding the MOST place values: the
-     fewer non-ladder options on the row, the less "pick the round one" is worth */
-  const pv = t => t.filter(p => /^10*$/.test(String(p[0]))).length;
-  const best = Math.max.apply(null, sets.map(pv));
-  const chosen = pick(sets.filter(t => pv(t) === best));
-  const cands = chosen.map(p => p[0]);
+  const keep = ri(2, 8), s = 10 + keep;
+  /* the 2x2 grid: {the carried 1, the digit that stays} x {hundreds, tens} */
+  const cands4 = [POW[1], POW[2], keep * POW[1], keep * POW[2]];
+  const key = pick(cands4);
+  const cands = cands4.filter(v => v !== key);
+  /* the key names the question and the column it is read in:
+       POW[c]          -> the carried 1 above column c, which came from column c+1
+       keep * POW[m]   -> the digit that stays in column m, whose 1 went to m-1 */
+  const carry = key === POW[1] || key === POW[2];
+  const col = carry ? (key === POW[1] ? 1 : 2) : (key === keep * POW[1] ? 0 : 1);
+  const src = col + 1;
 
   /* the two numbers, built column by column so the stem's claim is true as
      printed: the columns to the RIGHT of src carry nothing into it, so the src
-     column really does make s on its own. */
+     column really does make s on its own, and no column to its LEFT can reach ten
+     even after the carry lands. */
   const A = [0,0,0,0], B = [0,0,0,0];
   A[src] = ri(Math.max(3, s - 9), Math.min(9, s - 3)); B[src] = s - A[src];
   for (let i = src + 1; i < 4; i++){ A[i] = ri(0, 4); B[i] = ri(0, 9 - A[i]); }
@@ -1934,30 +2067,34 @@ function gAddConcept(){
   const a = numOf(A), b = numOf(B);
 
   const kid = pick(KIDS), who = kid[0], pron = kid[1].toLowerCase();
-  const why = slipWhy(cands, b0.fam);
   /* W2, seventh pass: on three draws in five the stem does not name the column
      the 1 is written above, so the child has to FIND the column that makes s
      before there is a place name to read. Exactly one column can: every column
      to the right of src is built to total under 10 and every column to its left
      under 9, while s is 12-18. */
   const bySum = ri(0, 4) >= 2;
+  const ask = carry
+    ? '<b>How much is that small 1 worth?</b>'
+    : '<b>How much is the ' + keep + ' ' + pron + ' writes there worth?</b>';
   const stem = bySum
     ? who + ' works out ' + a + ' + ' + b + ' in columns. One column makes ' + s + ', so ' + pron +
-      ' writes ' + keep + ' in that column and a small 1 above the column on its left. ' +
-      '<b>How much is that small 1 worth?</b>'
+      ' writes ' + keep + ' in that column and a small 1 above the column on its left. ' + ask
     : who + ' works out ' + a + ' + ' + b + ' in columns. The ' + PLACES[src] + ' column makes ' + s +
       ', so ' + pron + ' writes ' + keep + ' in the ' + PLACES[src] + ' column and a small 1 above the ' +
-      PLACES[col] + ' column. <b>How much is that small 1 worth?</b>';
+      PLACES[col] + ' column. ' + ask;
   const found = bySum
     ? 'The column that makes ' + s + ' is the ' + PLACES[src] + ' column: ' + A[src] + ' + ' + B[src] +
       ' = ' + s + ', and no other column reaches ten. '
     : '';
   return mcNum(stem, '', key, cands, '',
     found + s + ' ' + PLACES[src] + ' is ' + plPlace(1, col) + ' and ' + plPlace(keep, src) + ', so the ' +
-    keep + ' stays in the ' + PLACES[src] + ' column and the small 1 is ' + plPlace(1, col) +
-    ' - worth ' + key + '. A carried mark is worth the column it is written ABOVE, not the digit ' +
-    'it looks like: that is what regrouping means, ten of something small becoming one of the next ' +
-    'size up. ' + why[1] + ' gives ' + why[0] + '.');
+    keep + ' stays in the ' + PLACES[src] + ' column - worth ' + (keep * POW[src]) + ' - and the small 1 ' +
+    'goes above the ' + PLACES[col] + ' column - worth ' + POW[col] + '. ' +
+    (carry ? 'The small 1 is worth ' + key + '.' : 'The ' + keep + ' is worth ' + key + '.') +
+    ' A mark is worth the column it is written in, not the digit it looks like: that is what ' +
+    'regrouping means, ten of something small becoming one of the next size up. Every wrong answer ' +
+    'here is one of the two slips - the right digit read in the wrong column, or the wrong digit ' +
+    'read in the right one.');
 }
 
 /* FORMAT 2 - direct compute, addition with at least two regroupings
@@ -2247,11 +2384,38 @@ function gMentalMake(){
                     { minGap: 3, reject: c => !sameWidth(key, c) || widthTie(key, c),
                       prefer: c => c.some(v => v > key && v < ref) });
     g++;
+  /* W1, TENTH pass, and the PM's ruling on it (v11, 2026-09-16). THE DECLARED
+     OUTRIGHT FIGURE WAS COMPUTED ON A SUBSET. The v10 note declared the structural
+     rule - "find the addend that was rounded up, then take the largest option
+     below the OTHER one" - at 26.52 / 27.00% outright, and that number counted
+     only the 55% of draws where the rounded addend is UNIQUELY identified. It
+     dropped the 15.78 / 16.69% where the child cannot tell which addend was moved
+     and BOTH readings land on the key anyway - draws on which the rule answers the
+     item outright with no arithmetic at all. 26.52 + 15.78 = 42.30 and
+     27.00 + 16.69 = 43.69, on both seeds, to two decimals. The true figure was
+     over the PM's 40% and the sentence "outright is under the PM's 40%" was false.
+
+     THE SEATING CHANGE THAT CLOSES IT: `a % 10 <= 4` rather than `<= 6`. The rule
+     fails exactly when a named slip lands strictly BETWEEN the key and the addend
+     the child reduces to, and that window is `mv` wide with `minGap` 3 under it -
+     so on an `mv = 4` draw there is one usable slot and on an `mv = 9` draw there
+     are six. Capping `a % 10` at 4 puts `mv` in 6..9 instead of 4..9, and the
+     in-gap slip then ships on 61.6 / 62.1% of draws against 48.4 / 47.4%. It costs
+     two of the six `a % 10` values and nothing else; every other guard, the slip
+     family and the draw of `b` are untouched.
+
+     Measured, 20,000 draws x two seeds, with an independent loader reading the
+     RENDERED stem and options: the rule OUTRIGHT 42.30 / 43.69 -> 31.51 / 31.14%
+     and as a guesser 46.05 / 47.28 -> 33.77 / 33.34%. Residual 15's two halves come
+     down with it - "the largest option below the SMALLEST number on the page"
+     36.05 / 35.67 -> 23.99 / 23.80%, and below the BIGGEST 48.10 / 48.55 ->
+     28.76 / 28.41%. Every one of them is now under 40% and none of them needs
+     declaring any more. */
   /* `b !== round` closes residual 12's commutativity draw (1.1% of v7 draws): with
      b equal to the round-up the stem reads "43 + 50 = 50 + ?" and the key is `a`
      itself, so the item is answered by symmetry with no mental arithmetic at all.
      It was declared rather than fixed for six passes; it is one condition. */
-  } while (g < 200 && !(a % 10 !== 0 && a % 10 <= 6 && key >= 2 && (round - a) !== key &&
+  } while (g < 200 && !(a % 10 !== 0 && a % 10 <= 4 && key >= 2 && (round - a) !== key &&
            b !== round && b !== a &&
            cands && optsOk(key, cands) && sameWidth(key, cands) && !widthTie(key, cands)));
   const moved = round - a;
@@ -2314,7 +2478,7 @@ function gAddError(){
     pron.toLowerCase() + ' do wrong?</b>', '', key_, shuffle(wrongs),
     'The answer is ' + a + ' + ' + b + ' = ' + key + ', not ' + claim + '. ' + key_ +
     ' Every column that makes ten or more hands one ten to the column on its left, and in this sum ' +
-    cols.length + ' of the four columns do that: the ' + cols.map(c => PLACES[c]).join(', ') + '.');
+    cols.length + ' of the four columns do that: the ' + andList(cols.map(c => PLACES[c])) + '.');
 }
 
 /* FORMAT 7 - error spotting, CORRECT the mistake, numeric key (pool 3, ONE
@@ -2502,7 +2666,7 @@ function gBackFromTotal(){
          [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
          [gMissingAddend,'addsub'],[gMentalMake,'addsub']],
       3:[[gStandsCompare,'place'],[gStandsError,'place'],[gZeroFix,'place'],
-         [gOrder,'compare'],[gCompareError,'compare'],
+         [gOrder,'compare'],[gComparePlace,'compare'],
          [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],
          [gAddError,'addsub'],[gSubError,'addsub'],[gTwoStepWord,'addsub'],[gBackFromTotal,'addsub']]
     }

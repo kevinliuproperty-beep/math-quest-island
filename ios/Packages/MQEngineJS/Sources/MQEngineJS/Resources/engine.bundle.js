@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260916-744e14f */
-/* ENGINE_BUILD_META {"stamp":"20260916-744e14f","date":"2026-09-16","sha":"744e14f","dirty":false,"payloadHash":"1024e094c9807f4b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260916-744e14f","date":"2026-09-16","sha":"744e14f","dirty":false,"payloadHash":"1024e094c9807f4b","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260916-11324b4 */
+/* ENGINE_BUILD_META {"stamp":"20260916-11324b4","date":"2026-09-16","sha":"11324b4","dirty":false,"payloadHash":"d71708245a7a09c0","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260916-11324b4","date":"2026-09-16","sha":"11324b4","dirty":false,"payloadHash":"d71708245a7a09c0","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -1276,6 +1276,36 @@ var buildSetFor = MQI.buildSetFor;
  * hundreds decide in a third of draws, the tens in a third (the hundreds tie)
  * and the ones in a third (the hundreds and the tens tie), so the taught rule is
  * necessary and never sufficient. Measured floors are in the lane note.
+ *
+ * ... AND SO DOES THE STEM SHAPE (2026-09-16, fifth-pass KILL 1). v5's redesign
+ * reached two thirds of its own generator: the "A is greater than B" CLAIM stem
+ * was drawn ONLY when the hundreds decide, and the character always named the
+ * LOSER, so the true winner was always the SECOND number printed. "Take a
+ * hundreds option that ends on the second number" was the key in 6,632 of 6,632
+ * claim draws, and composed with the tie thirds' own rule the bank's floor was
+ * 66.7%, not the 41.7% recorded. Stem shape and deciding place are drawn
+ * independently now, and the same wrong claim is phrased either way round, so
+ * neither the stem shape nor the print order carries the answer. Re-measured
+ * over 20,000 draws x two seeds: that route 33.2 / 34.0%, "states a comparison
+ * rather than a tie" 33.3 / 33.4%, "names the number the character did not"
+ * 33.2 / 33.2%, "start with the hundreds" 24.9 / 24.9%. Two rules are DECLARED
+ * rather than closed, both structural and both written up at the generator: the
+ * two options at the leftmost place that names a winner (50.0%), and the rules
+ * that need the digits read (66.7%).
+ *
+ * AN EXPLANATION MAY ONLY NAME A WRONG ANSWER THAT IS ON THE ROW (2026-09-16,
+ * fifth-pass WOUND 2). Five two-step banks named the stop-after-step-one slip
+ * and its value, and that value is one entry in the POOL ranked() picks three
+ * slips from - so in 22.4%-41.4% of draws the sentence discussed a number the
+ * child could not see. Every bank now hands slipFor() its whole pool and names
+ * the first slip that actually shipped. Asserted by rule 5 of the p2 gate.
+ *
+ * A TEMPLATE DIFF IS NOT A CHECK ON AN OPTION-SET REWRITE (2026-09-16,
+ * fifth-pass WOUND 4). v4's and v5's gMulRepeatAdd option sets both mask to
+ * "# x # | # x # | # x # | # x #", so "no regression: N of 30 byte-identical"
+ * could not see that rewrite at all, in either direction. The same is true of
+ * the v6 swap. A masked-template diff bounds WORDING churn, not option content;
+ * only a measured battery bounds the latter.
  */
 (function () {
   const G = MQI.gen;
@@ -1339,6 +1369,43 @@ function nearSlips(key){
   const s = [key - 1, key + 1, key - 10, key + 10, key - 2, key + 2];
   if (key >= 100) s.push(key - 100, key + 100);
   return s;
+}
+/* NAME A SLIP THE CHILD CAN ACTUALLY SEE (refutation fifth pass 2026-09-16,
+   WOUND 2). Five two-step banks ended their explanation by naming the
+   stop-after-step-one slip and its value - "Answering 482 means the giving-away
+   step was forgotten". That value is one entry in the POOL ranked() chooses
+   three slips from, so in 22.4%-41.4% of draws the explanation talked about a
+   number that is not on the screen. It was 0.0% on v1 and v2 and appeared at v3,
+   when the named triple became a pool to flatten the key's value rank (the
+   second pass's WOUND 3) - the trade paid in a currency nobody was counting. It
+   is the first pass's own WOUND 4 class: an explanation asserting a property of
+   the option list that the draw does not deliver.
+
+   Every bank now hands slipFor() its WHOLE pool as [value, reason] pairs, in
+   preference order, and the sentence names the first pair whose value actually
+   shipped. The bank's own misconception is still first in the list, so nothing
+   changes on the draws where it is on the row; when the rank pool left it off,
+   the explanation names a distractor that IS there instead of one that is not.
+   Asserted by rule 5 of the p2 gate in tools/gen-sanity.mjs: every number an
+   explanation names after the word "answering" must be one of the four options.
+
+   The generic column slips get generic reasons, because that is what they are -
+   a finger miscounted, or a carry that went missing or went twice. */
+function nearWhy(key){
+  const w = [[key - 1, 'one was dropped in the ones column'],
+             [key + 1, 'one was counted twice in the ones column'],
+             [key - 10, 'a whole ten went missing in the column'],
+             [key + 10, 'a whole ten was counted twice'],
+             [key - 2, 'two were dropped in the ones column'],
+             [key + 2, 'two were counted twice in the ones column']];
+  if (key >= 100) w.push([key - 100, 'a whole hundred went missing in the column'],
+                         [key + 100, 'a whole hundred was counted twice']);
+  return w;
+}
+/* pairs are in preference order; returns the first one that is on the row. */
+function slipFor(cands, pairs){
+  for (const pr of pairs) if (cands.indexOf(pr[0]) !== -1) return pr;
+  return null;
 }
 /* Numeric MC whose distractors are all authored misconceptions. */
 function mcNum(stem, extra, correct, cands, unit, explain){
@@ -1567,12 +1634,15 @@ function gBondWord(){
   if (!cands) { T = 100; A = 30; B = 20; cands = [50, 70, 80]; }
   const c = pick(BOND_CTX), k = kid();
   const key = T - A - B;
+  const sl = slipFor(cands, [[A + B, 'that is what ' + k[0] + ' HAS, not what is still missing'],
+                             [T - A, 'that forgets the ' + B + ' that came later'],
+                             [T - B, 'that forgets the ' + A + ' already there']].concat(nearWhy(key)));
   return mcNum(k[0] + ' needs ' + T + ' ' + c[0] + ' for the ' + c[1] + '. ' + k[1] + ' already has ' + A +
     ' and gets ' + B + ' more. <b>How many more ' + c[0] + ' are still needed?</b>', '',
     key, cands, '',
     'Step 1 - how many are there now? ' + A + ' + ' + B + ' = ' + (A + B) + '. Step 2 - how many more ' +
-    'make ' + T + '? ' + T + ' − ' + (A + B) + ' = ' + key + '. Stopping after step 1 and answering ' +
-    (A + B) + ' is the usual slip: that is what ' + k[0] + ' HAS, not what is still missing.');
+    'make ' + T + '? ' + T + ' − ' + (A + B) + ' = ' + key +
+    (sl ? '. Answering ' + sl[0] + ' is the slip to watch: ' + sl[1] + '.' : '.'));
 }
 
 /* FORMAT 1.6 - error spotting, diagnose the mistake (pool 3, 2 steps).
@@ -1840,12 +1910,15 @@ function gAddSubWord(){
   if (!cands) { A = 245; B = 178; C = 134; cands = [423, 557, 111]; }
   const c = pick(HAVE_CTX), k = kid();
   const key = A + B - C;
+  const sl = slipFor(cands, [[A + B, 'the giving-away step was forgotten'],
+                             [A + B + C, 'the giving-away was added on instead of taken off'],
+                             [A - C, 'the buying was forgotten']].concat(nearWhy(key)));
   return mcNum(k[0] + ' had ' + A + ' ' + c[0] + ' and bought ' + B + ' more. ' + k[1] + ' then gave away ' +
     C + ' ' + c[0] + ' at ' + c[1] + '. <b>How many ' + c[0] + ' are left?</b>', '',
     key, cands, '',
     'Step 1 - how many after buying? ' + A + ' + ' + B + ' = ' + (A + B) + '. Step 2 - take away what ' +
-    'was given: ' + (A + B) + ' − ' + C + ' = ' + key + '. Answering ' + (A + B) +
-    ' means the giving-away step was forgotten, and ' + (A + B + C) + ' means it was added on instead.');
+    'was given: ' + (A + B) + ' − ' + C + ' = ' + key +
+    (sl ? '. Answering ' + sl[0] + ' means ' + sl[1] + '.' : '.'));
 }
 
 /* =====================================================================
@@ -1973,24 +2046,41 @@ function gSkipCount(){
    appears in at least two options, so no option can be singled out by an odd
    token, and THREE of the four multiply unlike numbers, so the one-rule "take
    the unlike product" route is 1 in 3. Asserted by the p2 TOKEN RULER in
-   tools/gen-sanity.mjs (the v4 option set is its negative control). */
+   tools/gen-sanity.mjs (the v4 option set is its negative control).
+
+   REFUTATION FIX (fifth pass 2026-09-16, WOUND 1). Closing the odd token opened
+   a pointer. n × v, w × v, n × n and w × n left exactly ONE square in the list,
+   and the square's base was n - the one numeral the stem does not print. "Find
+   the option that is a number times itself; that number times the number being
+   added is the answer" was the key in 20,000 of 20,000 draws on two seeds, and
+   so was "the numeral in the most options, paired with the stem's numeral". The
+   token ruler scores the bank 0.0% and is right to: no numeral is unique. The
+   route is one level below a token count - a distractor whose own FORM points at
+   the key.
+
+   n × n is now v × v, keeping v5's w × n. The square is then based on v, which
+   the stem already prints, so it points at nothing: the pointer route falls to
+   50% ("the two options that use the number being added"), and choosing between
+   those two is counting the addends, which is the whole idea of the item. Every
+   numeral still appears in at least two options (v in three, n in two, w in
+   two), so the odd-token class stays closed. */
 function gMulRepeatAdd(){
   let n = 4, v = 6, w = 5, g = 0;
   do {
     v = pick([2, 3, 4, 5, 10]); n = ri(2, 5); w = n + pick([1, -1]);
     g++;
   } while (g < 400 && !(n !== v && w >= 1 && w !== v &&
-           uniq4([n + ' × ' + v, w + ' × ' + v, n + ' × ' + n, w + ' × ' + n]) &&
-           uniq4([n * v, w * v, n * n, w * n])));
+           uniq4([n + ' × ' + v, w + ' × ' + v, v + ' × ' + v, w + ' × ' + n]) &&
+           uniq4([n * v, w * v, v * v, w * n])));
   const addends = Array.from({ length: n }, () => v).join(' + ');
   const many = w > n;
   return mcText('Which multiplication has the same answer as <b>' + addends + '</b>?', '',
     n + ' × ' + v,
-    [w + ' × ' + v, n + ' × ' + n, w + ' × ' + n],
+    [w + ' × ' + v, v + ' × ' + v, w + ' × ' + n],
     'Count the ' + v + 's: there are ' + n + ' of them, so this is ' + n + ' groups of ' + v +
     ', which is ' + n + ' × ' + v + ' = ' + (n * v) + '. Counting one group too ' +
     (many ? 'many' : 'few') + ' gives ' + w + ' × ' + v + ', which is ' + v + ' too ' +
-    (many ? 'much' : 'little') + ', and multiplying the wrong pair gives ' + n + ' × ' + n +
+    (many ? 'much' : 'little') + ', and multiplying the wrong pair gives ' + v + ' × ' + v +
     ' or ' + w + ' × ' + n + '. Multiplication is a short way of writing the same number added ' +
     'over and over - that is the whole idea, and it is why the times tables are worth knowing ' +
     'by heart.');
@@ -2055,12 +2145,16 @@ function gMulTwoStep(){
   if (!cands) { a = 5; b = 4; c = 3; cands = [20, 23, 9]; }
   const p = pick(PACK_CTX), k = kid();
   const key = a * b - c;
+  const sl = slipFor(cands, [[a * b, 'only the first step was done'],
+                             [a * b + c, 'the giving-away was added on instead of taken off'],
+                             [a + b, 'the two numbers were added instead of multiplied'],
+                             [a * b - 2 * c, 'the ' + c + ' was given away twice']].concat(nearWhy(key)));
   return mcNum(k[0] + ' buys ' + a + ' ' + p[0] + ' of ' + p[2] + '. Each ' + p[1] + ' holds ' + b + ' ' +
     p[2] + '. ' + k[1] + ' gives away ' + c + ' ' + p[2] + '. <b>How many ' + p[2] + ' are left?</b>', '',
     key, cands, '',
     'Step 1 - how many altogether? ' + a + ' ' + p[0] + ' of ' + b + ' is ' + a + ' × ' + b + ' = ' +
     (a * b) + '. Step 2 - give ' + c + ' away: ' + (a * b) + ' − ' + c + ' = ' + key +
-    '. Answering ' + (a * b) + ' means only the first step was done.');
+    (sl ? '. Answering ' + sl[0] + ' means ' + sl[1] + '.' : '.'));
 }
 
 /* FORMAT 3.8 - direct division fact, the DECLARED ANCHOR of the div skill
@@ -2135,12 +2229,20 @@ function gDivShareP2(){
   if (!cands) { gN = 5; each = 4; want = 2; cands = [4, 18, 10]; }
   const c = pick(SHARE_CTX), k = kid();
   const total = gN * each, key = want * each;
+  const sl = slipFor(cands, [[each, 'that is ONE share, and the question asked for ' + want],
+                             [gN * each - want, 'the ' + want + ' was taken off the total instead of shared out'],
+                             [want * gN, 'the ' + want + ' was multiplied by the number of ' + c[1] +
+                                         ' instead of by one share'],
+                             [(want + 1) * each, 'one share too many was counted'],
+                             [(want - 1) * each, 'one share too few was counted'],
+                             [gN * each, 'that is the whole amount, not ' + want + ' shares']]
+                            .concat(nearWhy(key)));
   return mcNum(k[0] + ' shares ' + total + ' ' + c[0] + ' equally among ' + gN + ' ' + c[1] +
     '. <b>How many ' + c[0] + ' do ' + want + ' ' + c[1] + ' get altogether?</b>', '',
     key, cands, '',
     'Step 1 - what does ONE get? ' + total + ' ÷ ' + gN + ' = ' + each + '. Step 2 - what do ' + want +
-    ' get? ' + want + ' × ' + each + ' = ' + key + '. Stopping after the sharing and answering ' + each +
-    ' is the usual slip: that is one share, and the question asked for ' + want + '.');
+    ' get? ' + want + ' × ' + each + ' = ' + key +
+    (sl ? '. Answering ' + sl[0] + ' is the slip to watch: ' + sl[1] + '.' : '.'));
 }
 
 /* FORMAT 3.11 - grouping, two steps (pool 3, 2 steps). Division as "how many
@@ -2177,14 +2279,23 @@ function gDivGroupWord(){
   if (!cands) { per = 5; groups = 6; filled = 2; cands = [6, 8, 20]; }
   const c = pick(FILL_CTX);
   const total = per * groups, key = groups - filled;
+  const pool = [[groups, 'the ' + c[1] + ' already filled were forgotten'],
+                [groups + filled, 'the filled ' + c[1] + ' were added on instead of taken off'],
+                [per * (groups - filled), c[0] + ' were counted when the question asked for ' + c[1]],
+                [filled, 'the ' + c[1] + ' already filled were counted instead of the ones still needed'],
+                [groups - 2 * filled, 'the filled ' + c[1] + ' were taken off twice'],
+                [groups - filled - 2, 'two ' + c[1] + ' too few were counted'],
+                [groups + 1, 'one ' + c[1] + ' too many was counted']].concat(nearWhy(key));
+  const sl = slipFor(cands, pool);
+  const sl2 = slipFor(cands.filter(x => !sl || x !== sl[0]), pool);
   return mcNum('The ' + c[3] + ' has ' + total + ' ' + c[0] + '. Each ' + c[2] + ' holds ' + per + ' ' +
     c[0] + '. ' + filled + ' ' + c[1] + ' have already been filled. <b>How many more ' + c[1] +
     ' are needed?</b>', '',
     key, cands, '',
     'Step 1 - how many ' + c[1] + ' altogether? ' + total + ' ÷ ' + per + ' = ' + groups +
     '. Step 2 - take away the ' + filled + ' already done: ' + groups + ' − ' + filled + ' = ' + key +
-    '. Answering ' + groups + ' forgets the ones already filled; answering ' + (per * groups - per * filled) +
-    ' counts ' + c[0] + ' when the question asked for ' + c[1] + '.');
+    (sl ? '. Answering ' + sl[0] + ' means ' + sl[1] : '') +
+    (sl2 ? '; answering ' + sl2[0] + ' means ' + sl2[1] + '.' : (sl ? '.' : '.')));
 }
 
 /* FORMAT 3.12 - error spotting, diagnose what the check proves
@@ -2373,94 +2484,162 @@ function gOrderP2(){
    topic (10.9% of every session), with no hundreds compared at all.
 
    REFUTATION FIX (fourth pass 2026-09-16, WOUND 2 - the DECIDING-PLACE
-   REDESIGN). The v4 rebuild fixed the hundreds as the deciding place on every
-   draw, so "start with the hundreds" AND "name the other number" together were
-   still the key in 100% of draws with no digit compared - and it printed the
-   stem's own reason with "more" flipped to "less", which a child bins for free.
-   The v4 note named the redesign and this is it: the DECIDING PLACE now varies,
+   REDESIGN). v4 fixed the hundreds as the deciding place on every draw, so
+   "start with the hundreds" AND "name the other number" together were still the
+   key in 100% of draws with no digit compared. The deciding place now varies,
    one third each.
 
-     hundreds decide  the three places all differ; the tens and the ones both
-                      point at the wrong number, and the character quotes the
-                      ones ("because 8 is more than 5"). The classic trap: a big
-                      ones digit never wins on its own.
-     tens decide      the hundreds tie and the ones tie, so the character says
-                      the two numbers are the SAME. Skip the tied places.
-     ones decide      the hundreds and the tens tie, same claim. Do not stop
-                      early: the last digit still settles it.
+   REFUTATION FIX (fifth pass 2026-09-16, KILL 1 - THE CLAIM STEM VARIES TOO).
+   The redesign reached two thirds of its own generator. The "A is greater than
+   B" CLAIM stem was drawn ONLY when the hundreds decide, and because the
+   character always names the LOSER as the greater, the true winner was always
+   the SECOND number printed. Two free text observations - "take a hundreds
+   option, and take the one that ends on the second number" - were therefore the
+   key in 6,632 of 6,632 claim draws with no digit compared, and composing that
+   with the tie thirds' own 50% rule gave the bank a 66.7% floor where the v5
+   note recorded 41.7%, on 3.44 items of every 30-item session. Two changes, both
+   inside machinery this generator already had:
 
-   So "start with the hundreds" is necessary and never sufficient, and the key is
-   whichever option names the place that really decides AND reads it correctly.
-   Two option templates, one coarse shape ("The <place> ..."):
-     THE <place> DECIDE   a's digit first, b's second, so "less" always ends on b
-                          and "more" always ends on a - no option can state a
-                          comparison and then contradict it.
-     THE <place> ARE THE SAME  ... so a and b are the same size: the character's
+     THE CLAIM STEM CARRIES EVERY DECIDING PLACE. The stem shape and the deciding
+       place are now drawn independently, so a claim stem appears on the hundreds
+       third, the tens third and the ones third alike. "Start with the hundreds"
+       is wrong two times in three on a claim draw as well.
+     PRINT ORDER IS INDEPENDENT OF THE TRUTH. The same wrong claim is phrased
+       either way round - "665 is greater than 933" or "933 is smaller than 665"
+       - so the number the character names is printed first in half the draws and
+       second in the other half, and "ends on the second number" is a coin toss.
+
+   The digits are drawn to one rule, which is what the oracle re-derives:
+
+     the deciding place is the LEFTMOST place where the two digits differ, so
+       every place to its left ties;
+     every OTHER place that differs points at the LOSER. That is what makes a
+       reading at that place a FALSE SENTENCE rather than a true one with a bad
+       conclusion, and it is what stops a single digit settling the item.
+
+   Three stem shapes, all asking "What went wrong?":
+     CLAIM, digit reason   "<P> is greater than <Q>, because <dP> is more than
+                           <dQ>", or "<P> is smaller than <Q>, because <dP> is
+                           less than <dQ>". The quoted place differs, points at
+                           the loser, and is never the deciding place.
+     CLAIM, the last digit the hundreds and the tens tie, so there is no place to
+                           the right of the deciding place left to misread. The
+                           character claims the ones CANNOT change which number
+                           is greater - the mirror of "a big ones digit never
+                           wins on its own", and the error this third exists to
+                           catch. The ones decide on those draws.
+     TIE                   "<P> and <Q> are the same, because the <place> are the
+                           same" - one place that really does tie, read as if it
+                           settled the whole number.
+
+   THE LAST-DIGIT CLAIM NAMES NO WINNER, ON PURPOSE. On an ones-decide draw the
+   two tied places can only carry tie sentences, which name no winner at all, so
+   the deciding place's two readings are the only options that do. If the stem
+   ALSO named a number as the greater, "bin the ties, then bin the option that
+   agrees with the character" would be the key in 100% of those draws with no
+   digit compared - the third pass's own KILL 1, one third over. Measured at
+   45.8% topic-wide before the wording changed and 33.3% after.
+
+   Two option templates, one coarse shape ("The <place> ..."), and the option set
+   is always four options over TWO places:
+     THE <place> DECIDE   P's digit first, Q's second, so "less" always ends on Q
+                          and "more" always ends on P - no option can state a
+                          comparison and then contradict it. A place NEVER ships
+                          one reading alone: both ship or neither does, so the
+                          stem's own reason can never be a lone free elimination
+                          (the v4 wound) and each number is named exactly twice.
+     THE <place> ARE THE SAME  ... so P and Q are the same size: the character's
                           own stopped-too-early conclusion, which is false, so it
-                          is never a defensible answer and it names BOTH numbers,
-                          which keeps the conclusion from singling the key out.
+                          is never a defensible answer, and it names BOTH numbers.
+   When a second place differs, the four options are the deciding place twice and
+   that place twice; when only the deciding place differs - every ones-decide
+   draw, and nothing else - the other two options are the two tied places.
+
+   DECLARED FLOOR, and it is structural. The option set only ever states a
+   comparison at a place where the digits DIFFER, and the deciding place is by
+   definition the leftmost of those, so "take one of the two options at the
+   leftmost place that names a winner" narrows to two on every draw of any
+   four-option item of this shape, whatever the stems do. That is 50%, it is what
+   v3, v4 and v5 were, and choosing between the two survivors IS the place-value
+   comparison the item teaches. Closing it would need an option naming a winner
+   at a TIED place, which is a sentence that contradicts itself. Every route that
+   does NOT need that comparison is measured in the lane note.
+
    Every numeral in the option list appears in at least two options, so no option
    can be picked out by an odd token. Asserted in tools/gen-sanity.mjs: the
    oracle re-derives the deciding place and every printed digit from the stem,
-   rejects any option whose comparison contradicts its own conclusion, rejects a
-   ones-comparison on a draw whose stem quotes the ones, and requires exactly one
-   option that states a TRUE comparison at the place that really decides. */
+   checks the character's claim really is wrong, checks that every differing
+   place other than the deciding one points at the loser, rejects any option
+   whose comparison contradicts its own conclusion, requires exactly one option
+   that states a TRUE comparison at the place that really decides, and rebuilds
+   the whole option set from the digits. */
 function gCompareError(){
   const PLACES = ['hundreds', 'tens', 'ones'];
+  const RIGHT = { hundreds: ['tens', 'ones'], tens: ['ones'], ones: [] };
   const decide = pick(PLACES);
-  let ha = 1, hb = 2, ta = 8, tb = 0, oa = 9, ob = 5, g = 0;
-  do {
-    if (decide === 'hundreds') {
-      /* every place differs, and the two places to the RIGHT of the hundreds
-         both point at a - the number the character wrongly picks. */
-      ha = ri(1, 8); hb = ri(ha + 1, 9);
-      ta = ri(5, 9); tb = ri(0, ta - 1);
-      oa = ri(5, 9); ob = ri(0, oa - 1);
-    } else if (decide === 'tens') {
-      ha = hb = ri(1, 9); oa = ob = ri(0, 9);
-      ta = ri(0, 9); tb = ri(0, 9);
-    } else {
-      ha = hb = ri(1, 9); ta = tb = ri(0, 9);
-      oa = ri(0, 9); ob = ri(0, 9);
-    }
-    g++;
-  } while (g < 400 && !(decide === 'hundreds' ? (hb > ha && ta > tb && oa > ob)
-                      : decide === 'tens' ? ta !== tb : oa !== ob));
-  const a = ha * 100 + ta * 10 + oa, b = hb * 100 + tb * 10 + ob;
-  const dig = { hundreds: [ha, hb], tens: [ta, tb], ones: [oa, ob] };
-  /* x is always a's digit and y is always b's, so "less" names b and "more"
-     names a: no option can state a comparison and then contradict it. */
+  const claimStem = Math.random() < 0.5;
+  /* digits as [winner, loser] per place. No redraw loop is needed: each branch
+     draws the ordering it wants, so every draw is valid by construction. */
+  const d = {};
+  const flr = p => p === 'hundreds' ? 1 : 0;
+  const sameAt = p => { const v = ri(flr(p), 9); d[p] = [v, v]; };
+  const winAt  = p => { const w = ri(flr(p) + 1, 9); d[p] = [w, ri(flr(p), w - 1)]; };
+  const loseAt = p => { const l = ri(flr(p) + 1, 9); d[p] = [ri(flr(p), l - 1), l]; };
+  for (const p of PLACES) { if (p === decide) break; sameAt(p); }
+  winAt(decide);
+  const rest = RIGHT[decide];
+  let q = null;        /* the second place that carries two options */
+  let qp = null;       /* the place the character quotes on a claim stem */
+  let z = 'hundreds';  /* the tied place the character cites on a tie stem */
+  if (decide === 'ones') {
+    if (!claimStem) z = pick(['hundreds', 'tens']);
+  } else if (claimStem) {
+    for (const p of rest) loseAt(p);
+    q = pick(rest);
+    qp = rest.length > 1 ? rest.find(p => p !== q) : q;
+  } else {
+    z = decide === 'hundreds' ? pick(rest) : 'hundreds';
+    q = rest.find(p => p !== z);
+    if (decide === 'hundreds') sameAt(z);
+    loseAt(q);
+  }
+  const num = i => d.hundreds[i] * 100 + d.tens[i] * 10 + d.ones[i];
+  const win = num(0), lose = num(1);
+  /* WHICH NUMBER PRINTS FIRST IS A COIN TOSS, and the claim is phrased to match,
+     so the truth never lines up with the print order. */
+  const P = Math.random() < 0.5 ? win : lose, Q = P === win ? lose : win;
+  const dg = (n, place) => place === 'hundreds' ? Math.floor(n / 100)
+                         : place === 'tens' ? Math.floor(n / 10) % 10 : n % 10;
   const cmp = (place, word) =>
-    'The ' + place + ' decide: ' + dig[place][0] + ' is ' + word + ' than ' + dig[place][1] +
-    ', so ' + (word === 'less' ? b : a) + ' is greater.';
-  const tie = place => 'The ' + place + ' are the same, so ' + a + ' and ' + b + ' are the same size.';
-  const right = dig[decide][0] > dig[decide][1] ? 'more' : 'less';
-  const wrong = right === 'more' ? 'less' : 'more';
-  const win = right === 'less' ? b : a, lose = win === a ? b : a;
-  const key = cmp(decide, right);
+    'The ' + place + ' decide: ' + dg(P, place) + ' is ' + word + ' than ' + dg(Q, place) +
+    ', so ' + (word === 'less' ? Q : P) + ' is greater.';
+  const tie = place => 'The ' + place + ' are the same, so ' + P + ' and ' + Q + ' are the same size.';
+  const trueWord = place => dg(P, place) > dg(Q, place) ? 'more' : 'less';
+  const key = cmp(decide, trueWord(decide));
+  const wrongs = [cmp(decide, trueWord(decide) === 'more' ? 'less' : 'more')];
+  if (q) wrongs.push(cmp(q, 'more'), cmp(q, 'less'));
+  else wrongs.push(tie('hundreds'), tie('tens'));
   const k = kid();
+  const rel = P === lose ? 'greater' : 'smaller';
+  const stem = claimStem
+    ? (qp
+        ? k[0] + ' says ' + P + ' is ' + rel + ' than ' + Q + ', because ' + dg(P, qp) + ' is ' +
+          (rel === 'greater' ? 'more' : 'less') + ' than ' + dg(Q, qp) + '.'
+        : k[0] + ' says the ones cannot change which of ' + P + ' and ' + Q + ' is greater, because ' +
+          'the hundreds and the tens are the same.')
+    : k[0] + ' says ' + P + ' and ' + Q + ' are the same, because the ' + z + ' are the same.';
+  const tied = PLACES.filter(p => dg(P, p) === dg(Q, p));
   const tail = ' Start on the LEFT and keep moving right until you reach a place where the two digits ' +
     'are DIFFERENT. That place decides, and nothing to the right of it can change the answer.';
-  if (decide === 'hundreds') {
-    return mcText(k[0] + ' says ' + a + ' is greater than ' + b + ', because ' + oa + ' is more than ' + ob +
-      '. <b>What went wrong?</b>', '',
-      key,
-      [cmp('hundreds', wrong), cmp('tens', 'more'), cmp('tens', 'less')],
-      'The ones digit does not decide anything on its own. ' + a + ' has ' + plural(ha, 'hundred', 'hundreds') +
-      ' and ' + b + ' has ' + plural(hb, 'hundred', 'hundreds') + ', and ' + ha + ' is less than ' + hb +
-      ', so ' + b + ' is the greater number. The tens are the wrong place to look first, and ' + ha +
-      ' is not more than ' + hb + '.' + tail);
-  }
-  const tied = decide === 'tens' ? 'ones' : 'tens';
-  return mcText(k[0] + ' says ' + a + ' and ' + b + ' are the same, because the hundreds and the ' + tied +
-    ' are the same. <b>What went wrong?</b>', '',
-    key,
-    [cmp(decide, wrong), tie('hundreds'), tie(tied)],
-    'Two places matching does not make two numbers the same. Both have ' +
-    plural(ha, 'hundred', 'hundreds') + ' and both have the same ' + tied +
-    ' digit, so neither of those settles it - the ' + decide.toUpperCase() + ' do. ' +
-    dig[decide][0] + ' is ' + right + ' than ' + dig[decide][1] + ', so ' + win + ' is greater and ' +
-    lose + ' is smaller.' + tail);
+  return mcText(stem + ' <b>What went wrong?</b>', '', key, wrongs,
+    (tied.length
+      ? 'A place that MATCHES settles nothing: ' + tied.map(p => 'the ' + p).join(' and ') +
+        ' are the same in both numbers. '
+      : 'All three places differ here, so the one furthest LEFT is the one that decides. ') +
+    'The ' + decide.toUpperCase() + ' decide: ' + win + ' has ' + dg(win, decide) + ' and ' + lose +
+    ' has ' + dg(lose, decide) + ', so ' + win + ' is greater and ' + lose + ' is smaller.' +
+    (qp ? ' The ' + qp + ' are the wrong place to start: a bigger digit there never wins on its own.' : '') +
+    tail);
 }
 
 
@@ -8127,4 +8306,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260916-744e14f */
+/* ENGINE_BUILD_END 20260916-11324b4 */

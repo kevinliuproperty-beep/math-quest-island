@@ -233,6 +233,62 @@
  *     takes its place; two never-true fillers now rotate independently of the
  *     belief. 76.8% -> 50.7%, row space 6 -> 12.
  *
+ * REFUTATION FIXES, v8 2026-09-16 (SEVENTH PASS: 2 KILLED, 3 WOUNDED). Both kills
+ * were holes in the INSTRUMENTS rather than in the authoring, which is why the
+ * deliverable is a rule and a gate rather than a rewrite.
+ *   - KILL 1, gPicTakeAway: THE PREMISE THE v7 REFILL WAS BUILT ON WAS FALSE. "The
+ *     bar's part count appears in no word of the stem" is true and does NOT make
+ *     the picture load-bearing: the child never had to DETERMINE the bottom number,
+ *     only to discriminate it, and "the answer's TOP number is a - g" - one
+ *     subtraction on the two numerals the stem printed - was true on 100.00% of
+ *     draws, isolated the key on 59.6 / 59.0%, answered the item at 79.6 / 79.2%
+ *     with the ties guessed and 88.7 / 88.8% once the bottom number printed twice
+ *     (a seat sameDen() is REQUIRED to fill) broke them. The bar was never counted,
+ *     at 3.42 / 3.54 items a session to a struggling child. THE REBUILD: the stem
+ *     prints NO NUMERAL AT ALL - the take-away is a word, the blue count and the
+ *     part count are both in the picture - so both halves of the key are counted
+ *     off the bar and there is nothing to write an expression over. The oracle
+ *     asserts that emptiness directly. Half the draws also seat every slip over the
+ *     bar's own part count, which collapses to one masked row shape whose key slot
+ *     is the value rank RULE 7 already draws evenly: composed stem-recall o
+ *     row-shape 69.0 / 71.6% -> 45.6 / 45.7%, stem arithmetic 14.7% -> 0.0%.
+ *   - KILL 2, gSubRelated's teaching card rendered fr(a-b, D-d) - a NEGATIVE
+ *     numerator on 49.97 / 50.70% of draws and a zero one on 15.19 / 14.36%.
+ *     Negative numbers are Secondary 1 content: a scope leak, on the highest
+ *     salience surface in the app, INHERITED from 11b5ce5 and earlier. Six passes
+ *     walked past it because every fraction regex in tools/gen-sanity.mjs was
+ *     (\d+) and a minus sign is not a digit. The belief is named in words at the
+ *     site; the harness reads (-?\d+) everywhere and gains THE SIGN GATE over every
+ *     bank in the GAME (277 bank slots, all topics), with the v7 card as its
+ *     control.
+ *   - THE DELIVERABLE, RULE 14, THE HALF-KEY RULE: no bank may have one half of its
+ *     key - numerator or denominator - named by a single expression over the stem's
+ *     numerals to the point where the OPTION ROW then settles the item on >= 60% of
+ *     draws, unless that expression IS the item's own declared mathematics, named
+ *     in an exemption list keyed to the (bank, expression) PAIR. Six declared
+ *     methods; three controls, including one proving the exemption does not travel
+ *     to another expression and one proving the rule does not fail the item working.
+ *   - W2, THE CARD-ROW CLAUSE: seven banks ended their teaching card by naming a
+ *     WRONG ANSWER the child could not see, because the sentence names a CANDIDATE
+ *     and sided() seats three of a dozen - gSimplest 58.6%, gEquivFromBar 52.3%,
+ *     gMakeOneIn 49.8%, gSubRelated 27.3%, gPickEquiv 26.8%, gSimplestError 25.5%,
+ *     gSubSame 2.2%. All seven fixed at their sites and GATED at zero. gPickEquiv's
+ *     is the one the class hides: its v5 ternary asked whether the candidate's
+ *     VALUE was on the row and then printed the candidate's OWN form, while uniq()
+ *     seats whichever equal-valued candidate is written in bigger pieces - the card
+ *     said "2/8" over a row showing "1/4".
+ *   - W1, THE COMPOSED ROUTE, widened and DECLARED. gSubRelated and gAddRelated
+ *     take the same flat row family: masked shape 97.4 -> 72.2% and 88.8 -> 80.4%,
+ *     composed 98.3 -> 82.8% and 93.1 -> 86.0%. It cannot reach the refutation's
+ *     60% in this lane and the arithmetic says why: gSubRelated has 27 distinct
+ *     stems and 27 keys, so FULL stem recall answers it on 100.0% by itself. The
+ *     stem-space class is wave 2 and out of fence.
+ *   - W3, gBetween's 107-stem space: DECLARED with its enumeration at the site.
+ *     108 shapes is the COMPLETE set of P3-legal related pairs with two or more
+ *     twelfths of room; relaxing to one interior value reaches 150, still short of
+ *     200, and every stem it adds names its own key. Full-table recall 56.7 /
+ *     56.8%, under the 60% line.
+ *
  * THE FOUR PRINCIPLES
  *  1. WHAT A FRACTION NAMES. A fraction names equal parts of one whole: the
  *     bottom number says how many EQUAL parts the whole was cut into, the top
@@ -841,13 +897,17 @@ function gPicIdentify(){
    P3 child most often loses it - the bottom number is the size of the piece, and
    eating a piece does not re-cut the cake.
 
-   THE TWO RULERS THIS FORMAT IS BUILT AGAINST, both of them gates rather than
-   wording:
-     - RULE 12, THE STEM-ONLY RULE. The stem prints the child's piece count `a`
-       and the number she eats `g`, and the answer is (a - g) over the bar's own
-       part count `d`. `d` is in the PICTURE and in no word of the stem, so no
-       table over the stem's numerals - and no arithmetic of them either - can
-       name the key. Measured: the six-row stem table is worth chance.
+   THE THREE RULERS THIS FORMAT IS BUILT AGAINST, all of them gates rather than
+   wording. (The v7 text of this paragraph claimed the first one and was WRONG in
+   the way the block below sets out: it argued from "the bottom number is in no
+   word of the stem", which is true, to "the picture is load-bearing", which does
+   not follow. The claims are now the ones the file can actually assert.)
+     - RULE 12, THE STEM-ONLY RULE, and RULE 14, THE HALF-KEY RULE. The stem prints
+       NO NUMERAL: the take-away is a word, the blue count and the part count are
+       both in the picture. So neither a table over the stem's numerals nor any
+       expression over them can name the key or half of it - there is nothing to
+       write one over, and the oracle fails the build if a digit ever appears in
+       this stem.
      - RULE 10, THE PICTURE RULER, and the load-bearing clause in the oracle:
        another legal bar (the same pieces over a different part count) changes the
        answer on every draw, because `d` IS the key's bottom number.
@@ -855,22 +915,70 @@ function gPicIdentify(){
    else in the file: one or two of the three slips are written over the bar's own
    part count (sameDen), and the key may not be the unique option both of whose
    numerals are printed elsewhere on the row (digitIsolatesKey). */
+/* SEVENTH PASS 2026-09-16, KILL 1 - and the premise the v7 refill was built on
+   was FALSE, which is the finding worth keeping. The condition the PM set was "the
+   picture is load-bearing - the bar's part count IS the key's bottom number and
+   appears in no word of the stem", and the second half of that sentence was true.
+   THE FIRST HALF DOES NOT FOLLOW FROM IT. The child never had to DETERMINE the
+   bottom number, only to DISCRIMINATE it, and the stem handed her the other half
+   of the key for free:
+
+     - "the answer's TOP number is a - g" is one subtraction on the two numerals
+       the stem printed, true on 100.00% of draws;
+     - that top number ISOLATED the key on 59.6 / 59.0%;
+     - take it and guess among the ties: 79.6 / 79.2%;
+     - break the tie with "the bottom number is the one printed twice on the row"
+       - a seat sameDen() is REQUIRED to fill - 88.7 / 88.8%;
+     - break it with the masked row shape instead: 94.9 / 94.7%.
+
+   The bar was never counted, in a bank served 3.42 / 3.54 items a session to a
+   struggling child, three or more times in 82-84% of those sessions.
+
+   WHY SIX RULERS WERE BLIND, which is the general lesson: RULE 12's arithmetic
+   library only scores an expression naming the WHOLE key, so a numerator-only
+   match scored nothing; RULE 10 and RULE 11 read the row with the stem discarded;
+   RULE 13 reads numeral MEMBERSHIP, and a - g is arithmetic, not membership. The
+   half-key route fell exactly through the middle of the four rulers this file had.
+   RULE 14, THE HALF-KEY RULE, is the general form and this bank's v7 construction
+   is its negative control.
+
+   THE REBUILD: THE STEM PRINTS NO NUMERAL AT ALL. The take-away is a WORD ("eats
+   two of his pieces"), the blue count is not printed, and the part count is not
+   printed - so BOTH halves of the key are counted off the bar and no expression
+   over the stem can name either one, because there is nothing to write an
+   expression over. The oracle in tools/gen-sanity.mjs asserts that emptiness
+   directly (a digit anywhere in this stem is a failure) rather than measuring
+   around it.
+
+   THE ROW FAMILY, and it is the second half of the fix. The composed route the
+   seventh pass measured - stem recall, then the masked row SHAPE where recall does
+   not settle it - ran at 69.0 / 71.6% on v7, and killing the stem half alone would
+   have left the shape half at 67. Half the draws now seat all three slips over the
+   BAR'S OWN part count, which collapses to a single masked shape whose key slot is
+   the value rank RULE 7 already draws evenly - 25% by construction - and the other
+   half spread the bottom numbers as before, where the part count has to be read to
+   choose at all. Measured below 60% composed, on both seeds, and declared.
+
+   COST, declared: on the flat half of the draws the bar's part count is settled by
+   the option row rather than by counting, so the picture carries the TOP number
+   there and both numbers on the spread half. On no draw does the stem carry
+   either. The distinct-stem space falls from 288 to 108 and is now
+   INFORMATION-FREE: the six-row stem table measures at chance, because the same
+   sentence sits over every picture the format can draw. */
+const TAKE_CTX = ['kueh lapis', 'pandan chiffon cake', 'pizza at the hawker centre',
+                  'chocolate swiss roll', 'ondeh-ondeh cake', 'sugee cake'];
+const TAKE_WORD = ['one', 'two', 'three'];
 function gPicTakeAway(){
-  const kid = pick(KIDS), cake = pick(CAKES);
+  const kid = pick(KIDS), cake = pick(TAKE_CTX);
   /* RULE 7: the value rank is drawn FIRST and sided() is forced to seat it. */
   const rank = ri(1,4);
-  let d = 8, a = 5, g2 = 2, key = [3,8], slips = [[5,8],[2,8],[3,7]], g = 0;
+  /* the row family, drawn per item so the count itself carries no information */
+  const flat = Math.random() < 0.5;
+  let d = 8, a = 5, g2 = 2, key = [3,8], slips = [[5,8],[2,8],[3,7]], g = 0, ok = false;
   do {
-    /* RULE 12 again, and it took a measurement to see it: with `a` allowed to run
-       to d - 1 the bar's part count was the child's piece count plus one on a
-       seventh of all draws, and "(a - g) over (a + 1)" - one subtraction and one
-       addition, both of them on numerals the STEM prints - named the key on 47.3%
-       of 4,000 draws without the bar being looked at. `a` stops two short of the
-       whole now and `d` starts at 6, so no arithmetic of the stem's two numerals
-       reaches the bottom number: measured 18.7%, which is the coincidence rate. */
     d = ri(6,12);
-    a = ri(3, d-2);          /* her pieces: at least three, never all but one */
-    g2 = ri(1, Math.min(2, a-1));
+    a = ri(4, d-2);                     /* her pieces: never all but one */
+    g2 = ri(1, Math.min(3, a-2));       /* what she eats, and at least two are left */
     key = [a-g2, d];
     const cands = [
       [a, d],                          /* answered the blue part as drawn, forgetting the bite */
@@ -879,6 +987,8 @@ function gPicTakeAway(){
       (d-a+g2 < d ? [d-a+g2, d] : null), /* answered the pieces that are not hers NOW */
       (a-g2+1 < d ? [a-g2+1, d] : null), /* one piece miscounted, one too many */
       (a-g2-1 >= 1 ? [a-g2-1, d] : null),/* one piece miscounted, one too few */
+      (a-g2+2 < d ? [a-g2+2, d] : null), /* two pieces miscounted */
+      (a-g2-2 >= 1 ? [a-g2-2, d] : null),
       (a-g2 < d-1 ? [a-g2, d-1] : null), /* took the eaten piece off the whole as well */
       (d+1 <= 12 ? [a-g2, d+1] : null),  /* counted a part that is not there */
       (a-g2 < d-2 && d-2 >= 2 ? [a-g2, d-2] : null),
@@ -894,16 +1004,22 @@ function gPicTakeAway(){
       (a < d-1 ? [a, d-1] : null),
       (d+1 <= 12 ? [g2, d+1] : null)
     ].filter(Boolean);
-    slips = sided(key, cands, sameDen(cands, d, key), 4 - rank) || [];
+    /* the flat family: every slip over the bar's own part count, so the four
+       options are four top numbers over one bottom number - one masked shape, and
+       the key's slot in it is the value rank, drawn evenly above. */
+    const pool = flat ? cands.filter(c => c[1] === d) : cands;
+    slips = sided(key, pool, sameDen(pool, d, key), 4 - rank) || [];
+    ok = slipsOk(key, slips) && !digitIsolatesKey(key, slips);
     g++;
-  } while (g < 200 && !(slipsOk(key, slips) && !digitIsolatesKey(key, slips)));
-  if (!slipsOk(key, slips)){ d = 8; a = 5; g2 = 2; key = [3,8]; slips = [[5,8],[2,8],[3,7]]; }
-  return fig(mcFrac('The bar below shows a ' + cake + ' cut into equal pieces, and ' + kid[0] + "'s " +
-    a + ' pieces are blue. ' + kid[1] + ' eats ' + g2 + ' of ' + (kid[2] === 'she' ? 'her' : 'his') +
+  } while (g < 200 && !ok);
+  if (!ok){ d = 8; a = 5; g2 = 2; key = [3,8]; slips = [[5,8],[2,8],[3,7]]; }
+  const art = /^[aeiou]/i.test(cake) ? 'an ' : 'a ';
+  return fig(mcFrac('The bar below shows ' + art + cake + ' cut into equal pieces, and ' + kid[0] + "'s " +
+    'pieces are blue. ' + kid[1] + ' eats ' + TAKE_WORD[g2-1] + ' of ' + (kid[2] === 'she' ? 'her' : 'his') +
     ' pieces. What fraction of the ' + cake + ' is <b>still ' + kid[0] + "'s</b>?", key, slips,
-    'Count all the parts on the bar first: the ' + cake + ' is cut into ' + d + ' equal parts, and ' +
+    'Count the parts on the bar first: the ' + cake + ' is cut into ' + d + ' equal parts, and ' +
     a + ' of them ' + (a === 1 ? 'is' : 'are') + ' blue, so ' + kid[0] + ' had ' + fr(a,d) + '. ' +
-    kid[1] + ' eats ' + g2 + ', so ' + a + ' − ' + g2 + ' = ' + (a-g2) + ' ' +
+    kid[1] + ' eats ' + TAKE_WORD[g2-1] + ', so ' + a + ' − ' + g2 + ' = ' + (a-g2) + ' ' +
     ((a-g2) === 1 ? 'piece is' : 'pieces are') + ' left, out of the same ' + d + ' parts: ' + fr(a-g2,d) +
     '. Eating a piece does not re-cut the ' + cake + ', so the bottom number never moves - it stays ' + d + '.'),
     bar(d, a));
@@ -1022,7 +1138,13 @@ function gEquivFromBar(){
         ' and ' + d + ' × ' + k + ' = ' + (k*d) + ', so the same amount of bar is also ' + fr(k*n, k*d) + '. '
       : 'Now group the small parts back together in ' + k + 's: ' + (k*n) + ' ÷ ' + k + ' = ' + n + ' and ' +
         (k*d) + ' ÷ ' + k + ' = ' + d + ', so the same amount of bar is also ' + fr(n,d) + '. ') +
-    'Adding ' + k + ' to the top and the bottom would give ' + fr(n+k, d+k) + ', which is a different amount.'),
+    /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE (see gSimplestError).
+       [n+k, d+k] is a candidate, not a seat, so this sentence named a wrong answer
+       that was nowhere on the screen on 52.3 / 52.5% of draws. */
+    (slips.some(s => s[0] === n+k && s[1] === d+k)
+      ? 'Adding ' + k + ' to the top and the bottom would give ' + fr(n+k, d+k) + ', which is a different amount.'
+      : 'Adding ' + k + ' to the top and the bottom instead of multiplying by it gives a different amount, ' +
+        'because it does not cut every part the same way.')),
     bar(parts, blue));
 }
 
@@ -1212,21 +1334,30 @@ function gPickEquiv(){
      they were not shown. The value is printed where it is offered and the slip is
      named in WORDS where it is not, which is what the rest of the file already
      does for the beliefs that overshoot the 12 cap. */
-  const onRow = c => slips.some(s => sameVal(s, c));
+  /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE. The v5 guard asked
+     whether a candidate's VALUE is on the row (sameVal) and then printed the
+     candidate's own form, but sided()'s uniq() keeps whichever of two equal-valued
+     candidates is written in the BIGGER pieces - so the card said "2/8" while the
+     row showed "1/4" on 26.8 / 26.1% of draws. Same amount, different glyphs, and
+     a P3 child hunting the row for "2/8" does not find it. The seated pair is
+     looked up and printed EXACTLY as the option row prints it. */
+  const seat = c => slips.find(s => sameVal(s, c)) || null;
+  const onRow = c => !!seat(c);
+  const asRow = c => { const p = seat(c); return fr(p[0], p[1]); };
   const first = up
     ? 'Cut every part into ' + k + ' smaller ones: multiply the top AND the bottom by ' + k + '. ' +
       n + ' × ' + k + ' = ' + (k*n) + ' and ' + d + ' × ' + k + ' = ' + (k*d) + ', so ' + fr(n,d) + ' = ' +
       fr(k*n, k*d) + '. ' + (onRow([n+k, d+k])
-        ? 'Adding ' + k + ' to both instead gives ' + fr(n+k, d+k) + ', which is a different amount. '
+        ? 'Adding ' + k + ' to both instead gives ' + asRow([n+k, d+k]) + ', which is a different amount. '
         : 'Adding ' + k + ' to the top and the bottom instead of multiplying them changes the amount. ')
     : 'Group the parts back together in ' + k + 's: divide the top AND the bottom by ' + k + '. ' +
       (k*n) + ' ÷ ' + k + ' = ' + n + ' and ' + (k*d) + ' ÷ ' + k + ' = ' + d + ', so ' + fr(k*n, k*d) + ' = ' +
       fr(n,d) + '. ' + (onRow([k*n-t, k*d-t])
-        ? 'Taking ' + t + ' away from both instead gives ' + fr(k*n-t, k*d-t) + ', which is a different amount. '
+        ? 'Taking ' + t + ' away from both instead gives ' + asRow([k*n-t, k*d-t]) + ', which is a different amount. '
         : 'Taking the same number off the top and the bottom instead of dividing them changes the amount. ');
   return mcFrac('Which fraction is <b>equivalent</b> to ' + fr(given[0], given[1]) + '?', key, slips,
     first + (onRow([n, k*d])
-      ? 'Changing only the bottom gives ' + fr(n, k*d) + ', which is not the same amount either.'
+      ? 'Changing only the bottom gives ' + asRow([n, k*d]) + ', which is not the same amount either.'
       : 'Changing only the bottom number and leaving the top alone is not the same amount either.'));
 }
 
@@ -1273,11 +1404,18 @@ function gSimplest(){
     g++;
   } while (g < 200 && !slipsOk(key, slips));
   if (!slipsOk(key, slips)){ n = 2; d = 3; k = 2; N = 4; D = 6; key = [2,3]; slips = [[2,4],[2,6],[1,3]]; }
+  /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE (see gSimplestError).
+     "Dividing only the top would give " + fr(n,D) names a candidate sided() seats
+     on fewer than half its draws: the card pointed at a wrong answer that was not
+     on the screen on 58.6 / 58.3%. Named in words where it is not seated. */
+  const onlyTop = slips.some(s => s[0] === n && s[1] === D);
   return mcFrac('Express ' + fr(N,D) + ' in its <b>simplest form</b>.', key, slips,
     'Simplest form means dividing the top and the bottom by the same number until you cannot go any further. ' +
     N + ' ÷ ' + k + ' = ' + n + ' and ' + D + ' ÷ ' + k + ' = ' + d + ', so ' + fr(N,D) + ' = ' + fr(n,d) +
-    '. It is the same amount, written with bigger parts. Dividing only the top would give ' + fr(n,D) +
-    ', which is a smaller amount.');
+    '. It is the same amount, written with bigger parts. ' +
+    (onlyTop ? 'Dividing only the top would give ' + fr(n,D) + ', which is a smaller amount.'
+             : 'Dividing only the top and leaving the bottom number at ' + D + ' would make the pieces ' +
+               'smaller as well as fewer, which is a different amount.'));
 }
 
 /* FORMAT 2f - negative form: which one is ALREADY simplest (pool 3, 2 steps).
@@ -1386,15 +1524,30 @@ function gSimplestError(){
     n = 2; d = 3; k = 2; N = 4; D = 6; t = 1; key = [2,3]; low = [1,2]; slips = [[3,5],[2,6],[1,2]];
   }
   kid = pick(KIDS);
+  /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE. The last sentence used
+     to print fr(low) unconditionally, and `low` is a CANDIDATE, not a seat: sided()
+     takes three of nineteen, so on 25.5 / 25.7% of draws the card said "gives 1/5"
+     about a fraction the child cannot see anywhere on the screen. A wrong answer a
+     child cannot compare against the row is a wrong answer they can only memorise.
+     Same class as the sixth pass's W4 (closed in gPickEquiv) and as gSimplest,
+     gEquivFromBar and gSubRelated, all four closed together this pass and gated by
+     the CARD-ROW CLAUSE in tools/gen-sanity.mjs: a fraction named inside a
+     wrong-answer sentence on the teaching card must be on the option row or in the
+     stem. Where it is not seated, the habit is named in words instead. */
+  const lowOnRow = slips.some(s => s[0] === low[0] && s[1] === low[1]);
   return mcFrac(kid[0] + ' says ' + fr(N,D) + ' in its simplest form is ' + fr(N-t, D-t) + ', because ' +
     kid[2] + ' took ' + t + ' away from the top and ' + t + ' away from the bottom. <b>What is ' + fr(N,D) +
     ' in its simplest form?</b>', key, slips,
     'Taking the same number away from the top and the bottom changes the amount. ' + fr(N,D) + ' is ' +
     'not ' + fr(N-t, D-t) + '. To simplify you DIVIDE both by the same number: ' + N + ' ÷ ' + k + ' = ' + n +
     ' and ' + D + ' ÷ ' + k + ' = ' + d + ', so ' + fr(N,D) + ' = ' + fr(n,d) + '. ' +
-    'Carrying the same habit on to the answer - taking 1 off ' +
-    (low[0] === n ? 'the bottom' : 'the top and the bottom') + ' of ' + fr(n,d) + ' - gives ' +
-    fr(low[0], low[1]) + ', which is a different amount again.');
+    (lowOnRow
+      ? 'Carrying the same habit on to the answer - taking 1 off ' +
+        (low[0] === n ? 'the bottom' : 'the top and the bottom') + ' of ' + fr(n,d) + ' - gives ' +
+        fr(low[0], low[1]) + ', which is a different amount again.'
+      : 'Carrying the same habit on to the answer would change the amount a second time: ' + fr(n,d) +
+        ' is as far as it goes, and taking anything more off the top or the bottom makes a different ' +
+        'fraction, not a simpler one.'));
 }
 
 
@@ -1792,6 +1945,19 @@ function gCompareWords(){
    d-ths strictly between them, which is what keeps the stem from naming the key:
    a child who memorises the pair of ends still has to choose between two or more
    interior values, so the six-row stem table of RULE 12 is worth nothing here. */
+/* SEVENTH PASS 2026-09-16, WOUND 3 - THE STEM SPACE, DECLARED WITH ITS ARITHMETIC
+   RATHER THAN WIDENED. The refutation asks for 200 distinct stems here and the
+   format cannot reach it inside P3: the loop below is the COMPLETE enumeration of
+   legal (d, b, x, y) - every related pair with a bottom number to 12 and at least
+   two twelfths of room between the ends - and it yields 108 shapes and 107 distinct
+   stems. Relaxing the guard to hi - lo >= 2 takes it to 150 shapes, still short of
+   200, and every stem it adds has exactly ONE value between its ends, so the pair
+   of ends NAMES the key on those draws and the stem-recall route goes UP, not down.
+   The only other widenings available leave related pairs, which is P4 content.
+   Measured: a child who has met all 107 stems and recalls each one's answer scores
+   56.7 / 56.8% on 20,000 held-out draws (two seeds), under the 60% line the file
+   uses everywhere - carried as the stem-space class, with its exposure of
+   1.69 / 1.67 items a session at 80% accuracy. */
 const BTW_SHAPES = [];
 for (let d2 = 4; d2 <= 12; d2++)
   for (let b2 = 2; b2 < d2; b2++) if (d2 % b2 === 0)
@@ -2167,11 +2333,15 @@ function gSubSame(){
      one - 28.3% of cards named a value off the row at v5, 67.8% after. Its value
      is printed where it is offered and the slip is named in WORDS where it is
      not, which is what the rest of the file already does. */
-  const namesIt = slips.some(s => sameVal(s, [a-b, d-b]));
+  /* SEVENTH PASS 2026-09-16, THE CARD-ROW CLAUSE: the SEATED form is printed, not
+     the candidate's own - sided()'s uniq() may have seated the same amount written
+     in bigger pieces, and a child hunting the row for the glyphs the card printed
+     does not find them. */
+  const seated = slips.find(s => sameVal(s, [a-b, d-b]));
   return mcFrac(fr(a,d) + ' − ' + fr(b,d) + ' = ?', key, slips,
     'Both fractions are the same size of piece, so take the pieces away and leave the bottom number alone: ' +
-    a + ' − ' + b + ' = ' + (a-b) + ', giving ' + fr(a-b, d) + '. ' + (namesIt
-      ? 'Subtracting the bottom numbers as well would give ' + fr(a-b, d-b) +
+    a + ' − ' + b + ' = ' + (a-b) + ', giving ' + fr(a-b, d) + '. ' + (seated
+      ? 'Subtracting the bottom numbers as well would give ' + fr(seated[0], seated[1]) +
         ' - but the pieces did not change size, only how many there are.'
       : 'Subtracting the bottom numbers as well would change the SIZE of each piece - and the pieces did not change size, only how many there are.'));
 }
@@ -2319,6 +2489,7 @@ function gMakeOneIn(){
     g++;
   } while (g < 200 && !ok);
   if (!ok){ d = 4; k = 3; D = 12; a = 1; form = 0; key = [9,12]; slips = [[3,12],[1,12],[11,12]]; }
+  const mSeat = slips.find(s => sameVal(s, [d-a, D]));
   return mcFrac(MAKE_ONE_IN[form](fr(a,d), D) +
     ' &nbsp; What is the missing fraction, written in ' + D + 'ths?',
     key, slips,
@@ -2327,7 +2498,15 @@ function gMakeOneIn(){
     'Step 2: write that in ' + D + 'ths. ' + d + ' × ' + k + ' = ' + D + ', so each big piece is ' + k +
     ' small ones: ' + (d-a) + ' × ' + k + ' = ' + (D - k*a) + ', giving ' + fr(D - k*a, D) + '. ' +
     'Check it: ' + fr(k*a, D) + ' + ' + fr(D - k*a, D) + ' = ' + fr(D,D) + ', which is 1. ' +
-    'Keeping the old top number over the new bottom number gives ' + fr(d-a, D) + ', which is too small.');
+    /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE. [d-a, D] is one
+       candidate of ten and sided() seats three, so this sentence named a wrong
+       answer that was nowhere on the screen on 49.8 / 50.0% of draws - the worst
+       rate in the topic after the two the refutation named. Printed where it is
+       seated (in the form the ROW prints it), named in words where it is not. */
+    (mSeat ? 'Keeping the old top number over the new bottom number gives ' + fr(mSeat[0], mSeat[1]) +
+             ', which is too small.'
+           : 'Keeping the old top number ' + (d-a) + ' over the new bottom number ' + D + ' would be too ' +
+             'small: each big piece became ' + k + ' small ones, so the top number has to grow as well.'));
 }
 
 /* FORMAT 4e - RELATED fractions, add (pool 3, 2 steps). MOE P3 3.2 names related
@@ -2335,6 +2514,13 @@ function gMakeOneIn(){
    subtract was a like-fraction item, which is why pool 3 added no step. The two
    steps are: change one fraction into an equivalent one, then count the pieces. */
 function gAddRelated(){
+  /* SEVENTH PASS 2026-09-16, W1. The flat row family narrows which seatings a draw
+     can supply, and a filter applied after a FREE rank draw does not leave a free
+     draw behind - the fifth pass wrote that down for the coupling seats and it is
+     the same effect here (41.1% second-largest with `u` left free). The rank is
+     drawn FIRST and sided() must seat it; the retry loop redraws the numbers until
+     it can. */
+  const rank = ri(1,4);
   let d = 4, k = 3, D = 12, a = 1, b = 2, key = [5,12], slips = [[3,12],[7,12],[4,11]], g = 0;
   do {
     /* WOUND 2: the scale factor ran to 4, which is why only nine (d, k) pairs
@@ -2357,6 +2543,21 @@ function gAddRelated(){
        piece-and-size miscount carried in both directions restores the third
        candidate on each side, and the draw guard is tightened by one so it is
        always legal. */
+    /* SEVENTH PASS 2026-09-16, WOUND 1 - THE COMPOSED ROUTE. The refutation's two
+       declared residual classes are printed on every run SEPARATELY, and a child
+       does not run one ruler at a time: the six-row stem table, then the masked row
+       SHAPE wherever the table does not settle it, answered this bank on 93.6 / 93.3% and its
+       sibling on the other. Both inputs are under their own gates.
+       The row half is what this lane can move. Half the draws now seat all three
+       slips over the CONVERTED bottom number D, which collapses to a single masked
+       shape - four top numbers over one bottom number - instead of the 33 shapes
+       that each named the key's slot on 97.5%; the other half spread the bottom
+       numbers as before. Every entry dropped on a flat draw is a size-miscount the
+       card already names, so nothing goes off the misconception list. The measured
+       composition after the change is in the lane note, with its exposure: this is
+       a widening, not a closure, and the stem half (27 and 24 distinct stems) is
+       the stem-space class, wave 2, and out of this lane's fence. */
+    const flat = Math.random() < 0.5;
     slips = sided(key, [
       [a+b, D],                         /* did not convert the first fraction */
       [a + k*b, D],                     /* scaled the wrong fraction */
@@ -2365,8 +2566,15 @@ function gAddRelated(){
       [k*a + b + 1, D-1],               /* one piece too many AND the size one short */
       [k*a + b, D-1],                   /* counted the pieces right, the size one short */
       [k*a + b - 1, D],                 /* counted one small piece too few */
+      /* SEVENTH PASS 2026-09-16, W1. The flat row family above seats all three
+         slips over D, and over D this bank could only name TWO candidates below
+         the key - so "key largest" was unseatable and RULE 7 came back at 12.8%
+         largest / 49.8% second largest. Two more of the file's own miscounts, both
+         over D and both below the key, put the fourth seating back. */
+      (k*a + b - 2 >= 1 ? [k*a + b - 2, D] : null),   /* two small pieces too few */
+      (k*(a-1) + b >= 1 ? [k*(a-1) + b, D] : null),   /* one BIG piece too few, converted */
       [k*a + b - 1, D-1]                /* one piece too few AND the size one short */
-    ]) || [];
+    ].filter(Boolean).filter(c => !flat || c[1] === D), null, 4 - rank) || [];
     g++;
     /* k*a + b + 1 < D: the gcd(key, D) = 1 guard hugely over-selects the key
        (D-1)/D - for D = 12 it is one of only four legal tops - and at (D-1)/D
@@ -2401,6 +2609,21 @@ function gSubRelated(){
        largest" answered this item every time. Converting and then FORGETTING to
        subtract, and subtracting the wrong way round, are both real and both
        overshoot. */
+    /* SEVENTH PASS 2026-09-16, WOUND 1 - THE COMPOSED ROUTE. The refutation's two
+       declared residual classes are printed on every run SEPARATELY, and a child
+       does not run one ruler at a time: the six-row stem table, then the masked row
+       SHAPE wherever the table does not settle it, answered this bank on 98.6 / 98.5% and its
+       sibling on the other. Both inputs are under their own gates.
+       The row half is what this lane can move. Half the draws now seat all three
+       slips over the CONVERTED bottom number D, which collapses to a single masked
+       shape - four top numbers over one bottom number - instead of the 33 shapes
+       that each named the key's slot on 97.5%; the other half spread the bottom
+       numbers as before. Every entry dropped on a flat draw is a size-miscount the
+       card already names, so nothing goes off the misconception list. The measured
+       composition after the change is in the lane note, with its exposure: this is
+       a widening, not a closure, and the stem half (27 and 24 distinct stems) is
+       the stem-space class, wave 2, and out of this lane's fence. */
+    const flat = Math.random() < 0.5;
     slips = sided(key, [
       [a-b, D-d],                       /* took the tops and the bottoms away */
       [a-b, D],                         /* did not convert the first fraction */
@@ -2431,7 +2654,7 @@ function gSubRelated(){
       (D+1 <= 12 ? [k*a - b, D+1] : null),  /* miscounted the size of the small pieces */
       (D+2 <= 12 ? [k*a - b, D+2] : null),  /* ... one and two parts over */
       (D+1 <= 12 ? [k*a - b - 1, D+1] : null)
-    ].filter(Boolean)) || [];
+    ].filter(Boolean).filter(c => !flat || c[1] === D)) || [];
     g++;
   } while (g < 200 && !(D <= 12 && a < d && (k*a - b >= 2 || D <= 10) && k*a - b + 1 < D &&
                         gcd(k*a - b, D) === 1 && slipsOk(key, slips)));
@@ -2439,11 +2662,36 @@ function gSubRelated(){
         slipsOk(key, slips))){
     d = 4; k = 2; D = 8; a = 3; b = 1; key = [5,8]; slips = [[2,4],[2,8],[6,8]];
   }
+  /* SEVENTH PASS 2026-09-16, KILL 2 - AND IT WAS INHERITED, WHICH IS THE PART THAT
+     MATTERS. This card used to end "...straight off would give " + fr(a-b, D-d).
+     `b` runs to D-1 and `a` stops at d-1, so a - b is NEGATIVE on 49.97 / 50.70%
+     of draws and ZERO on 15.19 / 14.36%: the teaching card - the highest-salience
+     surface in the app - printed "would give -1/8" to a P3 child on 65% of the
+     draws of a bank served 0.91 a session, and had done so since before this lane
+     started. Negative numbers are Secondary 1 content: it is a SCOPE LEAK, one of
+     the five items the PM's termination rule names.
+
+     SIX PASSES, FIFTEEN NEGATIVE CONTROLS AND 1.08 M AUDITED DRAWS WALKED PAST IT
+     because every fraction regex in tools/gen-sanity.mjs was (\d+) and a minus sign
+     is not a digit - parseFrac, allFracs, RULE 4's syllabus scan, the card walker
+     and the layout gate all read straight through the character. legalFrac keeps
+     such a fraction off the option ROW (p[0] >= 1); nothing guarded the card, and
+     the card is the one surface nothing re-derives. The harness now reads (-?\d+)
+     everywhere and THE SIGN GATE fails any rendered numerator below 1 or
+     denominator below 1 on any surface of any bank in the game, with this card as
+     its negative control.
+
+     The belief is named in WORDS here, which is the device this file already uses
+     wherever a named misconception cannot be rendered inside the syllabus (see the
+     12-cap note above) - and it also closes this bank's half of the seventh pass's
+     WOUND 2, because the fraction it used to print was off the option row on
+     27.3 / 27.6% of draws. */
   return mcFrac('Subtract: ' + fr(a,d) + ' − ' + fr(b,D) + ' = ?', key, slips,
     'The pieces are different sizes, so change the first fraction. ' + d + ' × ' + k + ' = ' + D + ', so ' +
     fr(a,d) + ' = ' + fr(k*a, D) + '. Now take the pieces away: ' + (k*a) + ' − ' + b + ' = ' + (k*a - b) +
-    ', giving ' + fr(k*a - b, D) + '. Subtracting the tops and the bottoms straight off would give ' +
-    fr(a-b, D-d) + ', which is a different amount altogether.');
+    ', giving ' + fr(k*a - b, D) + '. Subtracting the tops and the bottoms straight off is a different sum ' +
+    'altogether: the bottom number is the SIZE of the piece, and ' + D + 'ths do not turn into ' + (D-d) +
+    'ths just because some pieces were taken away.');
 }
 
 /* FORMAT 4g - error spotting, DIAGNOSE the mistake (pool 3, 2 steps). The named

@@ -106,7 +106,7 @@ const SHAPE_STOP = new Set(('A An The What Which How If In On At Of For From To 
 const SHAPE = q => {
   let s = String((q && q.q) || '') + ' ||X|| ' + String((q && q.extra) || '');
   s = s.replace(/<span class="frac">[\s\S]*?<\/span><\/span>/g, ' [FRAC] ');
-  s = s.replace(/<span class="n">\d+<\/span><span class="d">\d+<\/span>/g, ' [FRAC] ');
+  s = s.replace(/<span class="n">-?\d+<\/span><span class="d">-?\d+<\/span>/g, ' [FRAC] ');
   s = s.replace(/<[^>]*>/g, ' [T] ');
   s = s.replace(/&nbsp;/g, ' ');
   s = s.replace(/\$\s?[\d, ]+(\.\d+)?/g, ' [MONEY] ');

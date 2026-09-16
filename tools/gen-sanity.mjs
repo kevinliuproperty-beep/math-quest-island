@@ -58,10 +58,10 @@ const TOPICS = MQI.topics;
 const strip = s => String(s).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 const near = (x, y) => Math.abs(x - y) < 1e-9;
 const parseFrac = html => {
-  const m = String(html).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
+  const m = String(html).match(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/);
   return m ? [Number(m[1]), Number(m[2])] : null;
 };
-const allFracs = html => [...String(html).matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]
+const allFracs = html => [...String(html).matchAll(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/g)]
   .map(m => [Number(m[1]), Number(m[2])]);
 const gcd = (a, b) => { while (b) { [a, b] = [b, a % b]; } return a; };
 
@@ -428,7 +428,7 @@ function checkShape(q) {
      every draw rather than on the lucky ones (refutation §6). */
   if (Array.isArray(q.authoredFrac)) {
     const rf = s => {
-      const mm = String(s).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
+      const mm = String(s).match(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/);
       return mm ? [Number(mm[1]), Number(mm[2])] : null;
     };
     const key = rf(q.answerText);
@@ -1417,7 +1417,7 @@ function oracle(q, topic) {
      would turn that into "2 34", so this reads the RAW markup. --- */
   if (/^(Add|Subtract) the mixed numbers: /.test(text) || /^Multiply: \d+ \d+ x \d+ = \?$/.test(text)) {
     const allMixed = html => [...String(html).matchAll(
-      /(\d+)\s*<span class="frac"><span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]
+      /(\d+)\s*<span class="frac"><span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/g)]
       .map(x => [Number(x[1]), Number(x[2]), Number(x[3])]);
     const mval = t => t[0] + t[1] / t[2];
     const mixQ = allMixed(q.q), mixA = allMixed(q.answerText);
@@ -1683,31 +1683,31 @@ function oracle(q, topic) {
         return null;
       }
       /* --- the pool-1 refill: a fraction read off the bar after one step -----
-         SWEEP FRACTIONS REFUTATION, SIXTH PASS 2026-09-16, KILL 1. gEqualParts is
-         retired (its oracle is the branch above, now unreachable) and this is the
-         format that takes its slot. Everything is re-derived from the DRAWN bar
-         and the stem's OWN two numerals: the bar's part count is the key's bottom
-         number and appears in no word of the stem, which is what RULE 12 gates,
-         and the blue count must be the piece count the stem prints. */
-      if ((m = text.match(/^The bar below shows an? (.+?) cut into equal pieces, and (.+?)'s (\d+) pieces are blue\. (?:She|He) eats (\d+) of (?:her|his) pieces\. What fraction of the \1 is still \2's\?$/))) {
-        const a = Number(m[3]), g2 = Number(m[4]);
-        if (on !== a) return `take away: the stem says ${a} pieces are blue and the bar draws ${on}`;
-        if (a < 2) return `take away: ${a} piece is not a share to take from`;
-        if (g2 < 1 || g2 >= a) return `take away: eating ${g2} of ${a} pieces leaves nothing to name`;
+         SWEEP FRACTIONS REFUTATION, SEVENTH PASS 2026-09-16, KILL 1. The v7 stem
+         printed the child's piece count and the number she ate, and "the answer's
+         TOP number is a - g" - one subtraction on those two numerals - answered
+         the item at 79.6% with the ties guessed and 88.7% once the repeated bottom
+         number broke them, with the bar never counted. RULE 14 is the general form.
+
+         THE REBUILD IS ASSERTED HERE RATHER THAN MEASURED AROUND: this stem prints
+         NO NUMERAL AT ALL. The take-away is a word, the blue count and the part
+         count are both in the picture only, and both halves of the key are read off
+         the DRAWN bar - so there is nothing for an expression over the stem to be
+         an expression over. A digit anywhere in the stem is a failure. */
+      if ((m = text.match(/^The bar below shows an? (.+?) cut into equal pieces, and (.+?)'s pieces are blue\. (?:She|He) eats (one|two|three) of (?:her|his) pieces\. What fraction of the \1 is still \2's\?$/))) {
+        const g2 = { one: 1, two: 2, three: 3 }[m[3]];
+        if (/\d/.test(text))
+          return 'take away: the stem prints a numeral - this format exists because BOTH halves of its key are counted off the bar, and a numeral in the words is a half-key route (RULE 14)';
+        const a = on;
+        if (a < g2 + 2) return `take away: ${a} blue pieces less ${g2} eaten leaves nothing worth naming`;
         if (total > 12) return `take away: ${total} parts exceeds the P3 denominator limit of 12`;
         if (a >= total) return `take away: ${a} blue pieces out of ${total} is the whole bar or more`;
         const want = [a - g2, total];
         if (!keyF) return 'take away: the key is not a rendered fraction';
         if (!(keyF[0] === want[0] && keyF[1] === want[1]))
-          return `take away: ${a} pieces less ${g2} is ${want[0]} out of the bar's own ${total} parts, and the key is ${show(keyF)}`;
-        /* RULE 12's load-bearing half, checked here where the figure is: the
-           bottom number is the BAR's part count, so another legal bar changes the
-           answer on every draw and no reading of the two printed numerals can
-           reach it. */
-        if (total < a + 2)
-          return `take away: the bar has ${total} parts and ${a} of them blue, so the part count is the stem's own numeral plus one and the picture can be skipped`;
+          return `take away: the bar draws ${a} blue of ${total} and the child eats ${g2}, which is ${want[0]} out of the bar's own ${total} parts, and the key is ${show(keyF)}`;
         const named = [[a, total], [g2, total], [total - a, total], [total - a + g2, total],
-                       [want[0] + 1, total], [want[0] - 1, total],
+                       [want[0] + 1, total], [want[0] - 1, total], [want[0] + 2, total], [want[0] - 2, total],
                        [want[0], total - 1], [want[0], total + 1], [want[0], total - 2], [want[0], total + 2],
                        [want[0] + 1, total - 1], [want[0] - 1, total + 1], [a, total - 1], [g2, total + 1]];
         const badT = fromList('take away', named);
@@ -1785,7 +1785,7 @@ function oracle(q, topic) {
        same size: comparing fractions of different wholes is not a question. --- */
     if ((m = text.match(/^.+ each bought a same-size .+\. .+\. Who ate the (most|least)\?$/))) {
       const wantMax = m[1] === 'most';
-      const pairs = [...String(q.q).matchAll(/([A-Z][a-z]+) ate <span class="frac"><span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]
+      const pairs = [...String(q.q).matchAll(/([A-Z][a-z]+) ate <span class="frac"><span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/g)]
         .map(x => [x[1], Number(x[2]), Number(x[3])]);
       if (pairs.length !== 4) return `who ate most: ${pairs.length} name+fraction pairs found, expected 4`;
       if (pairs.some(p => p[1] >= p[2] || p[2] > 12)) return 'who ate most: a share is not a proper fraction with a denominator to 12';
@@ -1936,7 +1936,7 @@ function oracle(q, topic) {
     /* --- equivalence: the two inverses, then recognition -------------------- */
     if (/What is the missing numerator\?$/.test(text)) {
       const from = parseFrac(q.q);
-      const to = q.q.match(/<span class="n">\?<\/span><span class="d">(\d+)<\/span>/);
+      const to = q.q.match(/<span class="n">\?<\/span><span class="d">(-?\d+)<\/span>/);
       if (!from || !to) return 'missing numerator: the stem does not print n/d = ?/D';
       const D = Number(to[1]);
       if (D > 12) return `missing numerator: denominator ${D} exceeds 12`;
@@ -1950,7 +1950,7 @@ function oracle(q, topic) {
     }
     if (/What is the missing denominator\?$/.test(text)) {
       const from = parseFrac(q.q);
-      const to = q.q.match(/<span class="n">(\d+)<\/span><span class="d">\?<\/span>/);
+      const to = q.q.match(/<span class="n">(-?\d+)<\/span><span class="d">\?<\/span>/);
       if (!from || !to) return 'missing denominator: the stem does not print n/d = N/?';
       const N = Number(to[1]);
       if (gcd(from[0], from[1]) !== 1) return `missing denominator: the given fraction ${show(from)} is not in its simplest form`;
@@ -2006,7 +2006,7 @@ function oracle(q, topic) {
          the order BEFORE finishFrac shuffles, so the teaching card walked the three
          distractors in a different order from the screen in 83.3% of draws and a P3
          child had to hunt for each line. Gated, not just fixed. */
-      const walk = [...String(q.explain || '').matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]
+      const walk = [...String(q.explain || '').matchAll(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/g)]
         .map(x => x[1] + '/' + x[2]).slice(0, 3).join(' ');
       const screen = fOpts.map((o, i) => i === q.correct ? null : o).filter(Boolean).map(o => o[0] + '/' + o[1]).join(' ');
       if (walk !== screen)
@@ -2296,7 +2296,7 @@ function oracle(q, topic) {
   }
   if (/missing numerator/i.test(text)) {
     const from = parseFrac(q.q);
-    const to = q.q.match(/<span class="n">\?<\/span><span class="d">(\d+)<\/span>/);
+    const to = q.q.match(/<span class="n">\?<\/span><span class="d">(-?\d+)<\/span>/);
     if (from && to) {
       const e = from[0] * (Number(to[1]) / from[1]);
       return near(e, ansNum) ? null : `missing numerator: expected ${e} for ${from[0]}/${from[1]} -> ?/${to[1]}, got ${ansNum}`;
@@ -2304,7 +2304,7 @@ function oracle(q, topic) {
   }
   if (/missing denominator/i.test(text)) {
     const from = parseFrac(q.q);
-    const to = q.q.match(/<span class="n">(\d+)<\/span><span class="d">\?<\/span>/);
+    const to = q.q.match(/<span class="n">(-?\d+)<\/span><span class="d">\?<\/span>/);
     if (from && to) {
       const e = from[1] * (Number(to[1]) / from[0]);
       return near(e, ansNum) ? null : `missing denominator: expected ${e}, got ${ansNum}`;
@@ -2964,7 +2964,7 @@ function coincidence(q) {
      have to weaken the rule to write that item. */
   {
     const fr4 = (q.choices || []).map(c => {
-      const mm = String(c).match(/^<span class="frac"><span class="n">(\d+)<\/span><span class="d">(\d+)<\/span><\/span>$/);
+      const mm = String(c).match(/^<span class="frac"><span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span><\/span>$/);
       return mm ? [Number(mm[1]), Number(mm[2])] : null;
     });
     const asksForm = /simplest form/i.test(text);
@@ -3168,7 +3168,7 @@ function pilotGates(q, topic) {
     eachString({ q: q.q, extra: q.extra || '', explain: q.explain || '', answerText: q.answerText, choices: q.choices || [] },
       '', seen, new Set());
     for (const [where, s] of seen) {
-      for (const f of [...String(s).matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)]) {
+      for (const f of [...String(s).matchAll(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/g)]) {
         const n = Number(f[1]), d = Number(f[2]);
         /* n === d is allowed and is deliberate: "one whole is 8/8" is how P3
            teaches making one whole, and every explain in the `wholes` bank prints
@@ -3195,7 +3195,7 @@ function pilotGates(q, topic) {
         if (d > 12) return `denominator ${d} rendered in ${where} is past the P3 limit of 12`;
       }
     }
-    const kf = String(q.answerText).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
+    const kf = String(q.answerText).match(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/);
     if (kf && Number(kf[2]) > 12)
       return `the key ${kf[1]}/${kf[2]} carries a denominator past the P3 limit of 12`;
     /* FOURTH PASS 2026-09-16, W2. RULE 4 has never looked at an option that is a
@@ -3215,7 +3215,7 @@ function pilotGates(q, topic) {
     const stemRaw = String(q.q);
     const bare = (q.choices || []).map(c => strip(c));
     if (bare.length === 4 && bare.every(t => /^\d+$/.test(t))) {
-      let mm2 = stemRaw.match(/<span class="n">(\d+)<\/span><span class="d">\?<\/span>/);
+      let mm2 = stemRaw.match(/<span class="n">(-?\d+)<\/span><span class="d">\?<\/span>/);
       if (mm2 && /missing <b>denominator<\/b>/.test(stemRaw)) {
         const N = Number(mm2[1]);
         for (const t of bare) {
@@ -3224,7 +3224,7 @@ function pilotGates(q, topic) {
           if (D < 2) return `option "${t}" completes ${N}/${D}, which is not a fraction of a whole`;
         }
       }
-      mm2 = stemRaw.match(/<span class="n">\?<\/span><span class="d">(\d+)<\/span>/);
+      mm2 = stemRaw.match(/<span class="n">\?<\/span><span class="d">(-?\d+)<\/span>/);
       if (mm2 && /missing <b>numerator<\/b>/.test(stemRaw)) {
         const D = Number(mm2[1]);
         for (const t of bare) {
@@ -3419,7 +3419,7 @@ function optionValues(q) {
   const vals = [];
   for (const o of opts) {
     const t = strip(o);
-    const fs = [...String(o).matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)];
+    const fs = [...String(o).matchAll(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/g)];
     if (fs.length === 1 && !/[A-Za-z]/.test(t)) { vals.push(Number(fs[0][1]) / Number(fs[0][2])); continue; }
     if (fs.length === 0 && /^\d+$/.test(t)) { vals.push(Number(t)); continue; }
     return null;
@@ -3441,7 +3441,7 @@ function smallestDenPolicy(q) {
   if (opts.length !== 4) return null;
   const ds = [];
   for (const o of opts) {
-    const fs = [...String(o).matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)];
+    const fs = [...String(o).matchAll(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/g)];
     if (fs.length !== 1 || /[A-Za-z]/.test(strip(o))) return null;
     ds.push(Number(fs[0][2]));
   }
@@ -3657,7 +3657,7 @@ const PIC_N = 2000, PIC_CAP = 0.60, PIC_WATCH = 0.40;
 function optFracPairs(q) {
   const out = [];
   for (const o of (q.choices || [])) {
-    const fs = [...String(o).matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)];
+    const fs = [...String(o).matchAll(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/g)];
     if (fs.length !== 1 || /[A-Za-z]/.test(strip(o))) return null;
     out.push([Number(fs[0][1]), Number(fs[0][2])]);
   }
@@ -3819,7 +3819,7 @@ const SHAPE_CAP = 1.0, SHAPE_WATCH = 0.40, SHAPE_MEMO = 60;
 const rowKeyOf = q => (q.choices || []).map(strip).slice().sort().join(' ~ ');
 /* a rendered fraction is two numerals with no separator once the markup is gone,
    so it is opened out BEFORE stripping or the two collapse into one number */
-const openFrac = s => String(s).replace(/<span class="n">([\d?]+)<\/span><span class="d">([\d?]+)<\/span>/g, ' $1 / $2 ');
+const openFrac = s => String(s).replace(/<span class="n">(-?[\d?]+)<\/span><span class="d">(-?[\d?]+)<\/span>/g, ' $1 / $2 ');
 const numsOfHtml = s => (strip(openFrac(s)).match(/\d+/g) || []).map(Number);
 /* the row ordered by the bottom number each option prints, then masked: every
    numeral becomes the order in which it first appears. */
@@ -3942,7 +3942,7 @@ for (const g of GENS) {
 const STEM_N = 2000, STEM_CAP = 0.60, STEM_ROWS = 6;
 const stemSigOf = q => numsOfHtml(q.q).join(',');
 const optText = o => {
-  const m = String(o).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
+  const m = String(o).match(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/);
   return m ? m[1] + '/' + m[2] : strip(o);
 };
 function stemBank(draw, n) {
@@ -4059,7 +4059,14 @@ for (const g of GENS) {
 const GLY_N = 2000, GLY_CAP = 0.60;
 function glyphSigOf(q) {
   const sn = numsOfHtml(q.q);
-  if (!sn.length) return null;
+  /* SEVENTH PASS 2026-09-16. This returned null for a stem with no numerals in it,
+     and the caller SKIPS a null - so a bank whose stem prints no numeral at all
+     dropped out of RULE 13 entirely rather than being measured at chance. v8's
+     gPicTakeAway is exactly that bank, and a ruler that goes quiet on the newest
+     format is how six of the seven kills happened. A numeral-free stem is now one
+     signature: every option's membership tag is "out", so the rule can only settle
+     on digit count, and it is measured like everything else. */
+  if (!sn.length) return '-|-';
   const first = new Map();
   const part = sn.map(v => { if (!first.has(v)) first.set(v, first.size); return first.get(v); }).join('.');
   return part + '|' + sn.map(v => String(v).length).join('.');
@@ -4153,6 +4160,267 @@ for (const g of GENS) {
   const row = { name: g.topic + '.' + g.name, n, bad, rate: bad / n, sample };
   row.err = bad ? `prose agreement: a number disagrees with its verb on ${bad} of ${n} draws - ${sample}` : null;
   agreeRows.push(row);
+  if (row.err) failures++;
+}
+
+/* ---------- THE SIGN GATE -----------------------------------------------------
+   SWEEP FRACTIONS REFUTATION, SEVENTH PASS 2026-09-16, KILL 2. js/topics/
+   p3-fractions.js:2447 ended gSubRelated's teaching card with fr(a-b, D-d), and
+   `b` runs to D-1 while `a` stops at d-1, so the card printed a NEGATIVE numerator
+   to a P3 child on 49.97 / 50.70% of draws and a zero one on 15.19 / 14.36% -
+   "subtracting the tops and the bottoms straight off would give -1/8". Negative
+   numbers enter at Secondary 1. A scope leak, on the highest-salience surface in
+   the app, in a bank served 0.91 items a session, INHERITED from 11b5ce5 and
+   earlier and never once reported.
+
+   WHY SIX PASSES AND FIFTEEN CONTROLS WALKED PAST IT, which is the lesson worth
+   more than the fix: EVERY FRACTION REGEX IN THIS FILE WAS (\d+). A minus sign is
+   not a digit, so parseFrac and allFracs returned null on the offending markup and
+   RULE 4's syllabus scan, the off-row card walker and the layout gate all read
+   straight through it. The ruler could not read the character the defect was
+   written in. Every one of those regexes is (-?\d+) now, and THIS gate is the
+   direct assertion the file never made:
+
+   NO SURFACE OF ANY QUESTION IN THE GAME MAY RENDER A FRACTION WITH A NUMERATOR
+   BELOW 1 OR A DENOMINATOR BELOW 1 - stem, extra, option row, answer text or
+   teaching card. It runs over every bank in every topic, not only fractions,
+   because there is no topic in this game in which a rendered negative or zero
+   part of a whole is anything but a leak. A '?' is the one legal non-numeral (the
+   two completion banks render it by design). Negative control: the v7
+   gSubRelated card. --- */
+/* the same opening-out openFrac does, but it reads a sign, because the whole
+   point of this gate is the character the other readers cannot see. */
+const openFracAny = s => String(s).replace(/<span class="n">(-?[\d?]+)<\/span><span class="d">(-?[\d?]+)<\/span>/g, ' $1/$2 ');
+const SIGN_N = 500;
+const SIGN_RE = /<span class="n">([^<]*)<\/span><span class="d">([^<]*)<\/span>/g;
+function signScan(q) {
+  const where = [['stem', q.q], ['extra', q.extra || ''], ['card', q.explain || ''],
+                 ['answer', q.answerText || '']]
+    .concat((q.choices || []).map((c, i) => ['option ' + (i + 1), c]));
+  for (const [label, html] of where) {
+    for (const m of String(html).matchAll(SIGN_RE)) {
+      const n = m[1], d = m[2];
+      const badN = n !== '?' && !(Number(n) >= 1), badD = d !== '?' && !(Number(d) >= 1);
+      if (badN || badD)
+        return `the ${label} renders ${n}/${d} - a ${badN ? 'numerator' : 'denominator'} below 1 is not a P3 fraction and not a P4 or P5 one either (${strip(openFracAny(html)).slice(0, 110)})`;
+    }
+  }
+  return null;
+}
+const signRows = [];
+for (const g of GENS) {
+  let bad = 0, n = 0, sample = null;
+  for (let i = 0; i < SIGN_N; i++) {
+    let q; try { q = g.fn(); } catch (e) { break; }
+    if (!q) continue;
+    n++;
+    const v = signScan(q);
+    if (v) { bad++; if (!sample) sample = v; }
+  }
+  if (!n) continue;
+  const row = { name: g.topic + '.' + g.name, n, bad, sample };
+  row.err = bad ? `sign gate: a rendered fraction is below 1 on ${bad} of ${n} draws - ${sample}` : null;
+  signRows.push(row);
+  if (row.err) failures++;
+}
+
+/* ---------- THE CARD-ROW CLAUSE ----------------------------------------------
+   SWEEP FRACTIONS REFUTATION, SEVENTH PASS 2026-09-16, WOUND 2. The teaching card
+   is the one surface in this app that nothing re-derives, and four banks ended
+   theirs by naming a WRONG ANSWER the child could not see: gSimplest 58.6 / 58.3%,
+   gEquivFromBar 52.3 / 52.5%, gSubRelated 27.3 / 27.6% and gSimplestError
+   25.5 / 25.7%. The cause is always the same and it is structural: the sentence
+   names a CANDIDATE, and sided() seats three of a dozen or more. A child reading
+   "taking 1 off the bottom of 1/6 gives 1/5" under a row with no 1/5 on it is
+   being taught about an item they were not shown.
+
+   The fifth pass fixed exactly this in gPickEquiv with a ternary and the class was
+   left open in four siblings, so it is a GATE now rather than a habit: in any
+   teaching card, every fraction rendered inside a WRONG-ANSWER SENTENCE must be
+   printed on the option row or in the stem. A wrong-answer sentence is one
+   carrying one of the file's own markers - "would give", "gives", "instead",
+   "a different amount", "too small". Correct intermediate values ("the whole bar
+   is 9/9", "she had 7/10") are NOT touched: they sit in neutral sentences, which
+   is the calibration and is why the marker list is narrow rather than a scan of
+   every fraction on the card. Three more banks went red on its first run -
+   gMakeOneIn 49.8 / 50.0%, gPickEquiv 26.8 / 26.1% and gSubSame 2.2 / 2.6% - and
+   gPickEquiv's is the subtle one the class hides: its v5 ternary asked whether the
+   candidate's VALUE was on the row and then printed the candidate's OWN form,
+   while sided()'s uniq() seats whichever of two equal-valued candidates is written
+   in the bigger pieces, so the card said "2/8" over a row showing "1/4". All seven
+   are fixed at their sites and the gate is set at zero. --- */
+const CARD_N = 500;
+const CARD_WRONG = /would give|would be|would make|gives|instead|a different amount|a smaller amount|a bigger amount|too small|too big|not even close/i;
+function cardScan(q) {
+  const card = String(q.explain || '');
+  if (!card) return null;
+  const onScreen = new Set();
+  for (const src of (q.choices || []).concat([q.q, q.extra || '']))
+    for (const f of allFracs(src)) onScreen.add(f[0] + '/' + f[1]);
+  for (const sent of card.split(/(?<=\.)\s+/)) {
+    if (!CARD_WRONG.test(strip(sent))) continue;
+    for (const f of allFracs(sent)) {
+      const t = f[0] + '/' + f[1];
+      if (!onScreen.has(t))
+        return `the card names ${t} as a wrong answer and ${t} is on neither the option row nor the stem ("${strip(openFracAny(sent)).slice(0, 110)}")`;
+    }
+  }
+  return null;
+}
+const cardRows = [];
+for (const g of GENS) {
+  if (!TOK_TOPICS.has(g.topic)) continue;
+  let bad = 0, n = 0, sample = null;
+  for (let i = 0; i < CARD_N; i++) {
+    let q; try { q = g.fn(); } catch (e) { break; }
+    if (!q) continue;
+    n++;
+    const v = cardScan(q);
+    if (v) { bad++; if (!sample) sample = v; }
+  }
+  if (!n) continue;
+  const row = { name: g.topic + '.' + g.name, n, bad, sample };
+  row.err = bad ? `card-row clause: the teaching card names a wrong answer that is not on the screen on ${bad} of ${n} draws - ${sample}` : null;
+  cardRows.push(row);
+  if (row.err) failures++;
+}
+
+/* ---------- RULE 14: THE HALF-KEY RULE ---------------------------------------
+   SWEEP FRACTIONS REFUTATION, SEVENTH PASS 2026-09-16, KILL 1 - the deliverable,
+   and the fourth ruler in a row written because the tell moved to the surface the
+   newest ruler could not read.
+
+   v7's gPicTakeAway was built to RULE 12 and passed it: the bar's part count is
+   the key's bottom number and appears in no word of the stem, the six-row stem
+   table measured 39.5%, and "another legal bar changes the answer on every draw"
+   proved the figure DETERMINES the key. None of that is the same claim as the
+   child NEEDING it. The stem printed her piece count `a` and the number she ate
+   `g`, and:
+
+     - "the answer's TOP number is a - g" was true on 100.00% of draws;
+     - it isolated the key on 59.6 / 59.0% of them;
+     - take it and guess among the ties: 79.6 / 79.2%;
+     - break the tie on "the bottom number printed twice on the row" - the seat
+       sameDen() is REQUIRED to fill: 88.7 / 88.8%.
+
+   RULE 12's arithmetic library scores only an expression naming the WHOLE key
+   (v1/v2 against "a/b"), so a numerator-only match scored nothing and the column
+   reported 14.7% while a - g named the top on every single draw. RULE 10 and
+   RULE 11 discard the stem. RULE 13 reads numeral membership, and a - g is
+   arithmetic. The route fell through the middle of all four.
+
+   THE RULE. No bank may have ONE HALF of its key - the numerator or the
+   denominator - named by a single expression over the stem's numerals to the point
+   where the OPTION ROW then settles the item on 60% or more of draws. The ruler
+   learns the best such expression on 2,000 draws and tests on 2,000 more: take the
+   options carrying that numeral in that position, and guess among them (a rule
+   that leaves two options standing is worth half a draw, exactly as RULE 13 scores
+   it, and a rule that names nothing on the row is worth a guess).
+
+   THE METHOD EXEMPTION, which is what makes it gateable and is not a fudge. On
+   four banks the named expression IS THE ITEM WORKING, and each is declared BY
+   NAME with the mathematics it stands for below. "Add the two top numbers and keep
+   the bottom number" names gAddSame's numerator on every draw because that is the
+   whole of adding like fractions - the same call RULE 12 already makes for its
+   arithmetic column. The exemption is keyed to the (bank, expression) PAIR: a bank
+   on the list whose tell moves to a DIFFERENT expression still fails, and the
+   second control below proves that rather than asserting it.
+
+   Negative control: the v7 gPicTakeAway construction, rebuilt from its own draw
+   and its own candidate bank, red at ~80%. Live banks after the rebuild: the four
+   exempted ones at 69.8-77.8% on their own method, gAddRelated / gSubRelated on
+   "the answer is written over the BIGGER of the two bottom numbers" - also their
+   own method, and also declared - and nothing else over 42%. --- */
+const HALF_N = 2000, HALF_CAP = 0.60;
+/* (bank, expression) -> the mathematics that expression IS, in the item's own
+   words. Adding a line here is a claim about the SYLLABUS, not about the file. */
+const HALF_METHOD = {
+  'fractions.gAddSame|n0+n2': 'add the two top numbers and keep the bottom number',
+  'fractions.gSubSame|n0-n2': 'take the second top number from the first and keep the bottom number',
+  'fractions.gSubFromOne|n2-n1': 'one whole is d/d, so take the top number from the bottom number',
+  'fractions.gMakeOne|n1-n0': 'what is missing from one whole is the bottom number less the top number',
+  /* the two related-fraction banks sit ON the line (60.9% and 58.1%) and the
+     expression is the same one in both: the answer to a related add or subtract is
+     written over the BIGGER of the two bottom numbers, which is the conversion the
+     item is about. Declared for both so the pair cannot drift apart silently. */
+  'fractions.gAddRelated|n3': 'convert to the bigger bottom number and keep it',
+  'fractions.gSubRelated|n3': 'convert to the bigger bottom number and keep it'
+};
+const halfExprs = q => {
+  const ns = numsOfHtml(q.q), lab = [];
+  ns.forEach((v, i) => lab.push(['n' + i, v], ['n' + i + '+1', v + 1], ['n' + i + '-1', v - 1]));
+  for (let x = 0; x < ns.length; x++) for (let y = 0; y < ns.length; y++) if (x !== y)
+    lab.push(['n' + x + '+n' + y, ns[x] + ns[y]], ['n' + x + '-n' + y, ns[x] - ns[y]],
+             ['n' + x + '*n' + y, ns[x] * ns[y]]);
+  return lab;
+};
+const halfPair = o => {
+  const m = String(o).match(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/);
+  return m ? [Number(m[1]), Number(m[2])] : null;
+};
+function halfBank(draw, n) {
+  const cnt = new Map();
+  const bump = (k, i) => { const v = cnt.get(k) || [0, 0]; v[i]++; cnt.set(k, v); };
+  let drew = 0;
+  for (let i = 0; i < n; i++) {
+    let q; try { q = draw(); } catch (e) { break; }
+    if (!q || !(q.correct >= 0) || (q.choices || []).length !== 4) continue;
+    const k = halfPair(q.choices[q.correct]);
+    if (!k) continue;
+    drew++;
+    const sn = new Set(), sd = new Set();
+    for (const [nm, v] of halfExprs(q)) { if (v === k[0]) sn.add(nm); if (v === k[1]) sd.add(nm); }
+    for (const nm of sn) bump(nm, 0);
+    for (const nm of sd) bump(nm, 1);
+  }
+  if (!drew) return { n: 0 };
+  let expr = null, half = 0, best = -1;
+  for (const [k, v] of cnt) {
+    if (v[0] > best) { best = v[0]; expr = k; half = 0; }
+    if (v[1] > best) { best = v[1]; expr = k; half = 1; }
+  }
+  /* SEVENTH PASS 2026-09-16. A stem with NO numeral in it has no expression to
+     learn, and a ruler that drops such a bank from its table is the failure mode
+     this whole pass is about - five of the seven kills landed on the surface the
+     newest ruler did not read. v8's gPicTakeAway prints no numeral by design, so
+     it is reported at zero rather than omitted. */
+  if (!expr) return { n: drew, expr: '-none-', half: 'n/a', names: 0, rate: 0 };
+  let score = 0, names = 0, tested = 0;
+  for (let i = 0; i < n; i++) {
+    let q; try { q = draw(); } catch (e) { break; }
+    if (!q || !(q.correct >= 0) || (q.choices || []).length !== 4) continue;
+    const k = halfPair(q.choices[q.correct]);
+    if (!k) continue;
+    tested++;
+    const lab = new Map(halfExprs(q));
+    const v = lab.get(expr);
+    if (v === undefined) { score += 0.25; continue; }
+    if (k[half] === v) names++;
+    const hits = [];
+    for (let j = 0; j < 4; j++) {
+      const p = halfPair(q.choices[j]);
+      if (p && p[half] === v) hits.push(j);
+    }
+    score += hits.length ? (hits.indexOf(q.correct) >= 0 ? 1 / hits.length : 0) : 0.25;
+  }
+  return { n: tested, expr, half: half ? 'denominator' : 'numerator',
+           names: tested ? names / tested : 0, rate: tested ? score / tested : 0 };
+}
+function halfVerdict(row, name) {
+  if (!row.n || row.rate < HALF_CAP) return null;
+  const method = HALF_METHOD[name + '|' + row.expr];
+  if (method) return null;
+  return `half-key tell: the single expression "${row.expr}" over the stem's numerals names the key's ${row.half} on ${(100 * row.names).toFixed(1)}% of draws, and taking the options that carry it answers the item on ${(100 * row.rate).toFixed(1)}% - at or over the ${Math.round(100 * HALF_CAP)}% ceiling, with the other half of the key settled by the OPTION ROW and the item's own mathematics never done`;
+}
+const halfRows = [];
+for (const g of GENS) {
+  if (!TOK_TOPICS.has(g.topic)) continue;
+  const row = halfBank(g.fn, HALF_N);
+  if (!row.n) continue;
+  row.name = g.topic + '.' + g.name;
+  row.method = HALF_METHOD[row.name + '|' + row.expr] || null;
+  row.err = halfVerdict(row, row.name);
+  halfRows.push(row);
   if (row.err) failures++;
 }
 
@@ -4565,6 +4833,175 @@ control('prose agreement - the v6 gEquivFromBar sentence ("1 of them are blue")'
   return null;
 });
 
+/* ---------- NEGATIVE CONTROLS for the SEVENTH pass's three new gates ---------
+   SWEEP FRACTIONS REFUTATION, SEVENTH PASS 2026-09-16. Each rebuilds the ACTUAL v7
+   defect from its own construction, so nothing here depends on the topic file
+   still carrying it. --- */
+
+/* 16. THE SIGN GATE: v7's gSubRelated teaching card, rebuilt from its own draw.
+       `b` runs to D-1 and `a` stops at d-1, so a - b is negative on half of all
+       draws and zero on a seventh, and fr(a-b, D-d) printed it. The gate must
+       reject the card; the SIGN of the numerator is the whole finding, and every
+       other reader in this file used to return null on that markup. */
+const V7_SUBREL = () => {
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pk = arr => arr[Math.floor(Math.random() * arr.length)];
+  let d = 4, k = 2, D = 8, a = 3, b = 1;
+  for (let t = 0; t < 200; t++) {
+    d = pk([2, 3, 4, 5, 6]); k = pk([2, 3, 4, 5, 6]); D = k * d;
+    a = rnd(2, Math.max(2, d - 1)); b = rnd(1, Math.max(1, D - 1));
+    if (D <= 12 && a < d && k * a - b >= 2 && k * a - b + 1 < D && gcd(k * a - b, D) === 1) break;
+  }
+  const key = [k * a - b, D];
+  const row = [key, [a, d], [k * a, D], [k * a - b, D - 1]];
+  const order = row.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { q: FR(a, d) + ' − ' + FR(b, D) + ' = ?', extra: '',
+           choices: order.map(i => FR(row[i][0], row[i][1])), correct: order.indexOf(0),
+           answerText: FR(key[0], key[1]),
+           explain: 'Now take the pieces away: ' + (k * a) + ' − ' + b + ' = ' + (k * a - b) + ', giving ' +
+             FR(k * a - b, D) + '. Subtracting the tops and the bottoms straight off would give ' +
+             FR(a - b, D - d) + ', which is a different amount altogether.' };
+};
+control('sign gate - the v7 gSubRelated card (fr(a-b, D-d), negative on half of all draws)', () => {
+  let bad = 0, n = 0, sample = null;
+  for (let i = 0; i < CTL_N; i++) {
+    const q = V7_SUBREL();
+    n++;
+    const v = signScan(q);
+    if (v) { bad++; if (!sample) sample = v; }
+  }
+  if (!n) return null;
+  if (!bad) return null;
+  return `caught on ${bad} of ${n} draws - ${sample}`;
+});
+
+/* 17. RULE 14, THE HALF-KEY RULE: v7's gPicTakeAway, rebuilt from its own draw and
+       its own candidate bank, including sided()'s seating and the sameDen() seat -
+       which is the part that makes the route work, because the seat GUARANTEES the
+       key's bottom number is printed twice. The stem prints `a` and `g`, so
+       "n0-n1" names the key's top number on 100% of draws, and taking the options
+       that carry it answers the item at ~80% with the ties guessed. */
+const V7_TAKEAWAY = () => {
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const sh = arr => arr.slice().sort(() => Math.random() - 0.5);
+  const val = p => p[0] / p[1];
+  const rank = rnd(1, 4);
+  let d = 8, a = 5, g2 = 2, key = [3, 8], slips = [[5, 8], [2, 8], [3, 7]];
+  for (let t = 0; t < 200; t++) {
+    d = rnd(6, 12); a = rnd(3, d - 2); g2 = rnd(1, Math.min(2, a - 1));
+    key = [a - g2, d];
+    const cands = [[a, d], [g2, d], [d - a, d], [d - a + g2, d], [a - g2 + 1, d], [a - g2 - 1, d],
+                   [a - g2, d - 1], [a - g2, d + 1], [a - g2, d - 2], [a - g2, d + 2],
+                   [a - g2 + 1, d - 1], [a - g2 - 1, d + 1], [a, d - 1], [g2, d + 1]]
+      .filter(p => p[0] >= 1 && p[1] >= 2 && p[0] < p[1] && p[1] <= 12 && val(p) !== val(key));
+    /* the coupling seat: one or two options over the bar's own part count */
+    const same = sh(cands.filter(c => c[1] === d));
+    if (!same.length) continue;
+    const must = same.slice(0, same.length > 1 && Math.random() < 0.5 ? 2 : 1);
+    const rest = sh(cands.filter(c => !must.some(x => val(x) === val(c))));
+    const u = 4 - rank, hi = must.filter(c => val(c) > val(key)).length;
+    const above = rest.filter(c => val(c) > val(key)), below = rest.filter(c => val(c) < val(key));
+    const na = u - hi, nb = (3 - u) - (must.length - hi);
+    if (na < 0 || nb < 0 || na > above.length || nb > below.length) continue;
+    slips = must.concat(above.slice(0, na)).concat(below.slice(0, nb));
+    if (new Set([key].concat(slips).map(val)).size === 4) break;
+    slips = [];
+  }
+  if (slips.length !== 3) { key = [3, 8]; slips = [[5, 8], [2, 8], [3, 7]]; a = 5; g2 = 2; d = 8; }
+  const row = [key].concat(slips);
+  const order = row.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { q: 'The bar below shows a cake cut into equal pieces, and Siti\'s ' + a +
+             ' pieces are blue. She eats ' + g2 + ' of her pieces. What fraction of the cake is still Siti\'s?',
+           extra: '', figure: { type: 'fractionBar', parts: d, filled: a },
+           choices: order.map(i => FR(row[i][0], row[i][1])), correct: order.indexOf(0),
+           answerText: FR(key[0], key[1]), explain: '' };
+};
+control('RULE 14 half-key - the v7 gPicTakeAway stem ("a - g" names the top, the row settles the bottom)', () => {
+  const row = halfBank(V7_TAKEAWAY, HALF_N);
+  if (!row.n) return null;
+  if (process.env.CTL_DEBUG) console.log(`    [debug] v7 gPicTakeAway control: "${row.expr}" names the ${row.half} on ${(100 * row.names).toFixed(2)}%, route ${(100 * row.rate).toFixed(2)}%`);
+  return halfVerdict(row, 'control.v7PicTakeAway');
+});
+
+/* 18. RULE 14's METHOD EXEMPTION IS KEYED TO THE EXPRESSION, NOT TO THE BANK. The
+       same construction, handed an exemption for a DIFFERENT expression, must
+       still go red - otherwise a bank on the list could move its tell to a new
+       expression and keep its pass. */
+control('RULE 14 exemption keyed to the expression - the v7 row exempted on the WRONG expression', () => {
+  const row = halfBank(V7_TAKEAWAY, HALF_N);
+  if (!row.n) return null;
+  const name = 'control.v7PicTakeAway';
+  const other = row.expr === 'n0+n1' ? 'n0*n1' : 'n0+n1';
+  HALF_METHOD[name + '|' + other] = 'a method this item does not have';
+  const v = halfVerdict(row, name);
+  delete HALF_METHOD[name + '|' + other];
+  return v;
+});
+
+/* 19. ... and the other direction, which is what stops RULE 14 from being a rule
+       against arithmetic itself: the v6 gAddSame row, where "n0+n2" names the key's
+       top number because ADDING THE TOP NUMBERS IS THE ITEM. Over the ceiling
+       without the exemption, quiet with it. A control that only ever goes red
+       cannot show that a gate discriminates. */
+const V8_ADDLIKE = () => {
+  const rnd = (x, y) => x + Math.floor(Math.random() * (y - x + 1));
+  const sh = arr => arr.slice().sort(() => Math.random() - 0.5);
+  const val = p => p[0] / p[1];
+  const rank = rnd(1, 4);
+  let d = 9, a = 4, b = 3, key = [7, 9], slips = [];
+  for (let t = 0; t < 200; t++) {
+    d = rnd(5, 12); a = rnd(1, d - 2); b = rnd(1, d - a - 1);
+    if (a === b || a + b + 1 >= d) continue;
+    key = [a + b, d];
+    const cands = [[Math.abs(a - b), d], [a + b + 1, d], [a + b - 1, d], [a + b, d - 1], [a + b, d + 1],
+                   [a + b + 1, d + 1], [a, d], [b, d], [Math.abs(a - b), d + 1],
+                   [a + b, d - 2], [a + b, d + 2], [a + b + 1, d - 1], [a + b - 1, d + 1],
+                   [a, d - 1], [b, d + 1]]
+      .filter(p => p[0] >= 1 && p[1] >= 2 && p[0] < p[1] && p[1] <= 12 && val(p) !== val(key));
+    const same = sh(cands.filter(c => c[1] === d));
+    if (!same.length) continue;
+    const must = same.slice(0, same.length > 1 && Math.random() < 0.5 ? 2 : 1);
+    const rest = sh(cands.filter(c => !must.some(x => val(x) === val(c))));
+    const u = 4 - rank, hi = must.filter(c => val(c) > val(key)).length;
+    const above = rest.filter(c => val(c) > val(key)), below = rest.filter(c => val(c) < val(key));
+    const na = u - hi, nb = (3 - u) - (must.length - hi);
+    if (na < 0 || nb < 0 || na > above.length || nb > below.length) continue;
+    slips = must.concat(above.slice(0, na)).concat(below.slice(0, nb));
+    if (new Set([key].concat(slips).map(val)).size === 4) break;
+    slips = [];
+  }
+  if (slips.length !== 3) { key = [7, 9]; slips = [[1, 9], [8, 9], [7, 8]]; a = 4; b = 3; d = 9; }
+  const row = [key].concat(slips);
+  const order = row.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { q: FR(a, d) + ' + ' + FR(b, d) + ' = ?', extra: '',
+           choices: order.map(i => FR(row[i][0], row[i][1])), correct: order.indexOf(0),
+           answerText: FR(key[0], key[1]), explain: '' };
+};
+control('RULE 14 method exemption - the gAddSame row (n0+n2 IS adding like fractions)', () => {
+  const row = halfBank(V8_ADDLIKE, HALF_N);
+  if (!row.n) return null;
+  if (row.rate < HALF_CAP)
+    return `the control measures ${(100 * row.rate).toFixed(1)}%, under the ${Math.round(100 * HALF_CAP)}% ceiling - it is not exercising the exemption at all`;
+  const bare = halfVerdict(row, 'control.addSameNoMethod');
+  if (!bare) return 'the rule stayed quiet on the row WITHOUT any exemption - the control is not measuring what it claims';
+  const exempt = halfVerdict(row, 'fractions.gAddSame');
+  return exempt ? null
+    : `caught at ${(100 * row.rate).toFixed(1)}% on "${row.expr}" and exempted by name: ${HALF_METHOD['fractions.gAddSame|' + row.expr]}`;
+});
+
+/* 20. THE CARD-ROW CLAUSE: v7's gSimplestError card, whose last sentence named
+       fr(low) whether or not sided() had seated it - 25.5 / 25.7% of draws. */
+control('card-row clause - the v7 gSimplestError card ("gives 1/5", 1/5 not on the row)', () => {
+  const q = {
+    q: 'Siti says ' + FR(4, 6) + ' in its simplest form is ' + FR(3, 5) + ', because she took 1 away from the top and 1 away from the bottom. What is ' + FR(4, 6) + ' in its simplest form?',
+    extra: '', choices: [FR(2, 3), FR(3, 5), FR(2, 6), FR(5, 7)], correct: 0, answerText: FR(2, 3),
+    explain: 'To simplify you DIVIDE both by the same number: 4 / 2 = 2 and 6 / 2 = 3, so ' + FR(4, 6) +
+      ' = ' + FR(2, 3) + '. Carrying the same habit on to the answer - taking 1 off the top and the bottom of ' +
+      FR(2, 3) + ' - gives ' + FR(1, 2) + ', which is a different amount again.'
+  };
+  return cardScan(q);
+});
+
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
 const setRows = [];
 for (const tid of Object.keys(TOPICS)) {
@@ -4806,6 +5243,42 @@ if (glyRows.length) {
   console.log('     draws on which the glyphs name exactly one option and that option is the key. A bank of four fractions cannot');
   console.log('     reach far past chance here unless one option is the unique one carrying the stem\'s own numerals.');
   if (glyRows.every(r => !r.err)) console.log(`ok   RULE 13 glyph rule: ${glyRows.length} banks, no key settled by numeral identity, membership and digit count at or over ${Math.round(100*GLY_CAP)}%`);
+}
+
+/* RULE 14, printed in full: the exemption list IS the claim, so it is on the
+   record of every run (SEVENTH PASS 2026-09-16). */
+if (halfRows.length) {
+  console.log(`\nRULE 14  HALF-KEY RULE  (${HALF_N} draws learnt + ${HALF_N} tested: one expression over the stem's numerals\n` +
+    `         names HALF the key and the option row settles the rest - may not answer the item on >= ${Math.round(100*HALF_CAP)}%,\n` +
+    `         unless that expression IS the item's own declared mathematics, named in the table below)\n`);
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('EXPRESSION', 12) + pad('HALF', 13) +
+    pad('NAMES IT', 10) + pad('ANSWERS', 10) + 'RESULT');
+  console.log('-'.repeat(122));
+  for (const r of halfRows)
+    console.log(pad(r.name, 26) + pad(r.n, 8) + pad(r.expr, 12) + pad(r.half, 13) +
+      pad((100 * r.names).toFixed(1) + '%', 10) + pad((100 * r.rate).toFixed(1) + '%', 10) +
+      (r.err ? 'FAIL  ' + r.err
+        : (r.rate >= HALF_CAP ? 'pass - THE ITEM WORKING: ' + r.method : 'pass')));
+  console.log('');
+  console.log('     the exemption is keyed to the (bank, expression) PAIR and every line of it is a claim about the syllabus:');
+  console.log('     "add the two tops and keep the bottom" names gAddSame\'s key on every draw because that IS adding like');
+  console.log('     fractions. A bank on the list whose tell moves to another expression still fails - control 18 proves it.');
+  if (halfRows.every(r => !r.err)) console.log(`ok   RULE 14 half-key rule: ${halfRows.length} banks, no half of a key named by a stem expression the row then settles at or over ${Math.round(100*HALF_CAP)}%, outside the ${Object.keys(HALF_METHOD).length} declared methods`);
+}
+
+/* THE CARD-ROW CLAUSE and THE SIGN GATE, printed when they have something to say
+   (SEVENTH PASS 2026-09-16). */
+if (cardRows.length) {
+  const bad = cardRows.filter(r => r.err);
+  console.log('');
+  if (bad.length) for (const r of bad) console.log(`FAIL card-row  ${r.name}  ${r.err}`);
+  else console.log(`ok   card-row clause: ${cardRows.length} banks x ${CARD_N} draws, every wrong answer a teaching card names is printed on the option row or in the stem`);
+}
+if (signRows.length) {
+  const bad = signRows.filter(r => r.err);
+  console.log('');
+  if (bad.length) for (const r of bad) console.log(`FAIL sign gate  ${r.name}  ${r.err}`);
+  else console.log(`ok   sign gate: ${signRows.length} banks x ${SIGN_N} draws in every topic, no rendered fraction with a numerator or a denominator below 1 on any surface`);
 }
 
 /* THE PROSE AGREEMENT CLAUSE, printed only when it has something to say. */

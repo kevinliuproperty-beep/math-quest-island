@@ -1799,8 +1799,33 @@ function gFracToDec() {
      take the one that is not the smallest" read a fixed slot. */
   const places = shuffle([0, 1, 2, 3]).slice(0, ri(1, 4))
     .map(k => dnat(D(n, k))).filter(c => c.n > 0);
+  /* THE SHALLOWER SEAT (sweep 2026-09-16). Every point-moved slip this bank actually
+     SHIPPED sat DEEPER than the key - deeper1, deeper2, and the sub-one members of
+     `places` - so of the options made of the question's own numerator the key was the
+     one with that numerator in the HIGHEST place on 96.33% of the den-10 draws and
+     60.24% of the den-100 ones (5,000 draws, SEED=20260916). "Of the options made of
+     the question's top number, take the biggest" is a no-maths route and at ten it
+     was the whole item.
+     The cure is a candidate this bank already held and almost never shipped:
+     `shallow`, the numerator one column too far LEFT. At ten that is "8/10 = 8" - the
+     numerator read as the answer and the denominator read as nothing, the
+     whole-number-bias slip every P4 diagnostic list carries - and at a hundred it is
+     8/100 = 0.8, the same belief one column out. dnat() has already taken the
+     trailing zero off, so it prints as "8" and not "8.0", which is a badge the key is
+     never on in this file.
+     It was in the pool and did not ship because the v8 sub-row clause refuses it as a
+     LONE companion: {0.8, 8} is a two-member stem-digit sub-row on which "the one that
+     starts with a nought" IS the key. So it is SEATED rather than merely offered, and
+     rankPick has to find it a sub-row partner (0.08 is in the pool on every draw)
+     instead of dropping the whole selection.
+     The coin is a half and not a certainty because a seat paid on EVERY draw is
+     itself a feature the key never wears: the shallower slip is above the key by
+     construction, so making it compulsory would hand a child "the answer is never the
+     biggest" in exchange for the route this kills. */
+  const seatShallow = Math.random() < 0.5;
   return mcDec('Write ' + fr(n, den) + ' as a decimal.', '',
-    key, [shallow, complement, tacked, deeper1, deeper2, dropLast, dropFirst,
+    key, [seatShallow ? must(shallow) : shallow,
+          complement, tacked, deeper1, deeper2, dropLast, dropFirst,
           pRight(complement), pLeft(complement), noPoint,
           pRight(tacked), pLeft(tacked)].concat(places), '',
     n + ' out of ' + den + ' means ' + qty(n, dp) + '. The ' + PLACE_WORD[dp] +

@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20260916-ede9213 */
-/* ENGINE_BUILD_META {"stamp":"20260916-ede9213","date":"2026-09-16","sha":"ede9213","dirty":false,"payloadHash":"674421cdea2696f4","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20260916-ede9213","date":"2026-09-16","sha":"ede9213","dirty":false,"payloadHash":"674421cdea2696f4","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20260916-78a7e05 */
+/* ENGINE_BUILD_META {"stamp":"20260916-78a7e05","date":"2026-09-16","sha":"78a7e05","dirty":false,"payloadHash":"325395af9a0578d4","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20260916-78a7e05","date":"2026-09-16","sha":"78a7e05","dirty":false,"payloadHash":"325395af9a0578d4","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":31,"topicFileCount":28,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -455,15 +455,35 @@ function typedRejectReason(raw, q){
      generators keep a fixed stem and vary only the choices ("Which number is the
      smallest?"), so under a round-robin that key made the SECOND draw of such a
      skill a permanent duplicate and starved the skill out of the carousel for the
-     rest of the session. This is the same identity tools/gen-sanity.mjs uses. */
+     rest of the session. This is the same identity tools/gen-sanity.mjs uses.
+
+     INTEGRATOR (wave 1): the options are joined in SORTED order. mcNum and its
+     siblings shuffle the row, so the SAME four options in two shipped orders were
+     two different identities and the no-exact-duplicate guard let a child meet the
+     same item twice in one session. Sorting makes the identity the option SET,
+     which is what the guard has always meant, and tools/feed-sim.mjs's shapeKey
+     agrees with it. */
   function qIdentity(q){
-    const opts = q.typed ? String(q.answer) : (q.choices || []).join('');
+    const opts = q.typed ? String(q.answer) : (q.choices || []).slice().sort().join('');
     return (q.q + '|' + (q.extra || '') + '|' + opts).replace(/\s+/g, '');
   }
 
   const FEED_RING = 3;        /* fix 2: how many stem shapes back we refuse to repeat */
   const FEED_RETRIES = 8;     /* attempts before we accept a repeat - a one-generator pool must never hang */
-  const FEED_MIN_L3_SKILLS = 3;
+  /* v4 REFUTATION WOUND 1 (2026-09-15), 3 -> 2. The level-3 borrow was written in
+     the Repetition + Demand Audit, BEFORE the wave-3 blocker added the lastGen and
+     lastSkill guards below. Those guards already do the whole job: measured over
+     200 seeds x 30 items at 80% accuracy with the borrow forced off, P(next item
+     repeats the previous generator) is 0.000, P(next item repeats the previous
+     skill) is 0.000 and the worst run is 1, on geometry, tables AND p4area. So at
+     exactly two skills the borrow buys nothing - and it costs: deleting gMissSide
+     took geometry's pool 3 from three skills to two, thinL3 flipped true, and 48.8%
+     of the climb's level-3 turns were served out of pool 2. The depth pilot's two
+     pool-3-only formats (gPeriError, gPeriFence) halved, 20.3% -> 10.3% of a
+     session, and the child met the single-step fluency anchor as the hard question.
+     At ONE skill the carousel really is too short to hide a repeat, so the borrow
+     stays for that case. tools/feed-sim.mjs gates the pool source at level 3. */
+  const FEED_MIN_L3_SKILLS = 2;
 
   /* A skill carousel over one pool: [gen, skill] pairs grouped by skill, cycled in
      a shuffled order that RESHUFFLES on every full cycle (so two sessions do not
@@ -492,14 +512,17 @@ function typedRejectReason(raw, q){
    *
    * LEVEL-3 ALTERNATION RULE. The mastery climb is untouched - still 3 right in a
    * row up, 2 wrong in a row down, capped at pool 3. But that climb pins ~58% of a
-   * session in pool 3, and where pool 3 carries FEWER THAN 3 distinct skills the
-   * carousel is too short to hide a repeat. In that case level 3 alternates a pool
-   * 3 draw with a pool 2 draw. This is deliberate: the audit's fix 3 (purify pool 3
-   * so it holds only generators absent from pools 1 and 2) does the OPPOSITE - it
-   * collapses pool 3 to one or two generators and RAISES the repeat rate to 0.49
-   * with a worst run of 24. Pool 3 cannot be purified until new pool-3 generators
-   * are written, so variety at level 3 is bought by borrowing pool 2, not by
-   * narrowing pool 3.
+   * session in pool 3, and where pool 3 carries FEWER THAN FEED_MIN_L3_SKILLS
+   * distinct skills the carousel is too short to hide a repeat. In that case level 3
+   * alternates a pool 3 draw with a pool 2 draw. This is deliberate: the audit's
+   * fix 3 (purify pool 3 so it holds only generators absent from pools 1 and 2) does
+   * the OPPOSITE - it collapses pool 3 to one or two generators and RAISES the
+   * repeat rate to 0.49 with a worst run of 24. Pool 3 cannot be purified until new
+   * pool-3 generators are written, so variety at level 3 is bought by borrowing pool
+   * 2, not by narrowing pool 3.
+   * The threshold is now 2, not 3 - see FEED_MIN_L3_SKILLS. At two skills the
+   * lastGen/lastSkill guards already hold the repeat rate at 0.000, so the borrow
+   * only diluted the level.
    */
   function createFeed(topic, opts){
     const def = TOPICS[topic];
@@ -2855,100 +2878,2687 @@ function gCompareError(){
 /* Math Quest Island topic: p3numbers (P3). Self-contained.
  * Authoring rules + registration shape: js/topics/README.md
  * Loads after js/core.js. Touches no other file.
- * Scope limit (MOE Oct 2025, p.35): numbers up to 10 000 only. No rounding
- * (that is P4 1.5), no numbers past 9999, no negative results.
+ *
+ * ===========================================================================
+ * SWEEP 2026-09-15 (depth-pilot contract taken wide; lane/sweep-p3numbers).
+ * Baseline this file replaces, from [[Repetition + Demand Audit - 2026-09-05]]:
+ * 2 skills, 7 generators, 20 stem shapes, and worst-ten entry #5 -
+ * `gStandsEasy` (pool 1) and `gStandsHard` (pool 3) were BYTE-IDENTICAL stem
+ * templates ("In 5731, the digit 3 stands for how much?") differing only in the
+ * size of the number. Two of three pool-3 slots added no solving step.
+ *
+ * THE UNIT OF AUTHORING IS A PRINCIPLE, and each principle ships a BANK OF
+ * FORMATS a teacher would rotate through: direct compute, inverse, compare,
+ * error spotting (diagnose AND correct), word problem in a Singapore context,
+ * working backwards, concept check, mixed principle.
+ *
+ * PRINCIPLE 1 - PLACE VALUE (skill `place`).
+ *   A digit's place tells you what it is WORTH. The 3 in 5731 is not three, it
+ *   is three tens; and a zero still has to hold its place.
+ *   gStandsEasy (direct), gWhichDigit (concept check), gExpanded (expanded
+ *   form), gBuildNum (inverse: build the number), gStandsCompare (compare two
+ *   digit values in one number), gStandsFix (a wrong claim, corrected),
+ *   gZeroFix (error spot, correct). No bank here asks the child to NAME a
+ *   place-value misconception any more - see gStandsFix's retirement note.
+ *
+ * PRINCIPLE 2 - COMPARING, ORDERING AND NUMBER PATTERNS (skills `compare`,
+ *   `pattern`). Compare left to right, one place at a time, and stop at the
+ *   first place where the digits differ. A pattern is the same jump made again.
+ *   gGreatest, gCompareTrue, gSmallest, gBetween, gOrder, gBetweenWorded (compare);
+ *   gPatternConcept, gPattern4, gMoreLess, gPatternMissing, gPatternOdd (pattern).
+ *
+ * PRINCIPLE 3 - ADDING AND SUBTRACTING WITHIN 10 000, WITH REGROUPING
+ *   (skill `addsub`). When a column makes ten or more, the ten moves left; when
+ *   you cannot take away, you take one from the column on the left. Regrouping
+ *   IS the idea, and the two classic slips (never carry; always take the small
+ *   digit from the big one) are named distractors, not padding.
+ *   gAddConcept, gAddRegroup, gSubRegroup, gMissingAddend, gMentalMake,
+ *   gAddError, gSubError, gTwoStepWord, gBackFromTotal.
+ *
+ * NO GENERATOR SITS IN TWO POOLS. Pool 3 holds 11 slots and TEN of them are
+ * two-step. The eleventh is gSubError ("what is the correct answer?"), and it is
+ * DECLARED here rather than counted as two: a child who simply works out a − b
+ * answers it. The v2 pass rebuilt that slot to ask for the gap between the slip's
+ * answer and the right one, which did buy a second computation and cost more than
+ * it bought - the gap is structurally the smallest number on the screen, and
+ * "pick the smallest" answered the item on 97.67% of draws. Reverted, counted
+ * honestly. (Proposal 2 asks that a 1-step pool-3 slot be DECLARED rather than
+ * accidental. This is the declaration: one of eleven, named, with its reason.)
+ *
+ * The single-step fluency anchors live in pools 1 and 2, and on THIS topic the
+ * feed serves pools 1/2/3 at roughly 0.19 / 0.23 / 0.58 (500 seeds x 30 through
+ * MQI.createFeed at 80% accuracy), so a child is in pool 3 for about 58% of a
+ * session - the P3-grade aggregate feed-sim prints (0.206 / 0.398 / 0.397) picks
+ * a random live P3 topic per seed and does NOT describe Thousand Isles. At 45%
+ * accuracy the climb inverts it: pool 1 takes about 80% of the session, which is
+ * why both pool-1 singleton skills matter (see gCompareTrue).
+ *
+ * MAGNITUDE IS A TELL AND IT IS GATED. Every numeric MC in this file builds its
+ * distractors through slipSet(), so named slips land on BOTH sides of the key and
+ * the key's rank among the four printed numbers moves from draw to draw.
+ * tools/gen-sanity.mjs ranks all 2,000 draws of every numeric bank in the topic
+ * and fails it if any rank takes more than 45%, if "pick the smallest" or "pick
+ * the largest" clears 40%, or if any rank falls below 12% (third pass, W3: a
+ * rank at 0% is a free elimination, worth +8.3 points to a guesser on 100% of
+ * draws). TWO banks are exempt - gGreatest and gSmallest - and they are
+ * allowlisted BY NAME, with the premise of the exemption re-measured on every
+ * draw: their stems carry no number at all (0.00% of 20,000 draws), so the four
+ * options ARE the data and "the greatest is the largest one" is the mathematics.
+ * gBetween used to ride the same exemption on a stem-word regex, and "pick the
+ * third smallest" answered it on 100.00% of draws while the gate printed it as
+ * impossible (third pass, KILL). It now carries a THIRD, narrower exemption,
+ * allowlisted by name and re-measured on every draw (fourth pass, W1, PM ruling):
+ * its three wrong answers STRADDLE the range, one below and one above on 100% of
+ * draws, so neither single bound settles the item - and the price of that
+ * straddle is that the key is the 2nd or 3rd of the four printed numbers by
+ * construction (0.00 / 49.9 / 50.1 / 0.00). That ~50% is the declared structural
+ * floor of a four-option between-item, not a defect of this one. "Pick the
+ * smallest" and "pick the largest" are still gated and both measure 0.00%; the
+ * premise re-check fails the gate the moment the key is ever an extreme.
+ *
+ * AND SO IS WIDTH, INSIDE THE CLASS (seventh pass, 2026-09-16). The magnitude
+ * gate ranks the key against all four printed numbers and the length gate ranks
+ * it against the extremes; neither ranks it against the options it is CONFUSABLE
+ * with, which are the ones printed at the same width. Every slip family in this
+ * file is built by MULTIPLYING the key, a small multiple prints at the key's own
+ * width and always ABOVE it, so wherever such a slip shipped the key was the
+ * minimum of its own width class by construction - and "take the commonest
+ * printed width, then the smaller number" answered gPatternConcept, pool 1's
+ * busiest generator, on 69.63% of draws with no arithmetic at all. tools/
+ * gen-sanity.mjs now carries a WIDTH-CLASS RANK column over every numeric bank
+ * in the topic: the key's place inside its own width class must stay under 45%
+ * at each of MIN / MID / MAX, and the two rules a child can run - commonest
+ * width then smallest, commonest width then largest - under 40%. NO BANK IS
+ * EXEMPT; the three comparison anchors print four options of one width, so the
+ * rule declines on them rather than being waived. Its negative control is the v7
+ * gPatternConcept option set, which goes red at ~70%.
+ *
+ * AND SO IS SHAPE (eighth pass, 2026-09-16). The seventh pass's fix took the KEY
+ * off the power-of-ten ladder on two draws in three and left the ladder in the
+ * DISTRACTOR family on every draw, which made the key the only number on the row
+ * that is not 1-followed-by-zeros - and the smallest of those where there was
+ * more than one. "Cross out 1, 10, 100 and 1000, then take the smallest of what is
+ * left" answered gPatternConcept on 67.07% / 66.44% of 20,000 draws at two seeds,
+ * was never wrong when it fired, and never read the four printed terms. The
+ * magnitude, length and width columns all printed pass, and all three were true:
+ * nothing in the harness had ever read the SHAPE of an option. tools/gen-sanity.mjs
+ * now carries a SHAPE RULER over every numeric bank in the topic - "is 1 followed
+ * by zeros", "is a multiple of 100", "is round to the nearest ten" - scored in both
+ * directions (unique to the key, unique to all three distractors) and as a ROUTE
+ * (cross out the options that have the shape, or the ones that do not, then take
+ * the smallest or the largest of what is left), capped at 60% with no bank exempt.
+ * Its negative control is the v8 gPatternConcept option set, which goes red at
+ * ~67%. The power-of-ten ladder is retired as a slip family for jump items: a
+ * fixed set of round numbers beside a non-round key IS the answer.
+ *
+ * SCOPE (MOE Oct 2025, P3 p.35). Numbers up to 10 000: 1.1 counting in hundreds
+ * and thousands, 1.2 number notation / representations / place values,
+ * 1.4 comparing and ordering, 1.5 patterns in number sequences. Addition and
+ * Subtraction: 2.1 algorithms up to 4 digits, 2.2 mental calculation of two
+ * 2-digit numbers. NOT here: rounding (P4 1.5), numbers past 9999, negative
+ * results, reading and writing numbers in WORDS (needs a words-to-numeral typed
+ * input the finishers do not support - a separate lane's call).
+ *
+ * FENCE against `heuristics` (Puzzle Caves, which also owns a `pattern` skill):
+ * Puzzle Caves draws 1- and 2-digit typed sequences ("What comes next? 3, 6, 9,
+ * 12, ?"). This file's patterns are 4-digit and MC, and the step set is, in full:
+ * 10 / 100 / 1000 for the counting anchors (gPattern4, gMoreLess; MOE P3 1.1),
+ * 100 / 150 / 200 / 250 / 500 for gPatternMissing, and 15 / 25 / 35 for
+ * gPatternOdd - both of the last two being items where the jump has to be FOUND
+ * rather than read, which is MOE P3 1.5, patterns in number sequences, and which
+ * 1.5 does not restrict to multiples of ten. gPatternConcept draws 10 / 100 /
+ * 1000 on one draw in three and 15 / 25 / 150 / 250 on the other two (SEVENTH
+ * pass, and the reason is at the generator: while the jump is a power of ten the
+ * key is the smallest number of its own printed width by definition, and counting
+ * characters answered the item on 69.6% of draws). 1500 and 2500 were dropped in
+ * the EIGHTH pass: three to five times the largest jump anywhere else in the
+ * topic, and `start = ri(1000, MAXN - 3*step)` pinned every step-2500 item's first
+ * term into [1000, 2499] on 100% of its draws. Its question is "what is the jump",
+ * so it is a 1.5 item on every draw and a 1.1 item on the anchor third.
+ *
+ * W2, SIXTH pass. This paragraph used to read "jump by a whole number of tens -
+ * counting in tens, hundreds and thousands for the anchors, and 150s and 250s
+ * where the item needs the jump to be found", and it named gPatternOdd as one of
+ * the two. v6 moved gPatternOdd to 15 / 25 / 35 to close the fifth pass's tens-
+ * column kill and left this sentence false about that generator on 100% of its
+ * draws, along with the `pattern` skill tip a parent reads (which told the child
+ * to say whether the jump is "tens, hundreds or thousands"). Both are corrected
+ * here; the mathematics did not move and neither did the scope.
+ * Puzzle Caves reaches neither range. Different stems, different range, no
+ * overlap - and this sentence is a note, not a gate, which is what the refutation
+ * said about it.
+ *
+ * EVERY generator here is re-derived from its RENDERED stem by an oracle in
+ * tools/gen-sanity.mjs. Nothing is trusted from the generator's own answerText.
+ * Every numeric MC either stamps `q.authored` (all three distractors are named
+ * misconceptions and none was padded in) or stamps `q.optionSet` (the four
+ * options ARE the data the child compares, as in "which is the greatest?").
+ * gen-sanity fails this topic if a question stamps neither.
+ * ===========================================================================
  */
 (function () {
   const G = MQI.gen;
   const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishNum = G.finishNum;
 
-  const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Mei Ling'];
-  const PLACES = ['thousands','hundreds','tens','ones'];
+  /* name + the pronoun its options and explanations use, so an error-spotting
+     key reads as one sentence and the harness can rebuild it exactly. */
+  const KIDS = [
+    ['Wei Jie', 'He'], ['Aisyah', 'She'], ['Kavitha', 'She'], ['Jun Hao', 'He'],
+    ['Siti', 'She'], ['Priya', 'She'], ['Daryl', 'He'], ['Xin Yi', 'She'],
+    ['Farhan', 'He'], ['Mei Ling', 'She']
+  ];
+  const PLACES = ['thousands', 'hundreds', 'tens', 'ones'];
+  const PLACE1 = ['thousand', 'hundred', 'ten', 'one'];   /* singular forms */
+  const POW = [1000, 100, 10, 1];
+  const MAXN = 9999;                       /* scope ceiling: numbers up to 10 000 */
 
-  /* four distinct non-zero digits -> a 4-digit number with no repeated digit */
-  function digits4(){ return shuffle([1,2,3,4,5,6,7,8,9]).slice(0,4); }
-  function numOf(d){ return d[0]*1000 + d[1]*100 + d[2]*10 + d[3]; }
+  /* ---- house helpers -------------------------------------------------- */
+  const ok = n => Number.isInteger(n) && n >= 1 && n <= MAXN;
+  /* W1 (Sweep p3numbers Refutation, 2026-09-15): SIX generators printed "1 tens",
+     "1 ones" or "1 thousands" - and one of them printed it in the STEM a child
+     reads (gZeroFix, 31% of draws). gBuildNum already carried the pluraliser and
+     nobody else called it. It is now a house helper, and EVERY place-word that
+     follows a count in this file goes through it. tools/gen-sanity.mjs gates the
+     prose so the sentence cannot come back. */
+  const pl = (v, w) => v + ' ' + w + (v === 1 ? '' : 's');
+  const plPlace = (v, i) => pl(v, PLACE1[i]);
+  /* "2 thousands, 9 hundreds, 1 ten, 8 ones" - the read-it-out-loud line */
+  const placeList = d => d.map(plPlace).join(', ');
+  /* W7 (Sweep p3numbers Refutation, TENTH pass, 2026-09-16): gAddError's
+     explanation printed "2 of the four columns do that: the tens, hundreds" - a
+     comma list with no conjunction - on EVERY draw, because the generator
+     requires two or more carry columns. Every list of words in this file now goes
+     through here. */
+  const andList = a => a.length < 2 ? (a[0] || '') :
+    a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  function allDistinct(list){
+    const s = new Set();
+    for (const v of list){ if (s.has(v)) return false; s.add(v); }
+    return true;
+  }
+  /* every NAMED distractor must be a whole number inside scope, distinct from
+     the key and from every other named distractor - so finishNum's shuffle can
+     never surface a collision and the padding branch below never fires. */
+  function optsOk(correct, cands){
+    if (!ok(correct)) return false;
+    return cands.every(ok) && allDistinct([correct].concat(cands));
+  }
+  /* RULE C in tools/gen-sanity.mjs fails a key printed more than 1.4x as wide as
+     the longest distractor, and "pick the option with the odd number of digits"
+     is a strategy a child can run on sight. Most banks here draw four 4-digit
+     numbers and cannot trip either. The two banks whose named slips can collapse
+     to one or two digits (gStandsCompare's "compared the digits" family,
+     gMentalMake's "the amount moved") check here that at least one distractor is
+     printed at the key's own width, so the key is never the only wide option.
 
-  function standsFor(posLo, posHi){
-    const d = digits4(), n = numOf(d), p = ri(posLo, posHi), dig = d[p];
-    const val = dig * Math.pow(10, 3 - p);
-    /* every authored distractor must differ from the answer: drop the power that IS val */
-    const cands = [dig, dig*10, dig*100, dig*1000].filter(c => c !== val);
-    const q = finishNum('In ' + n + ', the digit ' + dig + ' stands for how much?', '', val,
-      cands, '',
-      'The ' + dig + ' sits in the ' + PLACES[p] + ' place, so it stands for ' +
-      dig + ' x ' + Math.pow(10, 3 - p) + ' = ' + val + '.');
-    q.authored = cands;   /* harness contract: no authored distractor equals the answer */
+     W4, EIGHTH pass - AND THE CHECK ITSELF WAS PINNING A CERTAINTY. Requiring a
+     distractor at the key's EXACT width is stronger than RULE C needs, and it
+     made the key's own width class impossible to leave: that width always held at
+     least two options, so wherever two widths tied 2-2 the key was in the WIDER
+     pair - 100.00% of gStandsCompare's 17.6% of tie draws, and 100% of
+     gMentalMake's and gZeroFix's smaller ones. That is a certainty sitting in the
+     one branch the width-class ruler declines to read. RULE C only fails a key
+     printed MORE than 1.4x the longest distractor, so the honest floor is "the
+     key is never the widest option on its own": at least one distractor at the
+     key's width OR WIDER. The narrow-key rows that admits are exactly the ones
+     that can put the key in the NARROWER half of a tie. */
+  function sameWidth(correct, cands){
+    const w = String(correct).length;
+    return cands.some(c => String(c).length >= w);
+  }
+  /* W4 (Sweep p3numbers Refutation, EIGHTH pass, 2026-09-16). The WIDTH-CLASS
+     RANK gate reads the COMMONEST printed width and declines when two widths tie
+     2-2 - by design, because there is then no commonest class to rank the key
+     inside. Where it declines, the answer was a certainty: gStandsCompare tied on
+     17.61 / 17.23% of draws and the key was in the WIDER pair on 100.00% of them,
+     gAddConcept tied on 8.37 / 8.29% with the key in the NARROWER pair on 100.00%,
+     gMentalMake and gZeroFix ~1-2% each, all 100%. "Two lengths, two of each -
+     take the long pair" halves the row for nothing.
+     The fix is not to break the certainty (on gStandsCompare the key is `vi - vj`
+     with `vj < POW[i] <= vi`, so the key is printed at `vi`'s width on every draw
+     the item can legally make and NO authoring can put it in the narrow half) but
+     to stop drawing the branch: a four-option row whose widths have no strict mode
+     is redrawn. The ruler declines on a shape the bank no longer ships. */
+  function widthTie(correct, cands){
+    const c = new Map();
+    for (const v of [correct].concat(cands)){
+      const w = String(v).length;
+      c.set(w, (c.get(w) || 0) + 1);
+    }
+    const n = [...c.values()].sort((x, y) => y - x);
+    /* only a tie for a class of TWO OR MORE is the branch in question. Four
+       distinct widths (counts 1,1,1,1) is the ruler declining because there is no
+       class at all - the shape the counting anchors ship on every draw. */
+    return n.length > 1 && n[0] >= 2 && n[0] === n[1];
+  }
+
+  /* ---- NAME A SLIP THE CHILD CAN ACTUALLY SEE -------------------------
+     W5 (Sweep p3numbers Refutation, SIXTH pass, 2026-09-16), and the same class
+     the p2 lane closed one pass earlier. Four banks ended their explanation by
+     naming ONE misconception and its value - "which is the commonest slip -
+     gives 3182" - while the three printed distractors are drawn by slipSet from
+     a LARGER family, so the named number was not on the options row on 52.98%
+     (gSubRegroup), 49.95% (gTwoStepWord), 49.15% (gAddRegroup) and 38.06%
+     (gBuildNum) of draws. Nothing is arithmetically false and nothing leaks
+     while the child is choosing; it is an explanation asserting something about
+     the option list that the draw did not deliver, and the child is sent to look
+     for a number that is not on the screen.
+
+     Every one of those banks now hands slipWhy() its WHOLE family as
+     [value, why] pairs in PREFERENCE order, and the sentence names the first
+     pair that actually shipped. The bank's own headline misconception is still
+     first, so nothing changes on the draws where it is on the row. Asserted by
+     RULE E of tools/gen-sanity.mjs: every number an explanation names after an
+     answer-naming verb ("gives", "you get", "answers", "leaves you with") must
+     be one of the four printed options. Its negative control is the v6
+     gSubRegroup sentence. */
+  function slipWhy(cands, pairs){
+    for (const p of pairs) if (cands.indexOf(p[0]) !== -1) return p;
+    return null;
+  }
+
+  /* ---- THE SAME SLIPS, MADE TWO AT A TIME -----------------------------
+     (Sweep p3numbers Refutation, NINTH pass, KILL - see slipSet.)
+
+     A family of one-column slips hands the item away column by column: three
+     one-column misreadings beside the key means every column carries the key's
+     digit three times out of four, so crossing out each column's minority digit
+     leaves the key alone and the stem is never read. What stops it is two slips
+     that carry the SAME wrong digit in the same column, and the cheapest honest
+     source of those is the file's own misconceptions COMPOUNDED - a child who
+     forgets the carry out of the tens column and also invents one into the
+     hundreds makes both of this bank's named slips at once, and the two errors
+     sit on the row sharing a digit where they agree.
+
+     Takes the single slips as [offset-from-the-key, why] pairs and returns the
+     singles plus every in-scope pair of them as [value, why] pairs in
+     preference order, so slipWhy still names the first one that shipped and
+     RULE E still binds. Offsets that cancel (a carry lost and the same carry
+     invented) land back on the key and are dropped. */
+  function twoAtATime(key, ones){
+    const out = [], seen = new Set([key]);
+    const add = (v, w) => { if (!ok(v) || seen.has(v)) return; seen.add(v); out.push([v, w]); };
+    for (const p of ones) add(key + p[0], p[1]);
+    for (let i = 0; i < ones.length; i++)
+      for (let j = i + 1; j < ones.length; j++)
+        add(key + ones[i][0] + ones[j][0],
+            ones[i][1] + ' and then ' + ones[j][1].charAt(0).toLowerCase() + ones[j][1].slice(1));
+    return out;
+  }
+
+  /* ---- MAGNITUDE RANK (second-pass KILL, 2026-09-15) -------------------
+     The v2 gSubError rebuild was answered on 97.67% of draws by "pick the
+     smallest number on the screen": all three of its named slips sat ABOVE the
+     key, so the key was structurally the minimum of the four. Nothing in the
+     harness could see it - RULE C and RULE D both count CHARACTERS, and every
+     option there was four characters or fewer. The tell was MAGNITUDE.
+
+     Every numeric MC in this file now builds its distractors through slipSet.
+     The generator declares its named slips as one FAMILY; slipSet splits the
+     family into the slips that land BELOW the key and those that land ABOVE,
+     picks how many come from each side, and returns three. The key's position
+     among the four printed numbers therefore moves from draw to draw BY
+     CONSTRUCTION - it is not a property of which misconceptions happened to be
+     bigger than the answer. Returns null when three distinct in-scope slips
+     cannot be found, which is the caller's signal to redraw.
+
+     tools/gen-sanity.mjs ranks every numeric bank in this topic over 2,000
+     draws and fails the topic if any one rank takes more than 45% of them, if
+     "pick the smallest" or "pick the largest" clears 40%, or - third pass, W3 -
+     if any rank falls BELOW 12%. A rank at 0% is as much a tell as a rank at
+     100%: it tells the child which option to cross out, and crossing one out
+     takes a guesser from 25% to 33.3% on every draw. The gate is now two-sided
+     and every family below carries slips on BOTH sides for that reason.
+
+     Third pass, W1. `minGap` forbids any slip closer to the key than the
+     SMALLEST PLACE VALUE THE ITEM TESTS. v3 added `ans +- step/10` to the two
+     counting banks, and on the step === 10 branch step/10 is 1: a distractor one
+     away from a 4-digit key is a proofreading trap on a phone, not a question
+     about tens. Nothing in the harness was asked about it (optsOk only checks
+     distinctness), so it is a constructor argument here.
+
+     Third pass, W2. `keepOne` names a set of slips of which exactly ONE is
+     guaranteed to be offered. gPatternMissing declared an anti-shortcut guard
+     ("at least two options are NOT printed in the stem") that held on every draw
+     and still left the compound "keep the options that end in the digits the run
+     holds constant, then drop anything already printed" with a single survivor -
+     always the key - on 44.65% of draws. The guard is now the stronger one the
+     wound asked for: one distractor that is ON the pattern's grid (so it
+     survives the trailing-digit test) and is NOT a printed term. keepOne holds
+     candidates on both sides of the key, so forcing one does not pin the rank.
+
+     The comparison anchors gGreatest and gSmallest are exempt from the rank gate
+     and NOTHING else is: see tools/gen-sanity.mjs, which now allowlists them by
+     NAME and re-checks the premise of the exemption on every draw. gBetween used
+     to be exempt by a stem-word regex and was answered by "pick the third
+     smallest" on 100.00% of draws. */
+
+  /* ---- THE COLUMN RULE (ninth-pass KILL, 2026-09-16) -------------------
+     Nine rulers read this file and not one of them ever read ACROSS the four
+     printed numbers digit by digit. The ninth pass did, and the topic fell over:
+
+         "Look down each column of the four answers.
+          If a digit is in the minority there, cross that answer out."
+
+     answered gPatternMissing outright on 72.6% of 20,000 draws, gMoreLess on
+     77.7%, gPattern4 on 67.1%, gSubError / gSubRegroup / gMissingAddend on 58.5
+     - 58.8% and gAddRegroup on 53.7%, with no arithmetic anywhere and without
+     the stem being read at all.
+
+     IT IS slipSet's OWN DESIGN PRINCIPLE, MEASURED FROM THE OUTSIDE. Every
+     named slip in this file is a ONE-COLUMN misreading of the key - key +-
+     POW[c]*10, a printed term one jump out, one digit slid. Three of those
+     beside the key means that in every column three of the four printed numbers
+     carry the key's digit and one does not, so the key is the column-wise
+     CONSENSUS of its own option row by construction. It arrived at c099275 /
+     4e50301 with the third and fourth passes' magnitude-rank fixes - a
+     symmetric +- POW[c] cloud is exactly what flattens the rank AND exactly
+     what makes the key the consensus.
+
+     THE ALGEBRA, because the note's own proposed fix does not close it. The
+     ninth pass asked for "at most one slip per draw may differ from the key in
+     exactly one digit column". That is not sufficient and the counterexample is
+     one line: key 3269 against 4179, 3369, 3258 - two slips differing in three
+     and two columns - still crosses out to the key alone, because a slip that
+     differs from the key in a column is a MINORITY in that column whether it
+     differs in one column or four. What crosses a row out is not how many
+     columns a slip moves, it is whether its digit is ALONE where it moved. So
+     the closing condition is DIGIT COINCIDENCE, and there are exactly two
+     shapes that satisfy it:
+
+       - the 2-2 column: two slips carry the SAME wrong digit in a column, so
+         that column splits two-two and crosses nobody out. A slip and the same
+         slip with a second error compounded on top of it do this by
+         construction, which is why the families below now carry compounds:
+         key+d, key+e, key+d+e is a LATTICE and the column rule crosses out
+         NOTHING on it, whichever corner the key sits in.
+       - the 1-1-1-1 column: all four digits in a column differ, so there is no
+         majority to be in the minority of. Three slips that all move the SAME
+         column by different amounts do this - which is what a counting bank's
+         +-step, +-2*step family already is.
+
+     Both shapes are free of the magnitude tell, and that is the answer to the
+     tension the ninth pass flagged: the two signs of a lattice are drawn
+     independently, so the key is the smallest of the four a quarter of the
+     time, the largest a quarter, and a middle the rest. Consensus-safe and
+     rank-flat at once; nothing has to be traded.
+
+     slipSet now SCORES the row it is about to ship. It draws the triple the way
+     it always did (the below/above split first, so the magnitude rank stays
+     exactly as designed), measures what the column rule would be worth on it,
+     and redraws up to COL_TRIES times inside the same split, keeping the best
+     row it saw and stopping early on a row the column rule cannot touch. The
+     ranking is lexicographic, four terms:
+
+       1. DISTANCE FROM CHANCE of the column rule's value. The target is 0.25,
+          not 0. A row on which the rule reliably crosses the KEY out is as much
+          a tell as one on which it crosses everything else out - it is the same
+          tell read backwards, and it is the direction residual 3 has been
+          declaring on gPatternOdd since the sixth pass.
+       2. the caller's own `prefer` shape, where it passes one. Closing this
+          route moved two DECLARED ones (see gPattern4 and gPatternMissing), so
+          a bank can name the shape it needs kept and have it honoured inside
+          the rows that already clear term 1.
+       3. no column holding the key's digit in exactly three of the four.
+       4. at least one slip differing from the key in two columns or more.
+
+     `reject` is the caller's HARD filter and runs before all of it - the row
+     conditions gStandsCompare, gZeroFix and gMentalMake used to apply in their
+     own redraw loops, moved inside so that a row slipSet likes and the caller
+     throws away no longer takes the drawn rank with it.
+
+     Gated by the COLUMN RULER in tools/gen-sanity.mjs over every numeric bank
+     in the topic, in both directions (cross out the minority, and its mirror -
+     pick the option that stands ALONE in a column), with the v9 gPatternMissing
+     option row as its negative control at 72.6%. */
+  const COL_TRIES = 24;
+  const colDigits = n => String(n).split('').reverse();      /* index 0 = ones */
+  /* one right-aligned column of four printed numbers; a number that does not
+     reach a column has a BLANK there, and a blank is a symbol like any other */
+  function colCell(d, k, i){ return i < d[k].length ? d[k][i] : ' '; }
+  function colWidth(d){ let w = 0; for (const x of d) if (x.length > w) w = x.length; return w; }
+  /* what the column rule is WORTH on this row: the chance a child who crosses
+     out every minority digit and then guesses among whatever is left lands on
+     the key. A rule that leaves all four (or crosses the whole row out) is
+     worth chance, 0.25; a rule that leaves the key alone is worth 1. */
+  function colValue(d){
+    const w = colWidth(d), alive = [true, true, true, true];
+    for (let i = 0; i < w; i++){
+      const cnt = new Map();
+      for (let k = 0; k < 4; k++){ const c = colCell(d, k, i); cnt.set(c, (cnt.get(c) || 0) + 1); }
+      let max = 0;
+      for (const v of cnt.values()) if (v > max) max = v;
+      for (let k = 0; k < 4; k++) if (cnt.get(colCell(d, k, i)) < max) alive[k] = false;
+    }
+    let n = 0;
+    for (const a of alive) if (a) n++;
+    return n ? (alive[0] ? 1 / n : 0) : 0.25;
+  }
+  /* a column holding the KEY's digit in exactly three of the four printed
+     numbers - the shape that hands the fourth away as a free cross-out */
+  function colThree(d){
+    const w = colWidth(d);
+    for (let i = 0; i < w; i++){
+      const ch = colCell(d, 0, i);
+      let c = 0;
+      for (let k = 0; k < 4; k++) if (colCell(d, k, i) === ch) c++;
+      if (c === 3) return true;
+    }
+    return false;
+  }
+  /* how many place-value columns separate two printed numbers */
+  function colSpan(A, B){
+    const w = Math.max(A.length, B.length);
+    let n = 0;
+    for (let i = 0; i < w; i++) if ((A[i] || ' ') !== (B[i] || ' ')) n++;
+    return n;
+  }
+  function slipSet(key, family, opt){
+    opt = opt || {};
+    const minGap = opt.minGap || 0;
+    if (!ok(key)) return null;
+    const seen = new Set([key]);
+    const usable = v => ok(v) && !seen.has(v) && Math.abs(v - key) >= minGap;
+    /* the guaranteed survivor, drawn from whichever candidates this draw allows */
+    let kept = null;
+    if (opt.keepOne){
+      const live = opt.keepOne.filter(usable);
+      if (!live.length) return null;
+      kept = pick(live);
+      seen.add(kept);
+    }
+    const below = [], above = [];
+    for (const v of family){
+      if (!usable(v)) continue;
+      seen.add(v);
+      (v < key ? below : above).push(v);
+    }
+    const need = kept === null ? 3 : 2;
+    const lo = Math.max(0, need - above.length), hi = Math.min(need, below.length);
+    if (lo > hi) return null;
+    const r = ri(lo, hi);                       /* how many slips land below the key */
+    /* THE COLUMN RULE, scored inside the split the magnitude gate just fixed.
+       The rank is drawn first and never moves; all that is chosen here is WHICH
+       slips fill it, and they are chosen so the four printed numbers do not
+       hand the key over column by column. */
+    const kd = colDigits(key);
+    /* `reject` is the CALLER's own row filter - gStandsCompare and gZeroFix both
+        redraw a row whose printed widths tie 2-2, and gStandsCompare also
+        requires a distractor at the key's width or wider. Those used to run in
+        the generator's do-while, AFTER slipSet had chosen: a row slipSet liked
+        and the caller threw away took the whole draw with it, including the rank
+        the magnitude gate had just fixed, and the rejected rows are not a
+        uniform sample of ranks (the eighth pass measured rank 3 falling to 11.8%
+        on gStandsCompare from exactly this). The filter runs INSIDE the search
+        now, so the rank drawn above is the rank shipped. */
+    const bad = opt.reject || (() => false);
+    /* `prefer` is the caller's SOFT criterion, and it exists because closing the
+       column rule reopened two declared ones. The compounds that flatten a
+       column are further from the key than the singles they replace, so on the
+       three counting banks they emptied the window between the key and the last
+       printed term - and "the smallest option above the biggest number on the
+       page" went from 32% to 41% on gPattern4, while gPatternMissing's straddle
+       went from 25% to 53%. A bank hands slipSet the shape it needs to keep
+       (here: at least one slip inside its own printed run) and it is honoured
+       AFTER the column value and before everything else, so the kill is closed
+       first and the residual is held where the ninth pass measured it. Where no
+       row can do both, the column value wins and the residual is declared. */
+    const want = opt.prefer || (() => true);
+    let bestOut = null, bv = 2, bp = 0, bt = 0, bm = 0, any = null;
+    for (let t = 0; t < COL_TRIES; t++){
+      const out = shuffle(below).slice(0, r).concat(shuffle(above).slice(0, need - r));
+      if (kept !== null) out.push(kept);
+      if (any === null) any = out;
+      if (bad(out)) continue;
+      const d = [kd].concat(out.map(colDigits));
+      /* CHANCE, not zero. The target is a row on which the column rule is worth
+         exactly what guessing is worth - 0.25 - and NOT a row on which it is
+         worth less. A rule that reliably crosses the key OUT is as much a tell
+         as one that crosses everything else out; it is the same tell read
+         backwards, and it is the direction residual 3 has been declaring on
+         gPatternOdd since the sixth pass. Distance from chance is the score. */
+      const v = Math.abs(colValue(d) - 0.25), three = colThree(d) ? 0 : 1;
+      const pr = want(out) ? 1 : 0;
+      let multi = 0;
+      for (let k = 1; k < 4; k++) if (colSpan(d[k], kd) >= 2) { multi = 1; break; }
+      if (bestOut === null || v < bv ||
+          (v === bv && (pr > bp ||
+          (pr === bp && (three > bt || (three === bt && multi > bm)))))){
+        bestOut = out; bv = v; bp = pr; bt = three; bm = multi;
+      }
+      if (bv < 1e-9 && bp && bt && bm) break;   /* a row the column rule cannot touch */
+    }
+    /* no row at this rank clears the caller's filter: hand back one it will
+       throw away, which is the redraw the generator's own do-while performs */
+    return shuffle(bestOut === null ? any : bestOut);
+  }
+
+  /* The two mirror regrouping slips, per column, as [offset-from-the-key, why]
+     pairs - the input twoAtATime compounds for the three subtraction banks. A
+     regrouping kept that was not needed lands ABOVE the answer and one lost
+     lands below it, which is what keeps the magnitude rank flat; compounded,
+     they are what keeps the column rule off the row. */
+  function borrowOnes(cols){
+    return cols.map(c => [POW[c] * 10, 'Forgetting to take one away from the ' + PLACES[c - 1] +
+             ' column after borrowing from it'])
+      .concat([1, 2, 3].map(c => [-POW[c] * 10, 'Borrowing from the ' + PLACES[c - 1] +
+             ' column when that column could already take away']));
+  }
+
+  /* Numeric MC whose three distractors are all AUTHORED misconceptions. Stamps
+     q.authored only when three named wrong answers survived, which is what makes
+     the harness's distractor-identity contract bind; every generator in this file
+     guarantees three by redraw, so the padding loop is dead code kept only so a
+     future edit degrades instead of throwing. */
+  function mcNum(stem, extra, correct, cands, unit, explain){
+    const seen = new Set([correct]); const d = [];
+    for (const c of (cands || [])){
+      if (d.length >= 3) break;
+      if (!ok(c) || seen.has(c)) continue;
+      seen.add(c); d.push(c);
+    }
+    const authored = d.length === 3;
+    /* `cands` is null when a generator's slip family ran out of in-scope, distinct
+       members - the same condition optsOk() has always reported. The padding loop
+       below then fires and q.authored is not stamped, so the harness fails the
+       distractor contract instead of the file throwing. */
+    let t = 1;
+    while (d.length < 3 && t < 200){
+      if (ok(correct + t) && !seen.has(correct + t)) { seen.add(correct + t); d.push(correct + t); }
+      else if (ok(correct - t) && !seen.has(correct - t)) { seen.add(correct - t); d.push(correct - t); }
+      t++;
+    }
+    const q = finishNum(stem, extra, correct, d, unit, explain);
+    if (authored) q.authored = d;
     return q;
   }
-  function gStandsEasy(){ return standsFor(1, 2); }   /* hundreds or tens */
-  function gStandsHard(){ return standsFor(0, 3); }   /* any place, thousands included */
-
-  function gWhichDigit(){
-    const d = digits4(), n = numOf(d), p = ri(0,3);
-    return finishNum('Which digit is in the ' + PLACES[p] + ' place of ' + n + '?', '', d[p],
-      [d[(p+1)%4], d[(p+2)%4], d[(p+3)%4]], '',
-      'Reading from the left: ' + d.join(', ') + '. The ' + PLACES[p] + ' digit is ' + d[p] + '.');
+  /* The four options ARE the numbers the child is comparing (greatest, smallest,
+     between, which list is in order). There is no "named misconception" to stamp:
+     the distractors are the data. Declared, so the harness can tell this apart
+     from a generator that quietly shipped padding. */
+  function mcSet(stem, extra, correctText, others, explain){
+    const opts = shuffle([correctText].concat(others));
+    const q = { q: stem, extra: extra || '', choices: opts.map(String),
+                correct: opts.indexOf(correctText), explain: explain,
+                answerText: String(correctText) };
+    q.optionSet = true;
+    return q;
+  }
+  /* Word-answer MC (concept checks, error diagnosis). Distractors are hand-written
+     misconceptions, so they are distinct by authoring, not by arithmetic. */
+  function mcText(stem, extra, correctText, wrongs, explain){
+    const opts = shuffle([correctText].concat(wrongs.slice(0, 3)));
+    return { q: stem, extra: extra || '', choices: opts, correct: opts.indexOf(correctText),
+             explain: explain, answerText: correctText };
   }
 
-  function gBuildNum(){
-    /* zero-in-the-middle trap: 4 thousands, 0 hundreds, 7 tens, 6 ones = 4076 */
-    const th = ri(1,9), zeroAt = pick([1,2]);
-    const h = zeroAt === 1 ? 0 : ri(1,9);
-    const t = zeroAt === 2 ? 0 : ri(1,9);
-    const o = ri(1,9);
-    const n = th*1000 + h*100 + t*10 + o;
-    const squashed = Number(String(th) + (h?String(h):'') + (t?String(t):'') + String(o));
-    const pl = (v, w) => v + ' ' + w + (v === 1 ? '' : 's');
-    return finishNum('Which number has ' + pl(th,'thousand') + ', ' + pl(h,'hundred') + ', ' + pl(t,'ten') +
-      ' and ' + pl(o,'one') + '?',
-      '', n, [squashed, n + 100, n + 9, th*1000 + o*100 + t*10 + h, n - 100, n + 1]
-        .filter(c => c > 0 && c <= 9999 && c !== n), '',
-      th + ' thousands = ' + (th*1000) + ', ' + h + ' hundreds = ' + (h*100) + ', ' + t + ' tens = ' + (t*10) +
-      ', ' + o + ' ones = ' + o + '. Add them: ' + n + '. A zero still needs to hold its place.');
+  /* four distinct non-zero digits -> a 4-digit number with no repeated digit, so
+     "the digit 3" can only mean one column. */
+  function digits4(){ return shuffle([1,2,3,4,5,6,7,8,9]).slice(0,4); }
+  function numOf(d){ return d[0]*1000 + d[1]*100 + d[2]*10 + d[3]; }
+  function digitsOf(n){
+    const d = [];
+    for (let i = 0; i < 4; i++) d.push(Math.floor(n / POW[i]) % 10);
+    return d;
   }
 
-  function gGreatest(){
-    const set = [];
-    while (set.length < 4){ const n = ri(1000, 9999); if (!set.includes(n)) set.push(n); }
-    const best = Math.max(...set);
-    return finishNum('Which number is the greatest?', '', best, set.filter(x => x !== best), '',
-      'Compare the thousands digit first, then hundreds, then tens, then ones. ' + best + ' is the greatest.');
+  /* Column arithmetic, simulated the way a child does it on paper. `suppressAt`
+     is the column whose carry (or borrow) the child forgot; pass -1 for a clean
+     run, which reproduces a + b and a - b exactly. Both are mirrored verbatim by
+     the oracles in tools/gen-sanity.mjs. */
+  function addCols(a, b, suppressAt){
+    const A = digitsOf(a), B = digitsOf(b);
+    let carry = 0, out = 0;
+    for (let i = 3; i >= 0; i--){
+      const s = A[i] + B[i] + carry;
+      out += (s % 10) * POW[i];
+      carry = (s >= 10 && i !== suppressAt) ? 1 : 0;
+    }
+    return out + carry * 10000;
   }
-  function gSmallest(){
-    /* same thousands digit, so the child must read past the first digit */
-    const th = ri(1,9)*1000, set = [];
-    while (set.length < 4){ const n = th + ri(0, 999); if (!set.includes(n)) set.push(n); }
-    const worst = Math.min(...set);
-    return finishNum('Which number is the smallest?', '', worst, set.filter(x => x !== worst), '',
-      'All four start with the same thousands digit, so compare the hundreds next. ' + worst + ' is the smallest.');
+  function subCols(a, b, suppressAt){
+    const A = digitsOf(a), B = digitsOf(b);
+    let borrow = 0, out = 0;
+    for (let i = 3; i >= 0; i--){
+      const top = A[i] - borrow;
+      if (top < B[i]) { out += (top + 10 - B[i]) * POW[i]; borrow = (i === suppressAt) ? 0 : 1; }
+      else { out += (top - B[i]) * POW[i]; borrow = 0; }
+    }
+    return out;
   }
-  function gMoreLess(){
-    const step = pick([10, 100, 1000]);
-    const dir = pick(['more','less']);
-    const n = dir === 'more' ? ri(1000, 9999 - step) : ri(1000 + step, 9999);
-    const ans = dir === 'more' ? n + step : n - step;
-    return finishNum('What number is ' + step + ' ' + dir + ' than ' + n + '?', '', ans,
-      /* scope clamp (MOE p.35 "up to 10 000"): reject any option outside 1..9999 in the
-         generator, never by tolerance downstream */
-      [dir === 'more' ? n + step*10 : n - step*10, dir === 'more' ? n + step/10 : n - step/10, n, ans + step,
-       dir === 'more' ? n + step + 1 : n - step - 1, ans + 10, ans - 10]
-        .filter(c => Number.isInteger(c) && c > 0 && c <= 9999 && c !== ans),
-      '', n + ' ' + (dir === 'more' ? '+ ' : '- ') + step + ' = ' + ans + '. Watch the digits that roll over.');
+  function carryCols(a, b){
+    const A = digitsOf(a), B = digitsOf(b), out = []; let c = 0;
+    for (let i = 3; i >= 0; i--){ const s = A[i] + B[i] + c; if (s >= 10){ out.push(i); c = 1; } else c = 0; }
+    return out;
   }
+  function borrowCols(a, b){
+    const A = digitsOf(a), B = digitsOf(b), out = []; let br = 0;
+    for (let i = 3; i >= 0; i--){ const top = A[i] - br; if (top < B[i]){ out.push(i); br = 1; } else br = 0; }
+    return out;
+  }
+  /* the "always take the small digit from the big one" answer */
+  function smallFromBig(a, b){
+    const A = digitsOf(a), B = digitsOf(b); let out = 0;
+    for (let i = 0; i < 4; i++) out += Math.abs(A[i] - B[i]) * POW[i];
+    return out;
+  }
+  /* the "never carry anything" answer */
+  function noCarry(a, b){
+    const A = digitsOf(a), B = digitsOf(b); let out = 0;
+    for (let i = 0; i < 4; i++) out += ((A[i] + B[i]) % 10) * POW[i];
+    return out;
+  }
+  const digitSum = n => digitsOf(n).reduce((s, d) => s + d, 0);
+
+
+/* =========================================================================
+   PRINCIPLE 1 - PLACE VALUE
+   ========================================================================= */
+
+/* FORMAT 1 - direct compute: what is this digit worth? (pool 1, 1 step)
+   The fluency anchor. Named distractors: the digit itself (the commonest P3
+   answer by a distance), and the same digit read one column too far each way. */
+function standsFor(posLo, posHi){
+  const d = digits4(), n = numOf(d), p = ri(posLo, posHi), dig = d[p];
+  const val = dig * POW[p];
+  const cands = [dig, dig*10, dig*100, dig*1000].filter(c => c !== val && c <= MAXN);
+  return mcNum('In ' + n + ', the digit ' + dig + ' stands for how much?', '', val, cands, '',
+    'Read the places from the left: ' + placeList(d) + '. The ' +
+    dig + ' sits in the ' + PLACES[p] + ' place, so it stands for ' + dig + ' × ' + POW[p] + ' = ' + val +
+    '. ' + (p === 3
+      ? 'In the ones place - and nowhere else - the digit and what it is worth are the same number.'
+      : 'Saying just "' + dig + '" gives the digit, not what the digit is worth.'));
+}
+/* The place is drawn from all FOUR columns. It used to be the hundreds or the
+   tens only, which meant the same three slips (the digit, and the digit read one
+   column each way) always sat two below and one above the key, or one below and
+   two above: the key was never the smallest or the largest of the four and a
+   child could learn that without learning any place value. Over all four columns
+   the key's rank is flat by construction - 25% at each position. */
+function gStandsEasy(){ return standsFor(0, 3); }
+
+/* FORMAT 2 - concept check, read the other way round (pool 1, 1 step) */
+function gWhichDigit(){
+  const d = digits4(), n = numOf(d), p = ri(0,3);
+  const q = mcNum('Which digit is in the ' + PLACES[p] + ' place of ' + n + '?', '', d[p],
+    [d[(p+1)%4], d[(p+2)%4], d[(p+3)%4]], '',
+    'Reading from the left, ' + n + ' is ' + placeList(d) +
+    '. So the ' + PLACES[p] + ' digit is ' + d[p] + '.');
+  return q;
+}
+
+/* FORMAT 3 - a second representation: expanded form (pool 2, 1 step)
+   The hundreds place is always 0, so the zero-drop slip is always on offer. */
+function gExpanded(){
+  let th = 4, t = 7, o = 6, g = 0;
+  do { th = ri(1,9); t = ri(1,9); o = ri(1,9); g++; }
+  while (g < 200 && !(th !== o && t !== o && th !== t));
+  const n = th*1000 + t*10 + o;
+  const key = th*1000 + ' + ' + t*10 + ' + ' + o;
+  /* W1 (Sweep p3numbers Refutation, v11 OPTION-ROW GEOMETRY ruler, 2026-09-16).
+     The v10 row's three wrong answers had first terms `th`, `o*1000` and
+     `th*100`, so the only one that could out-rank the key's `th*1000` was the
+     read-from-the-right slip: "take the line whose FIRST number is the biggest"
+     answered the item on 51.9% of draws, and the key was NEVER the line with the
+     two smallest first terms - a free cross-out worth another elimination. No
+     ruler in this harness could see it, because every numeric ruler was gated on
+     the options being bare numerals and an expanded form is not one. The fix is a
+     second thousands-sized slip: the thousands and tens digits SWAPPED, which is
+     the same confusion the item is about read the other way round. The key's first
+     term is now `th*1000` against `t*1000` and `o*1000`, and `th`, `t` and `o` are
+     drawn distinct and uniform, so the key's first-term rank is 1, 2 or 3 with
+     equal weight and never 0. */
+  const dropped = th*100 + ' + ' + t*10 + ' + ' + o;     /* dropped the empty hundreds place */
+  const digits  = th + ' + ' + t + ' + ' + o;            /* wrote the digits, not their values */
+  const third = pick([digits, dropped]);
+  const wrongs = [
+    o*1000 + ' + ' + t*10 + ' + ' + th,                  /* read the number from the right */
+    t*1000 + ' + ' + th*10 + ' + ' + o,                  /* thousands and tens digits swapped */
+    third
+  ];
+  return mcText('Which of these shows ' + n + ' in <b>expanded form</b>?', '', key, shuffle(wrongs),
+    'Expanded form writes what each digit is worth and adds them up. ' + n + ' is ' +
+    pl(th,'thousand') + ', 0 hundreds, ' + pl(t,'ten') + ' and ' + pl(o,'one') +
+    ', so it is ' + th*1000 + ' + ' + t*10 + ' + ' + o + '. The hundreds place is empty, so nothing ' +
+    'is written for it - but the 0 still holds the place.' +
+    (third === dropped
+      ? ' That is why ' + dropped + ' is a different number (' + (th*100 + t*10 + o) + ').'
+      : ' And a digit is not its worth: the ' + th + ' at the front is ' + pl(th,'thousand') +
+        ', not ' + pl(th,'one') + '.'));
+}
+
+/* FORMAT 4 - inverse: build the number from its parts (pool 2, 1 step)
+   The zero-in-the-middle trap: 4 thousands, 0 hundreds, 7 tens, 6 ones = 4076. */
+function gBuildNum(){
+  let th = 4, h = 0, t = 7, o = 6, n = 4076, squashed = 476, cands = null, g = 0;
+  do {
+    th = ri(1,9);
+    const zeroAt = pick([1,2]);
+    h = zeroAt === 1 ? 0 : ri(1,9);
+    t = zeroAt === 2 ? 0 : ri(1,9);
+    o = ri(1,9);
+    n = th*1000 + h*100 + t*10 + o;
+    /* the number you get by writing the digits with the zero left out */
+    squashed = Number(String(th) + (h ? String(h) : '') + (t ? String(t) : '') + String(o));
+    const swapped  = th*1000 + t*100 + h*10 + o;      /* hundreds and tens exchanged */
+    const reversed = o*1000 + t*100 + h*10 + th;      /* the four parts read back to front */
+    const zeroEnd  = th*1000 + (h || t)*100 + o*10;   /* wrote the 0 at the END instead */
+    const endsSwap = o*1000 + h*100 + t*10 + th;      /* first part and last part exchanged */
+    cands = slipSet(n, [squashed, swapped, reversed, zeroEnd, endsSwap]);
+    g++;
+  } while (g < 200 && !(cands && optsOk(n, cands)));
+  /* W5, SIXTH pass: the closing sentence used to name `squashed` whatever the
+     draw did, and slipSet left it off the options row on 38.06% of draws. The
+     zero's job is still the teaching point; the number the sentence blames is
+     now one the child can point at. */
+  const why = slipWhy(cands, [
+    [squashed, 'Leaving the 0 out'],
+    [th*1000 + t*100 + h*10 + o, 'Swapping the hundreds part and the tens part'],
+    [th*1000 + (h || t)*100 + o*10, 'Writing the 0 at the end instead'],
+    [o*1000 + t*100 + h*10 + th, 'Reading the four parts back to front'],
+    [o*1000 + h*100 + t*10 + th, 'Swapping the first part and the last part']
+  ]);
+  return mcNum('Which number has ' + pl(th,'thousand') + ', ' + pl(h,'hundred') + ', ' + pl(t,'ten') +
+    ' and ' + pl(o,'one') + '?', '', n, cands, '',
+    pl(th,'thousand') + ' = ' + th*1000 + ', ' + pl(h,'hundred') + ' = ' + h*100 + ', ' +
+    pl(t,'ten') + ' = ' + t*10 + ', ' + pl(o,'one') + ' = ' + o +
+    '. Add them and you get ' + n + '. The 0 is doing a job: it holds the ' +
+    'empty place open. ' + why[1] + ' gives ' + why[0] + '.');
+}
+
+/* FORMAT 5 - compare two digit values inside ONE number (pool 3, 2 steps).
+   This slot used to be `gStandsHard`, the byte-identical twin of gStandsEasy
+   (audit worst-ten #5). It now asks for two values and their difference. */
+function gStandsCompare(){
+  let d = digits4(), i = 0, j = 1, cands = null, g = 0;
+  do {
+    d = digits4();
+    i = ri(0,2); j = ri(i+1, 3);
+    const vi = d[i]*POW[i], vj = d[j]*POW[j];
+    /* W3, third pass: the slips below the key were thin - the key was the
+       smallest of the four on 10.02% of 20,000 draws - because two of them
+       collapse onto each other whenever the two columns are adjacent. Comparing
+       the digits and then reading the answer back in EITHER column is two more
+       genuine slips below the key, and reading the second digit one column to its
+       RIGHT is one more above.
+
+       W4, EIGHTH pass. Two widths tied 2-2 on 17.61 / 17.23% of draws and the key
+       was in the WIDER pair on 100.00% of them - a free halving of the row in the
+       one branch the width ruler declines to read. The key is `vi - vj` with
+       `vj < POW[i] <= vi`, so it is printed at `vi`'s width on every draw the item
+       can legally make and no distractor can be authored to put it in the narrow
+       half; the tie is therefore not drawn at all (`widthTie` in the redraw
+       condition). Rejecting it alone cost the magnitude gate - rank 3 fell to
+       11.8%, under the 12% floor, because the rejected rows are the ones with
+       three narrow slips below the key - so `vi - 2*vj`, the second value taken off
+       a second time, joins the family as a below-key slip printed at the KEY's
+       width. Measured: tie 17.61% -> 0.00%, ranks 27.9 / 28.2 / 25.3 / 18.6, and
+       the option board widens from 5,925 to 7,508 distinct rows. */
+    cands = d[i] > d[j] ? slipSet(vi - vj, [
+      d[i] - d[j],                /* compared the digits, not what they are worth */
+      (d[i] - d[j])*POW[i],       /* ...then read that in the FIRST digit's column */
+      (d[i] - d[j])*POW[j],       /* ...then read that in the SECOND digit's column */
+      vi - d[j]*POW[j-1],         /* read the second digit one column to its left */
+      vi - d[j]*POW[j+1],         /* read the second digit one column to its right */
+      vi + d[j]*POW[j-1],         /* ...and added it on instead of taking it off */
+      vj,                         /* gave the second value on its own */
+      vi,                         /* gave the first value on its own */
+      vi + vj,                    /* added the two values instead of comparing them */
+      vi - 2*vj,                  /* took the second value off a second time */
+      vi - d[j]                   /* took the digit off the value */
+    ], { reject: c => !sameWidth(vi - vj, c) || widthTie(vi - vj, c) }) : null;
+    g++;
+  } while (g < 200 && !(d[i] > d[j] && cands && optsOk(d[i]*POW[i] - d[j]*POW[j], cands) &&
+           sameWidth(d[i]*POW[i] - d[j]*POW[j], cands) &&
+           !widthTie(d[i]*POW[i] - d[j]*POW[j], cands)));
+  const n = numOf(d), vi = d[i]*POW[i], vj = d[j]*POW[j], ans = vi - vj;
+  return mcNum('In ' + n + ', how much more does the digit ' + d[i] + ' stand for than the digit ' +
+    d[j] + '?', '', ans, cands, '',
+    'The ' + d[i] + ' is in the ' + PLACES[i] + ' place, so it stands for ' + vi + '. The ' + d[j] +
+    ' is in the ' + PLACES[j] + ' place, so it stands for ' + vj + '. ' + vi + ' − ' + vj + ' = ' + ans +
+    '. Taking ' + d[j] + ' away from ' + d[i] + ' compares the digits, not what they are worth.');
+}
+
+/* FORMAT 6 - a claim that is wrong, and the worth the child has to supply
+   (pool 3, 2 steps). Registered as `gStandsFix`; it replaces `gStandsError`,
+   which was RETIRED.
+
+   RETIREMENT, ELEVENTH pass (Sweep p3numbers Refutation, 2026-09-16), and it is
+   the second bank in this topic to go for the same rule shape one version after
+   the first. `gStandsError` printed a wrong CLAIM and asked the child to name the
+   misconception that produced it, and the claim's CHARACTER COUNT was injective
+   onto the misconception: one character -> "wrote the digit", two or three -> "one
+   column right", four -> "one column left". 100.00 / 100.00% of 20,000 draws at
+   each of two seeds, on a bank served 1.51 items per 30-item session at 0.80. The
+   child never read the four-digit number, never found the named digit and never
+   named a column - which is why the tenth pass's in-skill carve-out ("locating the
+   named digit's column is the item's own work") does not survive contact with the
+   route: the route does not locate the column.
+
+   THE FIX WAS ATTEMPTED AND IT CANNOT BE AUTHORED. The PM's ruling was: draw the
+   claim so that its printed length is INDEPENDENT of the misconception - every
+   misconception reachable from every length, every cell of the length x
+   misconception table at 15% or more - and retire only if that cannot be done.
+   Four builds were measured at 20,000 draws x two seeds (seed 1 / seed 424242):
+
+     v11 as shipped, p over {thousands, hundreds}      worst cell 0.0%, route 100.00 / 100.00%
+     p over ALL FOUR places                            worst cell 0.0%, route  79.70 /  80.03%
+     ... and the claim named in WORDS on half the draws worst cell 0.0%, route  64.94 /  65.00%
+     ... and both fillers promoted to keys (5 readings) worst cell 0.0%, route  62.66 /  62.73%
+     all of it at once                                 worst cell 0.0%, route  54.33 /  54.19%
+
+   The table never fills, and it cannot: the "wrote the digit, not what it is
+   worth" claim is the digit itself - `dig` x 10^0 - so it is the SMALLEST value
+   this item can print on every draw it is the key, and no faithful rendering of a
+   number is non-monotone enough to let it reach the longest claim length. The
+   mirror holds at the other end: only "one column to the left" can print a
+   four-character claim. Two cells of the table are structurally empty whatever the
+   draw does, so a child who counts characters always has at least one length that
+   settles the item outright. RETIRED rather than shipped a third time.
+
+   WHAT REPLACES IT, and what is narrowed. The wrong claim STAYS in the stem - it
+   is the commonest P3 place-value error and a child should meet it - but the
+   question is no longer "name the mistake", it is "what is the digit really
+   worth". The claimed column is drawn UNIFORMLY over the three columns the digit
+   is not in, so the claim tells a child nothing about where the digit really sits;
+   the option row is the same four-value row `gStandsEasy` has shipped clean since
+   v1 (the digit at each of the four places), and the key's rank across it is flat
+   by construction. DECLARED NARROWING: no bank in this topic now asks a child to
+   DIAGNOSE a named place-value misconception - error spotting survives on `addsub`
+   (`gAddError`, `gSubError`) and correction survives on `place` (`gZeroFix` and
+   this bank), but the diagnose-the-place-slip demand is gone. That is a wave-2
+   authoring item, and the shape it needs is one where the claim's size is not a
+   function of which slip made it.
+
+   THE ONE ROUTE THIS BANK HANDS OVER, declared rather than hidden: the claim is
+   printed and is always one of the four options, so "cross out the number the
+   child in the stem said" is a free elimination worth 1 in 3 - 33.3% against 25%
+   chance. It is the price of keeping the misconception visible, it sits under
+   every cap in tools/gen-sanity.mjs, and the claimed column is drawn uniformly so
+   nothing composes with it: which of the three survivors is the key is
+   independent of which column was claimed. */
+function gStandsFix(){
+  const who = pick(KIDS)[0];
+  const d = digits4(), n = numOf(d);          /* four DISTINCT non-zero digits */
+  const p = ri(0, 3), dig = d[p];
+  /* the claimed column, uniform over the three the digit is NOT in: the claim
+     must not narrow where the digit really sits, which is the whole of the item */
+  const c = pick([0, 1, 2, 3].filter(k => k !== p));
+  const val = dig * POW[p], claim = dig * POW[c];
+  const cands = [0, 1, 2, 3].filter(k => k !== p).map(k => dig * POW[k]);
+  const how = c === 3 ? who + ' gave the digit itself instead of what it is worth'
+    : c === p - 1 ? who + ' read it one column to the LEFT of where it sits'
+    : c === p + 1 ? who + ' read it one column to the RIGHT of where it sits'
+    : who + ' counted the columns to the wrong place altogether';
+  return mcNum('In ' + n + ', ' + who + ' says the digit ' + dig + ' stands for ' + claim +
+    '. <b>How much does the digit ' + dig + ' really stand for?</b>', '', val, cands, '',
+    'Read the places from the left: ' + placeList(d) + '. The ' + dig + ' sits in the ' +
+    PLACES[p] + ' place, so it stands for ' + dig + ' × ' + POW[p] + ' = ' + val + ', not ' +
+    claim + ' - ' + how + ' (' + plPlace(dig, c) + ' is ' + claim + ').' +
+    ' Point at the column the digit is sitting in and say its name out loud before working out ' +
+    'the value. A digit is worth the column it is written in, and nothing else about it changes.');
+}
+
+/* FORMAT 7 - error spotting, CORRECT the mistake, then step on (pool 3, 2 steps).
+   The dropped-zero slip, which is the single commonest P3 place-value error.
+
+   W4 (Sweep p3numbers Refutation, 2026-09-15): this slot used to ask only "what
+   number should he have written?", which is gBuildNum's pool-2 computation with a
+   wrong number printed beside it - 5,000 / 5,000 draws were answerable from the
+   four part-words alone, ignoring the printed number entirely. It now asks for a
+   SECOND described number measured against the rebuilt one, so the child has to
+   rebuild the number (holding the empty place open) AND then count on or back
+   from it. The dropped-zero trap is still the premise, and "stepped from the
+   squashed number" is now a named distractor instead of the answer.
+
+   Second pass, 2026-09-15. Three things came back on this rebuild and all three
+   are fixed here by CONSTRUCTION rather than by rejection, which is what the
+   wound was actually about:
+   W3a - "1000 less" was declared in the step list and drawn 0 times in 20,000,
+     because its named distractor (squashed - 1000) is negative for every draw
+     and optsOk quietly rejected the whole combination. The thousands digit is
+     now drawn from the range that branch needs, and the family carries a slip
+     that survives it.
+   W3b - 2.28% of keys were 3-digit numbers, in an item whose whole lesson is
+     that the zero stops the number shrinking. The draw range now guarantees a
+     4-digit key and tools/gen-sanity.mjs fails a 3-digit one.
+   W4  - the stem was the longest in the topic at 30.6 words, ahead of both real
+     word problems, so part of the second step was reading comprehension. The
+     second child is gone; the step is asked directly of "the correct number",
+     which is the number the child has just had to rebuild. 21 words, both steps
+     intact. */
+function gZeroFix(){
+  const k1 = pick(KIDS), who = k1[0], pron = k1[1];
+  let th = 6, t = 4, o = 9, step = 100, sg = 1, cands = null, g = 0;
+  do {
+    step = pick([10, 100, 1000]); sg = pick([1, -1]);
+    /* the range the branch needs, BEFORE the draw: "1000 less" wants a number
+       with at least 2 thousands to stay 4-digit, "1000 more" at most 8. */
+    th = ri(sg === -1 && step >= 100 ? 2 : 1, sg === 1 && step === 1000 ? 8 : 9);
+    t = ri(1,9); o = ri(1,9);
+    const n0 = th*1000 + t*10 + o, sq0 = th*100 + t*10 + o, a0 = n0 + sg*step;
+    cands = (t !== o && a0 >= 1000 && a0 <= MAXN) ? slipSet(a0, [
+      sq0 + sg*step,        /* stepped on from the squashed number, zero still missing */
+      n0,                   /* stopped after rebuilding, never took the step */
+      n0 - sg*step,         /* stepped the wrong way */
+      n0 + sg*2*step,       /* took the step twice */
+      n0 + sg*(step/10),    /* stepped in the column to the RIGHT of the one named */
+      n0 + sg*step*10       /* stepped in the column to the LEFT of the one named */
+    ], { reject: c => widthTie(a0, c) }) : null;
+    /* W4, EIGHTH pass: the 2-2 width tie is the branch the width ruler declines on,
+       and the key was in the wider pair on 100% of this bank's 1.08 / 0.91% of
+       them. It is redrawn below rather than declared - see widthTie. */
+    g++;
+  } while (g < 400 && !(cands && optsOk(th*1000 + t*10 + o + sg*step, cands) &&
+           !widthTie(th*1000 + t*10 + o + sg*step, cands)));
+  const n = th*1000 + t*10 + o, squashed = th*100 + t*10 + o, ans = n + sg*step;
+  const dir = sg === 1 ? 'more' : 'less';
+  return mcNum(who + ' writes ' + pl(th,'thousand') + ', 0 hundreds, ' + pl(t,'ten') + ' and ' +
+    pl(o,'one') + ' as ' + squashed + '. <b>What is ' + step + ' ' + dir +
+    ' than the correct number?</b>', '', ans, cands, '',
+    pron + ' left the empty hundreds place out altogether, so every digit slid one place to the right ' +
+    'and the number shrank from ' + n + ' to ' + squashed + '. The 0 has to be written: ' + th*1000 +
+    ' + 0 + ' + t*10 + ' + ' + o + ' = ' + n + '. Then take the step from the RIGHT number: ' + n + ' ' +
+    (sg === 1 ? '+' : '−') + ' ' + step + ' = ' + ans + '.');
+}
+
+
+/* =========================================================================
+   PRINCIPLE 2 - COMPARING, ORDERING AND NUMBER PATTERNS
+   ========================================================================= */
+
+/* FORMAT 1 - direct compare, greatest (pool 1, 1 step).
+   At least two of the four share a thousands digit, so the answer is never a
+   one-glance read of the leading digit. */
+function gGreatest(){
+  let set = [], g = 0;
+  do {
+    const th = ri(1,9);
+    set = [th*1000 + ri(0,999), th*1000 + ri(0,999)];
+    while (set.length < 4){ const n = ri(1000, MAXN); if (!set.includes(n)) set.push(n); }
+    g++;
+  } while (g < 200 && !allDistinct(set));
+  const best = Math.max.apply(null, set);
+  return mcSet('Which number is the <b>greatest</b>?', '', best, set.filter(x => x !== best),
+    'Compare the thousands digit first, then the hundreds, then the tens, then the ones, and stop at ' +
+    'the first place where the digits are different. ' + best + ' is the greatest.');
+}
+/* FORMAT 2 - is this comparison true? (pool 1, 1 step). The SECOND `compare`
+   format in pool 1, and like gPatternOdd in pool 3 it is here because of a
+   measurement, not a taste call.
+
+   W2 (Sweep p3numbers Refutation, second pass, 2026-09-15): buildCarousel
+   round-robins SKILLS inside a pool, so a skill holding one generator takes the
+   whole of its quarter - that was the W3 argument, and W3 was fixed in pool 3 and
+   left standing in pool 1, where the mastery climb sends a struggling child. At
+   45% simulated accuracy a child sits in pool 1 for 79.5% of a 30-item session
+   and met gGreatest 5.25 times, worst 8, with ONE masked shape. Worse than the
+   3.64 that justified writing gPatternOdd, and on the child who can least afford
+   it.
+
+   KILL, TENTH pass (Sweep p3numbers Refutation, 2026-09-16), and the PM's ruling
+   on it (v11, 2026-09-16). The v10 comment above is the argument this bank died
+   on, and both of its clauses were true and neither was the defect.
+
+     Which of these is true?
+       2678 > 2849  |  2678 > 2504 <- key  |  2678 < 2521  |  2678 < 2522
+
+   Every line started with the SAME number, so the child covered it and read the
+   four numbers on the right: 2849, 2504, 2521, 2522 - three bunched and one off
+   on its own. The loner's line carried a ">", so "take the OTHER > line" was the
+   key on 79.22 / 79.14% of 20,000 draws at each of two seeds (84.25 / 84.16%
+   composed), on a bank served 3.07 times per 30-item session at 0.45 accuracy.
+   The draw did it: three companions on one side of n and one on the other, with
+   the key taken from the three, makes the lone companion the extreme of the four
+   and pairs its sign with the key's.
+
+   AND THE CONTROL THAT SETTLED WHAT THE DEFECT WAS. Relabel the two symbols -
+   hand the rule to a child who thinks "<" means greater - and the score is
+   79.22 / 79.14%, identical to four decimal places, because the rule never uses
+   what either symbol MEANS. The item could not tell a child who knows "<" from
+   ">" apart from one who does not, on four draws in five.
+
+   THE GENERAL RESULT, which is why this is a rebuild and not a patch. Take any
+   four-option "which of these is true?" row over four DIFFERENT number pairs with
+   exactly one true statement. A child compares each pair (real work, no symbol
+   knowledge needed) and asks of each line only "does the symbol agree with the
+   order I found?". Exactly one line agrees - the true one - so the agree/disagree
+   split is 1-3 and the singleton is the key. The child never has to know which
+   way round the split means: the odd one out IS the answer. That is 100%, on any
+   such bank, and it is the class the v10 draw was a weak instance of. The ONLY
+   way to break it is to put the SAME number pair on the row with BOTH symbols,
+   so that two lines agree and two disagree and the singleton deduction dies.
+
+   THE REBUILD, and its declared floor. The stem now names the pair, and the row
+   carries that pair with both symbols plus a second pair with both symbols:
+
+     Which line compares 4567 and 4123 correctly?
+       4567 > 4123 <- key | 4567 < 4123 | 2318 < 2764 | 2318 > 2764
+
+   Exactly TWO lines are true as written (the key, and one line of the second
+   pair), so the agree/disagree split is 2-2 and the singleton deduction is gone.
+   Both pairs are doubled, so "the pair that repeats" names nothing. Both pairs
+   are written in the same left-to-right order in both of their lines, so "the
+   two lines with the numbers the same way round" names nothing. The signs come
+   out 2 and 2, and the key's sign is ">" on half the draws and "<" on the other
+   half. All four numbers are drawn from one thousands-family with the gaps
+   levelled, so no number sits apart.
+
+   What is left is the floor, and it is DECLARED rather than claimed away: the
+   child reads the stem, keeps the two lines that use the stem's two numbers, and
+   is then one symbol away - a 50% guesser value with no further mathematics. It
+   cannot be lowered. Any row that carries the stem's pair with both symbols
+   gives that pair exactly one true and one false line, and any THIRD line about
+   the same pair forces the key into the doubled writing-order (a pair's two true
+   statements are "p > q" and "q < p", its two false ones "p < q" and "q > p", so
+   a 3-subset with one true always takes one order whole and the key sits in it).
+   50% is therefore what a four-option item costs when the last step it demands is
+   one binary symbol decision, and it is the same structural floor gBetween's
+   straddle is declared at (residual 14). The half it buys is the half the v10
+   item did not have at all: the relabelled child now scores 0.00%. */
+function gCompareTrue(){
+  /* four numbers from ONE thousands-family, with the gaps levelled so that no
+     member is further from its nearest neighbour than any other - the "sits
+     apart" detector the tenth pass killed this bank with has nothing to find. */
+  let fam = [4567, 4123, 4890, 4300], g = 0;
+  do {
+    const th = ri(1,9), gap = ri(150, 230);
+    fam = [ri(40, 180)];
+    for (let i = 0; i < 3; i++) fam.push(fam[i] + gap + ri(-25, 25));
+    fam = shuffle(fam.map(v => th*1000 + v));
+    g++;
+  } while (g < 200 && !(allDistinct(fam) && fam.every(v => ok(v) && v % 1000 <= 950)));
+  /* the stem's pair and the second pair, each printed in ONE drawn order in both
+     of its lines, so the writing order never separates the live pair from the
+     decoy */
+  const [p, q, r, s] = fam;
+  const pFirst = Math.random() < 0.5, rFirst = Math.random() < 0.5;
+  const line = (x, y, sign) => x + ' ' + sign + ' ' + y;
+  const px = pFirst ? p : q, py = pFirst ? q : p;
+  const rx = rFirst ? r : s, ry = rFirst ? s : r;
+  const key = line(px, py, px > py ? '>' : '<');
+  const wrongs = [line(px, py, px > py ? '<' : '>'),
+                  line(rx, ry, '>'), line(rx, ry, '<')];
+  const hi = Math.max(p, q), lo = Math.min(p, q);
+  const col = String(hi).split('').findIndex((c, i) => c !== String(lo)[i]);
+  return mcText('Which line compares <b>' + px + '</b> and <b>' + py +
+    '</b> correctly?', '', key, shuffle(wrongs),
+    'Compare left to right, one place at a time, and stop at the first place where the digits differ. ' +
+    hi + ' and ' + lo + ' first differ in the ' + PLACES[col] + ' place: ' + String(hi)[col] +
+    ' against ' + String(lo)[col] + ', so ' + hi + ' is the bigger number and ' + key +
+    ' is the line that says so. The ' + rx + ' and ' + ry + ' lines are about two other ' +
+    'numbers, so neither of them answers the question however the symbol falls - and one of ' +
+    'the two ' + px + ' lines has the symbol pointing the wrong way. The small end of the ' +
+    'symbol always points at the smaller number.');
+}
+
+/* FORMAT 3 - direct compare, smallest, every number sharing a thousands digit
+   so the child must read past the first digit (pool 2, 1 step) */
+function gSmallest(){
+  const th = ri(1,9)*1000; const set = [];
+  while (set.length < 4){ const n = th + ri(0, 999); if (!set.includes(n)) set.push(n); }
+  const worst = Math.min.apply(null, set);
+  return mcSet('Which number is the <b>smallest</b>?', '', worst, set.filter(x => x !== worst),
+    'All four numbers start with the same thousands digit, so that place cannot settle it. Compare the ' +
+    'hundreds next: ' + worst + ' is the smallest.');
+}
+
+/* FORMAT 4 - between two numbers (pool 2, 2 steps: check both ends)
+
+   KILL (Sweep p3numbers Refutation, THIRD pass, 2026-09-15). This bank was
+   answered by "pick the third smallest of the four options" on 20,000 / 20,000
+   draws - 100.00%, no reading of either bound, no comparison, no arithmetic -
+   and the magnitude gate printed it as EXEMPT, "there the ordering IS the
+   question". It was not: the question lives in the two bounds the stem prints on
+   100% of draws, and the key's rank was a by-product of how the distractors were
+   drawn. All three sat BELOW or ABOVE by construction - `far = lo - ri(400,900)`
+   is always further below `lo` than `below = lo - ri(5,300)`, so the sorted order
+   was always far < below < key < above. The generator was byte-identical back to
+   b41111e; what was new at c099275 was the gate line certifying the class as
+   impossible here.
+
+   W1 (Sweep p3numbers Refutation, FOURTH pass, 2026-09-15), and the PM's ruling
+   on it. The v4 fix drew `r = ri(0, 3)` wrong answers below the range, which
+   made the key's rank flat - and put all three wrong answers on ONE side of the
+   range on 49.91% of draws, where a child who checks a single bound is finished.
+   The explanation printed "they are not all on the same side of it" on 100% of
+   draws, which was FALSE on exactly those 49.91%. The flat rank and the
+   two-bound demand are incompatible here by construction: the key is inside the
+   range and every distractor outside it, so the key's rank IS the number of
+   distractors below it, and you cannot populate all four ranks and also
+   guarantee one wrong answer on each side.
+
+   THE TWO-BOUND DEMAND WINS. `r = ri(1, 2)` - one or two of the three wrong
+   answers below the range, so there is always at least one below AND at least
+   one above, and the near miss on each side is always the one offered. The item
+   genuinely needs both ends: checking "is it below hi?" alone leaves a wrong
+   answer standing, and so does checking "is it above lo?" alone.
+
+   The price is stated rather than hidden. The key's rank among the four printed
+   numbers is then 2nd or 3rd by construction - measured 0.00 / 49.9 / 50.1 /
+   0.00 over 20,000 draws - so "pick the second or third smallest" is worth ~50%
+   against 25% chance. That is the DECLARED STRUCTURAL FLOOR of any four-option
+   between-item with a straddling distractor set, not a defect of this one, and
+   it is bought with the elimination it removes: neither single bound settles the
+   item on any draw. tools/gen-sanity.mjs exempts p3numbers.gBetween from the
+   flat-rank ceiling and floor BY NAME with that measurement written down, and
+   re-checks the premise of the exemption on every draw - if the key is ever the
+   smallest or the largest of the four, the straddle has broken and the exemption
+   is void. "Pick the smallest" and "pick the largest" stay gated, and both
+   measure 0.00%.
+
+   `lo` also starts at 1900 rather than 1200 so that the furthest-below distractor
+   (lo - 900) is still a 4-digit number. It used to print a 3-digit option on
+   6.37% of draws - recorded by the third pass as a note, closed here because it
+   costs one number. */
+function gBetween(){
+  let lo = 3450, hi = 3520, key = 3480, cands = [3400, 3600, 2900], g = 0;
+  do {
+    lo = ri(1900, 8300);                       /* hi + 900 <= 9999, lo - 900 >= 1000 */
+    hi = lo + ri(40, 700);
+    key = lo + ri(10, hi - lo - 10);
+    /* near miss first on each side: the option a child who checks only ONE end
+       will take. The rest are further out, so the four printed numbers still
+       spread across the line rather than bunching on one side of the range. */
+    const belows = [lo - ri(5, 150), lo - ri(160, 400), lo - ri(410, 900)];
+    const aboves = [hi + ri(5, 150), hi + ri(160, 400), hi + ri(410, 900)];
+    const r = ri(1, 2);                        /* how many distractors land BELOW the range:
+                                                  never 0 and never 3, so the four printed
+                                                  numbers STRADDLE the range on every draw */
+    cands = belows.slice(0, r).concat(aboves.slice(0, 3 - r));
+    g++;
+  } while (g < 200 && !(hi - lo > 30 && key > lo && key < hi &&
+           optsOk(key, cands) &&
+           cands.every(v => v < lo || v > hi)));
+  return mcSet('Which number is <b>between</b> ' + lo + ' and ' + hi + '?', '', key, cands,
+    lo + ' is smaller than ' + key + ' and ' + key + ' is smaller than ' + hi + ', so ' + key +
+    ' sits between them. Put the two end numbers on a line in your head and check the new number ' +
+    'against BOTH of them - one check is never enough. Every wrong answer sits outside the range: ' +
+    'at least one of them is below ' + lo + ' and at least one is above ' + hi +
+    ', and on each side the nearest one misses by only a little.');
+}
+
+/* FORMAT 5 - order four numbers (pool 3, 2 steps) */
+function gOrder(){
+  const asc = a => a.every((v, i) => i === 0 || v > a[i-1]);
+  const join = a => a.join(', ');
+  let set = [], key = '', byOnes = [], byHundreds = [], rev = [], g = 0;
+  do {
+    const th = ri(1,9);
+    set = [];
+    while (set.length < 4){ const n = th*1000 + ri(0,999); if (!set.includes(n)) set.push(n); }
+    key = join(set.slice().sort((x,y) => x - y));
+    rev = set.slice().sort((x,y) => y - x);
+    byOnes = set.slice().sort((x,y) => (x % 10) - (y % 10));
+    byHundreds = set.slice().sort((x,y) => (x % 100) - (y % 100));
+    g++;
+  } while (g < 200 && !(allDistinct(set.map(n => n % 10)) && allDistinct(set.map(n => n % 100)) &&
+           !asc(byOnes) && !asc(byHundreds) &&
+           allDistinct([key, join(rev), join(byOnes), join(byHundreds)])));
+  return mcSet('Which list is in order from the <b>smallest to the greatest</b>?', '', key,
+    [join(rev), join(byOnes), join(byHundreds)],
+    'All four numbers have the same thousands digit, so compare the hundreds, then the tens, then the ' +
+    'ones. In order that is ' + key + '. Sorting by the LAST digit is the usual trap - it puts the ' +
+    'numbers in an order that has nothing to do with their size.');
+}
+
+/* FORMAT 6 - between two bounds NAMED IN PLACE-VALUE WORDS (pool 3, 2 steps).
+   Registered as `gBetweenWorded`; it replaces `gComparePlace`, which was RETIRED,
+   which had itself replaced `gCompareError`, which was KILLED.
+
+   RETIREMENT, ELEVENTH pass (Sweep p3numbers Refutation, 2026-09-16). This slot
+   has now produced two 100% banks in two versions and the PM's ruling was that it
+   does not get a third. The history is worth keeping because the second failure
+   was not the first one repeated:
+
+     v10 `gCompareError` - prose, "what did she do wrong?", KILLED at 100.00% by
+       "different digit counts -> tick 'only compared the first digit', same digit
+       counts -> tick 'compared from the right'". One boolean chose the stem shape
+       and the key sentence together.
+     v11 `gComparePlace` - numeric, "how much more is the bigger number worth at
+       the first place where the digits differ?", KILLED at 100.00 / 100.00% of
+       20,000 draws at each of two seeds by *"at the deciding place, cross out the
+       answer whose digit you can already see there"*. The generator wrote
+       `other + dg` in the bigger number and `other` in the smaller, and the option
+       row carried `dg` and `other`: so exactly one of the two digits on offer was
+       printed in the stem at the place the item named, and it was always the wrong
+       one. The subtraction the item existed for was replaced by a glance. Served
+       2.13 items per 30-item session at 0.80 (worst 4), the busiest bank in the
+       topic.
+
+   THE ONE REBUILD THE PM ALLOWED WAS MEASURED AND IT FAILS. The prescription was:
+   put BOTH visible digits at the deciding place on the row, AND their difference,
+   AND one more legal value, and draw the key uniformly over those categories by
+   varying the question - "the digit in the bigger number / in the smaller / how
+   much more". Built exactly that way and measured at 20,000 draws x two seeds
+   (fit on seed 1, held out on seed 424242, and back):
+
+     visible-digit EXCLUSION          16.71 / 16.90%
+     visible-digit INCLUSION          33.28 / 33.10%
+     question-word x VISIBLE x RANK   65.01 / 64.83% (54.93 / 54.64% outright)
+     RANK alone, by question word     59.73 / 59.44%
+     the child's own rule, unfitted   83.10 / 83.28%
+
+   where the child's rule is *"bigger number -> the larger of the two digits you
+   can see at that place; smaller number -> the smaller one; how much more -> guess
+   between the two you cannot see"*. It is forced, and no cap can save it: two of
+   the three questions ask for a digit that the stem PRINTS at the place the item
+   names, so those draws are answered by reading, and they are two thirds of the
+   bank. 83% against a 40% bar. RETIRED.
+
+   WHAT REPLACES IT. A `gBetween` variant - the PM's own example of a shape already
+   clean in this topic - with the two bounds named in PLACE-VALUE WORDS instead of
+   as numerals, which is the second step: the child has to build both bounds out of
+   their thousands and hundreds before either end can be checked, and then check
+   the new number against BOTH of them. The distractor geometry is `gBetween`'s
+   exactly, which has survived eight passes: a near miss and two further-out misses
+   on each side, `r = ri(1,2)` of the three wrong answers below the range, so the
+   four printed numbers always STRADDLE it and neither single bound settles the
+   item on any draw.
+
+   THE PRICE IS THE SAME DECLARED ONE `gBetween` PAYS, and it is not a new defect:
+   with the key inside the range and every distractor outside it, the key's rank
+   among the four printed numbers is 2nd or 3rd by construction, so "pick the
+   second or third smallest" is worth ~50% against 25% chance. That is the
+   structural floor of any four-option between-item with a straddling distractor
+   set (residual 14/15, PM-accepted). tools/gen-sanity.mjs exempts this bank from
+   the flat-rank ceiling and floor BY NAME, with the same premise `gBetween`
+   carries re-checked on every draw: if the key is ever the smallest or the largest
+   of the four, the straddle has broken and the exemption is void.
+
+   SCOPE, DECLARED. `compare` no longer contains an error-spotting item at all -
+   the two named MOE comparison misconceptions ("compared from the right, not the
+   left", "only compared the first digit of each") are not offered anywhere in the
+   topic as things to recognise, only inside explanation cards after the child has
+   answered. A diagnose-a-comparison item is a wave-2 authoring job and it needs a
+   shape whose stem does not choose its own key. */
+function gBetweenWorded(){
+  let lo = 3400, hi = 3900, key = 3480, cands = [3300, 4000, 2900], g = 0;
+  do {
+    /* bounds ROUND TO HUNDREDS so they can be said in place-value words, and
+       inside the range that keeps every distractor a 4-digit number */
+    lo = ri(2, 8) * 1000 + ri(0, 9) * 100;
+    hi = lo + pick([100, 200, 300, 400, 500, 600, 700]);
+    key = lo + ri(10, hi - lo - 10);
+    const belows = [lo - ri(5, 150), lo - ri(160, 400), lo - ri(410, 900)];
+    const aboves = [hi + ri(5, 150), hi + ri(160, 400), hi + ri(410, 900)];
+    const r = ri(1, 2);                      /* never 0 and never 3: the row straddles */
+    cands = belows.slice(0, r).concat(aboves.slice(0, 3 - r));
+    g++;
+  } while (g < 200 && !(hi <= 9000 && lo >= 1900 && key > lo && key < hi &&
+           key % 100 !== 0 && optsOk(key, cands) &&
+           cands.every(v => v < lo || v > hi)));
+  const said = v => plPlace(Math.floor(v / 1000), 0) + ' ' + plPlace(Math.floor(v / 100) % 10, 1);
+  return mcSet('Which number is <b>greater than ' + said(lo) + '</b> and <b>smaller than ' +
+    said(hi) + '</b>?', '', key, cands,
+    said(lo) + ' is ' + lo + ' and ' + said(hi) + ' is ' + hi + ': write both of them out as ' +
+    'numbers first. ' + lo + ' is smaller than ' + key + ' and ' + key + ' is smaller than ' + hi +
+    ', so ' + key + ' sits between them. Check the new number against BOTH ends - one check is ' +
+    'never enough. Every wrong answer sits outside the range: at least one of them is below ' +
+    lo + ' and at least one is above ' + hi + ', and on each side the nearest one misses by only ' +
+    'a little.');
+}
+
+/* FORMAT 7 - concept check on a pattern: name the jump (pool 1, 1 step).
+
+   KILL, SEVENTH pass (2026-09-16), and it had been here since v1. The family was
+   `[1, 10, 100, 1000, 2*step]` and the key was always a POWER OF TEN. The four
+   powers of ten have pairwise distinct printed widths, so the only family member
+   that could ever share the key's width was `2*step` - which is exactly twice the
+   key, and therefore always ABOVE it. Whenever it shipped, the four options held
+   one pair at the same width and the key was the smaller of that pair; whenever
+   it did not, all four widths were distinct and the rule declined. So
+
+       "count the characters in each option, take the commonest length,
+        pick the smaller number"
+
+   answered pool 1's busiest generator - 4.94 items per 30-item session at 0.45
+   accuracy - on 69.63% / 69.48% of 20,000 draws at each of two seeds, with no
+   arithmetic, no subtraction and without reading the run at all, and it is never
+   wrong when it fires. MAGNITUDE RANK ranks the key against all four (16.6 /
+   31.4 / 35.2 / 16.9, pass); LENGTH RANK ranks it against the extremes
+   (uSHORTEST 0.0%, PICK-SHORT 8.4%, pass). Nothing ranked the key INSIDE its own
+   width class, which is the cell the defect lived in. The WIDTH-CLASS RANK
+   column in tools/gen-sanity.mjs is that ruler, and it now gates this file.
+
+   THE v8 FIX MOVED THE TELL INSTEAD OF REMOVING IT - KILL, EIGHTH PASS
+   (2026-09-16). v8 took the KEY off the power-of-ten ladder on two draws in three
+   and left the ladder in the DISTRACTOR family on every draw. That made the key
+   the only number on the row that is not 1-followed-by-zeros, and the smallest of
+   those whenever there was more than one:
+
+       "cross out 1, 10, 100 and 1000; the answer is the smallest of what is left"
+
+   answered the bank on 67.07% / 66.44% of 20,000 draws at two seeds, was NEVER
+   wrong when it fired (0 exceptions in 40,000), needed no arithmetic and never
+   read the four printed terms at all. It is the seventh pass's kill on a new
+   axis - SHAPE instead of WIDTH - and the width ruler was built not to see it.
+
+   THE LADDER IS RETIRED AS A SLIP FAMILY (PM ruling, 2026-09-16). A fixed set of
+   round numbers beside a non-round key IS the answer, however the key is drawn
+   inside it. The in-between family is now built out of the item's OWN arithmetic,
+   every member a misreading of THIS run, and it carries at most ONE round number:
+
+     2*step        two jumps counted as one - the child measured t0 to t2;
+     3*step        the whole run measured, first term to last;
+     step + 10     the jump found correctly and written a ten out;
+     step - 10     the same slip the other way;
+     hiPart        the jump read in its LEADING column only - the tens that
+                   changed, and not the ones (15 -> 10, 150 -> 100);
+     step - hiPart the mirror - the ones counted and the tens left behind
+                   (15 -> 5, 150 -> 50);
+     step x/ 10    the jump read one whole column out (15 -> 150, 150 -> 15).
+
+   hiPart is the ONLY member that can be a power of ten (10 under 15, 100 under
+   150), it is at the key's width and BELOW it - which is the same-width slip the
+   seventh pass needed and the ladder could not supply - and on the 25 and 250
+   branches even that one is not round. So on every in-between draw the row holds
+   at most one of 1 / 10 / 100 / 1000, the key is never the odd non-round number,
+   and "cross out the round ones and take the smallest" degenerates into "take the
+   smallest of the four", which the MAGNITUDE RANK gate has capped since v2.
+
+   SCOPE. Steps are 15 / 25 / 150 / 250 - in scope on this file's own precedent
+   (100 / 150 / 200 / 250 / 500 in gPatternMissing, 15 / 25 / 35 in gPatternOdd;
+   MOE P3 1.5 does not restrict a sequence's jump to a multiple of ten). 1500 and
+   2500 are DROPPED: they are three to five times the largest jump anywhere else
+   in the topic, three of them eat 4500-7500 of the 1..9999 range, and
+   `start = ri(1000, MAXN - 3*step)` pinned every step-2500 item's first term into
+   [1000, 2499] on 100% of its draws.
+
+   One draw in three is still a counting anchor (10 / 100 / 1000, MOE P3 1.1). The
+   row there is four powers of ten because the JUMP ITSELF is a power of ten, so
+   the ladder is the arithmetic and not a slip family: every option is
+   1-followed-by-zeros, no shape value singles the key or the three distractors
+   out, every width is distinct so the class declines, and the only rules left
+   ("the smallest that is not 1", "the largest") are each worth exactly one draw
+   in three. The SHAPE RULER in tools/gen-sanity.mjs scores that column now.
+
+   W7, EIGHTH pass - THE OPTION BOARD IS SMALL ENOUGH TO LEARN, AND THAT IS
+   DECLARED, NOT FIXED. Four in-between steps and one anchor cannot make many
+   distinct option rows: 191 of them over 20,000 draws at each of two seeds (121 at
+   v8), and the row alone pins the key on every one, because each row comes from
+   exactly one step. That is the price of a closed step set inside MOE P3 1.5's
+   1..9999, and the eighth family member (`2*step - 10`, two jumps taken at once and
+   then written a ten out) is in partly to widen the board from 116 to 191.
+   DECLARED with its exposure: 1.37 items per 30-item session at 0.80 accuracy
+   (worst 6) and 4.90 at 0.45 (worst 7). */
+/* THE OPTION BOARD IS THE MECHANISM (Sweep p3numbers Refutation, TENTH pass,
+   2026-09-16, section 3, and the PM's ruling on it, v11). Residual 23 and
+   residual 6 sat in this file for three passes in different sections and nobody
+   multiplied them. The v10 bank drew its three distractors from `famOf(step)` -
+   a family derived from the step - so the four printed numbers were very nearly
+   a function of the key: 139 distinct option rows over 20,000 draws, the row
+   ALONE pinning the key on 67.08 / 66.44% of them, and the whole board worth
+   78.17 / 77.90% to a child who remembers which answer each row carries. At
+   5.00 items per 30-item session at 0.45 accuracy - the busiest bank in pool 1,
+   on the child the mastery climb keeps there - that clears the termination rule
+   on both of its clauses, and the PM ruled the kill STANDS by the letter of it.
+
+   THE FIX IS THE BOARD, NOT A CAP. A row is worth something only when it names
+   its own key. Every row this bank can print is now a set of four jumps EVERY
+   ONE of which is a legal key of this bank, and the key is drawn UNIFORMLY from
+   the four AFTER the row is drawn. So each option string is the key on 25.0% of
+   the draws it appears in and a distractor on 75.0% - the 1:3 the PM asked for -
+   and full-table recall of the board is worth exactly chance. The board is 33
+   rows rather than 139, and that is now the right trade rather than the wrong
+   one: the ninth pass's argument that a smaller board is worse only holds while
+   the rows PIN, and these do not.
+
+   THE ROWS. One counting anchor - 1, 10, 100, 1000, the four jumps MOE P3 1.1
+   names, with any of the four as the key (a jump of 1 is counting on in ones and
+   is drawn as often as the other three; the v10 anchor never keyed 1, which is
+   an option string at a 0% key share and is the other half of what a balanced
+   board means). And two ladders of four CONSECUTIVE rungs - fives from 5 to 95,
+   fifties from 50 to 950 - 16 windows each. Every distractor on a ladder row is
+   a jump one, two or three rungs off the one the run actually makes, which is
+   what a child gets by measuring the gap in the wrong column or counting a rung
+   wrong; and because the window is four consecutive rungs, the key sits at each
+   of the four magnitude ranks a quarter of the time, each shape feature splits
+   the row 2-2, and the column elimination crosses out all four. The rank, width,
+   shape and column gates are therefore satisfied by the SHAPE of the board
+   rather than by a search inside it, and the v9 threshold search, the v10
+   `colValue` pick, the width-class `posOf` labelling and the `famOf` family are
+   all gone with it. */
+const JUMP_ROWS = (function(){
+  const rows = [[1, 10, 100, 1000]];
+  for (const d of [5, 50]){
+    const lad = [];
+    for (let v = d; v <= 19 * d; v += d) lad.push(v);
+    for (let i = 0; i + 3 < lad.length; i++) rows.push(lad.slice(i, i + 4));
+  }
+  return rows;
+})();
+function gPatternConcept(){
+  /* the counting anchor keeps its third of the draws; the ladders share the rest */
+  const row = ri(0, 2) === 0 ? JUMP_ROWS[0] : pick(JUMP_ROWS.slice(1));
+  const step = pick(row);
+  return patternJump(step, shuffle(row.filter(v => v !== step)));
+}
+function patternJump(step, wrong){
+  const start = ri(1000, MAXN - 3*step);
+  const terms = [start, start+step, start+2*step, start+3*step];
+  return mcNum('In this number pattern, what is the <b>jump</b> from one number to the next? <b>' +
+    terms.join(', ') + '</b>', '', step, wrong, '',
+    terms[1] + ' − ' + terms[0] + ' = ' + step + ', and the same jump works every time: ' +
+    terms[2] + ' − ' + terms[1] + ' = ' + step + '. So the pattern counts on in ' +
+    (STEP_WORD[step] || 'jumps of ' + step) +
+    '. Write the difference above each gap and check that they all match.');
+}
+
+/* FORMAT 8 - counting on or back in tens, hundreds, thousands (pool 2, 1 step).
+   MOE P3 1.1. The step is NAMED in the stem, so this is the pattern anchor.
+
+   W5, EIGHTH pass (2026-09-16) - THE TWO DIRECTIONS COMPOSE AND RESIDUAL 15 DID
+   NOT SAY SO. Residual 15 lists this bank TWICE, at 31.75 / 31.73% ("the largest
+   option below the smallest number in the stem") and 32.24 / 31.90% ("the smallest
+   option above the biggest"), as separate rows. They are not independent: the run
+   is printed, so on an UP run the key is above every printed term and one of them
+   fires, and on a DOWN run the key is below every printed term and the other does.
+   A child running BOTH is worth 53.56 / 53.10% as a guesser value (guessing between
+   the two options the pair names when both fire; the refutation's own composed
+   figure, scored the stricter way, is 43.77 / 42.52%), against a best single of
+   32.24%. DECLARED, not fixed: the key of a counting item is on the same side of a
+   printed run as the direction the stem names, and that is the arithmetic. */
+const STEP_WORD = { 1: 'ones', 10: 'tens', 100: 'hundreds', 1000: 'thousands' };
+function gPattern4(){
+  const step = pick([10, 100, 1000]);
+  const up = Math.random() < 0.5;
+  const s = up ? step : -step;
+  /* the draw range is set so that EVERY named distractor also lands inside
+     1..9999 - a distractor filtered out for being out of scope would let
+     finishNum pad, and the padding branch is what the authored contract bans. */
+  const start = up ? ri(1000, MAXN - 7*step) : ri(1000 + 7*step, MAXN);
+  const terms = [0,1,2,3,4].map(k => start + k*s);
+  const ans = start + 5*s;
+  /* W1 (Sweep p3numbers Refutation, THIRD pass, 2026-09-15). v3 put `ans +-
+     step/10` in this family to populate both sides of the key. On the step === 10
+     branch step/10 is 1, so a distractor sat EXACTLY ONE away from a 4-digit key
+     on 31.75% of draws - a proofreading trap on a phone, not a question about
+     counting in tens. Worse, it handed the item away: `ans +- 1` and
+     `terms[4] + s/10` are the only options that break the trailing digits the
+     printed run holds constant, and everything else on offer was already printed,
+     so "keep what matches the run's last digits, drop what is already on the
+     page" left exactly one survivor - always the key - on 50.01% of draws, with
+     no arithmetic at all. (0.00% at cc2d326; this was a v3 regression and nothing
+     measured it either way.)
+
+     Every slip is now a whole number of JUMPS or a jump taken in the wrong
+     COLUMN, and none is closer to the key than the smallest place value this item
+     tests - 10 for a tens run, 10 for a hundreds run (the next-smaller-unit slip),
+     100 for a thousands run. That kills the near-miss and the trailing-digit
+     shortcut in the same stroke: with every option sitting on the run's own grid,
+     the trailing digits no longer separate the key from anything.
+
+     The offsets are symmetric about the key, so the rank stays flat whichever way
+     the pattern runs. */
+  const fam = [
+    ans + s,              /* took two jumps instead of one */
+    ans - s,              /* never took the last jump - the number already printed */
+    ans + 2*s,            /* took three jumps */
+    ans - 2*s,            /* jumped the wrong way from the last number */
+    ans + 10*s,           /* made the jump in the column to the LEFT */
+    ans - 10*s            /* the same slip, the other way */
+  ];
+  if (step >= 100){       /* the next-smaller unit is still a whole place value */
+    fam.push(terms[4] + s/10,   /* counted on from the last number in the smaller unit */
+             ans + step/10,     /* took the jump, then one more in the smaller column */
+             ans - step/10);    /* took the jump, then one back in the smaller column */
+  }
+  /* NINTH pass, KILL - the jump miscounted AND made in the wrong column, both at
+     once. One-column slips alone hand the row to "cross out each column's
+     minority digit"; compounded, they share a digit where they agree and the
+     crossing-out stops. See slipSet and gMoreLess. */
+  for (const x of [s, -s, 2*s, -2*s])
+    for (const y of (step >= 100 ? [10*s, -10*s, s/10, -s/10] : [10*s, -10*s]))
+      fam.push(ans + x + y);
+  /* residual 15's two directions - "the smallest option above the biggest number
+     on the page" and its mirror - are held where the eighth pass measured them by
+     keeping a slip in the window between the last printed term and the key. On
+     the step === 10 branch the window is `step` wide and minGap is 10, so nothing
+     can be authored into it at all; that branch is the residual's floor and it is
+     declared rather than closed. */
+  const cands = slipSet(ans, fam, { minGap: Math.max(10, step/10),
+    prefer: c => c.some(v => (v - terms[4]) * s > 0 && (ans - v) * s > 0) });
+  return mcNum('Count ' + (up ? 'on' : 'back') + ' in <b>' + STEP_WORD[step] +
+    '</b>. What number comes next? <b>' + terms.join(', ') + ', ?</b>', '', ans, cands, '',
+    'Each jump ' + (up ? 'adds' : 'takes away') + ' ' + step + ': ' + terms[3] + ' ' + (up ? '+' : '−') +
+    ' ' + step + ' = ' + terms[4] + '. One more jump gives ' + terms[4] + ' ' + (up ? '+' : '−') + ' ' +
+    step + ' = ' + ans + '. Counting in ' + STEP_WORD[step] + ' only changes the ' + STEP_WORD[step] +
+    ' digit — until it rolls over and takes the digit on its left with it.');
+}
+
+/* FORMAT 9 - one step on from a given number (pool 2, 1 step) */
+function gMoreLess(){
+  const step = pick([10, 100, 1000]);
+  const dir = pick(['more','less']);
+  const sg = dir === 'more' ? 1 : -1;
+  /* range set so all the named distractors stay inside 1..9999 (see gPattern4) */
+  const n = dir === 'more' ? ri(1000 + step, MAXN - 3*step) : ri(1000 + 3*step, MAXN - step);
+  const ans = n + sg*step;
+  /* W1, third pass: the same `step/10` regression as gPattern4 - a distractor one
+     away from a 4-digit key on 32.08% of draws when the step was 10. Same fix:
+     whole steps and whole columns only, nothing closer to the key than the
+     smallest place value the item tests, symmetric about the key. */
+  const fam = [
+    ans + step,         /* took the step twice */
+    ans - step,         /* never took it - the number you were given back again */
+    ans + 2*step,       /* took it three times */
+    ans - 2*step,       /* went the wrong way */
+    ans + 10*step,      /* moved the column to the LEFT of the one asked for */
+    ans - 10*step       /* the same slip, the other way */
+  ];
+  if (step >= 100){     /* the column to the RIGHT is still a whole place value */
+    fam.push(ans + step/10, ans - step/10);
+  }
+  /* NINTH pass, KILL - THE COLUMN RULE, and this bank was its worst number in
+     the topic at 77.7%. Every slip above moves ONE column, so three of them
+     beside the key put the key's digit in three of the four printed numbers in
+     every column and "cross out each column's minority digit" answered the item
+     outright with no counting at all. The two errors COMPOUNDED - the step
+     miscounted AND taken in the wrong column - are a real slip (a child who has
+     lost which column the step belongs in has usually lost the count as well),
+     and they are what stops the crossing-out: key, key+d, key+e and key+d+e is
+     a lattice, and every column of it splits two-two. */
+  for (const x of [step, -step, 2*step, -2*step])
+    for (const y of (step >= 100 ? [10*step, -10*step, step/10, -step/10] : [10*step, -10*step]))
+      fam.push(ans + x + y);
+  /* the window between the number the stem prints and the key, kept occupied for
+     the same reason as gPattern4's - and empty for the same reason on step 10 */
+  const cands = slipSet(ans, fam, { minGap: Math.max(10, step/10),
+    prefer: c => c.some(v => (v - n) * sg > 0 && (ans - v) * sg > 0) });
+  return mcNum('What number is ' + step + ' ' + dir + ' than ' + n + '?', '', ans, cands, '',
+    n + ' ' + (dir === 'more' ? '+ ' : '− ') + step + ' = ' + ans + '. Only the ' + STEP_WORD[step] +
+    ' digit changes, unless it rolls over and takes the digit on its left with it.');
+}
+
+/* FORMAT 10 - working backwards inside a pattern: the gap is in the MIDDLE and
+   the jump is NOT given, so the child must find the jump first (pool 3, 2 steps)
+
+   W6, EIGHTH pass (2026-09-16) - THE STRADDLE, AND RESIDUAL 15 DECLARED ONLY ONE
+   SIDE OF IT. The gap is in the middle by construction, so the key is ALWAYS
+   strictly inside the printed run. "Keep the options that sit between the first
+   and last printed terms and are not themselves printed, then guess among them" is
+   worth 61.69 / 61.49% as a guesser value and answers the item OUTRIGHT on 25.12 /
+   24.74% of draws - above the 60% this file uses as its prose ceiling, on a bank
+   served 2.04 times a session at 0.80 accuracy. Residual 15 declares only the
+   one-sided version ("the largest option below the biggest stem number", 46.55 /
+   46.40%). DECLARED at the higher figure: a missing MIDDLE term is inside its own
+   run, and narrowing the straddle would mean moving the gap to an end, which is
+   gPattern4's item and not this one. */
+function gPatternMissing(){
+  /* Steps are multiples of 100 so that a "jump added one column out" distractor
+     (key + step/10) is a visible slip rather than an off-by-one that would read as
+     padding. At least two of the four options are numbers NOT printed in the stem,
+     so a child cannot shortcut the pattern work by eliminating everything already
+     on the page - that elimination is valid reasoning, but it is not the reasoning
+     this item is for. */
+  const step = pick([100, 150, 200, 250, 500]);
+  const up = Math.random() < 0.5;
+  const s = up ? step : -step;
+  /* range set so the printed terms AND every named distractor stay in 1..9999 */
+  const start = up ? ri(1000 + step, MAXN - 5*step) : ri(1000 + 5*step, MAXN - step);
+  const gap = ri(1,3);
+  const terms = [0,1,2,3,4].map(k => start + k*s);
+  const shown = terms.map((v, i) => i === gap ? '?' : String(v));
+  /* W2 (Sweep p3numbers Refutation, 2026-09-15): this explanation used to derive
+     the jump from terms[4] and terms[3] whatever the gap index was - so on the
+     33.7% of draws where the gap landed at index 3 the teaching sentence told the
+     child to find the jump from a number that is not on the page, and the number
+     it named was the ANSWER. The pair is now picked by index and is always two
+     SHOWN, adjacent terms. gen-sanity re-reads the pair out of the rendered
+     explanation and fails if either number is not printed in the stem. */
+  const j = gap === 1 ? 3 : 0;       /* gap 1 -> (3,4); gaps 2 and 3 -> (0,1) */
+  /* The first three slips are the two neighbours and a column slip, and for a
+     given direction they all land on the same side of the key - the key was rank
+     1 on every ascending draw and rank 2 on every descending one. The family now
+     carries the column slip both ways and the jump made one column too far left,
+     so the key's position moves.
+
+     W2 (Sweep p3numbers Refutation, THIRD pass, 2026-09-15). The declared guard
+     above - "at least two of the four options are numbers NOT printed in the
+     stem" - held on 20,000 / 20,000 draws and was still not enough. The
+     trailing-digit test removes the survivors: every `+- s/10` slip breaks the
+     digits the printed run holds constant, and everything else on offer was
+     already on the page, so the compound "keep what matches the run's last
+     digits, then drop anything already printed" left exactly one option - always
+     the key - on 44.65% of draws, with no pattern work at all. (100.00% at
+     cc2d326; v3's slipSet more than halved it without anyone measuring it.)
+
+     The guard is now the one the wound asked for, and it is a guarantee rather
+     than a tendency: keepOne forces exactly one distractor that BOTH sits on the
+     pattern's own grid (so the trailing-digit test cannot touch it) AND is not a
+     printed term. Two of its four candidates are in scope on every draw - the
+     term after the end of the run and the term before its start - and they sit on
+     opposite sides of the key, so the guarantee does not pin the rank. */
+  const fam = [
+    terms[gap-1],            /* copied the number just before the gap */
+    terms[gap] + s/10,       /* added the jump one column to the right */
+    terms[gap] - s/10,       /* the same slip, taken off instead of added */
+    terms[gap-1] + 2*s,      /* took two jumps instead of one */
+    terms[gap] + 10*s,       /* made the jump one column too far to the left */
+    terms[gap] - 10*s        /* the same slip, the other way */
+  ];
+  /* NINTH pass, KILL - THE COLUMN RULE, and this bank was the kill: 72.6%
+     outright, 2.12 items a session, the stem never read. The jump miscounted AND
+     made in the wrong column, both at once, is a real slip and is the digit
+     coincidence that stops a column of four crossing itself out. See slipSet. */
+  for (const x of [s, -s, 2*s, -2*s])
+    for (const y of [10*s, -10*s, s/10, -s/10]) fam.push(terms[gap] + x + y);
+  const cands = slipSet(terms[gap], fam, { minGap: 10, keepOne: [
+    terms[4] + s,            /* carried the pattern PAST the end instead of filling the gap */
+    terms[0] - s,            /* counted back BEFORE the start instead of on to the gap */
+    terms[gap] + 10*s,       /* the jump one column too far to the left */
+    terms[gap] - 10*s        /* the same slip, the other way */
+  ],
+  /* the EIGHTH pass's declared straddle - "keep the options that sit between the
+     first and last printed terms and are not themselves printed" - is held where
+     it was measured by keeping a second such option on the row. The compounds
+     that flatten the column are mostly outside the run, so without this the
+     straddle went from 25% outright to 53%. */
+  prefer: c => c.filter(v => (v - terms[0]) * s > 0 && (terms[4] - v) * s > 0 &&
+                             terms.indexOf(v) === -1).length >= 1 });
+  return mcNum('What is the <b>missing number</b> in this pattern? <b>' + shown.join(', ') + '</b>',
+    '', terms[gap], cands, '',
+    'Nobody tells you the jump, so find it from two numbers that sit next to each other: ' +
+    terms[j+1] + ' and ' + terms[j] + ' are ' + step + ' apart, so the pattern counts ' +
+    (up ? 'on' : 'back') + ' in ' + step + 's. Now one jump from ' + terms[gap-1] + ' gives ' +
+    terms[gap-1] + ' ' + (up ? '+' : '−') + ' ' + step + ' = ' + terms[gap] + '.');
+}
+
+/* FORMAT 11 - the odd one out: one printed term breaks the pattern (pool 3, 2
+   steps). The SECOND `pattern` generator in pool 3, and the reason it is here is
+   a measurement, not a taste call.
+
+   W3 (Sweep p3numbers Refutation, 2026-09-15): buildCarousel round-robins SKILLS
+   inside a pool, so a skill holding one generator gets the whole of its quarter.
+   With gPatternMissing alone on the `pattern` peg, pool 3 served it 3.64 times in
+   a 30-item session (worst 6) with ONE masked shape - the shape of the original
+   complaint, arriving through the variety gate rather than around it. A second
+   format on the same peg halves it.
+
+   Two steps, and neither is gPatternMissing's: find the jump the MAJORITY of the
+   printed terms agree on, then test the terms against it. The jump is not named,
+   the answer is one of the numbers on the page, and the three distractors are the
+   other printed terms - so this is an optionSet item (the options ARE the data),
+   not an authored-distractor one.
+
+   W1 (Sweep p3numbers Refutation, second pass, 2026-09-15). The break used to be
+   one jump taken in the next column down (+-step/10) on a run counting in
+   hundreds or thousands - which meant five of the six printed terms shared a
+   digit in that column and the sixth did not. A right-to-left digit scan settled
+   the item on 100.00% of 50,000 draws and a left-to-right scan - the strategy
+   this topic's own compare tip teaches - on 90.50%. One step, no arithmetic.
+
+   The run now counts in 150s or 250s, so the only column all six terms share is
+   the ones, and the break (50, half of a hundred-jump) does not touch it: the
+   tens column splits four-two, never five-one. The break is also held inside its
+   own thousand, so it can never show in the leading digit either. The odd term
+   breaks the JUMP RULE and nothing else, which is the thing the item claims to
+   be about. Measured after: the scan settles it on well under a tenth of draws,
+   and tools/gen-sanity.mjs gates the topic's magnitude ranks besides. */
+function gPatternOdd(){
+  /* the one printed position that is off the line the other five sit on, or -1 if
+     that position is not unique. Written out here so the item is CONSTRUCTED to
+     have exactly one answer; tools/gen-sanity.mjs re-derives it independently. */
+  const uniqueFit = t => {
+    let hit = -1;
+    for (let i = 0; i < t.length; i++){
+      const J = t.map((_, k) => k).filter(k => k !== i);
+      const D = (t[J[1]] - t[J[0]]) / (J[1] - J[0]);
+      if (!Number.isInteger(D) || D === 0) continue;
+      if (J.every(k => t[k] === t[J[0]] + (k - J[0]) * D)){ if (hit >= 0) return -1; hit = i; }
+    }
+    return hit;
+  };
+  /* KILL (Sweep p3numbers Refutation, FIFTH pass, 2026-09-15). The v3-v5 run
+     counted in 150s or 250s and broke by +-50. A step that is a multiple of 50
+     but not of 100 moves the TENS DIGIT by exactly five every term, so the tens
+     column alternates between two values and only two - A B A B A B - and a +-50
+     break flips the odd term's tens digit into its NEIGHBOURS' class. That left
+     exactly one interior position in the printed run where three tens digits in a
+     row agree, and it was the answer on 20,000 / 20,000 draws at two seeds. Read
+     one digit column, find the three-in-a-row, done: no jump, no step, no
+     arithmetic of any kind. v3 killed the NAIVE "odd tens digit out" scan and
+     opened this one in the same edit; v3, the third pass and the fourth pass all
+     certified the class closed.
+
+     v6 takes the alternation away rather than the break. The step is now 15, 25
+     or 35 - not a multiple of 10, so the ONES digit alternates between two values
+     and the TENS digit advances by one, two or three (plus the carry out of the
+     ones) and does not repeat inside six terms. The break is a multiple of TEN
+     and strictly smaller than the step, which does three things at once:
+
+       - the odd term keeps its place in the ones-column alternation, so the one
+         column that IS regular stays regular through the break and says nothing;
+       - the tens column has no majority class to disagree with, so "the odd tens
+         digit" and "the tens digit that matches both neighbours" both stop
+         resolving to a single term (measured, both directions, in the note);
+       - the run stays monotonic, because |off| < step keeps every jump positive,
+         so "the numbers turn round here" is not a tell either.
+
+     What is left is the step rule itself: the jump into the odd term and the jump
+     out of it are both wrong, by |off| in opposite directions, and nothing else
+     in the printing distinguishes it. */
+  const step = pick([15, 25, 35]);
+  const up = Math.random() < 0.5;
+  const s = up ? step : -step;
+  /* a multiple of ten (the ones column survives the break) and smaller than the
+     step (the run never doubles back) */
+  const off = pick([1, -1]) * pick([10, 20, 30].filter(v => v < step));
+  let start = 2000, terms = [], bi = 2, g = 0;
+  do {
+    start = up ? ri(1000, MAXN - 6*step) : ri(1000 + 6*step, MAXN);
+    bi = ri(1,4);                 /* the break is interior, so removing an END term
+                                     can never leave an arithmetic sequence */
+    terms = [0,1,2,3,4,5].map(k => start + k*s);
+    terms[bi] = terms[bi] + off;
+    g++;
+  } while (g < 400 && !(terms.every(ok) && allDistinct(terms) &&
+           /* the break stays inside its own thousand, so no leading digit moves */
+           Math.floor(terms[bi] / 1000) === Math.floor((start + bi*s) / 1000) &&
+           uniqueFit(terms) === bi));
+  const odd = terms[bi];
+  /* W3, third pass. The three distractors used to be a random 3 of the 5 other
+     printed terms, which makes the key's rank among the four options a function
+     of WHERE the break landed: with the break interior, the odd term was the
+     smallest of the four on 12.51% of draws and the largest on 12.37%, against
+     25% for a flat bank. The rank gate now has a floor as well as a ceiling, and
+     this bank is inside it by construction instead of by luck: the number of
+     distractors drawn from BELOW the odd term is drawn uniformly from whatever
+     this break allows, exactly as slipSet does for the authored banks. */
+  const lower = terms.filter((v, i) => i !== bi && v < odd);
+  const upper = terms.filter((v, i) => i !== bi && v > odd);
+  const rLo = Math.max(0, 3 - upper.length), rHi = Math.min(3, lower.length);
+  const nBelow = ri(rLo, rHi);
+  /* W4, FOURTH pass - the free elimination on an axis the rank floor does not
+     look along. Under the old 150s/250s run the printed terms alternated between
+     exactly TWO tens digits, so a blind draw of three distractors left exactly
+     ONE option visibly alone in its tens column on 65.02% of draws, and that
+     option was NEVER the answer: crossing it out took a guesser from 25% to 33.3%
+     with no arithmetic. The v5 guard preferred distractor sets in which no option
+     stood alone, and got the rate to ~16.7%.
+
+     The v6 step (15 / 25 / 35) removes the two-class world the guard was written
+     for: the tens digits of six terms no longer repeat, so on most draws EVERY
+     option stands alone in its tens column and the elimination has nothing to
+     bite on. The guard is therefore re-stated in the form the wound actually
+     asks for - it is not "nobody stands alone", it is "not EXACTLY ONE stands
+     alone", which is the only shape a child can cross out. Sets where the count
+     of tens-column loners is 1 are avoided where the drawn `nBelow` allows it;
+     `nBelow` still wins, so the magnitude rank stays exactly where the third pass
+     put it. Both directions are measured in the note. */
+  const sideOk = t => t.filter(v => v < odd).length === nBelow;
+  const noLoner = t => {
+    const four = t.concat([odd]).map(v => Math.floor(v / 10) % 10);
+    return four.filter(c => four.filter(x => x === c).length === 1).length !== 1;
+  };
+  const pool = terms.filter((v, i) => i !== bi);
+  const sets = [];
+  for (let i = 0; i < pool.length; i++) for (let j = i + 1; j < pool.length; j++)
+    for (let k = j + 1; k < pool.length; k++) sets.push([pool[i], pool[j], pool[k]]);
+  const bySide = sets.filter(sideOk);
+  const clean = bySide.filter(noLoner);
+  const rest = shuffle(pick(clean.length ? clean : bySide));
+  /* the worked pair must be two terms that BOTH sit on the pattern and are next
+     to each other on the page */
+  const j = bi <= 1 ? 2 : 0;
+  const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
+  const into = Math.abs(terms[bi] - terms[bi-1]), outOf = Math.abs(terms[bi+1] - terms[bi]);
+  return mcSet('One number does <b>not belong</b> in this pattern. Which one is it? <b>' +
+    terms.join(', ') + '</b>', '', odd, rest,
+    'Most of the jumps are the same size: ' + terms[j] + ' ' + (up ? '+' : '−') + ' ' + step + ' = ' +
+    terms[j+1] + ', so the pattern counts ' + (up ? 'on' : 'back') + ' in ' + step +
+    's. Follow that jump from the start and the ' + ORD[bi] + ' number should be ' + (start + bi*s) +
+    ', but ' + odd + ' is printed instead: the jump into it is ' + into + ' and the jump out of it is ' +
+    outOf + ', and neither is ' + step + '. Write the difference above each gap and the gap that does ' +
+    'not match tells you which number to blame.');
+}
+
+
+/* =========================================================================
+   PRINCIPLE 3 - ADDING AND SUBTRACTING WITHIN 10 000, WITH REGROUPING
+   ========================================================================= */
+
+/* FORMAT 1 - concept check: what is the carried 1 actually WORTH? (pool 1,
+   1 step). No column arithmetic to do; this is the place-value idea itself.
+
+   THE PROSE FORM IS RETIRED (PM ruling on the SIXTH pass's KILL, 2026-09-16).
+   A four-sentence prose concept check was killed on five successive lexical
+   axes in five successive passes - form (v2), character length (v3), a bigram
+   (v4), a four-word phrase (v5), and finally, at v6, the ABSENCE of a phrase:
+   the v6 option set gave the key a shortest private phrase of TEN words and
+   left the three distractors at ONE, ONE and TWO ("14", "right", "Write 1"),
+   so "cross out the three options that say something none of the others say"
+   answered the pool-1 flagship on 100.00% of 20,000 draws at each of two seeds,
+   with no arithmetic and no idea what a carry is. Each rewrite closed the axis
+   it was given and opened the next one, because on four prose options every
+   word is a feature and the key cannot be made featureless and unremarkable at
+   the same time. The ruling: a four-option prose concept check cannot be made
+   tell-free by authoring, so stop authoring one.
+
+   THE LEARNING OBJECTIVE IS UNCHANGED - what the small carried 1 stands for -
+   and it is now asked NUMERICALLY, which puts the bank under the magnitude rank
+   gate (two-sided, 12-45%, "smallest"/"largest" under 40%) that owns the other
+   twenty numeric banks in this file, instead of under a word ruler that has now
+   been one notch short five times. The stem prints the two numbers, the column
+   that made ten or more, the digit that stays and the column the small 1 is
+   written above; the child says how much that 1 is worth.
+
+   THE FOUR OPTIONS ARE PLACE VALUES AND THE NAMED SLIPS AROUND THEM.
+   key      POW[col]            1 ten / 1 hundred / 1 thousand, by the column it
+                                is written above - the whole idea of the item
+   slips    1                   the mark read as the digit it looks like
+            POW[j], j != col    the WRONG column's value (the PM's named slip)
+            POW[src]            left in the column it came from - "a ten carried
+                                out of the tens column is still ten"
+            keep                the digit that STAYED, swapped with the carried 1
+            s                   the whole column total
+            keep * POW[src]     the part that stays, at its real value
+            s   * POW[src]      the whole column, not just the part that carries
+            keep * POW[col]     the stayed digit pushed into the carry's column
+            s   * POW[col]      the WHOLE total pushed into the carry's column
+
+   THE KEY'S RANK IS DRAWN UNIFORMLY AND SO IS THE COLUMN, both by construction
+   rather than by luck. The rank is drawn FIRST - ri(0,3) - and the column is
+   then drawn uniformly from the columns that can realise it out of this draw's
+   own family, which is enumerated rather than assumed. That is the only order
+   that makes both axes flat at once, and it is forced by arithmetic that no
+   wording can move: the key is 10, 100 or 1000, so a tens key has only two
+   in-scope wrong answers beneath it and can never be the largest of four, and a
+   thousands key has only one above it (10 000 is out of scope) and can never be
+   the smallest. Drawing the column first and the rank second gives
+   19.4 / 19.4 / 36.1 / 25.0 and "pick one of the two middle options" at 55.5%;
+   drawing the rank first gives 25 / 25 / 25 / 25, columns 1/3 each, and the
+   middle pair at exactly the 50.0% structural floor of a four-option row.
+
+   Two constructor rules pay for that, and both are declared:
+     - `keep * POW[col]` is NOT drawn when the carry lands in the thousands
+       column. There it would be the second in-scope slip above a thousands key,
+       which lets that column reach rank 2 - and the aggregate then lands with
+       the middle pair at 61.1%, over the refutation's own 60% ceiling.
+     - at least one distractor must be wide enough for RULE C in
+       tools/gen-sanity.mjs, which fails a key printed more than 1.4x the
+       longest distractor. This is why a hundreds key is never the largest of
+       four: everything in scope below 100 is one or two digits wide.
+   The residual the shape leaves is "pick the option that is 1 followed by
+   zeros", worth about 31% against 25% chance - the option set is a place-value
+   ladder on roughly half the draws and the key is always on it. Declared and
+   measured rather than authored away: the sets are chosen to hold as MANY place
+   values as the drawn rank allows, precisely so that rule cannot narrow.
+
+   W1, SEVENTH pass (2026-09-16) - AND THE RESIDUAL ABOVE WAS WRONG ABOUT ITS OWN
+   CEILING. The key is a power of ten, so it is the SMALLEST number of its printed
+   width by construction; `keep * POW[col]` and `s * POW[src]` were the only two
+   family members that could share that width, and both are larger than the key.
+   The key was therefore the minimum of its own width class whenever that class
+   was not a singleton, and "take the commonest printed width, then the smallest
+   number in it" answered the item on 45.83% / 45.94% of draws - 57.3% as a
+   guesser value, and 63.2% composed with "cross out the numbers the stem has
+   already printed". The residual named both halves of that composition itself
+   ("pick the option that is 1 followed by zeros" 31.6%, "keep the majority digit
+   count" 32.3%) and asserted the sets were chosen so the rule could not narrow
+   further. It does narrow further, because THE ONLY OPTION THAT IS BOTH A POWER
+   OF TEN AND AT THE KEY'S WIDTH IS THE KEY - the other powers of ten all print at
+   different widths, by definition.
+
+   W2, EIGHTH pass (2026-09-16) - AND THE CEILING WAS STILL WRONG, FOR THE THIRD
+   TIME. The residual above was corrected in v8 to "12.25 / 12.98% outright and
+   33.7 / 34.5% as a guesser". Both halves it names compose without any width step:
+   "the smallest option that is 1-followed-by-zeros and is not 1" - identically,
+   "cross out every number the stem printed, then take the smallest" - is worth
+   51.88 / 51.91% OUTRIGHT, firing on 100% of draws. It is structural and it is not
+   authorable away: the key is `POW[col]` for col in 0..2, so on the tens column
+   there is no multiple of ten below the key to print, and on the ones column the
+   key is 1. DECLARED at 51.9%, which is this bank's true shape ceiling, and it is
+   why the SHAPE RULER's route cap is 60% rather than the 40% the width rules take.
+
+   W7, EIGHTH pass. The option board here is 64 distinct rows over 20,000 draws at
+   each of two seeds, and the row alone pins the key on 73.11 / 73.14% of them.
+   Three columns times a family of powers of ten and small multiples of them cannot
+   make more; DECLARED, with exposure 0.82 items per session at 0.80 accuracy and
+   3.28 at 0.45. The v8 note declared row repetition for gPatternConcept's anchor
+   third only; it is the whole of both banks. The 2-2 width tie this bank ships on
+   8.37 / 8.29% of draws, with the key in the NARROWER pair on 100.00% of them, is
+   declared for the same reason: filtering it out costs 14 of the 64 rows, and a
+   smaller board is the worse trade.
+
+   Nothing can be authored below a power of ten at its own width, so the fix is
+   the other way round: every subset is now labelled by whether it puts ANY
+   distractor at the key's width, and a width-free subset is preferred wherever
+   the drawn (rank, column) cell has one. Two cells have none - rank 0 at the
+   hundreds column and rank 2 at the thousands column, where every in-scope slip
+   above the key is at the key's own width - and those are the draws where the key
+   is still its class's minimum. `s * POW[col]` is added to the family for that
+   reason as well as its own: it is the one named slip ABOVE a tens or hundreds
+   key at a DIFFERENT width, and it is what lets rank 0 and rank 1 be width-free
+   at the tens column. Measured after: 20.6% / 20.9% outright, against 45.8%
+   before, with rank and column both still flat.
+
+   W2, SEVENTH pass. The item no longer requires any `addsub` knowledge: the key
+   was a deterministic function of one phrase - "a small 1 above the <place>
+   column" - on 100% of draws, so a, b, the column total and the digit written
+   were decoration and the demand had drifted to place-name -> numeral
+   translation. On three draws in five the stem now describes the carry by the
+   column TOTAL instead of naming its column ("One column makes 14, so he writes 4
+   there and a small 1 above the column on its left"), which puts the column
+   addition back inside the item: the child has to find the column that makes 14
+   before the place name exists to translate. The stem is true as printed on every
+   draw - no other column can total 12-18, because every column right of the
+   source is built to sum under 10 and every column left of it under 9 - and the
+   explanation names the column it found. Measured: the phrase-only route
+   resolves on 40% of draws and is worth 55% as a guesser, against the 60%
+   ceiling. The bank stays registered under `addsub` because the majority of its
+   draws now demand it. */
+/* THE OPTION BOARD IS THE MECHANISM, AND THE KEY SET IS WIDENED (Sweep p3numbers
+   Refutation, TENTH pass, 2026-09-16, section 3, and the PM's ruling on it, v11).
+   The v10 bank's key was `POW[col]` on every draw - the worth of a carried 1, so
+   always 1 followed by zeros, and only ever one of three values. That did two
+   things at once. It put the board at 64 distinct rows worth 73.11 / 73.14% to a
+   child who remembers which answer each row carries, on a bank served 3.37 times
+   per 30-item session at 0.45 accuracy - a kill on both clauses of the
+   termination rule. And it put "the smallest option that is 1-followed-by-zeros
+   and is not 1" at 51.88 / 51.91% OUTRIGHT, which is why this bank carried a
+   NAMED exemption from the shape ruler's route cap and a NAMED exemption from the
+   width-class tie branch. Both exemptions are now GONE, because the thing they
+   were exempting is gone.
+
+   THE ITEM NOW ASKS TWO QUESTIONS OFF ONE COLUMN, and that is the widening. The
+   stem is unchanged - a column of a 4-digit sum makes 12 to 18, so a digit stays
+   and a small 1 goes above the column on its left - and the question is either
+   "how much is that small 1 worth?" (the v10 question, key `POW[col]`) or "how
+   much is the digit that stays worth?" (key `keep * POW[src]`). Both are MOE P3
+   2.1 regrouping and both are answered from the same reading of the same column;
+   what changes is that the key set is no longer three powers of ten but the whole
+   2x2 grid of {the carried 1, the digit that stays} x {the column it is written
+   above, the column it came from}.
+
+   THE ROW IS THAT GRID: `{10, 100, 10*keep, 100*keep}`. Every one of the four is
+   a legal key of this bank - 100 and 10 as a carried 1 above the hundreds or the
+   tens, `10*keep` and `100*keep` as the digit that stays in the tens or the
+   hundreds - and the key is drawn UNIFORMLY from the four AFTER the row is drawn.
+   Each option string is therefore the key on 25.0% of the draws it appears in,
+   full-table recall of the board is worth exactly chance, and every distractor is
+   one of the two named slips this item has always been about: the right digit in
+   the wrong column, or the wrong digit in the right column. The grid also lands
+   the numeric rulers at chance by construction - the row sorts 10 < 10*keep <
+   100 < 100*keep on every draw so magnitude rank is flat; "1 followed by zeros"
+   splits it 2-2 so the 51.9% shape route is gone; the two printed widths tie 2-2
+   with the key in the wider pair on exactly half the draws; and the column
+   elimination crosses out all four.
+
+   The board is 7 rows rather than 64. That is the right trade here for the same
+   reason it is in gPatternConcept: a row is worth something only when it names
+   its own key, and these do not. W7's and W5's declared row repetition, and
+   residual 23's and residual 6's figures, are closed with it. */
+function gAddConcept(){
+  const keep = ri(2, 8), s = 10 + keep;
+  /* the 2x2 grid: {the carried 1, the digit that stays} x {hundreds, tens} */
+  const cands4 = [POW[1], POW[2], keep * POW[1], keep * POW[2]];
+  const key = pick(cands4);
+  const cands = cands4.filter(v => v !== key);
+  /* the key names the question and the column it is read in:
+       POW[c]          -> the carried 1 above column c, which came from column c+1
+       keep * POW[m]   -> the digit that stays in column m, whose 1 went to m-1 */
+  const carry = key === POW[1] || key === POW[2];
+  const col = carry ? (key === POW[1] ? 1 : 2) : (key === keep * POW[1] ? 0 : 1);
+  const src = col + 1;
+
+  /* the two numbers, built column by column so the stem's claim is true as
+     printed: the columns to the RIGHT of src carry nothing into it, so the src
+     column really does make s on its own, and no column to its LEFT can reach ten
+     even after the carry lands. */
+  const A = [0,0,0,0], B = [0,0,0,0];
+  A[src] = ri(Math.max(3, s - 9), Math.min(9, s - 3)); B[src] = s - A[src];
+  for (let i = src + 1; i < 4; i++){ A[i] = ri(0, 4); B[i] = ri(0, 9 - A[i]); }
+  for (let i = 1; i < src; i++){ A[i] = ri(0, 4); B[i] = ri(0, 4); }
+  A[0] = ri(1, 4); B[0] = ri(1, 4);
+  /* W2, EIGHTH pass (2026-09-16) - THE BIG-DIGIT SCAN. The stem stopped naming
+     the column at the seventh pass, so the child has to find the one that makes
+     s. The seating above handed that search away for free: s is 12-18, so the
+     src column ALWAYS holds a digit of 6 or more, while every column to its left
+     was drawn from 0..4. "Read left to right, take the first column with a digit
+     of 5 or more" therefore landed on src on 100.00% of draws, measured - the
+     child never added anything, and the find the stem asks for was a scan.
+
+     The seating is now the fix rather than the leak: on 55% of draws ONE column
+     to the left of src carries a digit of 5 or more, so the scan's first hit is
+     a decoy and the route lands on src on 45%. The big pair is drawn to sum to 8
+     or less, so that column still cannot reach ten even after the carry lands on
+     it, and at index 0 both digits stay 1 or more so neither number grows a
+     leading zero - the legal big pairs there are (5,1) (5,2) (5,3) (6,1) (6,2)
+     (7,1) and their mirrors. The stem's two claims hold as printed on every
+     draw: exactly one column reaches ten, and it makes s. The src column and the
+     columns to its right are untouched. */
+  if (ri(1, 100) <= 55){
+    const j = ri(0, src - 1);
+    const big = j === 0 ? ri(5, 7) : ri(5, 8);
+    const small = j === 0 ? ri(1, 8 - big) : ri(0, 8 - big);
+    if (ri(0, 1)){ A[j] = big; B[j] = small; } else { A[j] = small; B[j] = big; }
+  }
+  const a = numOf(A), b = numOf(B);
+
+  const kid = pick(KIDS), who = kid[0], pron = kid[1].toLowerCase();
+  /* W2, seventh pass: on three draws in five the stem does not name the column
+     the 1 is written above, so the child has to FIND the column that makes s
+     before there is a place name to read. Exactly one column can: every column
+     to the right of src is built to total under 10 and every column to its left
+     under 9, while s is 12-18.
+
+     W6, ELEVENTH pass (2026-09-16) - AND NOW IT IS EVERY DRAW. The refutation
+     abstracted this stem the way a child does - question type x the place words
+     the stem prints x the digit it prints - and found a table of 42 rows with
+     70.81 / 71.31% recall, owned in ~55 sessions at 3.31 served per session:
+     finite, over 60%, over 1.00 a session, inside 60 sessions. Four for four
+     against the lane's own board gate, which until now read only the OPTION row
+     and never a stem abstraction. The carve-out offered for it was that the 42
+     rows are the P3 place-value fact set; they are not - `keep` runs 2..8 and the
+     carried digit is always 1 and the ones column never appears, so it is a
+     proper subset of a 36-fact set with the question type stapled on.
+
+     The widening is the honest one: the stem NEVER names the column now, so the
+     40% of draws that printed "the hundreds column makes 15" - where the stem
+     handed over both halves of the key - are gone. What is left is (question
+     type x keep), and the key is one of TWO columns on every one of them, so the
+     stem abstraction cannot pin it. The board gate below measures stem
+     abstractions from this version on, and this bank passes it on recall rather
+     than on a carve-out. */
+  const bySum = true;
+  const ask = carry
+    ? '<b>How much is that small 1 worth?</b>'
+    : '<b>How much is the ' + keep + ' ' + pron + ' writes there worth?</b>';
+  const stem = bySum
+    ? who + ' works out ' + a + ' + ' + b + ' in columns. One column makes ' + s + ', so ' + pron +
+      ' writes ' + keep + ' in that column and a small 1 above the column on its left. ' + ask
+    : who + ' works out ' + a + ' + ' + b + ' in columns. The ' + PLACES[src] + ' column makes ' + s +
+      ', so ' + pron + ' writes ' + keep + ' in the ' + PLACES[src] + ' column and a small 1 above the ' +
+      PLACES[col] + ' column. ' + ask;
+  const found = bySum
+    ? 'The column that makes ' + s + ' is the ' + PLACES[src] + ' column: ' + A[src] + ' + ' + B[src] +
+      ' = ' + s + ', and no other column reaches ten. '
+    : '';
+  return mcNum(stem, '', key, cands, '',
+    found + s + ' ' + PLACES[src] + ' is ' + plPlace(1, col) + ' and ' + plPlace(keep, src) + ', so the ' +
+    keep + ' stays in the ' + PLACES[src] + ' column - worth ' + (keep * POW[src]) + ' - and the small 1 ' +
+    'goes above the ' + PLACES[col] + ' column - worth ' + POW[col] + '. ' +
+    (carry ? 'The small 1 is worth ' + key + '.' : 'The ' + keep + ' is worth ' + key + '.') +
+    ' A mark is worth the column it is written in, not the digit it looks like: that is what ' +
+    'regrouping means, ten of something small becoming one of the next size up. Every wrong answer ' +
+    'here is one of the two slips - the right digit read in the wrong column, or the wrong digit ' +
+    'read in the right one.');
+}
+
+/* FORMAT 2 - direct compute, addition with at least two regroupings
+   (pool 1, 1 step - the addition fluency anchor).
+   Named distractors: never carried anything; forgot one carry; carried a ten
+   that was not there. */
+function gAddRegroup(){
+  let a = 3456, b = 1278, cols = [], key = 4734, cands = null, fam = [], g = 0;
+  do {
+    a = ri(1000, 7000); b = ri(1000, MAXN - a);
+    key = a + b; cols = carryCols(a, b);
+    /* every slip that drops a carry lands BELOW the true sum and every slip that
+       invents one lands above it, so a family built only out of the first kind
+       pins the key at one rank - it sat at rank 2 on 100% of draws.
+
+       NINTH pass, KILL: and a family built only out of ONE-COLUMN slips hands
+       the row to the column rule whichever side they land on. The per-column
+       slips are now offered two at a time as well (see twoAtATime), which is
+       both a real P3 slip - a child who drops one carry drops two - and the
+       digit coincidence that stops the column rule resolving. `noCarry` stays a
+       single: "wrote every column total straight down" is already every carry
+       at once and does not compound with a named carry. */
+    fam = cols.length >= 2
+      ? [[noCarry(a, b), 'Writing every column total straight down without carrying']].concat(
+          twoAtATime(key,
+            cols.map(c => [addCols(a, b, c) - key, 'Forgetting the carry out of the ' + PLACES[c] + ' column'])
+              .concat([1, 2, 3].map(c => [POW[c] * 10,
+                'Carrying a ten into the ' + PLACES[c - 1] + ' column that was never there']))))
+      : [];
+    cands = fam.length ? slipSet(key, fam.map(p => p[0])) : null;
+    g++;
+  } while (g < 200 && !(cols.length >= 2 && ok(key) && cands && optsOk(key, cands)));
+  /* W5, SIXTH pass: this sentence used to name noCarry(a, b) whatever the draw
+     did, and slipSet left that value off the options row on 49.15% of draws. */
+  const why = slipWhy(cands, fam);
+  return mcNum('What is ' + a + ' + ' + b + '?', '', key, cands, '',
+    'Line the numbers up and add from the right. ' + a + ' + ' + b + ' = ' + key + '. The ' +
+    PLACES[cols[0]] + ' column makes ten or more, so a ten moves into the column on its left; this ' +
+    'sum regroups in ' + cols.length + ' of its four columns. ' + why[1] + ' gives ' + why[0] + '.');
+}
+
+/* FORMAT 3 - direct compute, subtraction with regrouping (pool 2, 1 step) */
+function gSubRegroup(){
+  let a = 5042, b = 1867, cols = [], key = 3175, cands = null, fam = [], g = 0;
+  do {
+    a = ri(3000, MAXN); b = ri(1000, a - 2000);   /* key >= 2000, so key - 1000 is still a 4-digit option */
+    key = a - b; cols = borrowCols(a, b);
+    /* a regrouping kept that was not needed lands above the answer, one lost
+       lands below it, and the family carries both for every borrowing column -
+       the old three slips were two above and one below on every single draw.
+
+       W3, third pass: that still left only |cols| slips below the key against
+       |cols| + 1 above, so on the many draws with exactly two borrowing columns
+       the key could not be the largest of the four - "pick the largest" was
+       eliminable on 93.4% of draws (rank 3 took 6.64% of 20,000). The
+       below-the-key slip is now drawn for EVERY column, not only the borrowing
+       ones: taking one from the column on the left in a column that could already
+       take away is the mirror misconception of forgetting to reduce the column
+       you did borrow from, and it is just as common on paper.
+
+       NINTH pass, KILL: both sides is not enough if every slip still moves ONE
+       column - the column rule crossed this bank out to the key alone on 58.8%
+       of draws. The per-column slips are now offered two at a time as well (see
+       twoAtATime); a child who forgets to reduce after borrowing forgets it in
+       two columns as readily as in one. */
+    fam = cols.length >= 2
+      ? [[smallFromBig(a, b), 'Taking the smaller digit away from the bigger one in every column ' +
+          'instead - the commonest slip -']].concat(twoAtATime(key, borrowOnes(cols)))
+      : [];
+    cands = fam.length ? slipSet(key, fam.map(p => p[0])) : null;
+    g++;
+  } while (g < 200 && !(cols.length >= 2 && ok(key) && smallFromBig(a, b) !== key &&
+           cands && optsOk(key, cands)));
+  /* W5, SIXTH pass: this sentence used to name smallFromBig(a, b) whatever the
+     draw did, and slipSet left that value off the options row on 52.98% of
+     draws - the largest of the four sites, on a pool-2 fluency anchor. */
+  const why = slipWhy(cands, fam);
+  return mcNum('What is ' + a + ' − ' + b + '?', '', key, cands, '',
+    a + ' − ' + b + ' = ' + key + '. In the ' + PLACES[cols[0]] + ' column you cannot take away ' +
+    'enough, so you take one from the column on its left and turn it into ten. ' +
+    why[1] + ' gives ' + why[0] + '.');
+}
+
+/* FORMAT 4 - inverse: the missing part (pool 2, 2 steps) */
+function gMissingAddend(){
+  let a = 1278, total = 4021, key = 2743, cols = [], cands = null, g = 0;
+  do {
+    total = ri(3000, MAXN); a = ri(1000, total - 2000);   /* key >= 2000: see gSubRegroup */
+    key = total - a; cols = borrowCols(total, a);
+    /* both sides and two at a time, per column: see gSubRegroup */
+    cands = cols.length >= 2 ? slipSet(key,
+      [smallFromBig(total, a)].concat(twoAtATime(key, borrowOnes(cols)).map(p => p[0]))) : null;
+    g++;
+  } while (g < 200 && !(cols.length >= 2 && ok(key) && smallFromBig(total, a) !== key &&
+           cands && optsOk(key, cands)));
+  return mcNum(a + ' + ? = ' + total, '', key, cands, '',
+    'A missing part is found by taking the part you know away from the whole: ' + total + ' − ' + a +
+    ' = ' + key + '. Check it the other way round - ' + a + ' + ' + key + ' = ' + total +
+    ' - and you will catch a regrouping slip straight away.');
+}
+
+/* FORMAT 5 - mental strategy: make the next ten, then adjust (pool 2, 2 steps).
+   MOE P3 2.2, mental calculation with two 2-digit numbers. */
+function gMentalMake(){
+  const kid = pick(KIDS), who = kid[0], pron = kid[1];
+  let a = 58, b = 27, round = 60, key = 25, cands = null, g = 0;
+  do {
+    a = ri(11, 89);
+    round = a + (10 - (a % 10));
+    const mv = round - a;
+    /* b is drawn past twice the amount moved so that "compensated twice" is a
+       whole number and the family always has two slips below the key as well as
+       three above it - see slipSet. The floor of 21 (and of 2*mv + 3) is the
+       fifth pass's minGap 3: it keeps "the amount moved" at least three away from
+       the key and keeps the key above 11, so the off-by-a-ten slip is always in
+       scope.
+
+       W3, SEVENTH pass (2026-09-16), AND ITS OTHER HALF, WHICH NOBODY HAD
+       MEASURED. Residual 15 declares "the smallest option ABOVE the biggest
+       number in the stem" on three banks (37.4 / 41.5 / 41.2%). Its mirror -
+       "the largest option BELOW the SMALLEST number in the stem" - was worth
+       55.0% here and answered the item outright on 49.0%, higher than every row
+       the residual names, and it was declared nowhere.
+
+       The two directions on this bank are COMPLEMENTARY, and that is the finding.
+       The key is `b - mv`, so it sits just under `b`, and `b` is printed in the
+       stem. Nothing can be authored into that gap by luck: it is `mv` wide, `mv`
+       is at most 9, and minGap forbids any slip within 3 of the key. So the key
+       is the largest option below `b` on EVERY draw, and the only question is
+       whether `b` is the smallest number the stem prints or the largest:
+
+         b < round  ->  the key is under every stem number: "largest option below
+                        the SMALLEST" fires (and its twin cannot);
+         b > round  ->  b is the biggest stem number: "largest option below the
+                        BIGGEST" fires (and the first cannot).
+
+       One of the two therefore fires on essentially every draw, and the sum of
+       the pair is the structural floor of an item whose answer is one adjustment
+       away from a printed number - the same shape as gBetween's declared 50%
+       (residual 14), reached from the other side. Biasing the draw only moves the
+       weight from one of the pair to the other: taking b past the round-up on
+       four draws in five sent the first to 22% and the second to 86%, which is
+       worse than the 49 / 51 the balanced draw gives. The draw is therefore left
+       balanced, and what is added is the only thing that actually helps - three
+       named slips that can land strictly BETWEEN the key and `b`, so that on the
+       draws where one of them ships neither direction resolves to the key:
+
+         b - (a % 10)   moved the ones digit of `a` across instead of the amount
+                        `a` still needs to reach the next ten - the commonest
+                        confusion about WHICH gap to measure. Distance from the
+                        key is |2*mv - 10|, so slipSet can use it when mv >= 7.
+         b - (10 - b%10) topped up the WRONG number: moved what `b` needs to
+                        reach its own next ten. Distance mv - (10 - b%10).
+
+         b - 2*mv + 10  compensated twice AND wrote the answer a ten out - two
+                        slips the family already names, made together. Distance
+                        10 - mv, so it is usable when mv is 6 or 7.
+
+       All three are culled automatically when they fall inside minGap, which is
+       what keeps them from becoming a proofreading trap, and NONE of them is
+       forced, which is what keeps "the SECOND largest option below the biggest
+       stem number" from inheriting the item the way a guaranteed guard slip
+       would. Two things pay for them. `a % 10` is capped at 6 (so mv >= 4): the
+       window between the key and `b` is mv wide and minGap is 3, so on an mv <= 3
+       draw nothing can be authored into it at all and both directions fire by
+       arithmetic. And `b + 2*mv` leaves the family - the weakest of its members,
+       "compensated the wrong way, twice" - so three in-gap slips compete with
+       three above-side slips rather than four, and actually ship.
+
+       Measured, 20,000 draws x two seeds: the low direction 49.37% -> 36.05 /
+       35.67%, and the high direction - which nobody had measured, the lane or the
+       refutation - 66.69% -> 48.10 / 48.55%. Both are declared; the second is the
+       bigger number and it is the one this bank is now on the record for. */
+    /* W1, NINTH pass - THE PRINTED ROUND-UP NAMES THE ADDEND THE DRAWN ORDER WAS
+       HIDING. The eighth pass unpinned `b` from its position, and the ninth pass
+       showed that bought nothing: `round` is printed, `round` is `a + mv` with
+       `mv` in 4..9, so the rounded addend is simply the one sitting within nine
+       BELOW the printed round number. It was identified uniquely on 88.1 / 88.9%
+       of draws and "find that addend, then take the largest option below the
+       OTHER one" was worth 52.1% outright and 59.1 / 59.8% as a guesser value -
+       not the 37.5% the v9 note declared.
+
+       The floor is drawn shut instead. On half the draws the OTHER addend is
+       drawn into the same nine-below band, so BOTH printed addends round up to
+       the printed number and there is nothing in the stem that says which one was
+       moved. The item is unharmed, and that is not luck: the key is
+       `x + y - round` on every reading, so rounding either addend and
+       compensating off the other lands on the same answer - the relaxed premise
+       the eighth pass argued for and the ninth pass verified at 100.00% over
+       40,000 draws. What the child cannot recover is which addend to hold still,
+       and that is the half of the rule the drawn order was supposed to take.
+
+       `round - 4` rather than `round - 1` as the top of that band: the window
+       between the key and the nearer printed addend is `round - b` wide, so a
+       band running right up to the ten leaves nothing that can be authored into
+       it and BOTH readings of the rule land on the key. Four is the floor that
+       keeps one in-gap slip in scope (minGap is 3).
+
+       Measured, 20,000 x two seeds: the addend is identified uniquely on 55.0 /
+       54.7% of draws (from 88.1 / 88.9), the rule answers the item outright on
+       26.5 / 27.0% (from 49.97 / 50.02) and is worth 46.1 / 47.3% to a child who
+       tries both readings and guesses between the two answers (from 57.5 / 57.2).
+       Its two halves as singles come down with it: "the largest option below the
+       biggest number on the page" 41.7 -> 33.6 / 34.1%, and below the smallest
+       30.4 -> 33.0 / 33.9%. The 46% is DECLARED - see residual 15. */
+    const lo = Math.max(21, 2*mv + 3);
+    const both = Math.random() < 0.5 && round - 4 >= Math.max(lo, round - 9);
+    b = both ? ri(Math.max(lo, round - 9), round - 4) : ri(lo, 89);
+    key = b - mv;
+    /* "forgot to compensate" and "compensated the wrong way" both land above the
+       key, which is why it was the second-smallest of the four on 97.8% of draws.
+       Compensating twice, and the amount moved itself, land below it.
+
+       W3, third pass: two below and three above is not the same as flat. The key
+       was NEVER the largest of the four - 0.00% of 20,000 draws - so a child
+       could cross the biggest number out without doing any mental arithmetic,
+       which is +8.3 points to a guesser on every draw. (gTwoStepWord's mirror of
+       this was declared and argued in the file; this one was not mentioned
+       anywhere.) `b - 10` is the third slip below the key: a child who moves a
+       whole ten across instead of the `mv` the round-up actually needs.
+
+       W3, FOURTH pass. That new `b - 10` slip reopened, one bank along and in the
+       same commit, the class the third pass had just closed on the two counting
+       banks: the key is `b - mv`, so `b - 10` sits EXACTLY ONE away from it
+       whenever `mv` is 9, and a distractor one away from the key was offered on
+       16.05% of draws against 10.57% at c099275. The counting banks take
+       `minGap` for exactly this - no slip may sit closer to the key than the
+       smallest place value the item tests - and this bank tests ONES, so its
+       floor is 2. It costs `b - 10` on the `mv = 9` branch and `b`, `b - 2*mv` on
+       the `mv = 1` branch; both sides still carry at least two usable slips on
+       every draw, so the key's rank stays inside the gate's 12-45% band.
+
+       W2, FIFTH pass. That floor was written as `minGap: 2` and slipSet admits a
+       slip whose distance is `>= minGap`, so distance EXACTLY 2 was still legal
+       and still drawn: the v5 note claimed "within 2: 32.05% -> 0.00%" and the
+       true after-figure was 23.80%. The exactly-1 half was real. The floor is now
+       3, which is what "no slip closer to the key than the place value this item
+       tests" meant - a slip two away from a two-digit key is the same
+       proofreading trap one away from a four-digit key was.
+
+       Raising the floor to 3 culls `b`, `b + mv` and `b - 2*mv` on the `mv = 1`
+       branch and `b`, `b - 2*mv` on the `mv = 2` branch, and that left the small-
+       `mv` draws with two usable slips below the key and one above - so slipSet
+       had no choice about the side balance and rank 3 fell to 10.4%, under the
+       12% floor the third pass put in, and `b - 10` itself is culled at the other
+       end (`mv` 8 or 9 puts it two or one away). Two slips restore both ends, and
+       both are the missing halves of pairs the family already had:
+
+         `b + 10`  the mirror of `b - 10` - a whole ten moved across and added
+                   back the wrong way round. Distance `10 + mv`, so no floor
+                   reaches it, and it refills the ABOVE side at mv = 1 and 2.
+         `key - 10` the answer found correctly and written a ten out, which is the
+                   commonest place slip a child makes on a two-digit answer.
+                   Distance exactly 10 on every draw, always below the key, so it
+                   refills the BELOW side at mv = 8 and 9.
+
+       Every branch now carries at least three usable slips below the key and two
+       above it, and the rank band is back inside 12-45% on all four ranks.
+
+       W1, EIGHTH pass. `b + 10` is GONE and a fourth in-gap slip is in. The
+       paragraph above added `b + 10` to refill the ABOVE side at mv = 1 and 2, and
+       the seventh pass then stopped drawing mv = 1, 2 and 3 at all - so it had been
+       dead weight for a pass, and every draw of it crowded out one of the three
+       slips that can land between the key and `b`. Removing it, and adding
+         `b - (b % 10)`  the ones digit taken OFF `b` instead of the amount the
+                         round-up actually needed - "move across" read as "drop the
+                         ones", in gap whenever 3 <= b%10 < mv,
+       took the structural rule from 68.47 / 67.96% to 37.48 / 37.27% with the
+       printed order drawn, and the rank band holds at 23.5 / 25.8 / 26.0 / 24.7.
+       (SEVENTH pass: the mv = 1, 2 and 3 branches this paragraph argues about are
+       no longer drawn at all - see the W3 note above - so the floor it restores
+       is now paid for twice. The rank band is re-measured at 25.1 / 25.6 / 25.2 /
+       24.3 and 25.2 / 24.9 / 25.5 / 24.4.) */
+    /* W1, NINTH pass, the other half. Hiding WHICH addend was rounded is only
+       the first half of the rule; the second half is "then take the largest
+       option below the other one", and that half is an option-row property. The
+       smallest number the stem prints above the key is the reference EVERY
+       version of the rule reduces to - below it, and the key is the largest
+       option left. One slip inside that window is what stops it, and the window
+       is `round - b` or `mv` wide with a floor of 3 under it, so it cannot always
+       be filled: it is a preference, and what it cannot reach is declared. */
+    const above = [a, b, round].filter(v => v > key);
+    const ref = above.length ? Math.min.apply(null, above) : key;
+    cands = slipSet(key, [b, b + mv, mv, b - 2*mv, b - 10, key - 10,
+                          b - (a % 10), b - (10 - (b % 10)), b - 2*mv + 10,
+                          b - (b % 10)],
+                    { minGap: 3, reject: c => !sameWidth(key, c) || widthTie(key, c),
+                      prefer: c => c.some(v => v > key && v < ref) });
+    g++;
+  /* W1, TENTH pass, and the PM's ruling on it (v11, 2026-09-16). THE DECLARED
+     OUTRIGHT FIGURE WAS COMPUTED ON A SUBSET. The v10 note declared the structural
+     rule - "find the addend that was rounded up, then take the largest option
+     below the OTHER one" - at 26.52 / 27.00% outright, and that number counted
+     only the 55% of draws where the rounded addend is UNIQUELY identified. It
+     dropped the 15.78 / 16.69% where the child cannot tell which addend was moved
+     and BOTH readings land on the key anyway - draws on which the rule answers the
+     item outright with no arithmetic at all. 26.52 + 15.78 = 42.30 and
+     27.00 + 16.69 = 43.69, on both seeds, to two decimals. The true figure was
+     over the PM's 40% and the sentence "outright is under the PM's 40%" was false.
+
+     THE SEATING CHANGE THAT CLOSES IT: `a % 10 <= 4` rather than `<= 6`. The rule
+     fails exactly when a named slip lands strictly BETWEEN the key and the addend
+     the child reduces to, and that window is `mv` wide with `minGap` 3 under it -
+     so on an `mv = 4` draw there is one usable slot and on an `mv = 9` draw there
+     are six. Capping `a % 10` at 4 puts `mv` in 6..9 instead of 4..9, and the
+     in-gap slip then ships on 61.6 / 62.1% of draws against 48.4 / 47.4%. It costs
+     two of the six `a % 10` values and nothing else; every other guard, the slip
+     family and the draw of `b` are untouched.
+
+     Measured, 20,000 draws x two seeds, with an independent loader reading the
+     RENDERED stem and options: the rule OUTRIGHT 42.30 / 43.69 -> 31.51 / 31.14%
+     and as a guesser 46.05 / 47.28 -> 33.77 / 33.34%. Residual 15's two halves come
+     down with it - "the largest option below the SMALLEST number on the page"
+     36.05 / 35.67 -> 23.99 / 23.80%, and below the BIGGEST 48.10 / 48.55 ->
+     28.76 / 28.41%. Every one of them is now under 40% and none of them needs
+     declaring any more. */
+  /* `b !== round` closes residual 12's commutativity draw (1.1% of v7 draws): with
+     b equal to the round-up the stem reads "43 + 50 = 50 + ?" and the key is `a`
+     itself, so the item is answered by symmetry with no mental arithmetic at all.
+     It was declared rather than fixed for six passes; it is one condition. */
+  } while (g < 200 && !(a % 10 !== 0 && a % 10 <= 4 && key >= 2 && (round - a) !== key &&
+           b !== round && b !== a &&
+           cands && optsOk(key, cands) && sameWidth(key, cands) && !widthTie(key, cands)));
+  const moved = round - a;
+  /* W1, EIGHTH pass. The v8 note measured the two directions of the same rule
+     separately - "the largest option below the SMALLEST stem number" 36.3% and
+     "...below the BIGGEST" 47.9% - as if a child had to choose between them. They
+     do not have to: `b` was not an anonymous stem number, it was THE NUMBER AFTER
+     THE `+`, printed twice and always second, and the key is `b - mv`. So "take
+     the second number in the sum and pick the largest option below it" answered
+     the bank on 68.47 / 67.96% of draws, firing on 100% of them, with no mental
+     arithmetic at all.
+     `b` is now unpinned: the two addends are printed in a DRAWN order, so the
+     number that was rounded up is first on one draw in two and second on the
+     other. Nothing about the mathematics moves - `a + b` is the same sum either
+     way and the key is `a + b - round` on every reading, which is exactly why the
+     item stays single-answered - but the child can no longer find `b` by its
+     position, and the harness's oracle now checks that `round` is the next ten up
+     from ONE of the two printed addends rather than from the first. */
+  const flip = Math.random() < 0.5;
+  const x = flip ? b : a, y = flip ? a : b;
+  return mcNum(who + ' works out ' + x + ' + ' + y + ' in ' + (pron === 'He' ? 'his' : 'her') +
+    ' head. ' + pron + ' makes ' + round + ' first. ' + x + ' + ' + y + ' = ' + round + ' + ?', '',
+    key, cands, '',
+    'To get from ' + a + ' up to ' + round + ' you need ' + moved + ', so ' + moved + ' is moved ' +
+    'across from the ' + b + '. That leaves ' + b + ' − ' + moved + ' = ' + key + ', and ' + round +
+    ' + ' + key + ' = ' + (a + b) + '. Whatever you give to one number you must take off the other, ' +
+    'or the total changes.' + (b >= round - 9 && b < round
+      ? ' You could have rounded the ' + b + ' up to ' + round + ' instead and taken that amount off ' +
+        'the ' + a + ': it is the same total either way, so it lands on the same answer.'
+      : ''));
+}
+
+/* FORMAT 6 - error spotting, DIAGNOSE (pool 3, 2 steps). The claim is produced
+   by exactly one named misconception; the two filler options are re-checked
+   against this draw, so neither is ever a second defensible answer. */
+/* Same length discipline as STANDS_SLIPS: 38-44 characters across all four, so
+   every rendered option lands inside the 48-character ceiling. */
+const ADD_NOCARRY = ' did not carry any of the tens at all.';
+const ADD_FILL_SUB = ' subtracted the numbers instead of adding.';
+const ADD_FILL_SUM = ' added up all eight digits, not the numbers.';
+function gAddError(){
+  const kid = pick(KIDS), who = kid[0], pron = kid[1];
+  let a = 2856, b = 1379, cols = [], key = 4235, g = 0;
+  do {
+    a = ri(1000, 7000); b = ri(1000, MAXN - a);
+    key = a + b; cols = carryCols(a, b);
+    g++;
+  } while (g < 400 && !(cols.length >= 2 && ok(key) &&
+           cols.every(c => { const v = addCols(a, b, c); const nc = noCarry(a, b);
+             return ok(v) && ok(nc) && v !== key && nc !== key && v !== nc &&
+                    a - b !== v && a - b !== nc &&
+                    digitSum(a) + digitSum(b) !== v && digitSum(a) + digitSum(b) !== nc; })));
+  const useAll = Math.random() < 0.5;
+  const col = cols[0];
+  const claim = useAll ? noCarry(a, b) : addCols(a, b, col);
+  const oneText = ' forgot the carry in the ' + PLACES[col] + ' column.';
+  const key_ = pron + (useAll ? ADD_NOCARRY : oneText);
+  const wrongs = [pron + (useAll ? oneText : ADD_NOCARRY), pron + ADD_FILL_SUB, pron + ADD_FILL_SUM];
+  return mcText(who + ' works out ' + a + ' + ' + b + ' and gets ' + claim + '. <b>What did ' +
+    pron.toLowerCase() + ' do wrong?</b>', '', key_, shuffle(wrongs),
+    'The answer is ' + a + ' + ' + b + ' = ' + key + ', not ' + claim + '. ' + key_ +
+    ' Every column that makes ten or more hands one ten to the column on its left, and in this sum ' +
+    cols.length + ' of the four columns do that: the ' + andList(cols.map(c => PLACES[c])) + '.');
+}
+
+/* FORMAT 7 - error spotting, CORRECT the mistake, numeric key (pool 3, ONE
+   computation). The stem NAMES the slip, so the premise it states is true by
+   construction and the harness re-derives the printed wrong answer from it.
+
+   KILLED AND REVERTED (Sweep p3numbers Refutation, second pass, 2026-09-15).
+   The v2 rebuild asked "how much bigger is her answer than the correct one?" to
+   buy this slot a second computation. It bought a shortcut instead: the gap is
+   smallFromBig(a,b) - (a - b), which is structurally the smallest of the four
+   offered numbers, and "pick the smallest number on the screen" answered the
+   item on 48,835 of 50,000 draws - 97.67%, against 0 / 20,000 for the same
+   strategy on the form below. A child who could not subtract went from 25% to
+   97.67%, and the mastery climb read that as pool-3 competence.
+
+   So the question goes back to what it was, and the honest count goes with it:
+   this is the ONE declared single-computation slot in pool 3. It is not padding
+   - the misconception work is real and the printed claim is what that slip
+   produces - but a child who just computes a - b gets it, and the file says so
+   rather than claiming eleven two-step slots. What IS new is the option set:
+   the slips now straddle the key by construction (see slipSet), so no magnitude
+   strategy replaces the subtraction either. */
+function gSubError(){
+  const kid = pick(KIDS), who = kid[0], pron = kid[1];
+  let a = 4003, b = 1568, key = 2435, claim = 3565, cols = [], cands = null, g = 0;
+  do {
+    a = ri(3000, MAXN); b = ri(1000, a - 2000);   /* key >= 2000: see gSubRegroup */
+    key = a - b; claim = smallFromBig(a, b); cols = borrowCols(a, b);
+    /* both sides and two at a time, per column: see gSubRegroup */
+    cands = cols.length >= 2 ? slipSet(key,
+      [claim].concat(twoAtATime(key, borrowOnes(cols)).map(p => p[0]))) : null;
+    g++;
+  } while (g < 200 && !(cols.length >= 2 && ok(key) && ok(claim) && claim !== key &&
+           cands && optsOk(key, cands)));
+  return mcNum(who + ' works out ' + a + ' − ' + b + '. In every column ' + pron.toLowerCase() +
+    ' takes the smaller digit away from the bigger one, and gets ' + claim +
+    '. <b>What is the correct answer?</b>', '', key, cands, '',
+    'Taking the smaller digit from the bigger one in each column ignores which number is on top, and ' +
+    'that is how ' + claim + ' appears. Done properly, the ' + PLACES[cols[0]] + ' column cannot give ' +
+    'what is asked, so one is taken from the column on its left and turned into ten: ' + a + ' − ' + b +
+    ' = ' + key + '. Check by adding back: ' + b + ' + ' + key + ' = ' + a + '.');
+}
+
+/* FORMAT 8 - two-step word problem, Singapore context (pool 3, 2 steps) */
+const SHOP_CTX = [
+  ['Chinatown market stall', 'packets of bee hoon'],
+  ['Tampines library', 'books'],
+  ['Jurong hawker centre', 'bowls of laksa'],
+  ['Bishan bookshop', 'pencils'],
+  ['Woodlands MRT ticket office', 'tickets'],
+  ['Geylang Serai bazaar stall', 'kueh']
+];
+function gTwoStepWord(){
+  const c = pick(SHOP_CTX);
+  let first = 2145, more = 480, key = 4770, cands = null, g = 0;
+  do {
+    more = ri(120, 900);
+    /* the range is set so that ALL THREE over-counting slips stay inside the
+       ceiling; a slip filtered out for being out of scope would leave the key
+       pinned at one end of the four printed numbers. */
+    first = ri(1000, Math.floor((MAXN - 2*more) / 3));
+    key = first + (first + more);
+    /* stopping early and losing the "more" both land below the total, so the key
+       was the second-largest of the four on every draw. Counting a month twice
+       lands above it.
+
+       W3, third pass: three slips below and two above still left the key NEVER
+       the smallest of the four - 0.00% of 20,000 draws. The file declares and
+       argues that shape ("every slip that stops early lands below the total"),
+       and the argument is sound as far as it goes, but a declared free
+       elimination is still a free elimination. `key + second` is the third slip
+       above: a child who works out both months correctly and then adds this
+       month's total on top of the two-month answer. */
+    cands = slipSet(key, [
+      first + more,        /* stopped after step 1 */
+      first * 2,           /* forgot that this month sold more */
+      first + 2*more,      /* added the difference instead of last month's total */
+      key + more,          /* counted the extra a second time */
+      key + first,         /* counted last month twice over */
+      key + first + more   /* added this month's total on top of the answer */
+    ]);
+    g++;
+  } while (g < 200 && !(ok(key) && ok(first + more) && cands && optsOk(key, cands)));
+  const second = first + more;
+  /* W5, SIXTH pass: the sentence used to tell the child that stopping after
+     step 1 gives `second`, and slipSet left `second` off the options row on
+     49.95% of draws - a two-step word problem sending the reader to look for a
+     number that is not on the screen. */
+  const why = slipWhy(cands, [
+    [second, 'Stopping after step 1'],
+    [first * 2, 'Forgetting that this month sold more'],
+    [first + 2 * more, 'Adding the difference on top of this month instead of adding the two months'],
+    [key + more, 'Counting the extra ' + more + ' a second time'],
+    [key + first, 'Counting last month twice over'],
+    [key + first + more, 'Adding this month on top of the two-month answer']
+  ]);
+  return mcNum('The ' + c[0] + ' sold ' + first + ' ' + c[1] + ' last month. This month it sold ' +
+    more + ' more ' + c[1] + ' than last month. <b>How many ' + c[1] +
+    ' altogether in the two months?</b>', '', key, cands, '',
+    'Step 1 - this month: ' + first + ' + ' + more + ' = ' + second + ' ' + c[1] + '. Step 2 - the two ' +
+    'months together: ' + first + ' + ' + second + ' = ' + key + '. ' + why[1] + ' gives ' + why[0] + '.');
+}
+
+/* FORMAT 9 - working backwards from the end (pool 3, 2 steps) */
+const KEEP_CTX = ['stickers', 'marbles', 'trading cards', 'beads', 'stamps'];
+function gBackFromTotal(){
+  const kid = pick(KIDS), who = kid[0], pron = kid[1];
+  const thing = pick(KEEP_CTX);
+  let gave = 1240, got = 350, now = 2765, key = 3655, cands = null, g = 0;
+  do {
+    /* W3, FIFTH pass. "Pick the smallest option that is bigger than the biggest
+       number printed in the stem" answered this item on 62.52% of 20,000 draws
+       against 25% chance, because the start is bigger than the total (more was
+       given away than was bought back) and every distractor that also beat the
+       total sat ABOVE the key. The first half of that rule is the item's own
+       reasoning and is not a bypass; the second half is an accident of which
+       misconceptions happened to land where. `now + gave - 2*got` - taking the
+       bought ones off twice over - is the one named slip that lands strictly
+       BETWEEN the total and the key, and it only does so when `gave` beats twice
+       `got`, which the old draw left to chance. It is now guaranteed, so the
+       blocker is in scope on every draw, and it goes into `keepOne` PAIRED WITH
+       an above-key slip: exactly one of the two is always offered, so the blocker
+       appears about two draws in three (it is still in the family as well) while
+       the side it lands on is a coin toss rather than a constant. It is NOT
+       forced on its own: a distractor below the key on 100% of draws would mean
+       the key is never the smallest of the four, and the two-sided rank floor v3
+       added exists to forbid exactly that - it would trade a 62% surface rule for
+       a 100% cross-out. What remains is declared in the note. */
+    gave = ri(600, 2200); got = ri(150, Math.min(1200, Math.floor(gave / 2) - 1));
+    now = ri(2500, 5000);
+    key = now + gave - got;
+    /* "undid the buying only" and "took both away" land below the start, "undid
+       nothing" and "undid both the wrong way" land above it.
+
+       W3, third pass: whether the fifth slip landed above or below the key
+       depended on whether `got` beat `gave`, which it rarely does, so the key was
+       the smallest of the four on only 7.04% of 20,000 draws. Two more slips -
+       one each side, neither depending on the draw - make three a side on every
+       draw: undoing a step TWICE is the same misconception in both directions. */
+    cands = slipSet(key, [
+      now + got - gave,        /* undid both steps the wrong way round */
+      now + gave + got,        /* put both back instead of undoing the buy */
+      now + gave,              /* undid the giving away and stopped */
+      now + 2*gave - got,      /* put the given-away back twice over */
+      now - got,               /* undid the buying and stopped */
+      now + gave - 2*got,      /* took the bought ones off twice over */
+      now - got - gave         /* took both away instead of undoing them */
+    ], { keepOne: [now + gave - 2*got, now + gave] });
+    g++;
+  } while (g < 300 && !(ok(key) && gave !== got && 2*gave !== got && cands && optsOk(key, cands)));
+  return mcNum(who + ' had some ' + thing + '. ' + pron + ' gave away ' + gave + ' of them, then ' +
+    'bought ' + got + ' more. Now ' + pron.toLowerCase() + ' has ' + now +
+    '. <b>How many ' + thing + ' did ' + pron.toLowerCase() + ' have at first?</b>', '', key, cands, '',
+    'Start at the end and undo each step in reverse order. The last thing that happened was buying ' +
+    got + ', so take those off: ' + now + ' − ' + got + ' = ' + (now - got) + '. Before that ' +
+    gave + ' were given away, so put them back: ' + (now - got) + ' + ' + gave + ' = ' + key +
+    '. Undoing means swapping the operation: + becomes −, and − becomes +.');
+}
+
 
   MQI.registerTopic({
     id:'p3numbers', level:'P3', strand:'Number and Algebra',
-    moeSubTopic:"Numbers up to 10 000: number notation, representations and place values (thousands, hundreds, tens, ones); comparing and ordering numbers",
+    moeSubTopic:"Numbers up to 10 000: number notation, representations and place values (thousands, hundreds, tens, ones); comparing and ordering numbers; patterns in number sequences. Addition and Subtraction: addition and subtraction algorithms (up to 4 digits); mental calculation involving addition and subtraction of two 2-digit numbers",
     label:'Thousand Isles', short:'Numbers to 10 000', e:'🏝️',
     skills:{
-      place:  {label:'Place value',        tip:'Say the number out loud in parts: "four thousand, no hundreds, seven tens, six ones". The zero is the part children drop.'},
-      compare:{label:'Comparing numbers',  tip:'Compare left to right, one place at a time. Stop at the first place where the digits differ.'}
+      place:  {label:'Place value',
+               tip:'Say the number out loud in parts: "four thousand, no hundreds, seven tens, six ones". The zero is the part children drop, and the digit is what they say when you ask what it is WORTH.'},
+      compare:{label:'Comparing numbers',
+               tip:'Compare left to right, one place at a time, and stop at the first place where the digits differ. Count the digits first: a 4-digit number always beats a 3-digit one.'},
+      pattern:{label:'Number patterns',
+               /* W2, SIXTH pass: this tip is RENDERED in the parent dashboard, and
+                  it used to end "say whether it is a jump of tens, hundreds or
+                  thousands" - impossible on 100% of gPatternOdd draws, whose step
+                  is 15, 25 or 35. The jump the child has to name is now the SIZE,
+                  which is what every pattern generator in this file actually asks. */
+               tip:'Write the difference above each gap. If all the gaps match you have found the jump; then say how big it is - a jump of 10, 100 or 1000, or an in-between jump like 15, 25 or 250.'},
+      addsub: {label:'Adding & subtracting',
+               tip:'Line the columns up and work from the right. Ten in a column moves one place LEFT; if you cannot take away, take one from the left and turn it into ten. Check a subtraction by adding the answer back.'}
     },
     pools:{
-      1:[[gStandsEasy,'place'],[gGreatest,'compare']],
-      2:[[gWhichDigit,'place'],[gSmallest,'compare']],
-      3:[[gBuildNum,'place'],[gStandsHard,'place'],[gMoreLess,'compare']]
+      1:[[gStandsEasy,'place'],[gWhichDigit,'place'],
+         [gGreatest,'compare'],[gCompareTrue,'compare'],
+         [gPatternConcept,'pattern'],[gAddConcept,'addsub'],[gAddRegroup,'addsub']],
+      2:[[gExpanded,'place'],[gBuildNum,'place'],[gSmallest,'compare'],[gBetween,'compare'],
+         [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
+         [gMissingAddend,'addsub'],[gMentalMake,'addsub']],
+      3:[[gStandsCompare,'place'],[gStandsFix,'place'],[gZeroFix,'place'],
+         [gOrder,'compare'],[gBetweenWorded,'compare'],
+         [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],
+         [gAddError,'addsub'],[gSubError,'addsub'],[gTwoStepWord,'addsub'],[gBackFromTotal,'addsub']]
     }
   });
 })();
@@ -2975,6 +5585,25 @@ function gCompareError(){
         buildFracChoices = G.buildFracChoices, finishFrac = G.finishFrac,
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
+
+/* ---- WOUND 3 (v4 refutation, 2026-09-15): the authored-distractor contract ----
+   The v3 pass applied this guard to the two area/perimeter files only, so in THIS
+   file mcNum's padding branch still fired and the harness's distractor-identity
+   contract silently stopped binding: gDivError 25.6% of draws, gDivShare 15.5%,
+   gDoubling 14.0%, gGroups 3.4% (2,000 draws each) dropped a NAMED misconception
+   and shipped `key + 1` in its place. optsOk is the same guard the area/perimeter
+   files use: every named distractor must be a positive integer, distinct from the
+   key and from every other named distractor. A generator that redraws until
+   optsOk passes can never reach the padding branch, so q.authored is stamped on
+   every draw and tools/gen-sanity.mjs's padding gate binds. */
+function optsOk(correct, cands){
+  const s = new Set([correct]);
+  for (const c of cands){
+    if (!Number.isInteger(c) || c <= 0 || s.has(c)) return false;
+    s.add(c);
+  }
+  return true;
+}
 
 function mcNum(stem, extra, correct, cands, unit, explain){
   const seen = new Set([correct]); const d = [];
@@ -3029,7 +5658,14 @@ const GROUP_CTX = [
   ['The MRT platform has','benches','seats on each bench','seats']
 ];
 function gGroups(){
-  const c=pick(GROUP_CTX), a=pick(ALL_TABLES), b=ri(2,10), p=a*b;
+  const c=pick(GROUP_CTX);
+  /* wound 3: redraw until the three named distractors are clean (a+b can equal
+     the product, and a+b can equal p-a), so mcNum never pads. */
+  let a=6,b=3,ok=false;
+  for(let i=0;i<200&&!ok;i++){ a=pick(ALL_TABLES); b=ri(2,10);
+    ok=optsOk(a*b,[a+b, a*b-a, a*b+b]); }
+  if(!ok){ a=6; b=3; }
+  const p=a*b;
   return mcNum(c[0]+' '+a+' '+c[1]+', with '+b+' '+c[2]+'. <b>How many '+c[3]+' are there altogether?</b>','',
     p,[a+b, p-a, p+b],'',
     'Equal groups means multiply: '+a+' groups of '+b+' = '+a+' × '+b+' = '+p+' '+c[3]+
@@ -3068,7 +5704,12 @@ function gNotMultiple(){
 
 /* FORMAT 7 - doubling strategy: build a new fact from a known one (pool 3) */
 function gDoubling(){
-  const a=pick([3,4,6,7,8,9]), b=ri(3,9), p=a*b;
+  /* wound 3: p+a and p+b collide whenever a === b, which is 1 draw in 7. */
+  let a=3,b=4,ok=false;
+  for(let i=0;i<200&&!ok;i++){ a=pick([3,4,6,7,8,9]); b=ri(3,9);
+    ok=optsOk(2*a*b,[a*b+2, a*b+a, a*b+b]); }
+  if(!ok){ a=3; b=4; }
+  const p=a*b;
   return mcNum('You know that '+a+' × '+b+' = '+p+'. Use <b>doubling</b> to work out '+(2*a)+' × '+b+'.','',
     2*p,[p+2, p+a, p+b],'',
     'Doubling one factor doubles the product. '+(2*a)+' is double '+a+', so '+(2*a)+' × '+b+
@@ -3083,8 +5724,16 @@ const SHARE_CTX = [
 ];
 function gDivShare(){
   const c=pick(SHARE_CTX);
-  const g=pick(HARD_TABLES), each=ri(3,10), total=g*each;
-  let want=ri(2,g-1); if(want<2) want=2;
+  /* wound 3: "each" (stopping after the division) collides with want x each when
+     want is 1, and total-want collides with want x g on plenty of draws. */
+  let g=6,each=4,want=2,ok=false;
+  for(let i=0;i<200&&!ok;i++){
+    g=pick(HARD_TABLES); each=ri(3,10);
+    want=ri(2,g-1); if(want<2) want=2;
+    ok=optsOk(want*each,[each, g*each-want, want*g]);
+  }
+  if(!ok){ g=6; each=4; want=2; }
+  const total=g*each;
   return mcNum(c[0]+' '+total+' '+c[1]+' equally into '+g+' '+c[2]+'. <b>How many '+c[1]+' are in '+
     want+' '+c[3]+'?</b>','',
     want*each,[each, total-want, want*g],'',
@@ -3095,8 +5744,16 @@ function gDivShare(){
 
 /* FORMAT 9 - error spotting: check a division with multiplication (pool 3) */
 function gDivError(){
-  const a=pick(HARD_TABLES), b=ri(3,10), p=a*b;
-  const claim = Math.random()<0.5 ? b+1 : b-1;
+  /* wound 3: the divisor a collides with the key b, and with Ravi's claim b +- 1,
+     on a quarter of draws - the worst padding rate in the file. */
+  let a=6,b=4,claim=5,ok=false;
+  for(let i=0;i<200&&!ok;i++){
+    a=pick(HARD_TABLES); b=ri(3,10);
+    claim = Math.random()<0.5 ? b+1 : b-1;
+    ok=optsOk(b,[claim, a, a+b]);
+  }
+  if(!ok){ a=6; b=4; claim=5; }
+  const p=a*b;
   return mcNum('Ravi says '+p+' ÷ '+a+' = '+claim+'. He checked it by working out '+a+' × '+claim+
     ' = '+(a*claim)+'. <b>What should '+p+' ÷ '+a+' be?</b>','',
     b,[claim, a, a+b],'',
@@ -3201,6 +5858,416 @@ function gDivError(){
 /* Math Quest Island topic: fractions (P3). Self-contained.
  * Authoring rules + registration shape: js/topics/README.md
  * Loads after js/core.js. Touches no other file.
+ *
+ * DEPTH SWEEP 2026-09-15 (Kevin's Q114 "Reshape": the depth-pilot contract goes
+ * wide). Rebuilt from 12 generators / 22 masked shapes to 27 generators arranged
+ * as FOUR PRINCIPLES, each with a bank of formats a teacher would rotate through:
+ * direct compute, inverse, compare, error spotting with a NAMED misconception,
+ * word problem in a Singapore context, working backwards, concept check, mixed
+ * principle.
+ *
+ * The audit's three findings on this file are the brief:
+ *   - gPickEquiv ("Which fraction is equivalent to n/d?") WAS the whole
+ *     `equivalent` skill in pools 2 and 3 (worst-ten #8). It is now one of five
+ *     equivalence formats and sits in pool 2 only.
+ *   - gSimplest WAS the sole occupant of `fractions/simplest`, one step, in the
+ *     hardest pool (worst-ten #9). It has moved DOWN to pool 2, and the simplest
+ *     skill now carries two two-step pool-3 formats instead
+ *     (gAlreadySimplest, gSimplestError).
+ *   - pool 3 added no solving step in 5 of 6 slots. Pool 3 is now 12 slots, 10 of
+ *     them two-step, with two DECLARED single-step anchors (gMakeOne, gGreatest4)
+ *     kept on purpose per the pilot's contract note 2.
+ *
+ * REFUTATION FIXES, v2 2026-09-15 (Sweep fractions Refutation). The kill and all
+ * five wounds are answered in this file; each site carries its own comment.
+ *   - KILL, gCompareError: the key was the only option not written "X should
+ *     have ..." and was the longest, on 2,000 of 2,000 draws, in the topic's
+ *     most-served item, out of six option sets. One frame, one length band, a
+ *     rotating key, and 1,524 distinct stems in 2,000 draws. See FORMAT 3e.
+ *   - W1, the feed serves by SKILL: gGreatest4 retagged `order` -> `compare`,
+ *     and `order` and `wholes` each gain a second pool-3 format so no pool-3
+ *     skill is a one-generator hog. See the pools block.
+ *   - W2, the sample space was reported 24x too big: SIMPLE is the full
+ *     denominator-12 table, the scale factor runs to 6, and gPickEquiv and
+ *     gEquivFromBar both run their principle in BOTH directions.
+ *   - W3, gAddError drew b === 1 in 73% of draws and printed an addend as the
+ *     "wrong" answer in 32%: b draws 2-4 and the claims are filtered per draw.
+ *   - W4, four wording/structure defects: the two smallest-bottom-number tells,
+ *     gAlreadySimplest's card walking the wrong order, and the four complement
+ *     generators that could never draw one half.
+ *
+ * REFUTATION FIXES, v3 2026-09-15 (Sweep fractions Refutation, SECOND PASS). Two
+ * kills and four wounds; each site carries its own comment.
+ *   - KILL 1, gCompareError RELOCATED: v2 removed the sentence-frame tell and put
+ *     a NOUN tell in its place - the stem's stated reason named its belief with
+ *     the same words the key used and nothing else on the row repeated them, so a
+ *     pure word-matching policy scored 94.5% of 5,000 draws without a fraction
+ *     being compared. Two of the three belief sentences now name both nouns and
+ *     the never-true filler is PAIRED TO THE BELIEF, so at least two options
+ *     always repeat the reason's vocabulary. Policy 94.5% -> 36.3%. RULE 8 gates
+ *     it. See FORMAT 3e.
+ *   - KILL 2, gEqMissingDen: all three authored distractors were provably below
+ *     k x d, so "circle the biggest number on the row" answered it on 100.00% of
+ *     50,000 draws. Distractors are drawn on both sides of the key now, and its
+ *     twin gEqMissing no longer keys a non-extreme on every draw. See FORMAT 2c.
+ *   - W1, THE VALUE-RANK CLASS - the one that reaches past this file. The
+ *     authored-distractor contract produces one-sided distractor sets, which
+ *     pinned the key to one rank by VALUE on 100.00% of draws in five generators.
+ *     sided() / sidedNum() draw from both sides everywhere; RULE 7 in
+ *     tools/gen-sanity.mjs gates the whole topic over its own 2,000 draws.
+ *   - W2, gOrderGap did not discriminate: "pick the integer between the two
+ *     printed" was right on 100.0% of draws and the backwards-rule child got the
+ *     same answer as the correct one. The gap is now the smallest, middle OR
+ *     greatest slot of the row, drawn evenly. Policy 100.0% -> 36.2%.
+ *   - W3, three teaching cards denied their own key on a half-shaded bar
+ *     (gPicIdentify 12.96%, gPicUnshaded 22.6%, gSubFromOne 26.0%). Each sentence
+ *     is guarded and each is gated against the RENDERED bar. All three 0.00%.
+ *   - W4, the corrections: the option length band on record was wrong;
+ *     denominator 13 is banned outright (legalFrac + RULE 4); gMakeOneIn widened
+ *     from 25 to 75 distinct stems by asking the same move three ways.
+ *
+ * REFUTATION FIXES, v4 2026-09-16 (Sweep fractions Refutation, THIRD PASS). One
+ * kill and five wounds; each site carries its own comment. The sentence all three
+ * refutations have now killed on is the same one: THE CHILD CAN BE RIGHT WITHOUT
+ * DOING THE MATHEMATICS - and each time the item was one an earlier pass had
+ * already written down as fine. Two of the six fixes below are therefore rules
+ * rather than rewrites: a rule this file already had, run against every generator
+ * in the file instead of the one it was written for.
+ *   - THE KILL, gEqualParts: the key restated the stem's own second clause word
+ *     for word and was the only option on the row containing "equal", "same",
+ *     "size" or "all", so "pick the option that repeats the sentence you have just
+ *     read" answered the declared pool-1 concept anchor on 100.00% of 20,000 draws
+ *     out of eighteen option sets. Two earlier passes called it "the best item in
+ *     the bank" and never ran the wording lens on it. The four sentences are
+ *     rebuilt so every content word in the key is printed by some other option
+ *     too; RULE 8, written for gCompareError and scoped to it BY NAME, now runs on
+ *     every prose bank in the topic with the v3 set as its negative control.
+ *     Policy 100.00% -> 0.0%. See FORMAT 1b.
+ *   - W1, gCompareBar's picture was never needed: one option on the named side and
+ *     three on the other makes the key the strict extreme, so "read greater/less
+ *     and take that extreme, never look at the bar" scored 100.00% - in the one
+ *     format whose reason for existing is pictorial support, sitting in RANK_EXEMPT
+ *     under a printed reason ("the stem asks for an extreme") that was true of the
+ *     four comparison formats beside it and false of it. The stem names two
+ *     conditions now, one of which can only be counted off the bar; the generator
+ *     is out of RANK_EXEMPT. Policy 100.00% -> 34%. See FORMAT 3b.
+ *   - W2, the feed had never been simulated below 80% accuracy. tools/feed-sim.mjs
+ *     prints a report-only 45% pass per topic; `fractions` serves pool 1 for 78.3%
+ *     of a session there against 20.3% at 80%. Not a lane defect - js/core.js and
+ *     the pool composition are out of fence - and it is on the record for the
+ *     integrator as a fleet finding.
+ *   - W3, gAddError stopped rotating: the numbers were drawn first and only the
+ *     beliefs that survived were offered, so one sentence was the key on 53.6% of
+ *     draws and was the uniquely SHORTEST option on exactly those draws. The
+ *     BELIEF is drawn first now, evenly, and the three sentences are written to one
+ *     length; RULE 6 reads both directions. 53.6% -> 33%. See FORMAT 4g.
+ *   - W4, the over-12 denominators had migrated undeclared (gSubSame 0.0% ->
+ *     39.8%, gSubRelated 0.0% -> 40.1%, ceilings 12 -> 24). The readability cap of
+ *     24 is gone: TWELVE is the whole rule, everywhere, gated with a negative
+ *     control. No named belief is lost - each one that used to overshoot is either
+ *     reachable at a smaller bottom number or named in WORDS on the card.
+ *   - W5, RULE 7 had a cap and no floor, and its policy cap skipped one rank. A
+ *     12% FLOOR and "second smallest" go in, and three generators are widened to
+ *     clear them (gAddRelated 7.4% -> 26%, gSubSame 8.4% -> 17%, gEqMissing 11.0%
+ *     -> 15%). The three `wholes` formats that shared one 335-entry answer space
+ *     exactly are separated (Jaccard 100% -> 31.2 / 19.9 / 35.5%). And sided()
+ *     itself carried two bugs the gates were fighting each other over: a
+ *     cross-side fallback swap that silently moved a distractor from below the key
+ *     to above it, and a value-dedupe that kept whichever of two equal candidates
+ *     was shuffled first rather than the one written in smaller pieces.
+ *
+ * REFUTATION FIXES, v6 2026-09-16 (FIFTH PASS: 2 KILLED, 4 WOUNDED). The PM's
+ * wave-1 law: four-sentence prose concept checks are STRUCTURALLY tell-prone, and
+ * a fourth wording fix on the same generator would be a fourth new regularity.
+ *   - KILL 1, gEqualParts, fourth consecutive pass. The v5 remedy WAS the tell:
+ *     writing every key token into some distractor made the key the only option
+ *     with no word of its own, which answered the declared pool-1 concept anchor
+ *     on 100.00% of 40,000 draws while RULE 9 measured it at 0.00% and passed it.
+ *     The prose form is RETIRED. It is a picture item now - a bar of k equal
+ *     pieces, every piece cut into n equal parts in the stem, and the answer is
+ *     how many equal parts the whole has - with four bare part counts on the row,
+ *     so there is no lexical axis left to attack. See FORMAT 1b.
+ *   - KILL 2, gCompareError, third pass on this generator: the row named its own
+ *     key with the stem covered up, 54 rows / 54 keys / 100.00%, because the
+ *     fourth option was drawn from a bank PAIRED to the belief. The pairing is
+ *     gone and so is the filler: FOUR real beliefs, all four on every row, and the
+ *     fingerprint moves off the WORDS of the child's reason and onto the two
+ *     numbers it prints, which name a belief only in the light of the two printed
+ *     fractions. Row-only 100.00% -> 25.1% (chance); the printed fractions change
+ *     the answer on 83.9% of draws. See FORMAT 3e.
+ *   - W1, STEM-OPTION COUPLING, a class no rule in this repo had ever measured:
+ *     "keep the bottom number the question gives you" isolated the key on 48.7% of
+ *     gSubSame's draws (74.3% accuracy), 45.1% of gPicUnshaded's, 40.9% of
+ *     gMakeOne's, and answered gSubFromOne at 63.1% and gPicIdentify at 61.5%.
+ *     One or two of the three seats now go to a named belief written over the
+ *     stem's own bottom number - see sameDen() - so the rule leaves two or three
+ *     options and the tops have to be counted. ISOLATING RATE 0.00% in all five.
+ *   - W2, DIGIT OVERLAP, the value-rank class one level down: "pick the option
+ *     whose top and bottom number are both printed elsewhere on the row" isolated
+ *     the key on 74.3% of gMakeOneIn's draws and 66.9% of gAddSame's, because
+ *     every named belief is the key with ONE number nudged. digitIsolatesKey()
+ *     bans the key from being the unique option with no numeral of its own, and
+ *     both banks gain slips written with FRESH numerals. 0.00% in seven banks.
+ *   - W4, cards naming a wrong answer the child cannot see: gPickEquiv walked a
+ *     slip that was not on its row on 82.3% of draws. The value is printed where
+ *     it is offered and the slip is named in words where it is not. 0.00%.
+ *   - sided() takes a `must` LIST and a forced rank (forceU), because a filter
+ *     applied AFTER a free seating does not leave a free seating behind: the two
+ *     new bans alone took gAddSame to 58.6% key-smallest and gSubSame to 3.2%
+ *     key-largest. Seven banks draw the rank first now and RULE 7 is flat by
+ *     construction - every rank inside 23.9-26.1% at 4,000 draws.
+ *   - THE TWO NEW GATES, which are the deliverable: RULE 9 gains its COMPLEMENT
+ *     clause (the key may not be the unique option with no word of its own), and
+ *     RULE 11, THE ROW-ONLY RULE, says no bank's key may be named by its option
+ *     row alone, stem discarded, over a row space small enough to memorise. Three
+ *     more negative controls, all red: the v5 gEqualParts row on both new clauses
+ *     and the v5 gCompareError row on RULE 11.
+ *
+ * REFUTATION FIXES, v7 2026-09-16 (SIXTH PASS: 2 KILLED, 4 WOUNDED). THE PM'S
+ * RULING, and it is final for these two banks: gEqualParts and gCompareError have
+ * each now been killed on EVERY AXIS THIS FILE HAS A RULER FOR, across six passes
+ * - sentence frame, noun overlap, single word, word-set complement, paired filler,
+ * the stem's one numeral, the printed glyphs of the arithmetic - and each fix
+ * moved the tell rather than removing it. BOTH ARE RETIRED FROM THE TOPIC. Five
+ * passes on one generator and four on another are a structural finding about the
+ * FORMAT, not a wording defect, and the seventh rewrite would be the seventh new
+ * regularity. The two slots are refilled, the generator count is unchanged at 27,
+ * and the two retirement sites carry the whole argument and the measured numbers.
+ *   - KILL 1, gEqualParts, RETIRED (fifth consecutive pass). The v6 numeric
+ *     rebuild closed the lexical axis completely and correctly and opened a
+ *     STEM-RECALL axis the file had no ruler for: the stem printed exactly ONE
+ *     numeral and, under the declared k x n <= 10 cap, a FOUR-LINE TABLE over that
+ *     numeral (2->8, 3->6, 4->8, 5->10) answered the declared pool-1 concept
+ *     anchor on 65.52% / 66.42% of 20,000 draws on two seeds. The bar was never
+ *     counted. Its pool-1 `identify` slot goes to FORMAT 1b, gPicTakeAway: a
+ *     fraction read off the bar after one step, with the bar's part count - the
+ *     key's bottom number - in no word of the stem, and TWO numerals in the stem
+ *     so that no single one can name the key.
+ *   - KILL 2, gCompareError, RETIRED (fourth pass on this generator). The v6
+ *     rebuild moved the fingerprint onto the two numbers the child's mistake
+ *     prints, and for two of the four beliefs that output is a numeral already on
+ *     the screen - so a FOUR-CLAUSE RULE WITH NO ARITHMETIC IN IT (numeral
+ *     identity, then digit count) answered it on 91.84% / 91.19% of 20,000 draws
+ *     on two seeds. An error-spotting item must print the evidence it asks about,
+ *     so the surface can be moved but not removed. Its pool-3 `compare` slot goes
+ *     to FORMAT 3e, gBetween: "which of these is between X and Y" over related
+ *     bottom numbers, two steps, rank-gated, numeric - no sentence to recognise.
+ *   - THE THREE NEW GATES, which are the deliverable. tools/gen-sanity.mjs gains
+ *     RULE 12, THE STEM-ONLY RULE (a bank that draws a PICTURE may not be answered
+ *     from the numerals of its stem alone on >= 60% of draws, row and figure
+ *     discarded; the six-row stem table is measured on every bank and declared);
+ *     RULE 13, THE GLYPH RULE (no key may be SETTLED on >= 60% by numeral
+ *     identity, numeral membership and digit count, with no arithmetic anywhere);
+ *     and RULE 11's SHAPE CLAUSE (the memorisable test counts masked row SHAPES,
+ *     not rows). Negative controls: the v6 gEqualParts stem, the v6 gCompareError
+ *     row and the v6 gAddSame row, all three red.
+ *   - W1, THE ROW-SHAPE CLASS. gAddSame - 677 rows, exempt under the old rule -
+ *     had EIGHTEEN masked shapes, every one naming the key's slot on 100.0% of
+ *     held-out draws at 5.18 served items a session. Its candidate bank is widened
+ *     over bottom numbers d-2 .. d+2 and the coupling seat goes in: 18 shapes ->
+ *     31, 100.0% -> ~90%, and the rest of the class is declared with its numbers
+ *     on RULE 11's printed 40% watch line (twelve banks, 4 to 123 shapes).
+ *   - W3, gEquivFromBar printed "1 of them ARE blue" on 22.8% of draws. Fixed with
+ *     a ternary, and the harness gains a PROSE AGREEMENT clause that reads every
+ *     rendered stem, option and teaching card in the topic - the first grammar
+ *     ruler in this repo - with that sentence as its control.
+ *   - W2, OUT OF LANE AND FOR THE INTEGRATOR, one line: js/core.js line 387,
+ *     `qIdentity` builds `q.q + '|' + extra + '|' + q.choices.join('')` with the
+ *     choices in DISPLAY order, and every mc* helper shuffles - so the same stem
+ *     with the same four options reshuffled is a different key to the feed's
+ *     `seen` set and the same question to the child. The fix is `.slice().sort()`
+ *     inside qIdentity and it changes every topic in the game, which is why this
+ *     lane does not make it. Measured here through the real createFeed and the
+ *     app's own climb, 500 sessions x 30 items on each of two seeds: 0 / 15,000
+ *     under the feed's own identity, and 33 / 35 per 15,000 at 80% accuracy and
+ *     56 / 54 at 45% once the option row is compared as a SET. The residual list
+ *     has carried this as "closed" for two passes; it is not.
+ *   - RULE 13 also caught gAddError at 76.8% on its first run: `bottoms` was the
+ *     one belief whose claim was not written over the stem's own bottom number, so
+ *     ONE glyph test split the three beliefs before a fraction was read. It comes
+ *     off the claim bank and stays on the row as a never-true sentence; `gap`
+ *     takes its place; two never-true fillers now rotate independently of the
+ *     belief. 76.8% -> 50.7%, row space 6 -> 12.
+ *
+ * REFUTATION FIXES, v8 2026-09-16 (SEVENTH PASS: 2 KILLED, 3 WOUNDED). Both kills
+ * were holes in the INSTRUMENTS rather than in the authoring, which is why the
+ * deliverable is a rule and a gate rather than a rewrite.
+ *   - KILL 1, gPicTakeAway: THE PREMISE THE v7 REFILL WAS BUILT ON WAS FALSE. "The
+ *     bar's part count appears in no word of the stem" is true and does NOT make
+ *     the picture load-bearing: the child never had to DETERMINE the bottom number,
+ *     only to discriminate it, and "the answer's TOP number is a - g" - one
+ *     subtraction on the two numerals the stem printed - was true on 100.00% of
+ *     draws, isolated the key on 59.6 / 59.0%, answered the item at 79.6 / 79.2%
+ *     with the ties guessed and 88.7 / 88.8% once the bottom number printed twice
+ *     (a seat sameDen() is REQUIRED to fill) broke them. The bar was never counted,
+ *     at 3.42 / 3.54 items a session to a struggling child. THE REBUILD: the stem
+ *     prints NO NUMERAL AT ALL - the take-away is a word, the blue count and the
+ *     part count are both in the picture - so both halves of the key are counted
+ *     off the bar and there is nothing to write an expression over. The oracle
+ *     asserts that emptiness directly. Half the draws also seat every slip over the
+ *     bar's own part count, which collapses to one masked row shape whose key slot
+ *     is the value rank RULE 7 already draws evenly: composed stem-recall o
+ *     row-shape 69.0 / 71.6% -> 45.6 / 45.7%, stem arithmetic 14.7% -> 0.0%.
+ *   - KILL 2, gSubRelated's teaching card rendered fr(a-b, D-d) - a NEGATIVE
+ *     numerator on 49.97 / 50.70% of draws and a zero one on 15.19 / 14.36%.
+ *     Negative numbers are Secondary 1 content: a scope leak, on the highest
+ *     salience surface in the app, INHERITED from 11b5ce5 and earlier. Six passes
+ *     walked past it because every fraction regex in tools/gen-sanity.mjs was
+ *     (\d+) and a minus sign is not a digit. The belief is named in words at the
+ *     site; the harness reads (-?\d+) everywhere and gains THE SIGN GATE over every
+ *     bank in the GAME (277 bank slots, all topics), with the v7 card as its
+ *     control.
+ *   - THE DELIVERABLE, RULE 14, THE HALF-KEY RULE: no bank may have one half of its
+ *     key - numerator or denominator - named by a single expression over the stem's
+ *     numerals to the point where the OPTION ROW then settles the item on >= 60% of
+ *     draws, unless that expression IS the item's own declared mathematics, named
+ *     in an exemption list keyed to the (bank, expression) PAIR. Six declared
+ *     methods; three controls, including one proving the exemption does not travel
+ *     to another expression and one proving the rule does not fail the item working.
+ *   - W2, THE CARD-ROW CLAUSE: seven banks ended their teaching card by naming a
+ *     WRONG ANSWER the child could not see, because the sentence names a CANDIDATE
+ *     and sided() seats three of a dozen - gSimplest 58.6%, gEquivFromBar 52.3%,
+ *     gMakeOneIn 49.8%, gSubRelated 27.3%, gPickEquiv 26.8%, gSimplestError 25.5%,
+ *     gSubSame 2.2%. All seven fixed at their sites and GATED at zero. gPickEquiv's
+ *     is the one the class hides: its v5 ternary asked whether the candidate's
+ *     VALUE was on the row and then printed the candidate's OWN form, while uniq()
+ *     seats whichever equal-valued candidate is written in bigger pieces - the card
+ *     said "2/8" over a row showing "1/4".
+ *   - W1, THE COMPOSED ROUTE, widened and DECLARED. gSubRelated and gAddRelated
+ *     take the same flat row family: masked shape 97.4 -> 72.2% and 88.8 -> 80.4%,
+ *     composed 98.3 -> 82.8% and 93.1 -> 86.0%. It cannot reach the refutation's
+ *     60% in this lane and the arithmetic says why: gSubRelated has 27 distinct
+ *     stems and 27 keys, so FULL stem recall answers it on 100.0% by itself. The
+ *     stem-space class is wave 2 and out of fence.
+ *   - W3, gBetween's 107-stem space: DECLARED with its enumeration at the site.
+ *     108 shapes is the COMPLETE set of P3-legal related pairs with two or more
+ *     twelfths of room; relaxing to one interior value reaches 150, still short of
+ *     200, and every stem it adds names its own key. Full-table recall 56.7 /
+ *     56.8%, under the 60% line.
+ *
+ * REFUTATION FIXES, v9 2026-09-16 (EIGHTH PASS: 2 KILLED, 7 WOUNDED). Both kills
+ * are the seventh pass's lesson one level up: a ruler that reads ONE SPELLING of
+ * the thing it measures. v8's own closing line asked the question and this pass
+ * answers it - not "what surface has no ruler" but "what else could this defect be
+ * written as, and does my ruler read that spelling?"
+ *   - KILL 1, RULE 14's declared blind spot had two live banks in it. The rule
+ *     scored ONE operation over the stem's numerals; "(n1)/2" - halve the bottom
+ *     number the question prints - is TWO, and it answered gSimplestError on
+ *     70.5 / 70.7% of draws and gSimplest on 66.6 / 66.5%, both over the rule's own
+ *     60% ceiling, on banks served 1.81 and 1.35 items a session. The gate line
+ *     printed on every run was true of the RULER and false of the FILE. THE RULER:
+ *     the library is two operations now and the exemption list is matched BY VALUE,
+ *     so no bank can be failed - or excused - on a second spelling of the same
+ *     arithmetic. THE AUTHORING: the common factor is drawn FIRST and evenly over
+ *     2, 3 and 4 instead of being inherited from the base (k = 2 falls 71.5 / 76.7%
+ *     -> 33.4%), the bottom number of 2 leaves both banks (a key of 1/2 is the only
+ *     fraction any row can carry over 2, so its bottom number is a lone signal no
+ *     seating can break), and one seat on every row goes to a named belief written
+ *     over the key's OWN bottom number, with a second carrying its own top number
+ *     wherever the value rank can take both. 66.6 -> 36.5 / 36.7% and
+ *     70.5 -> 36.6 / 36.7% over the WIDENED library, 20,000 held-out draws on each
+ *     of two seeds. Controls: the v8 gSimplest row red at ~68% under two operations
+ *     and quiet under one; the exemption still red on a different expression and
+ *     still quiet on a different spelling of its own.
+ *   - KILL 2, the card-row clause closed the RENDERING, not the defect. Three of
+ *     v8's seven "fixes" stopped rendering an off-row wrong answer and went on
+ *     naming it - gSimplest 64.5 / 63.5% ("leaving the bottom number at 10", with
+ *     "8 / 2 = 4" two clauses earlier) and gMakeOneIn 49.1 / 49.6% ("the old top
+ *     number 1 over the new bottom number 6") - and the two BARE-NUMBER banks were
+ *     never in scope at all, because allFracs finds no fraction on their cards
+ *     (gEqMissing 51.3%, gEqMissingDen 50.9%). The clause reads plain text, word
+ *     form, a lone half and a bare number now. Six cards name the belief with no
+ *     numeral to assemble: the four the refutation named, plus the two the widened
+ *     clause found for itself (gAddSame's doubled bottom number, gAddRelated's "a
+ *     top number of 2 over a bottom number of 12"). AND v8's replacement sentence
+ *     in gSimplest WAS FALSE - "leaving the bottom number at 10 would make the
+ *     pieces smaller as well as fewer"; it leaves them exactly the size they were,
+ *     which is what the topic's own addsub tip says. Rewritten true. Measured 0 on
+ *     20,000 draws on each of two seeds, on every bank in the topic.
+ *   - W1, the sign gate read one rendering and the game has three: 36 banks in 9
+ *     topics write their fractions as plain text and none of them was inside it. It
+ *     reads the stripped text of every surface now, plus a unary minus fixed to any
+ *     number. Re-scanned: 259 banks, 3,000 draws, two seeds - ZERO hits in any
+ *     rendering. The verdict was right; only its stated scope was wrong.
+ *   - W2, the RULE 14 exemptions for gAddRelated and gSubRelated were v7 numbers
+ *     (60.9% / 58.1%) printed in a v8 table; post-v8 the banks measure 49.3 / 44.1%.
+ *     Deleted - an exemption with no evidence behind it is a permanent hole. W6,
+ *     gBetween's enumeration is 108 tuples and one of them, "between 1/6 and 2/3",
+ *     can never be seated: its ends leave exactly three legal sixths outside them,
+ *     uniq() collapses two of those, and the key then shares both numerals with
+ *     every row it can have. Refused at enumeration by the generator's own bank and
+ *     guards, so the table is 107 shapes, 107 stems, and the hard-coded fallback row
+ *     (76 of 200,000 draws) is unreachable. W5, gPicTakeAway's declared cost
+ *     corrected: the row settles the bar's part count on 87.5 / 87.8% of draws, not
+ *     ~60%. W7, tools/feed-sim.mjs's shapeKey regex is back in step with
+ *     js/core.js:370 (core.js is out of fence and untouched).
+ *   - THE COSTS, DECLARED. gSimplest's stem table falls 21 -> 16 (2/4, 3/6, 4/8,
+ *     5/10 and 6/12 leave it) and its six-row stem reading rises 65.7 -> 75.4%; the
+ *     masked row-shape space falls 113 -> 44 on gSimplest and 116 -> 60 on
+ *     gSimplestError, because two of the three seats are now spoken for. FULL
+ *     stem-table recall was already 100.0% on both banks before this pass and still
+ *     is, so the composed route does not move; what moves is the SIZE of the table,
+ *     and the honest unit is sessions to meet 90% of it - gSimplest 49 -> 42,
+ *     gSimplestError 62 -> 52 at their measured service rates. Carried as the
+ *     stem-space and row-shape classes, wave 2. RULE 7 pulls against two held
+ *     seats; halfSeats() carries the arithmetic and the resolution.
+ *
+ * THE FOUR PRINCIPLES
+ *  1. WHAT A FRACTION NAMES. A fraction names equal parts of one whole: the
+ *     bottom number says how many EQUAL parts the whole was cut into, the top
+ *     number how many of them you have.
+ *       gPicIdentify, gPicTakeAway, gPicUnshaded
+ *  2. EQUIVALENCE AND SIMPLEST FORM ARE ONE IDEA. Multiplying top and bottom by
+ *     the same number cuts every part into smaller ones; dividing them groups
+ *     parts back together. The amount never changes. Simplest form is that idea
+ *     taken as far as it will go — and it is DIVIDING, never subtracting.
+ *       gEquivFromBar, gEqMissing, gEqMissingDen, gPickEquiv,
+ *       gSimplest, gAlreadySimplest, gSimplestError
+ *  3. COMPARING AND ORDERING. Same bottom number -> the pieces are the same size,
+ *     so compare the tops. Same top number -> the bigger the bottom number, the
+ *     more parts the whole was cut into and the SMALLER each piece.
+ *       gCompareUnit, gCompareBar, gCompareSameD, gCompareWords,
+ *       gBetween, gGreatest4, gOrderThree, gOrderGap
+ *  4. ADDING AND SUBTRACTING WITHIN ONE WHOLE. The bottom number is the SIZE of
+ *     the piece, so it does not move; only the tops are counted. When the pieces
+ *     are different sizes (related fractions), change one fraction into an
+ *     equivalent one first.
+ *       gAddSame, gSubSame, gSubFromOne, gMakeOne, gMakeOneIn,
+ *       gAddRelated, gSubRelated, gAddError, gAddWords
+ *
+ * SCOPE (MOE Oct 2025, P3 p.36, NUMBER AND ALGEBRA / FRACTIONS):
+ *   equivalent fractions; comparing and ordering unlike fractions; addition and
+ *   subtraction of like and related fractions within one whole. Denominators run
+ *   to 12 and every fraction a child works with is proper.
+ *   NOT HERE, on purpose: fraction of a SET of objects, mixed numbers and
+ *   improper fractions (all MOE P4, and js/topics/p4-fractions.js already carries
+ *   them — the second depth-pilot refutation killed exactly this kind of leak in
+ *   the other direction). The one deliberate look BACKWARDS is gPicIdentify /
+ *   gPicTakeAway, naming a fraction of a whole from a picture: that is P2 content,
+ *   kept as the declared pool-1 fluency anchor for this topic.
+ *
+ * DEFECT CLASSES PRE-EMPTED (Depth Pilot Refutation 2026-09-05, both passes):
+ *   - self-contradicting stems: every error-spotting stem's printed claim is
+ *     re-derived by the harness and must map to exactly ONE named misconception
+ *     and never to the true answer.
+ *   - two defensible options: slipsOk() rejects any draw where a named distractor
+ *     is EQUIVALENT to the key (3/6 beside 1/2), which is the fraction form of
+ *     the coincidence ban. buildFracChoices refuses the same by value, so a
+ *     padded option can never appear either.
+ *   - number coincidences: no fraction item may print two options worth the same
+ *     amount; no "simplest form" key may itself be reducible.
+ *   - format tells: `fractions` joins PILOT_TOPICS in tools/gen-sanity.mjs, so
+ *     the one-odd-option-out rule now binds here. Every option set in this file
+ *     is four fractions, four bare numbers, or four sentences.
+ *   - wording inversions: a comparison stem must say the wholes are the SAME
+ *     SIZE, and an ordering stem's key must run in the direction it asks for.
+ *     Both gated.
+ *   - padded distractors: every MC here is exactly key + three AUTHORED named
+ *     misconceptions, stamped on q.authoredFrac / q.authored and asserted by the
+ *     harness. Nothing is ever filled in by the padding branch.
+ *
+ * Every stem is re-derived from its RENDERED text by an oracle in
+ * tools/gen-sanity.mjs; nothing is trusted from the generator's own answerText.
  */
 (function () {
   const G = MQI.gen;
@@ -3209,116 +6276,3136 @@ function gDivError(){
         finishNum = G.finishNum, finishTyped = G.finishTyped,
         gMul = G.gMul, EASY_TABLES = G.EASY_TABLES, HARD_TABLES = G.HARD_TABLES;
 
-/* The bar model leaves this file as PURE DATA; js/figures.js draws it.
-   Spec: { type:'fractionBar', parts, filled } - see js/topics/README.md. */
+/* ---- figures leave this file as PURE DATA; js/figures.js draws them ----------
+   Spec: { type:'fractionBar', parts, filled } - see js/topics/README.md. It is
+   the one fraction figure the renderer owns, and all three picture formats here
+   reuse it rather than inventing a second bar model. */
 const fig = (q, figure) => (q.figure = figure, q);
+const bar = (parts, filled) => ({ type:'fractionBar', parts, filled });
 
+/* A fraction with a '?' in one place. The three spans are the SAME three core.js
+   fr() builds, so they stay inside the harness's inline-markup allowlist. */
+const frQn = d => '<span class="frac"><span class="n">?</span><span class="d">' + d + '</span></span>';
+const frQd = n => '<span class="frac"><span class="n">' + n + '</span><span class="d">?</span></span>';
+
+/* ---- THE COINCIDENCE BAN, in its fraction form -----------------------------
+   The perimeter/area ban asked "do two different measurements print the same
+   number?". Its fraction twin is "do two options name the same AMOUNT?" - 3/6
+   beside 1/2 is two right answers to a child who can reduce, and a duplicate
+   option to one who cannot. legalFrac also holds the syllabus line: every
+   fraction a child WORKS with is proper with a denominator to 12. A named
+   misconception may print a denominator past 12 (adding the bottoms really does
+   give 5/14) because that IS the mistake; 24 is the readability cap. */
+/* SECOND PASS 2026-09-15, W3(a) / W4. THIRTEEN is banned outright. MOE P3 stops at
+   twelve, and no named misconception in this bank can produce a 13: adding the two
+   bottom numbers of a like pair gives 2d (even), adding a related pair gives
+   d(1+k), subtracting them gives d(k-1), and taking one away gives d-1. The only
+   things that reached 13 were the "+1" second-order slips - the half-substitute
+   [n, d+1] at d = 12, gSubSame's [a-b, d+b] and gSimplestError's [N+t, D+t] - which
+   put an off-P3-list bottom number in front of a child for no teaching reason at
+   all, including in the declared pool-1 anchor. */
+/* THIRD PASS 2026-09-16, W4. TWELVE IS NOW THE WHOLE CAP, and the 24 readability
+   allowance is gone. The v3 note led with "denominator 13 is banned outright" and
+   kept 24 for the named overshoot beliefs, which read as a tightening - while the
+   ceiling actually ROSE undeclared in four formats, because sided() reaches for an
+   overshoot candidate to break the one-sided rank and the overshoot a subtraction
+   bank has is [a-b, 2d] and [a-b, d+b]. gSubSame and gSubRelated went from 0.0% of
+   options over 12 to 39.8% and 40.1%, ceiling 12 -> 24, in a note whose own table
+   said 0%. Rather than re-declare a moving ceiling a third time, EVERY rendered
+   fraction in this file - stem, option, teaching card and figure - is now inside
+   the P3 denominator limit of 12, and tools/gen-sanity.mjs RULE 4 gates it with a
+   negative control. No named belief is lost: each one that used to overshoot past
+   12 is either still reachable at a smaller bottom number (gAddError draws the
+   belief FIRST and then numbers that fit it) or is now named IN WORDS on the
+   teaching card instead of being rendered as an off-syllabus fraction. */
+function legalFrac(p){
+  return Array.isArray(p) && p.length === 2 &&
+         Number.isInteger(p[0]) && Number.isInteger(p[1]) &&
+         p[0] >= 1 && p[1] >= 2 && p[0] < p[1] && p[1] <= 12;
+}
+const sameVal = (a, b) => a[0] * b[1] === b[0] * a[1];
+/* Exactly three named misconceptions, all legal, none worth what the key is
+   worth, none worth what another is worth. When this holds, buildFracChoices
+   takes all three and finishFrac's padding branch never fires - which is what
+   makes the authored-distractor contract bind on EVERY draw (refutation §6). */
+function slipsOk(key, slips){
+  if (!legalFrac(key)) return false;
+  if (!Array.isArray(slips) || slips.length !== 3) return false;
+  const seen = [key];
+  for (const s of slips){
+    if (!legalFrac(s)) return false;
+    if (seen.some(t => sameVal(t, s))) return false;
+    seen.push(s);
+  }
+  return true;
+}
+/* ---- THE VALUE-RANK BAN --------------------------------------------------
+   SWEEP FRACTIONS REFUTATION, SECOND PASS 2026-09-15, KILL 2 + WOUND 1. Sorted by
+   VALUE, the key sat at one fixed rank on 100.00% of 50,000 draws in five of these
+   generators - gAddSame 3rd of 4, gEquivFromBar 2nd, gSubSame smallest,
+   gSubRelated 3rd, gEqMissingDen LARGEST - and gEqMissing keyed a non-extreme on
+   100.00%, which halves its row. Between them they covered 5.4 of every 30 served
+   items, and "circle the biggest number on the row" answered gEqMissingDen every
+   single time without a fraction being read.
+
+   The cause is the contract this file is proudest of. Key plus exactly three NAMED
+   beliefs, padding branch provably dead, means the distractor set is whatever the
+   misconceptions produce - and a misconception errs in ONE direction, so the three
+   of them land on one side of the key and the rank collapses. Nothing in the repo
+   could see it: gen-sanity gated option FORM, SENTENCE FRAME and LENGTH, never
+   magnitude.
+
+   sided() is the fix and it is the same shape in every generator below. The
+   generator hands over EVERY candidate its bank can name; the helper sorts them by
+   value against the key and takes u of the three from above and 3-u from below,
+   with u drawn evenly over whatever the two sides can actually supply. Where a
+   misconception is inherently one-sided (adding like fractions has no named belief
+   that overshoots) the bank is backed by a DOCUMENTED second-order slip on the
+   other side - one piece too many or too few, which is the miscount a child makes
+   on top of the belief, and which the teaching card already names. Every slip is
+   still authored, still legal, still distinct in value; only WHICH three are put on
+   the row moves. tools/gen-sanity.mjs RULE 7 gates the result over the whole topic.
+
+   Returns null when one side cannot supply its share, and the caller's retry loop
+   redraws - exactly as it already does for slipsOk. */
+/* FIFTH PASS 2026-09-16. `forceU` is the fourth argument and the same device the
+   two completion banks already use through sidedNum: the CALLER draws the key's
+   value rank first and the helper must seat it or return null. It is needed
+   wherever a NEW filter sits outside sided() - the stem-denominator seats of
+   wound 1 and the digit-overlap ban of wound 2 both reject rows after the seating
+   is drawn, and a filter applied after a free draw does not leave a free draw
+   behind: gAddSame went to 58.6% key-smallest and gSubSame to 3.2% key-largest
+   under exactly that effect. With the rank drawn first the retry loop redraws the
+   NUMBERS until the rank it asked for can be seated, so RULE 7 comes out flat by
+   construction rather than by luck. */
+function sided(key, cands, must, forceU){
+  const ok = c => Array.isArray(c) && legalFrac(c) && !sameVal(c, key);
+  /* THIRD PASS 2026-09-16. When two named candidates are worth the SAME amount -
+     gSimplest names both [N-t, D-t] and [n-1, d-1], which at 9/12 are 6/9 and 2/3 -
+     the shuffle used to keep whichever came first, and half the time that was the
+     one with the BIG bottom number. The row was then entirely over the key's own
+     bottom number and "pick the smallest bottom number" scored 41.1%. Same amount,
+     same belief, so the one written in the smaller pieces is kept. */
+  const uniq = arr => {
+    const out = [];
+    for (const c of arr){
+      const i = out.findIndex(s => sameVal(s, c));
+      if (i < 0) out.push(c);
+      else if (c[1] < out[i][1]) out[i] = c;
+    }
+    return out;
+  };
+  /* ... and wherever the bank can supply one, one option carries a bottom number
+     UNDER the key's, so "pick the smallest bottom number" - the heuristic the first
+     refutation wounded gEquivFromBar and gSimplestError for - cannot answer the
+     item either. Each side is ordered small-bottom-number first so the rank draw
+     seats one by itself; only when the whole row still sits over the key's bottom
+     number is one swapped in, and then from the same side wherever possible. */
+  const small = arr => arr.filter(c => c[1] < key[1]).concat(arr.filter(c => c[1] >= key[1]));
+  /* FOURTH PASS 2026-09-16, W4(a). `must` is a named belief the caller will not let
+     the value-rank draw drop. gAddWords' stop-after-step-1 answer - the single most
+     diagnostic wrong answer a two-step word problem has - fell from being offered on
+     65.3% of draws at v3 to 35.3% at v4, silently, because sided() reaches for
+     whichever candidates balance the row and this one is only sometimes among them.
+     It is seated first now, and the rank is balanced around it with the other two. */
+  /* FIFTH PASS 2026-09-16, WOUND 1. `must` is now a LIST, because the stem-option
+     coupling fix needs more than one seat held at a time: at least one option has
+     to be written over the STEM'S OWN bottom number so that "keep the bottom
+     number the question gives you" cannot isolate the key, and the value rank
+     still has to come out flat around it. A single pair is still accepted, so
+     gAddWords' `must` call is unchanged. */
+  const mustList = (Array.isArray(must) && Array.isArray(must[0]) ? must : (must ? [must] : [])).filter(ok);
+  const M = [];
+  for (const c of mustList) if (M.length < 3 && !M.some(s => sameVal(s, c))) M.push(c);
+  const drop = c => !M.some(s => sameVal(s, c));
+  const above = small(uniq(shuffle(cands.filter(c => ok(c) && drop(c) && c[0]*key[1] > key[0]*c[1]))));
+  const below = small(uniq(shuffle(cands.filter(c => ok(c) && drop(c) && c[0]*key[1] < key[0]*c[1]))));
+  if (M.length){
+    const hi = M.filter(c => c[0]*key[1] > key[0]*c[1]).length, lo = M.length - hi;
+    const seat = u => {
+      const a = u - hi, b = (3 - u) - lo;
+      return (a >= 0 && b >= 0 && a <= above.length && b <= below.length)
+        ? M.concat(above.slice(0, a)).concat(below.slice(0, b)) : null;
+    };
+    if (Number.isInteger(forceU)) return seat(forceU);
+    const opts = [];
+    for (let u = 0; u <= 3; u++) if (seat(u)) opts.push(u);
+    return opts.length ? seat(pick(opts)) : null;
+  }
+  const us = [];
+  for (let u = 0; u <= 3; u++) if (u <= above.length && 3 - u <= below.length) us.push(u);
+  if (Number.isInteger(forceU) && us.indexOf(forceU) < 0) return null;
+  if (!us.length) return null;
+  const u = Number.isInteger(forceU) ? forceU : pick(us);
+  const out = above.slice(0, u).concat(below.slice(0, 3 - u));
+  /* THIRD PASS 2026-09-16, W5. This swap used to fall back to replacing the LAST
+     seated candidate when no same-side alternative existed, which silently moved a
+     distractor from below the key to above it - and every key already in its
+     simplest form with a top number of 1 has nothing below it carrying a smaller
+     bottom number, so the fallback fired on exactly those draws and converted the
+     all-below seating into a one-above one. gSimplestError keyed the LARGEST of
+     four on 13.1% and the 2nd largest on 38.6% for that reason alone: a gate
+     against the bottom-number heuristic was quietly undoing the value-rank one.
+     The swap is side-preserving now, and where no same-side alternative exists the
+     row is left as drawn - the bottom-number policy is separately capped and
+     separately measured by RULE 7. */
+  if (out.every(c => c[1] > key[1])){
+    const hi = c => c[0]*key[1] > key[0]*c[1];
+    const pool = above.concat(below).filter(c => c[1] < key[1]);
+    for (let i = out.length - 1; i >= 0; i--){
+      const alt = pool.find(c => hi(c) === hi(out[i]) && !out.some(s => sameVal(s, c)));
+      if (alt){ out[i] = alt; break; }
+    }
+  }
+  return out;
+}
+/* The same, for the two bare-integer banks (the missing numerator / denominator).
+
+   FOURTH PASS 2026-09-16, W2. The readability cap here was 24, on the reasoning
+   that a bare number a child only has to recognise as wrong need not be inside the
+   syllabus. It is not: these two banks are the ONLY place in the file where the
+   option IS a bottom number, and gEqMissingDen offered one past 12 on 51.3% of
+   draws, largest 22 - "3/4 = 9/?" with 18 on the row - while the v4 note's headline
+   was "the highest bottom number rendered anywhere is 12". RULE 4 could not see it,
+   because it scans rendered <span class="frac"> fractions and this option is the
+   string "18".
+
+   `lim` is now passed in by the caller and is the number the OPTION would put into
+   the stem's blank: 12 for a missing denominator, and the completed bottom number
+   minus one for a missing numerator, which keeps the completed fraction proper.
+   tools/gen-sanity.mjs RULE 4 reads the completion row the same way.
+
+   `forceU` is the second half. Capping the options costs the bank its room above
+   the key - when the answer is 12 there is nothing legal above it at all - so the
+   rank can no longer be left to fall out of whatever the bank supplies. The CALLER
+   draws the key's rank first and passes the seating it needs; a draw that cannot
+   supply it returns null and the caller redraws. The cap wins and the rank is
+   bought back with the stem space, which is declared in the lane note. */
+function sidedNum(key, cands, lim, forceU){
+  const cap = Number.isInteger(lim) ? lim : 24;
+  const ok = c => Number.isInteger(c) && c >= 1 && c <= cap && c !== key;
+  const above = shuffle([...new Set(cands.filter(c => ok(c) && c > key))]);
+  const below = shuffle([...new Set(cands.filter(c => ok(c) && c < key))]);
+  const seat = u => (u <= above.length && 3 - u <= below.length)
+    ? above.slice(0, u).concat(below.slice(0, 3 - u)) : null;
+  if (Number.isInteger(forceU)) return seat(forceU);
+  const us = [];
+  for (let u = 0; u <= 3; u++) if (seat(u)) us.push(u);
+  if (!us.length) return null;
+  return seat(pick(us));
+}
+
+/* ---- THE STEM-OPTION COUPLING BAN -----------------------------------------
+   SWEEP FRACTIONS REFUTATION, FIFTH PASS 2026-09-16, WOUND 1. Nothing in this
+   repo had ever compared an OPTION to the STEM. Measured, "keep the bottom number
+   the question gives you" answered gSubSame on 74.3% of draws and ISOLATED the key
+   - exactly one option written over the stem's own bottom number, and it the right
+   one - on 48.7%; gPicUnshaded 72.3 / 44.7 over the bar's part count, gMakeOne
+   68.8 / 40.2, gSubFromOne 62.9, gPicIdentify 61.1. Five banks over the 60%
+   ceiling this file uses for RULE 9 and RULE 10, and a child running it never
+   counts the tops at all.
+
+   It is the direct cost of RULE 7's cure: sided() deliberately seats an option
+   with a bottom number UNDER the key's to break the smallest-bottom heuristic, and
+   spreading the denominators is precisely what makes "keep the stem's bottom
+   number" discriminate. The two gates pull against each other, so the answer is
+   not to stop spreading them but to make sure the stem's own bottom number is
+   never a lone signal: one or two of the three seats go to a named belief written
+   over the SAME bottom number the stem prints, drawn per item so the count itself
+   carries no information. The rule then leaves the child two or three options and
+   the second half of the item - counting the tops - has to be done.
+
+   Returns 1 or 2 candidates for sided()'s `must` list, or [] when the bank cannot
+   supply one (the caller's retry loop redraws). */
+function sameDen(cands, d, key){
+  const pool = shuffle(cands.filter(c => Array.isArray(c) && legalFrac(c) && c[1] === d && !sameVal(c, key)));
+  if (!pool.length) return [];
+  return pool.slice(0, pool.length > 1 && Math.random() < 0.5 ? 2 : 1);
+}
+
+/* ---- THE DIGIT-OVERLAP BAN ------------------------------------------------
+   SWEEP FRACTIONS REFUTATION, FIFTH PASS 2026-09-16, WOUND 2. A second row-only
+   class, mathematics-free and over the ceiling: "pick the option whose top number
+   and bottom number BOTH appear somewhere else on the row" isolated the key and
+   was right on gMakeOneIn 74.6% of draws and gAddSame 66.8%. The cause is the
+   house style for a named belief - write the key with ONE number nudged by one -
+   which leaves every distractor carrying a numeral of its own while the key
+   carries none. It is the value-rank class one level down: RULE 7 gates where the
+   key sits by VALUE and nothing gated where it sits by DIGIT.
+
+   The ban is the smallest one that closes it: the key may not be the UNIQUE option
+   both of whose numerals are printed elsewhere on the row. Either no option has
+   that property, or at least two do, and then the rule leaves a guess. */
+function digitIsolatesKey(key, slips){
+  const row = [key].concat(slips);
+  const twin = i => {
+    const others = [];
+    for (let j = 0; j < row.length; j++) if (j !== i) others.push(row[j][0], row[j][1]);
+    return others.indexOf(row[i][0]) >= 0 && others.indexOf(row[i][1]) >= 0;
+  };
+  if (!twin(0)) return false;
+  for (let i = 1; i < row.length; i++) if (twin(i)) return false;
+  return true;
+}
+
+/* Fraction MC through the house helper, with the authored list stamped. */
+function mcFrac(stem, key, slips, explain){
+  const q = finishFrac(stem, '', key, slips, explain);
+  q.authoredFrac = slips.map(s => [s[0], s[1]]);
+  return q;
+}
+/* Numeric MC. Same contract, same shape as the pilot's mcNum. */
+function numsOk(correct, cands){
+  if (!Number.isInteger(correct) || correct <= 0) return false;
+  if (!Array.isArray(cands) || cands.length !== 3) return false;
+  const s = new Set([correct]);
+  for (const c of cands){
+    if (!Number.isInteger(c) || c <= 0 || s.has(c)) return false;
+    s.add(c);
+  }
+  return true;
+}
+function mcNum(stem, correct, cands, explain){
+  const q = finishNum(stem, '', correct, cands, '', explain);
+  q.authored = cands.slice();
+  return q;
+}
+/* Word-answer MC (concept checks, error diagnosis). Distractors are hand-written
+   misconceptions, so they are distinct by authoring, not by arithmetic. */
+function mcText(stem, correctText, wrongs, explain){
+  const opts = shuffle([correctText].concat(wrongs.slice(0, 3)));
+  return { q: stem, extra: '', choices: opts, correct: opts.indexOf(correctText),
+           explain: explain, answerText: correctText };
+}
+
+/* ---- Singapore contexts. Short lists on purpose: the pilot's rubric lesson 1
+   is that a long context list inflates the masked shape count without adding a
+   single new structure, so variety here is bought with FORMATS, not nouns. ---- */
+const CAKES = ['kueh lapis', 'pandan chiffon cake', 'pizza at the hawker centre'];
+/* [name, sentence-start pronoun, mid-sentence pronoun] */
+const KIDS = [['Siti','She','she'], ['Kumar','He','he'], ['Mei Ling','She','she'],
+              ['Ravi','He','he'], ['Aisyah','She','she'], ['Wei Jie','He','he']];
+/* single-token names only: gCompareWords' oracle reads "Name ate <frac>" pairs
+   off the rendered markup, and a two-word name would split the walk. */
+const SOLO = ['Siti', 'Kumar', 'Ravi', 'Aisyah', 'Devi', 'Hafiz'];
+
+/* WOUND 2 (Sweep fractions Refutation 2026-09-15). This was an eleven-entry table
+   of the simplest-form fractions with a denominator to 6, and every equivalence
+   format drew its STEM from it - which is why gPickEquiv had ELEVEN distinct
+   stems in 50,000 draws, not the 432 the lane reported (the lane counted the 4!
+   orderings of the option row as distinct questions).
+
+   SIMPLE is now the whole table to denominator 12 (45 entries), for the formats
+   that only need a fraction already in its simplest form. SCALABLE is the
+   sub-table that can still be scaled UP without leaving the P3 denominator cap,
+   and the scaling formats draw from that. The scale factor now runs to 6 rather
+   than 4, which is the other half of the refuter's fix: it puts 5/10 and 6/12 on
+   the table, so the reducible-fraction space is the full 21 that exist at or
+   below denominator 12 rather than 19. */
+const SIMPLE = [];
+for (let d0 = 2; d0 <= 12; d0++) for (let n0 = 1; n0 < d0; n0++) if (gcd(n0, d0) === 1) SIMPLE.push([n0, d0]);
+const scalesFor = d => { const ks = []; for (let k = 2; k <= 6; k++) if (k * d <= 12) ks.push(k); return ks; };
+const SCALABLE = SIMPLE.filter(b => scalesFor(b[1]).length > 0);
+/* ---- THE EQUIVALENCE FACT DRAW -----------------------------------------------
+   SWEEP FRACTIONS REFUTATION, NINTH PASS 2026-09-16, WOUND 1. `pick(SCALABLE)`
+   then `pick(scalesFor(d))` puts the scale factor at 2 on about 62% of draws,
+   because every base with a bottom number of 5 or 6 admits no other factor - the
+   same shape of defect the eighth pass inverted on the simplest-form draw. It was
+   invisible while the two BARE-NUMBER banks sat outside RULE 14's scope (halfPair
+   returned null on a bare-number option and dropped them before they were
+   measured). Brought into scope, "double the printed bottom number" answered
+   gEqMissingDen on 68.5% and a cousin answered gEqMissing on 71.3% - over the
+   ceiling, on an option row where a bare number can never be shared, so anything
+   that NAMES the key ISOLATES it and the only defence is that nothing names it
+   often. Both halves of the draw are weighted: a scale factor of 2 is worth 2
+   against 5 for every other factor, and a base whose TOP number is 1 is worth 2
+   against 5 - "multiply the printed bottom number by the printed new top number"
+   is the key exactly when the top number is 1, and SCALABLE is five twelfths unit
+   fractions. Measured after: k = 2 on 36%, a top number of 1 on 40%. */
+const EQUIV_FACTS = [];
+for (const b of SCALABLE) for (const k0 of scalesFor(b[1]))
+  for (let i = 0; i < (k0 === 2 ? 2 : 5) * (b[0] === 1 ? 2 : 5); i++) EQUIV_FACTS.push([b[0], b[1], k0]);
+const drawEquiv = () => pick(EQUIV_FACTS);
+
+/* ---- THE SIMPLEST-FORM DRAW -------------------------------------------------
+   SWEEP FRACTIONS REFUTATION, EIGHTH PASS 2026-09-16, KILL 1. RULE 14 scored ONE
+   operation over the stem's numerals; the tell was TWO. `(n1)/2` - halve the
+   bottom number the question prints - named gSimplestError's key on 76.2 / 76.9%
+   of draws and answered the item on 70.5 / 70.7%, and gSimplest's on 71.7% and
+   66.6%: both over the rule's own 60% ceiling, neither on the exemption list and
+   neither deserving one. Halving the bottom number is not simplest form; it is a
+   GUESS at the common factor that happens to be right three times in four - and it
+   was right three times in four because of how this file DREW that factor.
+   `pick(SCALABLE)` then `pick(scalesFor(d))` puts k = 2 on 71.5 / 76.7% of draws,
+   because every base with a bottom number of 5 or 6 admits no other factor.
+
+   THE DRAW IS INVERTED. The COMMON FACTOR is drawn FIRST and evenly over the three
+   the P3 denominator cap admits - 2, 3 and 4 - and the base is then drawn evenly
+   among the fractions that admit it. k = 2 falls to 33.3%, which is what takes
+   every halving expression under the ceiling with room rather than just under it,
+   and the item stops quietly teaching that simplifying means halving.
+
+   THE BOTTOM NUMBER OF 2 LEAVES THESE TWO BANKS, and it is the other half of the
+   same kill. There is exactly ONE proper fraction written over 2, so a key of 1/2
+   is the only option any row can ever carry over 2: its bottom number is a lone
+   signal that NO seating can break, and `(n1)/n0` - the printed bottom number
+   divided by the printed top one - isolates it on every such draw. gSimplestError
+   already drew from the d >= 3 table for a neighbouring reason; gSimplest joins
+   it. COST, declared: gSimplest's stem space falls 21 -> 16 (2/4, 3/6, 4/8, 5/10
+   and 6/12 leave it), and halves are still asked about in gAlreadySimplest, which
+   draws the whole 45-entry table, and in gPickEquiv. */
+const SCALABLE3 = SCALABLE.filter(b => b[1] >= 3);
+
+/* ---- THE SIMPLEST-FORM FACT TABLE (v10) -------------------------------------
+   SWEEP FRACTIONS REFUTATION, NINTH PASS 2026-09-16, CAPTAIN'S CALLS (i) AND (ii),
+   PM RULINGS 3 AND 4.
+
+   (ii) HALVES COME BACK. v9 filtered the base table to d >= 3 so that no key was
+   ever worth one half, because "there is exactly ONE proper fraction written over
+   2, so a key of 1/2 is the only option any row can carry over 2 and its bottom
+   number is a lone signal no seating can break". The refuter's ruling on that is
+   accepted: 2/4, 3/6, 4/8, 5/10 and 6/12 left the topic's simplification stems
+   entirely, the topic's OWN equivalent-fractions tip tells the child to "chant the
+   families: 1/2 = 2/4 = 3/6 = 4/8", and NOTHING in the topic then asked a child to
+   simplify anything to one half. The lone-signal argument is answered by the
+   format change below rather than by removing the content: with a BARE-NUMBER
+   option row there is no fraction over 2 on the screen to pick.
+
+   (i) THE TABLE IS THE SKILL, and that is the PM's declared premise for carrying
+   full-stem-table recall on this bank: the complete set of non-simplest proper
+   fractions with a bottom number to 12 is TWENTY-ONE facts, and knowing that whole
+   table IS the P3 simplest-form skill, the way the twelve times table is the P3
+   multiplication skill. The carve-out applies only to a bank whose stem set EQUALS
+   the syllabus fact set - which is what this table is, exactly and by
+   construction. It is not a licence for the OPTION board, which is measured
+   separately and balanced.
+
+   THE DRAW IS WEIGHTED ON THE COMMON FACTOR, not flat over the facts. Flat over
+   21 facts puts k = 2 on 52% of draws and "halve the printed bottom number" back
+   over the line the eighth pass fought it under; flat over k puts 20% of the whole
+   bank on the single fact 5/10. The weights below are the compromise measured in
+   the lane note: k = 2 on 35% of draws, no single fact over 10%, and every one of
+   the 21 facts reachable. */
+const SIMPLIFY_FACTS = [];
+for (let d0 = 2; d0 <= 6; d0++) for (let n0 = 1; n0 < d0; n0++) if (gcd(n0, d0) === 1)
+  for (let k0 = 2; k0 * d0 <= 12; k0++) SIMPLIFY_FACTS.push([n0, d0, k0]);
+/* THE WEIGHTS, and every one of them is bought with a measurement.
+     - a key worth one HALF gets weight 1. It is back in the table (captain's call
+       ii) and it is the one key the grid row below cannot be built for, because
+       x/2 is never a proper fraction; the draws it takes therefore go to the
+       distinct family, whose masked shape it pins to slot 0. Five per cent is what
+       holds that shape under RULE 11's per-shape line.
+     - a fact whose common factor is 2 gets weight 6, one whose factor is 3 or more
+       gets weight 9, because "halve the printed bottom number" is right exactly
+       when the factor is 2 and the eighth pass killed on that expression.
+   Measured: k = 2 on 51%, a top number of 1 on 47%, a key worth one half on 4.2%,
+   no single fact over 7.6%, all 21 facts reachable. */
+const SIMPLIFY_W = [];
+for (const f of SIMPLIFY_FACTS){
+  /* and a third weight, on the SHAPE the grid row below can build. A key of
+     n/(n+1) is the biggest fraction its own bottom number can write, so its grid
+     can only be seated with the key largest and its masked slot never moves; a key
+     with a top number of 1 can seat two of the four. Mixing them two to one is
+     what takes the grid shape's own slot rate to its minimum. */
+  const shape = f[1] === 2 ? 3                       /* no grid at all: the loose family */
+              : (f[0] === 1 && f[1] === 3) ? 1        /* grid seats ONE slot: 1/3 has no y under 3 */
+              : f[0] === f[1] - 1 ? 2                 /* grid seats ONE slot: the key is always largest */
+              : (f[0] > 1 ? 8 : 3);                   /* all four slots, or two */
+  const w = (f[1] === 2 ? 2 : (f[2] === 2 ? 5 : 11)) * shape;
+  for (let i = 0; i < w; i++) SIMPLIFY_W.push(f);
+}
+/* [n, d, k]: the fact in its simplest form, and the common factor it is hidden by. */
+const drawSimplify = () => { const b0 = pick(SIMPLIFY_W); return [b0[0], b0[1], b0[2]]; };
+
+/* ---- THE SHARED-HALF SEATS ---------------------------------------------------
+   SWEEP FRACTIONS REFUTATION, EIGHTH PASS 2026-09-16, KILL 1, the general half of
+   the fix. Re-drawing the common factor breaks the ONE expression the refuter
+   named; it does not break the CLASS, because ANY expression that lands on the
+   key's own top or bottom number settles the item the moment that number is the
+   key's alone on the row - and the eighth pass's lesson is that a defect does not
+   have to move surface to escape a ruler, only spelling. So neither half of the
+   key may be a lone signal: one seat goes to a named belief written over the key's
+   OWN bottom number and one to a named belief carrying the key's OWN top number.
+   A rule that names either half correctly then still leaves two options standing
+   and is worth half a draw, and that half is what holds `(n1)/2`, `(n0)/2`,
+   `(n1)/n0` and every other spelling of them under the ceiling together.
+
+   Two of the three seats are held, so the value rank can no longer be left to fall
+   out of whatever the bank supplies - the fifth pass's lesson, in the shape it
+   keeps coming back in. With two seats held the third is a single option, so a
+   pair can only seat the rank whose above-count is its own or one more, and
+   `u` is the number of options the caller needs ABOVE the key.
+
+   IT IS THE RANK THAT IS RE-DRAWN, NOT THE NUMBERS, and that is deliberate. A
+   rank drawn blind and then refused sends the retry loop back to redraw the BASE,
+   which silently reweights the stem table towards the fractions that can seat any
+   rank: measured that way, "express 4/6 in its simplest form" fell to 0.7% of
+   draws against 4/12 at 19.8%, and the top-number-of-1 share went 46.7% -> 55.4%.
+   halfRow() below walks the four ranks in random order and takes the first this
+   draw can seat, so the rank is uniform over what the bank can actually do and the
+   stem table stays exactly as drawn.
+
+   Returns sided()'s `must` pair, or [] when the bank cannot supply both at that
+   rank. */
+function halfSeats(cands, key, u){
+  const ok = c => Array.isArray(c) && legalFrac(c) && !sameVal(c, key);
+  const hi = c => c[0]*key[1] > key[0]*c[1];
+  const dens = shuffle(cands.filter(c => ok(c) && c[1] === key[1]));
+  const nums = shuffle(cands.filter(c => ok(c) && c[0] === key[0]));
+  /* both halves shared, wherever the rank this draw is seating allows it */
+  for (const a of dens) for (const b of nums){
+    if (sameVal(a, b)) continue;
+    const up = (hi(a) ? 1 : 0) + (hi(b) ? 1 : 0);
+    if (up === u || up === u - 1) return [a, b];
+  }
+  /* AND THE CONFLICT WITH RULE 7, DECLARED. Two held seats cannot seat all four
+     value ranks on this bank, and the arithmetic says why rather than the draw:
+     a key with a top number of 1 has nothing over its own bottom number BELOW it,
+     and a key with a top number of d - 1 has nothing over its own bottom number
+     ABOVE it and nothing carrying its own top number above it either - so those
+     two families, which are eight of the ten bases, can each seat only three of
+     the four ranks with both seats held, and "the key is the second largest" came
+     out at 42.7 / 43.0% against RULE 7's 40% policy cap. Where the rank cannot
+     take both, the BOTTOM-number seat is the one kept: it is the half every
+     expression in RULE 14's library reaches first (`(n1)/2`, `(n1)/n0`, `(n1)/3`
+     all land there) and the half the measurements put highest. One seat leaves the
+     rank three of four ranks to choose from and the row comes out flat. Measured
+     cost: the top-number seat is absent on about one draw in seven, and the best
+     numerator route over the widened library is measured, not assumed. */
+  for (const a of dens){
+    const up = hi(a) ? 1 : 0;
+    if (u >= up && u <= up + 2) return [a];
+  }
+  return [];
+}
+/* The three slips for a shared-half bank: the four value ranks in random order,
+   and the first one this draw can seat with both halves shared. Returns [] only
+   when no rank can be seated at all, and then the caller redraws. */
+function halfRow(cands, key){
+  for (const u of shuffle([0,1,2,3])){
+    const seats = halfSeats(cands, key, u);
+    if (!seats.length) continue;
+    const row = sided(key, cands, seats, u);
+    if (row && row.length === 3) return row;
+  }
+  return [];
+}
+
+/* ---- THE GRID ROW AND THE DISTINCT ROW ---------------------------------------
+   SWEEP FRACTIONS REFUTATION, NINTH PASS 2026-09-16, KILL 2. RULE 11's shape
+   clause was tested on the AGGREGATE at SHAPE_CAP = 1.0, which is a threshold no
+   bank with more than one shape can ever reach, while the sentence the file
+   printed claimed the test was per shape. Tested per shape, 32 of gSimplest's 37
+   masked shapes and 37 of gSimplestError's 39 named the key's SLOT on 100% of
+   their own draws, covering 73.4% and 83.0% of draws.
+
+   THE MECHANISM IS THE EIGHTH PASS'S OWN FIX. halfSeats() holds one distractor
+   over the key's bottom number and one carrying the key's top number, which makes
+   the KEY the unique option both of whose numerals are printed elsewhere on the
+   row - and that is precisely the FIFTH pass's digit-overlap ban (see
+   digitIsolatesKey), which these two banks never applied. The masked shape records
+   exactly which option is twinned, so a shape that is mostly one twinning pattern
+   is a slot that is always the same slot. RULE 14's cure was RULE 11's disease.
+
+   THE GRID closes both at once. Take the key n/d, one wrong top x and one wrong
+   bottom y, and seat the OTHER THREE CELLS of the 2 x 2 grid: x/d, n/y, x/y.
+   Every numeral on the row then appears exactly twice, so
+     - both halves of the key are shared, which is what RULE 14 needs;
+     - EVERY option is twinned, not just the key, so digitIsolatesKey is false and
+       the masked shape is one symmetric pattern - "0/1 2/1 0/3 2/3" - on every
+       grid draw, whatever the numbers;
+     - inside that one shape the key's slot is decided only by whether x is above
+       or below n and y above or below d, and those same two signs decide the
+       key's VALUE rank. All four slots and all four ranks are reachable, and they
+       move together, so RULE 7's flatness IS the shape clause's flatness.
+   Every cell is a named belief: x = n +- 1 is "one piece too many / too few in the
+   answer", y is "did not divide the bottom far enough", "divided it one step too
+   far", or "divided only the top" (y = D), and x/y is the two miscounts together,
+   all four already on these banks' candidate lists.
+
+   THE DISTINCT ROW is the other family and it exists for two reasons. A key worth
+   one half has NO legal wrong top over a bottom of 2, so no grid exists for it -
+   and captain's call (ii) puts halves back. And 1/2 itself can only be seated as a
+   DISTRACTOR off the grid, because x/2 is never proper. So a share of draws take a
+   row with all EIGHT numerals distinct: one masked shape again ("0/1 2/3 4/5 6/7"),
+   carrying no twinning at all, inside which the key's slot is its rank by BOTTOM
+   NUMBER - which this family draws directly, so it comes out flat too, except on
+   the half keys, where nothing is written over a smaller bottom number than 2.
+
+   Two families, two masked shapes, both scored per shape in tools/gen-sanity.mjs
+   and both under the line. --- */
+function gridRow(key, xs, ys, u){
+  const n = key[0], d = key[1], out = [];
+  for (const x of xs) for (const y of ys){
+    const row = [[x, d], [n, y], [x, y]];
+    if (!row.every(c => legalFrac(c))) continue;
+    if (!slipsOk(key, row)) continue;
+    if (row.filter(c => c[0]*d > n*c[1]).length !== u) continue;
+    out.push(row);
+  }
+  return out.length ? pick(out) : null;
+}
+/* The distinct row seats the VALUE rank the caller asks for, exactly as sided()
+   does, and lets the bottom-number order - which is this family's masked slot -
+   fall out of the numbers. It exists because the grid cannot seat every rank for
+   every key: a key of n/(n+1) is the largest fraction its own bottom number can
+   write, so every x/d is below it and no y under d leaves n/y proper, and the grid
+   for such a key can only ever be built with the key largest. Between the two
+   families all four ranks are reachable for every fact in the table. */
+function looseRow(key, all, u){
+  /* NINTH PASS 2026-09-16, KILL 2. The masked shape that would not go away off the
+     grid is the one where a numeral CROSSES the line - the key's bottom number
+     printed as another option's TOP number, which [n+1, d+1] is whenever the key is
+     (d-1)/d. Masked, that row is "0/1 0/2 1/2 3/4": the key is the only option
+     whose two numerals reappear in their own positions, and the pattern named the
+     slot on 55-78% of its own draws. Such a candidate is dropped from THIS family's
+     pool - the grid does not draw from the pool at all, so nothing is lost there. */
+  const clean = all.filter(c => Array.isArray(c) && c[0] !== key[1] && c[1] !== key[0]);
+  const cands = clean.length >= 4 ? clean : all;
+  for (let i = 0; i < 16; i++){
+    /* the key's BOTTOM number is shared here too - it is the half every expression
+       in RULE 14's library reaches first ((n1)/2, (n1)/n0, (n1)/3 all land there)
+       and off the grid nothing else would hold it. Sharing only the bottom leaves
+       the key's TOP number unrepeated, so the key is not the twinned option and
+       the masked shape still says nothing about which slot it is in. */
+    /* two seats: one over the key's OWN bottom number (RULE 14 - it is the half
+       every expression in the library reaches first) and one UNDER it (RULE 7's
+       bottom-number policy cap - the grid writes only two distinct bottom numbers
+       and the key ties for the smallest on most grid draws, so this family is where
+       that policy is made wrong rather than half right). */
+    const under = shuffle(cands.filter(c => Array.isArray(c) && legalFrac(c) &&
+                                            !sameVal(c, key) && c[1] < key[1]));
+    const row = sided(key, cands,
+      sameDen(cands, key[1], key).slice(0, 1).concat(under.length ? [under[0]] : []), u);
+    if (!row || row.length !== 3 || !slipsOk(key, row)) continue;
+    /* the FIFTH pass's digit-overlap ban, which is the whole mechanism of the
+       ninth pass's second kill: the key may not be the one option both of whose
+       numerals are printed elsewhere on the row, because the masked shape records
+       exactly that and a shape that is one twinning pattern is a slot that is
+       always the same slot. Off the grid the seating is free, so these rows spread
+       over many masked shapes instead of collapsing into one. */
+    if (digitIsolatesKey(key, row)) continue;
+    /* NINTH PASS 2026-09-16, KILL 2. A PARTLY twinned row is the worst of both:
+       the masked shape records which options are twinned and which are not, and
+       that pattern names the slot. The only coincidence this family allows is the
+       deliberate one - the seat written over the key's own bottom number - so its
+       masked shape is a single pattern carrying nothing but the ORDER, and the
+       order is what the under-the-key seat above makes vary. */
+    /* NINTH PASS 2026-09-16, KILL 2. The shape that would not go away off the grid
+       is the one where a numeral CROSSES halves - the key's bottom number printed
+       as another option's TOP number ([n+1, d+1] is d/(d+1) whenever the key is
+       (d-1)/d). Masked, that row is "0/1 0/2 1/2 ...", the key is the only option
+       whose numerals both reappear in the same positions, and the pattern names
+       the slot on 60-78% of its own draws. No numeral may sit on one side of the
+       line in the key and the other side in a distractor. */
+
+    /* captain's call (ii): where the bank can name a half, take the seating that
+       has one - the grid can never carry a 1/2 against a key that is not a half. */
+    if (cands.some(c => c[0] === 1 && c[1] === 2) &&
+        !row.some(c => c[0] === 1 && c[1] === 2) && i < 5) continue;
+    /* RULE 7's bottom-number policy cap. The grid's own bottom numbers are the
+       key's and ONE other, so on a grid draw the key ties for the smallest bottom
+       number about nine times in ten and "pick the smallest bottom number" is worth
+       half a draw; the loose family is where a bottom number UNDER the key's can be
+       seated, so where the bank names one it is taken. */
+    if (cands.some(c => c[1] < key[1]) && !row.some(c => c[1] < key[1]) && i < 9) continue;
+    return row;
+  }
+  return null;
+}
+/* The row for a simplest-form bank. The VALUE RANK is drawn first and walked in
+   random order - the fifth pass's device, so RULE 7 comes out flat by construction
+   rather than by luck and the FACT TABLE is not reweighted by refusals - and the
+   family that can seat that rank is used, the grid by preference. */
+const GRID_SHARE = 0.80;
+function simplestRow(key, cands, xs, ys, loose, bias){
+  const isHalf = c => c[0] === 1 && c[1] === 2;
+  const tryLoose = () => {
+    for (const u of shuffle([0,1,2,3])){ const r = looseRow(key, cands, u); if (r) return r; }
+    return null;
+  };
+  /* captain's call (ii) and RULE 7's bottom-number cap, in one share. The grid
+     writes only TWO distinct bottom numbers - the key's own and one other - so on a
+     grid draw the key ties for the smallest bottom number about nine times in ten,
+     and a 1/2 can never ride on a grid at all (x/2 is not a proper fraction). The
+     loose family is where both are fixed, and the share below is what it costs. */
+  if (Math.random() < (loose === undefined ? 1 - GRID_SHARE : loose)){
+    const r = tryLoose();
+    if (r) return r;
+  }
+  /* the two seatings whose wrong BOTTOM number sits UNDER the key's are walked
+     twice as often - they are the only grid rows on which "pick the smallest
+     bottom number" is wrong rather than half right, and RULE 7 caps that policy at
+     40%. The value rank stays inside its own cap and floor because the loose
+     family carries the complement. */
+  for (const u of shuffle(bias ? [0,1,1,2,3,3] : [0,1,2,3])){ const g = gridRow(key, xs, ys, u); if (g) return g; }
+  return tryLoose() || [];
+}
+
+
+/* ===========================================================================
+   PRINCIPLE 1 - WHAT A FRACTION NAMES
+   =========================================================================== */
+
+/* FORMAT 1a - direct read off a picture (pool 1, 1 step). THE DECLARED ANCHOR of
+   pool 1: one fluency item per pool is deliberate, per the pilot's contract
+   note 2. */
 function gPicIdentify(){
-  const d=ri(2,8), n=ri(1,d-1);
-  const cands=[[d-n,d],[n,d+1],[n+1,d],[n,d-1]];
-  return fig(finishFrac('What fraction of the bar is <b>blue</b>?', '', [n,d], cands,
-    n+' out of '+d+' parts are blue, so it is '+fr(n,d)+'.'),
-    { type:'fractionBar', parts:d, filled:n });
+  let d = 8, n = 3, key = [3,8], slips = [[5,8],[3,7],[4,8]], g = 0;
+  const rank = ri(1,4);   /* FIFTH PASS: the rank first, then numbers that seat it */
+  do {
+    d = ri(3,12); n = ri(1,d-1);
+    key = [n,d];
+    /* WOUND 4 (refutation 2026-09-15): the complement distractor [d-n, d] is worth
+       the KEY exactly when d === 2n, so slipsOk() rejected every half-shaded draw
+       and the bar was never cut in half in 20,000 draws - the first fraction a P3
+       child owns, missing from the declared pool-1 fluency anchor.
+
+       SECOND PASS, W3(a): the substitute used when the bar IS half shaded was
+       [n, d+1], which printed a bottom number of THIRTEEN on the option row of the
+       declared pool-1 anchor whenever d = 12 - the first off-P3-list denominator
+       ever to reach it, and one no named misconception produces (doubling gives an
+       even bottom, adding the two bottoms gives d(1+k), taking one away gives
+       d-1). The wrong-bottom-number belief is only offered while it stays inside
+       the syllabus; "one blue piece too few" covers the other case.
+
+       SECOND PASS, WOUND 1: the three slips used to be fixed, which pinned the
+       key's value rank. Every candidate the bank can name goes to sided() now. */
+    /* THIRD PASS 2026-09-16, W5. Only two of the five candidates sit above the key
+       on a typical draw, so sided() could seat three-above (key smallest) almost
+       never and two-above (key 2nd smallest) almost always: 15.5 / 39.7 / 23.8 /
+       21.0, and the 2nd-smallest rank was the one RULE 7's policy cap did not
+       cover. The two "a piece AND a part miscounted" entries the complement
+       formats already name are added here, one on each side, so all four seatings
+       are reachable on a typical draw. */
+    /* FIFTH PASS 2026-09-16, W1: one or two of the three seats go to a belief
+       written over the BAR'S OWN part count, so "pick the option with the
+       picture's bottom number" cannot isolate the key. See sameDen(). */
+    const cands = [
+      [d-n, d],                       /* read the white part instead of the blue */
+      [n, d-1], [n+1, d],             /* miscounted the parts / the blue pieces, one too few */
+      [n-1, d],                       /* miscounted the blue pieces, one too many */
+      [n+1, d-1],                     /* a blue piece too many AND a part too few */
+      [n-1, d-1],                     /* a blue piece too few AND a part too few */
+      (d < 12 ? [n, d+1] : null)      /* counted a part that is not there */
+    ].filter(Boolean);
+    slips = sided(key, cands, sameDen(cands, d, key), 4 - rank) || [];
+    g++;
+  } while (g < 200 && !(slipsOk(key, slips) && !digitIsolatesKey(key, slips)));
+  if (!slipsOk(key, slips)){ d = 8; n = 3; key = [3,8]; slips = [[5,8],[3,7],[4,8]]; }
+  return fig(mcFrac('What fraction of the bar is <b>blue</b>?', key, slips,
+    'The bar is cut into ' + d + ' equal parts, and ' + n + ' of those parts ' + (n === 1 ? 'is' : 'are') + ' blue. ' +
+    n + ' out of ' + d + ' equal parts is ' + fr(n,d) + '. Count all the parts first for the bottom number, ' +
+    'then count only the blue ones for the top number.' +
+    /* SECOND PASS, W2: this closing sentence named fr(d-n, d) as "the part that is
+       NOT blue" - and when the bar is half shaded that fraction IS the key, so the
+       card told the child the right answer was the wrong part on 12.96% of draws.
+       It is printed only where it is true of a DIFFERENT fraction. */
+    (d === 2*n ? ' Here exactly half the bar is blue, so the part that is not blue is ' + fr(d-n,d) + ' as well.'
+               : ' ' + fr(d-n,d) + ' is the part that is NOT blue.')),
+    bar(d, n));
 }
-function gCompare4(mode){
-  let pairs=[];
-  if(mode==='unit'){ const ds=shuffle([2,3,4,5,6,7,8,9,10,12]).slice(0,4); pairs=ds.map(d=>[1,d]); }
-  else if(mode==='sameD'){ const d=ri(6,12); const ns=shuffle([...Array(d-1).keys()].map(i=>i+1)).slice(0,4); pairs=ns.map(n=>[n,d]); }
-  else { const n=ri(1,3); const ds=shuffle([n+1,n+2,n+3,n+4,n+5,n+6,n+7].filter(x=>x<=12)).slice(0,4); pairs=ds.map(d=>[n,d]); }
-  const wantMax=Math.random()<0.5;
-  let bestI=0;
-  for(let i=1;i<4;i++){
-    const better = wantMax ? pairs[i][0]*pairs[bestI][1] > pairs[bestI][0]*pairs[i][1]
-                           : pairs[i][0]*pairs[bestI][1] < pairs[bestI][0]*pairs[i][1];
-    if(better) bestI=i;
-  }
-  const why = mode==='sameD' ? 'Same denominator: compare the numerators.'
-                             : 'Same numerator: the smaller denominator means bigger pieces.';
-  return { q:'Which fraction is the <b>'+(wantMax?'greatest':'smallest')+'</b>?', extra:'',
-    choices:pairs.map(p=>fr(p[0],p[1])), correct:bestI,
-    explain:why+' The '+(wantMax?'greatest':'smallest')+' is '+fr(pairs[bestI][0],pairs[bestI][1])+'.',
-    answerText: fr(pairs[bestI][0],pairs[bestI][1]) };
+
+/* FORMAT 1b - concept check: the parts must be EQUAL (pool 1, 1 step).
+   Nothing in the shipped bank asked this, and it is the idea every later
+   fraction rests on. */
+/* THIRD PASS 2026-09-16, THE KILL. The key was the only option on the row that
+   contained the word "equal" - and the only one containing "same", "size", "all"
+   or "are" - and it restated the stem's own second clause verbatim, so "pick the
+   option that repeats the sentence you have just read" answered the declared
+   pool-1 concept anchor on 100.00% of 20,000 draws out of eighteen option sets.
+   Two earlier passes called it "the best item in the bank" and never ran the
+   wording lens on it; it was exempted by reputation.
+
+   The four sentences are rebuilt so that EVERY content word in the key is also
+   printed by at least one distractor - "fraction", "counts", "parts", "equal",
+   "size", "pieces" and "different" each appear somewhere else on the row - which
+   is what makes a fixed word policy worthless rather than merely weaker. The key
+   no longer restates the stem's clause, and each distractor is a named belief a
+   P3 child actually holds: pieces are parts whatever their size; the bottom
+   number counts only the pieces that match; a whole has to be cut evenly.
+   tools/gen-sanity.mjs RULE 8 - written for gCompareError and scoped to it by
+   name, which is why nothing looked here - now runs on every prose bank in the
+   topic, with the v3 option set as its negative control. */
+/* FOURTH PASS 2026-09-16, THE KILL, for the third consecutive time. The v4 rewrite
+   above re-measured the four words the third pass NAMED and never swept the rest.
+   It missed by one letter: the distractor printed "count" and the key printed
+   "counts", so "pick the option containing `counts`" answered the declared pool-1
+   concept anchor on 100.00% of 40,000 draws across two seeds. Three function words
+   did the same work without needing that observation - the key was the only
+   COMPOUND sentence on the row, so "and", "these" and "that" were each unique to it
+   on every draw of all eighteen option sets.
+
+   Two things change, and the second one is the deliverable.
+
+   (1) THE SENTENCES. All four are now ONE sentence shape - the same simple frame,
+   "A fraction needs the whole cut into ...", with the belief in the tail - so no
+   conjunction, pronoun or demonstrative can single the key out. Every token the
+   key prints, function words included, is printed by at least one distractor; so
+   is every adjacent PAIR of tokens ("same size" lives in the even-number belief,
+   "into <parts>" in the shape belief, "of any size" in the nothing-is-wrong one).
+   Checked raw and after stemming, because stemming alone would have HIDDEN the v4
+   defect (count / counts collapse to one stem).
+
+   The bottom-number-counts-only-matching-pieces belief goes, and the shape belief
+   arrives in its place: a P3 child who says "the pieces are different SHAPES" is
+   confusing congruence with equal area, which is the misconception this format
+   exists to meet. `pieces` / `parts` is drawn once and used in all four sentences,
+   so the option-set count stays at 18 and the four rows move together.
+
+   (2) THE RULE. tools/gen-sanity.mjs RULE 9, the TOKEN RULER: over every prose bank
+   in the topic, no token and no two-token phrase may be unique to the key - or
+   common to all three distractors and absent from the key - on 60% of a bank's
+   draws. RULE 8's per-generator half tests only words that appear in the STEM, and
+   the stem says "cuts", not "counts", which is why it measured this bank at 0.0%
+   and passed it. The v4 option set is RULE 9's negative control and goes red on
+   "counts". That clause would have failed this generator at v1, v2, v3 and v4. */
+/* FIFTH PASS 2026-09-16, THE KILL, for the FOURTH consecutive time - and the
+   prose form is retired.
+
+   The v5 rewrite above did exactly what the fourth pass asked: every token the key
+   printed, function words included, and every adjacent pair, was printed by at
+   least one distractor. RULE 9 measured it at 0.00% and passed it. And that fix IS
+   the tell - no DISTRACTOR has the same property. Each of the three keeps
+   something of its own (`an`/`even`/`number`, `one`/`shape`, the numeral and
+   `any`), so "pick the option that has no word of its own" answered the declared
+   pool-1 concept anchor on 100.00% of 40,000 draws across two seeds, all 18 option
+   sets. RULE 9 is blind to it by construction: it asks whether a phrase is unique
+   TO the key, never whether the key is the unique option with nothing unique - the
+   rule and the defect are the same fact read from opposite ends.
+
+   THE PM'S RULING (wave-1 law): four-sentence prose concept checks are
+   STRUCTURALLY tell-prone, and a fourth wording fix would be a fourth new
+   regularity. The format is rebuilt with NO LEXICAL AXIS AT ALL. The option row is
+   four bare numbers, so there is no word to count, no sentence to measure, no
+   frame to match and nothing for a word-set complement to isolate; every rule this
+   file has ever been killed by is inapplicable by construction rather than by
+   wording.
+
+   THE ITEM. The picture carries the whole and the stem carries the re-cutting: a
+   cake is cut into equal pieces (the bar, k of them, the child's piece blue), then
+   EVERY piece is cut into n equal parts, and the question is how many equal parts
+   the whole is cut into now. That is Principle 1 stated as a number - "the bottom
+   number says how many EQUAL parts the whole was cut into" - and it is the one
+   reading of it that cannot be answered by counting what is on the screen: k is in
+   the picture, n is in the stem, and k x n is in neither. It is also the bridge to
+   Principle 2, which is what a P3 child is about to need.
+
+   Figure OPTIONS were the PM's first choice and the app cannot carry them: the
+   harness's markup allowlist (tools/gen-sanity.mjs, KILL FIX K1) permits inline
+   text markup only, a picture must be a q.figure spec, and a question object holds
+   exactly one. The PM's declared fallback is what is built here - one rendered
+   figure, numeric options naming part counts, named misconceptions, rank-gated.
+
+   WHAT HOLDS IT UP, measured rather than asserted:
+     - RULE 7: the key's value rank is DRAWN FIRST and sidedNum is forced to seat
+       it, so the four ranks come out flat by construction rather than by luck.
+     - The stem-option coupling class (wound 1): the picture's own part count k and
+       the stem's own number n are both NAMED BELIEFS, so "pick the number the
+       picture shows" and "pick the number the question gives you" each pick a
+       DISTRACTOR. At most one of the two is seated, so the key is never the only
+       option that is not on the screen either.
+     - RULE 10's new clause, which is the property "the picture is load-bearing"
+       actually names: another legal shading - another bar with a different part
+       count - changes the answer on every draw, because the answer is k x n.
+     - The four sentences are gone, so RULE 6, RULE 8, RULE 9 and the row-only rule
+       have nothing to bite on. gCompareError and gAddError remain this topic's
+       prose banks and both are gated.
+
+   COST, declared: k x n is capped at 10 rather than 12. At 12 there is nothing
+   legal above the key inside the P3 denominator limit, so the key would be the
+   largest of four on 100% of those draws and the shape would name the rank. Seven
+   (k, n) shapes survive, 3 question forms and 18 contexts on top, and the
+   option-row space is drawn rather than fixed. */
+/* SIXTH PASS 2026-09-16, THE KILL, for the FIFTH consecutive time - and the
+   GENERATOR IS RETIRED. THE PM'S RULING, final for this bank: gEqualParts has now
+   been killed on every axis this file has a ruler for, across six passes -
+   sentence matching (v3), a single word (v4), the word-set complement (v5) and
+   now the stem's ONE numeral (v6) - and each fix moved the tell rather than
+   removing it. It is off the topic.
+
+   WHAT THE SIXTH PASS MEASURED. The v6 rebuild took the lexical axis away
+   completely and correctly: four bare part counts, no sentence to match, nothing
+   for RULE 6, 8, 9 or 11 to bite on. It opened a STEM-RECALL axis instead. The
+   stem printed exactly ONE numeral, `n`, and under the declared `k x n <= 10` cap
+   that numeral names the key: the four-line table `2->8, 3->6, 4->8, 5->10`
+   answered the declared pool-1 concept anchor on 65.52% / 66.42% of 20,000 draws
+   on each of two seeds, and the recalled number was on the row and right on
+   61.46% / 62.43%. On `n = 4` and `n = 5` the picture is redundant BY
+   CONSTRUCTION, because the cap leaves exactly one `k` for each. The bar was never
+   counted.
+
+   THE DECLARED COST WAS THE KILL. The cap was declared as a RANK cost ("at 12
+   nothing legal sits above the key") and it is also a DEPENDENCY cost: it
+   collapses the (k, n) grid to seven cells in which `n` is nearly a function of
+   the answer, and the seven are not even served evenly (10.7% against 16.8%),
+   which sharpens the table further.
+
+   WHAT REPLACES IT, and why this shape rather than another rebuild. The slot is
+   pool 1 / `identify`, so the refill is a second READING-A-FRACTION-OFF-A-PICTURE
+   format - FORMAT 1b below - built to the two conditions the PM set: the picture
+   is load-bearing (the bar's part count is the key's bottom number and appears
+   NOWHERE in the words), and the stem prints TWO numerals, so no single numeral
+   can name the key and the four-line table has nothing to be a table over.
+   RULE 12 in tools/gen-sanity.mjs is the general form of the gate and the v6
+   gEqualParts row is its negative control. */
+/* FORMAT 1b - reading a fraction off a picture after a one-step change (pool 1,
+   1 step). The bar shows the child's pieces blue; she eats some; what is left is
+   still counted over the SAME bottom number, which is Principle 1 stated where a
+   P3 child most often loses it - the bottom number is the size of the piece, and
+   eating a piece does not re-cut the cake.
+
+   THE THREE RULERS THIS FORMAT IS BUILT AGAINST, all of them gates rather than
+   wording. (The v7 text of this paragraph claimed the first one and was WRONG in
+   the way the block below sets out: it argued from "the bottom number is in no
+   word of the stem", which is true, to "the picture is load-bearing", which does
+   not follow. The claims are now the ones the file can actually assert.)
+     - RULE 12, THE STEM-ONLY RULE, and RULE 14, THE HALF-KEY RULE. The stem prints
+       NO NUMERAL: the take-away is a word, the blue count and the part count are
+       both in the picture. So neither a table over the stem's numerals nor any
+       expression over them can name the key or half of it - there is nothing to
+       write one over, and the oracle fails the build if a digit ever appears in
+       this stem.
+     - RULE 10, THE PICTURE RULER, and the load-bearing clause in the oracle:
+       another legal bar (the same pieces over a different part count) changes the
+       answer on every draw, because `d` IS the key's bottom number.
+   The coupling seat and the digit-overlap ban both apply as they do everywhere
+   else in the file: one or two of the three slips are written over the bar's own
+   part count (sameDen), and the key may not be the unique option both of whose
+   numerals are printed elsewhere on the row (digitIsolatesKey). */
+/* SEVENTH PASS 2026-09-16, KILL 1 - and the premise the v7 refill was built on
+   was FALSE, which is the finding worth keeping. The condition the PM set was "the
+   picture is load-bearing - the bar's part count IS the key's bottom number and
+   appears in no word of the stem", and the second half of that sentence was true.
+   THE FIRST HALF DOES NOT FOLLOW FROM IT. The child never had to DETERMINE the
+   bottom number, only to DISCRIMINATE it, and the stem handed her the other half
+   of the key for free:
+
+     - "the answer's TOP number is a - g" is one subtraction on the two numerals
+       the stem printed, true on 100.00% of draws;
+     - that top number ISOLATED the key on 59.6 / 59.0%;
+     - take it and guess among the ties: 79.6 / 79.2%;
+     - break the tie with "the bottom number is the one printed twice on the row"
+       - a seat sameDen() is REQUIRED to fill - 88.7 / 88.8%;
+     - break it with the masked row shape instead: 94.9 / 94.7%.
+
+   The bar was never counted, in a bank served 3.42 / 3.54 items a session to a
+   struggling child, three or more times in 82-84% of those sessions.
+
+   WHY SIX RULERS WERE BLIND, which is the general lesson: RULE 12's arithmetic
+   library only scores an expression naming the WHOLE key, so a numerator-only
+   match scored nothing; RULE 10 and RULE 11 read the row with the stem discarded;
+   RULE 13 reads numeral MEMBERSHIP, and a - g is arithmetic, not membership. The
+   half-key route fell exactly through the middle of the four rulers this file had.
+   RULE 14, THE HALF-KEY RULE, is the general form and this bank's v7 construction
+   is its negative control.
+
+   THE REBUILD: THE STEM PRINTS NO NUMERAL AT ALL. The take-away is a WORD ("eats
+   two of his pieces"), the blue count is not printed, and the part count is not
+   printed - so BOTH halves of the key are counted off the bar and no expression
+   over the stem can name either one, because there is nothing to write an
+   expression over. The oracle in tools/gen-sanity.mjs asserts that emptiness
+   directly (a digit anywhere in this stem is a failure) rather than measuring
+   around it.
+
+   THE ROW FAMILY, and it is the second half of the fix. The composed route the
+   seventh pass measured - stem recall, then the masked row SHAPE where recall does
+   not settle it - ran at 69.0 / 71.6% on v7, and killing the stem half alone would
+   have left the shape half at 67. Half the draws now seat all three slips over the
+   BAR'S OWN part count, which collapses to a single masked shape whose key slot is
+   the value rank RULE 7 already draws evenly - 25% by construction - and the other
+   half spread the bottom numbers as before, where the part count has to be read to
+   choose at all. Measured below 60% composed, on both seeds, and declared.
+
+   COST, declared - and CORRECTED at the eighth pass, where it was understated.
+   v8 put the row-settles-the-part-count rate at "~60% of draws (the flat family)".
+   Measured independently, the key's bottom number is the UNIQUELY REPEATED one on
+   87.50 / 87.77% of draws: the flat family (58.7 / 59.4%) plus about seventy per
+   cent of the spread family, where sameDen()'s seat still lands on the key's own
+   bottom number. So the picture carries only ONE of the two numbers on seven draws
+   in eight, not on three in five. The TOP number is still counted off the bar on
+   100% of draws - the oracle re-derives it from the rendered bar on every draw of
+   40,000 - and that is the item's mathematics, so this is a correction to the cost
+   and not a route: four fixed row-only policies (commonest bottom number,
+   odd-one-out bottom number, middle value, smallest top number) all sit at or
+   under 28.8% against 25% for a guess. On no draw does the stem carry either half.
+   The stale-picture misconception [a, d] - the bar shows the BEFORE state - sits on
+   the row on 47.6 / 48.1%, up from the v7 note's 40.8%. The distinct-stem space
+   falls from 288 to 108 and is now INFORMATION-FREE: the six-row stem table
+   measures at chance, because the same sentence sits over every picture the format
+   can draw. */
+const TAKE_CTX = ['kueh lapis', 'pandan chiffon cake', 'pizza at the hawker centre',
+                  'chocolate swiss roll', 'ondeh-ondeh cake', 'sugee cake'];
+const TAKE_WORD = ['one', 'two', 'three'];
+function gPicTakeAway(){
+  const kid = pick(KIDS), cake = pick(TAKE_CTX);
+  /* RULE 7: the value rank is drawn FIRST and sided() is forced to seat it. */
+  const rank = ri(1,4);
+  /* the row family, drawn per item so the count itself carries no information */
+  const flat = Math.random() < 0.5;
+  let d = 8, a = 5, g2 = 2, key = [3,8], slips = [[5,8],[2,8],[3,7]], g = 0, ok = false;
+  do {
+    d = ri(6,12);
+    a = ri(4, d-2);                     /* her pieces: never all but one */
+    g2 = ri(1, Math.min(3, a-2));       /* what she eats, and at least two are left */
+    key = [a-g2, d];
+    const cands = [
+      [a, d],                          /* answered the blue part as drawn, forgetting the bite */
+      [g2, d],                         /* answered the pieces she ate */
+      [d-a, d],                        /* answered the pieces that were never hers */
+      (d-a+g2 < d ? [d-a+g2, d] : null), /* answered the pieces that are not hers NOW */
+      (a-g2+1 < d ? [a-g2+1, d] : null), /* one piece miscounted, one too many */
+      (a-g2-1 >= 1 ? [a-g2-1, d] : null),/* one piece miscounted, one too few */
+      (a-g2+2 < d ? [a-g2+2, d] : null), /* two pieces miscounted */
+      (a-g2-2 >= 1 ? [a-g2-2, d] : null),
+      (a-g2 < d-1 ? [a-g2, d-1] : null), /* took the eaten piece off the whole as well */
+      (d+1 <= 12 ? [a-g2, d+1] : null),  /* counted a part that is not there */
+      (a-g2 < d-2 && d-2 >= 2 ? [a-g2, d-2] : null),
+      /* WOUND 1, THE ROW-SHAPE CLASS (sixth pass). A row written over two bottom
+         numbers has few masked shapes and a child learns the picture rather than
+         the fraction; the miscounts below are the ones the card already names,
+         each over a bottom number the row would not otherwise reach, so the shape
+         moves with the numbers. sameDen() below still holds a seat over the bar's
+         own part count, which is what keeps RULE 13 off the row. */
+      (d+2 <= 12 ? [a-g2, d+2] : null),
+      (a-g2+1 < d-1 ? [a-g2+1, d-1] : null),
+      (a-g2-1 >= 1 && d+1 <= 12 ? [a-g2-1, d+1] : null),
+      (a < d-1 ? [a, d-1] : null),
+      (d+1 <= 12 ? [g2, d+1] : null)
+    ].filter(Boolean);
+    /* the flat family: every slip over the bar's own part count, so the four
+       options are four top numbers over one bottom number - one masked shape, and
+       the key's slot in it is the value rank, drawn evenly above. */
+    const pool = flat ? cands.filter(c => c[1] === d) : cands;
+    slips = sided(key, pool, sameDen(pool, d, key), 4 - rank) || [];
+    ok = slipsOk(key, slips) && !digitIsolatesKey(key, slips);
+    g++;
+  } while (g < 200 && !ok);
+  if (!ok){ d = 8; a = 5; g2 = 2; key = [3,8]; slips = [[5,8],[2,8],[3,7]]; }
+  const art = /^[aeiou]/i.test(cake) ? 'an ' : 'a ';
+  return fig(mcFrac('The bar below shows ' + art + cake + ' cut into equal pieces, and ' + kid[0] + "'s " +
+    'pieces are blue. ' + kid[1] + ' eats ' + TAKE_WORD[g2-1] + ' of ' + (kid[2] === 'she' ? 'her' : 'his') +
+    ' pieces. What fraction of the ' + cake + ' is <b>still ' + kid[0] + "'s</b>?", key, slips,
+    'Count the parts on the bar first: the ' + cake + ' is cut into ' + d + ' equal parts, and ' +
+    a + ' of them ' + (a === 1 ? 'is' : 'are') + ' blue, so ' + kid[0] + ' had ' + fr(a,d) + '. ' +
+    kid[1] + ' eats ' + TAKE_WORD[g2-1] + ', so ' + a + ' − ' + g2 + ' = ' + (a-g2) + ' ' +
+    ((a-g2) === 1 ? 'piece is' : 'pieces are') + ' left, out of the same ' + d + ' parts: ' + fr(a-g2,d) +
+    '. Eating a piece does not re-cut the ' + cake + ', so the bottom number never moves - it stays ' + d + '.'),
+    bar(d, a));
 }
-function gCompareUnit(){ return gCompare4('unit'); }
-function gAddSame(){
-  const d=ri(3,8);
-  const a=ri(1,d-2), b=ri(1,d-a-1);
-  const s=a+b;
-  const cands=[[s,2*d],[s+1,d],[s-1,d],[Math.abs(a-b)||s+2,d]];
-  return finishFrac(fr(a,d)+' + '+fr(b,d)+' = ?','',[s,d],cands,
-    'Same denominator: just add the numerators. '+a+' + '+b+' = '+s+', so the answer is '+fr(s,d)+'.');
+
+/* FORMAT 1c - the complement, off the same picture (pool 2, 2 steps: read the
+   shaded fraction, then take it from one whole). */
+function gPicUnshaded(){
+  let d = 8, n = 3, key = [5,8], slips = [[3,8],[6,8],[5,7]], g = 0;
+  const rank = ri(1,4);
+  do {
+    /* THIRD PASS 2026-09-16, W5(a). This generator, gSubFromOne and gMakeOne drew
+       the SAME d = ri(4,12) / a = ri(2,d-2) with the SAME candidate bank, so all
+       three produced exactly one 335-entry (option set + key) space - Jaccard
+       100.0% on all three pairs - and shapeKey plus the feed's repeat guard
+       counted them as three formats. Three of the four `wholes` formats were one
+       format under three sentences. The picture one is widened where a picture
+       can go and the other two cannot: a bar may be cut into 3 parts and it may
+       have a single part blue or a single part white, and the misread that only a
+       PICTURE affords - swapping the blue count and the white count - is named
+       here and nowhere else. */
+    d = ri(3,12); n = ri(1,d-1);
+    key = [d-n,d];
+    /* WOUND 4: same half-shaded gap as gPicIdentify - [n, d] is the key when
+       d === 2n, so the bar could never be half blue. SECOND PASS W3(a): the
+       substitute is capped inside the syllabus, and W1: sided() picks the three. */
+    /* FIFTH PASS 2026-09-16, W1. This was the second-worst bank of the class:
+       "the option written over the bar's part count" answered it on 72.3% of
+       draws and isolated the key on 44.7%. One or two seats are held for a
+       belief carrying that same part count now. */
+    const cands = [
+      [n, d],                         /* answered the blue part instead */
+      [d-n+1, d], [d-n, d-1],         /* one white piece too many / a part miscounted */
+      [d-n-1, d],                     /* one white piece too few */
+      [d-n+1, d-1], [d-n-1, d-1],     /* a piece AND a part miscounted, each way */
+      [n, d-n], [d-n, n],             /* swapped the blue count and the white count */
+      (d < 12 ? [d-n, d+1] : null)    /* counted a part that is not there */
+    ].filter(Boolean);
+    slips = sided(key, cands, sameDen(cands, d, key), 4 - rank) || [];
+    g++;
+  } while (g < 200 && !(slipsOk(key, slips) && !digitIsolatesKey(key, slips)));
+  if (!slipsOk(key, slips)){ d = 8; n = 3; key = [5,8]; slips = [[3,8],[6,8],[5,7]]; }
+  return fig(mcFrac('What fraction of the bar is <b>not</b> blue?', key, slips,
+    'Step 1: the bar is cut into ' + d + ' equal parts and ' + n + ' ' + (n === 1 ? 'is' : 'are') +
+    ' blue, so the blue part is ' + fr(n,d) + '. ' +
+    'Step 2: the whole bar is ' + fr(d,d) + ', so the part that is not blue is ' + d + ' − ' + n + ' = ' + (d-n) +
+    ' parts, which is ' + fr(d-n,d) + '.' +
+    /* SECOND PASS, W2: "n/d is the blue part, not the answer" named the KEY when
+       the bar was half shaded - 22.6% of draws telling the child the right answer
+       is the wrong part. */
+    (2*n === d ? ' Exactly half the bar is blue here, so the blue part is ' + fr(n,d) + ' too - the same amount, counted the other way round.'
+               : ' ' + fr(n,d) + ' is the blue part, not the answer.')),
+    bar(d, n));
 }
-const SIMPLE=[[1,2],[1,3],[2,3],[1,4],[3,4],[1,5],[2,5],[3,5],[4,5],[1,6],[5,6]];
+
+
+/* ===========================================================================
+   PRINCIPLE 2 - EQUIVALENCE AND SIMPLEST FORM ARE ONE IDEA
+   =========================================================================== */
+
+/* FORMAT 2a - equivalence WITH pictorial support (pool 1, 1 step).
+   WOUND 4 (refutation 2026-09-15): this used to draw the SCALED-UP bar every time
+   and key the reduced form every time, so the key was the unique smallest bottom
+   number on 20,000 of 20,000 draws and the item could be answered by looking for
+   it. It now runs BOTH directions on a coin flip: half the draws show the small
+   pieces and ask the child to group them back (key = the small bottom number),
+   half show the big pieces and ask for the same amount cut finer (key = the big
+   one, sharing its bottom number with two distractors). The
+   smallest-bottom-number heuristic now picks a DISTRACTOR about half the time. */
+function gEquivFromBar(){
+  let n = 3, d = 4, k = 2, up = false, key = [3,4], slips = [[5,6],[3,8],[7,8]], g = 0;
+  do {
+    const b = drawEquiv(); n = b[0]; d = b[1]; k = b[2];
+    up = Math.random() < 0.5;
+    key = up ? [k*n, k*d] : [n, d];
+    /* SECOND PASS, WOUND 1. [n+k, d+k] and [k*n+1, k*d] both sit ABOVE the key and
+       [n, k*d] below it, so the key was the 2nd smallest of four on 100.00% of
+       50,000 draws - "pick the second smallest" answered this item every time, at
+       1.34 served items a session. The candidate list is both-sided now, and the
+       two ±1 entries are the documented second-order slip: one small piece too many
+       or too few, on top of the regrouping. */
+    const cands = [
+      [n+k, d+k],                         /* added k to the top AND the bottom */
+      [n+1, d], [n+1, d+1],               /* one big piece too many, one part too many */
+      [k*n+1, k*d], [k*n-1, k*d],         /* one small piece too many / too few */
+      [n, k*d],                           /* changed only the bottom number */
+      (n > 1 ? [n-1, d] : null),          /* one big piece too few */
+      (n > 1 ? [n-1, d-1] : null),        /* took one off the top and the bottom */
+      (d-1 > n ? [n, d-1] : null),        /* one part too few in the whole */
+      /* THIRD PASS 2026-09-16, W5. Below the key the bank could only name
+         [k*n-1, k*d] and [n, k*d] whenever n = 1 - nearly half of SCALABLE - so
+         three-below, the seating that makes the key the LARGEST of four, was
+         reachable on 12.6% of draws, a hair over RULE 7's new 12% floor and inside
+         its sampling noise. Two more of the file's own miscounts sit below it. */
+      [k*n-2, k*d],                       /* two small pieces too few */
+      (d+1 <= 12 ? [n, d+1] : null),      /* one part too many in the whole */
+      [key[0]+1, key[1]], (key[0] > 1 ? [key[0]-1, key[1]] : null),
+      (key[1]-1 > key[0] ? [key[0], key[1]-1] : null),
+      (key[1]+1 <= 12 ? [key[0], key[1]+1] : null)
+    ].filter(Boolean);
+    /* NINTH PASS 2026-09-16, RULE 14's second limb. "n0+n0" - double the bar's own
+       top number - answered this bank on 46.7% at 5.66 served items a session to a
+       struggling child, the busiest generator in the topic. It names the key's
+       BOTTOM number; the grid shares it, and shares the key's top number too. */
+    slips = simplestRow(key, cands,
+      [key[0]-1, key[0]+1].filter(x => x >= 1 && x < key[1]),
+      [key[1]-1, key[1]+1, key[1]-2, key[1]+2, up ? d : k*d].filter(y => y >= 2 && y <= 12 && y !== key[1]));
+    g++;
+  } while (g < 200 && !slipsOk(key, slips));
+  if (!slipsOk(key, slips)){ n = 3; d = 4; k = 2; up = false; key = [3,4]; slips = [[5,6],[3,8],[7,8]]; }
+  const parts = up ? d : k*d, blue = up ? n : k*n;
+  /* SIXTH PASS 2026-09-16, W3. ' of them are blue.' was hard-coded, so the pool-1
+     equivalence anchor printed "1 of them ARE blue" on 22.81% / 22.68% of draws -
+     served 1.30 per session at 80% accuracy and 5.09 at 45%, so a struggling child
+     met the error about once a sitting. gPicUnshaded twenty lines up has always
+     done this correctly. Nothing in the harness read prose for agreement; the
+     PROSE AGREEMENT clause in tools/gen-sanity.mjs now does, over every rendered
+     stem and teaching card in the topic, with this sentence as its control. */
+  return fig(mcFrac('The bar below is cut into ' + parts + ' equal parts, and ' + blue +
+    (blue === 1 ? ' of them is blue' : ' of them are blue') +
+    '. Which fraction is <b>equivalent</b> to the blue fraction?', key, slips,
+    'The blue part is ' + blue + ' out of ' + parts + ' parts, which is ' + fr(blue, parts) + '. ' +
+    (up
+      ? 'Cut every one of those ' + d + ' parts into ' + k + ' smaller ones: ' + n + ' × ' + k + ' = ' + (k*n) +
+        ' and ' + d + ' × ' + k + ' = ' + (k*d) + ', so the same amount of bar is also ' + fr(k*n, k*d) + '. '
+      : 'Now group the small parts back together in ' + k + 's: ' + (k*n) + ' ÷ ' + k + ' = ' + n + ' and ' +
+        (k*d) + ' ÷ ' + k + ' = ' + d + ', so the same amount of bar is also ' + fr(n,d) + '. ') +
+    /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE (see gSimplestError).
+       [n+k, d+k] is a candidate, not a seat, so this sentence named a wrong answer
+       that was nowhere on the screen on 52.3 / 52.5% of draws. */
+    (slips.some(s => s[0] === n+k && s[1] === d+k)
+      ? 'Adding ' + k + ' to the top and the bottom would give ' + fr(n+k, d+k) + ', which is a different amount.'
+      : 'Adding ' + k + ' to the top and the bottom instead of multiplying by it gives a different amount, ' +
+        'because it does not cut every part the same way.')),
+    bar(parts, blue));
+}
+
+/* FORMAT 2b - inverse: the missing numerator (pool 2, 1 step).
+   FOURTH PASS 2026-09-16, W2. The option a child picks here goes into the stem's
+   blank, so the option row IS a fraction even though nothing on it is rendered as
+   one: 4.5% of draws offered a top number that makes the completed fraction
+   improper, largest 15 over a bottom number of 12. The candidate filter now caps
+   the row at one less than the completed bottom number, and the key's rank is drawn
+   FIRST and passed to sidedNum, because a capped bank can no longer be trusted to
+   supply both sides on its own. */
 function gEqMissing(){
-  const base=pick(SIMPLE.filter(p=>p[1]<=6));
-  const [n,d]=base;
-  const ks=[]; for(let k=2;k<=4;k++) if(k*d<=12) ks.push(k);
-  const k=pick(ks); const ans=k*n;
-  const wrongs=shuffle([ans+1, Math.max(1,ans-1), n+(k*d-d), ans+k]).filter(w=>w!==ans && w>=1);
-  const opts=[ans];
-  for(const w of wrongs){ if(opts.length<4 && !opts.includes(w)) opts.push(w); }
-  let t=2; while(opts.length<4){ if(!opts.includes(ans+t)) opts.push(ans+t); t++; }
-  const order=shuffle(opts.map((_,i)=>i));
-  return { q: fr(n,d)+' = <span class="frac"><span class="n">?</span><span class="d">'+(k*d)+'</span></span> &nbsp; What is the missing numerator?',
-    extra:'', choices: order.map(i=>''+opts[i]), correct: order.indexOf(0),
-    explain: 'The denominator was multiplied by '+k+' ('+d+' × '+k+' = '+(k*d)+'), so multiply the numerator by '+k+' too: '+n+' × '+k+' = '+ans+'.',
-    answerText: ''+ans };
+  const rank = ri(1,4);
+  let n = 1, d = 2, k = 2, key = 2, slips = [3,4,1], g = 0;
+  do {
+    const b = drawEquiv(); n = b[0]; d = b[1]; k = b[2];
+    key = k*n;
+    /* SECOND PASS, KILL 2's twin. n + d(k-1) is ALWAYS above k·n and n is always
+       below it, so the key was never an extreme of its own option row - 100.00% of
+       50,000 draws - which turns a four-way choice into a coin flip for any child
+       who has noticed. Both sides are drawn from now, and the row's smallest and
+       largest are as often the key as anything else. */
+    const numCands = [
+      n + d*(k-1),          /* added the amount the bottom number grew */
+      k*(n+1),              /* multiplied one more than the top number */
+      n*(k+1),              /* multiplied by one more than the multiplier */
+      n,                    /* left the top number alone */
+      n*(k-1),              /* multiplied by one less than the multiplier */
+      k*(n-1),              /* multiplied one less than the top number */
+      n + k,                /* added the multiplier instead of multiplying by it */
+      k*n + 1, k*n - 1,     /* counted one small piece too many / too few */
+      /* THIRD PASS 2026-09-16, W5. Below k·n the bank could only name n, n(k-1)
+         and k(n-1), which collapse to one or two distinct values whenever n = 1 -
+         almost half of SCALABLE - so three-below, the seating that makes the key
+         the LARGEST of four, was reachable on 10.8% of draws, under RULE 7's new
+         12% floor. Two more of the file's documented miscounts sit below it. */
+      k*n + 2, k*n - 2,     /* counted two small pieces too many / too few */
+      n - 1                 /* took one off the top number before multiplying */
+    ];
+    /* FOURTH PASS 2026-09-16, W2. A stem that can only seat SOME of the four ranks
+       is a stem whose rank a child can read off the numbers: "read the stem, guess
+       where the answer sits in the row" measured 36.9% at v4 here and 27.5% in the
+       denominator bank. Only draws that can seat all four are kept, in both. */
+    const inCap = c => Number.isInteger(c) && c >= 1 && c <= k*d - 1 && c !== key;
+    slips = (new Set(numCands.filter(c => inCap(c) && c > key)).size >= 3 &&
+             new Set(numCands.filter(c => inCap(c) && c < key)).size >= 3)
+      ? (sidedNum(key, numCands, k*d - 1, 4 - rank) || []) : [];
+    g++;
+  } while (g < 200 && !numsOk(key, slips));
+  if (!numsOk(key, slips)){ n = 1; d = 2; k = 3; key = 3; slips = [5,4,1]; }
+  /* EIGHTH PASS 2026-09-16, KILL 2 - THE CARD-ROW CLAUSE COULD NOT SEE THIS BANK
+     AT ALL. The clause walked the RENDERED fractions of a wrong-answer sentence,
+     and this bank's options are bare numbers, so `allFracs` found nothing on its
+     card and it was never in scope: "Adding 5 to the top instead gives 7" named a
+     7 that is on neither the row nor the stem, on 51.3 / 50.7% of draws. Both
+     named wrong answers are printed only where sided() actually seated them, and
+     the amounts themselves are named in words - the clause reads bare numerals on
+     a bare-number bank now, which is the same rule in this bank's own spelling. */
+  const seatGrew = slips.indexOf(n + d*(k-1)) >= 0, seatSame = slips.indexOf(n) >= 0;
+  return mcNum(fr(n,d) + ' = ' + frQn(k*d) + ' &nbsp; What is the missing <b>numerator</b>?',
+    key, slips,
+    'The bottom number was multiplied by ' + k + ' (' + d + ' × ' + k + ' = ' + (k*d) + '), ' +
+    'because every part was cut into ' + k + ' smaller ones. So the top number must be multiplied by ' + k +
+    ' as well: ' + n + ' × ' + k + ' = ' + key + '. ' +
+    (seatGrew
+      ? 'Adding the amount the bottom number grew, instead of multiplying, gives ' + (n + d*(k-1)) +
+        ', which is a different amount. '
+      : 'Adding the amount the bottom number grew, instead of multiplying, gives a different amount. ') +
+    (seatSame
+      ? 'So does leaving the top number at ' + n + '. '
+      : 'So does leaving the top number as the question printed it. ') +
+    'The answer is not always the biggest or the smallest number on the row: work the multiplier out.');
 }
+
+/* FORMAT 2c - the same inverse from the other end: the missing denominator
+   (pool 2, 1 step). Same principle, and the child must spot the multiplier from
+   the TOP line instead of the bottom one. */
+/* FOURTH PASS 2026-09-16, W2 - THE BANK THE 12 CAP DID NOT REACH. Every RENDERED
+   fraction in this file is inside 12 and the refutation confirms it over 1,080,000
+   draws. This generator's options are not rendered fractions: they are the bare
+   bottom number the child writes into the blank, and half of them were past 12,
+   largest 22. "3/4 = 9/?" offering 18 is exactly the off-syllabus denominator the
+   v4 pass removed the 24 allowance to stop printing, surviving only because the
+   gate looks for markup. The cap is 12 here too, and RULE 4 now reads this row.
+
+   THE CONFLICT, DECLARED. RULE 7's value-rank floor wants candidates on both sides
+   of the key; the cap takes the whole space above it away whenever the key IS 12,
+   which is 35% of the old draws. They cannot both be satisfied, and v4 resolved it
+   silently in favour of the floor. The cap wins here, and the price is paid in the
+   stem space: a draw is only kept when it can seat ALL FOUR ranks, which leaves the
+   scale factors whose product with the bottom number leaves room under 12, and the
+   distinct (n, d, k) stems fall 21 -> 8. The alternative was keeping the stems and
+   letting each one key a fixed rank, which is the same defect one layer down -
+   measured, it put "read the stem, guess where the answer sits in the row" at 49.8%
+   against 27.5% at v4. Both numbers are on the record in the lane note rather than
+   left to be found. */
+function gEqMissingDen(){
+  const rank = ri(1,4);
+  let n = 1, d = 2, k = 2, key = 4, slips = [3,4,2], g = 0;
+  do {
+    const b = drawEquiv(); n = b[0]; d = b[1]; k = b[2];
+    key = k*d;
+    /* SECOND PASS, THE SECOND KILL. The three authored distractors were
+       d + n(k-1), d + k and d, and because n < d every one of them is provably
+       BELOW k·d on every legal draw - so the key was the strict maximum of the
+       option row, and "circle the biggest number" answered this item on 100.00% of
+       50,000 draws. A child never read a fraction, never found the multiplier,
+       never touched the principle, in one of the three inverse formats this lane
+       was written to add. Distractors are drawn on BOTH sides of k·d now. */
+    /* A draw with NOTHING legal above the key - which is every draw where k*d is
+       12 itself - can only ever key the largest of four, and a stem that always
+       keys the same rank tells a child where the answer is before they have read
+       it: "read the stem, guess the rank" scored 49.8% of draws when those stems
+       were kept and 27.5% at v4. They are refused, which is where the stem space
+       goes. */
+    const denCands = [
+      (k+1)*d,              /* counted the multiplier one too many */
+      k*(d+1),              /* multiplied one more than the bottom number */
+      k*(d+n),              /* multiplied the two numbers added together */
+      d + n*(k-1),          /* added the amount the top number grew */
+      d + k,                /* added the multiplier instead of multiplying by it */
+      d,                    /* left the bottom number alone */
+      /* THIRD PASS 2026-09-16, W5. k(d+n) runs past the 24 the integer banks read
+         as a number to recognise as wrong, so above the key the bank often had
+         only two candidates and three-above - the key as the SMALLEST of four -
+         sat at 13.7%, inside the new 12% floor's noise. */
+      k*d + 1, k*d + 2,     /* counted one / two small parts too many */
+      k*d - 1, k*d - 2      /* counted one / two small parts too few */
+    ];
+    /* The improper-completion filter (an option must also exceed the printed top
+       number) is NOT applied, and the number is measured and declared instead: it
+       takes this bank from eight distinct stems to FOUR, which is the territory of
+       the two-stem comparison format the fourth pass already cautioned about. The
+       trade is stated in the lane note so the PM rules on it rather than the
+       author: 37.7% of rows offer a number that would complete an improper
+       fraction, against 32.2% at v4, and 0% at the cost of half the stems. */
+    slips = new Set(denCands.filter(c => c > key && c <= 12)).size >= 3
+      ? (sidedNum(key, denCands, 12, 4 - rank) || []) : [];
+    g++;
+  } while (g < 200 && !numsOk(key, slips));
+  if (!numsOk(key, slips)){ n = 3; d = 4; k = 3; key = 12; slips = [10,7,4]; }
+  /* EIGHTH PASS 2026-09-16, KILL 2 - the same blind spot as gEqMissing. The card
+     said "multiplying it by 4 would give 16, which is too small an amount" with 16
+     on neither the row nor the stem, on 50.9 / 51.3% of draws, and the card-row
+     clause never had a bare-number bank in scope. Each wrong answer is printed
+     only where it is seated; the multipliers themselves are named in words. */
+  const seatOver = slips.indexOf((k+1)*d) >= 0, seatSame = slips.indexOf(d) >= 0;
+  return mcNum(fr(n,d) + ' = ' + frQd(k*n) + ' &nbsp; What is the missing <b>denominator</b>?',
+    key, slips,
+    'The top number was multiplied by ' + k + ' (' + n + ' × ' + k + ' = ' + (k*n) + '), ' +
+    'so the bottom number must be multiplied by ' + k + ' too: ' + d + ' × ' + k + ' = ' + key + '. ' +
+    (seatSame
+      ? 'Leaving the bottom number at ' + d + ' instead would make the fraction bigger, not equal. '
+      : 'Leaving the bottom number alone instead would make the fraction bigger, not equal. ') +
+    (seatOver
+      ? 'Counting the multiplier one too many gives ' + ((k+1)*d) + ', which cuts the whole into too many ' +
+        'parts, so each piece is too small. '
+      : 'Counting the multiplier one too many cuts the whole into too many parts, so each piece is too ' +
+        'small. ') +
+    'The answer is not always the biggest number on the row: find the multiplier first.');
+}
+
+/* FORMAT 2d - recognise an equivalent fraction (pool 2, 1 step). The audit's
+   worst-ten #8: this ONE stem used to be the whole equivalence skill in two
+   pools. It is now one of five formats, in one pool, and its three distractors
+   are named beliefs instead of arbitrary near misses.
+
+   WOUND 2 (refutation 2026-09-15): the stem printed the SIMPLEST-FORM fraction on
+   every draw, so the generator had ELEVEN distinct stems - one per entry of the
+   base table - and a child who plays for a week has met all of them. The stem now
+   runs both ways on a coin flip: it asks about the base fraction (key = the
+   scaled-up form, 11 stems) or about the scaled-up fraction (key = the base form,
+   21 stems), which is 32 and is also the honest reading of the principle -
+   equivalence has no preferred direction. */
 function gPickEquiv(){
-  const base=pick(SIMPLE.filter(p=>p[1]<=6));
-  const [n,d]=base;
-  const ks=[]; for(let k=2;k<=4;k++) if(k*d<=12) ks.push(k);
-  const k=pick(ks);
-  const cands=[[n,k*d],[n+1,d+1],[k*n,k*d+1],[k*n+1,k*d]];
-  return finishFrac('Which fraction is <b>equivalent</b> to '+fr(n,d)+'?','',[k*n,k*d],
-    cands.filter(c=>!eq(c[0],c[1],n,d)),
-    fr(n,d)+' × '+k+' on top and bottom gives '+fr(k*n,k*d)+'.');
-}
-function gCompareSameD(){ return gCompare4('sameD'); }
-function gCompareSameN(){ return gCompare4('sameN'); }
-function gSubSame(){
-  const d=ri(4,12); const a=ri(2,d-1); const b=ri(1,a-1);
-  const s=a-b;
-  const cands=[[a+b,d],[s+1,d],[s,2*d],[Math.max(1,s-1),d]];
-  return finishFrac(fr(a,d)+' − '+fr(b,d)+' = ?','',[s,d],cands,
-    'Same denominator: subtract the numerators. '+a+' − '+b+' = '+s+', so the answer is '+fr(s,d)+'.');
-}
-function gSubFromOne(){
-  const d=ri(4,12); const a=ri(1,d-1); const s=d-a;
-  const cands=[[a,d],[Math.max(1,s-1),d],[s+1,d],[s,d+1]];
-  return finishFrac('1 − '+fr(a,d)+' = ?','',[s,d],cands,
-    '1 whole = '+fr(d,d)+'. Then '+d+' − '+a+' = '+s+', so the answer is '+fr(s,d)+'.');
-}
-function gMakeOne(){
-  const d=ri(4,12); const a=ri(1,d-1); const s=d-a;
-  const cands=[[a,d],[s+1,d],[Math.max(1,s-1),d],[s,2*d]];
-  return finishFrac(fr(a,d)+' + ? = 1 &nbsp; What is the missing fraction?','',[s,d],cands,
-    '1 whole = '+fr(d,d)+'. You need '+d+' − '+a+' = '+s+' more parts: '+fr(s,d)+'.');
-}
-function gGreatest4(){ return gCompare4(pick(['sameD','sameN','unit'])); }
-function gSimplest(){
-  const base=pick(SIMPLE.filter(p=>p[1]<=6));
-  const [n,d]=base;
-  const ks=[]; for(let k=2;k<=4;k++) if(k*d<=12) ks.push(k);
-  const k=pick(ks);
-  const N=k*n, D=k*d;
-  const cands=[[n+1,d+1],[Math.max(1,n===1?2:n-1),d],[n,Math.min(12,d+1)]];
-  if(k===4) cands.unshift([2*n,2*d]);
-  const pairs=[[n,d]];
-  for(const c of cands){
-    if(pairs.length>=4) break;
-    if(c[0]<1||c[0]>c[1]) continue;
-    if(pairs.some(s=>s[0]===c[0]&&s[1]===c[1])) continue;
-    if(eq(c[0],c[1],n,d) && !(c[0]===2*n&&c[1]===2*d)) continue;
-    pairs.push(c);
+  let n = 1, d = 2, k = 2, up = true, t = 1, key = [2,4], slips = [[3,4],[1,4],[3,4]], g = 0;
+  do {
+    const b = drawEquiv(); n = b[0]; d = b[1]; k = b[2];
+    up = Math.random() < 0.5;
+    t = n >= 2 ? k : 1;
+    key = up ? [k*n, k*d] : [n, d];
+    /* SECOND PASS, WOUND 1 + the smallest-bottom-number heuristic. Every candidate
+       the bank can name, sorted onto both sides of the key by sided(); the ±1
+       entries are the documented second-order slip (one small piece out). */
+    slips = sided(key, [
+      [n+k, d+k],                                  /* added k to the top AND the bottom */
+      [k*n+1, k*d], [k*n-1, k*d],                  /* one small piece too many / too few */
+      [k*n+2, k*d],                                /* two small pieces too many */
+      [n+1, d],                                    /* one big piece too many */
+      (n+1 < d-1 ? [n+1, d-1] : null),             /* one big piece too many, one part too few */
+      [n, k*d],                                    /* changed only the bottom number */
+      (t < k*n && t <= k*d-2 ? [k*n-t, k*d-t] : null),  /* took t off the top AND the bottom */
+      (n > 1 ? [n-1, d-1] : null),                 /* took one off the top and the bottom */
+      (d-1 > n ? [n, d-1] : null),                 /* one part too few in the whole */
+      /* THIRD PASS 2026-09-16, W5: two more below the key, so three-below - the key
+         as the LARGEST of four - clears the new 12% floor with room. */
+      [k*n-2, k*d],                                /* two small pieces too few */
+      (d+1 <= 12 ? [n, d+1] : null)                /* one part too many in the whole */
+    ].filter(Boolean)) || [];
+    g++;
+  } while (g < 200 && !(t < k*n && t <= k*d-2 && slipsOk(key, slips)));
+  if (!(t < k*n && t <= k*d-2 && slipsOk(key, slips))){
+    n = 1; d = 2; k = 3; up = true; key = [3,6]; slips = [[4,5],[1,6],[4,6]];
   }
-  let t=1;
-  while(pairs.length<4){ const c=[n+t,d+t+1]; if(c[0]<=c[1]&&!pairs.some(s=>s[0]===c[0]&&s[1]===c[1])&&!eq(c[0],c[1],n,d)) pairs.push(c); t++; if(t>30)break; }
-  const order=shuffle(pairs.map((_,i)=>i));
-  return { q:'Express '+fr(N,D)+' in its <b>simplest form</b>.', extra:'',
-    choices:order.map(i=>fr(pairs[i][0],pairs[i][1])), correct:order.indexOf(0),
-    explain:'Divide top and bottom by '+k+': '+fr(N,D)+' = '+fr(n,d)+'.',
-    answerText: fr(n,d) };
+  const given = up ? [n,d] : [k*n, k*d];
+  /* FIFTH PASS 2026-09-16, WOUND 4. This card walked a child through a wrong
+     answer they could not find anywhere on the screen on 82.4% of draws - the
+     worst in the topic - because the two slips it names are CANDIDATES and
+     sided() seats only three of a dozen. A P3 child reading "adding 2 to both
+     gives 4/7" under a row that has no 4/7 on it is being taught about an item
+     they were not shown. The value is printed where it is offered and the slip is
+     named in WORDS where it is not, which is what the rest of the file already
+     does for the beliefs that overshoot the 12 cap. */
+  /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE. The v5 guard asked
+     whether a candidate's VALUE is on the row (sameVal) and then printed the
+     candidate's own form, but sided()'s uniq() keeps whichever of two equal-valued
+     candidates is written in the BIGGER pieces - so the card said "2/8" while the
+     row showed "1/4" on 26.8 / 26.1% of draws. Same amount, different glyphs, and
+     a P3 child hunting the row for "2/8" does not find it. The seated pair is
+     looked up and printed EXACTLY as the option row prints it. */
+  const seat = c => slips.find(s => sameVal(s, c)) || null;
+  const onRow = c => !!seat(c);
+  const asRow = c => { const p = seat(c); return fr(p[0], p[1]); };
+  const first = up
+    ? 'Cut every part into ' + k + ' smaller ones: multiply the top AND the bottom by ' + k + '. ' +
+      n + ' × ' + k + ' = ' + (k*n) + ' and ' + d + ' × ' + k + ' = ' + (k*d) + ', so ' + fr(n,d) + ' = ' +
+      fr(k*n, k*d) + '. ' + (onRow([n+k, d+k])
+        ? 'Adding ' + k + ' to both instead gives ' + asRow([n+k, d+k]) + ', which is a different amount. '
+        : 'Adding ' + k + ' to the top and the bottom instead of multiplying them changes the amount. ')
+    : 'Group the parts back together in ' + k + 's: divide the top AND the bottom by ' + k + '. ' +
+      (k*n) + ' ÷ ' + k + ' = ' + n + ' and ' + (k*d) + ' ÷ ' + k + ' = ' + d + ', so ' + fr(k*n, k*d) + ' = ' +
+      fr(n,d) + '. ' + (onRow([k*n-t, k*d-t])
+        ? 'Taking ' + t + ' away from both instead gives ' + asRow([k*n-t, k*d-t]) + ', which is a different amount. '
+        : 'Taking the same number off the top and the bottom instead of dividing them changes the amount. ');
+  return mcFrac('Which fraction is <b>equivalent</b> to ' + fr(given[0], given[1]) + '?', key, slips,
+    first + (onRow([n, k*d])
+      ? 'Changing only the bottom gives ' + asRow([n, k*d]) + ', which is not the same amount either.'
+      : 'Changing only the bottom number and leaving the top alone is not the same amount either.'));
+}
+
+/* FORMAT 2e - simplest form (pool 2, 1 step). Moved DOWN out of pool 3, which is
+   the audit's worst-ten #9 closed: a one-step item does not belong in the
+   hardest pool when the skill has two-step formats available. */
+function gSimplest(){
+  let n = 2, d = 3, k = 2, N = 4, D = 6, t = 2, key = [2,3], slips = [[2,4],[2,6],[1,3]], g = 0;
+  do {
+    /* EIGHTH PASS 2026-09-16, KILL 1: the common factor is drawn evenly over
+       2, 3 and 4 and the base among the fractions that admit it, and the bottom
+       number of 2 is out of the table. See THE SIMPLEST-FORM DRAW above. */
+    const b = drawSimplify(); n = b[0]; d = b[1]; k = b[2];
+    N = k*n; D = k*d;
+    t = n >= 2 ? k : 1;
+    key = [n,d];
+    /* SECOND PASS, WOUND 1. [N-t, D-t] and [n, D] both sit below the key, so it was
+       the 3rd of four by value on 62.3% of draws and the unique SMALLEST bottom
+       number on 100% of them. Both sides are drawn from now, and at least one
+       candidate carries a bottom number under d. */
+    const cands = [
+      [N-t, D-t],                                  /* took t away from the top AND the bottom */
+      [N+t, D+t],                                  /* added t to the top and the bottom instead */
+      [N+1, D],                                    /* one piece too many, before dividing */
+      /* THIRD PASS 2026-09-16, W5. [N+t, D+t] is the only ABOVE-key candidate the
+         named beliefs supply and the 12 cap takes it off most draws, so three-above
+         - the key as the SMALLEST of four - sat at 12.7%, inside the floor's noise.
+         The mirrors of the two "left the bottom alone" slips go the other way. */
+      (N+t < D ? [N+t, D] : null),                 /* added t to the top and left the bottom */
+      [N+2, D],                                    /* two pieces too many, before dividing */
+      [n, D],                                      /* divided only the top */
+      [N-t, D],                                    /* took t off the top and left the bottom */
+      (n+1 < d ? [n+1, d] : null),                 /* one piece too many */
+      (n > 1 ? [n-1, d] : null),                   /* one piece too few */
+      (d-1 > n ? [n, d-1] : null),                 /* divided the bottom one step too far */
+      (n > 1 ? [n-1, d-1] : null),                 /* took one off the top and the bottom */
+      /* THIRD PASS 2026-09-16. Two more candidates carrying a bottom number UNDER
+         the key's, because "pick the smallest bottom number" came back to 39.0% -
+         inside RULE 7's 40% policy cap's noise - once the 12 cap took [N+t, D+t]
+         off most draws and left the row sitting over d. */
+      (n+1 < d-1 ? [n+1, d-1] : null),             /* one piece too many, one part too few */
+      (d-2 > n ? [n, d-2] : null),                 /* divided the bottom two steps too far */
+      [n+1, d+1],                                  /* added one to the top and the bottom */
+      [n, d+1],                                    /* did not divide the bottom far enough */
+      /* NINTH PASS 2026-09-16, captain's call (ii). "Simplified it all the way
+         down to a half" is a real P3 slip on a unit fraction and it is the only
+         way 1/2 reaches a row whose key is not itself a half - x/2 is never a
+         proper fraction, so the grid family cannot carry one. */
+      (d > 2 ? [1, 2] : null)
+    ].filter(Boolean);
+    /* NINTH PASS 2026-09-16, KILL 2. halfRow()'s two held seats made the key the
+       unique twinned option and collapsed the masked shape space; simplestRow()
+       shares both halves of the key AND twins every other option. See THE GRID ROW
+       AND THE DISTINCT ROW above. */
+    slips = simplestRow(key, cands,
+      [n-1, n+1].filter(x => x >= 1 && x < d && x !== n),
+      [d-1, d+1, d-2, d+2, D, D-t, D+t].filter(y => y >= 2 && y <= 12 && y !== d), 0.46, true);
+    g++;
+  } while (g < 200 && !slipsOk(key, slips));
+  if (!slipsOk(key, slips)){ n = 2; d = 3; k = 2; N = 4; D = 6; key = [2,3]; slips = [[2,4],[2,6],[1,3]]; }
+  /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE (see gSimplestError).
+     "Dividing only the top would give " + fr(n,D) names a candidate sided() seats
+     on fewer than half its draws: the card pointed at a wrong answer that was not
+     on the screen on 58.6 / 58.3%. Named in words where it is not seated.
+
+     EIGHTH PASS 2026-09-16, KILL 2 - AND THE v8 REPLACEMENT WAS FALSE. The
+     unseated branch read "Dividing only the top and leaving the bottom number at
+     D would make the pieces SMALLER as well as fewer". Leaving the bottom number
+     at D leaves the pieces EXACTLY the size they were - the topic's own addsub tip
+     says "the bottom number is the SIZE of each piece, so it never changes" - and
+     the card asserted the opposite on 64.5 / 63.5% of draws. It also handed the
+     child the two numerals of an off-row wrong answer (the D here and the n from
+     "N / k = n" two clauses earlier) without ever printing the fraction they make,
+     which is the spelling the v8 card-row clause could not read: it looked for a
+     RENDERED fraction and this one was written in words. The belief is named with
+     NO numeral to assemble, and it is now true. */
+  const onlyTop = slips.some(s => s[0] === n && s[1] === D);
+  return mcFrac('Express ' + fr(N,D) + ' in its <b>simplest form</b>.', key, slips,
+    'Simplest form means dividing the top and the bottom by the same number until you cannot go any further. ' +
+    N + ' ÷ ' + k + ' = ' + n + ' and ' + D + ' ÷ ' + k + ' = ' + d + ', so ' + fr(N,D) + ' = ' + fr(n,d) +
+    '. It is the same amount, written with bigger parts. ' +
+    (onlyTop ? 'Dividing only the top would give ' + fr(n,D) + ', which is a smaller amount.'
+             : 'Dividing only the top and leaving the bottom number alone keeps the pieces exactly the ' +
+               'size they were and simply takes some of them away, so it is a smaller amount - not the ' +
+               'same amount written in bigger pieces.'));
+}
+
+/* FORMAT 2f - negative form: which one is ALREADY simplest (pool 3, 2 steps).
+   Four fractions have to be tested, not one. */
+const REDUCIBLE = [];
+for (let q2 = 4; q2 <= 12; q2++) for (let p = 2; p < q2; p++) if (gcd(p, q2) > 1) REDUCIBLE.push([p, q2]);
+function gAlreadySimplest(){
+  let key = [3,4], slips = [[2,4],[4,6],[6,8]], g = 0;
+  do {
+    /* WOUND 4 (refutation 2026-09-15): the old `.filter(b => b[1] >= 3)` meant the
+       game NEVER asked whether one half is in its simplest form, which is the
+       first fraction a P3 child owns. The whole 45-entry table is drawn from now;
+       the sameVal guard below already refuses a reducible twin of the key. */
+    key = pick(SIMPLE);
+    /* SECOND PASS, WOUND 1's denominator half. The key is in its simplest form and
+       the three distractors are reducible, so the key carried the unique SMALLEST
+       bottom number on 42.0% of draws - over the 40% the topic-wide gate allows.
+       One distractor is drawn from BELOW the key's bottom number wherever the
+       reducible table has one; the value rank was already spread (30/21/20/29) and
+       stays that way. */
+    const under = shuffle(REDUCIBLE.filter(c => c[1] < key[1] && !sameVal(c, key)));
+    const bank = (under.length ? [under[0]] : []).concat(shuffle(REDUCIBLE));
+    slips = [];
+    for (const c of bank){
+      if (slips.length >= 3) break;
+      if (sameVal(c, key)) continue;
+      if (slips.some(s => sameVal(s, c))) continue;
+      slips.push(c);
+    }
+    g++;
+  } while (g < 200 && !slipsOk(key, slips));
+  if (!slipsOk(key, slips)){ key = [3,4]; slips = [[2,4],[4,6],[6,8]]; }
+  const q = mcFrac('Which of these fractions is <b>already</b> in its simplest form?', key, slips, '');
+  /* WOUND 4 (refutation 2026-09-15): `why` used to be built from the `slips` array,
+     which is the order BEFORE finishFrac shuffles, so the teaching card walked the
+     three distractors in a different order from the screen in 83.3% of draws and a
+     P3 child had to hunt for each line. Build it from the SHUFFLED choices. */
+  const onScreen = q.choices
+    .map((c, i) => i === q.correct ? null : slips.find(s => fr(s[0], s[1]) === c))
+    .filter(Boolean);
+  const why = onScreen.map(s => fr(s[0],s[1]) + ' divides by ' + gcd(s[0],s[1])).join(', ');
+  q.explain = 'Test each one: is there a number that divides into the top AND the bottom? ' + why +
+    '. Only ' + fr(key[0], key[1]) + ' has nothing left to divide by, so it is already in its simplest form.';
+  return q;
+}
+
+/* FORMAT 2g - error spotting, CORRECT the mistake (pool 3, 2 steps). The named
+   misconception the brief asks for: simplifying by SUBTRACTING. The printed
+   claim is re-derived by the harness and must never be the true answer. */
+function gSimplestError(){
+  let n = 2, d = 3, k = 2, N = 4, D = 6, t = 1, kid = KIDS[0], low = [1,2];
+  let key = [2,3], slips = [[3,5],[2,6],[1,2]], g = 0;
+  do {
+    /* EIGHTH PASS 2026-09-16, KILL 1: the common factor is drawn evenly over 2, 3
+       and 4, not inherited from the base. See THE SIMPLEST-FORM DRAW above - the
+       old draw put k = 2 on 76.7% of draws and "halve the printed bottom number"
+       answered this bank on 70.5 / 70.7%. */
+    const b = drawSimplify(); n = b[0]; d = b[1]; k = b[2];
+    N = k*n; D = k*d;
+    /* The amount taken away is 1, 2 or the true common factor - the three a child
+       actually writes. A free ri(1, N-1) drew "took 5 away from the top", which is
+       arithmetically consistent and pedagogically nonsense. */
+    const ts = [1, 2, k].filter(x => x >= 1 && x < N && x <= D-2);
+    t = ts.length ? pick(ts) : 1;
+    key = [n,d];
+    /* WOUND 4 (refutation 2026-09-15): the three distractors were [N-t, D-t],
+       [n, D] and [N-t, D], whose bottom numbers are D-t, D and D - all bigger than
+       the key's d - so the key was the unique smallest bottom number on 20,000 of
+       20,000 draws and the item could be settled without simplifying anything. The
+       third slot now carries a distractor BELOW d: the same take-one-away habit
+       applied a second time, to the answer. The base table is filtered to d >= 3
+       so that such a fraction always exists (nothing sits below a bottom of 2). */
+    low = (d-1 > n) ? [n, d-1] : [n-1, d-1];
+    /* SECOND PASS, WOUND 1. Two of the three sat below the key, so it was the 3rd
+       of four by value on 78.9% of draws. The mirror of the named belief - ADDING
+       the same number to both instead of subtracting it - is a real classroom slip
+       and it lands above the key, so the row is drawn from both sides. */
+    const cands = [
+      [N-t, D-t],                         /* took t away from the top AND the bottom */
+      [N+t, D+t],                         /* added t to the top and the bottom instead */
+      [N+1, D],                           /* one piece too many, before dividing */
+      /* THIRD PASS 2026-09-16, W5. Same shortage as gSimplest: [N+t, D+t] is the
+         only named candidate above the key and the 12 cap takes it off most draws,
+         so the key sat at 13.7% smallest and 39.0% 2nd largest, both inside the
+         new floor's and the policy cap's noise. */
+      (N+t < D ? [N+t, D] : null),        /* added t to the top and left the bottom */
+      [N+2, D],                           /* two pieces too many, before dividing */
+      (N+1 < D-1 ? [N+1, D-1] : null),    /* one piece too many AND the bottom one short */
+      (N+2 < D-1 ? [N+2, D-1] : null),
+      [n, D],                             /* divided only the top */
+      [N-t, D],                           /* took t off the top and left the bottom */
+      low,                                /* the same habit carried on to the answer */
+      (d-1 > n ? [n, d-1] : null),        /* one step too far down the bottom */
+      (n+1 < d ? [n+1, d] : null),        /* one piece too many */
+      [n+1, d+1],                         /* added one to the top and the bottom */
+      /* THIRD PASS 2026-09-16, W5. Three-below - the key as the LARGEST of four -
+         sat at 13.3%, inside the new 12% floor's sampling noise, because only the
+         three "left the bottom alone / took it off both" entries land under the
+         key. Two of the file's named miscounts join them. */
+      (n > 1 ? [n-1, d] : null),          /* one piece too few in the answer */
+      (n+1 < d-1 ? [n+1, d-1] : null),    /* one piece too many, one part too few */
+      (d-2 > n ? [n, d-2] : null),        /* one step too far down the bottom, twice */
+      (d+1 <= 12 ? [n, d+1] : null),      /* did not divide the bottom far enough */
+      /* NINTH PASS 2026-09-16, captain's call (ii): the only route 1/2 has on to a
+         row whose key is not itself a half. */
+      (d > 2 ? [1, 2] : null)
+    ].filter(Boolean);
+    /* NINTH PASS 2026-09-16, KILL 2 - see THE GRID ROW AND THE DISTINCT ROW. */
+    slips = simplestRow(key, cands,
+      [n-1, n+1].filter(x => x >= 1 && x < d && x !== n),
+      [d-1, d+1, d-2, d+2, D, D-t, D+t].filter(y => y >= 2 && y <= 12 && y !== d), 0.46, true);
+    g++;
+  } while (g < 200 && !(t < N && t <= D-2 && slipsOk(key, slips)));
+  if (!(t < N && t <= D-2 && slipsOk(key, slips))){
+    n = 2; d = 3; k = 2; N = 4; D = 6; t = 1; key = [2,3]; low = [1,2]; slips = [[3,5],[2,6],[1,2]];
+  }
+  kid = pick(KIDS);
+  /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE. The last sentence used
+     to print fr(low) unconditionally, and `low` is a CANDIDATE, not a seat: sided()
+     takes three of nineteen, so on 25.5 / 25.7% of draws the card said "gives 1/5"
+     about a fraction the child cannot see anywhere on the screen. A wrong answer a
+     child cannot compare against the row is a wrong answer they can only memorise.
+     Same class as the sixth pass's W4 (closed in gPickEquiv) and as gSimplest,
+     gEquivFromBar and gSubRelated, all four closed together this pass and gated by
+     the CARD-ROW CLAUSE in tools/gen-sanity.mjs: a fraction named inside a
+     wrong-answer sentence on the teaching card must be on the option row or in the
+     stem. Where it is not seated, the habit is named in words instead. */
+  const lowOnRow = slips.some(s => s[0] === low[0] && s[1] === low[1]);
+  return mcFrac(kid[0] + ' says ' + fr(N,D) + ' in its simplest form is ' + fr(N-t, D-t) + ', because ' +
+    kid[2] + ' took ' + t + ' away from the top and ' + t + ' away from the bottom. <b>What is ' + fr(N,D) +
+    ' in its simplest form?</b>', key, slips,
+    'Taking the same number away from the top and the bottom changes the amount. ' + fr(N,D) + ' is ' +
+    'not ' + fr(N-t, D-t) + '. To simplify you DIVIDE both by the same number: ' + N + ' ÷ ' + k + ' = ' + n +
+    ' and ' + D + ' ÷ ' + k + ' = ' + d + ', so ' + fr(N,D) + ' = ' + fr(n,d) + '. ' +
+    (lowOnRow
+      ? 'Carrying the same habit on to the answer - taking 1 off ' +
+        (low[0] === n ? 'the bottom' : 'the top and the bottom') + ' of ' + fr(n,d) + ' - gives ' +
+        fr(low[0], low[1]) + ', which is a different amount again.'
+      : 'Carrying the same habit on to the answer would change the amount a second time: ' + fr(n,d) +
+        ' is as far as it goes, and taking anything more off the top or the bottom makes a different ' +
+        'fraction, not a simpler one.'));
+}
+
+
+/* ===========================================================================
+   PRINCIPLE 3 - COMPARING AND ORDERING
+   =========================================================================== */
+
+/* Four fractions with four DIFFERENT values, in one of the three P3 arrangements.
+   Unlike values are what makes exactly one option the extreme; the guard below
+   proves it rather than assuming it. */
+function fourFracs(mode){
+  if (mode === 'unit'){
+    return shuffle([2,3,4,5,6,7,8,9,10,12]).slice(0,4).map(x => [1,x]);
+  }
+  if (mode === 'sameD'){
+    const d = ri(5,12);
+    return shuffle(Array.from({length:d-1}, (_,i) => i+1)).slice(0,4).map(x => [x,d]);
+  }
+  const n = ri(2,4);
+  return shuffle([n+1,n+2,n+3,n+4,n+5,n+6,n+7,n+8].filter(x => x <= 12)).slice(0,4).map(x => [n,x]);
+}
+function allDistinct(pairs){
+  for (let i = 0; i < pairs.length; i++)
+    for (let j = i+1; j < pairs.length; j++) if (sameVal(pairs[i], pairs[j])) return false;
+  return pairs.every(legalFrac);
+}
+function extremeOf(pairs, wantMax){
+  let b = 0;
+  for (let i = 1; i < pairs.length; i++){
+    const better = wantMax ? pairs[i][0]*pairs[b][1] > pairs[b][0]*pairs[i][1]
+                           : pairs[i][0]*pairs[b][1] < pairs[b][0]*pairs[i][1];
+    if (better) b = i;
+  }
+  return b;
+}
+function compareQ(stem, pairs, wantMax, explain){
+  const b = extremeOf(pairs, wantMax);
+  const order = shuffle(pairs.map((_,i) => i));
+  return { q: stem, extra: '', choices: order.map(i => fr(pairs[i][0], pairs[i][1])),
+           correct: order.indexOf(b), explain: explain(pairs[b]),
+           answerText: fr(pairs[b][0], pairs[b][1]) };
+}
+
+/* FORMAT 3a - unit fractions, with the rule named in the stem (pool 1, 1 step). */
+function gCompareUnit(){
+  let pairs = [[1,2],[1,3],[1,4],[1,5]], g = 0;
+  do { pairs = fourFracs('unit'); g++; } while (g < 200 && !allDistinct(pairs));
+  if (!allDistinct(pairs)) pairs = [[1,2],[1,3],[1,4],[1,5]];
+  const wantMax = Math.random() < 0.5;
+  return compareQ('These fractions are all <b>one part</b> of a whole. Which one is the <b>' +
+    (wantMax ? 'greatest' : 'smallest') + '</b>?', pairs, wantMax, best =>
+    'The top number is 1 every time, so the bottom number is doing all the work: it says how many equal ' +
+    'parts the whole was cut into. More parts means SMALLER pieces. ' +
+    'The bottom numbers here are ' + pairs.map(p => p[1]).sort((x,y) => x-y).join(', ') + ', so the ' +
+    (wantMax ? 'smallest bottom number gives the greatest fraction' : 'biggest bottom number gives the smallest fraction') +
+    ': ' + fr(best[0], best[1]) + '.');
+}
+
+/* FORMAT 3b - compare against a picture, using one of the two P3 rules
+   (pool 1, 1 step). Pictorial support is written into the syllabus objective.
+
+   THIRD PASS 2026-09-16, W1. The v3 format drew ONE option satisfying the stem's
+   direction and three from the other side of the blue fraction, so the key was the
+   strict maximum when the stem said "greater" and the strict minimum when it said
+   "less": the blind policy "read the direction word, take that extreme of the
+   option row, never look at the bar" scored 100.00% of 20,000 draws. The bar was
+   rendered on every draw and read on none of them, in the one format whose whole
+   reason for existing is pictorial support - and the generator sat in RANK_EXEMPT
+   beside four comparison formats whose stems DO name an extreme, under a printed
+   reason ("the stem asks for an extreme") that was true of them and false of it.
+
+   A single-threshold question cannot escape this: exactly one option greater than
+   the blue fraction IS the largest option. So the deciding step is moved onto the
+   PICTURE. The stem now names two conditions - the bar's own bottom number (or its
+   top number, on a coin flip), which can only be got by counting the parts, and a
+   direction - and the row carries TWO options on the named side of the blue
+   fraction, one of which fails the counted condition. Every option still shares a
+   top or a bottom number with the blue fraction, so every comparison a child makes
+   is one of the two P3 rules; what has gone is the option row that could be read
+   without the bar. gCompareBar is out of RANK_EXEMPT and gated like everything
+   else. Measured: direction-extreme policy 100.00% -> ~33%. */
+/* FOURTH PASS 2026-09-16, W1. The v4 rebuild above is real work and every number
+   it declared reproduces - but the picture is STILL never needed, and now provably
+   so. The four options were always exactly two PAIRS, one sharing a bottom number
+   with itself and one a top number; the stem named which feature to use; and the
+   blue fraction sat strictly BETWEEN the two options of the named pair on 100.00%
+   of draws. So "find the pair that shares the named feature, take the direction
+   extreme of those two" scored 100.00%, and reading the bar changed the answer on
+   0.00% of 20,000 draws. Two conditions, one of them readable off the row, is one
+   condition.
+
+   The deeper reason, written down so the fifth pass does not rediscover it: a
+   THRESHOLD condition can never need the picture. If exactly one option is greater
+   than the blue fraction, that option IS the largest option, and "take the largest"
+   answers it. The only escape is to stop asking for the unique option past a
+   threshold and start asking WHICH option the threshold lands next to.
+
+   So the stem asks for the smallest option still GREATER than the blue fraction (or
+   the greatest still LESS than it). All four options are comparable with the bar by
+   one P3 rule - either all four are written over the bar's own bottom number, or all
+   four carry its top number - and the row alone cannot say which of them the answer
+   is, because the answer moves as the shading moves. The key's place in the row BY
+   VALUE is drawn FIRST, uniformly over all four, and the bar is then drawn into the
+   gap beside it: every rank is 25%, the key is as often the smallest or the largest
+   of the four as anything else, and the child has to count the shaded parts to know
+   which gap the blue fraction is in.
+
+   Measured (own harness, 20,000 draws x two seeds): the best option-row-only policy
+   - every rank, every top/bottom extreme, every pair rule - scores 25.0%, against
+   100.00% for the v4 row. tools/gen-sanity.mjs RULE 10 gates it over every bank in
+   the topic that draws a picture, with the v4 option row as its negative control. */
+function gCompareBar(){
+  /* The rank is the thing that must be uniform, so it is drawn once and the numbers
+     are drawn to fit it - gAddError's belief-first shape, applied to a position. */
+  const rank = ri(1,4);
+  let d = 9, n = 4, mode = 'sameD', dir = 'greater';
+  let key = [5,9], others = [[2,9],[3,9],[7,9]], g = 0, ok = false;
+  do {
+    dir  = Math.random() < 0.5 ? 'greater' : 'less';
+    mode = Math.random() < 0.5 ? 'sameD' : 'sameN';
+    d = ri(4,12); n = ri(1,d-1);
+    /* how many of the four must sit BELOW the blue fraction for the key to land on
+       the drawn rank: "smallest one still greater" keys the option just above the
+       gap, "greatest one still less" the option just below it. */
+    const nLow = dir === 'greater' ? rank - 1 : rank;
+    const nHigh = 4 - nLow;
+    const low = [], high = [];
+    if (mode === 'sameD'){                 /* like fractions: the bar's own bottom number */
+      for (let x = 1; x < n; x++) low.push([x, d]);
+      for (let x = n+1; x <= d-1; x++) high.push([x, d]);
+    } else {                               /* same top number: a bigger bottom is a smaller piece */
+      for (let e = d+1; e <= 12; e++) if (e > n) low.push([n, e]);
+      for (let e = n+1; e <= d-1; e++) high.push([n, e]);
+    }
+    ok = low.length >= nLow && high.length >= nHigh;
+    if (ok){
+      const byVal = (p,q2) => p[0]*q2[1] - q2[0]*p[1];
+      const L = shuffle(low).slice(0, nLow).sort(byVal);
+      const H = shuffle(high).slice(0, nHigh).sort(byVal);
+      key = dir === 'greater' ? H[0] : L[L.length-1];
+      others = L.concat(H).filter(p => p !== key);
+      ok = !!key && others.length === 3 && allDistinct([key].concat(others));
+    }
+    g++;
+  } while (g < 200 && !ok);
+  if (!ok){ d = 9; n = 4; mode = 'sameD'; dir = 'greater'; key = [5,9]; others = [[2,9],[3,9],[7,9]]; }
+  const pairs = [key].concat(others);
+  const order = shuffle(pairs.map((_,i) => i));
+  const up = dir === 'greater';
+  const why = mode === 'sameD'
+    ? 'Every fraction on the row is written in ' + d + 'ths like the bar, so the pieces are all the same ' +
+      'size and only the top numbers are compared. The tops are ' +
+      pairs.map(p => p[0]).sort((x,y) => x-y).join(', ') + ', and the ' +
+      (up ? 'smallest one above ' : 'biggest one below ') + n + ' is ' + key[0] + ': ' + fr(key[0], key[1]) + '.'
+    : 'Every fraction on the row has a top number of ' + n + ' like the bar, so the bottom numbers decide - ' +
+      'the bigger the bottom number, the more parts the whole is cut into and the SMALLER each piece. The ' +
+      'bottom numbers are ' + pairs.map(p => p[1]).sort((x,y) => x-y).join(', ') + ', and a bottom number ' +
+      (up ? 'UNDER ' : 'OVER ') + d + ' makes a fraction ' + (up ? 'greater' : 'less') + ' than the blue one, ' +
+      'so the closest of those is the one with the ' + (up ? 'biggest' : 'smallest') + ' such bottom number, ' +
+      key[1] + ': ' + fr(key[0], key[1]) + '.';
+  return fig({
+    q: 'The bar below shows one fraction shaded blue. Which of these fractions is the <b>' +
+       (up ? 'smallest' : 'greatest') + '</b> one that is still <b>' + (up ? 'greater' : 'less') +
+       '</b> than the blue fraction?',
+    extra: '', choices: order.map(i => fr(pairs[i][0], pairs[i][1])), correct: order.indexOf(0),
+    explain: 'Count the bar first: it is cut into ' + d + ' equal parts with ' + n + ' shaded, so the blue ' +
+             'fraction is ' + fr(n,d) + '. ' + why,
+    answerText: fr(key[0], key[1]),
+    authoredFrac: others.map(p => [p[0], p[1]])
+  }, bar(d, n));
+}
+
+/* FORMAT 3c - like fractions, rule named in the stem (pool 2, 1 step). */
+function gCompareSameD(){
+  let pairs = [[1,7],[3,7],[5,7],[6,7]], g = 0;
+  do { pairs = fourFracs('sameD'); g++; } while (g < 200 && !allDistinct(pairs));
+  if (!allDistinct(pairs)) pairs = [[1,7],[3,7],[5,7],[6,7]];
+  const d = pairs[0][1], wantMax = Math.random() < 0.5;
+  return compareQ('These fractions all have the <b>same bottom number</b>. Which one is the <b>' +
+    (wantMax ? 'greatest' : 'smallest') + '</b>?', pairs, wantMax, best =>
+    'Every piece is one of ' + d + ' equal parts, so all the pieces are the same size. ' +
+    'When the pieces are the same size you just count them: compare the top numbers ' +
+    pairs.map(p => p[0]).sort((x,y) => x-y).join(', ') + '. The ' + (wantMax ? 'greatest' : 'smallest') + ' is ' +
+    fr(best[0], best[1]) + '.');
+}
+
+/* FORMAT 3d - two-step word problem in a Singapore context (pool 2). The child
+   maps four names onto four fractions, then compares. The wholes are declared
+   SAME-SIZE in the stem, because comparing fractions of different wholes is not
+   a question at all - and the harness refuses any draw that omits it. */
+function gCompareWords(){
+  let names = SOLO.slice(0,4), pairs = [[2,3],[2,5],[2,7],[2,9]], g = 0;
+  do { pairs = fourFracs(Math.random() < 0.5 ? 'sameN' : 'unit'); g++; } while (g < 200 && !allDistinct(pairs));
+  if (!allDistinct(pairs)) pairs = [[2,3],[2,5],[2,7],[2,9]];
+  names = shuffle(SOLO).slice(0,4);
+  const cake = pick(CAKES), wantMax = Math.random() < 0.5;
+  const b = extremeOf(pairs, wantMax);
+  const sentences = names.map((nm,i) => nm + ' ate ' + fr(pairs[i][0], pairs[i][1]));
+  const opts = shuffle(names.slice());
+  return { q: names[0] + ', ' + names[1] + ', ' + names[2] + ' and ' + names[3] +
+      ' each bought a <b>same-size</b> ' + cake + '. ' + sentences.join(', ') +
+      '. <b>Who ate the ' + (wantMax ? 'most' : 'least') + '?</b>',
+    extra: '', choices: opts, correct: opts.indexOf(names[b]),
+    /* "Because all four are the same size" and not "the <cake>s", which pluralised
+       to "kueh lapiss" and "pizza at the hawker centres". */
+    explain: 'Because all four are the same size, the fractions can be compared straight away. ' +
+      (pairs[0][0] === pairs[1][0]
+        ? 'Every fraction has the same top number, ' + pairs[0][0] + ', so the bigger the bottom number the smaller the share.'
+        : 'Every fraction is one part of a whole, so the bigger the bottom number the smaller the share.') +
+      ' ' + names[b] + ' ate ' + fr(pairs[b][0], pairs[b][1]) + ', which is the ' +
+      (wantMax ? 'biggest' : 'smallest') + ' share.',
+    answerText: names[b] };
+}
+
+/* FORMAT 3e - error spotting, DIAGNOSE the mistake (pool 3, 2 steps).
+
+   THE KILL, Sweep fractions Refutation 2026-09-15. The old item read:
+
+     Siti says 1/6 is greater than 1/4, because 6 is greater than 4.
+       * Siti forgot that the bigger the bottom number, the smaller each piece.
+         Siti should have compared the top numbers instead of the bottom ones.
+         Siti should have added the top and the bottom of each fraction first.
+         Siti should have made the top numbers the same before comparing.
+
+   Three distractors read "X should have ...", the key alone read "X forgot
+   that ...", and the key was also the longest option - on 2,000 of 2,000 draws,
+   in the item the feed served MORE OFTEN THAN ANY OTHER IN THE TOPIC (3.50 of
+   every 30). The name was fixed after the gLPerimDiff kill; the verb phrase was
+   not, so the odd sentence out was still the answer. Its whole draw space was six
+   option sets - one per child name - because the four sentences were constants.
+
+   Three things change, and all three are needed:
+
+   1. ONE GRAMMATICAL FRAME. Every option is "<Name> <past-tense verb> ...", the
+      house pattern gAddError already uses correctly, and every option sits in one
+      length band (measured 53-65 characters, or to 71 with a two-word name - the
+      v2 note's "50-56" was wrong and the second pass corrected it). There is no
+      odd one out by form OR by length, and no option can be picked out without
+      reading the stem.
+   2. THE KEY MOVES. Three named comparing beliefs are authored; ONE of them is
+      the mistake the stem prints, and the other two ride as distractors. Which
+      one is the key rotates per draw, so no single sentence is the answer more
+      than about a third of the time. A fourth option is drawn from a bank of
+      never-true diagnoses PAIRED TO THE BELIEF - see the second-pass block
+      below, which is what stops the reason's noun singling the key out.
+   3. THE STEM SAYS WHICH BELIEF IT IS. gAddError fingerprints its belief with the
+      claim's VALUE; a comparison claim is just "A is greater than B" and carries
+      no such number, so the fingerprint here is the child's stated REASON, which
+      each belief prints in its own form. The oracle re-derives the belief from
+      that reason and fails the build if it matches none or more than one.
+
+   Draw space: 6 names x 3 beliefs x 3 never-true diagnoses per belief x ~490
+   fraction pairs = 54 distinct option sets, all 54 of them (set, key) pairs,
+   measured at 5,072 distinct stems in 20,000 draws - against six option sets and
+   one fixed key before, with the key the odd sentence out and the longest option
+   every time. Key is the unique longest option on 10.7% of draws, sentence-frame
+   tell 0.0%, noun-matching policy 36.3%. */
+/* SECOND PASS 2026-09-15, KILL 1 RELOCATED. The v2 rewrite removed the grammatical
+   frame tell (100% -> 0.0%) and the length tell with it, but its own third pillar
+   put a new one in their place. The stem prints the child's stated REASON so the
+   oracle can fingerprint the belief, and the reason named its belief with the SAME
+   NOUN the key sentence used - while no other option repeated that noun. A child
+   running "find the words the reason used and pick the option that repeats them"
+   scored 94.5% over 5,000 draws (100% on the `top` and `sum` beliefs; 83.0% on
+   `bottom` only because one filler happened to say "bottom numbers" too) without a
+   single fraction being compared. Same sentence as the v1 kill, different shape.
+
+   The fix is the refuter's own: stop letting the noun single the key out. Two
+   things do that together.
+     1. Two of the three BELIEF sentences now name both nouns, which is also the
+        truer diagnosis - the `top` belief IS the bottom-number rule used on the
+        tops, and the `sum` belief IS adding the top number to the bottom one.
+     2. The never-true fourth option is drawn from a bank PAIRED TO THE BELIEF, so
+        it always repeats the reason's own noun.
+   On every draw at least two options repeat the reason's vocabulary - four on a
+   `bottom` stem, three on a `top` stem, two on a `sum` stem - and a word-matching
+   child who guesses between them scores ~36%, against 94.5% before.
+
+   Pairing the filler to the belief closes a second thing the second pass found:
+   the shared bank could offer "X made the bottom numbers the same before comparing
+   them" on a stem whose two fractions ALREADY had the same bottom number (11.4% of
+   draws) - correct practice, offered as a wrong answer, about a step the stem shows
+   was unnecessary. Each bank below is never true of ITS OWN belief's stem shape. */
+/* FIFTH PASS 2026-09-16, THE KILL, and the third time on this generator - this
+   time from the OPTION ROW with the stem covered up, on 100.00% of 40,000 draws.
+
+   `CMP_BELIEFS` had three members and all three were on every row, the key one of
+   them; the fourth option was drawn from `CMP_NEVER[belief.id]`, a filler bank
+   PAIRED TO THE BELIEF so that the reason's noun could not single the key out.
+   That pairing is the defect: the filler then identifies the belief, and the
+   belief identifies the key. 54 option rows, 54 (row, key) pairs, 54/54
+   deterministic - and the two printed fractions changed the answer on 0.00% of
+   draws, so 5,088 distinct stems were decoration. The v3 fix and the v2 fix,
+   working exactly as designed, are what built it.
+
+   THE PM'S RULING: drop the paired filler and draw FOUR REAL BELIEFS, so every row
+   is the same four sentences and only the printed fractions plus the stated reason
+   decide. That is what is here. `CMP_NEVER` is gone.
+
+   THE FOUR BELIEFS, all of them P3 classroom errors and all four on every row:
+   compared the top numbers only; the backwards bottom-number rule; added the top
+   number to the bottom number; and compared the pieces that are MISSING (the gap
+   between the two numbers) instead of the pieces you have.
+
+   THE FINGERPRINT MOVES OFF THE WORDS AND ONTO THE ARITHMETIC. v2-v5 printed the
+   child's reason in a form that named its belief ("9 is a smaller bottom number
+   than 11"), which is what let every later attack read the belief off the words.
+   The stem now prints only the two NUMBERS the child worked out, in one fixed
+   frame, and which belief produced them is a fact about the two printed fractions:
+   7 and 11 are tops, or bottoms, or totals, or gaps, depending entirely on what
+   the fractions are. This is gAddError's fingerprint-by-value, which is the one
+   error-spotting design in this file that five passes have not killed.
+
+   WHAT THAT BUYS, and it is the whole point:
+     - the option row is the same four sentences every time, so the row alone is
+       worth 25.00% - chance, exactly - and the new row-only rule measures it;
+     - the printed fractions are load-bearing by construction: change them and the
+       same two numbers name a different belief;
+     - there is no filler, so nothing on the row indexes anything;
+     - the key rotates uniformly over four beliefs, so no sentence is the answer
+       more than a quarter of the time.
+
+   THE ONE REGULARITY LEFT, declared. A same-top-number stem cannot host the `top`
+   belief, because comparing equal top numbers produces no claim at all, so that
+   shape carries three of the four beliefs and the related-fraction shape carries
+   all four. A child who reads the two fractions and sees a shared top number has
+   eliminated one option: 33% rather than 25%, under every ceiling in this file,
+   and it is bought by READING THE FRACTIONS, which is the thing the v5 item never
+   required. */
+/* SIXTH PASS 2026-09-16, THE KILL, for the FOURTH consecutive time - and the
+   GENERATOR IS RETIRED. THE PM'S RULING, final for this bank: every axis this
+   file can measure has now killed gCompareError - the sentence frame (v1), the
+   noun overlap (v2), the paired filler naming its own key (v5) and now the
+   GLYPHS of the numbers the rebuild printed (v6). It is off the topic.
+
+   WHAT THE SIXTH PASS MEASURED. The v6 rebuild moved the fingerprint off the
+   WORDS of the child's reason and onto the two numbers it prints, which name a
+   belief only in the light of the two printed fractions. Row-only fell to 25.1%,
+   exactly chance, and the printed fractions became load-bearing on 88%. All of
+   that reproduces. And the item is answered by a FOUR-CLAUSE RULE WITH NO
+   ARITHMETIC IN ANY CLAUSE on 91.84% / 91.19% of 20,000 draws on each of two
+   seeds:
+
+     are the two worked-out numbers the same two numerals as the two TOP numbers?
+       -> "compared the top numbers"
+     as the two BOTTOM numbers?              -> "bigger bottom number"
+     otherwise, does either have TWO DIGITS? -> "added them"
+     otherwise                               -> "counted what is missing"
+
+   Clauses 1 and 2 are pure numeral matching, fire on 50.5% of draws and never
+   misfire; clause 3 counts glyphs in a numeral, which is how a P3 child tells 14
+   from 4. The rebuild printed the belief's own arithmetic OUTPUT, and for two of
+   the four beliefs that output is literally a numeral already on the screen - so
+   copying a numeral, which is not a fraction operation, names the misconception.
+   A second, independent regularity the v6 note declared only in its weak half:
+   "if the two fractions do not share a top number, answer compared-the-tops" is
+   worth 44.12% / 43.70% overall, not the declared 33% on one shape.
+
+   WHY NOT A FIFTH REWRITE. An error-spotting item MUST print the evidence it asks
+   the child to diagnose, and the evidence is numbers; every rewrite of this bank
+   has moved the fingerprint to a different surface of the same printed evidence.
+   The PM's ruling is the same one that retired the prose concept check: four
+   passes on one generator is a structural finding about the FORMAT, not a wording
+   defect. gAddError remains this topic's error-spotting format and is gated by
+   RULE 13 like everything else.
+
+   WHAT REPLACES IT. The slot is pool 3 / `compare`, two steps, so the refill is
+   the PM's own named design - FORMAT 3e below, "which of these four is between X
+   and Y" over related denominators, rank-gated. It is numeric, so there is no
+   sentence to recognise; the two bounds must both be converted before any option
+   can be judged, so it is genuinely two-step; and the key is one interior value
+   out of several, so no extreme of the row names it. */
+/* FORMAT 3e - which fraction lies BETWEEN two printed ones (pool 3, 2 steps).
+   Step 1: cut both bounds into the smaller pieces the options are written in.
+   Step 2: read which single option lands strictly between them.
+
+   THE DESIGN CONSTRAINTS, each one a gate this file already carries:
+     - RULE 7: the key's value rank is drawn FIRST and sided() is forced to seat
+       it, so the key is not the extreme of the row and "pick the middle one" is
+       worth nothing. The two bounds are themselves offered - a child who has not
+       understood "between" picks an end - and they sit on opposite sides.
+     - THE COUPLING BAN: the stem's own bottom number is on the row (the two
+       converted bounds are not, the printed ones are), so "keep the bottom number
+       the question gives you" picks a DISTRACTOR.
+     - RULE 12: the stem prints four numerals and the key's bottom number is the
+       scaled one, which is in no word of the stem, so no six-row table over the
+       stem's numerals names the key.
+     - RULE 13: every option is a fraction and the key's numerals are not the
+       stem's, so numeral membership leaves at least two options standing.
+   The bounds are ADJACENT b-ths, so exactly the interior d-ths lie between them
+   and the item has one answer by construction rather than by filtering. */
+/* The two ends are RELATED, which is the only comparison P3 owns: one is written
+   over `b` and the other over `d = m x b`, so exactly one conversion is needed
+   before the row can be read at all. The ends are drawn to leave AT LEAST TWO
+   d-ths strictly between them, which is what keeps the stem from naming the key:
+   a child who memorises the pair of ends still has to choose between two or more
+   interior values, so the six-row stem table of RULE 12 is worth nothing here. */
+/* SEVENTH PASS 2026-09-16, WOUND 3 - THE STEM SPACE, DECLARED WITH ITS ARITHMETIC
+   RATHER THAN WIDENED. The refutation asks for 200 distinct stems here and the
+   format cannot reach it inside P3: the loop below is the COMPLETE enumeration of
+   legal (d, b, x, y) - every related pair with a bottom number to 12 and at least
+   two twelfths of room between the ends - and it yields 108 shapes and 107 distinct
+   stems. Relaxing the guard to hi - lo >= 2 takes it to 150 shapes, still short of
+   200, and every stem it adds has exactly ONE value between its ends, so the pair
+   of ends NAMES the key on those draws and the stem-recall route goes UP, not down.
+   The only other widenings available leave related pairs, which is P4 content.
+   Measured: a child who has met all 107 stems and recalls each one's answer scores
+   56.7 / 56.8% on 20,000 held-out draws (two seeds), under the 60% line the file
+   uses everywhere - carried as the stem-space class, with its exposure of
+   1.69 / 1.67 items a session at 80% accuracy.
+
+   EIGHTH PASS 2026-09-16, W6 - THE 107 WAS RIGHT AND ITS STATED CAUSE WAS WRONG.
+   The enumeration yields 108 tuples and they render 108 DISTINCT stems; the reason
+   only 107 are ever served is that one tuple's row can never be seated, so the
+   hard-coded fallback fired in its place on 76 of 200,000 draws (0.038%). The
+   tuple is [6, 3, 2, 1] - "which of these is between 1/6 and 2/3" - and the
+   arithmetic is exact: the ends convert to 1/6 and 4/6, the interior is 2/6 and
+   3/6, and the only legal sixths OUTSIDE the ends are 1/6, 4/6 and 5/6. The
+   printed 2/3 is the same value as 4/6, so uniq() collapses them and exactly three
+   distinct candidates remain - the row is forced, and the key then shares both its
+   numerals with it on every seating, which digitIsolatesKey refuses. A shape whose
+   row cannot be seated is not a stem this bank has; it is refused at enumeration
+   now, by the generator's OWN bank and OWN guards rather than by a hard-coded
+   exclusion, so the table is 107 shapes, 107 stems, and the fallback row is
+   unreachable. */
+/* The candidate bank, lifted out of the generator so that the enumeration filter
+   below and the draw itself cannot drift apart. Every entry is a named belief, and
+   NOTHING in it may lie strictly between the two ends or the item has two right
+   answers. */
+function btwCands(d, b, x, y, m, t0){
+  const lo = Math.min(x*m, y), hi = Math.max(x*m, y), key = [t0, d];
+  const between = p => lo*p[1] < p[0]*d && p[0]*d < hi*p[1];
+  return [
+    [lo, d], [hi, d],                     /* took one of the two ends */
+    [x, b], [y, d],                       /* took an end exactly as the stem prints it */
+    (lo-1 >= 1 ? [lo-1, d] : null),       /* just under the lower end */
+    (hi+1 < d ? [hi+1, d] : null),        /* just over the upper end */
+    [x, d],                               /* kept the top number, changed only the bottom */
+    (y < b ? [y, b] : null),              /* read the second end in the FIRST end's pieces */
+    (t0 < b ? [t0, b] : null),            /* the right top number over the wrong bottom */
+    (x+y < d ? [x+y, d] : null),          /* added the two printed top numbers */
+    (lo+hi < d ? [lo+hi, d] : null),      /* added the two converted top numbers */
+    (Math.abs(y-x) >= 1 && Math.abs(y-x) < b ? [Math.abs(y-x), b] : null)
+  ].filter(Boolean).filter(p => legalFrac(p) && !between(p) && !sameVal(p, key));
+}
+/* Is there ANY interior value this shape can key with three distinct candidates,
+   one written over each of the two bottom numbers the stem prints, and the key not
+   the lone option both of whose numerals are printed elsewhere on the row? Exactly
+   the do-while below asks for, run once per shape at load (0.3 ms for the whole
+   table). One tuple of the 108 fails it. */
+function btwSeatable(d, b, x, y){
+  const m = d/b, lo = Math.min(x*m, y), hi = Math.max(x*m, y);
+  for (let t0 = lo+1; t0 <= hi-1; t0++){
+    const key = [t0, d], u = [];
+    for (const c of btwCands(d, b, x, y, m, t0)){
+      const i = u.findIndex(z => sameVal(z, c));
+      if (i < 0) u.push(c); else if (c[1] < u[i][1]) u[i] = c;
+    }
+    for (let i = 0; i < u.length; i++)
+      for (let j = i+1; j < u.length; j++)
+        for (let p = j+1; p < u.length; p++){
+          const trio = [u[i], u[j], u[p]];
+          if (!slipsOk(key, trio)) continue;
+          if (!trio.some(s => s[1] === d) || !trio.some(s => s[1] === b)) continue;
+          if (!digitIsolatesKey(key, trio)) return true;
+        }
+  }
+  return false;
+}
+const BTW_SHAPES = [];
+for (let d2 = 4; d2 <= 12; d2++)
+  for (let b2 = 2; b2 < d2; b2++) if (d2 % b2 === 0)
+    for (let x2 = 1; x2 < b2; x2++)
+      for (let y2 = 1; y2 < d2; y2++) {
+        const lo2 = Math.min(x2*(d2/b2), y2), hi2 = Math.max(x2*(d2/b2), y2);
+        if (hi2 - lo2 >= 3 && btwSeatable(d2, b2, x2, y2)) BTW_SHAPES.push([d2, b2, x2, y2]);
+      }
+function gBetween(){
+  const rank = ri(1,4);
+  let d = 12, b = 3, m = 4, x = 1, y = 9, lo = 4, hi = 9, key = [6,12], slips = [[3,12],[1,3],[10,12]], g = 0;
+  do {
+    const s = pick(BTW_SHAPES);
+    d = s[0]; b = s[1]; m = d/b; x = s[2]; y = s[3];
+    lo = Math.min(x*m, y); hi = Math.max(x*m, y);
+    const inside = [];
+    for (let t = lo+1; t <= hi-1; t++) inside.push(t);
+    key = [pick(inside), d];
+    const cands = btwCands(d, b, x, y, m, key[0]);
+    slips = sided(key, cands, sameDen(cands, b, key), 4 - rank) || [];
+    g++;
+    /* THE MIRROR OF THE COUPLING BAN, and this format is the one place in the file
+       where it bites the other way round. sameDen() deliberately seats an option
+       written over the STEM'S first bottom number so that "keep the bottom number
+       the question gives you" cannot isolate the key - and the key here is written
+       over the SCALED bottom number, so seating two or three of those would leave
+       the key the unique option NOT over `b`, which is the same rule read
+       backwards. At least one slip shares the key's own bottom number as well, so
+       neither direction of the rule is ever alone on the row. */
+  } while (g < 200 && !(slipsOk(key, slips) && !digitIsolatesKey(key, slips) &&
+                        slips.filter(s2 => s2[1] === d).length >= 1 &&
+                        slips.filter(s2 => s2[1] === b).length >= 1));
+  if (!slipsOk(key, slips)){
+    d = 12; b = 3; m = 4; x = 1; y = 9; lo = 4; hi = 9; key = [6,12]; slips = [[3,12],[1,3],[10,12]];
+  }
+  const A = x*m < y ? [x, b] : [y, d], B = x*m < y ? [y, d] : [x, b];
+  return mcFrac('Which of these fractions is <b>between</b> ' + fr(A[0],A[1]) + ' and ' + fr(B[0],B[1]) + '?',
+    key, slips,
+    'Step 1: the two ends are not written in the same size of piece, so cut ' + fr(x,b) + ' into ' + d +
+    'ths first: ' + x + ' × ' + m + ' = ' + (x*m) + ' and ' + b + ' × ' + m + ' = ' + d + ', so ' + fr(x,b) +
+    ' is the same amount as ' + fr(x*m,d) + '. ' +
+    'Step 2: now every fraction is in ' + d + 'ths, so just count the tops - the answer has to be more than ' +
+    lo + ' of them and fewer than ' + hi + '. That is ' + fr(key[0], key[1]) + '. ' +
+    fr(A[0],A[1]) + ' and ' + fr(B[0],B[1]) + ' are the two ends themselves, so neither of them is between them.');
+}
+
+/* FORMAT 3f - mixed comparing, no rule named (pool 3, 1 step). DECLARED ANCHOR:
+   the fluency item pool 3 keeps on purpose. */
+function gGreatest4(){
+  let pairs = [[1,2],[1,3],[1,4],[1,5]], mode = 'unit', g = 0;
+  do { mode = pick(['sameD','sameN','unit']); pairs = fourFracs(mode); g++; }
+  while (g < 200 && !allDistinct(pairs));
+  if (!allDistinct(pairs)){ mode = 'unit'; pairs = [[1,2],[1,3],[1,4],[1,5]]; }
+  const wantMax = Math.random() < 0.5;
+  const rule = mode === 'sameD'
+    ? 'These all have the same bottom number, so the pieces are the same size and the top numbers decide.'
+    : 'These all have the same top number, so the bottom numbers decide - and the bigger the bottom number, the smaller the piece.';
+  return compareQ('Which of these fractions is the <b>' + (wantMax ? 'greatest' : 'smallest') + '</b>?',
+    pairs, wantMax, best => rule + ' The ' + (wantMax ? 'greatest' : 'smallest') + ' is ' +
+    fr(best[0], best[1]) + '.');
+}
+
+/* FORMAT 3g - ordering three fractions (pool 3, 2 steps). The reversed order is
+   always one of the options, because reversing is exactly the misconception
+   gCompareError diagnoses. */
+function gOrderThree(){
+  let three = [[1,2],[1,3],[1,4]], mode = 'unit', g = 0;
+  do {
+    mode = pick(['sameD','sameN','unit']);
+    three = fourFracs(mode).slice(0,3);
+    g++;
+  } while (g < 200 && !(three.length === 3 && allDistinct(three)));
+  if (!(three.length === 3 && allDistinct(three))){ mode = 'unit'; three = [[1,2],[1,3],[1,4]]; }
+  const asc = Math.random() < 0.5;
+  const sorted = three.slice().sort((a,b) => a[0]*b[1] - b[0]*a[1]);
+  const correct = asc ? sorted : sorted.slice().reverse();
+  const reversed = correct.slice().reverse();
+  const perms = [[0,2,1],[1,0,2],[2,1,0],[1,2,0],[2,0,1]];
+  const wrongs = [reversed];
+  for (const p of shuffle(perms)){
+    if (wrongs.length >= 3) break;
+    const cand = p.map(i => correct[i]);
+    const same = s => s.every((x,i) => sameVal(x, cand[i]));
+    if (same(correct) || wrongs.some(same)) continue;
+    wrongs.push(cand);
+  }
+  /* The three in the STEM must not already be in the answer's order, or the item
+     is answered by copying the question. */
+  let shown = shuffle(three.slice());
+  for (let t2 = 0; t2 < 30 && shown.every((x,i) => sameVal(x, correct[i])); t2++) shown = shuffle(three.slice());
+  if (shown.every((x,i) => sameVal(x, correct[i]))) shown = [correct[1], correct[0], correct[2]];
+  const render = s => s.map(p => fr(p[0], p[1])).join(', ');
+  const all = shuffle([correct].concat(wrongs.slice(0,3)));
+  const line = render(correct);
+  return { q: 'Put these fractions in order, from the <b>' + (asc ? 'smallest to the greatest' : 'greatest to the smallest') +
+      '</b>: ' + render(shown) + '. Which order is correct?',
+    extra: '', choices: all.map(render), correct: all.findIndex(s => s.every((x,i) => sameVal(x, correct[i]))),
+    explain: (mode === 'sameD'
+        ? 'All three have the same bottom number, so the pieces are the same size and the top numbers put them in order.'
+        : 'All three have the same top number, so the bottom numbers put them in order - and the bigger the bottom number, the smaller the piece.') +
+      ' In order from the ' + (asc ? 'smallest to the greatest' : 'greatest to the smallest') + ' they are ' + line +
+      '. Turning that order round is the commonest mistake.',
+    answerText: line };
+}
+
+/* FORMAT 3h - the gap in an ordered row (pool 3, 2 steps).
+   WOUND 1 (Sweep fractions Refutation 2026-09-15). The feed round-robins SKILLS
+   inside a pool and only then picks a generator inside the skill, so a pool-3
+   skill with one generator gets a full fifth of pool 3 to itself - which is how
+   gCompareError reached 3.50 items in a 30-item session out of six option sets.
+   Retagging gGreatest4 from `order` to `compare` (it asks for one extreme of
+   four, which is comparing) halves that, but it would leave `order` holding one
+   generator and make gOrderThree the new hog. This is `order`'s second format:
+   the child reads a row that is already in order and says what is missing from
+   it, which is ordering read from the inside rather than from the ends. */
+/* Three distractors from OUTSIDE the gap, taking one from each side first where
+   both sides exist: drawing all three from one side would leave the key as the
+   extreme of the option row, which is a shape a child can learn without ordering
+   anything. (At the ends of the denominator range one side is empty and the key
+   is the extreme unavoidably - that residual is measured, not hidden.) */
+function outsideThree(aboveHi, belowLo){
+  const a = shuffle(aboveHi), b = shuffle(belowLo), out = [];
+  if (a.length && b.length){ out.push(a.shift()); out.push(b.shift()); }
+  for (const x of shuffle(a.concat(b))){ if (out.length >= 3) break; out.push(x); }
+  return out;
+}
+/* SECOND PASS 2026-09-15, WOUND 2 - THE FORMAT DID NOT DISCRIMINATE. As first cut,
+   the gap was ALWAYS the middle slot of the row, every option shared a top or a
+   bottom number with the two printed ends, and the three distractors were drawn
+   from strictly outside the gap. So "pick the option whose varying INTEGER lies
+   numerically between the two printed ones" was right on 100.0% of 20,000 draws -
+   and, worse, a child holding the backwards rule (a bigger bottom number makes a
+   bigger fraction), which is the misconception the whole `order` skill exists to
+   correct, picked the SAME option as a child holding the correct rule, because the
+   middle integer is the middle integer either way. The item was added to give
+   `order` a second format and to carry the direction rule, and at 1.78 items a
+   session it carried betweenness of an integer and nothing else.
+
+   The gap now moves: it is the smallest, the middle OR the greatest slot of the
+   row, drawn evenly. At an END there is no "between" to read off - the child has to
+   know which way the row runs, so the backwards-rule child picks a WRONG option,
+   which is exactly what the format was added for. The distractors are whatever
+   fails the row, which at an end means they sit on the far side of the printed
+   neighbour, and the key's value rank moves with the gap instead of sitting mid-row
+   on every draw. */
+function gOrderGap(){
+  let mode = 'sameN', asc = true, gapPos = 1, n = 1, d = 8;
+  let row = [[1,10],[1,8],[1,4]], key = [1,8], slips = [[1,12],[1,6],[1,3]];
+  let g = 0, ok = false;
+  /* mode, direction and GAP POSITION are drawn once, outside the retry loop: a
+     middle gap is rejected more often than an end one (it needs a wrong option on
+     both sides), and redrawing the position on every retry quietly pushed the ends
+     to 37.8% each where an even third is 33.3%. The retry redraws the row, not the
+     shape of the question. */
+  mode = Math.random() < 0.5 ? 'sameN' : 'sameD';
+  asc = Math.random() < 0.5;
+  gapPos = ri(0,2);
+  do {
+    let cands;
+    if (mode === 'sameN'){
+      n = ri(1,3);
+      cands = Array.from({length: 12-n}, (_,i) => [n, n+1+i]);
+    } else {
+      d = ri(6,12);
+      cands = Array.from({length: d-1}, (_,i) => [i+1, d]);
+    }
+    cands = cands.filter(legalFrac);
+    /* value-ascending, which for a shared TOP number is bottom-number-descending */
+    const byVal = cands.slice().sort((a,b) => a[0]*b[1] - b[0]*a[1]);
+    if (byVal.length >= 6){
+      const idx = shuffle(byVal.map((_,i) => i)).slice(0,3).sort((a,b) => a-b);
+      row = idx.map(i => byVal[i]);
+      key = row[gapPos];
+      const printed = row.filter((_,i) => i !== gapPos);
+      /* a candidate FITS only if dropping it into the gap leaves the row strictly
+         increasing in value - which is the whole of the ordering rule, read from
+         wherever the gap happens to be */
+      const fits = X => {
+        const t = row.map((p,i) => i === gapPos ? X : p);
+        return t[0][0]*t[1][1] < t[1][0]*t[0][1] && t[1][0]*t[2][1] < t[2][0]*t[1][1];
+      };
+      const wrong = byVal.filter(c => !sameVal(c, key) && !printed.some(p => sameVal(p, c)) && !fits(c));
+      const hi = wrong.filter(c => c[0]*key[1] > key[0]*c[1]);
+      const lo2 = wrong.filter(c => c[0]*key[1] < key[0]*c[1]);
+      slips = outsideThree(hi, lo2);
+      /* With the gap in the MIDDLE both sides exist, so both must be on the row:
+         letting all three fall on one side put the key back at an extreme and left
+         "pick the smallest" / "pick the largest" over the 40% the gate allows. */
+      ok = slips.length === 3 && slipsOk(key, slips) && row.every(legalFrac) &&
+           (gapPos !== 1 || (hi.length >= 1 && lo2.length >= 1));
+    }
+    g++;
+  } while (g < 200 && !ok);
+  if (!ok){
+    mode = 'sameN'; asc = true; gapPos = 1; n = 1;
+    row = [[1,10],[1,8],[1,4]]; key = [1,8]; slips = [[1,12],[1,6],[1,3]];
+  }
+  const shown = (asc ? row.slice() : row.slice().reverse());
+  const gapAt = asc ? gapPos : 2 - gapPos;
+  const rendered = shown.map((p,i) => i === gapAt ? '?' : fr(p[0], p[1])).join(', ');
+  const rule = mode === 'sameD'
+    ? 'All of these have the same bottom number, ' + key[1] + ', so every piece is the same size and the top numbers put them in order.'
+    : 'All of these have the same top number, ' + key[0] + ', so the bottom numbers put them in order - and the bigger the bottom number, the smaller the piece.';
+  const where = gapPos === 1
+    ? 'The gap sits between ' + fr(row[0][0],row[0][1]) + ' and ' + fr(row[2][0],row[2][1]) +
+      ', so the missing fraction must be greater than ' + fr(row[0][0],row[0][1]) + ' and smaller than ' +
+      fr(row[2][0],row[2][1]) + ': that is ' + fr(key[0],key[1]) + '.'
+    : gapPos === 0
+      ? 'The gap is at the SMALLEST end of the row, so the missing fraction must be smaller than ' +
+        fr(row[1][0],row[1][1]) + ' - smaller than everything printed: that is ' + fr(key[0],key[1]) + '.'
+      : 'The gap is at the GREATEST end of the row, so the missing fraction must be greater than ' +
+        fr(row[1][0],row[1][1]) + ' - greater than everything printed: that is ' + fr(key[0],key[1]) + '.';
+  return mcFrac('These fractions are in order, from the <b>' +
+    (asc ? 'smallest to the greatest' : 'greatest to the smallest') + '</b>: ' + rendered +
+    '. <b>Which fraction belongs in the gap?</b>', key, slips,
+    rule + ' ' + where + ' Say the direction out loud before you start: every other option ' +
+    'would break the order the row is already in.');
+}
+
+
+/* ===========================================================================
+   PRINCIPLE 4 - ADDING AND SUBTRACTING WITHIN ONE WHOLE
+   =========================================================================== */
+
+/* FORMAT 4a - like fractions, add (pool 1, 1 step). */
+function gAddSame(){
+  let d = 9, a = 4, b = 3, key = [7,9], slips = [[1,9],[8,9],[7,8]], g = 0;
+  const rank = ri(1,4);
+  do {
+    d = ri(4,12); a = ri(1,d-2); b = ri(1,d-a-1);
+    key = [a+b, d];
+    /* SECOND PASS, WOUND 1. [a+b, 2d] and [|a-b|, d] both sit below the key and
+       [a+b+1, d] above it, so the key was the 3rd of four by value on 100.00% of
+       50,000 draws - "pick the second largest" answered the pool-1 addition anchor
+       every time, at 1.35 served items a session. Adding like fractions has no
+       named belief that OVERSHOOTS, so the other side is carried by the two
+       documented second-order slips the teaching card already names: counting one
+       piece too many, and counting the bottom number one short. */
+    /* THIRD PASS 2026-09-16, W4. [a+b, 2d] printed a bottom number past 12 on the
+       option row of the declared pool-1 addition anchor in 36.5% of draws. The
+       belief is not lost - the teaching card names it in words and gives the
+       bottom number it produces - but an off-syllabus fraction is no longer put in
+       front of a P3 child as something to choose. legalFrac refuses it now; it is
+       left in the list, commented, so the next lane can see what was taken out and
+       why rather than finding a gap. */
+    const cands = [
+      /* [a+b, 2*d] - added the bottom numbers as well; bottom number past 12 */
+      [Math.abs(a-b), d],               /* subtracted the top numbers instead */
+      [a+b+1, d],                       /* counted one piece too many */
+      [a+b-1, d],                       /* counted one piece too few */
+      (a+b < d-1 ? [a+b, d-1] : null),  /* miscounted the size of the pieces, one short */
+      (d+1 <= 12 ? [a+b, d+1] : null),  /* miscounted the size of the pieces, one over */
+      [a+b+1, d+1],                     /* one piece too many, out of one part too many */
+      /* FIFTH PASS 2026-09-16, W2: two slips written with a FRESH numeral, so the
+         row is not four writings of the same two numbers and "pick the option
+         whose top and bottom are both printed elsewhere" has something else to
+         land on. Both are the real classroom slip of answering one of the two
+         fractions instead of adding them. */
+      [a, d], [b, d],
+      (d+1 <= 12 ? [Math.abs(a-b), d+1] : null),  /* subtracted, and the pieces miscounted */
+      /* SIXTH PASS 2026-09-16, WOUND 1 - THE ROW-SHAPE CLASS, and this bank is the
+         finding. RULE 11 exempted it on 677 distinct ROWS, and a child does not
+         memorise rows, they memorise a row SHAPE - which printed numerals repeat
+         and where, with the four options put in order of their bottom number.
+         Masked that way the bank had EIGHTEEN shapes and every one of the eighteen
+         named the key's slot on 100.0% of held-out draws, at 5.18 served items a
+         session to a struggling child. The plainest case: four options over ONE
+         bottom number, where the key is the biggest top on 100% of those draws -
+         which happens because every candidate over `d` except [a+b+1, d] sits
+         BELOW the key, and sided() prefers a small bottom number when it reaches
+         above it, so an all-one-bottom row could only be an all-below seating.
+         RULE 7's flat 25/25/25/25 here is an AVERAGE over shapes each of which
+         pins the rank at 100%.
+         The cure is the one the PM named: widen the shape space until it is past
+         the memorisable line. Every miscount below is one the teaching card
+         already names, written over a bottom number the row did not previously
+         reach, so the masked pattern moves with the numbers instead of with the
+         key. 18 shapes -> see the lane note for the measured figure. */
+      (a+b < d-2 && d-2 >= 2 ? [a+b, d-2] : null),      /* the pieces miscounted, two short */
+      (d+2 <= 12 ? [a+b, d+2] : null),                  /* ... and two over */
+      (a+b+1 < d-1 ? [a+b+1, d-1] : null),              /* one piece too many, one part too few */
+      (d+1 <= 12 ? [a+b-1, d+1] : null),                /* one piece too few, one part too many */
+      (d-1 > a ? [a, d-1] : null), (d+1 <= 12 ? [b, d+1] : null)  /* one addend, pieces miscounted */
+    ].filter(Boolean);
+    /* SIXTH PASS 2026-09-16, RULE 13, and it is the price of the widening above.
+       Spreading the bottom numbers to d-2 .. d+2 is what breaks the shape lookup,
+       and it also made the key the UNIQUE option still written over the bottom
+       number the stem prints - so "pick the option whose bottom number is on the
+       question and whose top number is not" settled the bank on 73.3% of draws
+       with nothing added. sameDen() is the fix this file already owns: one or two
+       of the three seats go to a named belief over the stem's own bottom number,
+       which is the same seat gPicUnshaded, gSubSame and gMakeOne hold for the
+       coupling ban read the other way round. */
+    slips = sided(key, cands, sameDen(cands, d, key), 4 - rank) || [];
+    g++;
+    /* a + b + 1 < d keeps an OVERSHOOT reachable: at a + b = d - 1 every candidate
+       above the key is improper, and the key was the largest of four on 64.6% of
+       draws until this guard went in. */
+    /* FIFTH PASS 2026-09-16, W2: the digit-overlap ban. "Pick the option whose top
+       and bottom number both appear somewhere else on the row" isolated the key
+       here on 66.8% of draws, because every named belief is the key with ONE
+       number nudged - which leaves each distractor a numeral of its own and the
+       key none. See digitIsolatesKey(). */
+  } while (g < 200 && !(a !== b && a+b+1 < d && slipsOk(key, slips) && !digitIsolatesKey(key, slips)));
+  if (!(a !== b && a+b+1 < d && slipsOk(key, slips))){ d = 9; a = 4; b = 3; key = [7,9]; slips = [[1,9],[8,9],[7,8]]; }
+  return mcFrac(fr(a,d) + ' + ' + fr(b,d) + ' = ?', key, slips,
+    'Both fractions have the same bottom number, ' + d + ', so the pieces are already the same size. ' +
+    'Count the pieces: ' + a + ' + ' + b + ' = ' + (a+b) + '. The bottom number is the SIZE of each piece, ' +
+    /* EIGHTH PASS 2026-09-16, KILL 2. v4 removed [a+b, 2d] from the option row
+       because its bottom number runs past 12, and compensated by printing that
+       bottom number in the card. On the draws where d <= 6 the number it prints is
+       INSIDE the cap, so the card handed a P3 child the bottom number of a legal
+       wrong answer with no fraction to compare it against - the same class the
+       card-row clause catches everywhere else, found by the clause's new lone-half
+       reading. The belief is named without the numeral; nothing is lost, because
+       DOUBLE says exactly what the number said. */
+    'so it stays ' + d + ', and the answer is ' + fr(a+b, d) + '. Adding the bottom numbers as well would ' +
+    'DOUBLE the bottom number - twice as many pieces, so only half as much of the cake.');
+}
+
+/* FORMAT 4b - like fractions, subtract (pool 2, 1 step). */
+function gSubSame(){
+  let d = 9, a = 5, b = 2, key = [3,9], slips = [[7,9],[3,7],[4,9]], g = 0;
+  const rank = ri(1,4);
+  do {
+    d = ri(5,12); a = ri(3,d-1); b = ri(1,a-1);
+    key = [a-b, d];
+    /* SECOND PASS, WOUND 1. All three sat ABOVE the key, so it was the smallest of
+       four on 100.00% of 50,000 draws - "pick the smallest" answered this item
+       every time. The mirror of the named bottom-number belief lands below it:
+       taking the bottom numbers away gives d - b, ADDING them gives 2d, and both
+       are slips a child writes on a like-fraction subtraction. */
+    /* THIRD PASS 2026-09-16, W4 + W5. Two of the three below-key candidates were
+       [a-b, 2d] and [a-b, d+b], which is why 39.8% of this item's option rows
+       printed a bottom number past 12 (ceiling 24) after a note that declared
+       0.0%, and why the key was the LARGEST of four on only 8.2% of draws - under
+       RULE 7's new 12% floor - because below the key there was often nothing legal
+       left to seat. Both overshoot entries are gone with the 12 cap, and the
+       below-key side is carried instead by the second-order miscounts the teaching
+       cards in this file already name: one piece too few, the size of the piece
+       one or two too many, and the two of them together. */
+    /* FIFTH PASS 2026-09-16, W1, THE WORST OF THE CLASS. "Keep the bottom number
+       the question gives you" answered this bank on 74.3% of draws and ISOLATED
+       the key - exactly one option over the stem's own bottom number, and it the
+       right one - on 48.7%: a drawn row was 3/6 − 1/6 with 2/5, 1/5, *2/6, 3/5,
+       and the child never subtracts. One or two seats are held for a belief
+       written over d now, so the rule leaves two or three options standing and
+       the tops have to be counted. */
+    const cands = [
+      [a+b, d],                         /* added the top numbers instead */
+      [a-b, d-b],                       /* took the bottom numbers away as well */
+      [a-b+1, d],                       /* counted one piece too many */
+      [a-b+1, d-1],                     /* a piece too many AND a part too few */
+      [a-b-1, d],                       /* counted one piece too few */
+      [a-b-1, d-1],                     /* a piece too few AND a part too few */
+      (d+1 <= 12 ? [a-b, d+1] : null),  /* miscounted the size of the pieces, one over */
+      (d+2 <= 12 ? [a-b, d+2] : null),  /* miscounted the size of the pieces, two over */
+      (d+b <= 12 ? [a-b, d+b] : null)   /* added b to the bottom number */
+    ].filter(Boolean);
+    slips = sided(key, cands, sameDen(cands, d, key), 4 - rank) || [];
+    g++;
+  } while (g < 200 && !(a+b < d && d-b >= 2 && slipsOk(key, slips) && !digitIsolatesKey(key, slips)));
+  if (!(a+b < d && d-b >= 2 && slipsOk(key, slips))){ d = 9; a = 5; b = 2; key = [3,9]; slips = [[7,9],[3,7],[4,9]]; }
+  /* FIFTH PASS 2026-09-16, WOUND 4, the gPickEquiv treatment. [a-b, d-b] is one
+     candidate of nine, and the same-denominator seats of wound 1 made it a rarer
+     one - 28.3% of cards named a value off the row at v5, 67.8% after. Its value
+     is printed where it is offered and the slip is named in WORDS where it is
+     not, which is what the rest of the file already does. */
+  /* SEVENTH PASS 2026-09-16, THE CARD-ROW CLAUSE: the SEATED form is printed, not
+     the candidate's own - sided()'s uniq() may have seated the same amount written
+     in bigger pieces, and a child hunting the row for the glyphs the card printed
+     does not find them. */
+  const seated = slips.find(s => sameVal(s, [a-b, d-b]));
+  return mcFrac(fr(a,d) + ' − ' + fr(b,d) + ' = ?', key, slips,
+    'Both fractions are the same size of piece, so take the pieces away and leave the bottom number alone: ' +
+    a + ' − ' + b + ' = ' + (a-b) + ', giving ' + fr(a-b, d) + '. ' + (seated
+      ? 'Subtracting the bottom numbers as well would give ' + fr(seated[0], seated[1]) +
+        ' - but the pieces did not change size, only how many there are.'
+      : 'Subtracting the bottom numbers as well would change the SIZE of each piece - and the pieces did not change size, only how many there are.'));
+}
+
+/* FORMAT 4c - one whole, taken apart (pool 2, 1 step). */
+function gSubFromOne(){
+  let d = 8, a = 3, key = [5,8], slips = [[3,8],[6,8],[4,8]], g = 0;
+  const rank = ri(1,4);
+  do {
+    d = ri(4,12); a = ri(2,d-2);
+    key = [d-a, d];
+    /* WOUND 4: the part taken away, [a, d], is worth the KEY when d === 2a, so
+       neither of the two one-whole formats could ever key one half. SECOND PASS
+       W3(a) caps the substitute inside the syllabus (it printed a bottom number of
+       13 at d = 12) and WOUND 1 puts the choice of three through sided(). */
+    /* FIFTH PASS 2026-09-16, W1: 62.9% on the stem's own bottom number, over the
+       60% ceiling; one or two seats are held for a belief that carries it. */
+    const cands = [
+      [a, d],                           /* answered the part that was taken away */
+      [d-a+1, d], [d-a-1, d],           /* one piece too many / too few */
+      [d-a+1, d-1], [d-a-1, d-1],       /* a piece AND a part miscounted, each way */
+      (d+1 <= 12 ? [d-a, d+1] : null),  /* changed the size of the pieces as well */
+      (d-a < d-1 ? [d-a, d-1] : null)   /* took the 1 off the bottom number instead */
+    ].filter(Boolean);
+    slips = sided(key, cands, sameDen(cands, d, key), 4 - rank) || [];
+    g++;
+  } while (g < 200 && !(slipsOk(key, slips) && !digitIsolatesKey(key, slips)));
+  if (!slipsOk(key, slips)){ d = 8; a = 3; key = [5,8]; slips = [[3,8],[6,8],[4,8]]; }
+  return mcFrac('1 − ' + fr(a,d) + ' = ?', key, slips,
+    'One whole is ' + fr(d,d) + ' - ' + d + ' pieces out of ' + d + '. Take ' + a + ' of them away: ' +
+    d + ' − ' + a + ' = ' + (d-a) + ', so the answer is ' + fr(d-a, d) + '.' +
+    /* SECOND PASS, W2: the closing sentence called fr(a, d) "the part that was taken
+       away, not the part that is left" - and when d = 2a that IS the key, so the
+       card denied its own answer on 26.0% of draws. */
+    (d === 2*a ? ' Exactly half was taken away here, so what is left is ' + fr(a,d) + ' as well - the same amount, counted the other way round.'
+               : ' ' + fr(a,d) + ' is the part that was taken away, not the part that is left.'));
+}
+
+/* FORMAT 4d - working backwards to one whole (pool 3, 1 step). DECLARED ANCHOR:
+   pool 3's second single-step item, kept on purpose. */
+function gMakeOne(){
+  let d = 8, a = 3, key = [5,8], slips = [[3,8],[6,8],[4,8]], g = 0;
+  const rank = ri(1,4);
+  do {
+    /* THIRD PASS 2026-09-16, W5(a) - the other half of the three-formats-in-one
+       finding. This one is widened where working BACKWARDS can go: the amount
+       already there may be a single piece or all but one, and the "a piece AND a
+       part miscounted" pair is carried in BOTH directions on the bottom number,
+       which gPicUnshaded and gSubFromOne do not do. */
+    d = ri(4,12); a = ri(1,d-1);
+    key = [d-a, d];
+    /* WOUND 4 + SECOND PASS W3(a) and WOUND 1 - the same three changes gSubFromOne
+       carries, for the same reasons. */
+    /* FIFTH PASS 2026-09-16, W1: 68.8% accuracy and 40.2% ISOLATING on "keep the
+       bottom number the question gives you", both over the ceiling. Seats held. */
+    const cands = [
+      [a, d],                           /* answered the part already there */
+      [d-a+1, d], [d-a-1, d],           /* one piece too many / too few */
+      [d-a+1, d-1], [d-a-1, d-1],       /* a piece AND a part miscounted, each way */
+      (d+1 <= 12 ? [d-a+1, d+1] : null),/* the same again, one part too MANY */
+      (d+1 <= 12 ? [d-a-1, d+1] : null),
+      [d-a+2, d], [d-a-2, d],           /* two pieces too many / too few */
+      (d+1 <= 12 ? [d-a, d+1] : null),  /* changed the size of the pieces as well */
+      (d-a < d-1 ? [d-a, d-1] : null)   /* took one off the bottom number instead */
+    ].filter(Boolean);
+    slips = sided(key, cands, sameDen(cands, d, key), 4 - rank) || [];
+    g++;
+  } while (g < 200 && !(slipsOk(key, slips) && !digitIsolatesKey(key, slips)));
+  if (!slipsOk(key, slips)){ d = 8; a = 3; key = [5,8]; slips = [[3,8],[6,8],[4,8]]; }
+  return mcFrac(fr(a,d) + ' + ? = 1 &nbsp; What is the missing fraction?', key, slips,
+    'One whole is ' + fr(d,d) + '. You already have ' + a + ' ' + (a === 1 ? 'piece' : 'pieces') +
+    ', so you need ' + d + ' − ' + a + ' = ' +
+    (d-a) + ' more of the same pieces: ' + fr(d-a, d) + '. Check it: ' + fr(a,d) + ' + ' + fr(d-a, d) + ' = ' +
+    fr(d,d) + ', which is 1.');
+}
+
+/* FORMAT 4d(ii) - making one whole in SMALLER pieces (pool 3, 2 steps).
+   WOUND 1's other half. `wholes` was the second pool-3 skill with a single
+   generator, so gMakeOne took a fifth of pool 3 on its own - 3.08 items per
+   30-item session out of 32 distinct stems, re-putting a stem the child had
+   already answered IN THE SAME SESSION in 11.6% of sessions. This is the skill's
+   second format and it is a genuine two-step: take the part from one whole, then
+   write what is left over a bigger bottom number. It is also the one place the
+   bank makes a child use equivalence INSIDE an adding question, which is the
+   move MOE P3 3.2 is really asking for. */
+/* SECOND PASS 2026-09-15, W4. Authored at TWENTY-FIVE distinct stems and served
+   1.70 times in a 30-item session, so a child meets its whole draw space in about
+   fifteen sessions. The (d, k, a) space is capped at 26 by the syllabus itself -
+   D = k x d must not pass 12 - so the widening has to come from the READING, not
+   from the numbers: the same equivalence-inside-one-whole move is now asked three
+   ways, which is how a teacher would rotate it and takes the space past 60.
+   WOUND 1: the three slips were fixed in order, which pinned the key to 2nd of
+   four on 72% of draws; sided() picks them now. */
+/* SIXTH PASS 2026-09-16, W4 - DECLARED, NOT FIXED, and declared here rather than
+   found later. The v6 pass narrowed this bank's OPTION-ROW space from 392 distinct
+   rows to 190, a halving, in a bank served 1.78 items a session - the one
+   narrowing in a file whose other six movements were widenings (gPicIdentify
+   327 -> 592, gAddSame 453 -> 771, gPicUnshaded 412 -> 827, gSubFromOne 284 -> 526,
+   gSubSame 540 -> 927, gMakeOne 789 -> 1337). It is a side-effect of the coupling
+   seat: holding one or two of the three places for a belief written over the
+   stem's own bottom number removes exactly the rows that had none. The v5 note's
+   own lesson - "the note declared the stem cost of the cap and never the
+   option-row cost" - applies in the other direction, so the number is on record.
+   It is also the file's smallest ROW-SHAPE space: FOUR masked shapes, naming the
+   key's slot on 74.5% of held-out draws. That is the wave-2 class RULE 11's shape
+   watch line now prints on every run; this bank is its floor and, at 1.78 items a
+   session, its worst case by exposure. Widening it needs (d, k, a) room the 12 cap
+   does not have, which is why it is handed on rather than patched. */
+const MAKE_ONE_IN = [
+  (A, B) => A + ' + ? = 1',
+  (A, B) => '? + ' + A + ' = 1',
+  (A, B) => '1 − ' + A + ' = ?'
+];
+function gMakeOneIn(){
+  let d = 4, k = 3, D = 12, a = 1, form = 0, key = [9,12], slips = [[1,12],[3,12],[11,12]], g = 0, ok = false;
+  const rank = ri(1,4);
+  do {
+    d = pick([2,3,4,5,6]); k = pick(scalesFor(d)); D = k*d; a = ri(1, d-1);
+    form = ri(0, MAKE_ONE_IN.length - 1);
+    key = [D - k*a, D];
+    /* [d-a, D] is the belief the card names (right top number, new bottom number);
+       [k*a, D] is the part already there; [D-a, D] forgot to scale the top; the two
+       ±1 entries are the documented second-order slip (one small piece out), which
+       is what keeps a side available when d = 2 collapses the named ones. */
+    const cands = [
+      [d-a, D], [k*a, D], [D-a, D], [D - k*a + 1, D], [D - k*a - 1, D],
+      [D - k*a + k, D], [D - k*a - k, D],  /* one BIG piece out, converted, each way */
+      /* THIRD PASS 2026-09-16, W5: two more each way, so that the extreme seatings
+         clear RULE 7's new 12% floor with room rather than sitting inside its
+         sampling noise (15.0 / 14.7 measured at 20,000 draws). */
+      [D - k*a + 2, D], [D - k*a - 2, D],  /* two small pieces out, each way */
+      (D-1 > D - k*a ? [D - k*a, D-1] : null),
+      (D+1 <= 12 ? [D - k*a, D+1] : null), /* the small pieces miscounted, each way */
+      /* FIFTH PASS 2026-09-16, W2: three slips with a FRESH numeral, so the row
+         stops being five writings of D - ka. Each is a real step-1 or step-2
+         slip: the big pieces left uncounted, the part already there written in
+         big pieces, and the scaling done on the wrong number. */
+      [a, D], [d, D], (k*(d-a) - a > 0 ? [k*(d-a) - a, D] : null)
+    ].filter(Boolean);
+    /* NINTH PASS 2026-09-16, RULE 14's second limb. "(n3-2)-n0" answered this bank
+       on 49.1% at 1.76 served items a session, over the 40% the PM's ruling allows
+       a bank served once a session, and the gate printed 29.4% because its
+       shortlist was taken by NAMING frequency. The route names the key's TOP
+       number; the row never shared it, because every candidate here is written
+       over D. The grid seats the key's own top number over D - 1 or D + 1 and the
+       miscount over both bottoms, so the key's numerator is shared, every option is
+       twinned (the fifth pass's digit-overlap ban, which this bank already
+       enforced) and the masked shape stops naming the slot. */
+    slips = simplestRow(key, cands,
+      [key[0]-1, key[0]+1].filter(x => x >= 1 && x < key[1]),
+      [D-1, D+1, D-2, D+2].filter(y => y >= 2 && y <= 12 && y !== D), 0.05);
+    /* FIFTH PASS 2026-09-16, W2, THE WORST OF THE DIGIT-OVERLAP CLASS: 74.6% of
+       draws isolated the key on "both my numbers are printed somewhere else on
+       the row". Every candidate above is the key with one number moved, so the
+       key was the only option with no numeral of its own. */
+    ok = D <= 12 && a < d && slipsOk(key, slips) && !digitIsolatesKey(key, slips);
+    g++;
+  } while (g < 200 && !ok);
+  if (!ok){ d = 4; k = 3; D = 12; a = 1; form = 0; key = [9,12]; slips = [[3,12],[1,12],[11,12]]; }
+  const mSeat = slips.find(s => sameVal(s, [d-a, D]));
+  return mcFrac(MAKE_ONE_IN[form](fr(a,d), D) +
+    ' &nbsp; What is the missing fraction, written in ' + D + 'ths?',
+    key, slips,
+    'Step 1: one whole is ' + fr(d,d) + ', so what is missing is ' + d + ' − ' + a + ' = ' + (d-a) +
+    ' of the big pieces, which is ' + fr(d-a, d) + '. ' +
+    'Step 2: write that in ' + D + 'ths. ' + d + ' × ' + k + ' = ' + D + ', so each big piece is ' + k +
+    ' small ones: ' + (d-a) + ' × ' + k + ' = ' + (D - k*a) + ', giving ' + fr(D - k*a, D) + '. ' +
+    'Check it: ' + fr(k*a, D) + ' + ' + fr(D - k*a, D) + ' = ' + fr(D,D) + ', which is 1. ' +
+    /* SEVENTH PASS 2026-09-16, WOUND 2 - THE CARD-ROW CLAUSE. [d-a, D] is one
+       candidate of ten and sided() seats three, so this sentence named a wrong
+       answer that was nowhere on the screen on 49.8 / 50.0% of draws - the worst
+       rate in the topic after the two the refutation named. Printed where it is
+       seated (in the form the ROW prints it), named in words where it is not. */
+    /* EIGHTH PASS 2026-09-16, KILL 2. The unseated branch above did not stop
+       naming the off-row wrong answer, it stopped RENDERING it: "the old top
+       number 3 over the new bottom number 12" is 3/12 written in words and the
+       word "over", and the v8 card-row clause read only <span class="n">...
+       markup - so the measured rate never moved (49.8 / 50.0% before, 49.1 / 49.6%
+       after). The belief is named with no numeral for the child to assemble. */
+    (mSeat ? 'Keeping the old top number over the new bottom number gives ' + fr(mSeat[0], mSeat[1]) +
+             ', which is too small.'
+           : 'Keeping the old top number over the new bottom number would be too small: each big piece ' +
+             'became ' + k + ' small ones, so the top number has to grow by that much as well.'));
+}
+
+/* ---- THE RELATED-ADD TUPLE TABLE --------------------------------------------
+   SWEEP FRACTIONS REFUTATION, NINTH PASS 2026-09-16, KILL 1. The route was
+   `(n3/n1)+n2` - divide the second bottom number by the first, add the second top
+   number, take the option carrying it - which named this bank's key on 82.2 /
+   82.4% of draws and answered it on 65.8%, over the 60% ceiling, while the gate
+   printed 49.4%. The expression is k + b. The key is k*a + b. They are the same
+   number exactly when a = 1, and a WAS 1 on 82% of draws - so the bank whose
+   declared job is CONVERTING a related fraction asked "unit fraction + something"
+   five draws in six, and the first top number was never read.
+
+   THE CAUSE IS THE FREE DRAW, NOT THE RANGE. `a = ri(1, d-1)` looks even; the
+   guard `k*a + b + 2 < D` is what is not. It requires b < k(d - a) - 2, so every
+   step a takes away from 1 cuts the b range by k, and a = d - 1 usually leaves no
+   legal b at all. Measured over the whole legal space there are 22 tuples and 15
+   of them have a = 1. Drawing the NUMBERS and then filtering does not leave an
+   even draw behind - the fifth pass's lesson about the value rank, one level down
+   and in the stem this time.
+
+   THE TABLE IS ENUMERATED AND THE DRAW IS WEIGHTED. Every legal (d, k, a, b) is
+   built once at load, split on a = 1, and the unit-fraction half is drawn 35% of
+   the time - the ceiling the PM's ruling sets. The cost, declared: the seven
+   a > 1 stems go from 2.6% each to 9.3% each and the fifteen a = 1 stems from
+   5.5% to 2.3%, so the six-row stem reading moves 65.1% -> ~67%; the stem-space
+   class is wave 2 and this is inside its declared noise. --- */
+const ADD_REL = [];
+for (const d0 of [2,3,4,5,6]) for (const k0 of [2,3,4,5,6]) {
+  const D0 = k0*d0;
+  if (D0 > 12) continue;
+  for (let a0 = 1; a0 < d0; a0++) for (let b0 = 1; b0 < D0; b0++){
+    if (!(k0*a0 + b0 + 2 < D0)) continue;
+    if (gcd(k0*a0 + b0, D0) !== 1) continue;
+    ADD_REL.push([d0, k0, a0, b0]);
+  }
+}
+const ADD_REL_UNIT = ADD_REL.filter(t => t[2] === 1);
+const ADD_REL_MULTI = ADD_REL.filter(t => t[2] > 1);
+const drawAddRel = () => (Math.random() < 0.35 || !ADD_REL_MULTI.length)
+  ? pick(ADD_REL_UNIT) : pick(ADD_REL_MULTI);
+
+/* FORMAT 4e - RELATED fractions, add (pool 3, 2 steps). MOE P3 3.2 names related
+   fractions explicitly and the shipped bank had none of them: every add and
+   subtract was a like-fraction item, which is why pool 3 added no step. The two
+   steps are: change one fraction into an equivalent one, then count the pieces. */
+function gAddRelated(){
+  /* SEVENTH PASS 2026-09-16, W1. The flat row family narrows which seatings a draw
+     can supply, and a filter applied after a FREE rank draw does not leave a free
+     draw behind - the fifth pass wrote that down for the coupling seats and it is
+     the same effect here (41.1% second-largest with `u` left free).
+
+     NINTH PASS 2026-09-16, KILL 1. The rank used to be drawn once OUTSIDE the
+     loop and the NUMBERS redrawn until it could be seated, which is the same
+     defect one level up: it reweights the stem table towards the tuples that can
+     seat any rank, and the tuple table is now enumerated precisely so that it
+     STAYS as drawn. halfRow()'s device is used instead - walk the four ranks in
+     random order and take the first this tuple can seat - so the rank is uniform
+     over what the bank can actually do and the stem weighting is exact. */
+  let d = 4, k = 3, D = 12, a = 1, b = 2, key = [5,12], slips = [[3,12],[7,12],[4,11]], g = 0;
+  do {
+    /* WOUND 2: the scale factor ran to 4, which is why only nine (d, k) pairs
+       were reachable. It runs to 6 now - the D <= 12 guard below is the real
+       cap - which puts 1/2 + b/12 and 1/2 - b/12 on the table.
+       NINTH PASS, KILL 1: drawn from the enumerated table above, not free. */
+    const T = drawAddRel();
+    d = T[0]; k = T[1]; a = T[2]; b = T[3]; D = k*d;
+    key = [k*a + b, D];
+    /* SECOND PASS, WOUND 1: the key was the LARGEST of four by value on 67.7% of
+       draws, over the 45% the topic-wide gate allows. Scaling the SECOND fraction
+       as well is a real related-fractions slip and it overshoots, so the row is
+       drawn from both sides. */
+    /* THIRD PASS 2026-09-16, W4 + W5. The three "added the bottom numbers as well"
+       entries ([a+b, d+D] and [k*a+b, d+D] / [k*a+b, 2*D]) are what took 53.8% of
+       this item's option rows past a bottom number of 12, ceiling 24, and they are
+       out with the cap; the belief is named in words on the card instead. Their
+       removal is also the W5 fix: above the key only [k*a+b+1, D] and [k*a+b, D-1]
+       were reliably legal, so sided() could seat three-above - the key as the
+       SMALLEST of four - on 7.4% of draws, under the new 12% floor. The
+       piece-and-size miscount carried in both directions restores the third
+       candidate on each side, and the draw guard is tightened by one so it is
+       always legal. */
+    /* SEVENTH PASS 2026-09-16, WOUND 1 - THE COMPOSED ROUTE. The refutation's two
+       declared residual classes are printed on every run SEPARATELY, and a child
+       does not run one ruler at a time: the six-row stem table, then the masked row
+       SHAPE wherever the table does not settle it, answered this bank on 93.6 / 93.3% and its
+       sibling on the other. Both inputs are under their own gates.
+       The row half is what this lane can move. Half the draws now seat all three
+       slips over the CONVERTED bottom number D, which collapses to a single masked
+       shape - four top numbers over one bottom number - instead of the 33 shapes
+       that each named the key's slot on 97.5%; the other half spread the bottom
+       numbers as before. Every entry dropped on a flat draw is a size-miscount the
+       card already names, so nothing goes off the misconception list. The measured
+       composition after the change is in the lane note, with its exposure: this is
+       a widening, not a closure, and the stem half (27 and 24 distinct stems) is
+       the stem-space class, wave 2, and out of this lane's fence. */
+    /* NINTH PASS 2026-09-16, KILL 1, the ROW half of the fix, and it is TWO seats.
+
+       (i) THE SCALE-FACTOR SEAT. Re-weighting the draw takes `a = 1` from 82% to
+       35%; on the other 65% the route k + b has to land on a WRONG option or it is
+       still worth a free elimination. It lands on a named belief: the child cuts
+       each big part into k small ones and writes the SCALE FACTOR as the new top
+       number instead of multiplying the top number by it - k over D rather than
+       k*a over D. It is the commonest step-2 slip in related-fraction addition and
+       the card teaches against it. Held wherever it is legal, so "divide the bottom
+       numbers, add the second top number, take that option" is WRONG whenever
+       a > 1 and right only inside the 35%.
+
+       (ii) THE SHARED-TOP SEAT, which is what makes the fix a CLASS fix rather than
+       one more expression closed. The tuple space this format has is 22 tuples
+       wide - the guard k*a + b + 2 < D costs k of the b range for every step a
+       takes off 1 - and six of its seven a > 1 tuples have k = 2, so a draw that
+       flattens `a` necessarily concentrates `k`: closing k + b on its own handed
+       the bank straight to 2a + b at 69.5% naming. Neither expression is beaten by
+       arithmetic; both are beaten by the row. One seat carries the KEY'S OWN TOP
+       NUMBER over a different bottom number (the file's own "counted the pieces
+       right, the size one short" slip), so ANY expression that names the key's
+       numerator - k + b, 2a + b, or a spelling nobody has thought of yet - leaves
+       two options standing and is worth half a draw. The eighth pass's shared-half
+       seats, on the bank the ninth pass killed.
+
+       THE FLAT ROW FAMILY IS GONE, and that is the price. The seventh pass seated
+       all three slips over D on half the draws to collapse the masked shape space;
+       a seat over D - 1 or D + 1 cannot live inside it. The shapes come back and
+       the half-key route goes under the ceiling - RULE 11's declared row-shape
+       class against RULE 14's gated one, and the gated one wins. */
+    const sf = (a > 1 && k + b >= 1 && k + b < D) ? [k + b, D] : null;
+    const tops = [[k*a + b, D-1]].concat(D + 1 <= 12 ? [[k*a + b, D+1]] : []);
+    const topSeat = pick(tops);
+    const cands = [
+      [a+b, D],                         /* did not convert the first fraction */
+      [a + k*b, D],                     /* scaled the wrong fraction */
+      [k*a + k*b, D],                   /* scaled BOTH fractions before adding */
+      [k*a + b + 1, D],                 /* counted one small piece too many */
+      [k*a + b + 1, D-1],               /* one piece too many AND the size one short */
+      [k*a + b, D-1],                   /* counted the pieces right, the size one short */
+      [k*a + b - 1, D],                 /* counted one small piece too few */
+      /* SEVENTH PASS 2026-09-16, W1. The flat row family above seats all three
+         slips over D, and over D this bank could only name TWO candidates below
+         the key - so "key largest" was unseatable and RULE 7 came back at 12.8%
+         largest / 49.8% second largest. Two more of the file's own miscounts, both
+         over D and both below the key, put the fourth seating back. */
+      (k*a + b - 2 >= 1 ? [k*a + b - 2, D] : null),   /* two small pieces too few */
+      (k*(a-1) + b >= 1 ? [k*(a-1) + b, D] : null),   /* one BIG piece too few, converted */
+      [k*a + b - 1, D-1],               /* one piece too few AND the size one short */
+      (D + 1 <= 12 ? [k*a + b, D+1] : null),  /* the size one long */
+      topSeat,                          /* the pieces right, the size out by one */
+      sf                                /* wrote the scale factor as the new top */
+    ].filter(Boolean);
+    /* FIFTH PASS's stem-option coupling seat, kept: with the flat family gone the
+       stem's own converted bottom number D is a LONE signal again unless a second
+       option is written over it - `n3` alone answered 57.1% without it. The
+       scale-factor seat is itself written over D, so it doubles as the coupling
+       seat wherever it is legal. */
+    /* NINTH PASS 2026-09-16, KILL 2's lesson applied here in the same sitting.
+       Holding the two seats above by hand made the key the unique TWINNED option
+       and took this bank's masked shape space to 17 shapes with 16 of them never
+       wrong - the exact defect KILL 2 is about, created by KILL 1's fix. The grid
+       seats the same two beliefs as two cells of a 2 x 2 and twins every option:
+       the scale-factor slip (or a one-piece miscount) over D, the key's own top
+       number over D +- 1, and the two together. */
+    slips = simplestRow(key, cands,
+      [(sf ? sf[0] : null), key[0]-1, key[0]+1].filter(x => x >= 1 && x < D && x !== key[0]),
+      [D-1, D+1, D-2, D+2].filter(y => y >= 2 && y <= 12 && y !== D), 0.20);
+    g++;
+    /* k*a + b + 1 < D: the gcd(key, D) = 1 guard hugely over-selects the key
+       (D-1)/D - for D = 12 it is one of only four legal tops - and at (D-1)/D
+       every fraction above the key is improper, so the key was the largest of four
+       on 52% of draws. Barring the top step leaves the overshoot reachable on
+       every draw. Both guards are now enforced by the tuple table above; they are
+       re-asserted here because the fallback row depends on them. */
+  } while (g < 200 && !(D <= 12 && a < d && k*a + b + 2 < D && gcd(k*a + b, D) === 1 &&
+                        slipsOk(key, slips)));
+  if (!(D <= 12 && a < d && k*a + b + 2 < D && gcd(k*a + b, D) === 1 && slipsOk(key, slips))){
+    d = 4; k = 3; D = 12; a = 1; b = 2; key = [5,12]; slips = [[3,12],[7,12],[4,11]];
+  }
+  /* NINTH PASS 2026-09-16, KILL 1. The scale-factor slip is named on the card in
+     the form the ROW prints it wherever it is seated, and in words where it is
+     not - the seventh pass's card-row clause, applied to the new belief. */
+  const sfRow = slips.find(s => s[0] === k + b && s[1] === D && k + b !== k*a + b);
+  return mcFrac('Add: ' + fr(a,d) + ' + ' + fr(b,D) + ' = ?', key, slips,
+    'The pieces are different sizes, so make them the same first. ' + d + ' × ' + k + ' = ' + D +
+    ', so cut each of the ' + d + ' parts into ' + k + ': ' + fr(a,d) + ' = ' + fr(k*a, D) + '. ' +
+    (sfRow ? 'Writing the ' + k + ' straight down as the new top number gives ' + fr(k + b, D) +
+             ', which forgets that there are ' + a + ' big pieces and each one became ' + k +
+             ' small ones: ' + a + ' × ' + k + ' = ' + (k*a) + '. '
+           : '') +
+    'Now both are ' + D + 'ths and you can count them: ' + (k*a) + ' + ' + b + ' = ' + (k*a + b) +
+    /* EIGHTH PASS 2026-09-16, KILL 2. "a top number of 2 over a bottom number of
+       12" is the fraction 2/12 written in words, and on every draw where d + D is
+       inside the 12 cap it is a legal P3 fraction that is nowhere on the screen.
+       The v8 card-row clause read rendered markup only and never saw it; the
+       widened clause reads the word form. Named as the belief, with no numeral. */
+    ', giving ' + fr(k*a + b, D) + '. Adding the tops and the bottoms straight off changes the SIZE of ' +
+    'the pieces, and the size is the one thing that has to be made the same before anything is counted.');
+}
+
+/* FORMAT 4f - RELATED fractions, subtract (pool 3, 2 steps). */
+function gSubRelated(){
+  let d = 4, k = 2, D = 8, a = 3, b = 1, key = [5,8], slips = [[2,4],[2,8],[6,8]], g = 0;
+  do {
+    /* WOUND 2: the scale factor ran to 4, which is why only nine (d, k) pairs
+       were reachable. It runs to 6 now - the D <= 12 guard below is the real
+       cap - which puts 1/2 + b/12 and 1/2 - b/12 on the table. */
+    d = pick([2,3,4,5,6]); k = pick([2,3,4,5,6]); D = k*d;
+    a = ri(2, Math.max(2, d-1)); b = ri(1, Math.max(1, D-1));
+    key = [k*a - b, D];
+    /* SECOND PASS, WOUND 1: two of the three sat below the key and one above, so
+       it was the 3rd of four by value on 100.00% of 50,000 draws - "pick the second
+       largest" answered this item every time. Converting and then FORGETTING to
+       subtract, and subtracting the wrong way round, are both real and both
+       overshoot. */
+    /* SEVENTH PASS 2026-09-16, WOUND 1 - THE COMPOSED ROUTE. The refutation's two
+       declared residual classes are printed on every run SEPARATELY, and a child
+       does not run one ruler at a time: the six-row stem table, then the masked row
+       SHAPE wherever the table does not settle it, answered this bank on 98.6 / 98.5% and its
+       sibling on the other. Both inputs are under their own gates.
+       The row half is what this lane can move. Half the draws now seat all three
+       slips over the CONVERTED bottom number D, which collapses to a single masked
+       shape - four top numbers over one bottom number - instead of the 33 shapes
+       that each named the key's slot on 97.5%; the other half spread the bottom
+       numbers as before. Every entry dropped on a flat draw is a size-miscount the
+       card already names, so nothing goes off the misconception list. The measured
+       composition after the change is in the lane note, with its exposure: this is
+       a widening, not a closure, and the stem half (27 and 24 distinct stems) is
+       the stem-space class, wave 2, and out of this lane's fence. */
+    const flat = Math.random() < 0.5;
+    slips = sided(key, [
+      [a-b, D-d],                       /* took the tops and the bottoms away */
+      [a-b, D],                         /* did not convert the first fraction */
+      [k*a - b + 1, D],                 /* counted one small piece too many */
+      [k*a, D],                         /* converted, then forgot to subtract */
+      [k*a + b, D],                     /* added instead of subtracting */
+      [k*a - b, D-1],                   /* counted the pieces right, the size one short */
+      [k*(a-b), D],                     /* subtracted first, then converted the answer */
+      /* THIRD PASS 2026-09-16, W4: [k*a-b, d+D] and [k*a-b, 2*D] - subtracted the
+         tops and ADDED the bottom numbers - put a bottom number past 12 on 40.1%
+         of this item's option rows, ceiling 24, under a note that declared 0.0%.
+         Out with the cap; the card names the belief in words. */
+      [k*a - b - k, D],                 /* one BIG piece too few, converted */
+      [k*a - b - 1, D],                 /* counted one small piece too few */
+      /* THIRD PASS 2026-09-16, W5. Removing the two overshoot entries above took
+         the BELOW-key side down to whatever [a-b, ...] could supply, and b runs to
+         D-1 so a-b is often not positive at all: sided() was then forced to seat
+         three-above and the key was the SMALLEST of four on 60.5% of draws. Four
+         more candidates go below - one and two small pieces too few, and the small
+         pieces themselves miscounted one or two parts over - and the draw guard
+         bars the one case that has nothing legal underneath it at all: a key of
+         one twelfth, below which no proper fraction with a bottom number to 12
+         exists. Everything else the format can draw is still reachable, which
+         costs seven of its 34 stems rather than the fifteen a flat "key >= 3"
+         guard cost. */
+      [k*a - b - 2, D],                 /* counted two small pieces too few */
+      [k*a - b - 1, D-1],               /* one piece too few AND the size one short */
+      (D+1 <= 12 ? [k*a - b, D+1] : null),  /* miscounted the size of the small pieces */
+      (D+2 <= 12 ? [k*a - b, D+2] : null),  /* ... one and two parts over */
+      (D+1 <= 12 ? [k*a - b - 1, D+1] : null)
+    ].filter(Boolean).filter(c => !flat || c[1] === D)) || [];
+    g++;
+  } while (g < 200 && !(D <= 12 && a < d && (k*a - b >= 2 || D <= 10) && k*a - b + 1 < D &&
+                        gcd(k*a - b, D) === 1 && slipsOk(key, slips)));
+  if (!(D <= 12 && a < d && (k*a - b >= 2 || D <= 10) && k*a - b + 1 < D && gcd(k*a - b, D) === 1 &&
+        slipsOk(key, slips))){
+    d = 4; k = 2; D = 8; a = 3; b = 1; key = [5,8]; slips = [[2,4],[2,8],[6,8]];
+  }
+  /* SEVENTH PASS 2026-09-16, KILL 2 - AND IT WAS INHERITED, WHICH IS THE PART THAT
+     MATTERS. This card used to end "...straight off would give " + fr(a-b, D-d).
+     `b` runs to D-1 and `a` stops at d-1, so a - b is NEGATIVE on 49.97 / 50.70%
+     of draws and ZERO on 15.19 / 14.36%: the teaching card - the highest-salience
+     surface in the app - printed "would give -1/8" to a P3 child on 65% of the
+     draws of a bank served 0.91 a session, and had done so since before this lane
+     started. Negative numbers are Secondary 1 content: it is a SCOPE LEAK, one of
+     the five items the PM's termination rule names.
+
+     SIX PASSES, FIFTEEN NEGATIVE CONTROLS AND 1.08 M AUDITED DRAWS WALKED PAST IT
+     because every fraction regex in tools/gen-sanity.mjs was (\d+) and a minus sign
+     is not a digit - parseFrac, allFracs, RULE 4's syllabus scan, the card walker
+     and the layout gate all read straight through the character. legalFrac keeps
+     such a fraction off the option ROW (p[0] >= 1); nothing guarded the card, and
+     the card is the one surface nothing re-derives. The harness now reads (-?\d+)
+     everywhere and THE SIGN GATE fails any rendered numerator below 1 or
+     denominator below 1 on any surface of any bank in the game, with this card as
+     its negative control.
+
+     The belief is named in WORDS here, which is the device this file already uses
+     wherever a named misconception cannot be rendered inside the syllabus (see the
+     12-cap note above) - and it also closes this bank's half of the seventh pass's
+     WOUND 2, because the fraction it used to print was off the option row on
+     27.3 / 27.6% of draws. */
+  return mcFrac('Subtract: ' + fr(a,d) + ' − ' + fr(b,D) + ' = ?', key, slips,
+    'The pieces are different sizes, so change the first fraction. ' + d + ' × ' + k + ' = ' + D + ', so ' +
+    fr(a,d) + ' = ' + fr(k*a, D) + '. Now take the pieces away: ' + (k*a) + ' − ' + b + ' = ' + (k*a - b) +
+    ', giving ' + fr(k*a - b, D) + '. Subtracting the tops and the bottoms straight off is a different sum ' +
+    'altogether: the bottom number is the SIZE of the piece, and ' + D + 'ths do not turn into ' + (D-d) +
+    'ths just because some pieces were taken away.');
+}
+
+/* FORMAT 4g - error spotting, DIAGNOSE the mistake (pool 3, 2 steps). The named
+   misconception the brief asks for: adding numerators AND denominators. Three
+   claim forms; the harness re-derives which one the printed number IS and fails
+   the build if the "wrong" answer is actually right, or matches two beliefs. */
+/* WOUND 3 (Sweep fractions Refutation 2026-09-15). The draw used to require
+   a*b < d so that all THREE claim values stayed legal on every draw, and the only
+   way to satisfy that beside a > b was b = 1: the refuter measured b === 1 in
+   73.0% of 5,000 draws, and with b = 1 the multiply claim a x 1 = a IS one of the
+   addends, so 31.8% of draws printed "Siti says 5/12 + 1/12 = 5/12" - where the
+   named belief is invisible (multiplying by one changes nothing) and the reading a
+   child actually has ("she forgot the second one") is not on the option list.
+
+   The fix is the refuter's, plus the constraint that forced the collapse: b now
+   draws 2-4, and the three claims are filtered PER DRAW rather than all three
+   being required to be legal at once. A claim is only printable if it is a proper
+   fraction, is not worth the true answer, is not worth either addend, and is not
+   worth what another named belief would give - so the harness can still map the
+   printed claim to exactly one belief. All three sentences stay on the option
+   list either way: an unused belief is a distractor, not a missing one. */
+/* THIRD PASS 2026-09-16, W3 + W4. v3 drew the NUMBERS first and then whichever
+   beliefs survived the per-draw filter, and the three beliefs do not survive it
+   equally: (a+b)/2d is legal on far more draws than a·b/d, so the key stopped
+   rotating - "X added the bottom numbers as well" was the answer on 53.6% of
+   20,000 draws against 37.1% and 9.2%, and it was ALSO the uniquely shortest
+   option on exactly those draws, which RULE 6 did not look for because it gated
+   only the longest. Its sibling gCompareError twenty lines up had been rebuilt
+   precisely so the key rotates evenly (33.3 / 33.4 / 33.3) and nothing carried
+   that standard down the file.
+
+   So the BELIEF is drawn first, uniformly over the three, and the numbers are then
+   drawn to fit it - gCompareError's own shape. The three belief sentences are also
+   written to exactly one length (50 characters after the shared name) with the
+   never-true filler at 51, so the key is never the uniquely longest or the
+   uniquely shortest option and neither reader has anything to read.
+
+   W4's cap costs this generator the most and it is declared here rather than
+   discovered later: "added both bottom numbers" prints 2d, so it can only be asked
+   where 2d <= 12, which is FIVE (d, a, b) configurations - d of 4, 5 or 6 -
+   against sixty-four for the subtract branch and twelve for the multiply branch.
+   A third of this item's draws therefore come from 30 stems (five configurations
+   x six names), and the generator as a whole falls from 558 distinct stems to 486.
+   That is the price of taking an off-syllabus bottom number off a P3 option row,
+   and it is on the record in the lane note rather than left to be found. */
+/* SIXTH PASS 2026-09-16, RULE 13 - THE GLYPH RULE, and this bank is the second
+   thing it caught. The refutation's own residual list already said so: gAddError
+   "is now the third bank in this topic answerable at >= 90% with no fraction
+   mathematics". Measured on the new gate, a learned rule over NUMERAL IDENTITY
+   and DIGIT COUNT alone settled the item on 76.8% of 4,000 draws, and the reason
+   is one line of the design: `bottoms` was the only belief whose claim was NOT
+   written over the stem's own bottom number, so "is the claim's bottom number the
+   one the question prints?" split the three beliefs one against two before a
+   fraction had been read. The v4 note declared the cause without seeing the
+   consequence: "the 12 cap makes the three beliefs DISJOINT in (a, b, d)".
+
+   THE FIX, and it is the cap's own logic run forwards. `bottoms` prints 2d, which
+   is why it needed d <= 6 and why its glyphs are different; it comes off the
+   CLAIM bank and stays on the OPTION ROW as a never-true sentence, where it is
+   still the misconception a P3 child most needs to meet and is now diagnosable
+   from the screen (the printed claim's bottom number is d, so the bottom numbers
+   were plainly not added). Its place in the claim bank goes to `gap` - counting
+   the pieces that are MISSING - which is a real P3 belief, legal over the whole
+   (a, b, d) range, and written over d like the other two. All three claims now
+   share the stem's bottom number, so no glyph test separates them.
+
+   The two never-true sentences are drawn INDEPENDENTLY of the belief, which is
+   the fifth pass's own requirement (a filler PAIRED to the belief is what killed
+   v5's gCompareError on RULE 11): the row space doubles from 6 to 12 and the
+   fourth option indexes nothing. */
+const ADD_ERR = [
+  { id:'minus',   claim:(a2,b2,d2) => [a2-b2, d2],
+    say: nm => nm + ' subtracted the top numbers instead of adding them.' },
+  { id:'times',   claim:(a2,b2,d2) => [a2*b2, d2],
+    say: nm => nm + ' multiplied the top numbers instead of adding them.' },
+  { id:'gap',     claim:(a2,b2,d2) => [d2-a2-b2, d2],
+    /* written to the same 51 characters after the name as the other two, and as
+       the two never-true sentences: RULE 6 reads both directions and nothing on
+       this row is the uniquely longest or the uniquely shortest option. */
+    say: nm => nm + ' counted the empty pieces instead of the full ones.' }
+];
+/* Never true of any stem this generator draws: both fractions are already written
+   over the same bottom number, so there is nothing to make the same - and every
+   printable claim is written over that same bottom number, so the bottom numbers
+   were never added either. Drawn independently of the belief. */
+const ADD_ERR_NEVER = [
+  nm => nm + ' should have made the bottom numbers the same first.',
+  nm => nm + ' added both bottom numbers as well as the top ones.'
+];
+/* FOURTH PASS 2026-09-16, W3. The v4 fix reproduces exactly - the belief rotates
+   33.1 / 33.3 / 33.7 and the key is never the uniquely shortest option - but the
+   NUMBERS then fingerprinted the belief it was drawn to hide. `b` was drawn AFTER
+   the belief and redrawn until the claim was legal, and the three claims do not
+   admit the same b: "multiplied the top numbers" needs ab < d <= 12, which leaves
+   b = 2 on 100.00% of its draws, while b of 3 or 4 forced "subtracted" on 100.00%.
+   A four-line table read off the stem's second top number scored 70.61% with no
+   arithmetic done. And b === 1 came back at 40.1%, undoing the v2 fix.
+
+   b is drawn INDEPENDENTLY of the belief now - uniformly over {2, 3}, never 1 -
+   and the (a, d) pairs are enumerated for that (belief, b) and drawn evenly from
+   the whole legal set, rather than being rejection-sampled into whatever the
+   belief happens to allow. Every belief is reachable at every b, so P(belief | b)
+   is 1/3 and the table is worth chance: measured 33.3%, against 70.61% at v4.
+
+   TWO RESIDUALS, DECLARED rather than discovered. (1) b never reaches 4. "Added
+   both bottom numbers" prints 2d, so it needs d <= 6, and with a + b < d and
+   neither addend allowed to be 1 there is no room for b = 4 anywhere in that
+   belief; letting b = 4 through for the other two would put the whole table back.
+   (2) The 12 cap makes the three beliefs DISJOINT in (a, b, d): "bottoms" needs
+   2d <= 12 and "times" needs ab < d, and with a, b >= 2 no stem can carry both. So
+   a lookup on the FULL stem - all three numerals, not just b - cannot be pushed
+   below 50% while the cap stands, and it is measured and declared in the lane note
+   instead of being hidden behind the one number the fourth pass named. */
+function gAddError(){
+  let w = ri(0, ADD_ERR.length - 1);      /* the BELIEF, evenly */
+  const b = ri(2, 3);                     /* ... and the second top number, independently */
+  const legalAD = ww => {
+    const out = [];
+    for (let d2 = 4; d2 <= 12; d2++) for (let a2 = 2; a2 + b < d2; a2++){
+      const cs = ADD_ERR.map(x => x.claim(a2, b, d2));
+      const c = cs[ww];
+      if (!legalFrac(c)) continue;                                 /* proper, bottom <= 12 */
+      if (c[0] * d2 === (a2 + b) * c[1]) continue;                 /* the "wrong" claim is right */
+      if (c[0] * d2 === a2 * c[1] || c[0] * d2 === b * c[1]) continue;  /* it IS an addend */
+      if (!cs.every((o, j) => j === ww || o[0] * c[1] !== c[0] * o[1])) continue;  /* one belief only */
+      out.push([a2, d2]);
+    }
+    return out;
+  };
+  let legal = legalAD(w);
+  /* Unreachable as the three beliefs stand - each is legal at both values of b -
+     but a fourth belief added later must not be able to ship an illegal stem. */
+  if (!legal.length){ w = 1; legal = legalAD(w); }
+  const ad = pick(legal);
+  const a = ad[0], d = ad[1];
+  const k = pick(KIDS);
+  const s = { claim: ADD_ERR[w].claim(a, b, d), text: ADD_ERR[w].say(k[0]) };
+  const wrongs = ADD_ERR.filter((_, i) => i !== w).map(x => x.say(k[0]))
+    .concat([pick(ADD_ERR_NEVER)(k[0])]);
+  return mcText(k[0] + ' says ' + fr(a,d) + ' + ' + fr(b,d) + ' = ' + fr(s.claim[0], s.claim[1]) +
+    '. <b>What did ' + k[2] + ' do wrong?</b>', s.text, wrongs,
+    'Both fractions are already ' + d + 'ths, so the pieces are the same size and only the top numbers ' +
+    'are counted: ' + a + ' + ' + b + ' = ' + (a+b) + ', and the answer is ' + fr(a+b, d) + '. ' + s.text +
+    ' The bottom number is the size of each piece - it never changes when you add.');
+}
+
+/* FORMAT 4h - two-step word problem, Singapore context (pool 3). Add, then take
+   the total from one whole. The stop-after-the-first-step answer is offered. */
+/* FOURTH PASS 2026-09-16, W4(a). The stop-after-step-1 answer is the whole point of
+   a two-step word problem - it is the child who adds and then forgets to take the
+   total from one whole - and every earlier pass named it. v4 offered it on 35.3% of
+   draws, down from 65.3%, because sided() seats whichever three candidates balance
+   the row by value and this one is only sometimes among them. It is passed as
+   sided()'s `must` now and is on EVERY row.
+
+   It cannot reopen the v2 wound (the key smallest of four on 56.8%) because the
+   rank is balanced around it rather than by dropping it: which SIDE of the key the
+   stop-after-step-1 answer falls on is fixed by whether the two of them ate more or
+   less than half, so that coin is flipped first and the numbers drawn to match.
+   2(a+b) = d is refused outright - there the stop-after-step-1 answer is worth the
+   key. Ranks measure 17 / 33 / 33 / 17 rather than 25 / 25 / 25 / 25, which is the
+   honest cost of a distractor that must always be on the row. */
+function gAddWords(){
+  const wantHigh = Math.random() < 0.5;   /* the stop-after-step-1 answer sits above the key */
+  let d = 8, a = 2, b = 3, key = [3,8], slips = [[5,8],[6,8],[2,8]], g = 0, fits = false;
+  do {
+    d = ri(5,12); a = ri(1, Math.max(1, d-3)); b = ri(1, Math.max(1, d-a-2));
+    key = [d-a-b, d];
+    fits = 2*(a+b) !== d && (2*(a+b) > d) === wantHigh;
+    /* SECOND PASS, WOUND 1: "stopped after step 1" and "subtracted only one of the
+       two" both overshoot the key, so it was the SMALLEST of four by value on
+       56.8% of draws, over the 45% the topic-wide gate allows. */
+    slips = sided(key, [
+      [a+b, d],                             /* stopped after step 1 */
+      [d-a, d],                             /* subtracted only the first share */
+      [d-b, d],                             /* subtracted only the second share */
+      /* THIRD PASS 2026-09-16, W4: [a+b, 2*d] - added the bottom numbers as well -
+         put a bottom number past 12 on 39.6% of this item's option rows. Out with
+         the cap; the card names the belief in words. Its place below the key is
+         taken by the second-order miscounts the rest of the file already names. */
+      (d-a-b > 1 ? [d-a-b-1, d] : null),    /* counted one piece too few */
+      (d-a-b > 1 ? [d-a-b-1, d-1] : null),  /* one piece too few AND a part too few */
+      (d+1 <= 12 ? [d-a-b, d+1] : null),    /* miscounted the size of the pieces */
+      (d+2 <= 12 ? [d-a-b, d+2] : null),    /* the same, two parts over */
+      [d-a-b+1, d],                         /* counted one piece too many */
+      [d-a-b, d-1]                          /* miscounted the size of the pieces, one short */
+    ].filter(Boolean), fits ? [a+b, d] : null) || [];
+    g++;
+  } while (g < 200 && !(fits && a !== b && d-a-b >= 1 && slipsOk(key, slips)));
+  if (!(fits && a !== b && d-a-b >= 1 && slipsOk(key, slips))){ d = 8; a = 2; b = 3; key = [3,8]; slips = [[5,8],[6,8],[2,8]]; }
+  const two = shuffle(SOLO).slice(0,2), cake = pick(CAKES);
+  return mcFrac(two[0] + ' eats ' + fr(a,d) + ' of a ' + cake + ' and ' + two[1] + ' eats ' + fr(b,d) +
+    ' of the same ' + cake + '. <b>What fraction of the ' + cake + ' is left?</b>', key, slips,
+    'Step 1: together they eat ' + fr(a,d) + ' + ' + fr(b,d) + ' = ' + fr(a+b, d) + '. ' +
+    'Step 2: the whole ' + cake + ' is ' + fr(d,d) + ', so what is left is ' + d + ' − ' + (a+b) + ' = ' +
+    (d-a-b) + ' pieces, which is ' + fr(d-a-b, d) + '. Stopping after step 1 gives ' + fr(a+b, d) +
+    ', which is the part that was eaten, not the part left.');
 }
 
 
@@ -3327,18 +9414,50 @@ function gSimplest(){
     moeSubTopic:"Fractions: equivalent fractions; comparing and ordering unlike fractions; addition and subtraction",
     label:'Fraction Forest', short:'Fractions', e:'🌳',
     skills:{
-      identify:  {label:'Reading fractions from pictures', tip:'Draw or shade bars and name the fraction aloud: "3 out of 8 parts is 3/8".'},
-      compare:   {label:'Comparing fractions',             tip:'Two rules: same denominator → compare numerators; same numerator → smaller denominator wins. Draw two bars side by side when stuck.'},
-      order:     {label:'Ordering fractions',              tip:'Use the same comparing rules across 3 fractions. Start with unit fractions (1/2, 1/3, 1/4...).'},
-      equivalent:{label:'Equivalent fractions',            tip:'Multiply top AND bottom by the same number. Chant the families: 1/2 = 2/4 = 3/6 = 4/8.'},
-      addsub:    {label:'Adding & subtracting (same denominator)', tip:'Only numerators add or subtract: the denominator is the piece size and stays the same.'},
-      wholes:    {label:'Making one whole',                tip:'Remember 1 = 8/8 = 12/12. Ask: "how many more parts to fill the whole?"'},
-      simplest:  {label:'Simplest form',                   tip:'Divide top and bottom by the same number until you can\'t. Drill the common ones: 4/6→2/3, 6/8→3/4, 8/12→2/3.'}
+      identify:  {label:'Reading fractions from pictures', tip:'Count ALL the parts first (that is the bottom number), then the shaded ones. Check the parts are equal - unequal pieces are not a fraction at all.'},
+      /* WOUND 1 (refutation 2026-09-15): gGreatest4 was tagged `order` and so a
+         child tapping the hint on "which of these is the smallest?" was told to
+         "use the same two rules across THREE fractions" and warned about
+         reversing an order the item never asks for. Picking one extreme out of
+         four is comparing, so it is tagged `compare` now and the compare tip
+         names that case out loud. */
+      compare:   {label:'Comparing fractions',             tip:'Two rules: same bottom number → compare the tops; same top number → the BIGGER bottom number means smaller pieces, so a smaller fraction. To pick the greatest or smallest of a list, use the same rule on every one. Draw two bars side by side when stuck.'},
+      order:     {label:'Ordering fractions',              tip:'Use the same two rules across a whole row, and say the direction out loud ("smallest first") before you start. Reversing the order is the commonest slip - and a gap in a row can sit at either END of it, not only in the middle, so check which way the row runs before you choose.'},
+      equivalent:{label:'Equivalent fractions',            tip:'Multiply top AND bottom by the same number - you are cutting every piece into smaller ones, not changing the amount. Chant the families: 1/2 = 2/4 = 3/6 = 4/8.'},
+      addsub:    {label:'Adding & subtracting fractions',  tip:'The bottom number is the SIZE of each piece, so it never changes: only the tops are counted. If the bottoms are different, change one fraction first so both pieces match.'},
+      wholes:    {label:'Making one whole',                tip:'Remember 1 = 8/8 = 12/12. Ask: "how many more of these pieces fill the whole?" - and if the answer has to be in smaller pieces, fill the whole first and change the pieces after.'},
+      simplest:  {label:'Simplest form',                   tip:'DIVIDE top and bottom by the same number until you cannot any more - never subtract. Drill the common ones: 4/6→2/3, 6/8→3/4, 8/12→2/3.'}
     },
+    /* Pools. No generator sits in two pools: the audit's boredom score multiplied
+       one stem shape by the number of pools it occupied, and gPeri-in-all-three
+       was the worst case in the game. Pool 1 = 6 gens / 4 skills, pool 2 = 9 / 5,
+       pool 3 = 12 / 5.
+
+       WOUND 1 (Sweep fractions Refutation 2026-09-15). The feed serves by SKILL,
+       not by slot: createFeed's carousel round-robins the skills inside a pool and
+       only then picks a generator inside the skill, so a pool-3 skill holding ONE
+       generator is served as often as a skill holding four. The lane composed its
+       pools by slot and nobody measured what the feed actually served. Measured
+       over 500 sessions x 30 items through the real createFeed, pool 3's two
+       single-generator skills took 3.48 (gCompareError) and 3.04 (gMakeOne) items
+       per session while the three equivalence formats this lane was written to add
+       took 0.42-0.50 each.
+
+       Two changes, both here: gGreatest4 moves from `order` to `compare` (it asks
+       for one extreme of four, which is comparing), and the two skills that were
+       then left holding one generator - `order` and `wholes` - each gain a second
+       format (gOrderGap, gMakeOneIn) rather than being left as hogs. Pool 3 now
+       reads wholes 2, simplest 2, compare 2, order 2, addsub 4. */
     pools:{
-      1:[[gPicIdentify,'identify'],[gCompareUnit,'compare'],[gAddSame,'addsub']],
-      2:[[gEqMissing,'equivalent'],[gPickEquiv,'equivalent'],[gCompareSameD,'compare'],[gCompareSameN,'compare'],[gSubSame,'addsub'],[gAddSame,'addsub']],
-      3:[[gSubFromOne,'wholes'],[gMakeOne,'wholes'],[gGreatest4,'order'],[gSimplest,'simplest'],[gEqMissing,'equivalent'],[gPickEquiv,'equivalent']]
+      1:[[gPicIdentify,'identify'],[gPicTakeAway,'identify'],[gEquivFromBar,'equivalent'],
+         [gCompareUnit,'compare'],[gCompareBar,'compare'],[gAddSame,'addsub']],
+      2:[[gPicUnshaded,'wholes'],[gSubFromOne,'wholes'],[gEqMissing,'equivalent'],
+         [gEqMissingDen,'equivalent'],[gPickEquiv,'equivalent'],[gSimplest,'simplest'],
+         [gCompareSameD,'compare'],[gCompareWords,'compare'],[gSubSame,'addsub']],
+      3:[[gMakeOne,'wholes'],[gMakeOneIn,'wholes'],[gAlreadySimplest,'simplest'],
+         [gSimplestError,'simplest'],[gBetween,'compare'],[gGreatest4,'compare'],
+         [gOrderThree,'order'],[gOrderGap,'order'],
+         [gAddRelated,'addsub'],[gSubRelated,'addsub'],[gAddError,'addsub'],[gAddWords,'addsub']]
     }
   });
 })();
@@ -4270,165 +10389,2981 @@ function gMakeHundred(){
 
 /* ===== js/topics/p4-decimals.js ===== */
 "use strict";
-/* Math Quest Island topic: decimals (Decimal Bay, P4).
+/* Math Quest Island topic: decimals (Decimal Bay, P4). Self-contained.
+ * Authoring rules + registration shape: js/topics/README.md
+ * Loads after js/core.js. Touches no other file.
  *
- * RECOVERED, NOT SHIPPED. These are the five decimal generator families from the
- * stale branch exp/level-one (commit 651c5b4), lifted without that branch's
- * destructive deletion of cube/index.html and vercel.json. They pass the sanity
- * harness at 100% oracle coverage.
+ * SWEEP 2026-09-15 (depth-pilot contract taken wide, Kevin's Q114 "Reshape").
+ * Rebuilt from the five recovered generator families into FOUR PRINCIPLES, each
+ * with a bank of formats a teacher would rotate through. The audit's findings on
+ * this file were: 5 skills / 13 generators / 15 stem shapes; gDecPV1 and gDecPV2
+ * were the same stem one decimal place apart (worst-ten #6); pool 3 added no
+ * solving step in 5 of 5 slots; `convert` and `place` owned one stem shape each.
  *
- * This file has NO script tag in index.html and the Decimal Bay map node stays
- * status:'locked'. Play is unchanged. The Phase 1 calibration lane owns this file:
- * it is the sample sub-strand that proves the certification rubric, and it goes
- * live only after Kevin ratifies that rubric (Expansion Brief, phase 1) - the
- * calibration gate forbids shipping content ahead of it.
- * To ship: add the script tag, flip the node to status:'live' in js/registry.js.
+ * PRINCIPLE 1 - PLACE VALUE. A decimal is the whole number plus tenths,
+ *   hundredths and thousandths OF ONE. Where a digit sits decides what it is
+ *   worth, and an empty place still has to be written.
+ * PRINCIPLE 2 - COMPARING, ORDERING AND ROUNDING. Line the decimal points up and
+ *   compare one place at a time from the left. A longer decimal is NOT
+ *   automatically a bigger one, and rounding looks only at the next digit.
+ * PRINCIPLE 3 - DECIMALS AND FRACTIONS. One number written two ways: tenths over
+ *   10, hundredths over 100, thousandths over 1000 - and a fraction whose
+ *   denominator divides into 10 or 100 can always be rewritten that way.
+ * PRINCIPLE 4 - OPERATIONS IN MONEY AND MEASURES. The decimal point is a place
+ *   marker, not a decoration: it is what you line up when you add, and what you
+ *   keep track of when you multiply or share.
+ *
+ * CONTRACT RULES CARRIED FROM THE PILOT AND ITS TWO REFUTATIONS:
+ *  - EXACT ARITHMETIC. Every value in this file is carried as a SCALED INTEGER
+ *    plus a decimal-place count (the `D(n, dp)` pair below) and formatted by
+ *    digit surgery, never by toFixed on a float. `0.07` is `D(7, 2)`, never
+ *    `7/100`. The recovered finishDec formatted every option to ONE shared dp,
+ *    so a distractor meant to read "0.07" shipped as "0.1"; that whole class is
+ *    gone because each option now prints at its OWN dp.
+ *  - NO TWO DEFENSIBLE OPTIONS. Every option set is checked for exact-value
+ *    collisions before it ships, and every "which one" item is drawn so that
+ *    exactly one option satisfies the stem.
+ *  - NAMED MISCONCEPTIONS ONLY. Each numeric item authors three named wrong
+ *    answers and stamps `q.decAuthored` (and `q.authored` where the options parse
+ *    as plain numbers) so the harness fails the build if a padded distractor ever
+ *    ships or if a named one collides with the key.
+ *  - THE ANCHOR IS DECLARED. Pool 3 keeps exactly one single-step item on
+ *    purpose (`gDecExpand`); the other eleven pool-3 slots are two-step.
+ *  - MONEY IS WRITTEN LIKE MONEY. Every money amount with a decimal point prints
+ *    exactly two places ($4.50, never $4.5). Gated in tools/gen-sanity.mjs.
+ * Every stem is re-derived from its RENDERED text by a decimals oracle in
+ * tools/gen-sanity.mjs that is dispatched on the topic id BEFORE any other
+ * branch, so an unmatched decimals stem is a build FAILURE, not a warning.
  */
 (function () {
   const G = MQI.gen;
-  const ri=G.ri, pick=G.pick, shuffle=G.shuffle, gcd=G.gcd, fr=G.fr, eq=G.eq, buildFracChoices=G.buildFracChoices, finishFrac=G.finishFrac, finishNum=G.finishNum, finishTyped=G.finishTyped;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, gcd = G.gcd, fr = G.fr, eq = G.eq,
+        buildFracChoices = G.buildFracChoices, finishFrac = G.finishFrac,
+        finishNum = G.finishNum, finishTyped = G.finishTyped;
 
-/* ===== DECIMALS (Decimal Bay, P4) =====
-   MOE 2021 P4 Decimals sub-strand: place value (tenths/hundredths/thousandths),
-   comparing & ordering, rounding, decimal<->fraction, four operations.
-   Answers are non-integer, so finishNum (integer-only) cannot be used; these
-   route through finishDec below. All internal arithmetic is done in scaled
-   integers so answers are exact (no floating-point drift). */
-const PLACE_WORD={1:'tenths',2:'hundredths',3:'thousandths'};
-/* MCQ finisher for decimal-valued answers. correct + cands are Numbers;
-   dp = number of decimal places to display each choice to. */
-function finishDec(qHtml, extraHtml, correct, cands, unit, explain, dp){
-  dp=(dp==null)?1:dp;
-  const step=1/Math.pow(10,dp);
-  const key=x=>x.toFixed(dp);
-  const nums=[correct]; const seen=new Set([key(correct)]);
-  const add=c=>{ if(nums.length<4 && Number.isFinite(c) && c>=0 && !seen.has(key(c))){ nums.push(c); seen.add(key(c)); } };
-  for(const c of shuffle(cands)) add(c);
-  let t=1;
-  while(nums.length<4){ add(correct+step*t); add(correct-step*t); t++; if(t>90) break; }
-  const u=unit?(' '+unit):'';
-  const order=shuffle(nums.map((_,i)=>i));
-  return { q:qHtml, extra:extraHtml||'', choices:order.map(i=>nums[i].toFixed(dp)+u),
-           correct:order.indexOf(0), explain, answerText: correct.toFixed(dp)+u };
+/* ===== EXACT DECIMAL KIT ====================================================
+   A value is { n, dp }: the integer n scaled by 10^dp. 0.07 is { n:7, dp:2 }.
+   Nothing here ever divides, so nothing here ever drifts. */
+const P10 = [1, 10, 100, 1000, 10000, 100000];
+const D = (n, dp) => ({ n: n, dp: dp });
+/* the decimal string, built from the digits - not from a float */
+function dtext(d) {
+  const neg = d.n < 0, n = Math.abs(d.n);
+  if (d.dp === 0) return (neg ? '-' : '') + n;
+  const p = P10[d.dp], w = Math.floor(n / p);
+  let f = String(n - w * p);
+  while (f.length < d.dp) f = '0' + f;
+  return (neg ? '-' : '') + w + '.' + f;
 }
-/* Place value: value of one digit in a decimal (digits are distinct so the
-   asked digit is unambiguous). dp = decimal places in the number (1..3). */
-function gDecPlaceValue(dp){
-  dp=dp||1;
-  const ds=shuffle([1,2,3,4,5,6,7,8,9]).slice(0,dp+1);
-  const whole=ds[0], decDigits=ds.slice(1);
-  const numStr=whole+'.'+decDigits.join('');
-  const place=ri(1,dp);
-  const d=decDigits[place-1];
-  const value=d/Math.pow(10,place);
-  const cands=[ d/10, d/Math.pow(10,Math.min(3,place+1)) ];
-  if(place>1) cands.push(d/Math.pow(10,place-1));
-  cands.push((d+1)/Math.pow(10,place));
-  return finishDec('What is the value of the digit <b>'+d+'</b> in <b>'+numStr+'</b>?','',
-    value, cands, '',
-    'In '+numStr+', the digit '+d+' sits in the '+PLACE_WORD[place]+' place. Its value is '+d+' '+PLACE_WORD[place]+', which is '+value.toFixed(place)+'.',
-    place);
+/* the Number a child would read, for candidate lists the shared kit wants */
+const dnum = d => d.n / P10[d.dp];
+/* same quantity? compared as integers at the deeper scale */
+function dsame(a, b) {
+  const m = Math.max(a.dp, b.dp);
+  return a.n * P10[m - a.dp] === b.n * P10[m - b.dp];
 }
-/* Compare 4 decimals that share the same whole-number part, so the comparison
-   turns on the decimal places. dp = decimal places (1 or 2). */
-function gDecCompare(dp){
-  dp=dp||1;
-  const scale=Math.pow(10,dp);
-  const whole=ri(1,9);
-  const fracs=new Set();
-  while(fracs.size<4) fracs.add(ri(0,scale-1));
-  const arr=[...fracs].map(f=>whole*scale+f);
-  const wantMax=Math.random()<0.5;
-  const target=wantMax?Math.max(...arr):Math.min(...arr);
-  return { q:'Which decimal is the <b>'+(wantMax?'greatest':'smallest')+'</b>?', extra:'',
-    choices:arr.map(v=>(v/scale).toFixed(dp)), correct:arr.indexOf(target),
-    explain:'Line up the decimal points and compare one place at a time from the left. The '+(wantMax?'greatest':'smallest')+' is '+(target/scale).toFixed(dp)+'.',
-    answerText:(target/scale).toFixed(dp) };
-}
-/* Round a decimal (to+1 places) to the nearest whole number (to=0) or 1 dp
-   (to=1). Round half up. All exact via integer arithmetic. */
-function gDecRound(to){
-  to=to||0;
-  const dp=to+1, scale=Math.pow(10,dp), factor=Math.pow(10,to);
-  const raw=ri(scale+1, 9*scale);
-  const val=raw/scale;
-  const base=Math.floor(raw/10), firstDrop=raw%10;
-  const roundedTo=firstDrop>=5?base+1:base;
-  const rounded=roundedTo/factor;
-  const label=(to===0)?'nearest whole number':'1 decimal place';
-  const cands=[ base/factor, (base+1)/factor, rounded+1/factor, Math.max(0,rounded-1/factor) ];
-  return finishDec('Round <b>'+val.toFixed(dp)+'</b> to the '+label+'.','',
-    rounded, cands, '',
-    'Look at the digit just after the '+label.replace('nearest ','')+': it is '+firstDrop+'. Since '+firstDrop+' is '+(firstDrop>=5?'5 or more, round up':'4 or less, round down')+', '+val.toFixed(dp)+' becomes '+rounded.toFixed(to)+'.',
-    to);
-}
-/* Express a proper fraction (denominator 10 or 100) as a decimal. */
-function gFractionToDecimal(den){
-  den=den||10;
-  const dp=den===100?2:1;
-  const n=ri(1,den-1);
-  const val=n/den;
-  const cands=[ n/(den*10), (n+1)/den, val*10, (n>9?Math.floor(n/10):n)/10 ];
-  return finishDec('Write '+fr(n,den)+' as a decimal.','',
-    val, cands, '',
-    fr(n,den)+' means '+n+' out of '+den+'. Reading it off the place-value chart gives '+val.toFixed(dp)+'.',
-    dp);
-}
-/* Add or subtract two decimals with matching decimal places. */
-function gDecAddSub(dp, mode){
-  dp=dp||1;
-  const scale=Math.pow(10,dp);
-  mode=mode||(Math.random()<0.5?'add':'sub');
-  if(mode==='add'){
-    let a=ri(1,6*scale), b=ri(1,3*scale);
-    if((a+b)%scale===0) b+=1;
-    const s=a+b;
-    const cands=[ (s+1)/scale, (s-1)/scale, (s+scale)/scale, Math.abs(a-b)/scale ];
-    return finishDec((a/scale).toFixed(dp)+' + '+(b/scale).toFixed(dp)+' = ?','',
-      s/scale, cands, '',
-      'Line up the decimal points and add: '+(a/scale).toFixed(dp)+' + '+(b/scale).toFixed(dp)+' = '+(s/scale).toFixed(dp)+'.', dp);
+const dcmp = (a, b) => { const m = Math.max(a.dp, b.dp); return a.n * P10[m - a.dp] - b.n * P10[m - b.dp]; };
+/* strip trailing zeros: D(40,2) -> D(4,1), so "how many hundredths in 0.4" can
+   print 0.4 and not give its own answer away */
+function dnat(d) { let n = d.n, dp = d.dp; while (dp > 0 && n % 10 === 0) { n /= 10; dp--; } return D(n, dp); }
+/* The two point-placement slips every P4 paper carries: the right digits with the
+   decimal point one column out. pLeft reads BIGGER, pRight reads SMALLER, so a
+   generator that authors both has a named candidate on each side of its key.
+   pRight is only legal while the result stays inside the three-place ceiling. */
+const pLeft  = d => D(d.n, Math.max(0, d.dp - 1));
+const pRight = d => (d.dp < 3 ? D(d.n, d.dp + 1) : null);
+/* ===== THE POINT-PLACEMENT TWIN (refutation v6 @ 5a5fb3b, THE KILL) ===========
+   Two options are TWINS when they are the same digits with the point in a
+   different place - "3.7" and "0.37". In this kit that is exactly "the same scaled
+   integer", because dtext() prints n's digits and pads the fraction with LEADING
+   zeros only, so the printed digit string with the point taken out and any leading
+   zero dropped IS String(n).
+
+   THE DEFECT. The rank discipline (WOUND 1) requires every numeric bank to author
+   a candidate on each side of the key at comparable magnitude, and the cheapest
+   such pair is the point-one-column-out slip - so every numeric generator authored
+   pLeft(key) / pRight(key). RULE D1 then requires the ARITHMETIC slips to be
+   written to the key's OWN decimal places. Between them the key became the only
+   option that had a same-digits twin AND shared its depth with something, and the
+   twin was alone at its own depth. One rule read it - "two of these are the same
+   digits with the point in a different place; take the one written to as many
+   decimal places as another number on the row" - and settled 75-94% of seven
+   generators at 100.000% accuracy, with no stem read and no arithmetic done.
+
+   THE FIX is RULE D1's MIRROR, and it is the conjunction that breaks, not either
+   half. D1 protects the key from being the odd one out at its own depth; nothing
+   protected the key's TWIN from being the odd one out at ITS depth, and inside a
+   two-member digit family marking one is marking the other. So the picker now
+   refuses any shipped row on which EXACTLY ONE option both has a twin and has a
+   depth-mate. Three shapes satisfy it and the picker takes whichever the bank's
+   candidate bank can reach on the draw:
+     - the key's twin ships AND is not alone at its own decimal-place count, so the
+       route keeps TWO options and names neither;
+     - a DISTRACTOR pair are the row's twins (every bank below now authors the
+       point-one-column-out slip of a NAMED WRONG ANSWER as well as of the key - a
+       child who slides the point one column has no reason to have carried
+       correctly first), so the route can land away from the key;
+     - no twin ships at all, and the route reads nothing.
+   A rule that never picks exactly one option gives a child nothing, in either
+   direction: its negation keeps two or four as well. The relation is gated in
+   tools/gen-sanity.mjs as an option-to-option coupling relation, scored alone and
+   paired with the depth relation, with the v6 gDecAddSub and gDecTrack rebuilt as
+   live negative controls. */
+/* which option does the refuter's composed route pick? `sel` is the three shipped
+   distractors and the key is option 0, so 0 means the route reads the key, a
+   positive index means it reads a wrong answer, and -1 means it picks out nobody.
+   Only 0 is forbidden outright: a route that lands on a DISTRACTOR is one a child
+   cannot use, and forbidding those as well costs the banks selections they need -
+   gDecBar lost the whole "key is the largest" rank to the stricter form and went
+   to 45.6% on one rank against a 45% ceiling. */
+function twinRouteOn(key, sel) {
+  const all = [key].concat(sel);
+  let only = -1, count = 0;
+  for (let i = 0; i < all.length; i++) {
+    let twin = false, mate = false;
+    for (let j = 0; j < all.length; j++) {
+      if (j === i) continue;
+      if (all[j].n === all[i].n) twin = true;
+      if (all[j].dp === all[i].dp) mate = true;
+    }
+    if (twin && mate) { only = i; count++; }
   }
-  let a=ri(2*scale,9*scale), b=ri(1,a-1);
-  if((a-b)%scale===0) b+=1;
-  if(b>=a) b=a-1;
-  const s=a-b;
-  const cands=[ (s+1)/scale, (s-1)/scale, (a+b)/scale, (s+scale)/scale ];
-  return finishDec((a/scale).toFixed(dp)+' − '+(b/scale).toFixed(dp)+' = ?','',
-    s/scale, cands, '',
-    'Line up the decimal points and subtract: '+(a/scale).toFixed(dp)+' − '+(b/scale).toFixed(dp)+' = '+(s/scale).toFixed(dp)+'.', dp);
+  return count === 1 ? only : -1;
 }
-/* Difficulty-banded wrappers (pools store function refs, like gMulEasy etc.). */
-function gDecPV1(){ return gDecPlaceValue(1); }
-function gDecPV2(){ return gDecPlaceValue(2); }
-function gDecPV3(){ return gDecPlaceValue(3); }
-function gDecCmp1(){ return gDecCompare(1); }
-function gDecCmp2(){ return gDecCompare(2); }
-function gDecRoundWhole(){ return gDecRound(0); }
-function gDecRound1(){ return gDecRound(1); }
-function gFracToDec10(){ return gFractionToDecimal(10); }
-function gFracToDec100(){ return gFractionToDecimal(100); }
-function gDecAdd1(){ return gDecAddSub(1,'add'); }
-function gDecAdd2(){ return gDecAddSub(2,'add'); }
-function gDecSub1(){ return gDecAddSub(1,'sub'); }
-function gDecSub2(){ return gDecAddSub(2,'sub'); }
+/* and which side of its twin the key sits on, when exactly one twin ships: same
+   digits, so the one written to FEWER decimal places is the bigger number. Three
+   or more members of a digit family leave the key in the middle, where neither
+   "the bigger" nor "the smaller" reaches it, so those selections are free. */
+function twinSideOk(key, sel, wantBigger) {
+  const twins = sel.filter(c => c.n === key.n);
+  if (twins.length !== 1) return true;
+  return (key.dp < twins[0].dp) === wantBigger;
+}
+/* ===== THE WHOLE / FRACTION SEAT (refutation v8 @ f0cbe38, KILL 1) ============
+   The eighth pass killed the five odd-one-out routes on gDecQuotient and the bank
+   got WORSE, by twenty points, because the route MOVED rather than died. Removing
+   ÷ 10 left `quotCore`'s must-shipped remainder slip carrying floor(a / b) - which
+   IS the key's own whole-number part - on 100.00% of draws, so *"take the biggest
+   option that shares its whole number with another option, else the second
+   biggest"* read 79.08% at 94.47%, E 79.94% against a 25% floor.
+
+   The defect is not the slip and it is not the route: it is that the key's
+   MEMBERSHIP of the whole-part family was CONSTANT across draws. A child cannot
+   use a feature the key wears half the time, so this is the twin coin's mirror on
+   the whole-number axis, drawn per item exactly the same way:
+
+     heads  the key shares its whole ones with another option - and, when exactly
+            one option shares them, it is the bigger of the pair on half of those
+            draws and the smaller on the other half, so "of the two starting with
+            the same whole number, take the bigger" is a coin too.
+     tails  the key shares its whole ones with NOBODY, and a DISTRACTOR PAIR
+            carries a shared whole part instead. The pair is required: without it
+            "the option that shares a whole part with another" names nobody on a
+            tails row, and the child reads the key off the complement - which is
+            the same free elimination wearing the other badge.
+
+   THE SAME COIN RUNS ON THE FRACTIONAL COLUMNS, because the two halves of the
+   whole / fraction cross are one reading to a child and the eighth pass's own
+   worst surviving pair on this bank was the MIRROR of the clause `oddOneOutOnKey`
+   already carried: *"shares its digits after the point with another option AND
+   shares its whole ones with nobody"*, E 47.84%. Refusing that cell per draw as
+   well costs the rank picker its freedom - all four cells bound took "2nd largest"
+   to 43.05% against a 45% ceiling - so it is SEATED instead: the key carries each
+   family membership on about half the draws, and neither sign of either axis is a
+   badge the key wears every time.
+
+   Unreachable on a draw is not fatal: the seat sits in the SAME tier as the twin
+   shape (a row that satisfies neither still ships ahead of one a v6/v7 route
+   reads), so a bank whose candidates cannot reach it loses a preference, not an
+   item. */
+function famSeatOk(keyOf, sel, key, mayShare, wantBigger) {
+  const kw = keyOf(key);
+  if (kw === null || mayShare === null) return true;
+  const mates = sel.filter(c => keyOf(c) === kw);
+  if (!mayShare) {
+    if (mates.length) return false;
+    for (let i = 0; i < sel.length; i++)
+      for (let j = i + 1; j < sel.length; j++)
+        if (keyOf(sel[i]) !== null && keyOf(sel[i]) === keyOf(sel[j])) return true;
+    return false;
+  }
+  if (!mates.length) return false;
+  if (wantBigger === null) return true;
+  /* the key's SLOT inside its own family is drawn, not left to whatever the
+     candidate bank happens to offer. Coining only the two-member case left the key
+     the biggest of its whole-part family on 81.33% of the draws that carried one,
+     because every slip wearing the key's whole ones - the remainder slip, the
+     dropped-whole slip - sits below it; "the biggest option that shares its whole
+     number" then still read the key four times in five. */
+  return (mates.every(c => dcmp(c, key) < 0)) === wantBigger;
+}
+/* and the CELL of the whole x fraction cross the key sits in. The seat above draws
+   the key's whole-part membership; `oddOneOutOnKey` refuses the cell where the key
+   is the unique option sharing BOTH. Neither reaches the eighth pass's own worst
+   surviving pair on gDecQuotient, which is the cell next door - "shares its digits
+   after the point with another option AND shares its whole ones with nobody",
+   42.73% at 85.80%. A row on which at least one WRONG answer sits in the key's own
+   cell cannot be read by any of the four, whichever signs they wear. */
+function crossSeatOk(key, sel) {
+  const all = [key].concat(sel);
+  const ws = all.map(dwhole), fs = all.map(dfracStr);
+  const sW = i => ws.filter((w, j) => j !== i && w === ws[i]).length > 0;
+  const sF = i => fs[i] !== null && fs.filter((f, j) => j !== i && f === fs[i]).length > 0;
+  const kw = sW(0), kf = sF(0);
+  for (let i = 1; i < all.length; i++) if (sW(i) === kw && sF(i) === kf) return true;
+  return false;
+}
+/* ===== THE ODD ONE OUT, ON THREE MORE AXES (refutation v7 @ ed2c0dc, THE KILL) ==
+   The v6 clause above killed the point-placement twin by refusing any row on which
+   EXACTLY ONE option both had a twin and had a depth-mate. On `gDecQuotient` the
+   cure was the disease one bank over. Forbidding the key's twin from shipping left
+   the key the LONE carrier of its own digit family - and at `÷ 10` the key's digits
+   ARE the dividend's, so "26 ÷ 10 = ?" shipped `0.6 / 2.6 / 3.6 / 0.1` and *"take
+   the option made of the question's own digits"* settled 100.00% of that mode at
+   100.00%, with no division done. Measured against the v6 file itself the bank went
+   BACKWARDS, 63.12% to 74.22%, while eight other banks improved by 30 to 76 points.
+   The seventh pass killed it.
+
+   Every one of these routes is the same child's move - "three of these look alike
+   and one does not, so it is the one" - read on a different axis, so they are
+   written as one family and scored together:
+
+     stemFamRoute   the option whose DIGIT STRING is a stem number's. At ÷ 10 the
+                    quotient's digits are the dividend's, so the key wore the stem's
+                    own digits and nothing else on the row did.
+     loneFamRoute   the option whose digit string appears on no other option, when
+                    every other option has a digit-family partner. This is the trap
+                    the cure walks into: authoring a twin PAIR among the distractors
+                    to protect the key makes the key the odd one out instead.
+     wholeFracRoute D1's MIRROR ON THE WHOLE / FRACTION AXIS, and the whole of the
+                    ÷ 2, ÷ 4, ÷ 5 and ÷ 8 modes. RULE D1 requires the arithmetic
+                    slips to sit at the key's own decimal places; `quotCands` then
+                    authors a slip carrying the key's WHOLE ones ("wrote the
+                    remainder after the point") and two carrying the key's DIGITS
+                    AFTER THE POINT ("dropped the whole ones", "one whole too many"),
+                    so the key was the unique INTERSECTION of the two families -
+                    "9 ÷ 2 = ?" on `0.5 / [4.5] / 5.5 / 4.1`, 92.66% at 100.00%.
+
+   All three are gated in tools/gen-sanity.mjs by the stem-option coupling gate,
+   whose shape key now carries a bare operand's VALUE so that ÷ 10 and ÷ 2 are
+   different stem shapes, with v7's gDecQuotient rebuilt as a live negative
+   control. */
+const dwhole = d => Math.floor(d.n / P10[d.dp]);
+/* the digits after the point, as the child reads them off the page: dtext pads with
+   LEADING zeros, so "0.06" reports "06" and not "6" - two options share a fractional
+   part only when the printed columns match. */
+const dfracStr = d => (d.dp === 0 ? null : dtext(d).split('.')[1]);
+/* the digit family: dtext prints n's digits with the point somewhere inside, so the
+   printed digit string with the point taken out and leading zeros dropped IS
+   String(n). Same as the v6 twin relation, named here for the other two routes. */
+const dfam = d => String(d.n);
+const onlyOne = (all, pred) => {
+  let hit = -1, n = 0;
+  for (let i = 0; i < all.length; i++) if (pred(all[i], i)) { hit = i; n++; }
+  return n === 1 ? hit : -1;
+};
+/* does any of the five routes name the KEY? `sel` is the three shipped distractors
+   and the key is option 0, so a route that lands on a wrong answer (or on nobody) is
+   one a child cannot use and is left alone - the same rule the v6 clause follows.
+
+   The last two are the composites the coupling gate itself prints once its shape key
+   can tell ÷ 10 from ÷ 2, written here in the gate's own vocabulary so that the two
+   files say the same thing:
+
+     (d) NOT "repeats a number printed in the stem" AND "shares its digit string with
+         another option" - at ÷ 10 the key's only digit-family relative is the
+         DIVIDEND written back unchanged, and the dividend repeats a stem number
+         while the key does not, so pairing the key with it names the key again.
+     (e) "shares its digits after the point with another option" AND "its digit
+         multiset is a stem number's" - the dividend has no digits after the point,
+         so the same pair read the other way round also comes back to the key unless
+         nothing on the row shares the key's fractional columns. */
+function oddOneOutOnKey(key, sel, st) {
+  const all = [key].concat(sel);
+  const fams = all.map(dfam);
+  const shareFam = i => fams.filter((f, j) => j !== i && f === fams[i]).length > 0;
+  if (st.bare.size && onlyOne(all, (c, i) => st.bare.has(fams[i])) === 0) return true;
+  if (onlyOne(all, (c, i) => !shareFam(i)) === 0) return true;
+  const ws = all.map(dwhole), fs = all.map(dfracStr);
+  const shareFrac = i => fs[i] !== null && fs.filter((f, j) => j !== i && f === fs[i]).length > 0;
+  const shareWhole = i => ws.filter((w, j) => j !== i && w === ws[i]).length > 0;
+  /* THE KILL (refutation v8 @ f0cbe38). This clause used to refuse ONE of the four
+     cells of the whole x fraction cross - the key as the unique option sharing
+     BOTH - and the eighth pass's own worst surviving pair on this bank was its
+     MIRROR: *"the option that shares its digits after the point with another and
+     shares its whole ones with nobody"*, E 47.84%. "Shares with another" and
+     "shares with nobody" are the same reading to the child; a route that names the
+     key is a route whichever sign it wears.
+     It is answered by SEATING and not by refusing, because refusing the other
+     cells too leaves so few clean selections that the magnitude-rank draw cannot
+     be honoured - "2nd largest" went to 43.05% against a 45% ceiling the first
+     time all four cells bound, which trades this pass's kill for last pass's. The
+     fix is crossSeatOk below: the key's membership of the whole-part family AND of
+     the fractional-string family are each drawn per item, so neither sign of
+     either axis is a feature the key wears every time. */
+  if (onlyOne(all, (c, i) => shareFrac(i) && shareWhole(i)) === 0) return true;
+  const printed = all.map(dtext);
+  if (onlyOne(all, (c, i) => !st.nums.has(printed[i]) && shareFam(i)) === 0) return true;
+  const sortD = i => printed[i].replace('.', '').split('').sort().join('');
+  if (st.sorted.size && onlyOne(all, (c, i) => shareFrac(i) && st.sorted.has(sortD(i))) === 0) return true;
+  return subsetSplitOnKey(all, printed, fams, st);
+}
+/* ===== THE SUB-ROW (refutation v8 @ f0cbe38, KILL 2) =========================
+   Every clause above asks whether a feature picks out ONE option from FOUR. The
+   eighth pass's second kill did not live there. `gFracToDec`'s key is the question's
+   own numerator with the point put in, so its digit string IS a stem number's on
+   100.00% of draws and it is BELOW ONE on 100.00% of draws - both structural. The
+   v6 cure then guarantees a SECOND option carrying that digit family, which is what
+   makes `stemFamRoute`'s onlyOne() pass, and the child reads:
+
+     "Two of these are the question's own digits with the point in different places.
+      Take the one that starts with a nought."
+
+   63.59% of draws, 100.00% right, on a pool-1 bank served 1.95 items a session, and
+   declared at E 35.9% for two passes.
+
+   The missing axis is the SUBSET. A child who can pick 2 or 3 options out of 4 by a
+   shared feature is looking at a smaller row, and every cue that names nobody on the
+   full four can name the key on the sub-row. So each k-of-4 subset a shared feature
+   carves out - the stem's digit family, and each digit family with more than one
+   member - is scored against the cues that read off the page with no arithmetic:
+   which one starts with a nought, which one is a whole number, which one is written
+   to more or to fewer places than the rest of the subset. MAGNITUDE inside a subset
+   is deliberately NOT a cue here: on a two-member subset the key is the bigger or
+   the smaller by definition, so refusing it per draw refuses every such row - that
+   axis is seated by the coins in famSeatOk instead. */
+function subsetSplitOnKey(all, printed, fams, st) {
+  const groups = [];
+  /* the sub-row a child picks out FROM THE STEM - "the ones made of the question's
+     own digits" - is scored at two members as well as at three, because it is the
+     one the stem itself hands over. A bare digit-family pair is the v6 twin and is
+     seated by a coin in mcDec instead. */
+  if (st.bare.size) groups.push({ g: all.map((c, i) => st.bare.has(fams[i])), min: 2 });
+  const seen = {};
+  for (let i = 0; i < all.length; i++) {
+    if (seen[fams[i]]) continue;
+    seen[fams[i]] = 1;
+    const g = all.map((c, j) => fams[j] === fams[i]);
+    if (g.filter(Boolean).length > 1) groups.push({ g: g, min: 3 });
+  }
+  const cues = [
+    i => printed[i].charAt(0) === '0',            /* it starts with a nought */
+    i => all[i].dp === 0,                         /* it is a whole number */
+    i => all[i].dp                                /* ... written to its own depth */
+  ];
+  for (const grp of groups) {
+    if (!grp.g[0]) continue;                      /* only sub-rows the key is on */
+    const idx = [];
+    for (let i = 0; i < all.length; i++) if (grp.g[i]) idx.push(i);
+    if (idx.length === 1) return true;            /* the key alone IS the sub-row */
+    /* a bare digit-family sub-row needs THREE members for any of these to be a cue
+       at all: on a two-member one the key is the deeper or the shallower, the
+       nought-leading or the not, BY DEFINITION, and refusing that pair costs
+       gDecBar and gDecShareMass their magnitude-rank ceiling (47.5% and 46.3% at
+       one rank against a 45% ceiling) - neither bank has a named slip above the key
+       that is not a whole number, so their clean rows all live at one rank. */
+    if (idx.length < grp.min || idx.length > 3) continue;
+    for (let c = 0; c < cues.length; c++) {
+      const vals = idx.map(cues[c]);
+      if (c < 2) { if (vals.filter(v => v).length === 1 && vals[idx.indexOf(0)]) return true; continue; }
+      if (idx.length < 3) continue;               /* the depth cue needs three */
+      for (const want of [Math.max.apply(null, vals), Math.min.apply(null, vals)])
+        if (vals.filter(v => v === want).length === 1 && vals[idx.indexOf(0)] === want) return true;
+    }
+  }
+  return false;
+}
+/* W2's route, which is a tier of its own (refutation v7 @ ed2c0dc). "The option
+   ending in the digit the question names" is weaker than the five above - it reads
+   one digit - but at a multiplier or a divisor of 5 it is deterministic: a product
+   or quotient by 5 ends in 0 or 5, every draw guard in this file forbids the 0, so
+   the key ALWAYS ends in 5 and 5 is the number the stem printed. It read 72.52% at
+   100.00% inside gDecMulWhole's × 5 shape and 91.34% at 100.00% inside gDecTrack's
+   5-laps shape, invisible bank-wide and invisible to the coupling gate until its
+   shape key could tell one multiplier from another. It sits BELOW the five, because
+   a row that closes it while reopening one of them is a worse row. */
+function lastDigitOnKey(key, sel, st) {
+  if (!st.named.size) return false;
+  const all = [key].concat(sel);
+  const last = c => { const s = dtext(c); return Number(s.charAt(s.length - 1)); };
+  if (onlyOne(all, c => st.named.has(last(c))) === 0) return true;
+  /* and the gate's own pairing of it. Every stem here prints its decimal as "0.7",
+     so "0" is one of the stem's whole-number parts and a helper written 0.35 is
+     thrown out of the pair before it can do any work - the helper has to carry a
+     whole-number part the stem does not print as well as the right last digit. */
+  return onlyOne(all, c => st.named.has(last(c)) && !st.wholes.has(dtext(c).split('.')[0])) === 0;
+}
+/* what the rendered stem prints, in the four readings the routes above use: the
+   numerals themselves, their digit strings with the point and any leading zero taken
+   out, their digit MULTISETS as printed (which is the gate's own relation, so "0.26"
+   reads 026 and does not match a stem 26 while "6.2" does), and the LONE digits it
+   names - a digit standing on its own, not one inside a longer numeral. */
+function stemMarksOf(stem, extra) {
+  const t = (String(stem || '') + ' ' + String(extra || '')).replace(/<[^>]*>/g, ' ');
+  const nums = t.match(/\d+(?:\.\d+)?/g) || [];
+  return { nums: new Set(nums),
+           bare: new Set(nums.map(v => v.replace('.', '').replace(/^0+(?=\d)/, ''))),
+           sorted: new Set(nums.map(v => v.replace('.', '').split('').sort().join(''))),
+           wholes: new Set(nums.map(v => v.split('.')[0])),
+           named: new Set([...t.matchAll(/(?<![\d.])(\d)(?![\d.])/g)].map(x => Number(x[1]))) };
+}
+/* every distinct? (exact, not by string) */
+function dallDistinct(list) {
+  for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) if (dsame(list[i], list[j])) return false;
+  return true;
+}
+const money = cents => '$' + dtext(D(cents, 2));
+const PLACE_WORD = ['ones', 'tenths', 'hundredths', 'thousandths'];
+const PLACE_ONE  = ['one', 'tenth', 'hundredth', 'thousandth'];
+/* "1 tenths" is not English and a parent reads the explanation out loud. */
+const qty = (n, place) => n + ' ' + (n === 1 ? PLACE_ONE[place] : PLACE_WORD[place]);
+/* WOUND 5 (refutation 2026-09-15): gDecBar wrote `filled + ' parts are shaded'` raw
+   and printed "1 parts are shaded" on 12.8% of its draws, in a file that already
+   carried qty() for exactly this. Nothing that counts anything in this file writes
+   its own plural any more: it goes through `many`, which agrees the verb too. */
+const many = (n, one, plural) => n + ' ' + (n === 1 ? one : plural);
+/* always written as "... to " + roundPhrase(to), so the article lives in one place */
+const roundPhrase = to => (to === 0 ? 'the nearest whole number' : (to === 1 ? '1 decimal place' : '2 decimal places'));
+/* round half up at `to` places, from a scaled integer. Integer arithmetic only. */
+function dround(d, to) {
+  if (d.dp <= to) return D(d.n * P10[to - d.dp], to);
+  const cut = P10[d.dp - to];
+  const base = Math.floor(d.n / cut), rem = d.n - base * cut;
+  return D(rem * 2 >= cut ? base + 1 : base, to);
+}
+
+const NAMES = ['Mei Ling', 'Siti', 'Ravi', 'Kumar', 'Wei Jie', 'Nurul', 'Jun Hao', 'Priya', 'Ah Seng', 'Aisyah'];
+const pickNames = n => shuffle(NAMES).slice(0, n);
+
+/* ===== FINISHERS ============================================================
+   mcDec  - 4 decimal options, EACH printed at its own decimal places, deduped by
+            exact value. Stamps q.decAuthored (the three named distractor strings)
+            and, when every option parses as a plain number, q.authored, so the
+            harness's distractor-identity contract binds on every draw.
+   mcMoney- the same, as $x.xx. parseFloat("$6.25") is NaN, so money items carry
+            q.decAuthored only; the decimals gate in gen-sanity checks it the same
+            way the shared contract checks q.authored.
+   mcText - hand-written misconception options (concept checks, error diagnosis). */
+function assemble(keyStr, wrongStrs, stem, extra, explain) {
+  const opts = shuffle([keyStr].concat(wrongStrs));
+  return { q: stem, extra: extra || '', choices: opts, correct: opts.indexOf(keyStr),
+           explain: explain, answerText: keyStr };
+}
+
+/* ===== MAGNITUDE-RANK DISCIPLINE (refutation 2026-09-15, WOUND 1) ============
+   The sweep's cheap-strategy table measured length and decimal places and found
+   nothing above 5%. It never measured MAGNITUDE. "Always pick the second biggest
+   number" won 38.5% of this bank and 100% of six generators, because each of
+   those generators' three named distractors always bracketed the key the same
+   way: two below and one above, on every draw, for ever.
+
+   The fix is not a padded distractor and not a redraw. It is a WIDER BANK of
+   named slips - every numeric generator now authors five or six, with at least
+   two on each side of the key - plus this picker, which draws the NUMBER OF
+   SHIPPED OPTIONS ABOVE THE KEY uniformly over whatever the pool can support.
+   The key's rank then spreads across the four positions instead of being pinned
+   to one, and no fixed rank rule beats chance by much.
+
+   `must(c)` marks a candidate that has to ship on every draw - the item's whole
+   point (gDecAlignError's printed slip, gDecShareMass's stop-after-dividing
+   answer, which its oracle requires).
+
+   rankPick is generic on purpose: `cmp` orders a candidate against the key and
+   `dpOf` reports its decimal places, so the same routine serves the decimal
+   finisher, the money finisher (integer cents) and the count finisher. That is
+   the shape the integrator lifts into the shared harness. */
+const must = c => (c ? { n: c.n, dp: c.dp, must: true } : c);
+const RANK_TOP = 9;                     /* a selection scoring this ships at once */
+/* the same discipline for a finishNum item, whose answers are plain counts */
+function rankInts(key, cands) {
+  const pool = [];
+  for (const c of cands) {
+    const v = (c && typeof c === 'object') ? c : { n: c };
+    if (!Number.isInteger(v.n) || v.n <= 0 || v.n === key || pool.some(k => k.n === v.n)) continue;
+    pool.push(v);
+  }
+  const sel = rankPick(pool, c => c.n - key, () => null, null) || pool.slice(0, 3);
+  return shuffle(sel).map(v => v.n);
+}
+/* `rank` is the KILL's clause. It scores a candidate selection on a TEN-POINT
+   ladder, and the picker takes the best the bank's candidates can reach:
+
+     9    take it at once - no row-only route names the key and every seat the draw
+          asked for is filled. The whole-part seat is worth 3 (it is the eighth
+          pass's kill); the whole x fraction cell, the v6 twin shape and the
+          fractional seat are worth 1 apiece.
+     4-8  acceptable, one or more seats short of the preferred shape
+     3    acceptable - every route is blind, but no seat the draw asked for is filled
+     2    only the one-digit route names the key (W2's × 5 / ÷ 5 shape)
+     1    a v7 odd-one-out route names the key; the v6 twin route does not
+     0    the v6 twin route names the key: never ship it if anything else is there
+
+   THE KILL (refutation v8 @ f0cbe38) widened the top of the ladder from one tier to
+   six. At v8 "preferred" was a single all-or-nothing tier, so the moment a third
+   seat was added to it the whole-part seat stopped being reached on rows that could
+   have carried it - the key was the biggest of its own whole-part family on 84.31%
+   of the draws that carried one, against 74.66% with the whole seat scored alone.
+   A partial seat now outranks no seat, so adding a discipline can no longer cost
+   one that is already paid for.
+
+   Ranked tiers rather than a pass/fail because each pass's KILL must never be closed
+   by REOPENING an earlier one: a bank that can reach no fully clean row still ships
+   the twin-clean row rather than the twin-readable one, and the weakest route is
+   the one that gives way. It sits UNDER RULE D1 and OVER nothing, so a bank that can
+   satisfy none of it on a draw still ships a D1-clean row rather than failing to
+   ship at all.
+
+   60 tries was enough for one clause; seven of them need more head-room on the
+   narrow banks, and a try is a shuffle and four comparisons. */
+function rankPick(pool, cmp, dpOf, keyDp, rank) {
+  const musts = pool.filter(c => c.must), rest = pool.filter(c => !c.must);
+  if (musts.length > 3) return null;
+  const need = 3 - musts.length;
+  const above = rest.filter(c => cmp(c) > 0), below = rest.filter(c => cmp(c) < 0);
+  const hi = Math.min(need, above.length), lo = Math.max(0, need - below.length);
+  if (lo > hi) return null;
+  let fallback = null, d1only = null;
+  const tier = new Array(RANK_TOP).fill(null);   /* by score, 1 to RANK_TOP-1 */
+  /* WOUND 1's discipline comes FIRST and the KILL clauses come second, because the
+     rank ceiling is the harder gate. The number of options above the key is drawn
+     ONCE and held for the first half of the search, so the clean rows the clauses
+     below accept are found AT THE RANK THE DRAW ASKED FOR rather than at whichever
+     rank happens to yield clean rows most often. Redrawing `a` every try cost
+     gFracToDec 9 points of "the key is the smallest" the first time D1's mirror
+     bound - 52.3% against a 45% ceiling - because its clean selections lived at one
+     end. Only if no clean row exists at the drawn rank is `a` let go. */
+  const want = ri(lo, hi);
+  for (let t = 0; t < 200; t++) {
+    const a = t < 170 ? want : ri(lo, hi);
+    const sel = musts.concat(shuffle(above).slice(0, a), shuffle(below).slice(0, need - a));
+    if (sel.length !== 3) continue;
+    if (!fallback) fallback = sel;
+    /* RULE D1 still binds: the key may not be the only option written to its own
+       number of decimal places, so a selection that shares it is preferred. */
+    if (!(keyDp == null || sel.some(c => dpOf(c) === keyDp))) continue;
+    if (!d1only) d1only = sel;
+    if (!rank) return sel;
+    /* a row found AFTER the drawn rank is let go costs a point, so it has to beat
+       the best row at the rank the draw asked for before it takes the item's
+       magnitude rank away from the discipline above. Without the penalty
+       gDecQuotient's clean selections pulled "2nd largest" to 39.99% of 20,000
+       draws against a 45% ceiling. */
+    const r = rank(sel) - (t < 170 ? 0 : 1);
+    if (r >= RANK_TOP) return sel;
+    if (r > 0 && !tier[r]) tier[r] = sel;
+  }
+  for (let r = RANK_TOP - 1; r >= 1; r--) if (tier[r]) return tier[r];
+  return d1only || fallback;
+}
+
+/* the row scorer, lifted out of mcDec so the MONEY finisher runs the identical
+   clauses (refutation v8 @ f0cbe38, W5 / residual 12). `mcMoney` called rankPick
+   with four arguments and no rank clause at all, so none of the tiers and none of
+   the seats ever ran on a money row - the same defect class the seventh and eighth
+   passes killed on the decimal finisher, on the finisher the mandate did not reach.
+   Cents are integers, so a money option IS a two-place decimal: D(cents, 2) makes
+   the whole-part family the DOLLARS and the fractional-string family the CENTS, and
+   every clause below reads a money row exactly as it reads a decimal one. */
+function keyRouteRank(key, stemMarks, keyMayTwin, keyTwinBigger, keyMayShareWhole, keyWholeBigger, keyMayShareFrac, keyFracBigger) {
+  return sel => {
+    const on = twinRouteOn(key, sel);
+    if (on === 0) return 0;                          /* the v6 KILL: never, if avoidable */
+    if (oddOneOutOnKey(key, sel, stemMarks)) return 1; /* the v7 KILL: only if nothing better */
+    if (lastDigitOnKey(key, sel, stemMarks)) return 2; /* W2's × 5 / ÷ 5 route */
+    const keyed = sel.some(c => c.n === key.n);
+    /* RESIDUAL 8 (refutation v7 @ ed2c0dc W4), and the one thing that pass tried and
+       PUT BACK. Forcing a DISTRACTOR pair onto the row whenever the coin says the key
+       ships no twin looks like the fix for "the pair contains the key on 100.00% of
+       the rows that carry one" - it took gFracToDec's 100.00% down and every other
+       bank to 5-23%. It is worse, and the measurement says so: it also takes the
+       PAIR-ROW RATE from 16-44% to 59-69%, and a rare unfair coin beats a common one.
+       "Eliminate the two that are the same digits" then read E 40.4% on gDecQuotient
+       against 32.1% with this line out. The rows stay as the v6 coin leaves them and
+       the numbers are declared instead.
+       `on > 0` is the v6 route landing on a WRONG answer, which is a row a child
+       cannot use - the twin seat is already paid for on those draws. */
+    const twinOk = on > 0 ? true : (keyMayTwin ? twinSideOk(key, sel, keyTwinBigger) : !keyed);
+    const wholeOk = famSeatOk(dwhole, sel, key, keyMayShareWhole, keyWholeBigger);
+    const fracOk = famSeatOk(dfracStr, sel, key, keyMayShareFrac, keyFracBigger);
+    return 3 + (wholeOk ? 3 : 0) + (crossSeatOk(key, sel) ? 1 : 0) + (twinOk ? 1 : 0) + (fracOk ? 1 : 0);
+  };
+}
+function mcDec(stem, extra, key, cands, unit, explain) {
+  const u = unit ? (' ' + unit) : '';
+  const pool = [];
+  for (const c of cands) {
+    /* zero is never a named misconception: "0.0" as an answer to an addition of
+       two positive numbers is a free elimination wearing a distractor's badge
+       (refutation v2 WOUND 1), so it is dropped here as well as gated. */
+    if (!c || !Number.isFinite(c.n) || c.n <= 0) continue;
+    if (dsame(c, key) || pool.some(k => dsame(k, c))) continue;
+    pool.push(c);
+  }
+  /* THE KILL (refutation v6 @ 5a5fb3b): the route "the option with a same-digits
+     twin AND a depth-mate" may not pick out one option at all - AND, once the twin
+     pair is on the row deliberately, the follow-on "take the bigger / the smaller
+     of the two that are the same digits" must be a coin. The key is the point one
+     column LEFT of its twin on half the draws that ship one and one column RIGHT
+     on the other half, drawn here. (Without this clause the picker's own
+     above/below draw pinned it: "the bigger of the twins" read 49.8% on gDecTrack
+     the first time this fix was measured.)
+     And the pair on the row is the KEY's own on only half the draws that carry one:
+     on the other half the key ships no twin at all and whatever digit family is on
+     the row belongs to two wrong answers, so "the answer is one of the two that are
+     the same digits" is not a free elimination either. */
+  const keyMayTwin = Math.random() < 0.5, keyTwinBigger = Math.random() < 0.5;
+  /* THE KILL (refutation v8 @ f0cbe38): the same coin on the two halves of the
+     whole / fraction cross, each with its own SLOT draw. The slot is what the
+     coupling gate's new cascade arm reads - "keep the options that share their
+     digits after the point, then take the 2nd biggest" settled 60.80% of
+     gDecShareMass at 93.4% with the fractional slot left to the candidate bank -
+     so both families draw where the key sits inside them, not just whether it is
+     in one. The side is drawn at 0.35 rather than 0.5 because the slips that
+     carry the key's own whole ones almost all sit BELOW it (the remainder slip,
+     the dropped-whole slip), so asking for the harder side more often is what
+     brings the realised split back to even. */
+  const keyMayShareWhole = Math.random() < 0.5, keyWholeBigger = Math.random() < 0.35;
+  const keyMayShareFrac = Math.random() < 0.5, keyFracBigger = Math.random() < 0.5;
+  /* the v7 KILL: the five odd-one-out routes, three of which read the stem */
+  const stemMarks = stemMarksOf(stem, extra);
+  let kept = rankPick(pool, c => dcmp(c, key), c => c.dp, key.dp,
+    keyRouteRank(key, stemMarks, keyMayTwin, keyTwinBigger, keyMayShareWhole, keyWholeBigger, keyMayShareFrac, keyFracBigger))
+    || pool.slice(0, 3);
+  kept = shuffle(kept);
+  const authored = kept.length === 3;
+  let t = 1;
+  while (kept.length < 3 && t < 90) {
+    for (const cand of [D(key.n + t, key.dp), D(key.n - t, key.dp)]) {
+      if (kept.length >= 3) break;
+      if (cand.n <= 0 || dsame(cand, key) || kept.some(k => dsame(k, cand))) continue;
+      kept.push(cand);
+    }
+    t++;
+  }
+  const wrongStrs = kept.map(c => dtext(c) + u);
+  const q = assemble(dtext(key) + u, wrongStrs, stem, extra, explain);
+  if (authored) {
+    q.decAuthored = wrongStrs.slice();
+    if (!/\$/.test(u)) q.authored = kept.map(dnum);
+  }
+  return q;
+}
+function mcMoney(stem, extra, keyCents, candCents, explain) {
+  /* THE KILL (refutation v8 @ f0cbe38, W5 / residual 12). This line used to read
+     `rankPick(pool, cmp, () => null, null)` - four arguments, no rank clause - so
+     the five tiers, the v6 twin coin and the v7 odd-one-out clauses ran on every
+     decimal row in the file and on NO money row. Measured on the v8 file:
+     gDecMoneyMore E 67.95%, gDecStartAmount E 61.29%, gDecPetrol E 60.38% at 1.44
+     items a session on the 80% table, against a declaration of 40.4% and 29.0%.
+     Cents ARE a two-place decimal, so the money pool is carried as D(cents, 2) and
+     scored by the identical clause: the dollars are the whole-part family and the
+     cents are the fractional-string family. */
+  const key = D(keyCents, 2);
+  const pool = [];
+  for (const c of candCents) {
+    const v = (c && typeof c === 'object') ? c : { n: c };
+    if (!Number.isInteger(v.n) || v.n <= 0 || v.n === keyCents || pool.some(k => k.n === v.n)) continue;
+    pool.push(v.must ? must(D(v.n, 2)) : D(v.n, 2));
+  }
+  const stemMarks = stemMarksOf(stem, extra);
+  const keptV = rankPick(pool, c => c.n - keyCents, c => c.dp, 2,
+    /* the DOLLARS seat is switched OFF on a money row and the CENTS seat is not.
+       Measured both ways on all four mcMoney banks, 20,000 draws x 2 seeds: with
+       the dollars seated, gDecMoneyMore went 48.47% -> 41.68% and gDecStartAmount
+       52.34% -> 44.29%, but gDecMulConcept went the WRONG way, 37.90% -> 48.01%,
+       because on a price list the dollars are a coarse thing to share and the
+       seat's tails branch - the key sharing its dollars with nobody while a
+       distractor pair shares theirs - is itself the readable half of "the option
+       whose dollars stand alone, and not the smallest of those". Cents are fine
+       grained and carry no such shadow. */
+    keyRouteRank(key, stemMarks, Math.random() < 0.5, Math.random() < 0.5,
+      null, null, Math.random() < 0.5, Math.random() < 0.5)) || pool.slice(0, 3);
+  const kept = shuffle(keptV).map(v => v.n);
+  const authored = kept.length === 3;
+  let t = 5;
+  while (kept.length < 3 && t < 400) {
+    for (const cand of [keyCents + t, keyCents - t]) {
+      if (kept.length >= 3) break;
+      if (cand <= 0 || cand === keyCents || kept.indexOf(cand) !== -1) continue;
+      kept.push(cand);
+    }
+    t += 5;
+  }
+  const wrongStrs = kept.map(money);
+  const q = assemble(money(keyCents), wrongStrs, stem, extra, explain);
+  if (authored) q.decAuthored = wrongStrs.slice();
+  return q;
+}
+function mcText(stem, extra, correctText, wrongs, explain) {
+  const named = wrongs.slice(0, 3);
+  const opts = shuffle([correctText].concat(named));
+  const q = { q: stem, extra: extra || '', choices: opts, correct: opts.indexOf(correctText),
+              explain: explain, answerText: correctText };
+  /* the word-answer half of the named-distractor contract: these three strings ARE
+     the three wrong options, and the harness fails the build if one of them ever
+     equals the key or if a fourth string appears from somewhere. */
+  if (named.length === 3 && new Set(opts).size === 4) q.decAuthored = named;
+  return q;
+}
+const fig = (q, figure) => (q.figure = figure, q);
+
+/* ===== THE EXPLANATION MAY ONLY NAME A NUMBER THAT IS ON THE ROW ==============
+   (the p2 sweep's explanation gate, lifted here as one helper - refutation v4
+   WOUND 2 on gDecBuild, refutation v5 WOUND 2 on gDecRoundSum.)
+
+   An explanation that calls out a named slip BY NUMBER, while that slip is one of
+   six candidates of which three ship, sends the child hunting the option row for a
+   number that is not on it - and in both generators a LOOKALIKE one unit away was
+   on the row every time. Marking the slip `must()` fixes it and pins the key's
+   magnitude rank, which is the defect the rank discipline above exists to stop.
+
+   `slipFor` is the other fix: hand it the built item and the [value, sentence]
+   pairs in priority order, and it returns the first pair whose value is actually
+   printed on the row, so the diagnosis always matches a number the child can see.
+   `textOf` renders a value the way its option is written ("5 kg", "1.87"). */
+function slipFor(q, named, textOf) {
+  const on = (q.choices || []).map(c => String(c));
+  return named.find(p => p[0] !== null && p[0] !== undefined && on.indexOf(textOf(p[0])) >= 0) || null;
+}
+
+/* ---- draw helper: distinct digits 1..9, so the digit a stem names appears in
+   exactly one place and "which place is it in" has exactly one answer ---- */
+function distinctDigits(k) { return shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, k); }
+
+/* =============================================================================
+   PRINCIPLE 1 - PLACE VALUE
+   "A decimal is the whole number plus tenths, hundredths and thousandths of one."
+   ========================================================================== */
+
+/* FORMAT 1a - direct compute: what is one digit worth? (pool 1)
+
+   THE KILL (refutation v5 @ 8cf212b). The v5 row was the named digit at the asked
+   place, the same digit one place shallower, the ONES digit at the asked place and
+   a second decimal digit at the asked place - so THREE options printed at the asked
+   depth and, because `distinctDigits` guarantees the digits differ, exactly one of
+   those three ended in the digit the question names. "Of the options written to the
+   commonest number of decimal places, take the one ending in the named digit"
+   settled 100.00% of draws and was right 100.00% of them, on 80,000 draws without a
+   miss, and the numeral in the stem was never read. Structural on both branches of
+   the draw, on the pool-1 `place` anchor a struggling child meets twice a session.
+
+   THE REBUILD, and it is the PM's own: the row is now the SAME digit at ALL FOUR
+   PLACES - ones, tenths, hundredths, thousandths - so the ONLY token that differs
+   between the options is the place, which is the mathematics. Every option ends in
+   the named digit (the refuter's second half keeps 4 and settles nothing), every
+   option is written to its own depth so there is no commonest depth to read (the
+   first half keeps 4 as well), no option carries a trailing zero, and the four
+   lengths, magnitudes and depths are one apiece, so every formatting and rank rule
+   is a flat 1-in-4. The number carries three decimal places on every draw and the
+   place asked for is uniform over the four, which is what keeps "pick the option
+   written to as many places as the number" at chance instead of at 46%.
+
+   RULE D1 is refined in tools/gen-sanity.mjs in the same sitting: a key alone at its
+   own decimal-place count is a tell only when some OTHER pair shares one. Where all
+   four options differ, the odd one out does not exist and the depth names nobody. */
+function gDecDigitValue() {
+  const ds = distinctDigits(4);
+  const whole = ds[0], dec = ds.slice(1);
+  const numStr = whole + '.' + dec.join('');
+  const place = ri(0, 3);                                  /* the ones place is a place too */
+  const d = place === 0 ? whole : dec[place - 1];
+  const key = D(d, place);
+  /* the three named slips ARE the other three places: counted one place too few,
+     one too many, or forgot to count past the point at all. */
+  const wrongs = [0, 1, 2, 3].filter(p => p !== place).map(p => D(d, p));
+  return mcDec('What is the value of the digit <b>' + d + '</b> in <b>' + numStr + '</b>?', '',
+    key, wrongs, '',
+    'In ' + numStr + ', count the places after the decimal point: tenths, then hundredths, then thousandths. ' +
+    'The digit ' + d + ' is ' + (place === 0 ? 'before the point, so it sits in the ones place'
+      : 'number ' + place + ' after the point, so it sits in the ' + PLACE_WORD[place] + ' place') +
+    ' and it is worth ' + qty(d, place) + ', which is ' + dtext(key) + '.');
+}
+/* --- (gDecNamePlace follows) --- */
+
+/* FORMAT 1b - concept check, no arithmetic: name the place (pool 1) */
+function gDecNamePlace() {
+  const ds = distinctDigits(4);
+  const whole = ds[0], dec = ds.slice(1);
+  const numStr = whole + '.' + dec.join('');
+  const place = ri(0, 3);
+  const d = place === 0 ? whole : dec[place - 1];
+  const key = PLACE_WORD[place];
+  const wrongs = PLACE_WORD.filter(w => w !== key);
+  return mcText('In <b>' + numStr + '</b>, which place is the digit <b>' + d + '</b> in?', '',
+    key, wrongs,
+    'The places run ones, then the decimal point, then tenths, hundredths and thousandths. ' +
+    'In ' + numStr + ' the digit ' + d + ' is ' +
+    (place === 0 ? 'before the point, so it is in the ones place.'
+                 : 'number ' + place + ' after the point, so it is in the ' + key + ' place.'));
+}
+
+/* FORMAT 1c - inverse / working backwards: build the number from its parts, with
+   one place left EMPTY. The empty place is the whole item (pool 2). */
+function gDecBuild() {
+  let w = 3, p1 = 1, d1 = 7, d2 = 2, key = D(3702, 3), packed = D(3720, 3),
+      swapped = D(3207, 3), packedSwapped = D(3270, 3), guard = 0;
+  const p2 = 3;
+  do {
+    guard++;
+    const ds = distinctDigits(3);
+    w = ds[0]; d1 = ds[1]; d2 = ds[2];
+    p1 = Math.random() < 0.5 ? 1 : 2;
+    key = D(w * 1000 + d1 * P10[3 - p1] + d2, 3);
+    /* WOUND 2 + WOUND 3 (refutation v4 @ 7ec7919): written at three places this
+       printed "1.870", a trailing zero no key here can carry - and a child who
+       writes the digits in a row writes 1.87, not 1.870. dnat prints what the
+       slip actually produces. */
+    packed = dnat(D(w * 1000 + d1 * 100 + d2 * 10, 3));        /* wrote the digits in a row */
+    swapped = D(w * 1000 + d2 * P10[3 - p1] + d1, 3);          /* the two digits in each other's place */
+    packedSwapped = dnat(D(w * 1000 + d2 * 100 + d1 * 10, 3)); /* in a row AND the wrong way round */
+  } while (guard < 200 && !dallDistinct([key, packed, swapped, packedSwapped]));
+  const parts = qty(w, 0) + ', ' + qty(d1, p1) + ' and ' + qty(d2, p2);
+  /* WOUND 1: `packed` always sits above the key and the two swaps sit wherever the
+     digits fall, so the key was the smallest of the four on 48% of draws. Two more
+     named slips, both below: the child who forgets to write the whole number at
+     all, and the child who writes the first part and the last part but drops the
+     middle one. */
+  /* COUPLING GATE (fourth pass, found by the new arm): "forgot to write the whole
+     number at all" is the key with its whole ones removed, so it repeats the KEY's
+     digits after the point exactly - and it is the only option that does. "The
+     option whose whole ones are one of the numbers in the question, and whose
+     digits after the point another option repeats" then settled 57% of draws and
+     was right every time. The slip is kept and written the way a child who loses
+     the whole number actually writes it - the digits in a row, with the empty place
+     still held open by the zero - so it no longer carries the key's own tail. */
+  const noWhole = dnat(D(d1 * 100 + d2 * 10, 3));
+  const noMiddle = D(w * 1000 + d2, 3);
+  /* and one guaranteed ABOVE, so the two swaps falling below cannot pin the key
+     to the top: the child who ignores the decimal point altogether. */
+  const noPoint = D(w * 100 + d1 * 10 + d2, 0);
+  /* WOUND 2 (refutation v4 @ 7ec7919): the explanation named `packed` by number,
+     and `packed` was one of six candidates of which three ship - so on 50.48% of
+     draws a child re-read the explanation, hunted the row for a number that was not
+     on it, and found the LOOKALIKE `packedSwapped` instead. Making `packed` a must
+     would have fixed it and pinned the key's magnitude rank (it sits above the key
+     on every draw), so the explanation is written off the row instead: whichever
+     named slip actually shipped is the one it calls out, and each carries its own
+     sentence so the diagnosis still matches the number. */
+  /* THE KILL (refutation v8 @ f0cbe38, W4): only two named slips sat below the key
+     with any reliability, so the key was the largest of four on 11.8% of 2,000
+     draws against a 12% floor while "2nd largest" carried 44.3%. Leaving the LAST
+     part out is the mirror of leaving the middle one out, and it lands below the
+     key on every draw by construction. */
+  const noLast = dnat(D(w * 1000 + d1 * P10[3 - p1], 3));
+  /* and one more ABOVE it, so the key is not pinned off the bottom either: the
+     first part written one place too shallow, which at the tenths draw is the child
+     who adds the tenths into the whole ones. */
+  const shallowPart = p1 === 1 ? D((w + d1) * 1000 + d2, 3) : D(w * 1000 + d1 * 100 + d2, 3);
+  const named = [
+    [packed, 'Writing the digits in a row with no zero gives '],
+    [packedSwapped, 'Writing the digits in a row with no zero and the wrong way round gives '],
+    [swapped, 'Putting each of the two digits in the other one\'s place gives '],
+    [noMiddle, 'Leaving the middle part out altogether gives '],
+    [noLast, 'Leaving the last part out altogether gives '],
+    [shallowPart, 'Writing the ' + PLACE_WORD[p1] + ' one place too far to the left gives '],
+    [noWhole, 'Forgetting the whole number gives '],
+    [noPoint, 'Ignoring the decimal point gives ']
+  ];
+  const q = mcDec('Which number is made up of <b>' + parts + '</b>?', '',
+    key, [packed, swapped, packedSwapped, noWhole, noMiddle, noLast, shallowPart, noPoint], '', '');
+  const on = slipFor(q, named, dtext) || named[0];
+  q.explain = parts + ' is written ' + dtext(key) + '. There are no ' + PLACE_WORD[p1 === 1 ? 2 : 1] +
+    ', so a zero holds that place open. ' + on[1] + dtext(on[0]) + ', which is a different number.';
+  q.answerText = dtext(key);
+  return q;
+}
+
+/* FORMAT 1d - concept check: how many of a smaller place make this number?
+   (pool 2). Answers here are counts, so this one routes through finishNum. */
+function gDecHowMany() {
+  let w = 2, dp = 1, j = 1, val = D(27, 1), V = 27, shallow = 2, digitsOnly = 7, guard = 0;
+  do {
+    guard++;
+    dp = Math.random() < 0.65 ? 1 : 2;
+    /* WOUND 4 (refutation v5 @ 8cf212b). `j` was the number's OWN last place on
+       50.0% of draws, and there the key is the stem's digits with the point rubbed
+       out - "How many hundredths are there in 4.68?" -> 468 - so "the option whose
+       digit multiset is the stem number's" settled those draws 100.00% and was
+       right every time, with no place counted. The shape is the MOE question and it
+       is kept, but it is now one draw in four instead of one in two, and on the
+       other three `j` runs DEEPER than the number, where the option carrying the
+       stem's digits is `shallow`, a named slip, and the rule walks into it.
+
+       WOUND 2 (refutation v6 @ 5a5fb3b) deletes the remaining quarter. Where `j`
+       IS the number's own last place the key is the digits with the point rubbed
+       out - and it is then the SMALLEST member of its own digit family on 100% of
+       draws, because a family member below it would have to be the digits with a
+       zero TAKEN OFF, which is a different number. No option row removes that: "of
+       the options carrying the question's digits, take the smallest" reads the item
+       without counting a single place. `j` now runs at least one place deeper than
+       the number on every draw, and two places wherever the three-place ceiling
+       allows it, which is what gives the key a family member on each side and lets
+       its rank inside the family move. The shape is not lost to the child: asking
+       for the number's own last place is the same demand one step easier, and
+       `gDecBuild` and `gDecExpand` both still print it. */
+    j = dp === 1 ? (Math.random() < 0.5 ? 2 : 3) : 3;
+    const ds = distinctDigits(dp + 1);
+    w = ds[0];
+    val = D(w * P10[dp] + ds.slice(1).reduce((a, x, i) => a + x * P10[dp - 1 - i], 0), dp);
+    V = val.n * P10[j - dp];                                   /* the count in place j */
+    /* j > dp on every draw now, so the count one place shallower is always another
+       member of the number's own digit family and never a truncation. */
+    shallow = val.n * P10[j - 1 - dp];                          /* the count one place shallower */
+    digitsOnly = val.n - w * P10[dp];                          /* just the digits after the point */
+  } while (guard < 200 && !(V > 0 && shallow > 0 && digitsOnly > 0 &&
+           new Set([V, shallow, digitsOnly, V * 10]).size === 4));
+  /* WOUND 1: `shallow` and `digitsOnly` are always below V and `V x 10` always
+     above, so "second biggest" was the answer on 2,000 of 2,000 draws. More named
+     slips on each side let the picker vary how many options sit above the key. */
+  const digitsAsWholes = (w + digitsOnly) * P10[j];   /* the digits after the point counted as wholes too */
+  /* WOUND 4 (refutation v4 @ 7ec7919): "neither the longest nor the shortest
+     numeral" settled 38.1% of draws here at 53.5% accuracy, because the key was the
+     only option written to its own number of digits whenever the "counted the whole
+     ones only" slip did not ship. That slip (w followed by j zeros) is written to
+     EXACTLY the key's length on every draw by construction, so making it a must()
+     closed the route.
+
+     WOUND 2 (refutation v6 @ 5a5fb3b). That must() is what reopened it one zero
+     wider. The family a child actually sees is the stem's digits WITH ZEROS ON THE
+     END (546, 5460, 54600 for "how many thousandths in 5.46"), and the key is the
+     ONLY member of that family at the whole-ones slip's length - the only number
+     with the stem's digits and j - dp zeros IS the key - so "two of these have the
+     same number of digits; of those two take the one whose digits are the ones in
+     the question" read 76.72% at 100.0%. No option can be added at the key's length
+     inside the family, so the length half is what has to go: the whole-ones slip is
+     gone, no option is written to the key's number of digits any more, and all four
+     lengths differ - where "neither the longest nor the shortest" keeps TWO and the
+     v4 route does not settle either.
+     What is left is the family's own rank, which is the item's real content: the
+     row now carries the digits with a zero too few and with a zero or two too many,
+     and picking between them IS counting the places. "Rubbed the point out and added
+     no zeros at all" is the third family member, below the key, so which members
+     ship - and where the key sits among them - moves with the picker's own
+     above/below draw and with the two-place draw above. The residual is declared
+     with its number in the lane note: the family's rank rules do not fall to the
+     25% floor, because the key can have at most two family members below it. */
+  const pointOut = val.n;                           /* rubbed the point out, added no zeros */
+  const bank = [shallow,        /* counted one place too shallow */
+                digitsOnly,     /* forgot the whole ones */
+                V * 10,         /* counted one place too deep */
+                V * 100,        /* counted two places too deep */
+                pointOut,
+                /* THE KILL (refutation v8 @ f0cbe38, W4): wherever the asked place
+                   is one deeper than the number's own (which is most draws) the
+                   "one place too shallow" slip IS the point rubbed out, so only TWO
+                   distinct candidates sat below the key and it could never be the
+                   largest of four - 9.6% of 2,000 draws against a 12% floor. The
+                   digits after the point counted into the asked place, with the
+                   whole ones still forgotten, is the third. */
+                digitsOnly * P10[j - dp]];
+  if (String(digitsAsWholes).length !== String(V).length) bank.push(digitsAsWholes);
+  const wrongs = rankInts(V, bank);
+  const q = finishNum('How many <b>' + PLACE_WORD[j] + '</b> are there in <b>' + dtext(val) + '</b>?', '',
+    V, wrongs, '',
+    'One whole is ' + qty(P10[j], j) + ', so ' + qty(w, 0) + ' is ' + qty(w * P10[j], j) +
+    '. Adding the ' + PLACE_WORD[j] + ' already after the point gives ' + qty(V, j) + ' altogether.');
+  q.decAuthored = wrongs.map(String);
+  q.authored = wrongs.slice();
+  return q;
+}
+
+/* FORMAT 1e - concept check, expanded form (pool 3, the DECLARED single-step
+   anchor: one idea, no working). */
+function gDecExpand() {
+  const dp = Math.random() < 0.5 ? 2 : 3;
+  const ds = distinctDigits(dp + 1);
+  const w = ds[0], dec = ds.slice(1);
+  const numStr = w + '.' + dec.join('');
+  const term = (d, place) => dtext(D(d, place));
+  const key = w + ' + ' + dec.map((d, i) => term(d, i + 1)).join(' + ');
+  const noPoint = w + ' + ' + dec.join(' + ');
+  /* COUPLING GATE (refutation v4 @ 7ec7919, the gate's own finding): this used to
+     print its places in the reverse order too, so the KEY was the only option
+     ending on a term written to the number's own last place - "pick the option
+     that ends at the same depth as the number" settled it on 100% of draws with no
+     place value read at all. The digits are still the wrong way round; the places
+     now run big to small like the key's, so the depth of the last term is shared. */
+  const reversed = w + ' + ' + dec.map((d, i) => term(dec[dp - 1 - i], i + 1)).join(' + ');
+  const allTenths = w + ' + ' + dec.map(d => term(d, 1)).join(' + ');
+  return mcText('Which of these shows <b>' + numStr + '</b> written as the sum of its place values?', '',
+    key, [noPoint, reversed, allTenths],
+    'Take ' + numStr + ' one place at a time: ' + qty(w, 0) + ', ' +
+    dec.map((d, i) => qty(d, i + 1)).join(', ') + '. Written out that is ' + key + '.');
+}
+
+/* FORMAT 1f - error spotting, the mistake NAMED (pool 3, diagnose).
+   Misconception: the places after the point miscounted.
+
+   WOUND 3 (refutation 2026-09-15). The first cut offered the four PLACE NAMES as
+   sentences, so "find the place the digit is really in and pick the option naming
+   that place" answered it on 20,000 of 20,000 draws WITHOUT EVER READING THE
+   CLAIM - the demand of the pool-1 lookup gDecNamePlace with a story round it.
+   The options are now the four ways the miscount itself can go: one or two places
+   too many, one or two too few. Neither half of that answer exists in the stem
+   alone. The child has to find the true place AND read the claimed place AND
+   compare them, which is the two-step demand a pool-3 slot is for. */
+const MISCOUNT = k => (k > 0
+  ? (k === 1 ? 'counted one place too many after the decimal point' : 'counted two places too many after the decimal point')
+  : (k === -1 ? 'counted one place too few after the decimal point' : 'counted two places too few after the decimal point'));
+function gDecPlaceError() {
+  const who = pick(NAMES);
+  /* ALWAYS three decimal places, so every offset in [-2, -1, 1, 2] is reachable. */
+  const dp = 3;
+  const ds = distinctDigits(dp + 1);
+  const whole = ds[0], dec = ds.slice(1);
+  const numStr = whole + '.' + dec.join('');
+  /* the OFFSET is drawn first and uniformly, so no single option is the answer
+     more often than any other and "always pick one place too many" is at chance */
+  const off = pick([-2, -1, 1, 2]);
+  /* the claimed place is always a place this number actually HAS (1..3), so the
+     mistake is a miscount and not a nonsense claim; the true place may be the ones */
+  const places = [0, 1, 2, 3].filter(p => p + off >= 1 && p + off <= dp);
+  const place = pick(places);
+  const sayIdx = place + off;
+  const d = place === 0 ? whole : dec[place - 1];
+  const key = who + ' ' + MISCOUNT(off) + '.';
+  const wrongs = [-2, -1, 1, 2].filter(k => k !== off).map(k => who + ' ' + MISCOUNT(k) + '.');
+  return mcText(who + ' says the digit <b>' + d + '</b> in <b>' + numStr + '</b> is worth <b>' + qty(d, sayIdx) +
+    '</b>. <b>What did ' + who + ' get wrong?</b>', '', key, wrongs,
+    'Count the places one at a time: the ones are before the decimal point, then tenths, hundredths and thousandths after it. In ' +
+    numStr + ' the digit ' + d + ' is ' +
+    (place === 0 ? 'before the point, so it is worth ' : 'number ' + place + ' after the point, so it is worth ') +
+    qty(d, place) + ', which is ' + dtext(D(d, place)) + '. ' + who + ' named the ' + PLACE_WORD[sayIdx] +
+    ' place, which is ' + (Math.abs(off) === 1 ? 'one place' : 'two places') +
+    (off > 0 ? ' further after the decimal point' : ' nearer the decimal point') + ' than the right one, and ' +
+    qty(d, sayIdx) + ' is ' + dtext(D(d, sayIdx)) + ', a different amount altogether.');
+}
+
+/* =============================================================================
+   PRINCIPLE 2 - COMPARING, ORDERING AND ROUNDING
+   "Line the points up and compare from the left. A longer decimal is not
+    automatically a bigger one."
+   ========================================================================== */
+
+/* FORMAT 2a - direct compare, all four the same length (pool 1) */
+function gDecCompare() {
+  const dp = ri(1, 2);
+  const whole = ri(1, 9);
+  const fracs = new Set();
+  let guard = 0;
+  while (fracs.size < 4 && guard++ < 400) fracs.add(ri(1, P10[dp] - 1));
+  const vals = [...fracs].map(f => D(whole * P10[dp] + f, dp));
+  const wantMax = Math.random() < 0.5;
+  let best = vals[0];
+  for (const v of vals) if (wantMax ? dcmp(v, best) > 0 : dcmp(v, best) < 0) best = v;
+  const opts = shuffle(vals).map(dtext);
+  const q = { q: 'Which decimal is the <b>' + (wantMax ? 'greatest' : 'smallest') + '</b>?', extra: '',
+    choices: opts, correct: opts.indexOf(dtext(best)),
+    explain: 'All four start with ' + qty(whole, 0) + ', so line the decimal points up and compare the tenths next' +
+      (dp > 1 ? ', and then the hundredths if the tenths tie' : '') + '. The ' +
+      (wantMax ? 'greatest' : 'smallest') + ' is ' + dtext(best) + '.',
+    answerText: dtext(best) };
+  /* WOUND 2: this generator and gDecCmpMixed stamped NOTHING - not decAuthored,
+     not authored, not optionSet - so the lane's "the contract is on, not quietly
+     off" was true of 27 of 32 generators, not 29. The right stamp is not a
+     distractor list: these four options ARE the numbers being compared, so there
+     is no such thing as a padded one. q.optionSet declares exactly that, and it
+     is also what exempts a compare item from the magnitude-rank gate - "pick the
+     biggest" is not a cheap strategy here, it is the question. */
+  q.optionSet = true;
+  return q;
+}
+
+/* FORMAT 2b - compare with DIFFERENT lengths: the "longer decimal is bigger"
+   trap, drawn so the trap actually bites (pool 2).
+   q.decCompare tells the harness these options are the numbers being compared,
+   not computed answers, so it applies the anti-digit-count rule instead of the
+   matching-decimal-places rule. */
+function gDecCmpMixed() {
+  let vals = [D(6, 1), D(45, 2), D(78, 2), D(518, 3)], wantMax = true, best = D(78, 2), guard = 0, ok = false;
+  do {
+    guard++;
+    wantMax = Math.random() < 0.5;
+    const whole = ri(0, 4);
+    const dps = shuffle([1, 2, 2, 3]);
+    vals = dps.map(dp => D(whole * P10[dp] + ri(dp === 1 ? 1 : P10[dp - 1], P10[dp] - 1), dp));
+    best = vals[0];
+    for (const v of vals) if (wantMax ? dcmp(v, best) > 0 : dcmp(v, best) < 0) best = v;
+    /* the trap: whoever ignores the point and reads the digits as a whole number
+       must land on a DIFFERENT option from the true answer */
+    let digitBest = vals[0];
+    for (const v of vals) {
+      const a = Math.abs(v.n), b = Math.abs(digitBest.n);
+      if (wantMax ? a > b : a < b) digitBest = v;
+    }
+    const maxDp = Math.max(...vals.map(v => v.dp)), minDp = Math.min(...vals.map(v => v.dp));
+    const uniqLong = vals.filter(v => v.dp === maxDp).length === 1;
+    const uniqShort = vals.filter(v => v.dp === minDp).length === 1;
+    if (!dallDistinct(vals)) continue;
+    if (dsame(digitBest, best)) continue;                               /* the trap must bite */
+    if (wantMax && uniqLong && best.dp === maxDp) continue;             /* key must not be the only longest */
+    if (!wantMax && uniqShort && best.dp === minDp) continue;           /* key must not be the only shortest */
+    if (new Set(vals.map(v => v.dp)).size < 2) continue;
+    ok = true;
+    break;
+  } while (guard < 400);
+  if (!ok) { vals = [D(6, 1), D(45, 2), D(78, 2), D(518, 3)]; wantMax = true; best = D(78, 2); }
+  const pad = v => dtext(D(v.n * P10[3 - v.dp], 3));
+  const opts = shuffle(vals).map(dtext);
+  const q = { q: 'Which decimal is the <b>' + (wantMax ? 'greatest' : 'smallest') + '</b>?', extra: '',
+    choices: opts, correct: opts.indexOf(dtext(best)),
+    explain: 'Write them one under the other with the decimal points in line and fill the short ones with zeros: ' +
+      vals.slice().sort(dcmp).map(pad).join(', ') + '. Now compare the tenths first, then the hundredths. The ' +
+      (wantMax ? 'greatest' : 'smallest') + ' is ' + dtext(best) +
+      '. A decimal with more digits after the point is not always the bigger one.',
+    answerText: dtext(best) };
+  q.decCompare = true;
+  q.optionSet = true;      /* WOUND 2: the options ARE the numbers being compared */
+  return q;
+}
+
+/* FORMAT 2c - ordering a whole list (pool 2). Exactly one option is sorted; the
+   three wrong orders are the three wrong beliefs, not random shuffles. */
+function gDecOrder() {
+  /* The four numbers are built so that TWO of them share a tenths digit and two
+     share another. That is what makes the three wrong orders genuinely different
+     beliefs: sorting by the digit string, and looking at the tenths only and then
+     letting the longer decimal win the tie, both give orders a child really
+     produces. Drawn at random the two wrong orders coincide on every draw, which
+     is what the first cut of this generator did. */
+  let asc = true, guard = 0, ok = false;
+  let t1 = 4, t2 = 5, whole = 0;
+  let a = D(4, 1), b = D(45, 2), c = D(5, 1), e = D(514, 3);
+  do {
+    guard++;
+    asc = Math.random() < 0.5;
+    whole = ri(0, 3);
+    t1 = ri(1, 7); t2 = ri(t1 + 1, 8);
+    a = D(whole * 10 + t1, 1);
+    b = D(whole * 100 + t1 * 10 + ri(1, 9), 2);
+    c = D(whole * 10 + t2, 1);
+    e = D(whole * 1000 + t2 * 100 + ri(1, 99), 3);
+    if (dallDistinct([a, b, c, e])) { ok = true; break; }
+  } while (guard < 200);
+  if (!ok) { whole = 0; t1 = 4; t2 = 5; a = D(4, 1); b = D(45, 2); c = D(5, 1); e = D(514, 3); asc = true; }
+  const vals = [a, b, c, e];
+  const join = list => list.map(dtext).join(', ');
+  const dir = list => (asc ? list : list.slice().reverse());
+  const key = join(dir([a, b, c, e]));                    /* the true order, smallest first */
+  const byDigits = join(dir([a, c, b, e]));               /* read the digits as whole numbers */
+  const byTenths = join(dir([b, a, e, c]));               /* only the tenths, longer wins the tie */
+  const reversed = join(dir([a, b, c, e]).slice().reverse());
+  const pad = v => dtext(D(v.n * P10[3 - v.dp], 3));
+  return mcText('Which list is in order from the <b>' + (asc ? 'smallest to the greatest' : 'greatest to the smallest') +
+    '</b>?', '', key, [byDigits, byTenths, reversed],
+    'Fill every number out to three places first: ' + vals.map(pad).join(', ') +
+    '. Then compare the tenths, then the hundredths, then the thousandths. In order from the ' +
+    (asc ? 'smallest to the greatest' : 'greatest to the smallest') + ' they are ' + key +
+    '. Reading the digits as if the point were not there puts them in a different order altogether.');
+}
+
+/* FORMAT 2d - error spotting, the mistake NAMED (pool 3, diagnose).
+   Misconception: "longer decimal = bigger", because 45 is bigger than 6. */
+/* KILL 2 (refutation v2 @ 0157aa1). This generator shipped THREE never-correct
+   frames on every draw, one of them the identical sentence every time ("The
+   digits after the point should have been counted..."), one of them the free
+   "Nothing is wrong" the v2 pass deleted from gDecFracError and left here, and
+   one naming a slip the first refutation had already said no child makes
+   (0.5 -> 0.05). The key's frame was the key on 100% of draws and a distractor
+   on 0%, so "pick the only option that starts with a number" and "pick the only
+   one containing which is less than" both scored 40,000 / 40,000. The key was
+   also the 2nd longest of four distinct lengths on every single draw.
+
+   THE REBUILD. All four options are now LIVE comparisons in ONE shared frame,
+   and the key rotates. Two styles are drawn, each of which writes both numbers
+   the same way so the four options are within two characters of one another:
+
+     UNIT   "<A> is <m> hundredths and <B> is <n> hundredths, so <Z> is the
+             greater one."          (and the thousandths draw, one place deeper)
+     LINED  "Lined up, <A> is written <x> and <B> is written <y>, so <Z> is the
+             greater one."
+
+   In both, one of the two quantities is padded correctly or not, and the verdict
+   names A or B - four combinations, exactly one true, and the verdict splits 2-2
+   so the option naming the true greater number is not free. The key wears three
+   different masked frames across draws; no frame is never-correct. */
+function gDecCmpError() {
+  const who = pick(NAMES);
+  let dpA = 2, A = D(43, 2), B = D(5, 1), guard = 0, ok = false;
+  do {
+    guard++;
+    dpA = ri(2, 3);
+    const dpB = dpA - 1;                                  /* exactly one place apart, so the
+                                                             four options stay the same length */
+    A = D(ri(P10[dpA - 1] + 1, P10[dpA] - 1), dpA);
+    B = D(ri(P10[dpB - 1] + 1, P10[dpB] - 1), dpB);
+    if (A.n % 10 === 0 || B.n % 10 === 0) continue;        /* no trailing zero gives the dp away */
+    if (dcmp(A, B) >= 0) continue;                         /* A must really be the SMALLER */
+    if (A.n <= B.n) continue;                              /* but its digit string the BIGGER */
+    ok = true;
+    break;
+  } while (guard < 900);
+  if (!ok) { dpA = 2; A = D(43, 2); B = D(5, 1); }
+  const dpB = dpA - 1;
+  const bDeep = D(B.n * 10, dpA);                          /* B padded into A's place - correct */
+  const bFlat = D(B.n, dpA);                               /* B's digits pushed one place too deep */
+  const lined = Math.random() < 0.4;
+  const unit = PLACE_WORD[dpA];
+  /* (the number written in A's place for B, the number named as greater) */
+  const rows = [[bDeep, B], [bFlat, A], [bDeep, A], [bFlat, B]];
+  const say = lined
+    ? r => 'Lined up with ' + dtext(A) + ', ' + dtext(B) + ' is written ' + dtext(r[0]) +
+           ', so ' + dtext(r[1]) + ' is the greater one.'
+    : r => dtext(A) + ' is ' + A.n + ' ' + unit + ' and ' + dtext(B) + ' is ' + r[0].n + ' ' + unit +
+           ', so ' + dtext(r[1]) + ' is the greater one.';
+  const key = say(rows[0]);
+  const wrongs = rows.slice(1).map(say);
+  return mcText(who + ' says <b>' + dtext(A) + '</b> is greater than <b>' + dtext(B) +
+    '</b>, because ' + A.n + ' is greater than ' + B.n + '. <b>Which of these puts it right?</b>', '',
+    key, wrongs,
+    'Line the decimal points up and write both to the same length: ' + dtext(A) + ' and ' + dtext(bDeep) +
+    '. That is ' + A.n + ' ' + unit + ' against ' + bDeep.n + ' ' + unit + ', so ' + dtext(B) +
+    ' is the greater one. Counting digits does not tell you which decimal is bigger: ' + dtext(B) +
+    ' is not ' + dtext(bFlat) + '.');
+}
+
+/* FORMAT 2d2 - error spotting in a LIST (pool 3, diagnose + order).
+   WOUND 4 (refutation 2026-09-15): pool 3 held exactly ONE `compare` generator,
+   and buildCarousel round-robins SKILLS, so the whole sixth of pool 3 that belongs
+   to comparing landed on gDecCmpError - 2.66 items in a 30-item session, worst
+   session 5, the most-served item in the topic by a clear margin, and its two
+   masked shapes are one sentence counted twice for name arity. The lane's own
+   headline could not see it: same-shape 0.000 measures ADJACENT repeats only.
+   This is the second `compare` voice in pool 3. It is a different demand from
+   gDecOrder one pool below (there, four candidate lists; here, one list and the
+   child has to find the inversion) and a different demand from gDecCmpError
+   (there, one comparison diagnosed; here, four, and then a location). */
+function gDecOrderError() {
+  const who = pick(NAMES);
+  let vals = [D(34, 1), D(341, 2), D(38, 1), D(3405, 3), D(36, 1)], swapAt = 1, guard = 0, ok = false;
+  do {
+    guard++;
+    const whole = ri(1, 8);
+    const list = [];
+    let tries = 0;
+    while (list.length < 5 && tries++ < 80) {
+      const dp = pick([1, 2, 2, 3]);
+      const v = D(whole * P10[dp] + ri(1, P10[dp] - 1), dp);
+      if (v.n % 10 === 0) continue;                       /* no trailing zero gives its own dp away */
+      if (list.some(k => dsame(k, v))) continue;
+      list.push(v);
+    }
+    if (list.length < 5) continue;
+    if (new Set(list.map(v => v.dp)).size < 2) continue;  /* the mixed-length trap must be present */
+    const sorted = list.slice().sort(dcmp);
+    /* and the digit-string reading must put them in a DIFFERENT order, or the item
+       teaches nothing: "read it as a whole number" has to fail on this list. */
+    const byDigits = list.slice().sort((x, y) => x.n - y.n);
+    if (sorted.every((v, i) => dsame(v, byDigits[i]))) continue;
+    /* exactly one adjacent pair is swapped, and the spot is drawn uniformly over
+       all four, so "the pair whose second number is the longer" is at chance. */
+    swapAt = ri(0, 3);
+    vals = sorted.slice();
+    const t = vals[swapAt]; vals[swapAt] = vals[swapAt + 1]; vals[swapAt + 1] = t;
+    ok = true;
+    break;
+  } while (guard < 400);
+  /* the fallback is the sorted list with the first adjacent pair swapped, so it
+     carries exactly one inversion like every drawn one */
+  if (!ok) { vals = [D(3405, 3), D(34, 1), D(341, 2), D(36, 1), D(38, 1)]; swapAt = 0; }
+  const pairText = i => dtext(vals[i]) + ' and ' + dtext(vals[i + 1]);
+  const key = pairText(swapAt);
+  const wrongs = [0, 1, 2, 3].filter(i => i !== swapAt).map(pairText);
+  const pad = v => dtext(D(v.n * P10[3 - v.dp], 3));
+  const sortedNow = vals.slice().sort(dcmp);
+  return mcText(who + ' puts these decimals in order <b>from the smallest to the greatest</b> and writes: <b>' +
+    vals.map(dtext).join(', ') + '</b>. <b>Which two numbers are the wrong way round?</b>', '',
+    key, wrongs,
+    'Fill every number out to three places first: ' + sortedNow.map(pad).join(', ') +
+    '. Now compare the tenths, then the hundredths, then the thousandths. In order they are ' +
+    sortedNow.map(dtext).join(', ') + ', so ' + dtext(vals[swapAt]) + ' and ' + dtext(vals[swapAt + 1]) +
+    ' are the pair that have swapped places. A decimal with more digits after the point is not always the bigger one.');
+}
+
+/* FORMAT 2e - concept check: which two whole numbers is it between? (pool 1) */
+function gDecBetween() {
+  let w = 7, d = 4, dp = 1, val = D(74, 1), guard = 0;
+  do {
+    guard++;
+    w = ri(1, 9); dp = ri(1, 2);
+    const f = ri(1, P10[dp] - 1);
+    val = D(w * P10[dp] + f, dp);
+    d = Math.floor(f / P10[dp - 1]);
+  } while (guard < 200 && !(d >= 1 && d !== w && d !== w - 1 && d !== w + 1 && w - 1 >= 0));
+  const pairText = (a, b) => a + ' and ' + b;
+  return mcText('Between which two <b>whole numbers</b> does <b>' + dtext(val) + '</b> lie?', '',
+    pairText(w, w + 1), [pairText(w - 1, w), pairText(w + 1, w + 2), pairText(d, d + 1)],
+    /* WOUND 1 (refutation v3 @ c9d26fb): this wrote `w + ' whole ones'` raw and
+       printed "1 whole ones" on 12.55% of draws. RULE D8 could not see it - the
+       plural sits one word to the RIGHT of the numeral - and the rule is widened
+       to that pattern in tools/gen-sanity.mjs at the same time. */
+    dtext(val) + ' is ' + many(w, 'whole one', 'whole ones') + ' with a bit left over, and the bit left over is less than one whole. ' +
+    'So ' + dtext(val) + ' is more than ' + w + ' but less than ' + (w + 1) + ': it lies between ' + w + ' and ' + (w + 1) + '.');
+}
+
+/* FORMAT 2f - direct compute, rounding (pool 2). Three named slips: rounded the
+   wrong way, looked at the LAST digit instead of the next one, rounded to the
+   wrong place. */
+function gDecRound() {
+  let to = 2, val = D(3268, 3), key = D(327, 2), guard = 0, ok = false, cands = [];
+  do {
+    guard++;
+    to = ri(0, 2);
+    /* MOE P4 goes to THREE decimal places, so the number never carries more. */
+    const dp = Math.min(3, to + 2);
+    val = D(ri(P10[dp] + 1, 9 * P10[dp]), dp);
+    /* WOUND 4 (refutation v6 @ 5a5fb3b): this shipped "Round <b>1.870</b> to 1
+       decimal place" on 2.89% of draws - 7.49% of the to = 1 shape, the only shape
+       that can carry it. A P4 paper does not write a number with a trailing zero
+       after the point, and every other generator in this file already guards
+       against it (gFracToDec rejects n % 10 === 0, gDecTrack rejects a product
+       ending in 0, gDecBuild routes through dnat, and the v4/v5 trailing-zero work
+       stops the OPTION row doing it). Here it was the STEM, and five passes missed
+       it. One clause. */
+    if (val.n % 10 === 0) continue;
+    const cut = P10[dp - to];
+    const base = Math.floor(val.n / cut);
+    const d1 = Math.floor((val.n - base * cut) / P10[dp - to - 1]);
+    const d2 = val.n % 10;
+    key = dround(val, to);
+    /* WOUND 1 (refutation v5 @ 8cf212b). A line here rejected any draw whose
+       rounding digit and LAST digit sat on the same side of 5, so that "looked at
+       the last digit" could not collide with the key and always shipped as a
+       distinct slip. It fired on every to = 0 and to = 1 draw - 56.5% of the bank -
+       and could not fire at to = 2, where the two digits are the same digit. That
+       made the last digit a PERFECT predictor, inverted below and direct above: one
+       two-branch rule selected by reading the rounding phrase settled 100.00% of
+       draws and was right 100.00% of them, on a bank whose own skill tip is "look at
+       ONE digit only - the very next one". The line is gone. The two digits are now
+       independent, so at to = 0 and to = 1 the last digit decides nothing better
+       than a coin; the candidate list is deduplicated by value and a draw survives
+       on any three of five slips, so when the two digits do fall on the same side
+       the "last digit" slip simply collides with the key and is dropped, which is
+       the right outcome and is also what restores the rounding-place mix to even. */
+    if (key.n <= 0) continue;
+    /* REGRESSION, found by the v5 trailing-zero work (WOUND 3) and not by any pass:
+       `to` was drawn over 0, 1 and 2 and the generator shipped `2 decimal places`
+       on 20,000 of 20,000 draws. At to = 0 and to = 1 the "rounded the wrong way"
+       slip and the "looked at the LAST digit" slip are THE SAME NUMBER by
+       construction - the draw forces the two digits onto opposite sides of 5, so
+       both land on the other side of the key - and a flat dallDistinct() over four
+       fixed candidates rejected every such draw. Two thirds of MOE 1.5 were
+       unreachable and the bank's own scope line said otherwise. The slips are a
+       LIST now, deduplicated by value, and a draw survives on any three of them. */
+    const bank = [
+      D(d1 >= 5 ? key.n - 1 : key.n + 1, to),                /* rounded the wrong way */
+      dp > to + 1 ? D(base + (d2 >= 5 ? 1 : 0), to) : null,  /* looked at the LAST digit */
+      dround(val, to === 0 ? 1 : to - 1),                    /* rounded to the place next door */
+      dround(val, Math.min(3, to + 1)),                      /* rounded one place too many */
+      val,                                                   /* did not round at all */
+      /* THE KILL (refutation v8 @ f0cbe38, W4). Every slip above sits within one
+         unit of the key, so the key was the largest or the smallest of four on
+         75.7% of draws and the two middle ranks read 11.6% and 12.7% against a 12%
+         floor. Rounding but writing the 1 into the WRONG COLUMN - 3.268 to 2 places
+         read as 4.27 - is a named place-value slip that lands a whole one away,
+         which is the candidate the picker needs to seat the key in the middle. */
+      to >= 1 ? D(key.n + P10[to], to) : null,
+      to >= 1 && key.n > P10[to] ? D(key.n - P10[to], to) : null
+    ];
+    cands = [];
+    for (const c of bank) {
+      if (!c || c.n <= 0 || dsame(c, key) || cands.some(k => dsame(k, c))) continue;
+      cands.push(c);
+    }
+    if (cands.length < 3) continue;
+    ok = true;
+    break;
+  } while (guard < 400);
+  if (!ok) { to = 1; val = D(3268, 3); key = D(33, 1);
+             cands = [D(32, 1), D(3, 0), D(327, 2), val]; }
+  return mcDec('Round <b>' + dtext(val) + '</b> to <b>' + roundPhrase(to) + '</b>.', '',
+    key, cands, '',
+    'Look only at the digit just after the ' + (to === 0 ? 'ones' : PLACE_WORD[to]) + ' place: it is ' +
+    d1Of(val, to) + '. Since ' + d1Of(val, to) + ' is ' +
+    (d1Of(val, to) >= 5 ? '5 or more, round up' : '4 or less, round down') + ', ' + dtext(val) +
+    ' rounded to ' + roundPhrase(to) + ' is ' + dtext(key) + '. The digits further along do not change the decision.');
+}
+function d1Of(val, to) {
+  const cut = P10[val.dp - to];
+  const base = Math.floor(val.n / cut);
+  return Math.floor((val.n - base * cut) / P10[val.dp - to - 1]);
+}
+
+/* FORMAT 2g - working backwards: which number could it have been? (pool 3) */
+function gDecRoundBack() {
+  const who = pick(NAMES);
+  let to = 1, key = D(428, 2), wrongs = [D(435, 2), D(424, 2), D(437, 2)], guard = 0, r = 43, ok = false;
+  do {
+    guard++;
+    to = ri(0, 1);
+    const dp = to + 1;
+    r = ri(P10[to] + 1, 9 * P10[to]);              /* the rounded answer, as a scaled integer at dp `to` */
+    const lo = r * 10 - 5, hi = r * 10 + 5;        /* the half-open window [lo, hi) at dp `to`+1 */
+    const inside = [];
+    for (let h = lo + 1; h < hi; h++) if (h % 10 !== 0) inside.push(h);   /* never the exact half */
+    /* WOUND 1: the four candidates were two above the window and two below it, so
+       three of them shipped and the key could only ever be the second or third
+       biggest (62.3% third). Three on each side lets the picker put the key
+       anywhere. */
+    const outside = [hi, hi + ri(1, 4), hi + ri(5, 9), lo - 1, lo - ri(2, 5), lo - ri(6, 12)]
+      .filter(h => h > 0 && h % 10 !== 0 && (h < lo || h >= hi));
+    if (!inside.length || outside.length < 6) continue;
+    key = D(pick(inside), dp);
+    const picked = outside.map(h => D(h, dp));
+    if (!dallDistinct([key].concat(picked))) continue;
+    if (picked.some(p => dsame(dround(p, to), D(r, to)))) continue;     /* exactly one right answer */
+    wrongs = picked;
+    ok = true;
+    break;
+  } while (guard < 400);
+  if (!ok) { to = 1; r = 43; key = D(428, 2); wrongs = [D(435, 2), D(424, 2), D(437, 2)]; }
+  const target = D(r, to);
+  return mcDec(who + ' rounds a number to <b>' + roundPhrase(to) + '</b> and gets <b>' + dtext(target) +
+    '</b>. <b>Which of these could the number have been?</b>', '',
+    key, wrongs, '',
+    'A number rounds to ' + dtext(target) + ' only if it sits from ' + dtext(D(r * 10 - 5, to + 1)) +
+    ' up to (but not including) ' + dtext(D(r * 10 + 5, to + 1)) + '. Of these four, only ' + dtext(key) +
+    ' is inside that stretch, so only ' + dtext(key) + ' rounds to ' + dtext(target) + '.');
+}
+
+/* FORMAT 2h - error spotting, the mistake NAMED (pool 3, diagnose).
+   Misconception: rounding UP on a 4 (or down on a 5).
+
+   THE KILL (refutation 2026-09-15). The first cut gave exactly TWO of its four
+   options a "..., so the answer is N" tail - the key, and the direction
+   distractor, whose N was the very number the stem had already declared wrong.
+   The child's move was never rounding: it was "only two of these carry an
+   answer, and one of them is the answer the question just called wrong."
+   20,000 of 20,000 draws, structural, and the lane's own cheap-strategy scan
+   could not see it because it measured string length and decimal places. The
+   direction word in that distractor contradicted the stem on every draw as well
+   ("Priya rounded down" of a child who plainly rounded up), and the third
+   distractor described looking at "every digit after the ones place" of a number
+   that had exactly one.
+
+   THE KILL, SECOND PASS (refutation v2 @ 0157aa1). The mechanism above is gone
+   and stayed gone - no option carries an answer, nothing repeats the declared
+   wrong number - but the tell moved from the TAILS to the FRAMES. The key was
+   the only option naming a direction ("rounded up instead of down"), the only
+   one containing "but", the only one outside three never-correct frames, and the
+   3rd longest of the four on 100% of draws. "Pick the only option with up or
+   down in it" scored 20,000 / 20,000 on each of two seeds, and RULE D6 could not
+   see it because the tails split 2-1-1, which D6 passes by design.
+
+   THE REBUILD. All four options are the SAME sentence, differing only in which
+   digit of the printed number they say was used:
+
+       "<name> rounded <dir> after looking at the <first|second|third|fourth>
+        digit, <d>."
+
+   `dir` is the direction the child ACTUALLY went, read off the stem's own claim,
+   so it is the same word in all four options and discriminates nothing. There is
+   no "but", no "instead of", no connective that one option wears and the others
+   do not. The ordinals are 5 or 6 characters, the digits are one, so the four
+   options are within ONE character of each other and no length rank can be read.
+
+   The mathematics: the number always has exactly FOUR digits, the rounding place
+   is drawn so the digit that matters sits at position 1, 2 or 3 of those four,
+   and the draw is rejected unless EXACTLY ONE of the other three digits would
+   have sent the number the way the child went. That digit is the key, and it
+   rotates over the first, second, third and fourth positions across draws - so
+   the key's frame is not a constant and "pick the odd frame out" buys nothing.
+
+   THE KILL, THIRD PASS (refutation v3 @ c9d26fb) - and it is not a tell. The
+   rebuild above had TWO defensible answers on 40,000 of 40,000 draws. "Which
+   digit did X look at?" asks a question the stem cannot settle: the keyed digit
+   is the unique OTHER digit that justifies the direction under a correctly
+   applied rule, but the option naming the ROUNDING digit is consistent with
+   every quantitative claim the stem makes, because a child who reads the right
+   digit and applies "4 or less rounds up" produces the claimed answer exactly.
+   That reading is the commonest P4 rounding error, this file's own skill tip
+   warns about it, and it was this generator's own KEY at 441e684 and 0157aa1.
+   Two free settles rode with it: the direction word was printed in all four
+   options while exactly one of the four digits sat on that side of 5, so "pick
+   the digit that agrees with the direction" was unique and right on 100.00% of
+   draws with the stem never read, and "pick the smallest of the four digits"
+   won 60.56%.
+
+   THE REBUILD, and why one clause in the stem is not enough. Pinning the method
+   ("X used the 5-or-more rule correctly, but on the wrong digit") does make the
+   item markable - but it CANNOT move either free settle, and the reason is
+   structural: under a correctly applied rule the key is the digit that agrees
+   with the direction, the rounding digit disagrees with it by construction, and
+   the other two must disagree or there would be two defensible answers again.
+   The key is therefore ALWAYS the one digit alone on its side of 5, whatever the
+   stem says. So the stem pins the method AND the question changes:
+
+     stem:    X rounds 1.263 to 1 decimal place. X looks at the 3, says that 3 is
+              4 or less, rounds down, and gives the answer 1.2.
+              Which digit should X have looked at, and what is the correct answer?
+     options: X should have looked at the digit <6 | 2>, and the answer is <1.3 | 1>.
+
+   The four options are a 2 x 2 GRID over the right digit (the one rounding is
+   allowed to look at) and the right answer (the number correctly rounded), and
+   exactly one cell is right in both. Each digit is printed twice and each answer
+   is printed twice, so EVERY token sits in exactly two options: no unique token,
+   no unique length, no digit alone on its side of 5, and no value rule can pick
+   a single option out.
+
+   THE FOURTH PASS'S KILL, and the v5 draw that closes it. The grid was lexically
+   perfect and still settled on 79.14% of draws, because its TWO AXES WERE BOTH
+   READABLE OFF THE STEM and one of them was free:
+
+     R1  the stem said "to the nearest whole number" and the offered wrong answer
+         was the number rounded to the place NEXT DOOR, so it carried a different
+         number of decimal places. "The answer is written to the place the stem
+         names" deleted two options - never the key - on 100.00% of draws, with no
+         arithmetic at all. That half of the grid was a FORMAT CONVENTION.
+     R3  the stem printed the digit the child read, and the offered wrong digit
+         was drawn from a different set than the right one, so on 79.14% of draws
+         exactly one of the two offered digits sat immediately BESIDE the stem's
+         digit inside the numeral - and it was always the right one. R1 AND R3
+         together settled 79.14% of draws and were right every single time.
+
+   Both are closed by the draw, not by a gate:
+
+     (a) THE ANSWER AXIS IS NOW ARITHMETIC. The two answers are the number rounded
+         the right way and the number rounded THE WRONG WAY - base and base + 1 at
+         the place the stem names - so BOTH are written to exactly the decimal
+         places the rounding phrase implies and neither can be deleted by reading
+         it. Telling them apart is the 5-or-more rule itself, which is the lesson.
+     (b) THE STEM NAMES A PLACE, NOT A DIGIT. "X looks at the hundredths digit"
+         prints no digit for an option to stand next to, so the adjacency route is
+         structurally dead: a child who wants to use position has to FIND the
+         named place in the numeral first, which is the other half of the lesson.
+         It also means no option can be refuted by matching a printed digit.
+     (c) THE TWO OFFERED DIGITS ARE DRAWN ON INDEPENDENT SIDES OF 5, each 50/50,
+         so "pick the digit that is 5 or more", "pick the smaller digit" and every
+         other side-of-5 rule is a coin flip rather than a tell.
+
+   Self-consistency is a deliberate two-two split: the option pairing the right
+   digit with the right answer and the option pairing the other digit with what
+   THAT digit would give are both internally consistent, so "pick the option that
+   agrees with itself" leaves two and never settles.
+
+   The declared residual is a 50% floor whose free half is the lesson: a child who
+   can round but cannot name the place gets the answer and guesses the digit, and
+   a child who can name the place but cannot round gets the digit and guesses the
+   answer. Neither half is a format convention, and no rule that reads only the
+   printed shapes beats a coin. */
+function gDecRoundError() {
+  const who = pick(NAMES);
+  let to = 1, wlen = 1, digits = [1, 2, 6, 3], val = D(1263, 3);
+  let ci = 2, xi = 3, yi = 1, truth = D(13, 1), wrong = D(12, 1), guard = 0, ok = false;
+  do {
+    guard++;
+    wlen = ri(1, 2);                                   /* digits before the point */
+    const dp = 4 - wlen;                               /* ALWAYS four digits in the number */
+    to = ri(0, dp - 1);                                /* whole number, 1 dp or 2 dp */
+    ci = wlen + to;                                    /* the digit rounding must look at */
+    if (ci > 3) continue;                              /* it has to be one of the four */
+    /* the place the child read instead: the one being rounded TO, or one further
+       along. Nobody rounds off the tens digit, so those draws are not offered. */
+    const xs = [];
+    for (let i = 0; i < 4; i++) if (i !== ci && (i === ci - 1 || i > ci)) xs.push(i);
+    if (!xs.length) continue;
+    xi = pick(xs);
+    /* the offered wrong digit: the digit IN the place being rounded to, or the
+       last digit of the number - the two digits a child actually looks at by
+       mistake, and the two this file's own explanations warn about. It is never
+       the digit sitting in the place the stem names, or the stem would refute one
+       option for free. */
+    let ys = [ci - 1, 3].filter(i => i >= 0 && i !== ci && i !== xi);
+    if (!ys.length) ys = [0, 1, 2, 3].filter(i => i !== ci && i !== xi);
+    if (!ys.length) continue;
+    yi = pick(ys);
+    /* (c): the right digit and the offered wrong digit each take their side of 5
+       on an independent coin, so no side-of-5 reading of the option list beats
+       chance. The other two digits are whatever is left. */
+    const loP = shuffle([1, 2, 3, 4]), hiP = shuffle([5, 6, 7, 8, 9]);
+    const take = s => (s ? hiP : loP).pop();
+    digits = [0, 0, 0, 0];
+    digits[ci] = take(Math.random() < 0.5);
+    digits[yi] = take(Math.random() < 0.5);
+    const restP = shuffle(loP.concat(hiP));
+    for (let i = 0; i < 4; i++) if (!digits[i]) digits[i] = restP.pop();
+    const dc = digits[ci];
+    val = D(digits.reduce((a, d) => a * 10 + d, 0), dp);
+    const cut = P10[dp - to], base = Math.floor(val.n / cut);
+    /* (a): both answers live at the place the stem names, one column apart - the
+       number rounded correctly and the number rounded the wrong way. */
+    truth = D(base + (dc >= 5 ? 1 : 0), to);
+    wrong = D(base + (dc >= 5 ? 0 : 1), to);
+    if (truth.n <= 0 || wrong.n <= 0 || dsame(truth, wrong)) continue;
+    /* no trailing zero anywhere: "1.20" is not how a child writes an answer */
+    if (to > 0 && (truth.n % 10 === 0 || wrong.n % 10 === 0)) continue;
+    /* a whole-number answer that reads as one of the two printed digits would be
+       ambiguous, so those draws go (the same guard RULE D5 used to need) */
+    const shown = [digits[ci], digits[yi]];
+    if (truth.dp === 0 && shown.indexOf(truth.n) !== -1) continue;
+    if (wrong.dp === 0 && shown.indexOf(wrong.n) !== -1) continue;
+    ok = true;
+    break;
+  } while (guard < 400);
+  /* the fallback obeys every rule the draw does: 1.263 to 1 decimal place, with
+     the child reading the thousandths place instead of the hundredths; the offered
+     wrong digit is the tenths 2 and the two answers are 1.3 and 1.2. */
+  if (!ok) { wlen = 1; to = 1; ci = 2; xi = 3; yi = 1; digits = [1, 2, 6, 3]; val = D(1263, 3);
+             truth = D(13, 1); wrong = D(12, 1); }
+  const dc = digits[ci], dy = digits[yi];
+  const placeOf = i => (i >= wlen ? PLACE_WORD[i - wlen + 1] : (i === wlen - 1 ? 'ones' : 'tens'));
+  const opt = (d, r) => who + ' should have looked at the digit ' + d + ', and the answer is ' + dtext(r) + '.';
+  return mcText(who + ' rounds <b>' + dtext(val) + '</b> to <b>' + roundPhrase(to) + '</b>. ' + who +
+    ' looks at the <b>' + placeOf(xi) + '</b> digit. <b>Which digit should ' + who +
+    ' have looked at, and what is the correct answer?</b>', '',
+    opt(dc, truth), [opt(dc, wrong), opt(dy, truth), opt(dy, wrong)],
+    'Rounding to ' + roundPhrase(to) + ' looks at one digit only: the next one along, which is the ' +
+    placeOf(ci) + ' digit of ' + dtext(val) + ', ' + dc + '. ' + who + ' looked at the ' + placeOf(xi) +
+    ' digit instead, and the other digits, before it and after it, do not get a vote. ' +
+    dc + ' is ' + (dc >= 5 ? '5 or more, so round up' : '4 or less, so round down') + ', so ' + dtext(val) +
+    ' rounded to ' + roundPhrase(to) + ' is ' + dtext(truth) + '.');
+}
+
+/* FORMAT 2i - two-step word problem, SG wet market (pool 3): add, THEN round. */
+function gDecRoundSum() {
+  const who = pick(NAMES);
+  let a = D(267, 2), b = D(18, 1), total = D(447, 2), key = 4, guard = 0, ok = false;
+  let doubleRound = 5, chopped = 3, subtracted = 1, twiceA = 5, twiceB = 4, twiceBoth = 9;
+  do {
+    guard++;
+    /* WOUND 4 (refutation v2 @ 0157aa1). a was drawn from [1.10, 4.80] and b from
+       [1.1, 3.9] with the fractional part of the total forced into [0.45, 0.49],
+       which collapsed the KEY to four values - 5 kg on 48.7% of draws, 4 kg on
+       23.0%, 6 kg on 18.8%, 7 kg on 9.5%. "Always answer 5 kg" beat the
+       magnitude-rank gate's own 45% ceiling on the axis that gate cannot see: it
+       measures where the key sits among its OPTIONS, never how often it is the
+       same NUMBER. Both ranges are widened so the total spreads over a dozen
+       kilograms instead of four, and the modal-key ceiling below gates it. */
+    a = D(ri(110, 890), 2);
+    b = D(ri(11, 69), 1);
+    total = D(a.n + b.n * 10, 2);
+    const frac = total.n % 100;
+    /* tenths digit 4, hundredths 5 or more: rounding ONCE gives the floor, while
+       rounding to 1 dp first and then again gives one more. That is the item. */
+    if (frac < 45 || frac > 49) continue;
+    if (a.n % 100 + (b.n % 10) * 10 < 100) continue;       /* the cents must carry, so "chop both" is key - 1 */
+    key = Math.floor(total.n / 100);
+    doubleRound = key + 1;                                  /* 4.47 -> 4.5 -> 5 */
+    chopped = Math.floor(a.n / 100) + Math.floor(b.n / 10); /* dropped both remainders before adding */
+    subtracted = dround(D(Math.abs(a.n - b.n * 10), 2), 0).n;
+    /* WOUND 1: chopped and subtracted are always below the key and doubleRound is
+       always one above it, so "second biggest" answered this on every draw. The two
+       "weighed one of them twice" slips STRADDLE the key - whichever fruit is the
+       heavier, doubling it overshoots and doubling the other undershoots - so the
+       picker always has at least two named candidates on each side. */
+    twiceA = dround(D(a.n * 2, 2), 0).n;
+    twiceB = dround(D(b.n * 20, 2), 0).n;
+    twiceBoth = dround(D(total.n * 2, 2), 0).n;             /* weighed the pair twice */
+    if (new Set([key, doubleRound, chopped, subtracted, twiceA, twiceB, twiceBoth]).size !== 7) continue;
+    if (key < 2 || chopped < 1 || subtracted < 1 || twiceA < 1 || twiceB < 1) continue;
+    ok = true;
+    break;
+    /* the ceiling is high because the draw is tight: the fractional part has to
+       land in [0.45, 0.49] AND the cents have to carry AND seven named values have
+       to differ, which is about 1.2% of rolls. At 400 the declared fallback shipped
+       on 0.85% of draws - one identical item eight times as often as any other
+       stem in the generator. At 1200 it is unreachable in practice. */
+  } while (guard < 1200);
+  if (!ok) { a = D(267, 2); b = D(18, 1); total = D(447, 2); key = 4; doubleRound = 5; chopped = 3; subtracted = 1; twiceA = 5; twiceB = 4; twiceBoth = 9; }
+  const fruit = pick([['papaya', 'pineapple'], ['bag of rice', 'bag of onions'], ['bunch of bananas', 'watermelon']]);
+  const wrongs = rankInts(key, [doubleRound, chopped, subtracted, twiceA, twiceB, twiceBoth]);
+  /* WOUND 2 (refutation v5 @ 8cf212b): the last sentence named `doubleRound` by
+     number, and `doubleRound` is one of six candidates of which `rankInts` ships
+     three - so on 50.0% of draws the child re-read the explanation, hunted the row
+     for the trap it named and did not find it, with a lookalike one kilogram away
+     sitting on the row every one of those times. This is the v4 WOUND 2 class,
+     fixed in gDecBuild at v5 and left standing in the only other generator that
+     does the same thing. Whichever named slip actually SHIPPED is the one the
+     explanation calls out now, each with its own diagnosis, so the sentence always
+     points at a number the child can see. */
+  const named = [
+    [doubleRound, 'rounding ' + dtext(total) + ' to 1 decimal place first and then again gives '],
+    [chopped, 'dropping the bit after the point on each mass before adding gives '],
+    [twiceBoth, 'weighing the pair twice over gives '],
+    [twiceA, 'weighing the ' + fruit[0] + ' twice and forgetting the ' + fruit[1] + ' gives '],
+    [twiceB, 'weighing the ' + fruit[1] + ' twice and forgetting the ' + fruit[0] + ' gives '],
+    [subtracted, 'taking one mass away from the other gives ']
+  ];
+  const q = finishNum('At the wet market ' + who + ' buys a ' + fruit[0] + ' weighing <b>' + dtext(a) +
+    ' kg</b> and a ' + fruit[1] + ' weighing <b>' + dtext(b) + ' kg</b>. <b>Rounded to the nearest kilogram</b>, ' +
+    'what is the total mass of the two together?', '',
+    key, wrongs, 'kg', '');
+  const on = slipFor(q, named, v => v + ' kg') || named[0];
+  q.explain = 'Step 1: add the two masses. ' + dtext(a) + ' + ' + dtext(b) + ' = ' + dtext(total) +
+    ' kg. Step 2: round ' + dtext(total) + ' to the nearest whole number. The digit just after the ones place is ' +
+    Math.floor((total.n % 100) / 10) + ', which is 4 or less, so it rounds down to ' + key +
+    ' kg. Add first and round ONCE: ' + on[1] + on[0] + ' kg, which is not the same thing.';
+  q.decAuthored = wrongs.map(v => v + ' kg');
+  q.authored = wrongs.slice();
+  return q;
+}
+
+/* =============================================================================
+   PRINCIPLE 3 - DECIMALS AND FRACTIONS ARE ONE NUMBER WRITTEN TWO WAYS
+   ========================================================================== */
+
+/* FORMAT 3a - direct: a fraction over 10, 100 or 1000 as a decimal (pool 1)
+
+   THE KILL (refutation v8 @ f0cbe38, KILL 2). *"Two of these are the question's own
+   digits with the point in different places. Take the one that starts with a
+   nought."* 63.59% of draws, 100.00% right, on a pool-1 bank a struggling child
+   meets 1.95 times a session - and declared at E 35.9% since the sixth pass,
+   which is 36 points low. It is not a route the row shape can close, because BOTH
+   halves of it were arithmetic facts about this item:
+
+     the key's digit string IS the numerator's           on 100.00% of draws
+     the key is BELOW ONE                                on 100.00% of draws
+
+   and the v6 cure guarantees a SECOND option carrying that digit family, which is
+   what let `stemFamRoute`'s onlyOne() pass the row. The rule is never WRONG; it is
+   right or silent, so no ceiling on accuracy can catch it. The only way to cut it is
+   to make the first fact FALSE on a fair share of draws, and the arithmetic offers
+   exactly one honest way to do that: a numerator that ends in a zero.
+
+     620 / 1000 = 0.62   - the key's digits are 62, and 620 is not on the row at all
+
+   That is MOE 3.1's own content (a decimal written in its natural form, the way a
+   child must write $0.60 as 0.6 in a measures answer) and it is drawn as one of
+   three shapes:
+
+     tail    the numerator ends in a nought, so the key's digit string is NOT the
+             stem's and "the option made of the question's digits" names nobody -
+             or a wrong answer.
+     short   at thousandths, a TWO-digit numerator, so the key (0.0xy) is not the
+             only placement of those digits that is below one: 0.xy is on the row
+             too, and "the one that starts with a nought" names two.
+     full    the v7 shape, which the rule still settles. One draw in nine.
+
+   The residual is declared rather than hidden: at three places with a three-digit
+   numerator ending in a non-zero digit, the key IS the only sub-one way to write
+   those digits, and the v7 stem-family clause requires a second stem-digit option
+   on the row. Those two facts cannot both be satisfied, so that shape is drawn
+   one time in nine instead of one time in three. */
+function gFracToDec() {
+  let den = 10, dp = 1, n = 3, key = D(3, 1), guard = 0;
+  let shallow = D(30, 1), complement = D(7, 1), tacked = D(13, 1);
+  do {
+    guard++;
+    dp = ri(1, 3); den = P10[dp];
+    const shape = dp === 1 ? 2 : ri(0, 2);
+    if (shape === 0) n = 10 * ri(dp === 3 ? 11 : 1, den / 10 - 1);   /* tail  */
+    else if (shape === 1 && dp === 3) n = ri(11, 99);                /* short */
+    /* WOUND 1: at three places a three-digit numerator is what puts the "dropped a
+       digit" slips BELOW the key. 7/1000 was a fair item but it left the key with
+       nothing named beneath it. */
+    else n = ri(dp === 3 ? 101 : 1, den - 1);                        /* full  */
+    key = dnat(D(n, dp));
+    shallow = dnat(D(n * 10, dp));                 /* read hundredths as tenths */
+    complement = dnat(D(den - n, dp));             /* took it away from the whole */
+    tacked = dnat(D(den + n, dp));                 /* wrote the denominator and the numerator side by side */
+    /* the key is never a whole number and never zero, and the four named values
+       must differ. dnat() is what takes the trailing zeros off, so a numerator
+       ending in a nought is now a SHAPE rather than a rejected draw. */
+  } while (guard < 300 && !(n > 0 && key.dp > 0 &&
+           dallDistinct([key, shallow, complement, tacked])));
+  /* WOUND 1: shallow and tacked are above the key on every draw and complement is
+     usually above it too, so the key was the smallest or the third biggest and
+     never anything else. The point-one-column-out slips and the dropped digits are
+     the named candidates underneath it. */
+  const deeper1 = pRight(key);
+  const deeper2 = key.dp + 2 <= 3 ? D(key.n, key.dp + 2) : null;
+  /* W5 (refutation v7 @ ed2c0dc): "dropped the last digit" is the one candidate here
+     that can end in a zero - 305 thousandths drops to 30, and "0.030" is an option
+     the key is never on. dnat() takes the zero off rather than dropping the draw. */
+  const dropLast = n >= 10 ? dnat(D(Math.floor(n / 10), dp)) : null;
+  const dropFirst = dp === 3 && n % 100 !== 0 ? dnat(D(n % 100, dp)) : null;
+  /* THE KILL (refutation v6): "took it away from the whole" carries its own
+     point-one-column-out pair, so the twins on the row need not be the key's. */
+  /* THE KILL (refutation v7 @ ed2c0dc), the magnitude rank's side of it. D1's mirror
+     on the whole/fraction axis takes selections away from this picker, and the ones
+     it took were the ones holding the key off the bottom: "the key is the smallest"
+     went to 52.3% against the 45% ceiling the moment the mirror bound. "Wrote the
+     digits with no point at all" and the tacked-on slip's own point-out pair are
+     three more candidates ABOVE the key, which is where the bank was thin. */
+  const noPoint = pLeft(key);
+  /* every OTHER place the numerator's own digits could sit, which is the sub-strand's
+     misconception and, on the shapes above, the thing that keeps "the option made of
+     the question's digits" from being a badge only the key wears. */
+  /* how MANY of them are offered is drawn as well: a stem-digit family that is the
+     same size on every draw lets "of the options made of the question's own digits,
+     take the one that is not the smallest" read a fixed slot. */
+  const places = shuffle([0, 1, 2, 3]).slice(0, ri(1, 4))
+    .map(k => dnat(D(n, k))).filter(c => c.n > 0);
+  /* THE SHALLOWER SEAT (sweep 2026-09-16). Every point-moved slip this bank actually
+     SHIPPED sat DEEPER than the key - deeper1, deeper2, and the sub-one members of
+     `places` - so of the options made of the question's own numerator the key was the
+     one with that numerator in the HIGHEST place on 96.33% of the den-10 draws and
+     60.24% of the den-100 ones (5,000 draws, SEED=20260916). "Of the options made of
+     the question's top number, take the biggest" is a no-maths route and at ten it
+     was the whole item.
+     The cure is a candidate this bank already held and almost never shipped:
+     `shallow`, the numerator one column too far LEFT. At ten that is "8/10 = 8" - the
+     numerator read as the answer and the denominator read as nothing, the
+     whole-number-bias slip every P4 diagnostic list carries - and at a hundred it is
+     8/100 = 0.8, the same belief one column out. dnat() has already taken the
+     trailing zero off, so it prints as "8" and not "8.0", which is a badge the key is
+     never on in this file.
+     It was in the pool and did not ship because the v8 sub-row clause refuses it as a
+     LONE companion: {0.8, 8} is a two-member stem-digit sub-row on which "the one that
+     starts with a nought" IS the key. So it is SEATED rather than merely offered, and
+     rankPick has to find it a sub-row partner (0.08 is in the pool on every draw)
+     instead of dropping the whole selection.
+     The coin is a half and not a certainty because a seat paid on EVERY draw is
+     itself a feature the key never wears: the shallower slip is above the key by
+     construction, so making it compulsory would hand a child "the answer is never the
+     biggest" in exchange for the route this kills. */
+  const seatShallow = Math.random() < 0.5;
+  return mcDec('Write ' + fr(n, den) + ' as a decimal.', '',
+    key, [seatShallow ? must(shallow) : shallow,
+          complement, tacked, deeper1, deeper2, dropLast, dropFirst,
+          pRight(complement), pLeft(complement), noPoint,
+          pRight(tacked), pLeft(tacked)].concat(places), '',
+    n + ' out of ' + den + ' means ' + qty(n, dp) + '. The ' + PLACE_WORD[dp] +
+    ' place is number ' + dp + ' after the decimal point, so ' + qty(n, dp) +
+    (key.dp === dp ? ' is written ' + dtext(key) + '.'
+      : ' is the same as ' + qty(key.n, key.dp) + ', which is written ' + dtext(key) + '.'));
+}
+
+/* FORMAT 3b - the same idea as a PICTURE (pool 1). The bar is a q.figure spec;
+   the oracle counts the shaded segments off the render, not off this function. */
+function gDecBar() {
+  const parts = 10;
+  /* 5 shaded is excluded on purpose: the "counted the unshaded parts" distractor is
+     10 - filled, which at exactly half IS the key, and the item would then ship a
+     padded distractor instead of a named one. */
+  const filled = pick([1, 2, 3, 4, 6, 7, 8, 9]);
+  const key = D(filled, 1);
+  const rest = D(parts - filled, 1);          /* counted the unshaded parts */
+  const tooDeep = pRight(key);                /* the point one column too far right */
+  const deeper = D(filled, 3);                /* and two columns, "thousandths of one" */
+  const noPoint = pLeft(key);                 /* no point at all */
+  const restNoPoint = D(parts - filled, 0);   /* both slips at once */
+  const q = mcDec('Each strip below is <b>one whole</b> cut into <b>10 equal parts</b>. ' +
+    '<b>What decimal does the shaded part show?</b>', '',
+    /* THE KILL (refutation v6): the unshaded-parts slip with the point one column
+       too far right as well, so the row can carry a twin pair that is not the key's
+       and so three named candidates below the key exist on every draw - without it
+       the twin clause could not reach a row where the key is the largest option. */
+    key, [rest, tooDeep, noPoint, restNoPoint, deeper, pRight(rest)], '',
+    /* WOUND 5: this sentence printed "1 parts are shaded" on 12.8% of draws. */
+    'The whole is cut into 10 equal parts, so each part is one tenth. ' + many(filled, 'part is', 'parts are') +
+    ' shaded, which is ' + qty(filled, 1) + ', and ' + qty(filled, 1) + ' is written ' + dtext(key) + '.');
+  return fig(q, { type: 'fractionBar', parts: parts, filled: filled });
+}
+
+/* FORMAT 3c - inverse: a decimal written as a fraction (pool 2).
+
+   WOUND 1 (refutation v6 @ 5a5fb3b), both halves.
+
+   (a) THE ROW SHAPE. The v6 row was two fractions over one denominator and one or
+   two over others, and the KEY's numerator was the digits the stem prints. "Two of
+   these fractions have the same bottom number; of those, take the one whose top
+   number is the digits the question prints" settled 100.00% of draws and was right
+   100.00% of them, with no conversion done.
+
+   (b) THE DEMAND WAS DECORATION. The draw guard was gcd(n, den) === 1, so the key
+   was ALREADY in lowest terms on 100% of draws and the stem's bolded "in its
+   simplest form" asked for nothing. It is the other way round now: gcd(n, den) is
+   REQUIRED to be more than 1, so the fraction a child writes down first - the
+   digits over 10 or 100 - is never on the row, and the simplification is what
+   finds the answer on every draw. That also kills (a) outright, because the key's
+   numerator is no longer the digits the stem prints: the option carrying those
+   digits is a WRONG one.
+   (The unsimplified form of the KEY cannot be offered as the fourth option, which
+   is the obvious way to make the demand bite: it is the same quantity as the key,
+   so buildFracChoices drops it by cross-multiplication and the decimals oracle
+   fails the build for two options being the same fraction. Making the demand
+   change the ANSWER is the version of "load-bearing" this harness can carry.)
+
+   THE ROW, per draw: every option is a proper fraction in its lowest terms, so
+   "the one that is already simplified" names all four. At two places the four
+   split 2-2 by denominator - the number and its complement over den/g, the
+   REVERSED digits and their complement over den/h, with g and h forced apart - so
+   "two of these have the same bottom number" names two pairs and neither. At one
+   place the digit is single, there is no reversal to make, and three of the four
+   land over 5 with the hundredths misreading alone at 25 or 50. */
+function gDecToFrac() {
+  const red = p => { const g0 = gcd(p[0], p[1]) || 1; return [p[0] / g0, p[1] / g0]; };
+  const same = (a, b) => a[0] * b[1] === b[0] * a[1];
+  let dp = 2, den = 100, n = 36, g = 4, rev = 63, guard = 0, ok = false;
+  let cands = [[16, 25], [63, 100], [37, 100]];
+  do {
+    guard++;
+    /* the tenths shape has exactly FOUR numerals in it (0.2 / 0.4 / 0.6 / 0.8 - a
+       single digit sharing a factor with ten and not being half of it), so drawing
+       the two places evenly would put each of them on a sixth of the bank's draws.
+       v6 drew them evenly against a hundredths shape with twelve numerals in it and
+       shipped SIXTEEN distinct stems in 60,000 draws, four of them at 22% each;
+       nothing in six passes measured it. The hundredths shape is the wide one, so
+       it is the common one. */
+    dp = Math.random() < 0.15 ? 1 : 2; den = P10[dp];
+    n = dp === 1 ? pick([2, 4, 6, 8]) : ri(11, 99);
+    g = gcd(n, den);
+    if (g === 1) continue;                    /* the simplification has to be real */
+    if (n % 10 === 0) continue;               /* "0.30" is not how a P4 paper writes it */
+    if (2 * n === den) continue;              /* the key and its complement are the same half */
+    rev = Number(String(n).split('').reverse().join(''));
+    if (dp === 1) {
+      /* the part-whole slip this file already uses in gDecMoneyFrac - the whole
+         counted in FIVE parts instead of ten - plus the two readings that do not
+         need the reversal a single digit cannot have. */
+      cands = [red([den - n, den]), (n < 5 ? [n, 5] : [10 - n, 5]), red([n, den * 10])];
+    } else {
+      if (n % 10 === Math.floor(n / 10)) continue;   /* the reversal is the number itself */
+      if (rev < 10 || gcd(rev, den) === g) continue; /* the row must split 2-2 by denominator */
+      cands = [red([den - n, den]), red([rev, den]), red([den - rev, den])];
+    }
+    const all = [red([n, den])].concat(cands);
+    if (all.some(p => p[0] <= 0 || p[0] >= p[1])) continue;
+    if (all.some((p, i) => all.some((c, j) => j > i && same(p, c)))) continue;
+    ok = true;
+    break;
+  } while (guard < 500);
+  if (!ok) { dp = 2; den = 100; n = 36; g = 4; cands = [[16, 25], [63, 100], [37, 100]]; }
+  const val = D(n, dp), key = red([n, den]);
+  const q = finishFrac('Write <b>' + dtext(val) + '</b> as a fraction in its <b>simplest form</b>.', '',
+    key, cands,
+    dtext(val) + ' is ' + qty(n, dp) + ', and ' + PLACE_WORD[dp] + ' go over ' + den +
+    '. So ' + dtext(val) + ' is ' + n + ' over ' + den + '. ' + n + ' and ' + den +
+    ' both divide by ' + g + ', so ' + n + ' over ' + den + ' in its simplest form is ' +
+    key[0] + ' over ' + key[1] + '.', 4);
+  /* the fraction half of the named-distractor contract (WOUND 2): every shipped
+     option must be one of these three, so buildFracChoices can never pad here. */
+  q.fracAuthored = cands;
+  return q;
+}
+
+/* FORMAT 3d - simple equivalents: a denominator that divides into 10 or 100 (pool 2) */
+const EQUIV_DENS = [4, 5, 20, 25, 50];
+function gFracEquivDec() {
+  let den = 5, n = 3, key = D(6, 1), guard = 0;
+  let asTenths = D(3, 1), denAsDec = D(5, 1), rest = D(4, 1), over = 10;
+  do {
+    guard++;
+    den = pick(EQUIV_DENS);
+    n = ri(1, den - 1);
+    over = (10 % den === 0) ? 10 : 100;
+    const mult = over / den;
+    key = dnat(D(n * mult, over === 10 ? 1 : 2));
+    asTenths = D(n, 1);                                     /* wrote the numerator after the point */
+    denAsDec = dnat(D(den, String(den).length));            /* wrote the denominator after the point */
+    rest = dnat(D((den - n) * mult, over === 10 ? 1 : 2));  /* found the other part of the whole */
+    /* W5 (refutation v7 @ ed2c0dc): "wrote the numerator after the point" printed
+       "1.0" for 10/20 - a trailing zero the key is never on, on 3.64% of draws, the
+       same distractor badge the v4 work took off gDecAddSub's key. This bank
+       authors exactly three candidates and ships all three, so the shape of the
+       slip is load-bearing on the magnitude rank and cannot be re-cut; the four
+       numerators that print the zero are dropped from the draw instead. */
+  } while (guard < 400 && !(n % 10 !== 0 && dallDistinct([key, asTenths, denAsDec, rest])));
+  return mcDec('Write ' + fr(n, den) + ' as a decimal.', '',
+    key, [asTenths, denAsDec, rest], '',
+    den + ' goes into ' + over + ' exactly ' + (over / den) + ' times, so multiply the top and the bottom by ' +
+    (over / den) + ': ' + n + ' over ' + den + ' is the same as ' + (n * over / den) + ' over ' + over +
+    '. ' + qty(n * over / den, over === 10 ? 1 : 2) + ' is written ' + dtext(key) + '.');
+}
+
+/* FORMAT 3e - error spotting, the mistake NAMED (pool 3, diagnose).
+   Misconception: "0.5 of a dollar is 5 cents". */
+function gDecFracError() {
+  const who = pick(NAMES);
+  const tenthsShape = Math.random() < 0.5;
+  /* 1 would read "1 tenths"; 5 is dropped on the tenths shape because 50 cents is
+     then both the true value AND the rest of the dollar. */
+  const d = pick(tenthsShape ? [2, 3, 4, 6, 7, 8, 9] : [2, 3, 4, 5, 6, 7, 8, 9]);
+  const val = tenthsShape ? D(d, 1) : D(d, 2);
+  const place = tenthsShape ? 1 : 2;
+  const trueC = tenthsShape ? 10 : 1;                  /* cents in one of that place */
+  const trueCents = d * trueC;
+  const claimCents = tenthsShape ? d : d * 10;         /* the digit read at the wrong place */
+  /* WOUND 3 (refutation v2 @ 0157aa1). Two of the four frames - "One whole dollar
+     is 100 cents..." and "A dollar is 100 cents and this is the part that is
+     left..." - were the key on 0 / 20,000 draws, so "neither the longest nor the
+     shortest" was a coin flip that never deleted the key. All four options now
+     wear ONE frame and differ only in what a single place of a dollar is worth
+     and what that makes of the whole amount: three live beliefs about the worth
+     of the place (a dollar, a tenth, a hundredth) and one that gets the worth
+     right and adds instead of multiplying. Every amount is written as money, so
+     all four options are EXACTLY the same length and no length rank exists. The
+     clause order is drawn, so the key does not wear the same sentence every
+     time. */
+  const rows = [[trueC, trueCents], [100, d * 100], [trueC === 10 ? 1 : 10, d * (trueC === 10 ? 1 : 10)],
+                [trueC, trueC + d]];
+  const headFirst = Math.random() < 0.5;
+  const say = r => headFirst
+    ? 'A ' + PLACE_ONE[place] + ' of a dollar is ' + money(r[0]) + ', and ' + dtext(val) + ' is ' +
+      qty(d, place) + ', so that is ' + money(r[1]) + '.'
+    : dtext(val) + ' is ' + qty(d, place) + ', and a ' + PLACE_ONE[place] + ' of a dollar is ' +
+      money(r[0]) + ', so that is ' + money(r[1]) + '.';
+  const key = say(rows[0]);
+  const wrongs = rows.slice(1).map(say);
+  return mcText(who + ' says that <b>' + dtext(val) + ' of a dollar</b> is <b>' + money(claimCents) +
+    '</b>. <b>Which of these puts it right?</b>', '', key, wrongs,
+    'One dollar is 100 cents, so one tenth of a dollar is 10 cents and one hundredth of a dollar is 1 cent. ' +
+    dtext(val) + ' is ' + qty(d, place) + ', and each one is worth ' + money(trueC) + ', so ' + dtext(val) +
+    ' of a dollar is ' + d + ' × ' + money(trueC) + ' = ' + money(trueCents) + '. ' + money(claimCents) +
+    ' is ' + many(claimCents, 'cent', 'cents') + ', a different amount altogether.');
+}
+
+/* FORMAT 3f - two-step word problem, SG money (pool 3): cents over 100, then
+   simplify. The decimal is printed alongside so the two spellings sit together. */
+/* W6 (refutation v7 @ ed2c0dc): this list had TEN values, so the generator shipped
+   fifty stems and TEN distinct keys, modal key 10.38%, on an item served 1.44 times
+   in a 30-item session at 80% accuracy (worst 3) - the narrowest answer space in the
+   topic and the one sample space no pass had measured. Every price here still
+   shares a factor with 100, because Step 2 of the explanation divides by it and
+   "37 and 100 both divide by 1" is not a simplification a child can read; that is
+   the only constraint, and it leaves every whole number of cents that is even or a
+   multiple of five. Thirty-eight prices, thirty-eight distinct keys, modal key
+   2.6%: a bookshop price list rather than a rounding of one. */
+const CENT_PRICES = [4, 5, 6, 8, 10, 12, 14, 15, 16, 18, 20, 22, 24, 25, 26, 28, 30,
+                     32, 35, 36, 38, 40, 42, 44, 45, 48, 50, 52, 55, 56, 60, 64, 65,
+                     70, 75, 80, 85, 90];
+function gDecMoneyFrac() {
+  const cents = pick(CENT_PRICES);
+  const g = gcd(cents, 100);
+  const n = cents / g, den = 100 / g;
+  const item = pick(['a packet of sweets', 'an eraser', 'a pencil sharpener', 'a sticker sheet', 'a paper clip box']);
+  const red = (a, b) => { const g2 = gcd(a, b); return [a / g2, b / g2]; };
+  /* WOUND 2 (refutation 2026-09-15). At 50 cents - one of the ten CENT_PRICES, so
+     10.03% of draws - the first candidate `red(100 - cents, 100)` IS the key:
+     50/100 and 50/100 both reduce to 1/2. buildFracChoices dropped it as a
+     duplicate, ran out of candidates and PADDED with [correct[0] + n,
+     correct[1] + n] = 2/3, a denominator that cannot divide 100 and a slip no
+     child makes. Nothing caught it: this generator stamped no contract at all,
+     so decGates rule D4 never ran, and the shared q.authored check cannot read
+     fractions. There are now five named candidates, any that collide with the key
+     are dropped HERE rather than inside the shared kit, and q.fracAuthored
+     asserts to the harness that every shipped option is one of them. */
+  const raw = [red(100 - cents, 100),                    /* the rest of the dollar */
+               red(cents, 1000),                         /* one place too far */
+               red(cents + 5, 100),                      /* misread the price by five cents */
+               red(Math.max(cents - 5, 1), 100),         /* and the other way */
+               red(cents, 200)];                         /* halved the whole instead of the part */
+  /* W6's widening turned up a collision the ten-price list had never reached: at 16
+     cents the "one place too far" slip is 2/125 and the "rest of the dollar" slip is
+     21/25, and once the fraction markup is stripped both read "2125" - the same four
+     digits in the same order. The child sees two different fractions; every text
+     rule that reads an option, this file's own harness included, sees one. Two
+     options may not flatten to the same digit string. */
+  const flat = c => String(c[0]) + String(c[1]);
+  const cands = [];
+  for (const c of raw) {
+    if (c[0] <= 0 || c[1] <= 0 || c[0] > c[1]) continue;
+    if (eq(c[0], c[1], n, den) || flat(c) === flat([n, den])) continue;   /* never the key wearing another face */
+    if (cands.some(k => eq(k[0], k[1], c[0], c[1]) || flat(k) === flat(c))) continue;
+    cands.push(c);
+  }
+  const q = finishFrac('At the school bookshop ' + item + ' costs <b>' + cents + ' cents</b>, which is written <b>' +
+    money(cents) + '</b>. <b>What fraction of one dollar is that, in its simplest form?</b>', '',
+    [n, den], cands,
+    'Step 1: one dollar is 100 cents, so ' + cents + ' cents is ' + cents + ' out of 100, or ' + cents +
+    ' over 100 - the same as the two hundredths digits in ' + money(cents) + '. Step 2: ' + cents + ' and 100 both divide by ' +
+    g + ', so ' + cents + ' over 100 simplifies to ' + n + ' over ' + den + '.', 4);
+  q.fracAuthored = cands;
+  return q;
+}
+
+/* =============================================================================
+   PRINCIPLE 4 - OPERATIONS IN MONEY AND MEASUREMENT CONTEXTS
+   ========================================================================== */
+
+/* FORMAT 4a - direct compute, add or subtract, both numbers the same length
+   (pool 1). Named slips: dropped the carry / borrow, did the other operation,
+   carried when there was nothing to carry. */
+function gDecAddSub() {
+  const dp = ri(1, 2);
+  const scale = P10[dp];
+  const addMode = Math.random() < 0.5;
+  let a = 0, b = 0, key = 0, noCarry = 0, other = 0, overCarry = 0, rounded = 0, guard = 0;
+  do {
+    guard++;
+    if (addMode) {
+      a = ri(scale + 1, 6 * scale); b = ri(scale + 1, 3 * scale);
+      key = a + b;
+      noCarry = key - scale;                       /* wrote the carried ten down and lost it */
+      other = Math.abs(a - b);                     /* subtracted instead */
+      overCarry = key + scale;                     /* carried where there was nothing to carry */
+    } else {
+      a = ri(3 * scale, 9 * scale); b = ri(scale + 1, a - scale);
+      key = a - b;
+      noCarry = digitwiseDiff(a, b, dp);           /* took the smaller digit from the larger in each column */
+      other = a + b;                               /* added instead */
+      overCarry = key + scale;
+    }
+    /* WOUND 3 (refutation v3 @ c9d26fb): the key was never the SMALLEST option on
+       an add draw and never the LARGEST on a subtract draw, 100% of draws - one
+       free elimination out of four, for ever, on the bank a struggling child sees
+       most. MAGNITUDE-RANK passed it because it measures rank SHARES and is blind
+       to a rank that is structurally empty: the picker can only put the key at the
+       top when three named candidates sit below it, and the subtract branch only
+       ever had two (the borrow taken twice, and the point one column right).
+       "Rounded the second number up to a whole number first" is the third, and it
+       lands on the needed side of the key on BOTH branches by construction. */
+    rounded = addMode ? a + Math.ceil(b / scale) * scale : a - Math.ceil(b / scale) * scale;
+  /* REGRESSION, refutation v2 @ 0157aa1. The W1 candidate widening added
+     `key - scale` to this Set and raised the required size to 5 - but in ADD mode
+     `noCarry` IS `key - scale`, so the Set could never hold more than four
+     members and `size === 5` was never true. The do-while ran to its 300-iteration
+     ceiling on 100% of add draws and shipped whatever the last roll produced, with
+     every other clause in the guard - no trailing-zero key, no trailing-zero
+     operand, `other > 0` (which is what stops the two operands being identical) -
+     silently unenforced. Trailing-zero keys went from 0.000% to 9.9%, operands
+     ending in 0 to 19.1%, identical operands to 1.1%, and a `0.0` option shipped
+     on 0.77% of draws wearing a named distractor's badge. The distinctness test
+     now counts the candidates it actually has: five on a subtract draw, four on an
+     add draw, where two of them are the same number by construction. */
+  /* WOUND 3 (refutation v4 @ 7ec7919): `key % 10 !== 0` is gone. It was written to
+     stop "5.60" being an answer, and the side effect was that the KEY could never
+     end in a zero after the point while distractors could - a badge that said
+     "distractor" on every draw it appeared. The operands still may not end in a
+     zero (that is what keeps the last column real); the sum may land wherever the
+     arithmetic puts it, which is what a child's column addition does. */
+  } while (guard < 300 && !(key > scale && noCarry > 0 && other > 0 && rounded > 0 &&
+           a % 10 !== 0 && b % 10 !== 0 &&
+           new Set([key, noCarry, other, overCarry, key - scale, rounded]).size === (addMode ? 5 : 6)));
+  const A = D(a, dp), B = D(b, dp), K = D(key, dp);
+  const sign = addMode ? '+' : '−';
+  /* WOUND 1: on an ADD draw both named slips but one sat below the key and on a
+     SUBTRACT draw all three sat above it, so the key was pinned to the second
+     biggest or the smallest. The point-one-column-out pair and "took one too many
+     out of the next column" give the picker candidates on both sides either way. */
+  /* THE KILL (refutation v6): the point-one-column-out slip of a NAMED WRONG
+     ANSWER, so the row can carry a twin pair that is not the key's. A child who
+     slides the point one column has no reason to have carried correctly first. */
+  const NC = D(noCarry, dp);
+  return mcDec('<b>' + dtext(A) + ' ' + sign + ' ' + dtext(B) + ' = ?</b>', '',
+    K, [NC, D(other, dp), D(overCarry, dp), D(key - scale, dp), D(rounded, dp), pLeft(K), pRight(K),
+        pLeft(NC), pRight(NC)], '',
+    'Write them one under the other with the decimal points in line, then ' + (addMode ? 'add' : 'subtract') +
+    ' column by column starting from the right: ' + dtext(A) + ' ' + sign + ' ' + dtext(B) + ' = ' + dtext(K) +
+    '. The decimal point in the answer goes straight under the other two.');
+}
+/* the "smaller from larger in every column" subtraction slip, done exactly */
+function digitwiseDiff(a, b, dp) {
+  let out = 0, mul = 1, x = a, y = b;
+  for (let i = 0; i <= dp; i++) {
+    const da = i < dp ? x % 10 : x, db = i < dp ? y % 10 : y;
+    out += Math.abs(da - db) * mul;
+    if (i < dp) { x = Math.floor(x / 10); y = Math.floor(y / 10); mul *= 10; }
+  }
+  return out;
+}
+
+/* FORMAT 4b - working backwards, SG money (pool 2): the total is the unknown. */
+const SHOPS = ['the school bookshop', 'the NTUC checkout', 'the hawker centre drinks stall', 'the MRT station kiosk'];
+function gDecStartAmount() {
+  const who = pick(NAMES);
+  let spent = 435, left = 560, key = 995, guard = 0;
+  let subtracted = 125, noCarry = 985, dropped = 1095;
+  do {
+    guard++;
+    spent = ri(105, 895); left = ri(105, 895);
+    key = spent + left;
+    subtracted = Math.abs(left - spent);                  /* subtracted instead of adding */
+    noCarry = key - 100;                                  /* lost the carry out of the cents */
+    dropped = key + 100;                                  /* carried where there was nothing to carry */
+  } while (guard < 300 && !(key % 100 !== 0 && subtracted > 0 && spent !== left &&
+           spent % 100 !== 0 && left % 100 !== 0 &&          /* "$2.00" teaches no decimals */
+           new Set([key, subtracted, noCarry, dropped, 2 * spent, 2 * left]).size === 6));
+  /* WOUND 1: subtracted and noCarry sit below the key and dropped sits above it on
+     every draw, so "second biggest" answered this 2,000 times out of 2,000. The
+     two "used one amount twice" slips STRADDLE the key by construction - whichever
+     of the two amounts is the larger, doubling it overshoots and doubling the other
+     undershoots - so the picker always has at least two named candidates on each
+     side and the key's rank moves. */
+  return mcMoney(who + ' spends <b>' + money(spent) + '</b> at ' + pick(SHOPS) + ' and has <b>' + money(left) +
+    '</b> left. <b>How much money did ' + who + ' have at first?</b>', '',
+    /* THE KILL (refutation v8 @ f0cbe38, W4). Only `dropped` and the larger of the
+       two doubles ever sat above the key, so two named candidates above it was the
+       most this bank could offer and the key was NEVER the smallest of four -
+       0.00% of 40,000 draws, a free one-of-four elimination the rank gate had no
+       floor to catch. "Counted one amount twice and kept the other as well" is the
+       third and fourth, both above the key by construction. */
+    key, [subtracted, noCarry, dropped, 2 * spent, 2 * left, key + spent, key + left],
+    'Work backwards: the money at the start is the money spent plus the money left over. Line the decimal points up and add: ' +
+    money(spent) + ' + ' + money(left) + ' = ' + money(key) + '. Taking one amount from the other answers a different question.');
+}
+
+/* FORMAT 4c - compare two prices, SG supermarket (pool 2, two steps). */
+function gDecMoneyMore() {
+  const [who] = pickNames(1);
+  const goods = pick([['a carton of milk', 'a loaf of bread'], ['a packet of rice', 'a bottle of oil'],
+                      ['a tray of eggs', 'a bag of onions'], ['a tub of yoghurt', 'a packet of biscuits']]);
+  let hi = 345, lo = 180, key = 165, guard = 0;
+  let total = 525, noBorrow = 245, wholeOnly = 200, centsOnly = 65, oneDollarOut = 65;
+  do {
+    guard++;
+    hi = ri(260, 890); lo = ri(105, hi - 160);
+    key = hi - lo;
+    total = hi + lo;                                       /* added instead of comparing */
+    noBorrow = digitwiseDiff(hi, lo, 2);                   /* smaller digit from larger in every column */
+    wholeOnly = (Math.floor(hi / 100) - Math.floor(lo / 100)) * 100;   /* ignored the cents */
+    centsOnly = Math.abs(hi % 100 - lo % 100);             /* compared the cents only */
+    oneDollarOut = key - 100;                              /* exchanged a dollar that was already there */
+  } while (guard < 300 && !(key % 100 !== 0 && wholeOnly > 0 && noBorrow > 0 && centsOnly > 0 && oneDollarOut > 0 &&
+           hi % 100 !== 0 && lo % 100 !== 0 &&               /* "$2.00" teaches no decimals */
+           new Set([key, total, noBorrow, wholeOnly, centsOnly, oneDollarOut]).size === 6));
+  /* WOUND 1: total, noBorrow and wholeOnly are all normally ABOVE the difference,
+     so "always pick the smallest" won 74.2% of this generator. centsOnly and
+     oneDollarOut are named slips that both land BELOW it, and the draw now
+     guarantees a difference of at least $1.60 so the second of them stays positive. */
+  return mcMoney('At NTUC ' + goods[0] + ' costs <b>' + money(hi) + '</b> and ' + goods[1] + ' costs <b>' +
+    money(lo) + '</b>. <b>How much more does ' + goods[0].replace(/^an? /, 'the ') + ' cost?</b>', '',
+    /* THE KILL (refutation v8 @ f0cbe38, W4): the key was the largest option on
+       0.09% of 40,000 draws, because only two named slips (centsOnly and the
+       dollar already exchanged) reliably sat below it and the rank gate had a
+       ceiling but no floor. Two more that land below by construction: the cents of
+       the dearer price dropped before subtracting, and the cheaper price rounded up
+       to the next dollar first. */
+    key, [total, noBorrow, wholeOnly, centsOnly, oneDollarOut, key + 100,
+          Math.floor(hi / 100) * 100 - lo, hi - Math.ceil(lo / 100) * 100],
+    'Step 1: line the decimal points up. Step 2: subtract, exchanging a dollar for 100 cents when the cents will not go: ' +
+    money(hi) + ' − ' + money(lo) + ' = ' + money(key) + '. Adding the two prices tells you what both cost together, which is a different question.');
+}
+
+/* FORMAT 4d - error spotting, the mistake NAMED (pool 3, CORRECT the mistake).
+   Misconception: lining up the last digits instead of the decimal points.
+
+   WOUND 3 (refutation 2026-09-15). The first cut always asked `w + 0.d` - a whole
+   number plus a tenth - which needs a CARRY in 0 of 20,000 draws, while the pool-1
+   addition anchor it sits two levels above needs one in 81.0%. The pool-3 wrapper
+   was making the arithmetic EASIER than the pool-1 item. The dominant draw now
+   adds two numbers that both carry digits after the point, one place apart
+   (3.75 + 4.6), whose fractional parts are forced to add past one whole: the carry
+   rate is the 85% of draws that take that shape. The classic `w + 0.d` shape is
+   kept for the other 15% because it is the purest picture of the slip.
+
+   THE KILL's rule, applied here too: the number the stem declares wrong is no
+   longer offered as an option. A child could delete it on sight - the question
+   has just said it is wrong - so it was one of three distractors doing no work. */
+function gDecAlignError() {
+  const who = pick(NAMES);
+  let a = D(375, 2), b = D(46, 1), guard = 0, ok = false;
+  /* WOUND (refutation v6, this lane's own measurement). This generator used to draw
+     a SECOND shape on 12% of its draws - a whole number plus a tenth, "2 + 0.6" -
+     and that shape asks no arithmetic at all: the answer IS the two printed numbers
+     written side by side, so any relation that reads "the option ending in the digit
+     the stem names" finds the key for nothing. Three passes in a row found a route
+     through it (v4's "whole ones from one stem number, digits after the point from
+     the other" at 83%, v5's 53.6% residual, and, once the coupling gate could see a
+     last digit, "of the two options sharing a whole number take the one ending in a
+     digit the stem names" at 85.46% @ 100.0% inside that shape on 6,000 draws). It
+     cannot be fixed, because every sum with a whole-number addend is a
+     concatenation. The shape is gone; the item keeps the shape that carries a real
+     carry, where the misalignment is the whole lesson. */
+  do {
+    guard++;
+    const A = ri(101, 899), B = ri(11, 89);
+    if (A % 10 === 0 || B % 10 === 0) continue;             /* the last digits must be real digits */
+    /* W5 (refutation v7 @ ed2c0dc): "got the whole ones right and kept the
+       misaligned rest" is the one candidate here whose last digit is A + B's, so
+       when those two last digits summed to ten it printed a trailing zero - an
+       option the key is never on, on 5.30% of draws. */
+    if ((A + B) % 10 === 0) continue;
+    if ((A % 100) + (B % 10) * 10 < 100) continue;          /* the fractions must carry into the ones */
+    a = D(A, 2); b = D(B, 1);
+    const m0 = 2;
+    const t0 = a.n + b.n * 10;
+    const df = Math.abs(a.n - b.n * 10);
+    if (t0 - P10[m0] <= 0 || df <= 0) continue;
+    /* "writes the 9 underneath the 9" reads as a riddle; the two last digits differ */
+    if (a.n % 10 === b.n % 10) continue;
+    /* "got the whole ones right and kept the misaligned rest" may not come out as the
+       printed slip itself, or RULE D5 would offer the declared-wrong number back */
+    if (Math.floor(t0 / P10[m0]) === Math.floor((a.n + b.n) / P10[m0])) continue;
+    /* THE KILL's new candidates (the subtracted-instead slip with the point one
+       column out) join this list, and they have to: at 3.51 + 3.9 the difference is
+       0.39, its point-one-left twin is 3.9 - which is BOTH a printed addend and the
+       same quantity as the declared-wrong 3.90, so RULE D5 fired on 1 draw in
+       ~30,000 the first time the 50,000-sample gate ran. */
+    if (!dallDistinct([D(t0, m0), D(a.n + b.n, m0), D(a.n + b.n, 0), D(t0 + P10[m0], m0),
+                       D(df, m0), D(t0 - P10[m0], m0), D(t0, m0 + 1), D(t0, m0 - 1),
+                       D(df, m0 + 1), D(df, m0 - 1), a, b])) continue;
+    ok = true;
+    break;
+  } while (guard < 400);
+  if (!ok) { a = D(375, 2); b = D(46, 1); }
+  const m = Math.max(a.dp, b.dp);
+  const trueN = a.n * P10[m - a.dp] + b.n * P10[m - b.dp];
+  const key = D(trueN, m);                           /* 3.75 + 4.6 = 8.35 */
+  const claim = D(a.n + b.n, m);                     /* what lining up the LAST DIGITS gives: 4.21 */
+  const lastA = a.n % 10, lastB = b.n % 10;
+  const noPoint = D(a.n + b.n, 0);                   /* ignored the point altogether */
+  const diff = D(Math.abs(a.n * P10[m - a.dp] - b.n * P10[m - b.dp]), m);   /* subtracted instead */
+  const overCarry = D(trueN + P10[m], m);            /* carried where there was nothing to carry */
+  const lostCarry = D(trueN - P10[m], m);            /* wrote the carried ten down and lost it */
+  /* COUPLING GATE (refutation v4 @ 7ec7919, the gate's own finding), kept: "got the
+     whole ones right and kept the rest of the misaligned sum" carries the key's own
+     whole ones with the digits after the point of the wrong answer the stem prints,
+     so the key is never the only option whose whole part reads correctly. It was a
+     must() while the one-sided shape existed and is an ordinary candidate now - the
+     rank picker is free to leave it out, which is what stops "of the two options
+     sharing a whole number, take the one ending in a named digit" from settling. */
+  const patched = D(Math.floor(trueN / P10[m]) * P10[m] + claim.n % P10[m], m);
+  return mcDec(who + ' works out <b>' + dtext(a) + ' + ' + dtext(b) + '</b>. ' + who +
+    ' writes the ' + lastB + ' underneath the ' + lastA + ' and gets <b>' + dtext(claim) +
+    '</b>. <b>What is the correct answer?</b>', '',
+    /* THE KILL (refutation v6): the point one column out of a NAMED WRONG ANSWER
+       as well as of the key, so the twin pair on the row need not be the key's. */
+    key, [noPoint, diff, overCarry, lostCarry, patched, pLeft(key), pRight(key),
+          pLeft(diff), pRight(diff)], '',
+    'Line up the decimal POINTS, not the last digits. Write ' + dtext(a) + ' and ' + dtext(b) +
+    ' one under the other with the points in a column, filling the short one out with a zero: ' +
+    dtext(D(a.n * P10[m - a.dp], m)) + ' + ' + dtext(D(b.n * P10[m - b.dp], m)) + ' = ' + dtext(key) +
+    '. Writing the ' + lastB + ' under the ' + lastA + ' slides ' + dtext(b) +
+    ' one whole column to the right, and that is where ' + dtext(claim) + ' comes from.');
+}
+
+/* FORMAT 4e - TYPED two-step word problem, SG money (pool 3): total, then change.
+   Typed on purpose: it is the one item in this topic that exercises the shared
+   typed-money grader, so tools/answer-parse-test.mjs keeps binding on this file. */
+function gDecMoneyChange() {
+  const who = pick(NAMES);
+  const goods = pick([['a packet of rice', 'a bottle of oil'], ['a carton of milk', 'a box of noodles'],
+                      ['a bag of flour', 'a jar of kaya'], ['a tray of eggs', 'a packet of tea']]);
+  const note = pick([10, 20]);
+  const cap = note * 50 - 100;                 /* each item at most half the note, so the basket is believable */
+  let x = 540, y = 385, guard = 0;
+  do { x = ri(105, cap); y = ri(105, cap); guard++; }
+  while (guard < 300 && !(x % 100 !== 0 && y % 100 !== 0 && (x + y) % 100 !== 0 && (x + y) % 10 !== 0 &&
+         note * 100 - x - y > 0 && (note * 100 - x - y) % 100 !== 0));
+  const total = x + y, change = note * 100 - total;
+  const q = finishTyped('At NTUC ' + who + ' buys ' + goods[0] + ' for <b>' + money(x) + '</b> and ' + goods[1] +
+    ' for <b>' + money(y) + '</b>, and pays with a <b>$' + note + '</b> note. <b>How much change, in dollars?</b>',
+    change / 100,
+    'Step 1: add the two prices with the decimal points in line: ' + money(x) + ' + ' + money(y) + ' = ' + money(total) +
+    '. Step 2: take that away from the note: $' + note + ' − ' + money(total) + ' = ' + money(change) + '.', '$');
+  q.answerText = money(change);
+  q.dp = 2;
+  return q;
+}
+
+/* FORMAT 4f - direct compute in money: the cost of n of one thing (pool 1, muldiv
+   anchor).
+
+   THIS FORMAT HAS NOW BEEN KILLED THREE TIMES AS A "WHICH CALCULATION" CONCEPT
+   CHECK, EACH TIME ON A DIFFERENT PROPERTY OF THE OPTION ROW.
+
+     v2 @ 0157aa1  the key was always the ×, and the three distractor frames were
+                   the key on 0% of draws: "pick the multiplication" answered it on
+                   20,000 / 20,000 draws without a decimal being read.
+     v4 @ 7ec7919  the key was the only option naming two different money amounts
+                   (mode 1) and the only one shaped "a price shared into a count"
+                   (mode 2): the OPERAND SHAPE settled 66.83% of draws.
+     v5 @ 8cf212b  the key was the only option built on the CHEAP price - the two
+                   price lists never overlapped - and in the box mode the only ÷
+                   whose divisor was the count printed three times on the row.
+                   100.00% of draws, 100% right, no stem read and no arithmetic.
+
+   THE FIFTH PASS'S MANDATE was to make every option on the row carry the SAME
+   operand set, so that only the operation could discriminate. That cannot be done
+   on this demand, and the reason is structural rather than a matter of effort:
+
+     over an operand set of {price, count} exactly TWO arrangements can ever be the
+     key - `$p × n` and `$p ÷ n`. Addition and subtraction of a price and a count
+     are not answers to any question, so they are permanently dead frames. With two
+     live keys, "always pick the multiplication" wins P(the key is the ×) - 50% by
+     construction, whatever the row does, twice chance and over the 40% bar. The
+     only way to a third live key is two operands of the SAME KIND (two prices,
+     where +, − and ÷ are all live), and that would make two thirds of a generator
+     tagged `muldiv` an addition-and-subtraction concept check.
+
+   Measured, not just argued: a prototype of the mandated design - one price list,
+   a constant four-arrangement row (`$p × n`, `$p ÷ n`, `n ÷ $p`, `$p + n`) and the
+   demand alone deciding - reads "always pick the ×" at 50.0% and "always pick the
+   ÷" at 50.0% on 20,000 draws. Every other row rule is flat, exactly as intended.
+   The floor is the two-key arithmetic, not the row.
+
+   THE REBUILD is therefore the PM's second instruction, the wave-1 law: ask for the
+   TOTAL AS A NUMBER and carry named misconceptions as the option values. There is
+   then no option row to read at all - four money amounts, each the answer to a
+   named wrong method - and every arm of the harness binds on it the way it binds on
+   the rest of the bank: the magnitude-rank picker spreads the key over all four
+   positions, `q.decAuthored` binds the distractor contract, the coupling gate scores
+   the stem against the options, and the oracle re-derives the key from the rendered
+   price and count. The item still asks the muldiv question it was written for - how
+   many groups of this price - and now a child has to do it. */
+/* [with its article, plural, bare singular] - so every stem below reads as English */
+const BOOKSHOP_ITEMS = [['a pen', 'pens', 'pen'], ['an exercise book', 'exercise books', 'exercise book'],
+  ['a ruler', 'rulers', 'ruler'], ['a glue stick', 'glue sticks', 'glue stick'],
+  ['a pencil', 'pencils', 'pencil'], ['an eraser', 'erasers', 'eraser']];
+function gDecMulConcept() {
+  /* ONE price list (the v5 kill was two lists that never overlapped, so "cheap"
+     was a badge). Every price carries cents, because the cents are the lesson. */
+  let x = 115, n = 7, guard = 0, ok = false, cands = [];
+  let dollars = 1, cents = 15;
+  do {
+    guard++;
+    x = pick([105, 115, 120, 125, 135, 140, 145, 150, 160, 175, 180, 195,
+              210, 220, 240, 250, 265, 280, 295, 310, 325, 350, 375, 420]);
+    n = ri(3, 9);
+    dollars = Math.floor(x / 100); cents = x % 100;
+    /* the cents must CARRY into the dollars, or "forgot to carry" is not a slip and
+       the item is two separate one-digit multiplications */
+    if (n * cents < 100) continue;
+    cands = [
+      { n: (n + 1) * x },                          /* one group too many */
+      { n: n * (dollars + 1) * 100 },              /* rounded the price up to a whole dollar first */
+      { n: n * x + 100 },                          /* carried a dollar that was not there */
+      { n: (n - 1) * x },                          /* one group too few */
+      { n: n * dollars * 100 + cents },            /* multiplied the dollars, copied the cents */
+      { n: dollars * 100 + n * cents },            /* multiplied the cents, copied the dollars */
+      { n: n * dollars * 100 + (n * cents) % 100 } /* never carried the cents into the dollars */
+    ];
+    if (new Set([n * x].concat(cands.map(c => c.n))).size !== 8) continue;
+    if (cands.some(c => c.n <= 0)) continue;
+    ok = true;
+    break;
+  } while (guard < 400);
+  if (!ok) {
+    x = 175; n = 6; dollars = 1; cents = 75;
+    cands = [{ n: 7 * 175 }, { n: 6 * 200 }, { n: 6 * 175 + 100 }, { n: 5 * 175 },
+             { n: 600 + 75 }, { n: 100 + 6 * 75 }, { n: 600 + (6 * 75) % 100 }];
+  }
+  const item = pick(BOOKSHOP_ITEMS), key = n * x;
+  const q = mcMoney('At the school bookshop ' + item[0] + ' costs <b>' + money(x) +
+    '</b>. <b>How much do ' + n + ' ' + item[1] + ' cost altogether?</b>', '',
+    key, cands, '');
+  /* the explanation names a slip that is ON THE ROW (slipFor), never one that is not */
+  const named = [
+    [n * dollars * 100 + (n * cents) % 100, 'Multiplying the cents and forgetting to carry them into the dollars gives '],
+    [n * dollars * 100 + cents, 'Multiplying the dollars and copying the cents across gives '],
+    [dollars * 100 + n * cents, 'Multiplying the cents and copying the dollars across gives '],
+    [n * (dollars + 1) * 100, 'Rounding ' + money(x) + ' up to a whole dollar first gives '],
+    [(n + 1) * x, 'Counting one ' + item[2] + ' too many gives '],
+    [(n - 1) * x, 'Counting one ' + item[2] + ' too few gives '],
+    [n * x + 100, 'Carrying a dollar that was never there gives ']
+  ];
+  const on = slipFor(q, named, money) || named[0];
+  q.explain = n + ' ' + item[1] + ' at ' + money(x) + ' each is ' + n + ' equal groups of ' + money(x) +
+    ', so multiply: ' + n + ' × ' + money(x) + ' = ' + money(key) + '. The cents are multiplied too - ' +
+    n + ' × ' + cents + ' cents is ' + (n * cents) + ' cents, which is ' + money(n * cents) +
+    ', and those whole dollars carry across into the dollars column. ' + on[1] + money(on[0]) + '.';
+  return q;
+}
+
+/* FORMAT 4g - direct compute: a decimal times a 1-digit whole number (pool 2) */
+function gDecMulWhole() {
+  let dp = 1, a = 36, n = 4, guard = 0;
+  do { dp = ri(1, 2); a = ri(P10[dp] + 1, 9 * P10[dp]); n = ri(3, 9); guard++; }
+  while (guard < 300 && !((a * n) % 10 !== 0 && a % 10 !== 0 &&
+         dallDistinct([D(a * n, dp), D(a + n * P10[dp], dp), D(a * n, dp + 1), D(a * n, dp - 1),
+                       D(a * (n - 1), dp), D(a * (n + 1), dp)])));
+  const A = D(a, dp), key = D(a * n, dp);
+  /* WOUND 1 (96.0% "second biggest"): the added slip and the point-one-right slip
+     were both below the key and the point-one-left slip was above it, every draw.
+     One group too few and one group too many bracket it at the same magnitude. */
+  return mcDec('<b>' + dtext(A) + ' × ' + n + ' = ?</b>', '',
+    /* THE KILL (refutation v6): the added-instead slip carries its own point-out
+       pair, so the row's twins are not always the key's. */
+    /* W2 (refutation v7 @ ed2c0dc), and the coupling gate found it the moment its
+       shape key could tell × 5 from × 3: a product by 5 ends in 0 or 5, the draw
+       guard forbids 0, so at × 5 the key ALWAYS ends in 5 - the digit the stem
+       names - and no other option had to. "Carried a whole one too many" and "lost
+       a whole one" are the two slips that leave the last digit alone, so they are
+       the two that share the key's last digit at the key's own depth on every draw,
+       at × 5 and at every other multiplier. They bracket the key as well. */
+    key, [D(a + n * P10[dp], dp), pRight(key), pLeft(key),
+          dnat(D(a * (n - 1), dp)), dnat(D(a * (n + 1), dp)),
+          pRight(D(a + n * P10[dp], dp)), pLeft(D(a + n * P10[dp], dp)),
+          D(a * n + P10[dp], dp), D(a * n - P10[dp], dp)], '',
+    'Multiply as if there were no decimal point: ' + a + ' × ' + n + ' = ' + (a * n) + '. ' + dtext(A) +
+    ' has ' + dp + ' digit' + (dp > 1 ? 's' : '') + ' after the point, so the answer has ' + dp +
+    ' too: ' + dtext(key) + '. Adding instead of multiplying answers a different question.');
+}
+
+/* FORMAT 4h - direct compute: a decimal shared by a 1-digit whole number (pool 2) */
+function gDecDivWhole() {
+  let dp = 1, key = 24, n = 3, guard = 0, wholeOnly = 20, forgotWhole = 2588, droppedWhole = 88;
+  do {
+    guard++;
+    dp = ri(1, 2); key = ri(P10[dp] + 1, 4 * P10[dp]); n = ri(2, 9);
+    /* divided the whole ones and threw the digits after the point away */
+    wholeOnly = Math.floor(Math.floor(key * n / P10[dp]) / n) * P10[dp];
+    /* WOUND 1 (refutation v4 @ 7ec7919). The v3 fix to the written-length route was
+       a "divided the whole ones and copied the digits down" candidate that shipped
+       on every draw. It closed the length route and opened a VALUE route that was
+       worse: the identity floor(floor(x/a)/b) = floor(x/(ab)) made its whole ones
+       the KEY'S OWN, and the digits it copied down were the digits after the point
+       of the number printed in the STEM. So exactly two options shared a whole
+       number part, one of them ended in the stem's own digits, and the other one
+       was the answer - 100.00% settled, 100.00% right, no division done.
+
+       These two are the same slip cut the other way and they borrow nothing the key
+       borrows. "Divided the digits after the point and left the whole ones alone"
+       keeps the STEM's whole ones (never the key's) with the KEY's digits after the
+       point (never the stem's); "shared it out and forgot to write the whole ones"
+       keeps the key's digits with no whole ones at all. Both are real P4 slips,
+       both are written to the key's own number of decimal places so RULE D1 still
+       binds, and neither hands a child a whole-number part to match. */
+    forgotWhole = Math.floor(key * n / P10[dp]) * P10[dp] + key % P10[dp];
+    droppedWhole = key % P10[dp];
+  } while (guard < 300 && !(key % 10 !== 0 && (key * n) % 10 !== 0 && key * n !== n * P10[dp] && wholeOnly > 0 &&
+         droppedWhole > 0 && forgotWhole !== key &&
+         dallDistinct([D(key, dp), D(key, dp + 1), D(key, dp - 1), D(Math.abs(key * n - n * P10[dp]), dp),
+                       D(key * n, dp), D(wholeOnly, dp), D(forgotWhole, dp), D(droppedWhole, dp)])));
+  const total = key * n;
+  const T = D(total, dp), K = D(key, dp);
+  /* WOUND 1 (89.0% "second smallest"): the point-one-right slip was the only
+     candidate below the key. "Divided the whole ones only" is the second one, and
+     "did not divide at all" is a second candidate above it. */
+  return mcDec('<b>' + dtext(T) + ' ÷ ' + n + ' = ?</b>', '',
+    /* THE KILL (refutation v6): the point-out pair of a named wrong answer too. */
+    K, [D(forgotWhole, dp), D(droppedWhole, dp), pRight(K), pLeft(K),
+        D(Math.abs(total - n * P10[dp]), dp), D(total, dp), dnat(D(wholeOnly, dp)),
+        pRight(D(forgotWhole, dp)), pLeft(D(forgotWhole, dp))], '',
+    'Divide as if there were no decimal point: ' + total + ' ÷ ' + n + ' = ' + key + '. ' + dtext(T) +
+    ' has ' + dp + ' digit' + (dp > 1 ? 's' : '') + ' after the point, so the answer keeps the point in the same column: ' +
+    dtext(K) + '. Check it by multiplying back: ' + dtext(K) + ' × ' + n + ' = ' + dtext(T) + '.');
+}
+
+/* ===== MOE P4 3.2 - dividing a WHOLE number by a WHOLE number with the quotient
+   as a decimal. SCOPE (refutation 2026-09-15 section 5): the shipped bank had
+   zero generators for this sub-strand - "3 divided by 4 is 0.75" appeared nowhere
+   in 640,000 draws - and the lane's own scope note did not mention it. Divisors
+   are 2, 4, 5 and 8 - the ONE-DIGIT divisors whose quotients terminate inside the
+   three-place ceiling (halves, quarters, fifths, eighths) - and the draw rejects
+   anything that divides exactly, so the answer is always a decimal and never a
+   repeating one.
+
+   ÷ 10 IS GONE, and it is THE KILL (refutation v7 @ ed2c0dc). Dividing a whole
+   number by 10 moves the point one column and changes no digit, so the quotient's
+   digits ARE the dividend's: "26 ÷ 10 = ?" has the answer written on the question.
+   The key's only digit-family relatives are then the dividend written back
+   unchanged and the two point-moves of the answer itself, and every arrangement of
+   those leaves exactly one option named by a rule a child reads with no division -
+   which is why the mode read 100.00% settled at 100.00% accuracy on 5,141 draws.
+   It was measured out rather than argued away: over every dividend the generator
+   can draw, EXHAUSTIVELY over all ~120 three-of-pool rows, only ONE to THREE rows
+   per dividend survive RULE D1, the v6 twin clause, the v7 odd-one-out clauses and
+   every pair of the coupling gate's 21 relations - and those rows carry no rank
+   freedom at all, so the bank would ship a near-fixed option set. At ÷ 2, ÷ 4,
+   ÷ 5 and ÷ 8 the same search finds clean rows for every dividend but one.
+   The scope cost is declared and it is small: 3.2's demand is the quotient that
+   CARRIES ON past the point, which halves, quarters, fifths and eighths all ask
+   and tenths does not, and "10" was never a one-digit divisor in the first place -
+   the line above it said so and drew it anyway. --------------------- */
+const QUOT_DENS = [2, 4, 5, 8];
+/* a / b as an exact scaled integer: 1/8 is 125 thousandths, and dnat strips the
+   zeros so 3 / 5 prints "0.6" and not "0.600". */
+const quot = (a, b) => dnat(D(a * (1000 / b), 3));
+/* the named slips shared by both 3.2 formats, five of them, at least two on each
+   side of the key (refutation WOUND 1 - every numeric generator authors a bank
+   wide enough for the rank picker to move the answer around). */
+function quotCore(a, b, key) {
+  const floor = Math.floor(a / b), unit = P10[key.dp];
+  return [
+    /* THE KILL (refutation v8 @ f0cbe38). This is the slip the whole sub-strand
+       exists to kill and it USED to ship on every draw, marked must(). Its whole
+       ones are floor(a / b), which IS the key's own whole ones, because a % b is
+       under b and b is at most 8 - so must()-ing it handed the child *"the answer
+       always shares its whole number with something"* on 100.00% of draws, and at
+       v7 only the ÷ 10 mode (where the slip EQUALS the key and is dropped) held
+       the share down to 77.4%. Removing ÷ 10 removed the exception and the bank
+       went twenty points backwards.
+       The must() comes OFF. The slip is still authored and still ships on about
+       half the draws - the whole-part seat above draws which half - and the
+       explanation names it through slipFor() only when it is actually on the row,
+       which is the discipline must() existed to enforce in the first place. It
+       also frees the key's magnitude rank: with a candidate below the key pinned
+       to every row the key could never be the smallest of four, and "smallest"
+       read 0.00% of 40,000 draws. */
+    D(floor * 10 + (a % b), 1),
+    floor > 0 ? D(key.n - floor * unit, key.dp) : null,  /* dropped the whole ones */
+    D(key.n + unit, key.dp),                        /* a whole one that is not there */
+    /* WOUND 6 (refutation v2 @ 0157aa1): at b = 2 "shared ONE whole and stopped"
+       IS the key's own fractional part - quot(1, 2) = 0.5 = key - floor - so
+       dallDistinct rejected EVERY b = 2 draw and the divisor was unreachable on
+       0 / 40,000 draws. Halves, the first instance of the sub-strand a P4 teacher
+       sets, never shipped. The candidate is dropped at b = 2, where it is not a
+       distinct slip at all, and the other five still bracket the key. */
+    (a > 1 && b !== 2) ? quot(1, b) : null,         /* shared ONE whole and stopped */
+    D(a * b, 0),                                    /* multiplied instead of dividing */
+    /* THE KILL (refutation v8 @ f0cbe38), the other half. Every slip above that
+       carries the key's own whole ones sits BELOW the key - the remainder slip is
+       floor.(a % b) and the dropped-whole slip has no whole ones at all - so on a
+       row where the key shared a whole part it was ALWAYS the bigger of the pair,
+       and "of the two starting with the same whole number, take the bigger" was
+       free. These two are the off-by-one on the dividend ("shared 23 kg, not 22"),
+       the same counting slip gDecTrack has shipped as ± one lap since v1, and one
+       of them lands ABOVE the key with the key's own whole ones whenever the
+       fractional part has room - which is what gives the whole-part seat a
+       key-is-the-SMALLER selection to reach. */
+    a + 1 <= 6 * b ? quot(a + 1, b) : null,         /* shared one whole too many */
+    a - 1 >= 1 ? quot(a - 1, b) : null,             /* shared one whole too few */
+    pRight(key), pLeft(key)                         /* the point one column out, each way */
+  ];
+}
+/* THE KILL (refutation v7 @ ed2c0dc). Every named slip above carries its OWN
+   point-one-column-out pair, the way gDecAddSub, gDecTrack, gDecMulWhole,
+   gDecDivWhole, gFracToDec and gDecShareMass have carried one since v6 - a child who
+   slides the point one column has no reason to have divided correctly first. It is
+   what lets the picker put a digit family on the row that is NOT the key's (so "the
+   option whose digits appear on no other option" cannot name the key) and what gives
+   the whole/fraction mirror in mcDec a clean selection to reach on every draw: at
+   b = 2 the v7 bank had none at all, and the key was the unique intersection of the
+   remainder slip's whole ones and the dropped-whole slip's digits after the point on
+   92.66% of that mode.
+   A point move must never print a trailing zero on the option it makes ("26.0" for
+   260 tenths), which is the badge W5 takes off four other banks in this same pass,
+   so the pair is filtered rather than trusted. The GUARD still runs on the core
+   list only: these are variations on candidates it has already checked, and
+   requiring thirteen quantities to be pairwise distinct rejects most of the draws
+   the sub-strand exists to teach. */
+const noTrailZero = d => (d && d.n > 0 && !(d.dp > 0 && d.n % 10 === 0) ? d : null);
+function quotCands(a, b, key) {
+  const core = quotCore(a, b, key), out = core.slice();
+  for (const c of core) {
+    if (!c) continue;
+    out.push(noTrailZero(pLeft(c)), noTrailZero(pRight(c)));
+  }
+  return out;
+}
+function gDecQuotient() {
+  let a = 3, b = 4, guard = 0;
+  do { b = pick(QUOT_DENS); a = ri(2, 6 * b - 1); guard++; }   /* 1 divided by b explains itself */
+  while (guard < 300 && !(a % b !== 0 &&
+         dallDistinct([quot(a, b)].concat(quotCore(a, b, quot(a, b)).filter(Boolean)))));
+  const key = quot(a, b);
+  const remAfterPoint = D(Math.floor(a / b) * 10 + (a % b), 1);   /* wrote the remainder after the point */
+  const q = mcDec('<b>' + a + ' ÷ ' + b + ' = ?</b>', '',
+    key, quotCands(a, b, key), '',
+    b + ' does not go into ' + a + ' a whole number of times, so the answer carries on after the decimal point. ' +
+    'One whole shared into ' + b + ' is ' + dtext(quot(1, b)) + ', so ' + many(a, 'whole', 'wholes') +
+    ' shared into ' + b + ' is ' +
+    a + ' × ' + dtext(quot(1, b)) + ' = ' + dtext(key) + '. Check it by multiplying back: ' + dtext(key) + ' × ' + b +
+    ' = ' + a + '.');
+  return withQuotSlip(q, a, b, key, remAfterPoint);
+}
+/* the diagnosis sentence, now that the remainder slip is no longer must()-ed onto
+   every row: name the slip the row actually carries, or say the rule with no
+   number at all. Numbers in an explanation must be numbers the child can see. */
+function withQuotSlip(q, a, b, key, remAfterPoint, unit) {
+  const u = unit ? (' ' + unit) : '';
+  const moved = v => (v ? [v, 'The point does not slide: ' + a + ' ÷ ' + b + ' is not ' + dtext(v) + '.'] : [null, '']);
+  const slip = slipFor(q, [
+    [remAfterPoint, 'The remainder is not written after the point: ' + a + ' ÷ ' + b +
+      ' is not ' + dtext(remAfterPoint) + '.'],
+    moved(pLeft(key)), moved(pRight(key))
+  ], v => dtext(v) + u);
+  q.explain += ' ' + (slip ? slip[1] : 'A remainder is never written after the decimal point.');
+  return q;
+}
+
+/* the same sub-strand as a measures word problem (pool 2) */
+function gDecQuotientWord() {
+  const who = pick(NAMES);
+  let a = 3, b = 4, guard = 0;
+  do { b = pick(QUOT_DENS); a = ri(b + 1, 6 * b - 1); guard++; }
+  while (guard < 300 && !(a % b !== 0 &&
+         dallDistinct([quot(a, b)].concat(quotCore(a, b, quot(a, b)).filter(Boolean)))));
+  const key = quot(a, b);
+  const goods = pick([['flour', 'bags'], ['rice', 'packets'], ['sugar', 'tins'], ['dried shrimp', 'tubs']]);
+  const q = mcDec('At the provision shop ' + who + ' splits <b>' + a + ' kg</b> of ' + goods[0] +
+    ' equally into <b>' + b + '</b> ' + goods[1] + '. <b>How much ' + goods[0] + ' is in each ' +
+    goods[1].replace(/e?s$/, '') + '?</b>', '',
+    key, quotCands(a, b, key), 'kg',
+    'Share the ' + a + ' kg into ' + b + ' equal ' + goods[1] + ': one kilogram shared into ' + b + ' is ' +
+    dtext(quot(1, b)) + ' kg, so ' + many(a, 'kilogram', 'kilograms') + ' shared into ' + b + ' is ' + a + ' × ' + dtext(quot(1, b)) +
+    ' = ' + dtext(key) + ' kg. Check it by multiplying back: ' + dtext(key) + ' × ' + b + ' = ' + a + '.');
+  return withQuotSlip(q, a, b, key, D(Math.floor(a / b) * 10 + (a % b), 1), 'kg');
+}
+
+/* FORMAT 4i - word problem, SG running track (pool 2, measures) */
+function gDecTrack() {
+  const who = pick(NAMES);
+  let lap = 4, laps = 6, guard = 0;
+  do { lap = ri(2, 9); laps = ri(4, 9); guard++; }
+  while (guard < 200 && !(lap !== laps && (lap * laps) % 10 !== 0 &&
+         (lap * (laps - 1)) % 10 !== 0 && (lap * (laps + 1)) % 10 !== 0 &&   /* no "3.0 km" option */
+         dallDistinct([D(lap * laps, 1), D(lap + laps * 10, 1), D(lap * laps, 2), D(lap * laps, 0),
+                       D(lap * (laps - 1), 1), D(lap * (laps + 1), 1)])));
+  const L = D(lap, 1), key = D(lap * laps, 1);
+  const where = pick(['the stadium', 'the school field', 'the sports hall', 'the park connector loop']);
+  /* WOUND 1: the two named slips were exactly key / 10 and key x 10 and the third
+     sat above both, so the key was the SECOND SMALLEST on 2,000 of 2,000 draws.
+     The two off-by-one-lap slips are the counting mistake this item is really
+     about, and they bracket the key at comparable magnitude on every draw. */
+  return mcDec('One lap of the running track at ' + where + ' is <b>' + dtext(L) + ' km</b>. ' + who +
+    ' runs <b>' + laps + '</b> laps. <b>How far does ' + who + ' run altogether?</b>', '',
+    /* THE KILL (refutation v6): pLeft / pRight of BOTH off-by-one-lap slips too, so
+       a distractor pair can be the row's twins instead of the key and its own. Both
+       directions of both slips, because with only the short lap's pair the draws on
+       which the key ships no twin had two named candidates below it and four above,
+       and "always pick the smallest" went to 45.3% - the rank ceiling exactly. */
+    /* W2's second instance (refutation v7 @ ed2c0dc), found by the coupling gate as
+       soon as its shape key could tell 5 laps from 6: lap x 5 ends in 0 or 5, the
+       guard above forbids 0, so at 5 laps the key ALWAYS ends in 5 - the digit the
+       stem names - and nothing else on the row had to. "Carried a whole kilometre
+       too many" and "lost one" are the two slips that leave the last digit alone,
+       so they carry the key's last digit at the key's own depth on every draw. */
+    key, [D(lap + laps * 10, 1), pRight(key), pLeft(key),
+          D(lap * (laps - 1), 1), D(lap * (laps + 1), 1),
+          pRight(D(lap * (laps - 1), 1)), pLeft(D(lap * (laps - 1), 1)),
+          pRight(D(lap * (laps + 1), 1)), pLeft(D(lap * (laps + 1), 1)),
+          D(lap * laps + 10, 1), D(lap * laps - 10, 1)], 'km',
+    laps + ' laps of ' + dtext(L) + ' km means ' + laps + ' equal groups, so multiply: ' + lap + ' × ' + laps +
+    ' = ' + (lap * laps) + ' tenths of a kilometre, which is ' + dtext(key) + ' km. Adding the lap length to the number of laps answers nothing.');
+}
+
+/* FORMAT 4j - two-step word problem, SG petrol kiosk (pool 3): multiply, then
+   take away from the note. */
+function gDecPetrol() {
+  const who = pick(NAMES);
+  let rate = 275, litres = 5, note = 20, guard = 0, ok = false;
+  let key = 625, stopped = 1375, ratePaid = 1725, noBorrow = 1635;
+  let oneLitreOut = 350, oneDollarOut = 525, centsOnly = 25;
+  do {
+    guard++;
+    /* Singapore pump prices in 2026 run about $2.60-$3.30 a litre; the first cut
+       drew $1.65-$2.85, which is 2016 and reads wrong to a Singapore parent
+       (refutation 2026-09-15, section 6). */
+    rate = ri(255, 330); litres = ri(4, 9); note = pick([20, 50]);
+    if (rate % 100 === 0) continue;                           /* "$2.00" teaches no decimals */
+    const cost = rate * litres;
+    if (cost >= note * 100 || cost % 100 === 0) continue;
+    key = note * 100 - cost;
+    stopped = cost;                                     /* stopped after step 1 */
+    ratePaid = note * 100 - rate;                       /* took away one litre's price, not the whole cost */
+    noBorrow = digitwiseDiff(note * 100, cost, 2);      /* smaller digit from larger in every column */
+    /* WOUND 1: all three of those sit ABOVE the change on nearly every draw, so the
+       key was the smallest or the third biggest and nothing else. These three are
+       named slips that land below it. */
+    oneLitreOut = key - rate;                           /* paid for one litre too many */
+    oneDollarOut = key - 100;                           /* a dollar lost in the exchange */
+    centsOnly = key % 100;                              /* counted the cents and stopped */
+    if (key <= 0 || key % 100 === 0) continue;
+    if (oneLitreOut <= 0 || oneDollarOut <= 0 || centsOnly <= 0) continue;
+    if (new Set([key, stopped, ratePaid, noBorrow, oneLitreOut, oneDollarOut, centsOnly]).size !== 7) continue;
+    if (noBorrow <= 0) continue;
+    ok = true;
+    break;
+  } while (guard < 400);
+  if (!ok) { rate = 275; litres = 5; note = 20; key = 625; stopped = 1375; ratePaid = 1725; noBorrow = 1635;
+             oneLitreOut = 350; oneDollarOut = 525; centsOnly = 25; }
+  return mcMoney('At the petrol kiosk ' + who + ' pumps <b>' + litres + ' litres</b> of petrol at <b>' +
+    money(rate) + ' per litre</b> and pays with a <b>$' + note + '</b> note. <b>How much change is there?</b>', '',
+    /* THE KILL (refutation v8 @ f0cbe38, W4): with a $50 note the cost is SMALLER
+       than the change, so "stopped after step 1" flips to the wrong side of the key
+       and only one named candidate was left above it - the key was the smallest of
+       four on 7.8% of 2,000 draws against a 12% floor. Adding instead of
+       subtracting, and paying for one litre too few, both land above it whichever
+       note the draw takes. */
+    /* and the mirror of "a dollar lost in the exchange": every named slip that
+       carries the change's own CENTS sat BELOW it (the dollar lost, the cents
+       counted alone), so "of the options with the same cents, take the biggest"
+       read 92.95% of draws at 57.46%, E 55.18%. A dollar too MANY in the exchange
+       is the same slip the other way and lands above. */
+    key, [stopped, ratePaid, noBorrow, oneLitreOut, oneDollarOut, centsOnly,
+          note * 100 + stopped, key + rate, key + 100],
+    'Step 1: ' + litres + ' litres at ' + money(rate) + ' each costs ' + money(rate) + ' × ' + litres + ' = ' +
+    money(rate * litres) + '. Step 2: $' + note + ' − ' + money(rate * litres) + ' = ' + money(key) +
+    '. Stopping after step 1 gives the cost of the petrol, not the change.');
+}
+
+/* FORMAT 4k - two-step word problem, SG wet market (pool 3): share, then take
+   some of the shares. The stop-after-dividing answer is offered. */
+function gDecShareMass() {
+  const who = pick(NAMES);
+  let total = 54, trays = 3, want = 2, per = 18, guard = 0;
+  do {
+    guard++;
+    trays = ri(3, 6); want = ri(2, trays - 1);
+    per = ri(11, 39);
+    total = per * trays;
+  } while (guard < 300 && !(total % 10 !== 0 && (per * want) % 10 !== 0 && (per + want) % 10 !== 0 &&
+           per % 10 !== 0 &&                                    /* no "2.0 kg" option */
+           /* W5 (refutation v7 @ ed2c0dc): the guard above covered `per` and missed
+              the two options built from it. "23.0 kg" shipped on 22.73% of draws and
+              the key was never it - a free one-of-four elimination wearing a
+              distractor's badge, which is the same thing the v4 work took off
+              gDecAddSub's key. `total - per` and `total x want` are where it came
+              from, so they are guarded here alongside `per`. */
+           (total - per) % 10 !== 0 && (total * want) % 10 !== 0 &&
+           dallDistinct([D(per * want, 1), D(per, 1), D(total * want, 1), D(total - per, 1),
+                         D(per * want, 2), D(per * want, 0), D(per + want, 1)])));
+  const key = per * want;
+  const goods = pick([['prawns', 'trays'], ['fishballs', 'packets'], ['chicken wings', 'boxes'], ['kang kong', 'bundles']]);
+  /* WOUND 1 (100% "second smallest"): per < key < total - per < total x want on every
+     draw. THE KILL (refutation v8 @ f0cbe38, W4): the stop-after-dividing answer
+     used to be must()-ed onto every row, and a fixture BELOW the key is exactly why
+     the key could never be the smallest of four - "smallest" read 0.00% of 40,000
+     draws, a free one-of-four elimination, and the magnitude-rank gate had a ceiling
+     but no floor so it printed `ok`. The fixture comes off: the slip still rides on
+     most draws, the oracle still refuses a row that carries it twice, and the
+     explanation's step 1 computes it either way. The ± one-tray slips are added in
+     the same sitting, so the bank has named candidates ABOVE the key as well and
+     the picker can put the answer at every rank. */
+  return mcDec('A stall at the wet market packs <b>' + dtext(D(total, 1)) + ' kg</b> of ' + goods[0] +
+    ' equally into <b>' + trays + '</b> ' + goods[1] + '. <b>How much do ' + want + ' of the ' + goods[1] +
+    ' hold altogether?</b>', '',
+    /* THE KILL (refutation v6): "took one tray off the total" carries its own
+       point-out pair, so the row's twins are not always the key's. */
+    D(key, 1), [D(per, 1), D(total * want, 1), D(total - per, 1),
+                D(per * want, 2), D(per * want, 0), D(per + want, 1),
+                D(total - per, 2), D(total - per, 0),
+                D(per * (want + 1), 1), want > 1 ? D(per * (want - 1), 1) : null,
+                D(per * (want + 1), 2), D(per * (want + 1), 0)], 'kg',
+    'Step 1: share the ' + dtext(D(total, 1)) + ' kg into ' + trays + ' equal ' + goods[1] + ': ' + total +
+    ' ÷ ' + trays + ' = ' + per + ' tenths, so one ' + goods[1].replace(/e?s$/, '') + ' holds ' + dtext(D(per, 1)) +
+    ' kg. Step 2: ' + want + ' of them hold ' + dtext(D(per, 1)) + ' × ' + want + ' = ' + dtext(D(key, 1)) +
+    ' kg. Stopping after the sharing gives one ' + goods[1].replace(/e?s$/, '') + ' only.');
+}
 
 
 
   MQI.registerTopic({
-    id:'decimals', level:'P4', strand:'Number and Algebra',
-    moeSubTopic:'Decimals: notation, representations and place values (tenths, hundredths, thousandths); comparing and ordering decimals; rounding decimals; expressing fractions as decimals; adding and subtracting decimals',
-    label:'Decimal Bay', short:'Decimals', e:'\u{1F30A}',
-    skills:{
-      place:   {label:'Place value of decimals', tip:'Name each place after the point: tenths, then hundredths, then thousandths.'},
-      compare: {label:'Comparing & ordering decimals', tip:'Line up the decimal points and compare one place at a time from the left.'},
-      round:   {label:'Rounding decimals', tip:'Look only at the digit just after the place you are rounding to.'},
-      convert: {label:'Decimals & fractions', tip:'Tenths go over 10 and hundredths go over 100.'},
-      addsub:  {label:'Adding & subtracting decimals', tip:'Stack so the decimal points line up.'}
+    id: 'decimals', level: 'P4', strand: 'Number and Algebra',
+    /* The three qualifiers the first cut dropped are back, VERBATIM from the MOE
+       Oct 2025 P4 sub-strand list as audited in the vault's Expansion Brief
+       (refutation 2026-09-15, section 6): "when the denominator is a factor of 10
+       or 100" on 1.4, "(up to 2 dp)" on 2.1 and again on 3.1. The generators were
+       always inside all three - this was a string that over-claimed, not a scope
+       leak - and 3.2 joins the list now that gDecQuotient and gDecQuotientWord
+       exist to cover it. */
+    moeSubTopic: 'Decimals: notation, representations and place values (tenths, hundredths, thousandths); ' +
+      'comparing and ordering decimals; expressing decimals as fractions; ' +
+      'expressing fractions as decimals when the denominator is a factor of 10 or 100; ' +
+      'rounding decimals to the nearest whole number, 1 decimal place and 2 decimal places; ' +
+      'adding and subtracting decimals (up to 2 dp); ' +
+      'multiplying and dividing decimals (up to 2 dp) by a 1-digit whole number; ' +
+      'dividing a whole number by a whole number with quotient as a decimal',
+    label: 'Decimal Bay', short: 'Decimals', e: '\u{1F30A}',
+    skills: {
+      place:   { label: 'Place value of decimals',      tip: 'Name each place after the point out loud: tenths, hundredths, thousandths. An empty place still needs a zero to hold it open.' },
+      compare: { label: 'Comparing & ordering decimals', tip: 'Write them one under the other with the points in line and fill the short ones with zeros. More digits does not mean bigger.' },
+      round:   { label: 'Rounding decimals',            tip: 'Look at ONE digit only - the very next one after the place you are rounding to. 5 or more up, 4 or less down.' },
+      convert: { label: 'Decimals & fractions',         tip: 'Tenths go over 10, hundredths over 100, thousandths over 1000. A dollar is 100 cents, so money is hundredths.' },
+      addsub:  { label: 'Adding & subtracting decimals', tip: 'Stack them so the decimal points line up, not so the last digits line up.' },
+      muldiv:  { label: 'Multiplying & dividing decimals', tip: 'Work it out as whole numbers first, then put the point back in the answer.' }
     },
-    pools:{
-      1:[[gDecPV1,'place'],[gDecCmp1,'compare'],[gDecAdd1,'addsub']],
-      2:[[gDecPV2,'place'],[gDecCmp2,'compare'],[gDecRoundWhole,'round'],[gFracToDec10,'convert'],[gDecAdd2,'addsub'],[gDecSub1,'addsub']],
-      3:[[gDecPV3,'place'],[gDecRound1,'round'],[gFracToDec100,'convert'],[gDecSub2,'addsub'],[gDecCmp2,'compare']]
+    /* Every generator appears in EXACTLY ONE pool, so no stem the child meets at
+       level 1 can come back as a level-3 item, and the feed's same-template rate
+       has nothing to repeat across a level change. Pool 3's single-step slot is
+       gDecExpand, declared as the anchor (depth-pilot contract change 2). */
+    pools: {
+      /* FOR THE INTEGRATOR - WOUND 2 (refutation v3 @ c9d26fb), measured and NOT
+         closed here, deliberately. At 45% accuracy pool 1 is 79.0% of a session,
+         and three of the six skills own exactly ONE pool-1 generator each -
+         `compare` -> gDecCompare, `round` -> gDecBetween, `addsub` -> gDecAddSub -
+         so buildCarousel's skill round-robin hands each of them a full sixth of the
+         pool: 3.86 / 3.72 / 3.90 items per 30-item session, worst session 6 each,
+         38.3% of a struggling child's whole session on three stems. That is WOUND 4
+         (gDecCmpError, 2.66 a session) one pool down, in the pool the child who
+         needs the anchors actually lives in.
+         The fix is a fourth pool-1 voice on one of those three skills, and it is
+         held back because every cheap candidate reaches into another pool: a second
+         rounding item is gDecRound's demand (pool 2), a second comparison is
+         gDecCompare/gDecCmpMixed's declared shape pair, and a second addition is
+         gDecAddSub's own demand in money clothes. It travels with the gDecBetween
+         retag (tagged `round`, asks no rounding - v1 section 6), which is a pool
+         decision the lane has now deferred three times and should stop deferring
+         now that the 45% number exists.
+
+         v7 UPDATE, measured through the real createFeed, 500 x 30 at 45%: the
+         retag below has been done and the three-stem concentration is 4.58 + 2.41
+         + 2.40 = 31.7% of a session (v6: 3.91 + 3.84 + 3.66 = 38.0%). It cost
+         what a retag with no new generator must cost - pool 1's skill round-robin
+         now cycles FIVE skills, so every remaining pool-1 bank gains about a
+         sixth: gDecAddSub goes from 3.91 to 4.58 a session (worst session 7), and
+         residual 4's stem-numeral pair, gDecDigitValue + gDecNamePlace on the same
+         W.DDD numeral, goes from 4.10 to 4.79 (16.0% of a 30-item session). Both
+         numbers are DECLARED, not fixed: the fourth pool-1 voice is still the fix
+         and it is still a pool decision this lane does not own. At 80% accuracy
+         nothing moves (top three 14.6% either way; pools 19.2 / 22.9 / 57.9%).
+
+         v8 UPDATE - THE POOL DECISION, TAKEN. The seventh pass measured the other
+         side of the v7 retag and ruled it as a P4 teacher: at 45% accuracy the six
+         skills ran muldiv 5.90 / compare 5.83 / place 5.80 / convert 5.76 /
+         addsub 5.61 and `round` 1.11 - five skills at about 5.8 items in a 30-item
+         session and one at 1.1, and every one of those 1.1 a POOL-2 item, i.e.
+         above the level the struggling child is actually sitting at. MOE 1.5 is one
+         of the six declared skills of this topic and it had stopped being taught to
+         the child the anchors exist for.
+         `gDecRound` MOVES to pool 1. It is the definitional MOE 1.5 item - "Round
+         4.211 to 2 decimal places" - it carries the skill's own tip, and its demand
+         sits alongside gDecQuotient ("2 ÷ 8 = ?") and gDecAddSub, which are already
+         pool-1 anchors. Pool 1 now cycles SIX skills instead of five, so it costs
+         every other pool-1 bank a sixth of its share - the same arithmetic that
+         took gDecAddSub UP to 4.58 when the retag removed a skill, running
+         backwards: gDecAddSub comes back DOWN, and residual 4's stem-numeral pair
+         with it. The seventh pass's preferred shape - a `to = 0`-only pool-1
+         sibling with gDecRound left in pool 2 - was rejected because it would put
+         the same stem shape in two pools and break this file's
+         one-generator-one-pool invariant (the line above), for the same skill
+         coverage. `round` keeps three pool-3 voices, which is where a child at 80%
+         accuracy spends 58% of a session. Measured in tools/feed-sim.mjs's
+         per-skill table, which prints at 45% as well as at 80%. */
+      /* WOUND 3 (refutation v6 @ 5a5fb3b), and the wave-2 retag deferred by six
+         passes: gDecBetween is tagged `round` and asks no rounding. "Between which
+         two whole numbers does 4.9 lie?" is answered by reading the whole-number
+         part - which the refuter's residual 9 rules IS the item's whole content,
+         and which is accepted - but the content it teaches is LOCATING a decimal
+         between two whole numbers, which is comparing and ordering (MOE 1.3), not
+         rounding (MOE 1.5). It is tagged for what it tests now. The consequence is
+         declared and not hidden: `round` has NO pool-1 voice, so a child at 45%
+         accuracy meets the rounding anchor only when the carousel reaches pool 2 -
+         which is the honest state of this bank and is visible, where a mistagged
+         item was not. `compare` now carries three pool-1 voices and its share is
+         split three ways instead of two, which is also what takes gDecCompare down
+         from 3.89 items a session. */
+      1: [[gDecDigitValue, 'place'], [gDecNamePlace, 'place'], [gDecCompare, 'compare'],
+          [gDecBetween, 'compare'], [gFracToDec, 'convert'], [gDecBar, 'convert'],
+          [gDecAddSub, 'addsub'], [gDecMulConcept, 'muldiv'], [gDecQuotient, 'muldiv'],
+          [gDecRound, 'round']],
+      2: [[gDecBuild, 'place'], [gDecHowMany, 'place'], [gDecCmpMixed, 'compare'], [gDecOrder, 'compare'],
+          [gDecToFrac, 'convert'], [gFracEquivDec, 'convert'],
+          [gDecStartAmount, 'addsub'], [gDecMoneyMore, 'addsub'],
+          [gDecMulWhole, 'muldiv'], [gDecDivWhole, 'muldiv'], [gDecTrack, 'muldiv'],
+          /* THE PM's RULING ON ÷ 10 (refutation v8 @ f0cbe38, section 5.2), and the
+             answer is NO - with the measurement, not with an argument.
+             The ruling was that "26 ÷ 10" is P4 syllabus and, since the eighth pass
+             took the divisor out of gDecQuotient and js/topics/p5-decimals.js refuses
+             a whole dividend in its own source comment, it now lives in no topic in
+             this app. A dedicated bank was built for it here (gDecTenShift): the
+             place-value shift family of the question's own number, with two
+             DIGIT-ALTERED shift families riding so that the key's depth-mate and its
+             magnitude-mates are not always made of its own digits, both directions
+             drawn, measured on its own shape key with cplFrame now carrying the
+             OPERATOR so ÷ 10 and × 10 cannot hide in each other's average. It passed
+             shape, integrity, its own oracle, RULE D1, the magnitude-rank ceiling AND
+             the new 12% floor, the prose gate and the named-distractor contract.
+             It FAILS the stem-option coupling gate inside the ÷ 10 shape, and the
+             failure is structural rather than a row that was not found:
+
+               both directions  "NOT repeats a number printed in the stem" AND "its
+                                digit multiset is a stem number's"  67.68% at 100.0%
+               ÷ 10 alone       "NOT its whole-number part is a stem number's" AND
+                                "its digit multiset is a stem number's"  67.70% at 99.1%
+               × 10 alone       clean on every arm in this harness
+
+             The cause is the arithmetic. Dividing by ten changes no digit, so the key
+             IS the question's numeral with the point moved, and the shifts of those
+             digits that carry no extra zero are exactly three - 284, 28.4, 2.84 -
+             with the key the MIDDLE one on every draw, for ever. The unshifted number
+             repeats the stem numeral and is thrown out of the pair, which leaves the
+             key alone in it unless 2.84 also ships; and when 2.84 does ship, "of the
+             options made of the question's own digits, take the second biggest" reads
+             the row instead. RULE D1 needs the third slot for a depth-mate, so no row
+             closes both. That is the seventh pass's finding and the eighth-pass
+             refuter's exhaustive search arriving at the same wall from a third side.
+             So it is NOT SHIPPED and the scope gap is DECLARED instead: as of this
+             commit `26 ÷ 10 = 2.6` is in no topic in this app. Shipping the × 10 half
+             alone was measured too and rejected - it passes every arm, but "26 × 10 =
+             260" prints no decimal anywhere and belongs in whole numbers, not in
+             Decimal Bay. What is left is a PM question this lane may not answer by
+             shipping: whether "the second biggest of the question's own digits" is a
+             TELL at all on an item whose entire content is that shift. */
+          [gDecQuotientWord, 'muldiv']],
+      /* WOUND 4: `compare` owned exactly one pool-3 slot, and buildCarousel
+         round-robins skills, so that whole sixth of the pool landed on
+         gDecCmpError - 2.66 items a session. gDecOrderError is the second voice. */
+      3: [[gDecExpand, 'place'], [gDecPlaceError, 'place'],
+          [gDecCmpError, 'compare'], [gDecOrderError, 'compare'],
+          [gDecRoundBack, 'round'], [gDecRoundError, 'round'], [gDecRoundSum, 'round'],
+          [gDecFracError, 'convert'], [gDecMoneyFrac, 'convert'],
+          [gDecAlignError, 'addsub'], [gDecMoneyChange, 'addsub'],
+          [gDecPetrol, 'muldiv'], [gDecShareMass, 'muldiv']]
     }
   });
 })();
@@ -5329,6 +14264,22 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
      L is a thin unbuildable sliver. Applied to every corner cut in this file. */
   const capCut = n => Math.max(2, Math.min(n - 3, Math.floor(2 * n / 3)));
 
+  /* ---- WOUND 2 (v4 refutation, 2026-09-15): "A 18 cm by 14 cm tile" -----------
+     The article in front of a NUMBER follows the number's SPOKEN form, not its
+     first digit: an 8, an 11, an 18, an 80, but a 1, a 9, a 100. Three stems in
+     this file open on a drawn dimension and printed the wrong article whenever
+     that dimension was 8, 11 or 18 - measured at gLPerimDiff 27.0%, gLSkirting
+     26.5%, gLCornerInverse 19.2% of 1,000 draws. Every dimension this bank prints
+     is at most two digits, so 8 / 11 / 18 / 80-89 is the whole rule; the 800-899
+     arm is there so the helper stays correct if the ranges ever grow.
+     tools/gen-sanity.mjs gates the three pilot files against both mistakes. */
+  function anNum(n){
+    const s = String(n);
+    return /^(8|11|18)$/.test(s) || /^8\d$/.test(s) || /^8\d\d$/.test(s);
+  }
+  const artLc = n => (anNum(n) ? 'an ' : 'a ');
+  const artUc = n => (anNum(n) ? 'An ' : 'A ');
+
   /* ---- rectangles and squares: find the missing dimension (1.1, 1.2) ---- */
 
   const RECT_CTX = [
@@ -5556,15 +14507,54 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
       ' + ' + H + ') = ' + (2 * (W + H)) + ' cm. Cutting a rectangular corner changes the area, not the perimeter.');
   }
 
-  /* pool 2: concept check on what the cut does */
+  /* pool 2: concept check on what the cut does.
+
+     SWEEP FRACTIONS REFUTATION 2026-09-15, inherited debt (v6). The old option set
+     keyed "It stays the same." (19 characters) against "It gets smaller." /
+     "It gets bigger." / "It is halved." (16 / 15 / 13), so the key was the unique
+     LONGEST option in 100% of draws and the whole item could be settled with a
+     ruler - the same class as the pilot's own gLPerimDiff kill. The fractions lane
+     found it with its RULE 6 and exempted it by name; this is the fix.
+
+     Three things hold now. (1) ONE GRAMMATICAL FRAME per set: every option in a set
+     is the same kind of sentence about the same subject, so nothing is singled out
+     by form or by opening. (2) BALANCED LENGTH: within a set the four options sit
+     within two characters of each other, and both the longest and the shortest
+     length are SHARED by at least two options, so the key is never the unique
+     longest or the unique shortest. (3) THE FRAME ROTATES: three frames, so the
+     option SET moves between draws instead of being the one fixed quartet a child
+     meets every time. The concept and the three named misconceptions - shorter by
+     the cut, longer by the cut, depends on the size of the cut - are unchanged. */
+  const L_CONCEPT_FRAMES = [
+    { ask: '<b>What happens to the perimeter?</b>',
+      same: 'It stays exactly the same as before.',     /* 36 */
+      shorter: 'It gets shorter by the two cut sides.', /* 37 */
+      longer: 'It gets longer by the two cut sides.',   /* 36 */
+      depends: 'It depends on the size of the corner.', /* 37 */
+      noun: 'perimeter' },
+    { ask: '<b>Which sentence is true of the L-shape?</b>',
+      same: 'The perimeter stays the same as before.',  /* 39 */
+      shorter: 'The perimeter gets shorter than before.', /* 39 */
+      longer: 'The perimeter gets longer than before.', /* 38 */
+      depends: 'The perimeter depends on the cut size.', /* 38 */
+      noun: 'perimeter' },
+    { ask: '<b>What happens to the distance around the outside?</b>',
+      same: 'The distance around it is the same as before.',    /* 45 */
+      shorter: 'The distance around it is shorter by the cut.', /* 45 */
+      longer: 'The distance around it is longer than before.',  /* 45 */
+      depends: 'The distance around it depends on the corner.', /* 45 */
+      noun: 'distance around the outside' }
+  ];
   function gLConcept() {
+    const f = pick(L_CONCEPT_FRAMES);
     return mcText(
       'A rectangular corner is cut out of a rectangle to make an L-shape with right angles at every corner. ' +
-      '<b>What happens to the perimeter?</b>', '',
-      'It stays the same.',
-      ['It gets smaller.', 'It gets bigger.', 'It is halved.'],
+      f.ask, '',
+      f.same,
+      [f.shorter, f.longer, f.depends],
       'The two new sides at the notch are exactly as long as the two pieces removed from the old sides, ' +
-      'so the total walk around is unchanged. The AREA does get smaller: that is the measurement the cut takes away.');
+      'so the ' + f.noun + ' is unchanged however big the cut is. The AREA does get smaller: ' +
+      'that is the measurement the cut takes away.');
   }
 
   /* pool 3: inverse - the area is given, find the missing corner dimension */
@@ -5579,7 +14569,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     if (!ok) { W = 12; H = 9; a = 4; b = 3; }
     const area = W * H - a * b;
     return mcNum(
-      'An L-shape is made from a ' + W + ' cm by ' + H + ' cm rectangle with a rectangular corner cut out. ' +
+      'An L-shape is made from ' + artLc(W) + W + ' cm by ' + H + ' cm rectangle with a rectangular corner cut out. ' +
       'The corner cut out is ' + a + ' cm wide. The area of the L-shape is ' + area +
       ' cm². <b>How tall is the corner that was cut out?</b>', '',
       b, [a, W * H - area, area - a], CM,
@@ -5601,7 +14591,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     if (!ok) { W = 10; H = 8; rate = 5; a = 3; b = 2; }
     const per = 2 * (W + H);
     return mcNum(
-      'An L-shaped kitchen floor is a ' + W + ' m by ' + H + ' m rectangle with a ' + a + ' m by ' + b +
+      'An L-shaped kitchen floor is ' + artLc(W) + W + ' m by ' + H + ' m rectangle with ' + artLc(a) + a + ' m by ' + b +
       ' m corner taken out for a store room. Skirting board is fitted right around the edge of the floor at $' +
       rate + ' per metre. <b>What does the skirting cost altogether, in dollars?</b>', '',
       per * rate, [(W * H - a * b) * rate, (per - a - b) * rate, per], '',
@@ -5649,7 +14639,7 @@ function gDecSub2(){ return gDecAddSub(2,'sub'); }
     }
     if (!ok) { W = 12; H = 9; a = 4; b = 3; }
     return mcText(
-      'A ' + W + ' cm by ' + H + ' cm rectangular tile has a corner piece ' + a + ' cm by ' + b +
+      artUc(W) + W + ' cm by ' + H + ' cm rectangular tile has a corner piece ' + a + ' cm by ' + b +
       ' cm cut away, leaving an L-shape with right angles at every corner. <b>How much longer is ' +
       'the perimeter of the whole rectangle than the perimeter of the L-shape?</b>', '',
       '0 cm',
@@ -8481,4 +17471,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20260916-ede9213 */
+/* ENGINE_BUILD_END 20260916-78a7e05 */

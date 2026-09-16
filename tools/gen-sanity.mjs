@@ -3788,9 +3788,31 @@ const CPL_FEATS = [
 ];
 const CPL_POP = new Uint8Array(16);
 for (let i = 0; i < 16; i++) CPL_POP[i] = (i & 1) + ((i >> 1) & 1) + ((i >> 2) & 1) + ((i >> 3) & 1);
+/* THE SEVENTH PASS'S GATE FINDING (W2, refutation v7 @ ed2c0dc). The shape key
+   mapped every numeral to a CLASS, so "2 ÷ 8 = ?" and "24 ÷ 10 = ?" were both the
+   single shape `CC` and all five divisor modes of gDecQuotient were averaged into
+   one. The ÷ 10 mode - settled 100.00% at 100.00% by "take the option made of the
+   question's own digits" - disappeared into a bank-wide 26.62%, and the same
+   blindness hid gDecMulWhole's × 5 mode. A divisor of 2 and a divisor of 10 are not
+   the same stem shape to the child in front of them.
+   The fix is one line: the LAST small BARE COUNT the stem prints carries its VALUE
+   into the key. The last one, and only that one, on purpose. On a calculation the
+   number the stem ends on is the number the child is asked to divide or multiply BY
+   - "26 ÷ 10" keys as CC10 and "9 ÷ 2" as CC2 - while the dividend, the price and
+   the running total stay coarse, so each mode keeps enough draws in it to judge.
+   Valuing every operand instead would give "2 ÷ 8" and "3 ÷ 8" different shapes and
+   drop all of them under CPL_SHAPE_FLOOR, which measures nothing at all.
+   At RANK_DRAWS = 2000 each of gDecQuotient's five divisor modes holds ~300-500
+   draws, above the floor, and ÷ 10 and ÷ 2 both turn red on the v7 file - which is
+   why that file is rebuilt below as a live negative control. */
+const CPL_VALUE_MAX = 12;               /* a bare count at or under this keys by VALUE */
 const cplFrame = t => {
   const toks = [...String(t).matchAll(/\$?\d+(?:\.\d+)?/g)].map(x => x[0]);
-  const cls = toks.map(v => v[0] === '$' ? 'M' : (v.indexOf('.') >= 0 ? 'D' : 'C')).join('');
+  const bare = i => toks[i][0] !== '$' && toks[i].indexOf('.') < 0 && Number(toks[i]) <= CPL_VALUE_MAX;
+  let last = -1;
+  for (let i = 0; i < toks.length; i++) if (bare(i)) last = i;
+  const cls = toks.map((v, i) => v[0] === '$' ? 'M'
+    : (v.indexOf('.') >= 0 ? 'D' : (i === last ? 'C' + v : 'C'))).join('');
   const ph = String(t).match(/(the nearest whole number|1 decimal place|2 decimal places)/);
   return cls + (ph ? '|' + ph[1] : '');
 };
@@ -4071,6 +4093,95 @@ function ctlV6Track() {
      DV(lap * (laps - 1), 1), DV(lap * (laps + 1), 1)], 'km');
 }
 
+/* ---- the SEVENTH pass's KILL, rebuilt exactly as gDecQuotient shipped at ed2c0dc:
+   the v7 candidate list and the v7 rank picker - the v6 twin clause and RULE D1,
+   with NOTHING steering the three odd-one-out routes. That bank was green on every
+   arm in this file on the day it was killed, INCLUDING this coupling gate, which
+   read 26.62% because cplFrame averaged all five divisor modes into one shape. So
+   this control tests the SHAPE KEY as much as the relations: if valuing the last
+   bare count does not turn "26 ÷ 10 = ?" red, the gate is still measuring a blur. */
+function v7RankPick(pool, cmp, dpOf, keyDp, rank) {
+  const musts = pool.filter(c => c.must), rest = pool.filter(c => !c.must);
+  if (musts.length > 3) return null;
+  const need = 3 - musts.length;
+  const above = rest.filter(c => cmp(c) > 0), below = rest.filter(c => cmp(c) < 0);
+  const hi = Math.min(need, above.length), lo = Math.max(0, need - below.length);
+  if (lo > hi) return null;
+  let fallback = null, d1only = null, second = null;
+  for (let t = 0; t < 60; t++) {
+    const a = v6Ri(lo, hi);
+    const sel = musts.concat(v6Sh(above).slice(0, a), v6Sh(below).slice(0, need - a));
+    if (sel.length !== 3) continue;
+    if (!fallback) fallback = sel;
+    if (!(keyDp == null || sel.some(c => dpOf(c) === keyDp))) continue;
+    if (!d1only) d1only = sel;
+    const r = rank(sel);
+    if (r >= 2) return sel;
+    if (r === 1 && !second) second = sel;
+  }
+  return second || d1only || fallback;
+}
+function v7TwinRouteOn(key, sel) {
+  const all = [key].concat(sel);
+  let only = -1, count = 0;
+  for (let i = 0; i < all.length; i++) {
+    let twin = false, mate = false;
+    for (let j = 0; j < all.length; j++) {
+      if (j === i) continue;
+      if (all[j].n === all[i].n) twin = true;
+      if (all[j].dp === all[i].dp) mate = true;
+    }
+    if (twin && mate) { only = i; count++; }
+  }
+  return count === 1 ? only : -1;
+}
+function ctlV7Quotient(fixedB) {
+  const DNAT = d => { let n = d.n, dp = d.dp; while (dp > 0 && n % 10 === 0) { n /= 10; dp--; } return DV(n, dp); };
+  const PL = d => DV(d.n, Math.max(0, d.dp - 1));
+  const PR = d => (d.dp < 3 ? DV(d.n, d.dp + 1) : null);
+  const quot = (a, b) => DNAT(DV(a * (1000 / b), 3));
+  const cands = (a, b, key) => {
+    const floor = Math.floor(a / b), unit = TEN(key.dp);
+    return [
+      b === 10 ? null : { n: floor * 10 + (a % b), dp: 1, must: true },
+      floor > 0 ? DV(key.n - floor * unit, key.dp) : null,
+      DV(key.n + unit, key.dp),
+      (a > 1 && b !== 2) ? quot(1, b) : null,
+      DV(a * b, 0), PR(key), PL(key)
+    ];
+  };
+  const DENS = [2, 4, 5, 8, 10];
+  let a = 3, b = 4, guard = 0;
+  do { b = fixedB || DENS[v6Rand(5)]; a = v6Ri(2, 6 * b - 1); guard++; }
+  while (guard < 300 && !(a % b !== 0 && (() => {
+    const list = [quot(a, b)].concat(cands(a, b, quot(a, b)).filter(Boolean));
+    for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) if (DEQ(list[i], list[j])) return false;
+    return true;
+  })()));
+  const key = quot(a, b);
+  const pool = [];
+  for (const c of cands(a, b, key)) {
+    if (!c || !Number.isFinite(c.n) || c.n <= 0) continue;
+    if (DEQ(c, key) || pool.some(k => DEQ(k, c))) continue;
+    pool.push(c);
+  }
+  const keyMayTwin = Math.random() < 0.5, keyTwinBigger = Math.random() < 0.5;
+  let kept = v7RankPick(pool, c => DCMP(c, key), c => c.dp, key.dp, sel => {
+    const on = v7TwinRouteOn(key, sel);
+    if (on === 0) return 0;
+    if (on > 0) return 1;
+    const keyed = sel.some(c => c.n === key.n);
+    if (!keyMayTwin) return keyed ? 1 : 2;
+    const twins = sel.filter(c => c.n === key.n);
+    if (twins.length !== 1) return 2;
+    return ((key.dp < twins[0].dp) === keyTwinBigger) ? 2 : 1;
+  }) || pool.slice(0, 3);
+  const keyStr = DTXT(key);
+  const all = v6Sh([keyStr].concat(kept.slice(0, 3).map(DTXT)));
+  return { q: `<b>${a} ÷ ${b} = ?</b>`, extra: '', choices: all, correct: all.indexOf(keyStr),
+           answerText: keyStr, explain: 'A negative control.' };
+}
+
 const couplingRows = [];
 {
   const decGens = GENS.filter(g => g.topic === 'decimals').map(g => ({ name: g.name, fn: g.fn }));
@@ -4308,6 +4419,14 @@ const negRows = [];
     ctlV6AddSub, 'the stem-option coupling ceiling');
   couplingCtl('SIXTH-PASS KILL - v6 gDecTrack, the point-placement twin with a depth-mate',
     ctlV6Track, 'the stem-option coupling ceiling');
+  couplingCtl('SEVENTH-PASS KILL - v7 gDecQuotient, the whole bank across all five divisors',
+    ctlV7Quotient, 'the stem-option coupling ceiling inside one divisor shape');
+  /* and the mode the seventh pass actually killed, alone: this is the control on the
+     SHAPE KEY. At v7 the whole bank read 26.62% here because cplFrame averaged all
+     five divisors into the single shape "CC"; the ÷ 10 rows below are the ones that
+     26.62% was hiding, and this lane has removed the mode rather than shipped it. */
+  couplingCtl('SEVENTH-PASS KILL - v7 gDecQuotient at ÷ 10, the option made of the question\'s own digits',
+    () => ctlV7Quotient(10), 'the stem-option coupling ceiling');
   /* and the control on those controls: a generator that borrows nothing from its
      stem must pass, or the ceiling is just failing every bank that prints a number */
   {

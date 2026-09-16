@@ -149,6 +149,121 @@ function twinSideOk(key, sel, wantBigger) {
   if (twins.length !== 1) return true;
   return (key.dp < twins[0].dp) === wantBigger;
 }
+/* ===== THE ODD ONE OUT, ON THREE MORE AXES (refutation v7 @ ed2c0dc, THE KILL) ==
+   The v6 clause above killed the point-placement twin by refusing any row on which
+   EXACTLY ONE option both had a twin and had a depth-mate. On `gDecQuotient` the
+   cure was the disease one bank over. Forbidding the key's twin from shipping left
+   the key the LONE carrier of its own digit family - and at `÷ 10` the key's digits
+   ARE the dividend's, so "26 ÷ 10 = ?" shipped `0.6 / 2.6 / 3.6 / 0.1` and *"take
+   the option made of the question's own digits"* settled 100.00% of that mode at
+   100.00%, with no division done. Measured against the v6 file itself the bank went
+   BACKWARDS, 63.12% to 74.22%, while eight other banks improved by 30 to 76 points.
+   The seventh pass killed it.
+
+   Every one of these routes is the same child's move - "three of these look alike
+   and one does not, so it is the one" - read on a different axis, so they are
+   written as one family and scored together:
+
+     stemFamRoute   the option whose DIGIT STRING is a stem number's. At ÷ 10 the
+                    quotient's digits are the dividend's, so the key wore the stem's
+                    own digits and nothing else on the row did.
+     loneFamRoute   the option whose digit string appears on no other option, when
+                    every other option has a digit-family partner. This is the trap
+                    the cure walks into: authoring a twin PAIR among the distractors
+                    to protect the key makes the key the odd one out instead.
+     wholeFracRoute D1's MIRROR ON THE WHOLE / FRACTION AXIS, and the whole of the
+                    ÷ 2, ÷ 4, ÷ 5 and ÷ 8 modes. RULE D1 requires the arithmetic
+                    slips to sit at the key's own decimal places; `quotCands` then
+                    authors a slip carrying the key's WHOLE ones ("wrote the
+                    remainder after the point") and two carrying the key's DIGITS
+                    AFTER THE POINT ("dropped the whole ones", "one whole too many"),
+                    so the key was the unique INTERSECTION of the two families -
+                    "9 ÷ 2 = ?" on `0.5 / [4.5] / 5.5 / 4.1`, 92.66% at 100.00%.
+
+   All three are gated in tools/gen-sanity.mjs by the stem-option coupling gate,
+   whose shape key now carries a bare operand's VALUE so that ÷ 10 and ÷ 2 are
+   different stem shapes, with v7's gDecQuotient rebuilt as a live negative
+   control. */
+const dwhole = d => Math.floor(d.n / P10[d.dp]);
+/* the digits after the point, as the child reads them off the page: dtext pads with
+   LEADING zeros, so "0.06" reports "06" and not "6" - two options share a fractional
+   part only when the printed columns match. */
+const dfracStr = d => (d.dp === 0 ? null : dtext(d).split('.')[1]);
+/* the digit family: dtext prints n's digits with the point somewhere inside, so the
+   printed digit string with the point taken out and leading zeros dropped IS
+   String(n). Same as the v6 twin relation, named here for the other two routes. */
+const dfam = d => String(d.n);
+const onlyOne = (all, pred) => {
+  let hit = -1, n = 0;
+  for (let i = 0; i < all.length; i++) if (pred(all[i], i)) { hit = i; n++; }
+  return n === 1 ? hit : -1;
+};
+/* does any of the five routes name the KEY? `sel` is the three shipped distractors
+   and the key is option 0, so a route that lands on a wrong answer (or on nobody) is
+   one a child cannot use and is left alone - the same rule the v6 clause follows.
+
+   The last two are the composites the coupling gate itself prints once its shape key
+   can tell ÷ 10 from ÷ 2, written here in the gate's own vocabulary so that the two
+   files say the same thing:
+
+     (d) NOT "repeats a number printed in the stem" AND "shares its digit string with
+         another option" - at ÷ 10 the key's only digit-family relative is the
+         DIVIDEND written back unchanged, and the dividend repeats a stem number
+         while the key does not, so pairing the key with it names the key again.
+     (e) "shares its digits after the point with another option" AND "its digit
+         multiset is a stem number's" - the dividend has no digits after the point,
+         so the same pair read the other way round also comes back to the key unless
+         nothing on the row shares the key's fractional columns. */
+function oddOneOutOnKey(key, sel, st) {
+  const all = [key].concat(sel);
+  const fams = all.map(dfam);
+  const shareFam = i => fams.filter((f, j) => j !== i && f === fams[i]).length > 0;
+  if (st.bare.size && onlyOne(all, (c, i) => st.bare.has(fams[i])) === 0) return true;
+  if (onlyOne(all, (c, i) => !shareFam(i)) === 0) return true;
+  const ws = all.map(dwhole), fs = all.map(dfracStr);
+  const shareFrac = i => fs[i] !== null && fs.filter((f, j) => j !== i && f === fs[i]).length > 0;
+  if (onlyOne(all, (c, i) => shareFrac(i) &&
+      ws.filter((w, j) => j !== i && w === ws[i]).length > 0) === 0) return true;
+  const printed = all.map(dtext);
+  if (onlyOne(all, (c, i) => !st.nums.has(printed[i]) && shareFam(i)) === 0) return true;
+  const sortD = i => printed[i].replace('.', '').split('').sort().join('');
+  if (st.sorted.size && onlyOne(all, (c, i) => shareFrac(i) && st.sorted.has(sortD(i))) === 0) return true;
+  return false;
+}
+/* W2's route, which is a tier of its own (refutation v7 @ ed2c0dc). "The option
+   ending in the digit the question names" is weaker than the five above - it reads
+   one digit - but at a multiplier or a divisor of 5 it is deterministic: a product
+   or quotient by 5 ends in 0 or 5, every draw guard in this file forbids the 0, so
+   the key ALWAYS ends in 5 and 5 is the number the stem printed. It read 72.52% at
+   100.00% inside gDecMulWhole's × 5 shape and 91.34% at 100.00% inside gDecTrack's
+   5-laps shape, invisible bank-wide and invisible to the coupling gate until its
+   shape key could tell one multiplier from another. It sits BELOW the five, because
+   a row that closes it while reopening one of them is a worse row. */
+function lastDigitOnKey(key, sel, st) {
+  if (!st.named.size) return false;
+  const all = [key].concat(sel);
+  const last = c => { const s = dtext(c); return Number(s.charAt(s.length - 1)); };
+  if (onlyOne(all, c => st.named.has(last(c))) === 0) return true;
+  /* and the gate's own pairing of it. Every stem here prints its decimal as "0.7",
+     so "0" is one of the stem's whole-number parts and a helper written 0.35 is
+     thrown out of the pair before it can do any work - the helper has to carry a
+     whole-number part the stem does not print as well as the right last digit. */
+  return onlyOne(all, c => st.named.has(last(c)) && !st.wholes.has(dtext(c).split('.')[0])) === 0;
+}
+/* what the rendered stem prints, in the four readings the routes above use: the
+   numerals themselves, their digit strings with the point and any leading zero taken
+   out, their digit MULTISETS as printed (which is the gate's own relation, so "0.26"
+   reads 026 and does not match a stem 26 while "6.2" does), and the LONE digits it
+   names - a digit standing on its own, not one inside a longer numeral. */
+function stemMarksOf(stem, extra) {
+  const t = (String(stem || '') + ' ' + String(extra || '')).replace(/<[^>]*>/g, ' ');
+  const nums = t.match(/\d+(?:\.\d+)?/g) || [];
+  return { nums: new Set(nums),
+           bare: new Set(nums.map(v => v.replace('.', '').replace(/^0+(?=\d)/, ''))),
+           sorted: new Set(nums.map(v => v.replace('.', '').split('').sort().join(''))),
+           wholes: new Set(nums.map(v => v.split('.')[0])),
+           named: new Set([...t.matchAll(/(?<![\d.])(\d)(?![\d.])/g)].map(x => Number(x[1]))) };
+}
 /* every distinct? (exact, not by string) */
 function dallDistinct(list) {
   for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) if (dsame(list[i], list[j])) return false;
@@ -226,11 +341,24 @@ function rankInts(key, cands) {
   const sel = rankPick(pool, c => c.n - key, () => null, null) || pool.slice(0, 3);
   return shuffle(sel).map(v => v.n);
 }
-/* `rank` is the KILL's clause. It scores a candidate selection 2 (take it), 1
-   (acceptable - the route is blind, but the row is not the preferred shape) or 0
-   (the route reads the key: never ship it if anything else is available). It sits
-   UNDER RULE D1 and OVER nothing, so a bank that can satisfy neither on a draw
-   still ships a D1-clean row rather than failing to ship at all. */
+/* `rank` is the KILL's clause. It scores a candidate selection on FIVE tiers, and
+   the picker takes the best the bank's candidates can reach on the draw:
+
+     4  take it - no row-only route names the key and the row is the preferred shape
+     3  acceptable - every route is blind, but the row is not the preferred shape
+     2  only the one-digit route names the key (W2's × 5 / ÷ 5 shape)
+     1  a v7 odd-one-out route names the key; the v6 twin route does not
+     0  the v6 twin route names the key: never ship it if anything else is available
+
+   Ranked tiers rather than a pass/fail because each pass's KILL must never be closed
+   by REOPENING an earlier one: a bank that can reach no fully clean row still ships
+   the twin-clean row rather than the twin-readable one, and the weakest route is
+   the one that gives way. It sits UNDER RULE D1 and OVER nothing, so a bank that can
+   satisfy none of it on a draw still ships a D1-clean row rather than failing to
+   ship at all.
+
+   60 tries was enough for one clause; seven of them need more head-room on the
+   narrow banks, and a try is a shuffle and four comparisons. */
 function rankPick(pool, cmp, dpOf, keyDp, rank) {
   const musts = pool.filter(c => c.must), rest = pool.filter(c => !c.must);
   if (musts.length > 3) return null;
@@ -238,9 +366,19 @@ function rankPick(pool, cmp, dpOf, keyDp, rank) {
   const above = rest.filter(c => cmp(c) > 0), below = rest.filter(c => cmp(c) < 0);
   const hi = Math.min(need, above.length), lo = Math.max(0, need - below.length);
   if (lo > hi) return null;
-  let fallback = null, d1only = null, second = null;
-  for (let t = 0; t < 60; t++) {
-    const a = ri(lo, hi);
+  let fallback = null, d1only = null;
+  const tier = [null, null, null, null];    /* by score, 1 to 3; 4 returns at once */
+  /* WOUND 1's discipline comes FIRST and the KILL clauses come second, because the
+     rank ceiling is the harder gate. The number of options above the key is drawn
+     ONCE and held for the first half of the search, so the clean rows the clauses
+     below accept are found AT THE RANK THE DRAW ASKED FOR rather than at whichever
+     rank happens to yield clean rows most often. Redrawing `a` every try cost
+     gFracToDec 9 points of "the key is the smallest" the first time D1's mirror
+     bound - 52.3% against a 45% ceiling - because its clean selections lived at one
+     end. Only if no clean row exists at the drawn rank is `a` let go. */
+  const want = ri(lo, hi);
+  for (let t = 0; t < 160; t++) {
+    const a = t < 80 ? want : ri(lo, hi);
     const sel = musts.concat(shuffle(above).slice(0, a), shuffle(below).slice(0, need - a));
     if (sel.length !== 3) continue;
     if (!fallback) fallback = sel;
@@ -250,10 +388,10 @@ function rankPick(pool, cmp, dpOf, keyDp, rank) {
     if (!d1only) d1only = sel;
     if (!rank) return sel;
     const r = rank(sel);
-    if (r >= 2) return sel;
-    if (r === 1 && !second) second = sel;
+    if (r >= 4) return sel;
+    if (r > 0 && !tier[r]) tier[r] = sel;
   }
-  return second || d1only || fallback;
+  return tier[3] || tier[2] || tier[1] || d1only || fallback;
 }
 
 function mcDec(stem, extra, key, cands, unit, explain) {
@@ -280,13 +418,26 @@ function mcDec(stem, extra, key, cands, unit, explain) {
      the row belongs to two wrong answers, so "the answer is one of the two that are
      the same digits" is not a free elimination either. */
   const keyMayTwin = Math.random() < 0.5, keyTwinBigger = Math.random() < 0.5;
+  /* the v7 KILL: the five odd-one-out routes, three of which read the stem */
+  const stemMarks = stemMarksOf(stem, extra);
   let kept = rankPick(pool, c => dcmp(c, key), c => c.dp, key.dp, sel => {
     const on = twinRouteOn(key, sel);
-    if (on === 0) return 0;                          /* the KILL: never, if avoidable */
-    if (on > 0) return 1;                            /* it picks a wrong answer: usable */
+    if (on === 0) return 0;                          /* the v6 KILL: never, if avoidable */
+    if (oddOneOutOnKey(key, sel, stemMarks)) return 1; /* the v7 KILL: only if nothing better */
+    if (lastDigitOnKey(key, sel, stemMarks)) return 2; /* W2's × 5 / ÷ 5 route */
+    if (on > 0) return 3;                            /* it picks a wrong answer: usable */
     const keyed = sel.some(c => c.n === key.n);
-    if (!keyMayTwin) return keyed ? 1 : 2;
-    return twinSideOk(key, sel, keyTwinBigger) ? 2 : 1;
+    /* RESIDUAL 8 (refutation v7 @ ed2c0dc W4), and the one thing this pass tried and
+       PUT BACK. Forcing a DISTRACTOR pair onto the row whenever the coin says the key
+       ships no twin looks like the fix for "the pair contains the key on 100.00% of
+       the rows that carry one" - it took gFracToDec's 100.00% down and every other
+       bank to 5-23%. It is worse, and the measurement says so: it also takes the
+       PAIR-ROW RATE from 16-44% to 59-69%, and a rare unfair coin beats a common one.
+       "Eliminate the two that are the same digits" then read E 40.4% on gDecQuotient
+       against 32.1% with this line out. The rows stay as the v6 coin leaves them and
+       the numbers are declared instead. */
+    if (!keyMayTwin) return keyed ? 3 : 4;
+    return twinSideOk(key, sel, keyTwinBigger) ? 4 : 3;
   }) || pool.slice(0, 3);
   kept = shuffle(kept);
   const authored = kept.length === 3;
@@ -1337,13 +1488,24 @@ function gFracToDec() {
      the named candidates underneath it. */
   const deeper1 = pRight(key);
   const deeper2 = dp + 2 <= 3 ? D(n, dp + 2) : null;
-  const dropLast = n >= 10 ? D(Math.floor(n / 10), dp) : null;
+  /* W5 (refutation v7 @ ed2c0dc): "dropped the last digit" is the one candidate here
+     that can end in a zero - 305 thousandths drops to 30, and "0.030" is an option
+     the key is never on. It is dropped on those draws rather than printed. */
+  const dropLast = (n >= 10 && Math.floor(n / 10) % 10 !== 0) ? D(Math.floor(n / 10), dp) : null;
   const dropFirst = dp === 3 && n % 100 !== 0 ? D(n % 100, dp) : null;
   /* THE KILL (refutation v6): "took it away from the whole" carries its own
      point-one-column-out pair, so the twins on the row need not be the key's. */
+  /* THE KILL (refutation v7 @ ed2c0dc), the magnitude rank's side of it. D1's mirror
+     on the whole/fraction axis takes selections away from this picker, and the ones
+     it took were the ones holding the key off the bottom: "the key is the smallest"
+     went to 52.3% against the 45% ceiling the moment the mirror bound. "Wrote the
+     digits with no point at all" and the tacked-on slip's own point-out pair are
+     three more candidates ABOVE the key, which is where the bank was thin. */
+  const noPoint = pLeft(key);
   return mcDec('Write ' + fr(n, den) + ' as a decimal.', '',
     key, [shallow, complement, tacked, deeper1, deeper2, dropLast, dropFirst,
-          pRight(complement), pLeft(complement)], '',
+          pRight(complement), pLeft(complement), noPoint,
+          pRight(tacked), pLeft(tacked)], '',
     n + ' out of ' + den + ' means ' + qty(n, dp) + '. The ' + PLACE_WORD[dp] +
     ' place is number ' + dp + ' after the decimal point, so ' + qty(n, dp) +
     ' is written ' + dtext(key) + '.');
@@ -1473,7 +1635,13 @@ function gFracEquivDec() {
     asTenths = D(n, 1);                                     /* wrote the numerator after the point */
     denAsDec = dnat(D(den, String(den).length));            /* wrote the denominator after the point */
     rest = dnat(D((den - n) * mult, over === 10 ? 1 : 2));  /* found the other part of the whole */
-  } while (guard < 400 && !dallDistinct([key, asTenths, denAsDec, rest]));
+    /* W5 (refutation v7 @ ed2c0dc): "wrote the numerator after the point" printed
+       "1.0" for 10/20 - a trailing zero the key is never on, on 3.64% of draws, the
+       same distractor badge the v4 work took off gDecAddSub's key. This bank
+       authors exactly three candidates and ships all three, so the shape of the
+       slip is load-bearing on the magnitude rank and cannot be re-cut; the four
+       numerators that print the zero are dropped from the draw instead. */
+  } while (guard < 400 && !(n % 10 !== 0 && dallDistinct([key, asTenths, denAsDec, rest])));
   return mcDec('Write ' + fr(n, den) + ' as a decimal.', '',
     key, [asTenths, denAsDec, rest], '',
     den + ' goes into ' + over + ' exactly ' + (over / den) + ' times, so multiply the top and the bottom by ' +
@@ -1525,7 +1693,18 @@ function gDecFracError() {
 
 /* FORMAT 3f - two-step word problem, SG money (pool 3): cents over 100, then
    simplify. The decimal is printed alongside so the two spellings sit together. */
-const CENT_PRICES = [5, 15, 20, 25, 40, 45, 50, 60, 75, 80];
+/* W6 (refutation v7 @ ed2c0dc): this list had TEN values, so the generator shipped
+   fifty stems and TEN distinct keys, modal key 10.38%, on an item served 1.44 times
+   in a 30-item session at 80% accuracy (worst 3) - the narrowest answer space in the
+   topic and the one sample space no pass had measured. Every price here still
+   shares a factor with 100, because Step 2 of the explanation divides by it and
+   "37 and 100 both divide by 1" is not a simplification a child can read; that is
+   the only constraint, and it leaves every whole number of cents that is even or a
+   multiple of five. Thirty-eight prices, thirty-eight distinct keys, modal key
+   2.6%: a bookshop price list rather than a rounding of one. */
+const CENT_PRICES = [4, 5, 6, 8, 10, 12, 14, 15, 16, 18, 20, 22, 24, 25, 26, 28, 30,
+                     32, 35, 36, 38, 40, 42, 44, 45, 48, 50, 52, 55, 56, 60, 64, 65,
+                     70, 75, 80, 85, 90];
 function gDecMoneyFrac() {
   const cents = pick(CENT_PRICES);
   const g = gcd(cents, 100);
@@ -1547,11 +1726,18 @@ function gDecMoneyFrac() {
                red(cents + 5, 100),                      /* misread the price by five cents */
                red(Math.max(cents - 5, 1), 100),         /* and the other way */
                red(cents, 200)];                         /* halved the whole instead of the part */
+  /* W6's widening turned up a collision the ten-price list had never reached: at 16
+     cents the "one place too far" slip is 2/125 and the "rest of the dollar" slip is
+     21/25, and once the fraction markup is stripped both read "2125" - the same four
+     digits in the same order. The child sees two different fractions; every text
+     rule that reads an option, this file's own harness included, sees one. Two
+     options may not flatten to the same digit string. */
+  const flat = c => String(c[0]) + String(c[1]);
   const cands = [];
   for (const c of raw) {
     if (c[0] <= 0 || c[1] <= 0 || c[0] > c[1]) continue;
-    if (eq(c[0], c[1], n, den)) continue;                /* never the key wearing another face */
-    if (cands.some(k => eq(k[0], k[1], c[0], c[1]))) continue;
+    if (eq(c[0], c[1], n, den) || flat(c) === flat([n, den])) continue;   /* never the key wearing another face */
+    if (cands.some(k => eq(k[0], k[1], c[0], c[1]) || flat(k) === flat(c))) continue;
     cands.push(c);
   }
   const q = finishFrac('At the school bookshop ' + item + ' costs <b>' + cents + ' cents</b>, which is written <b>' +
@@ -1743,6 +1929,11 @@ function gDecAlignError() {
     guard++;
     const A = ri(101, 899), B = ri(11, 89);
     if (A % 10 === 0 || B % 10 === 0) continue;             /* the last digits must be real digits */
+    /* W5 (refutation v7 @ ed2c0dc): "got the whole ones right and kept the
+       misaligned rest" is the one candidate here whose last digit is A + B's, so
+       when those two last digits summed to ten it printed a trailing zero - an
+       option the key is never on, on 5.30% of draws. */
+    if ((A + B) % 10 === 0) continue;
     if ((A % 100) + (B % 10) * 10 < 100) continue;          /* the fractions must carry into the ones */
     a = D(A, 2); b = D(B, 1);
     const m0 = 2;
@@ -1939,9 +2130,17 @@ function gDecMulWhole() {
   return mcDec('<b>' + dtext(A) + ' × ' + n + ' = ?</b>', '',
     /* THE KILL (refutation v6): the added-instead slip carries its own point-out
        pair, so the row's twins are not always the key's. */
+    /* W2 (refutation v7 @ ed2c0dc), and the coupling gate found it the moment its
+       shape key could tell × 5 from × 3: a product by 5 ends in 0 or 5, the draw
+       guard forbids 0, so at × 5 the key ALWAYS ends in 5 - the digit the stem
+       names - and no other option had to. "Carried a whole one too many" and "lost
+       a whole one" are the two slips that leave the last digit alone, so they are
+       the two that share the key's last digit at the key's own depth on every draw,
+       at × 5 and at every other multiplier. They bracket the key as well. */
     key, [D(a + n * P10[dp], dp), pRight(key), pLeft(key),
           dnat(D(a * (n - 1), dp)), dnat(D(a * (n + 1), dp)),
-          pRight(D(a + n * P10[dp], dp)), pLeft(D(a + n * P10[dp], dp))], '',
+          pRight(D(a + n * P10[dp], dp)), pLeft(D(a + n * P10[dp], dp)),
+          D(a * n + P10[dp], dp), D(a * n - P10[dp], dp)], '',
     'Multiply as if there were no decimal point: ' + a + ' × ' + n + ' = ' + (a * n) + '. ' + dtext(A) +
     ' has ' + dp + ' digit' + (dp > 1 ? 's' : '') + ' after the point, so the answer has ' + dp +
     ' too: ' + dtext(key) + '. Adding instead of multiplying answers a different question.');
@@ -1996,23 +2195,40 @@ function gDecDivWhole() {
    as a decimal. SCOPE (refutation 2026-09-15 section 5): the shipped bank had
    zero generators for this sub-strand - "3 divided by 4 is 0.75" appeared nowhere
    in 640,000 draws - and the lane's own scope note did not mention it. Divisors
-   are 2, 4, 5, 8 and 10 only, which are exactly the one-digit divisors whose
-   quotients terminate inside the three-place ceiling (halves, quarters, fifths,
-   eighths, tenths), and the draw rejects anything that divides exactly, so the
-   answer is always a decimal and never a repeating one. --------------------- */
-const QUOT_DENS = [2, 4, 5, 8, 10];
+   are 2, 4, 5 and 8 - the ONE-DIGIT divisors whose quotients terminate inside the
+   three-place ceiling (halves, quarters, fifths, eighths) - and the draw rejects
+   anything that divides exactly, so the answer is always a decimal and never a
+   repeating one.
+
+   ÷ 10 IS GONE, and it is THE KILL (refutation v7 @ ed2c0dc). Dividing a whole
+   number by 10 moves the point one column and changes no digit, so the quotient's
+   digits ARE the dividend's: "26 ÷ 10 = ?" has the answer written on the question.
+   The key's only digit-family relatives are then the dividend written back
+   unchanged and the two point-moves of the answer itself, and every arrangement of
+   those leaves exactly one option named by a rule a child reads with no division -
+   which is why the mode read 100.00% settled at 100.00% accuracy on 5,141 draws.
+   It was measured out rather than argued away: over every dividend the generator
+   can draw, EXHAUSTIVELY over all ~120 three-of-pool rows, only ONE to THREE rows
+   per dividend survive RULE D1, the v6 twin clause, the v7 odd-one-out clauses and
+   every pair of the coupling gate's 21 relations - and those rows carry no rank
+   freedom at all, so the bank would ship a near-fixed option set. At ÷ 2, ÷ 4,
+   ÷ 5 and ÷ 8 the same search finds clean rows for every dividend but one.
+   The scope cost is declared and it is small: 3.2's demand is the quotient that
+   CARRIES ON past the point, which halves, quarters, fifths and eighths all ask
+   and tenths does not, and "10" was never a one-digit divisor in the first place -
+   the line above it said so and drew it anyway. --------------------- */
+const QUOT_DENS = [2, 4, 5, 8];
 /* a / b as an exact scaled integer: 1/8 is 125 thousandths, and dnat strips the
    zeros so 3 / 5 prints "0.6" and not "0.600". */
 const quot = (a, b) => dnat(D(a * (1000 / b), 3));
 /* the named slips shared by both 3.2 formats, five of them, at least two on each
    side of the key (refutation WOUND 1 - every numeric generator authors a bank
    wide enough for the rank picker to move the answer around). */
-function quotCands(a, b, key) {
+function quotCore(a, b, key) {
   const floor = Math.floor(a / b), unit = P10[key.dp];
   return [
-    /* the slip the whole sub-strand exists to kill, so it ships on every draw - bar
-       the divisor of 10, where writing the remainder after the point is CORRECT */
-    b === 10 ? null : must(D(floor * 10 + (a % b), 1)),
+    /* the slip the whole sub-strand exists to kill, so it ships on every draw */
+    must(D(floor * 10 + (a % b), 1)),
     floor > 0 ? D(key.n - floor * unit, key.dp) : null,  /* dropped the whole ones */
     D(key.n + unit, key.dp),                        /* a whole one that is not there */
     /* WOUND 6 (refutation v2 @ 0157aa1): at b = 2 "shared ONE whole and stopped"
@@ -2026,11 +2242,36 @@ function quotCands(a, b, key) {
     pRight(key), pLeft(key)                         /* the point one column out, each way */
   ];
 }
+/* THE KILL (refutation v7 @ ed2c0dc). Every named slip above carries its OWN
+   point-one-column-out pair, the way gDecAddSub, gDecTrack, gDecMulWhole,
+   gDecDivWhole, gFracToDec and gDecShareMass have carried one since v6 - a child who
+   slides the point one column has no reason to have divided correctly first. It is
+   what lets the picker put a digit family on the row that is NOT the key's (so "the
+   option whose digits appear on no other option" cannot name the key) and what gives
+   the whole/fraction mirror in mcDec a clean selection to reach on every draw: at
+   b = 2 the v7 bank had none at all, and the key was the unique intersection of the
+   remainder slip's whole ones and the dropped-whole slip's digits after the point on
+   92.66% of that mode.
+   A point move must never print a trailing zero on the option it makes ("26.0" for
+   260 tenths), which is the badge W5 takes off four other banks in this same pass,
+   so the pair is filtered rather than trusted. The GUARD still runs on the core
+   list only: these are variations on candidates it has already checked, and
+   requiring thirteen quantities to be pairwise distinct rejects most of the draws
+   the sub-strand exists to teach. */
+const noTrailZero = d => (d && d.n > 0 && !(d.dp > 0 && d.n % 10 === 0) ? d : null);
+function quotCands(a, b, key) {
+  const core = quotCore(a, b, key), out = core.slice();
+  for (const c of core) {
+    if (!c) continue;
+    out.push(noTrailZero(pLeft(c)), noTrailZero(pRight(c)));
+  }
+  return out;
+}
 function gDecQuotient() {
   let a = 3, b = 4, guard = 0;
   do { b = pick(QUOT_DENS); a = ri(2, 6 * b - 1); guard++; }   /* 1 divided by b explains itself */
   while (guard < 300 && !(a % b !== 0 &&
-         dallDistinct([quot(a, b)].concat(quotCands(a, b, quot(a, b)).filter(Boolean)))));
+         dallDistinct([quot(a, b)].concat(quotCore(a, b, quot(a, b)).filter(Boolean)))));
   const key = quot(a, b);
   const remAfterPoint = D(Math.floor(a / b) * 10 + (a % b), 1);   /* wrote the remainder after the point */
   return mcDec('<b>' + a + ' ÷ ' + b + ' = ?</b>', '',
@@ -2039,8 +2280,8 @@ function gDecQuotient() {
     'One whole shared into ' + b + ' is ' + dtext(quot(1, b)) + ', so ' + many(a, 'whole', 'wholes') +
     ' shared into ' + b + ' is ' +
     a + ' × ' + dtext(quot(1, b)) + ' = ' + dtext(key) + '. Check it by multiplying back: ' + dtext(key) + ' × ' + b +
-    ' = ' + a + '.' + (b === 10 ? '' : ' The remainder is not written after the point: ' + a + ' ÷ ' + b +
-    ' is not ' + dtext(remAfterPoint) + '.'));
+    ' = ' + a + '. The remainder is not written after the point: ' + a + ' ÷ ' + b +
+    ' is not ' + dtext(remAfterPoint) + '.');
 }
 
 /* the same sub-strand as a measures word problem (pool 2) */
@@ -2049,7 +2290,7 @@ function gDecQuotientWord() {
   let a = 3, b = 4, guard = 0;
   do { b = pick(QUOT_DENS); a = ri(b + 1, 6 * b - 1); guard++; }
   while (guard < 300 && !(a % b !== 0 &&
-         dallDistinct([quot(a, b)].concat(quotCands(a, b, quot(a, b)).filter(Boolean)))));
+         dallDistinct([quot(a, b)].concat(quotCore(a, b, quot(a, b)).filter(Boolean)))));
   const key = quot(a, b);
   const goods = pick([['flour', 'bags'], ['rice', 'packets'], ['sugar', 'tins'], ['dried shrimp', 'tubs']]);
   return mcDec('At the provision shop ' + who + ' splits <b>' + a + ' kg</b> of ' + goods[0] +
@@ -2084,10 +2325,17 @@ function gDecTrack() {
        directions of both slips, because with only the short lap's pair the draws on
        which the key ships no twin had two named candidates below it and four above,
        and "always pick the smallest" went to 45.3% - the rank ceiling exactly. */
+    /* W2's second instance (refutation v7 @ ed2c0dc), found by the coupling gate as
+       soon as its shape key could tell 5 laps from 6: lap x 5 ends in 0 or 5, the
+       guard above forbids 0, so at 5 laps the key ALWAYS ends in 5 - the digit the
+       stem names - and nothing else on the row had to. "Carried a whole kilometre
+       too many" and "lost one" are the two slips that leave the last digit alone,
+       so they carry the key's last digit at the key's own depth on every draw. */
     key, [D(lap + laps * 10, 1), pRight(key), pLeft(key),
           D(lap * (laps - 1), 1), D(lap * (laps + 1), 1),
           pRight(D(lap * (laps - 1), 1)), pLeft(D(lap * (laps - 1), 1)),
-          pRight(D(lap * (laps + 1), 1)), pLeft(D(lap * (laps + 1), 1))], 'km',
+          pRight(D(lap * (laps + 1), 1)), pLeft(D(lap * (laps + 1), 1)),
+          D(lap * laps + 10, 1), D(lap * laps - 10, 1)], 'km',
     laps + ' laps of ' + dtext(L) + ' km means ' + laps + ' equal groups, so multiply: ' + lap + ' × ' + laps +
     ' = ' + (lap * laps) + ' tenths of a kilometre, which is ' + dtext(key) + ' km. Adding the lap length to the number of laps answers nothing.');
 }
@@ -2147,6 +2395,13 @@ function gDecShareMass() {
     total = per * trays;
   } while (guard < 300 && !(total % 10 !== 0 && (per * want) % 10 !== 0 && (per + want) % 10 !== 0 &&
            per % 10 !== 0 &&                                    /* no "2.0 kg" option */
+           /* W5 (refutation v7 @ ed2c0dc): the guard above covered `per` and missed
+              the two options built from it. "23.0 kg" shipped on 22.73% of draws and
+              the key was never it - a free one-of-four elimination wearing a
+              distractor's badge, which is the same thing the v4 work took off
+              gDecAddSub's key. `total - per` and `total x want` are where it came
+              from, so they are guarded here alongside `per`. */
+           (total - per) % 10 !== 0 && (total * want) % 10 !== 0 &&
            dallDistinct([D(per * want, 1), D(per, 1), D(total * want, 1), D(total - per, 1),
                          D(per * want, 2), D(per * want, 0), D(per + want, 1)])));
   const key = per * want;
@@ -2228,7 +2483,30 @@ function gDecShareMass() {
          W.DDD numeral, goes from 4.10 to 4.79 (16.0% of a 30-item session). Both
          numbers are DECLARED, not fixed: the fourth pool-1 voice is still the fix
          and it is still a pool decision this lane does not own. At 80% accuracy
-         nothing moves (top three 14.6% either way; pools 19.2 / 22.9 / 57.9%). */
+         nothing moves (top three 14.6% either way; pools 19.2 / 22.9 / 57.9%).
+
+         v8 UPDATE - THE POOL DECISION, TAKEN. The seventh pass measured the other
+         side of the v7 retag and ruled it as a P4 teacher: at 45% accuracy the six
+         skills ran muldiv 5.90 / compare 5.83 / place 5.80 / convert 5.76 /
+         addsub 5.61 and `round` 1.11 - five skills at about 5.8 items in a 30-item
+         session and one at 1.1, and every one of those 1.1 a POOL-2 item, i.e.
+         above the level the struggling child is actually sitting at. MOE 1.5 is one
+         of the six declared skills of this topic and it had stopped being taught to
+         the child the anchors exist for.
+         `gDecRound` MOVES to pool 1. It is the definitional MOE 1.5 item - "Round
+         4.211 to 2 decimal places" - it carries the skill's own tip, and its demand
+         sits alongside gDecQuotient ("2 ÷ 8 = ?") and gDecAddSub, which are already
+         pool-1 anchors. Pool 1 now cycles SIX skills instead of five, so it costs
+         every other pool-1 bank a sixth of its share - the same arithmetic that
+         took gDecAddSub UP to 4.58 when the retag removed a skill, running
+         backwards: gDecAddSub comes back DOWN, and residual 4's stem-numeral pair
+         with it. The seventh pass's preferred shape - a `to = 0`-only pool-1
+         sibling with gDecRound left in pool 2 - was rejected because it would put
+         the same stem shape in two pools and break this file's
+         one-generator-one-pool invariant (the line above), for the same skill
+         coverage. `round` keeps three pool-3 voices, which is where a child at 80%
+         accuracy spends 58% of a session. Measured in tools/feed-sim.mjs's
+         per-skill table, which prints at 45% as well as at 80%. */
       /* WOUND 3 (refutation v6 @ 5a5fb3b), and the wave-2 retag deferred by six
          passes: gDecBetween is tagged `round` and asks no rounding. "Between which
          two whole numbers does 4.9 lie?" is answered by reading the whole-number
@@ -2244,9 +2522,10 @@ function gDecShareMass() {
          from 3.89 items a session. */
       1: [[gDecDigitValue, 'place'], [gDecNamePlace, 'place'], [gDecCompare, 'compare'],
           [gDecBetween, 'compare'], [gFracToDec, 'convert'], [gDecBar, 'convert'],
-          [gDecAddSub, 'addsub'], [gDecMulConcept, 'muldiv'], [gDecQuotient, 'muldiv']],
+          [gDecAddSub, 'addsub'], [gDecMulConcept, 'muldiv'], [gDecQuotient, 'muldiv'],
+          [gDecRound, 'round']],
       2: [[gDecBuild, 'place'], [gDecHowMany, 'place'], [gDecCmpMixed, 'compare'], [gDecOrder, 'compare'],
-          [gDecRound, 'round'], [gDecToFrac, 'convert'], [gFracEquivDec, 'convert'],
+          [gDecToFrac, 'convert'], [gFracEquivDec, 'convert'],
           [gDecStartAmount, 'addsub'], [gDecMoneyMore, 'addsub'],
           [gDecMulWhole, 'muldiv'], [gDecDivWhole, 'muldiv'], [gDecTrack, 'muldiv'],
           [gDecQuotientWord, 'muldiv']],

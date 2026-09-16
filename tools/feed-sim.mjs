@@ -185,6 +185,54 @@ function measure(grade) {
   };
 }
 
+/* ---------- SKILL SERVICE, one topic at a time ---------------------------------
+   The decimals refutation's seventh pass (W3) measured something this harness could
+   not see. Its table reads TEMPLATE repetition, which was Kevin's complaint; it
+   never read how many items of each SKILL a child actually gets. At 45% simulated
+   accuracy the p4 decimals feed was serving five of its six skills about 5.8 items
+   in a thirty-item session and the sixth - `round`, one of the topic's own declared
+   skills - 1.11, every one of them from a pool the struggling child is not sitting
+   in. A skill a topic declares and then does not serve is invisible to every other
+   arm in this file, so it is printed here: items per session by skill and by
+   generator, at the accuracy the argument is about.
+
+   Reported, not gated: what the right number is, is a pool decision a lane makes
+   with its eyes open, and a threshold here would guess it. --- */
+const SKILL_TID = argOf('--skills') || 'decimals';
+function skillTable(tid, acc, seeds) {
+  const bySkill = new Map(), byGen = new Map();
+  const worst = new Map();
+  const keepAcc = ACC;
+  for (let s = 0; s < seeds; s++) {
+    setSeed(2000003 + s * 7919);
+    const items = sessionAt(tid, acc);
+    const here = new Map();
+    for (const q of items) {
+      bySkill.set(q.skill, (bySkill.get(q.skill) || 0) + 1);
+      byGen.set(q.gen, (byGen.get(q.gen) || 0) + 1);
+      here.set(q.skill, (here.get(q.skill) || 0) + 1);
+    }
+    for (const [k, v] of here) worst.set(k, Math.max(worst.get(k) || 0, v));
+  }
+  void keepAcc;
+  return { bySkill, byGen, worst, seeds };
+}
+/* the same session loop as above with the accuracy passed in rather than global */
+function sessionAt(tid, acc) {
+  const feed = HAS_FEED ? MQI.createFeed(tid) : null;
+  const qset = HAS_FEED ? null : MQI.buildSetFor(tid, LEN);
+  const out = [];
+  let level = 1, rightRow = 0, wrongRow = 0;
+  for (let i = 0; i < LEN; i++) {
+    const q = feed ? feed.next(level)
+      : ((qset[level] && qset[level].length) ? qset[level].shift() : MQI.makeQuestionFor(tid, level));
+    out.push({ gen: q.__gen, skill: q.skill, pool: q.level || level });
+    if (rnd() < acc) { rightRow++; wrongRow = 0; if (rightRow >= 3 && level < 3) { level++; rightRow = 0; } }
+    else { wrongRow++; rightRow = 0; if (wrongRow >= 2 && level > 1) { level--; wrongRow = 0; } }
+  }
+  return out;
+}
+
 /* ---------- report ---------- */
 const f3 = x => x.toFixed(3);
 console.log(`feed-sim  core=${path.relative(ROOT, COREPATH) || COREPATH}  path=${HAS_FEED ? 'createFeed (round-robin + no-repeat-3)' : 'legacy buildSetFor (uniform draw)'}`);
@@ -194,6 +242,24 @@ console.log('------|---------------|------------|------------|----------|-------
 const rows = GRADES.map(measure);
 for (const r of rows) {
   console.log(`${r.grade}    | ${f3(r.sameTemplate).padStart(13)} | ${f3(r.sameShape).padStart(10)} | ${f3(r.sameSkill).padStart(10)} | ${r.meanRun.toFixed(2).padStart(8)} | ${String(r.worstRun).padStart(9)} | ${String(r.worstSkillRun).padStart(15)} | ${r.pool.map(f3).join(' / ')}`);
+}
+
+if (TOPICS[SKILL_TID]) {
+  const accs = [ACC, 0.45];
+  const label = a => (a * 100).toFixed(0) + '%';
+  const tables = accs.map(a => [a, skillTable(SKILL_TID, a, SEEDS)]);
+  const skills = [...new Set(tables.flatMap(([, t]) => [...t.bySkill.keys()]))].sort();
+  console.log(`\nSKILL SERVICE  (${SKILL_TID}, ${SEEDS} seeds x ${LEN} questions, items per session by skill)`);
+  console.log(`skill    | ` + accs.map(a => `at ${label(a)}  worst`).join(' | '));
+  for (const sk of skills) {
+    const cells = tables.map(([, t]) =>
+      `${((t.bySkill.get(sk) || 0) / t.seeds).toFixed(2).padStart(5)}  ${String(t.worst.get(sk) || 0).padStart(5)}`);
+    console.log(`${String(sk).padEnd(8)} | ` + cells.join(' | '));
+  }
+  const lo = tables[tables.length - 1][1];
+  const gens = [...lo.byGen.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  console.log(`  busiest six generators at ${label(0.45)}: ` +
+    gens.map(([id, n]) => `${(GEN_OF.get(id) || {}).name || id} ${(n / lo.seeds).toFixed(2)}`).join(', '));
 }
 
 if (!GATE) process.exit(0);

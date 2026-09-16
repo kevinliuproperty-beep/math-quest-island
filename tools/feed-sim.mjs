@@ -97,7 +97,15 @@ for (const tid of Object.keys(TOPICS)) {
 }
 /* The harness masks stems itself rather than calling MQI.shapeKey, so a core
    under test that predates the fix is measured with the SAME ruler. Kept in step
-   with core.js shapeKey by hand; the audit's key it descends from is identical. */
+   with core.js shapeKey by hand; the audit's key it descends from is identical.
+
+   EIGHTH PASS 2026-09-16, W7. v8 widened the fraction regex below to `-?\d+` when
+   it widened every fraction regex in tools/gen-sanity.mjs, and js/core.js:370's
+   shapeKey - which this block exists to MIRROR - was left at `\d+`. Inert while
+   nothing in the game renders a negative fraction, but the simulator and the app
+   were no longer computing the same shape key, so the repeat guard this file
+   certifies was not quite the one the app runs. Back in step with core.js;
+   core.js is out of this lane's fence and is untouched. */
 const SHAPE_STOP = new Set(('A An The What Which How If In On At Of For From To And Or But So Then When Where Why Who '
   + 'Find Work Round Write Express Simplify Solve Calculate Convert Complete Give Use Look Read Add Subtract Multiply '
   + 'Divide Count Fill Choose Pick Draw Shade Here There This That It Is Are Was Were Do Does Each Every After Before '
@@ -106,7 +114,7 @@ const SHAPE_STOP = new Set(('A An The What Which How If In On At Of For From To 
 const SHAPE = q => {
   let s = String((q && q.q) || '') + ' ||X|| ' + String((q && q.extra) || '');
   s = s.replace(/<span class="frac">[\s\S]*?<\/span><\/span>/g, ' [FRAC] ');
-  s = s.replace(/<span class="n">-?\d+<\/span><span class="d">-?\d+<\/span>/g, ' [FRAC] ');
+  s = s.replace(/<span class="n">\d+<\/span><span class="d">\d+<\/span>/g, ' [FRAC] ');
   s = s.replace(/<[^>]*>/g, ' [T] ');
   s = s.replace(/&nbsp;/g, ' ');
   s = s.replace(/\$\s?[\d, ]+(\.\d+)?/g, ' [MONEY] ');

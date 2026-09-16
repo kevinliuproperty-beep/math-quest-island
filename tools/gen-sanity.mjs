@@ -4187,12 +4187,32 @@ for (const g of GENS) {
    because there is no topic in this game in which a rendered negative or zero
    part of a whole is anything but a leak. A '?' is the one legal non-numeral (the
    two completion banks render it by design). Negative control: the v7
-   gSubRelated card. --- */
+   gSubRelated card.
+
+   EIGHTH PASS 2026-09-16, W1 - THE GATE READ ONE RENDERING AND THE GAME HAS THREE.
+   The scanner was `<span class="n">...</span><span class="d">...</span>`, which is
+   robust to anything WITHIN that markup - a unicode minus, a space, a letter - and
+   blind to a fraction that is not written in that markup at all. THIRTY-SIX BANKS
+   ACROSS NINE TOPICS write theirs as plain text, `n + '/' + d`: the whole of
+   js/topics/p5-fractions.js - the game's mixed-number bank, led by gMixedAdd at
+   ten per draw - plus gShareAsFraction, gDivideAsFraction, gMixedTimesWhole,
+   gMixedSub, gImproperTimesImproper and p4pie.gPieFracOfSet, and not one of them
+   was inside the gate. Its verdict was correct and its STATED SCOPE was not, which
+   is the same defect as the kill it was written for: the ruler could not read the
+   spelling. It reads the stripped text of every surface now - the rendered
+   fractions opened out into it, so one pass covers both renderings - plus a UNARY
+   MINUS in front of any number anywhere, which is the leak one step before a
+   fraction is built out of it. --- */
 /* the same opening-out openFrac does, but it reads a sign, because the whole
    point of this gate is the character the other readers cannot see. */
 const openFracAny = s => String(s).replace(/<span class="n">(-?[\d?]+)<\/span><span class="d">(-?[\d?]+)<\/span>/g, ' $1/$2 ');
 const SIGN_N = 500;
 const SIGN_RE = /<span class="n">([^<]*)<\/span><span class="d">([^<]*)<\/span>/g;
+/* a fraction written as plain text, in the stripped reading of the surface */
+const SIGN_TEXT = /(-?\d+)\s*\/\s*(-?\d+)/g;
+/* a minus sign fixed to a number: the app renders every subtraction as ' - ' with
+   spaces on both sides, so a sign with no space after it is a unary one */
+const SIGN_UNARY = /[-−]\d/;
 function signScan(q) {
   const where = [['stem', q.q], ['extra', q.extra || ''], ['card', q.explain || ''],
                  ['answer', q.answerText || '']]
@@ -4204,6 +4224,15 @@ function signScan(q) {
       if (badN || badD)
         return `the ${label} renders ${n}/${d} - a ${badN ? 'numerator' : 'denominator'} below 1 is not a P3 fraction and not a P4 or P5 one either (${strip(openFracAny(html)).slice(0, 110)})`;
     }
+    /* the same assertion over every OTHER way this game writes a fraction */
+    const text = strip(openFracAny(html));
+    for (const m of text.matchAll(SIGN_TEXT)) {
+      const n = Number(m[1]), d = Number(m[2]);
+      if (!(n >= 1) || !(d >= 1))
+        return `the ${label} prints ${m[1]}/${m[2]} as text - a ${!(n >= 1) ? 'numerator' : 'denominator'} below 1 is not a P3 fraction and not a P4 or P5 one either (${text.slice(0, 110)})`;
+    }
+    if (SIGN_UNARY.test(text))
+      return `the ${label} prints a minus sign fixed to a number - negative numbers enter at Secondary 1 (${text.slice(0, 110)})`;
   }
   return null;
 }
@@ -4248,21 +4277,93 @@ for (const g of GENS) {
    candidate's VALUE was on the row and then printed the candidate's OWN form,
    while sided()'s uniq() seats whichever of two equal-valued candidates is written
    in the bigger pieces, so the card said "2/8" over a row showing "1/4". All seven
-   are fixed at their sites and the gate is set at zero. --- */
+   are fixed at their sites and the gate is set at zero.
+
+   EIGHTH PASS 2026-09-16, KILL 2 - THE CLAUSE CLOSED THE RENDERING, NOT THE
+   DEFECT. Three of those seven "fixes" did not stop NAMING an off-row wrong
+   answer; they stopped RENDERING it, and this clause could only read the
+   rendering. gSimplest went on naming one on 64.5 / 63.5% ("leaving the bottom
+   number at 10", with "8 / 2 = 4" two clauses earlier - the two numerals of 4/10
+   and the instruction to put one over the other) and gMakeOneIn on 49.1 / 49.6%
+   ("the old top number 1 over the new bottom number 6"), both flat against their
+   declared "before" rates of 58.6% and 49.8%. WORSE, THE TWO NUMERIC-OPTION BANKS
+   WERE NEVER IN SCOPE AT ALL: gEqMissing and gEqMissingDen answer with a BARE
+   NUMBER, so allFracs found nothing on their cards and the clause skipped them -
+   51.3 / 50.7% and 50.9 / 51.3%, never once measured.
+
+   THE CLAUSE READS EVERY SPELLING THE TOPIC USES NOW, which is the ninth pass's
+   question asked of this ruler: what else could this defect be written as?
+     (a) a RENDERED fraction, as before;
+     (b) a PLAIN-TEXT fraction, "4/10";
+     (c) a WORD fraction - "4 over 10", "4 out of 10", and the split form "the top
+         number 4 ... the bottom number 10";
+     (d) a LONE HALF of one, on a bank whose options are fractions: "leaving the
+         bottom number at 10" hands the child one part of a wrong answer and never
+         shows the whole, which is the assembly instruction itself. A wrong-answer
+         sentence may name a PART only when it also names the whole fraction and
+         that fraction is on the screen; otherwise it names the belief in words,
+         which is exactly what the v8 note claimed all seven banks already did;
+     (e) a BARE NUMBER, on a bank whose options are bare numbers - every numeral in
+         a wrong-answer sentence must be printed on the option row or in the stem,
+         because on those banks the wrong answer IS a bare number.
+   Rendered fractions are masked out before (b)-(e) run, so "taking 1 off the
+   bottom of 2/3" is read as a rendered fraction and not as a lone part. Negative
+   controls: the v8 gSimplest card, the v8 gMakeOneIn card and the v8 gEqMissingDen
+   card, all three red. --- */
 const CARD_N = 500;
 const CARD_WRONG = /would give|would be|would make|gives|instead|a different amount|a smaller amount|a bigger amount|too small|too big|not even close/i;
+/* a numeral introduced as one half of a fraction */
+const CARD_PART = /\b(top|bottom)\s+number\s+(?:at\s+|of\s+|is\s+)?(-?\d+)|\b(top|bottom)\s+at\s+(-?\d+)/gi;
+const CARD_OVER = /(-?\d+)[^.\d]{0,40}?\b(?:over|out of)\b[^.\d]{0,40}?(-?\d+)/gi;
+const CARD_SPLIT = /\btop\s+number\s+(?:at\s+|of\s+|is\s+)?(-?\d+)[^.]{0,60}?\bbottom\s+number\s+(?:at\s+|of\s+|is\s+)?(-?\d+)/gi;
+const CARD_SLASH = /(-?\d+)\s*\/\s*(-?\d+)/g;
 function cardScan(q) {
   const card = String(q.explain || '');
   if (!card) return null;
   const onScreen = new Set();
-  for (const src of (q.choices || []).concat([q.q, q.extra || '']))
+  const onNums = new Set();
+  for (const src of (q.choices || []).concat([q.q, q.extra || ''])) {
     for (const f of allFracs(src)) onScreen.add(f[0] + '/' + f[1]);
+    for (const x of strip(openFracAny(src)).match(/-?\d+/g) || []) onNums.add(x);
+  }
+  /* Which kind of answer this bank takes. `strip` alone will not tell: stripping
+     the markup off a rendered fraction leaves its two numerals side by side, so
+     every fraction bank reads as a bare-number one. The rendered fractions have to
+     be COUNTED, not removed. */
+  const ch = q.choices || [];
+  const numericBank = ch.length > 0 && ch.every(c => allFracs(c).length === 0 && /^-?\d+$/.test(strip(String(c))));
+  const fracBank = ch.length > 0 && ch.every(c => allFracs(c).length > 0);
   for (const sent of card.split(/(?<=\.)\s+/)) {
-    if (!CARD_WRONG.test(strip(sent))) continue;
-    for (const f of allFracs(sent)) {
+    const text = strip(sent);
+    if (!CARD_WRONG.test(text)) continue;
+    const shown = allFracs(sent);
+    for (const f of shown) {
       const t = f[0] + '/' + f[1];
       if (!onScreen.has(t))
         return `the card names ${t} as a wrong answer and ${t} is on neither the option row nor the stem ("${strip(openFracAny(sent)).slice(0, 110)}")`;
+    }
+    /* everything below reads the sentence with its RENDERED fractions masked out,
+       so a fraction already checked above cannot be re-read as loose numerals */
+    const masked = strip(String(sent).replace(/<span class="frac">[\s\S]*?<\/span><\/span>/g, ' [FRAC] ')
+      .replace(/<span class="n">-?\d+<\/span><span class="d">-?\d+<\/span>/g, ' [FRAC] '));
+    const pair = (a, b, how) => {
+      const t = a + '/' + b;
+      return onScreen.has(t) ? null
+        : `the card names ${t} as a wrong answer ${how} and ${t} is on neither the option row nor the stem ("${masked.slice(0, 110)}")`;
+    };
+    for (const m of masked.matchAll(CARD_SLASH)) { const v = pair(m[1], m[2], 'in plain text'); if (v) return v; }
+    for (const m of masked.matchAll(CARD_SPLIT)) { const v = pair(m[1], m[2], 'in words'); if (v) return v; }
+    for (const m of masked.matchAll(CARD_OVER)) { const v = pair(m[1], m[2], 'in words'); if (v) return v; }
+    if (fracBank && !shown.length) {
+      for (const m of masked.matchAll(CARD_PART)) {
+        const half = (m[1] || m[3]).toLowerCase(), val = m[2] === undefined ? m[4] : m[2];
+        return `the card hands the child the ${half} number ${val} of a wrong answer and never shows the fraction it makes, on a bank whose options are fractions ("${masked.slice(0, 110)}")`;
+      }
+    }
+    if (numericBank) {
+      for (const x of masked.match(/-?\d+/g) || [])
+        if (!onNums.has(x))
+          return `the card names ${x} as a wrong answer and ${x} is on neither the option row nor the stem, on a bank whose options are bare numbers ("${masked.slice(0, 110)}")`;
     }
   }
   return null;
@@ -4327,38 +4428,121 @@ for (const g of GENS) {
    second control below proves that rather than asserting it.
 
    Negative control: the v7 gPicTakeAway construction, rebuilt from its own draw
-   and its own candidate bank, red at ~80%. Live banks after the rebuild: the four
-   exempted ones at 69.8-77.8% on their own method, gAddRelated / gSubRelated on
-   "the answer is written over the BIGGER of the two bottom numbers" - also their
-   own method, and also declared - and nothing else over 42%. --- */
+   and its own candidate bank, red at ~80%.
+
+   EIGHTH PASS 2026-09-16, KILL 1 - THE LIBRARY WAS ONE OPERATION AND THE TELL WAS
+   TWO. v8 shipped this rule with its own blind spot declared as residual 9: "the
+   expression library is ONE operation over the stem's numerals ... a two-operation
+   half-key route is invisible to it". It was not theoretical. `(n1)/2` - halve the
+   bottom number the stem prints - named gSimplestError's key on 76.2 / 76.9% of
+   draws and answered the item on 70.5 / 70.7%, and gSimplest's on 71.7% at 66.6%,
+   on two banks served 1.81 and 1.35 items a session. THE RULE as stated says "a
+   single expression"; only the IMPLEMENTATION's library kept the gate quiet, so the
+   line this file printed on every run was false as a claim about the FILE and true
+   only as a claim about the RULER. THE LIBRARY IS TWO OPERATIONS NOW: every
+   one-operation value composed once more with the same operations plus the halving
+   family the residual names - A op n_k, A op 1, A op 2, A/2, A/3, A/n_k. Distinct
+   VALUES only are composed, because two spellings of one number cannot score
+   differently and that dedupe is what keeps the widened sweep inside the harness's
+   running time.
+
+   AND THE EXEMPTION LIST IS KEYED BY VALUE, NOT BY SPELLING, which is the same
+   lesson applied to the fix. "n0+n2" and "(n0)+n2" are one piece of arithmetic, so
+   a list keyed to the STRING would have failed all four exempted banks the moment
+   the library learnt to write their own method a second way. A learnt expression is
+   exempt when it is value-identical, on EVERY tested draw, to an expression the
+   list declares for that bank.
+
+   THE TWO RELATED-FRACTION EXEMPTIONS ARE GONE. v8 declared gAddRelated|n3 and
+   gSubRelated|n3 at 60.9% and 58.1%; those were v7 numbers printed in a v8 table.
+   After v8's own row change the banks measure 49.9% and 44.0%, so the exemptions
+   were two permanent holes with no evidence behind them - a later edit could push
+   either bank's n3 route back over the ceiling with the gate staying quiet. Deleted;
+   both banks are gated like every other.
+
+   Live banks after the ninth-pass rebuild: the four exempted ones at 70.3-77.7% on
+   their own method, and nothing else over 50%. --- */
 const HALF_N = 2000, HALF_CAP = 0.60;
 /* (bank, expression) -> the mathematics that expression IS, in the item's own
-   words. Adding a line here is a claim about the SYLLABUS, not about the file. */
+   words. Adding a line here is a claim about the SYLLABUS, not about the file. The
+   match is by VALUE: any spelling of the same arithmetic is the same exemption. */
 const HALF_METHOD = {
   'fractions.gAddSame|n0+n2': 'add the two top numbers and keep the bottom number',
   'fractions.gSubSame|n0-n2': 'take the second top number from the first and keep the bottom number',
   'fractions.gSubFromOne|n2-n1': 'one whole is d/d, so take the top number from the bottom number',
-  'fractions.gMakeOne|n1-n0': 'what is missing from one whole is the bottom number less the top number',
-  /* the two related-fraction banks sit ON the line (60.9% and 58.1%) and the
-     expression is the same one in both: the answer to a related add or subtract is
-     written over the BIGGER of the two bottom numbers, which is the conversion the
-     item is about. Declared for both so the pair cannot drift apart silently. */
-  'fractions.gAddRelated|n3': 'convert to the bigger bottom number and keep it',
-  'fractions.gSubRelated|n3': 'convert to the bigger bottom number and keep it'
+  'fractions.gMakeOne|n1-n0': 'what is missing from one whole is the bottom number less the top number'
 };
-const halfExprs = q => {
-  const ns = numsOfHtml(q.q), lab = [];
-  ns.forEach((v, i) => lab.push(['n' + i, v], ['n' + i + '+1', v + 1], ['n' + i + '-1', v - 1]));
-  for (let x = 0; x < ns.length; x++) for (let y = 0; y < ns.length; y++) if (x !== y)
-    lab.push(['n' + x + '+n' + y, ns[x] + ns[y]], ['n' + x + '-n' + y, ns[x] - ns[y]],
-             ['n' + x + '*n' + y, ns[x] * ns[y]]);
-  return lab;
+/* every expression any exemption is written in, for the value-alias test below */
+const HALF_METHOD_EXPRS = [...new Set(Object.keys(HALF_METHOD).map(k => k.split('|')[1]))];
+/* ONE operation over the stem's numerals, then a SECOND over the result. Walked
+   rather than materialised: the library is ~1,400 values on an eight-numeral stem
+   and building an array of it on every draw is most of the running time. */
+/* the v8 library, kept so a control can show that the WIDENING is what reads the
+   two-operation route and not the rest of the rule */
+function halfWalk1(ns, cb) {
+  ns.forEach((v, i) => { cb('n' + i, v); cb('n' + i + '+1', v + 1); cb('n' + i + '-1', v - 1); });
+  for (let x = 0; x < ns.length; x++) for (let y = 0; y < ns.length; y++) if (x !== y) {
+    cb('n' + x + '+n' + y, ns[x] + ns[y]);
+    cb('n' + x + '-n' + y, ns[x] - ns[y]);
+    cb('n' + x + '*n' + y, ns[x] * ns[y]);
+  }
+}
+function halfWalk(ns, cb) {
+  const base = [];
+  const one = (nm, v) => { base.push([nm, v]); cb(nm, v); };
+  ns.forEach((v, i) => { one('n' + i, v); one('n' + i + '+1', v + 1); one('n' + i + '-1', v - 1); });
+  for (let x = 0; x < ns.length; x++) for (let y = 0; y < ns.length; y++) if (x !== y) {
+    one('n' + x + '+n' + y, ns[x] + ns[y]);
+    one('n' + x + '-n' + y, ns[x] - ns[y]);
+    one('n' + x + '*n' + y, ns[x] * ns[y]);
+  }
+  const done = new Set();
+  const two = (nm, v) => { if (Number.isInteger(v)) cb(nm, v); };
+  for (const [nm, v] of base) {
+    if (done.has(v)) continue;
+    done.add(v);
+    two('(' + nm + ')/2', v / 2); two('(' + nm + ')/3', v / 3); two('(' + nm + ')*2', v * 2);
+    two('(' + nm + ')+1', v + 1); two('(' + nm + ')-1', v - 1);
+    two('(' + nm + ')+2', v + 2); two('(' + nm + ')-2', v - 2);
+    for (let k = 0; k < ns.length; k++) {
+      two('(' + nm + ')+n' + k, v + ns[k]);
+      two('(' + nm + ')-n' + k, v - ns[k]);
+      two('(' + nm + ')*n' + k, v * ns[k]);
+      if (ns[k]) two('(' + nm + ')/n' + k, v / ns[k]);
+    }
+  }
+}
+/* One expression's value on one stem, so the TEST pass costs O(1) instead of
+   rebuilding the library. undefined when the expression does not land on a whole
+   number - the file's own convention, and why a rule that names nothing on the row
+   is scored as a guess rather than as a miss. */
+const halfBase = (nm, ns) => {
+  let m = /^n(\d+)$/.exec(nm);
+  if (m) return ns[+m[1]];
+  m = /^n(\d+)([+-])1$/.exec(nm);
+  if (m) return ns[+m[1]] === undefined ? undefined : ns[+m[1]] + (m[2] === '+' ? 1 : -1);
+  m = /^n(\d+)([+\-*])n(\d+)$/.exec(nm);
+  if (!m) return undefined;
+  const a = ns[+m[1]], b = ns[+m[3]];
+  if (a === undefined || b === undefined) return undefined;
+  return m[2] === '+' ? a + b : m[2] === '-' ? a - b : a * b;
 };
+function halfEval(nm, ns) {
+  const m = /^\((.+)\)([+\-*/])(\d+|n\d+)$/.exec(nm);
+  if (!m) return halfBase(nm, ns);
+  const a = halfBase(m[1], ns);
+  if (a === undefined) return undefined;
+  const b = m[3][0] === 'n' ? ns[+m[3].slice(1)] : Number(m[3]);
+  if (b === undefined) return undefined;
+  const v = m[2] === '+' ? a + b : m[2] === '-' ? a - b : m[2] === '*' ? a * b : (b ? a / b : NaN);
+  return Number.isInteger(v) ? v : undefined;
+}
 const halfPair = o => {
   const m = String(o).match(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/);
   return m ? [Number(m[1]), Number(m[2])] : null;
 };
-function halfBank(draw, n) {
+function halfBank(draw, n, walk) {
+  const lib = walk || halfWalk;
   const cnt = new Map();
   const bump = (k, i) => { const v = cnt.get(k) || [0, 0]; v[i]++; cnt.set(k, v); };
   let drew = 0;
@@ -4369,47 +4553,72 @@ function halfBank(draw, n) {
     if (!k) continue;
     drew++;
     const sn = new Set(), sd = new Set();
-    for (const [nm, v] of halfExprs(q)) { if (v === k[0]) sn.add(nm); if (v === k[1]) sd.add(nm); }
+    lib(numsOfHtml(q.q), (nm, v) => { if (v === k[0]) sn.add(nm); if (v === k[1]) sd.add(nm); });
     for (const nm of sn) bump(nm, 0);
     for (const nm of sd) bump(nm, 1);
   }
   if (!drew) return { n: 0 };
-  let expr = null, half = 0, best = -1;
-  for (const [k, v] of cnt) {
-    if (v[0] > best) { best = v[0]; expr = k; half = 0; }
-    if (v[1] > best) { best = v[1]; expr = k; half = 1; }
-  }
+  /* EIGHTH PASS 2026-09-16. v8 learnt the ONE expression that names a half most
+     often and reported its route. That is not the same as the best ROUTE: naming
+     the key's bottom number on 77% is worth less than naming it on 71% if the
+     first one leaves three options standing and the second isolates. On the v8
+     gSimplest control the two tie at ~71% and the ruler picked whichever the
+     library happened to emit first - 42% instead of 66%. The HALF_TOP candidates
+     by naming frequency are all carried into the test pass now and the WORST of
+     them is the bank's verdict, which is the honest reading of "a child who has
+     found the rule" and costs one integer evaluation per candidate per draw. */
+  const HALF_TOP = 12;
+  const cands = [];
+  for (const [k, v] of cnt) { cands.push([k, 0, v[0]]); cands.push([k, 1, v[1]]); }
+  cands.sort((a, b) => b[2] - a[2] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  const picks = cands.slice(0, HALF_TOP).map(c => ({
+    expr: c[0], half: c[1], names: 0, score: 0, alias: new Set(HALF_METHOD_EXPRS)
+  }));
   /* SEVENTH PASS 2026-09-16. A stem with NO numeral in it has no expression to
      learn, and a ruler that drops such a bank from its table is the failure mode
      this whole pass is about - five of the seven kills landed on the surface the
      newest ruler did not read. v8's gPicTakeAway prints no numeral by design, so
      it is reported at zero rather than omitted. */
-  if (!expr) return { n: drew, expr: '-none-', half: 'n/a', names: 0, rate: 0 };
-  let score = 0, names = 0, tested = 0;
+  if (!picks.length) return { n: drew, expr: '-none-', half: 'n/a', names: 0, rate: 0, aliases: [] };
+  let tested = 0;
   for (let i = 0; i < n; i++) {
     let q; try { q = draw(); } catch (e) { break; }
     if (!q || !(q.correct >= 0) || (q.choices || []).length !== 4) continue;
     const k = halfPair(q.choices[q.correct]);
     if (!k) continue;
     tested++;
-    const lab = new Map(halfExprs(q));
-    const v = lab.get(expr);
-    if (v === undefined) { score += 0.25; continue; }
-    if (k[half] === v) names++;
-    const hits = [];
-    for (let j = 0; j < 4; j++) {
-      const p = halfPair(q.choices[j]);
-      if (p && p[half] === v) hits.push(j);
+    const ns = numsOfHtml(q.q);
+    const pairs = [];
+    for (let j = 0; j < 4; j++) pairs.push(halfPair(q.choices[j]));
+    for (const p of picks) {
+      const v = halfEval(p.expr, ns);
+      /* which declared-method expressions this one is value-identical to, on every
+         draw: an exemption that reads only the SPELLING is the same defect the
+         widened library was written to catch, one level up */
+      for (const e of p.alias) if (halfEval(e, ns) !== v) p.alias.delete(e);
+      if (v === undefined) { p.score += 0.25; continue; }
+      if (k[p.half] === v) p.names++;
+      const hits = [];
+      for (let j = 0; j < 4; j++) if (pairs[j] && pairs[j][p.half] === v) hits.push(j);
+      p.score += hits.length ? (hits.indexOf(q.correct) >= 0 ? 1 / hits.length : 0) : 0.25;
     }
-    score += hits.length ? (hits.indexOf(q.correct) >= 0 ? 1 / hits.length : 0) : 0.25;
   }
-  return { n: tested, expr, half: half ? 'denominator' : 'numerator',
-           names: tested ? names / tested : 0, rate: tested ? score / tested : 0 };
+  if (!tested) return { n: 0 };
+  let win = picks[0];
+  for (const p of picks) if (p.score > win.score) win = p;
+  return { n: tested, expr: win.expr, half: win.half ? 'denominator' : 'numerator',
+           aliases: [...win.alias], names: win.names / tested, rate: win.score / tested };
+}
+/* The exemption this row qualifies for under `name`, by spelling OR by value. */
+function halfMethodOf(row, name) {
+  if (!row || !row.expr) return null;
+  for (const e of [row.expr].concat(row.aliases || []))
+    if (HALF_METHOD[name + '|' + e]) return HALF_METHOD[name + '|' + e];
+  return null;
 }
 function halfVerdict(row, name) {
   if (!row.n || row.rate < HALF_CAP) return null;
-  const method = HALF_METHOD[name + '|' + row.expr];
-  if (method) return null;
+  if (halfMethodOf(row, name)) return null;
   return `half-key tell: the single expression "${row.expr}" over the stem's numerals names the key's ${row.half} on ${(100 * row.names).toFixed(1)}% of draws, and taking the options that carry it answers the item on ${(100 * row.rate).toFixed(1)}% - at or over the ${Math.round(100 * HALF_CAP)}% ceiling, with the other half of the key settled by the OPTION ROW and the item's own mathematics never done`;
 }
 const halfRows = [];
@@ -4418,7 +4627,7 @@ for (const g of GENS) {
   const row = halfBank(g.fn, HALF_N);
   if (!row.n) continue;
   row.name = g.topic + '.' + g.name;
-  row.method = HALF_METHOD[row.name + '|' + row.expr] || null;
+  row.method = halfMethodOf(row, row.name);
   row.err = halfVerdict(row, row.name);
   halfRows.push(row);
   if (row.err) failures++;
@@ -4986,7 +5195,101 @@ control('RULE 14 method exemption - the gAddSame row (n0+n2 IS adding like fract
   if (!bare) return 'the rule stayed quiet on the row WITHOUT any exemption - the control is not measuring what it claims';
   const exempt = halfVerdict(row, 'fractions.gAddSame');
   return exempt ? null
-    : `caught at ${(100 * row.rate).toFixed(1)}% on "${row.expr}" and exempted by name: ${HALF_METHOD['fractions.gAddSame|' + row.expr]}`;
+    : `caught at ${(100 * row.rate).toFixed(1)}% on "${row.expr}" and exempted by its mathematics: ${halfMethodOf(row, 'fractions.gAddSame')}`;
+});
+
+/* 19b. THE EXEMPTION MUST READ THE ARITHMETIC, NOT THE SPELLING - the eighth
+        pass's lesson applied to the exemption list itself. The same adding-like-
+        fractions row, with the ONE spelling the list declares deleted and only a
+        two-operation spelling of the SAME arithmetic left, must still be exempt.
+        Keyed to a string it would go red on an honest bank the moment the widened
+        library found a second way to write "add the two top numbers". */
+control('RULE 14 exemption reads the arithmetic, not the spelling - "(n2)+n0" is "n0+n2"', () => {
+  const name = 'control.addSameSpelling', spelling = '(n2)+n0';
+  HALF_METHOD[name + '|' + spelling] = 'add the two top numbers and keep the bottom number';
+  HALF_METHOD_EXPRS.push(spelling);
+  const row = halfBank(V8_ADDLIKE, HALF_N);
+  const v = halfVerdict(row, name);
+  delete HALF_METHOD[name + '|' + spelling];
+  HALF_METHOD_EXPRS.pop();
+  if (!row.n) return null;
+  if (row.rate < HALF_CAP) return `the control measures ${(100 * row.rate).toFixed(1)}%, under the ceiling - it is not exercising the exemption at all`;
+  if (row.expr === spelling) return `the ruler learnt the declared spelling itself, so this control proves nothing`;
+  return v ? null
+    : `"${row.expr}" recognised as the declared "${spelling}" by its value and exempted at ${(100 * row.rate).toFixed(1)}%`;
+});
+
+/* 19c. RULE 14 READS TWO OPERATIONS, and this is the row that proves the widening
+        rather than asserting it: v8's gSimplest, rebuilt from its own base table,
+        its own factor draw and its own candidate bank. `pick(SCALABLE)` then
+        `pick(scalesFor(d))` puts the common factor at 2 on ~71% of draws, so
+        "halve the bottom number the stem prints" names the key's bottom number on
+        ~72% and settles the row at ~66%. The v8 ONE-operation library is run over
+        the SAME construction in the same control and must stay under the ceiling:
+        if it did not, the widening would not be what catches this. */
+const V8_SIMPLEST = () => {
+  const rnd = (x, y) => x + Math.floor(Math.random() * (y - x + 1));
+  const sh = arr => arr.slice().sort(() => Math.random() - 0.5);
+  const val = p => p[0] / p[1];
+  const ok = p => Array.isArray(p) && p[0] >= 1 && p[1] >= 2 && p[0] < p[1] && p[1] <= 12;
+  const BASE = [];
+  for (let d0 = 2; d0 <= 6; d0++) for (let n0 = 1; n0 < d0; n0++) if (gcd(n0, d0) === 1) BASE.push([n0, d0]);
+  let n = 2, d = 3, N = 4, D = 6, key = [2, 3], slips = [];
+  for (let tr = 0; tr < 200; tr++) {
+    const b = BASE[rnd(0, BASE.length - 1)];
+    n = b[0]; d = b[1];
+    const ks = []; for (let z = 2; z <= 6; z++) if (z * d <= 12) ks.push(z);
+    const k = ks[rnd(0, ks.length - 1)], t = n >= 2 ? k : 1;
+    N = k * n; D = k * d; key = [n, d];
+    const cands = [[N - t, D - t], [N + t, D + t], [N + 1, D], [N + t, D], [N + 2, D], [n, D], [N - t, D],
+                   [n + 1, d], [n - 1, d], [n, d - 1], [n - 1, d - 1], [n + 1, d - 1], [n, d - 2],
+                   [n + 1, d + 1], [n, d + 1]]
+      .filter(p => ok(p) && val(p) !== val(key));
+    /* sided()'s uniq(): two candidates of equal value collapse to the one written
+       in the bigger pieces */
+    const u = [];
+    for (const c of sh(cands)) {
+      const i = u.findIndex(z => val(z) === val(c));
+      if (i < 0) u.push(c); else if (c[1] < u[i][1]) u[i] = c;
+    }
+    /* sided()'s small(): a candidate written over a bottom number UNDER the key's
+       is taken first, which is the seat that breaks "pick the smallest bottom
+       number" - and, on this bank, the seat that leaves the key's OWN bottom
+       number alone on the row */
+    const small = arr => arr.filter(c => c[1] < key[1]).concat(arr.filter(c => c[1] >= key[1]));
+    const above = small(sh(u.filter(c => val(c) > val(key)))), below = small(sh(u.filter(c => val(c) < val(key))));
+    const us = []; for (let z = 0; z <= 3; z++) if (z <= above.length && 3 - z <= below.length) us.push(z);
+    if (!us.length) continue;
+    const uu = us[rnd(0, us.length - 1)];
+    slips = above.slice(0, uu).concat(below.slice(0, 3 - uu));
+    if (slips.every(c => c[1] > key[1])) {
+      const pool = above.concat(below).filter(c => c[1] < key[1]);
+      for (let i = slips.length - 1; i >= 0; i--) {
+        const up = val(slips[i]) > val(key);
+        const alt = pool.find(c => (val(c) > val(key)) === up && !slips.some(z => val(z) === val(c)));
+        if (alt) { slips[i] = alt; break; }
+      }
+    }
+    if (new Set([key].concat(slips).map(val)).size === 4) break;
+    slips = [];
+  }
+  if (slips.length !== 3) { n = 2; d = 3; N = 4; D = 6; key = [2, 3]; slips = [[2, 4], [2, 6], [1, 3]]; }
+  const row = [key].concat(slips);
+  const order = row.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { q: 'Express ' + FR(N, D) + ' in its <b>simplest form</b>.', extra: '',
+           choices: order.map(i => FR(row[i][0], row[i][1])), correct: order.indexOf(0),
+           answerText: FR(key[0], key[1]), explain: '' };
+};
+control('RULE 14 two operations - the v8 gSimplest row ("(n1)/2" halves the printed bottom number)', () => {
+  const two = halfBank(V8_SIMPLEST, HALF_N);
+  if (!two.n) return null;
+  const v = halfVerdict(two, 'control.v8Simplest');
+  if (process.env.CTL_DEBUG) console.log(`    [debug] v8 gSimplest control: two-op "${two.expr}" names the ${two.half} on ${(100 * two.names).toFixed(2)}%, route ${(100 * two.rate).toFixed(2)}%`);
+  if (!v) return null;
+  const one = halfBank(V8_SIMPLEST, HALF_N, halfWalk1);
+  if (one.n && halfVerdict(one, 'control.v8Simplest'))
+    return null;   /* the v8 library caught it too, so this is not a two-operation control */
+  return `${v} - and the v8 ONE-operation library learnt "${one.expr}" at ${(100 * one.rate).toFixed(1)}%, under the ceiling, which is how this route shipped`;
 });
 
 /* 20. THE CARD-ROW CLAUSE: v7's gSimplestError card, whose last sentence named
@@ -5001,6 +5304,34 @@ control('card-row clause - the v7 gSimplestError card ("gives 1/5", 1/5 not on t
   };
   return cardScan(q);
 });
+
+/* 21. THE CARD-ROW CLAUSE, EVERY OTHER SPELLING (eighth pass, KILL 2). Three cards
+       that the v8 clause passed and a P3 child could not: one naming a lone half,
+       one naming a fraction in words, one naming a bare number on a bank whose
+       options are bare numbers. Each is the v8 card verbatim. */
+control('card-row clause - the v8 gSimplest card ("leaving the bottom number at 10")', () => cardScan({
+  q: 'Express ' + FR(8, 10) + ' in its <b>simplest form</b>.', extra: '',
+  choices: [FR(4, 5), FR(5, 6), FR(3, 4), FR(3, 5)], correct: 0, answerText: FR(4, 5),
+  explain: 'Simplest form means dividing the top and the bottom by the same number until you cannot go ' +
+    'any further. 8 ÷ 2 = 4 and 10 ÷ 2 = 5, so ' + FR(8, 10) + ' = ' + FR(4, 5) + '. It is the same ' +
+    'amount, written with bigger parts. Dividing only the top and leaving the bottom number at 10 would ' +
+    'make the pieces smaller as well as fewer, which is a different amount.'
+}));
+control('card-row clause - the v8 gMakeOneIn card ("the old top number 1 over the new bottom number 6")', () => cardScan({
+  q: FR(1, 2) + ' + ? = 1 &nbsp; What is the missing fraction, written in 6ths?', extra: '',
+  choices: [FR(3, 6), FR(2, 6), FR(4, 6), FR(5, 6)], correct: 0, answerText: FR(3, 6),
+  explain: 'Step 1: one whole is ' + FR(2, 2) + ', so what is missing is 2 − 1 = 1 of the big pieces, ' +
+    'which is ' + FR(1, 2) + '. Step 2: write that in 6ths. 2 × 3 = 6, so each big piece is 3 small ' +
+    'ones: 1 × 3 = 3, giving ' + FR(3, 6) + '. Keeping the old top number 1 over the new bottom number ' +
+    '6 would be too small: each big piece became 3 small ones, so the top number has to grow as well.'
+}));
+control('card-row clause - the v8 gEqMissingDen card ("would give 16", a bare-number bank)', () => cardScan({
+  q: FR(3, 4) + ' = ' + FR(9, '?') + ' &nbsp; What is the missing <b>denominator</b>?', extra: '',
+  choices: ['12', '10', '7', '4'], correct: 0, answerText: '12',
+  explain: 'The top number was multiplied by 3 (3 × 3 = 9), so the bottom number must be multiplied by ' +
+    '3 too: 4 × 3 = 12. Leaving the bottom at 4 would make the fraction 3 times bigger, and multiplying ' +
+    'it by 4 would give 16, which is too small an amount.'
+}));
 
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
 const setRows = [];
@@ -5263,7 +5594,7 @@ if (halfRows.length) {
   console.log('     the exemption is keyed to the (bank, expression) PAIR and every line of it is a claim about the syllabus:');
   console.log('     "add the two tops and keep the bottom" names gAddSame\'s key on every draw because that IS adding like');
   console.log('     fractions. A bank on the list whose tell moves to another expression still fails - control 18 proves it.');
-  if (halfRows.every(r => !r.err)) console.log(`ok   RULE 14 half-key rule: ${halfRows.length} banks, no half of a key named by a stem expression the row then settles at or over ${Math.round(100*HALF_CAP)}%, outside the ${Object.keys(HALF_METHOD).length} declared methods`);
+  if (halfRows.every(r => !r.err)) console.log(`ok   RULE 14 half-key rule: ${halfRows.length} banks, no half of a key named by a ONE- or TWO-operation expression over the stem's numerals that the row then settles at or over ${Math.round(100*HALF_CAP)}%, outside the ${Object.keys(HALF_METHOD).length} declared methods (matched by value, in any spelling)`);
 }
 
 /* THE CARD-ROW CLAUSE and THE SIGN GATE, printed when they have something to say
@@ -5272,13 +5603,13 @@ if (cardRows.length) {
   const bad = cardRows.filter(r => r.err);
   console.log('');
   if (bad.length) for (const r of bad) console.log(`FAIL card-row  ${r.name}  ${r.err}`);
-  else console.log(`ok   card-row clause: ${cardRows.length} banks x ${CARD_N} draws, every wrong answer a teaching card names is printed on the option row or in the stem`);
+  else console.log(`ok   card-row clause: ${cardRows.length} banks x ${CARD_N} draws, every wrong answer a teaching card names - rendered, plain text, in words, one half of one, or a bare number on a bare-number bank - is printed on the option row or in the stem`);
 }
 if (signRows.length) {
   const bad = signRows.filter(r => r.err);
   console.log('');
   if (bad.length) for (const r of bad) console.log(`FAIL sign gate  ${r.name}  ${r.err}`);
-  else console.log(`ok   sign gate: ${signRows.length} banks x ${SIGN_N} draws in every topic, no rendered fraction with a numerator or a denominator below 1 on any surface`);
+  else console.log(`ok   sign gate: ${signRows.length} banks x ${SIGN_N} draws in every topic, no fraction with a numerator or a denominator below 1 and no unary minus on any surface, in any rendering`);
 }
 
 /* THE PROSE AGREEMENT CLAUSE, printed only when it has something to say. */

@@ -1333,10 +1333,12 @@ function gOrderP2(){
        place are now drawn independently, so a claim stem appears on the hundreds
        third, the tens third and the ones third alike. "Start with the hundreds"
        is wrong two times in three on a claim draw as well.
-     PRINT ORDER IS INDEPENDENT OF THE TRUTH. The same wrong claim is phrased
-       either way round - "665 is greater than 933" or "933 is smaller than 665"
-       - so the number the character names is printed first in half the draws and
-       second in the other half, and "ends on the second number" is a coin toss.
+     PRINT ORDER IS INDEPENDENT OF THE TRUTH. Which of the two numbers prints
+       first is a coin toss, so "ends on the second number" is a coin toss too.
+       v5 also phrased the same wrong claim either way round ("665 is greater
+       than 933" or "933 is smaller than 665"); the SIXTH pass showed that is not
+       enough, because a false claim about an order names the loser whichever way
+       round it is phrased, and no stem states a direction any more (see below).
 
    The digits are drawn to one rule, which is what the oracle re-derives:
 
@@ -1346,28 +1348,65 @@ function gOrderP2(){
        reading at that place a FALSE SENTENCE rather than a true one with a bad
        conclusion, and it is what stops a single digit settling the item.
 
-   Three stem shapes, all asking "What went wrong?":
-     CLAIM, digit reason   "<P> is greater than <Q>, because <dP> is more than
-                           <dQ>", or "<P> is smaller than <Q>, because <dP> is
-                           less than <dQ>". The quoted place differs, points at
-                           the loser, and is never the deciding place.
+   REFUTATION FIX (sixth pass 2026-09-16, KILL 1 - NO STEM STATES A DIRECTION).
+   v6 phrased the character's wrong claim as "<P> is greater than <Q>". A claim
+   about an order that MUST be false is false in exactly one way, so that wording
+   is a logical IDENTITY, not a correlation: "greater" named the loser in 13,189
+   of 13,189 claim draws, and "take the option that ends on the number the
+   character did NOT call greater" composed with the structural 50% below was the
+   key in every claim draw with no digit compared - a 66.7% floor where the v6
+   note claimed 33.7%. No threshold on any spread gate could see it, because
+   there was nothing to correlate. The v6 stem's "because <dP> is more than <dQ>"
+   carried the same identity one level down: the quoted place always points at
+   the loser, so the digit relation named the loser too.
+
+   NO STEM MAY CARRY THE WORD "greater" OR "smaller" ABOUT A NAMED NUMBER. Every
+   claim shape is now ORDER-FREE: it names a PLACE and says the character used it
+   (or dismissed it), and it names no winner and quotes no digit. The four
+   options each name a place and a conclusion, and the key rotates uniformly over
+   them, so the only thing that separates them is reading the digits.
+
+   Three stem shapes, all asking "What went wrong?", each claim shape phrased two
+   ways on an independent coin:
+     CLAIM, looked too far right  "<K> looked only at the <place> to decide which
+                           of <P> and <Q> is greater", or "<K> says the <place>
+                           decide which of <P> and <Q> is greater". The place
+                           named differs, points at the LOSER, and is never the
+                           deciding place, so the method really is wrong. No digit
+                           is printed and no number is called greater or smaller.
      CLAIM, the last digit the hundreds and the tens tie, so there is no place to
                            the right of the deciding place left to misread. The
                            character claims the ones CANNOT change which number
-                           is greater - the mirror of "a big ones digit never
-                           wins on its own", and the error this third exists to
-                           catch. The ones decide on those draws.
-     TIE                   "<P> and <Q> are the same, because the <place> are the
-                           same" - one place that really does tie, read as if it
+                           is greater, or equivalently that the hundreds and the
+                           tens were all he looked at - the mirror of "a big ones
+                           digit never wins on its own", and the error this third
+                           exists to catch. The ones decide on those draws.
+     TIE                   "<P> and <Q> are the same, because the <place(s)> are
+                           the same" - places that really do tie, read as if they
                            settled the whole number.
 
-   THE LAST-DIGIT CLAIM NAMES NO WINNER, ON PURPOSE. On an ones-decide draw the
-   two tied places can only carry tie sentences, which name no winner at all, so
-   the deciding place's two readings are the only options that do. If the stem
-   ALSO named a number as the greater, "bin the ties, then bin the option that
-   agrees with the character" would be the key in 100% of those draws with no
-   digit compared - the third pass's own KILL 1, one third over. Measured at
-   45.8% topic-wide before the wording changed and 33.3% after.
+   THE PHRASING COIN IS INDEPENDENT OF EVERYTHING. v6 got half its surface variety
+   from the greater/smaller pairing, which was the leak; the coin replaces it with
+   a word that carries nothing. Ten masked stem templates and twelve whole masked
+   items, against v6's six and twelve.
+
+   NO CLAIM NAMES A WINNER, ON PURPOSE. On an ones-decide draw the two tied
+   places can only carry tie sentences, which name no winner at all, so the
+   deciding place's two readings are the only options that do. If the stem ALSO
+   named a number as the greater, "bin the ties, then bin the option that agrees
+   with the character" would be the key in 100% of those draws with no digit
+   compared - the third pass's own KILL 1, one third over. Measured at 45.8%
+   topic-wide before the wording changed and 33.3% after. Since the sixth pass
+   that reasoning binds every claim shape, not just the last-digit one.
+
+   REFUTATION FIX (sixth pass 2026-09-16, WOUND 4 - THE TIE STEM NAMES BOTH TIED
+   PLACES WHEN BOTH TIE). On an ones-decide tie draw the two distractors are
+   tie('hundreds') and tie('tens'), and a stem citing one of those two places
+   reprinted the character's own reason AND conclusion as an option, word for
+   word, on 16.8% of all draws. It leaked nothing (binning it leaves three), but
+   an option that is the stem is not a reading of anything, so the stem now cites
+   "the hundreds and the tens" together and no option can restate it. Asserted by
+   the oracle.
 
    Two option templates, one coarse shape ("The <place> ..."), and the option set
    is always four options over TWO places:
@@ -1421,7 +1460,10 @@ function gCompareError(){
   let qp = null;       /* the place the character quotes on a claim stem */
   let z = 'hundreds';  /* the tied place the character cites on a tie stem */
   if (decide === 'ones') {
-    if (!claimStem) z = pick(['hundreds', 'tens']);
+    /* BOTH tied places, never one of them: the two distractors on this third are
+       tie('hundreds') and tie('tens'), so citing a single place would reprint the
+       character's own sentence as an option (sixth-pass WOUND 4). */
+    if (!claimStem) z = 'hundreds and the tens';
   } else if (claimStem) {
     for (const p of rest) loseAt(p);
     q = pick(rest);
@@ -1434,8 +1476,9 @@ function gCompareError(){
   }
   const num = i => d.hundreds[i] * 100 + d.tens[i] * 10 + d.ones[i];
   const win = num(0), lose = num(1);
-  /* WHICH NUMBER PRINTS FIRST IS A COIN TOSS, and the claim is phrased to match,
-     so the truth never lines up with the print order. */
+  /* WHICH NUMBER PRINTS FIRST IS A COIN TOSS, and since the sixth pass no stem
+     says anything about either of them, so neither the print order nor any word
+     in the stem lines up with the truth. */
   const P = Math.random() < 0.5 ? win : lose, Q = P === win ? lose : win;
   const dg = (n, place) => place === 'hundreds' ? Math.floor(n / 100)
                          : place === 'tens' ? Math.floor(n / 10) % 10 : n % 10;
@@ -1449,13 +1492,20 @@ function gCompareError(){
   if (q) wrongs.push(cmp(q, 'more'), cmp(q, 'less'));
   else wrongs.push(tie('hundreds'), tie('tens'));
   const k = kid();
-  const rel = P === lose ? 'greater' : 'smaller';
+  /* ORDER-FREE, ALL THREE THIRDS (sixth-pass KILL 1). A false claim about an
+     order names the loser with certainty, so no stem states one: the claim shapes
+     name a PLACE and nothing else. No winner, no digit, no direction.
+     Each claim shape is phrased two ways on an INDEPENDENT coin, which is where
+     the surface variety v6 got from "greater"/"smaller" now comes from - a coin
+     that carries nothing, rather than a word that carried the answer. */
+  const alt = Math.random() < 0.5, which = ' which of ' + P + ' and ' + Q + ' is greater.';
   const stem = claimStem
     ? (qp
-        ? k[0] + ' says ' + P + ' is ' + rel + ' than ' + Q + ', because ' + dg(P, qp) + ' is ' +
-          (rel === 'greater' ? 'more' : 'less') + ' than ' + dg(Q, qp) + '.'
-        : k[0] + ' says the ones cannot change which of ' + P + ' and ' + Q + ' is greater, because ' +
-          'the hundreds and the tens are the same.')
+        ? (alt ? k[0] + ' says the ' + qp + ' decide' + which
+               : k[0] + ' looked only at the ' + qp + ' to decide' + which)
+        : (alt ? k[0] + ' says the ones cannot change' + which.slice(0, -1) + ', because ' +
+                 'the hundreds and the tens are the same.'
+               : k[0] + ' looked only at the hundreds and the tens to decide' + which))
     : k[0] + ' says ' + P + ' and ' + Q + ' are the same, because the ' + z + ' are the same.';
   const tied = PLACES.filter(p => dg(P, p) === dg(Q, p));
   const tail = ' Start on the LEFT and keep moving right until you reach a place where the two digits ' +

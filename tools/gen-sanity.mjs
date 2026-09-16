@@ -1351,12 +1351,29 @@ function oracle(q) {
        the digits - four readings over TWO places, every place shipping BOTH of
        its readings or neither, so the stem's own reason can never be a lone free
        elimination. */
-    {
-      const claimA = text.match(/^[A-Za-z ]+ says (\d+) is (greater|smaller) than (\d+), because (\d+) is (more|less) than (\d+)\. What went wrong\?$/);
-      const claimB = text.match(/^[A-Za-z ]+ says the ones cannot change which of (\d+) and (\d+) is greater, because the hundreds and the tens are the same\. What went wrong\?$/);
-      const tieStem = text.match(/^[A-Za-z ]+ says (\d+) and (\d+) are the same, because the (hundreds|tens|ones) are the same\. What went wrong\?$/);
-      if (claimA || claimB || tieStem) {
-        const P = Number(claimA ? claimA[1] : claimB ? claimB[1] : tieStem[1]);
+    if (/What went wrong\?$/.test(text)) {
+      /* each claim shape is phrased two ways, on a coin that carries nothing.
+         Both alternatives of a pair have the same capture layout. */
+      const claimA = text.match(/^[A-Za-z ]+ looked only at the (hundreds|tens|ones) to decide which of (\d+) and (\d+) is greater\. What went wrong\?$/)
+                  || text.match(/^[A-Za-z ]+ says the (hundreds|tens|ones) decide which of (\d+) and (\d+) is greater\. What went wrong\?$/);
+      const claimB = text.match(/^[A-Za-z ]+ says the ones cannot change which of (\d+) and (\d+) is greater, because the hundreds and the tens are the same\. What went wrong\?$/)
+                  || text.match(/^[A-Za-z ]+ looked only at the hundreds and the tens to decide which of (\d+) and (\d+) is greater\. What went wrong\?$/);
+      const tieStem = text.match(/^[A-Za-z ]+ says (\d+) and (\d+) are the same, because the (hundreds and the tens|hundreds|tens|ones) are the same\. What went wrong\?$/);
+      /* THE STEM SHAPE IS CLOSED (sixth-pass KILL 1). "What went wrong?" is this
+         bank's stem and nothing else's in the topic, so an unrecognised shape is
+         a defect, not an uncovered draw - which is how a stem that states a
+         direction would otherwise slip past as a coverage number. */
+      if (/\d+ is (greater|smaller) than \d+/.test(text)) {
+        return `p2 compare error: the stem calls a named number greater or smaller ("${text}") - the ` +
+               `character's claim must be FALSE, and a false claim about an order names the loser with ` +
+               `certainty, so one word hands over the comparison the item exists to test (sixth-pass KILL 1)`;
+      }
+      if (!(claimA || claimB || tieStem)) {
+        return `p2 compare error: stem shape not recognised ("${text}") - every stem must be one of the ` +
+               `three declared ORDER-FREE shapes, none of which calls a named number greater or smaller`;
+      }
+      {
+        const P = Number(claimA ? claimA[2] : claimB ? claimB[1] : tieStem[1]);
         const Q = Number(claimA ? claimA[3] : claimB ? claimB[2] : tieStem[2]);
         if (!(P >= 100 && P <= 999 && Q >= 100 && Q <= 999)) {
           return `p2 compare error: ${P} and ${Q} are not both three-digit numbers`;
@@ -1377,21 +1394,18 @@ function oracle(q) {
           }
         }
         if (claimA) {
-          const said = claimA[2] === 'greater' ? P : Q;
-          if (said !== lose) return `p2 compare error: ${said} really is the greater number, so nothing went wrong`;
-          const x = Number(claimA[4]), word = claimA[5], y = Number(claimA[6]);
-          if ((claimA[2] === 'greater') !== (word === 'more')) {
-            return `p2 compare error: the claim and the reason it gives run in opposite directions`;
+          /* the character looked ONLY at a place to the right of the one that
+             decides, and that place must really differ - otherwise it names no
+             winner and the method is not wrong, it is merely incomplete. The
+             loser-pointing check above already binds the direction. */
+          const at = claimA[1];
+          if (at === decide) {
+            return `p2 compare error: the stem says the character looked only at the ${at}, which is the ` +
+                   `place that really decides, so nothing went wrong`;
           }
-          if ((word === 'more') !== (x > y)) {
-            return `p2 compare error: the reason states "${x} is ${word} than ${y}", which is not true`;
-          }
-          const at = PLACES.filter(p => digitAt(P, p) === x && digitAt(Q, p) === y);
-          if (!at.length) {
-            return `p2 compare error: the reason quotes ${x} and ${y}, which are not the two numbers' digits at any one place`;
-          }
-          if (!at.some(p => p !== decide)) {
-            return `p2 compare error: the reason quotes the ${decide}, which is the place that really decides`;
+          if (digitAt(P, at) === digitAt(Q, at)) {
+            return `p2 compare error: the stem says the character looked only at the ${at}, and the two ` +
+                   `digits there are the same (${digitAt(P, at)}), so that reading names no winner to be wrong about`;
           }
         } else if (claimB) {
           /* the last-digit claim names NO winner on purpose: on an ones-decide
@@ -1401,9 +1415,23 @@ function oracle(q) {
             return 'p2 compare error: the stem says the hundreds and the tens are the same, and they are not';
           }
         } else {
-          const z = tieStem[3];
-          if (digitAt(P, z) !== digitAt(Q, z)) {
-            return `p2 compare error: the stem says the ${z} are the same, and they are not (${digitAt(P, z)}, ${digitAt(Q, z)})`;
+          const zPlaces = tieStem[3].split(' and the ');
+          for (const z of zPlaces) {
+            if (digitAt(P, z) !== digitAt(Q, z)) {
+              return `p2 compare error: the stem says the ${z} are the same, and they are not (${digitAt(P, z)}, ${digitAt(Q, z)})`;
+            }
+          }
+          /* NO OPTION MAY BE THE STEM (sixth-pass WOUND 4). A tie option states
+             the same reason and the same conclusion as a tie stem, so a stem
+             citing exactly the place one of them cites reprints itself on the
+             row. On an ones-decide draw both tie options ship, so the stem cites
+             BOTH places together and no option can match it. */
+          if (zPlaces.length === 1) {
+            const same = opts.find(o => o === `The ${zPlaces[0]} are the same, so ${P} and ${Q} are the same size.`);
+            if (same) {
+              return `p2 compare error: option "${same}" restates the character's own claim word for word ` +
+                     `- same place, same conclusion - so it is not a reading of anything`;
+            }
           }
         }
         const sound = [], named = [];
@@ -3076,33 +3104,79 @@ function p2OddTokenHit(opts, keyOpt, stemNums) {
    of those draws. That is the pattern every pass has now hit twice - a gate
    narrower than the claim it is taken to support - so the claim gets a gate.
 
-   Three sampled rules over a whole generator's sample, all of them distribution
+   REPAIRED (refutation sixth pass 2026-09-16, KILL 1 and WOUND 1). The v6 gate
+   had the datum that mattered and threw it away. Its classifier needed the words
+   "is greater than" to call a draw a CLAIM draw, so the ORDER-FREE "cannot
+   change which of A and B is greater" stem was not counted at all: rule (b) read
+   the shipped file as hundreds 49.9% / tens 50.1% / ones 0.0%, and because (b)
+   was a CEILING only, a third at 0.0% could never fail it - so the rule written
+   to enforce "the claim stem must carry every deciding place" would have passed
+   the very build it forbids. Rule (b) had also never been observed to go red:
+   the v6 note attributes two controls to it, but both trip rule (a) first and
+   the loop breaks before (b) is evaluated. And the direction word itself - the
+   one datum with a 100% binding to the truth - was captured as group 2 of the
+   regex and stored as a BOOLEAN. Rule (b) now recognises all three order-free
+   stems, has a FLOOR as well as a ceiling, and rule (d) reads the word.
+
+   Four sampled rules over a whole generator's sample, all of them distribution
    claims and none of them checkable on one draw:
      a  each deciding place holds between 15% and 55% of the draws (a third
         each by design; at 200 samples a true third sits 5+ standard errors
         inside both bounds, so the gate does not flap);
-     b  among the draws whose stem CLAIMS one number is greater or smaller, no
-        single deciding place holds more than 80% - the claim stem must carry
-        every deciding place, which is exactly what v5 did not do;
+     b  among the draws whose stem is a CLAIM about the character's reading (as
+        opposed to a TIE stem), every deciding place holds between 15% and 80% -
+        the claim stem must carry every deciding place, which is exactly what v5
+        did not do, and a place it never reaches is as readable as one it always
+        reaches. The claim half is ~100 draws at 200 samples, where a true third
+        sits 4.0 standard errors inside the floor and 9.9 inside the ceiling
+        (one flap in ~10,000 runs), and ~40 inside both at 50,000;
      c  among those same claim draws, the true winner is the SECOND number
         printed in between 20% and 80% of them - print order independent of the
-        truth, which is the other half of the kill.
+        truth, which is the other half of v5's kill;
+     d  TRUTH vs THE DIRECTION WORD. Of the draws whose stem calls a NAMED number
+        greater or smaller, the share in which that number really is the greater
+        must sit between 20% and 80%. The shipped file states no direction at
+        all, so the denominator is 0 and the rule asserts THAT instead - which is
+        the only honest form of this rule, because a stem that must be false and
+        asserts an order names the loser in 100% of draws for EVERY draw
+        distribution. That is a logical identity, not a correlation, and no band
+        on any of (a), (b) or (c) can see it.
    Negative controls: v5's own draw restored (claim stem on the hundreds only)
-   goes red on rules a and b; the true winner pinned to second place goes red on
-   rule c. */
+   goes red on rules a and b; the claim stem pinned to the hundreds with the
+   deciding place left uniform goes red on rule b alone (the control rule (b)
+   never had); the true winner pinned to second place goes red on rule c; v6's
+   "<P> is greater than <Q>" wording restored goes red on rule d. */
 const P2_CE_PLACE_LO = 0.15, P2_CE_PLACE_HI = 0.55;
-const P2_CE_CLAIM_HI = 0.80, P2_CE_SECOND_LO = 0.20, P2_CE_SECOND_HI = 0.80;
+const P2_CE_CLAIM_LO = 0.15, P2_CE_CLAIM_HI = 0.80;
+const P2_CE_SECOND_LO = 0.20, P2_CE_SECOND_HI = 0.80;
+const P2_CE_DIR_LO = 0.20, P2_CE_DIR_HI = 0.80;
 function p2CompareErrorDraw(q) {
   const st = strip(q.q);
-  const m = st.match(/^[A-Za-z ]+ says (?:the ones cannot change which of )?(\d{3}) (?:is (greater|smaller) than|and) (\d{3})/);
-  if (!m || !/What went wrong\?$/.test(st)) return null;
-  const P = Number(m[1]), Q = Number(m[3]);
+  if (!/What went wrong\?$/.test(st)) return null;
+  /* all three ORDER-FREE stems, plus any stem that states a direction about a
+     named number - that last one must never match, and rule (d) is what says so. */
+  const mA = st.match(/^[A-Za-z ]+ looked only at the (?:hundreds|tens|ones) to decide which of (\d{3}) and (\d{3}) is greater\./)
+          || st.match(/^[A-Za-z ]+ says the (?:hundreds|tens|ones) decide which of (\d{3}) and (\d{3}) is greater\./);
+  const mB = st.match(/^[A-Za-z ]+ says the ones cannot change which of (\d{3}) and (\d{3}) is greater,/)
+          || st.match(/^[A-Za-z ]+ looked only at the hundreds and the tens to decide which of (\d{3}) and (\d{3}) is greater\./);
+  const mT = st.match(/^[A-Za-z ]+ says (\d{3}) and (\d{3}) are the same, because the /);
+  const mDir = st.match(/(\d{3}) is (greater|smaller) than (\d{3})/);
+  let P, Q, claim;
+  if (mA || mB) { const m = mA || mB; P = Number(m[1]); Q = Number(m[2]); claim = true; }
+  else if (mT) { P = Number(mT[1]); Q = Number(mT[2]); claim = false; }
+  else if (mDir) { P = Number(mDir[1]); Q = Number(mDir[3]); claim = true; }
+  else return null;
   if (P === Q) return null;
   const digitAt = (n, place) => place === 'hundreds' ? Math.floor(n / 100)
                               : place === 'tens' ? Math.floor(n / 10) % 10 : n % 10;
   const place = ['hundreds', 'tens', 'ones'].find(p => digitAt(P, p) !== digitAt(Q, p));
   if (!place) return null;
-  return { place, claim: !!m[2], winnerSecond: Q > P };
+  /* the WORD, not a boolean: which number the stem calls the greater, and
+     whether that number really is the greater one. */
+  const namedGreater = mDir ? (mDir[2] === 'greater' ? P : Q) : null;
+  const namedSmaller = mDir ? (mDir[2] === 'greater' ? Q : P) : null;
+  return { place, claim, winnerSecond: Q > P,
+           dir: !!mDir, dirNamesWinner: mDir ? namedGreater > namedSmaller : false };
 }
 
 /* ---------- collect every registered generator ---------- */
@@ -3134,7 +3208,7 @@ for (const g of GENS) {
   const featSample = P2_FEATURES.map(() => null);
   let featN = 0, tokN = 0, tokHit = 0, tokSample = null;
   const cePlace = { hundreds: 0, tens: 0, ones: 0 }, ceClaim = { hundreds: 0, tens: 0, ones: 0 };
-  let ceN = 0, ceClaimN = 0, ceSecond = 0;
+  let ceN = 0, ceClaimN = 0, ceSecond = 0, ceDirN = 0, ceDirWinner = 0;
   for (let i = 0; i < N; i++) {
     let q;
     try { q = g.fn(); } catch (e) { err = 'threw: ' + e.message; break; }
@@ -3185,6 +3259,7 @@ for (const g of GENS) {
       if (ce) {
         ceN++; cePlace[ce.place]++;
         if (ce.claim) { ceClaimN++; ceClaim[ce.place]++; if (ce.winnerSecond) ceSecond++; }
+        if (ce.dir) { ceDirN++; if (ce.dirNamesWinner) ceDirWinner++; }
       }
     }
     distinct.add(g.topic === 'p2' ? qKey(q) : qSetKey(q));
@@ -3244,14 +3319,29 @@ for (const g of GENS) {
       }
     }
     if (!err && ceClaimN >= 25) {
+      const claimSpread = ['hundreds', 'tens', 'ones']
+        .map(p => `${p} ${(100 * ceClaim[p] / ceClaimN).toFixed(1)}%`).join(' / ');
       for (const p of ['hundreds', 'tens', 'ones']) {
-        if (ceClaim[p] / ceClaimN > P2_CE_CLAIM_HI) {
-          err = `p2 compare error spread: the stem that CLAIMS one number is greater is drawn on the ` +
+        const f = ceClaim[p] / ceClaimN;
+        if (f > P2_CE_CLAIM_HI || f < P2_CE_CLAIM_LO) {
+          err = `p2 compare error spread: the stem that CLAIMS the character read a place is drawn on the ` +
                 `${p} third in ${ceClaim[p]} of ${ceClaimN} claim draws ` +
-                `(${(100 * ceClaim[p] / ceClaimN).toFixed(1)}%), over the ` +
-                `${(100 * P2_CE_CLAIM_HI).toFixed(0)}% ceiling - the stem shape then announces the ` +
-                `deciding place before a digit is read (v5's KILL 1)`;
+                `(${(100 * f).toFixed(1)}%), outside the ${(100 * P2_CE_CLAIM_LO).toFixed(0)}-` +
+                `${(100 * P2_CE_CLAIM_HI).toFixed(0)}% band - a claim stem that always lands on one ` +
+                `deciding place, or never reaches one, announces the deciding place before a digit is ` +
+                `read (v5's KILL 1; the FLOOR is the sixth pass's WOUND 1) (${claimSpread})`;
           break;
+        }
+      }
+      if (!err && ceDirN >= 25) {
+        const f = ceDirWinner / ceDirN;
+        if (f > P2_CE_DIR_HI || f < P2_CE_DIR_LO) {
+          err = `p2 compare error spread: the stem calls a named number greater or smaller in ${ceDirN} ` +
+                `of ${ceClaimN} claim draws, and that number really is the greater one in ${ceDirWinner} ` +
+                `of them (${(100 * f).toFixed(1)}%), outside the ${(100 * P2_CE_DIR_LO).toFixed(0)}-` +
+                `${(100 * P2_CE_DIR_HI).toFixed(0)}% band - the character's claim must be FALSE, so a ` +
+                `claim about an order names the loser with certainty and one word hands over the ` +
+                `comparison with no digit compared (sixth pass's KILL 1)`;
         }
       }
       if (!err) {

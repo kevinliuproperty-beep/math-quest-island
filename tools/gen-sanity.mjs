@@ -2039,7 +2039,13 @@ function oracle(q, topic) {
            three-above - the key as the smallest of four - sat at 13.7%, inside the
            new rank floor's noise. These five are its mirrors and its miscounts. */
         [F[0]+t2, F[1]], [F[0]+2, F[1]], [F[0]+1, F[1]-1], [F[0]+2, F[1]-1],
-        [e[0]-1, e[1]], [e[0]+1, e[1]-1], [e[0], e[1]-2], [e[0], e[1]+1]
+        [e[0]-1, e[1]], [e[0]+1, e[1]-1], [e[0], e[1]-2], [e[0], e[1]+1],
+        /* NINTH PASS 2026-09-16, KILL 2: the 2 x 2 GRID's own cells - the key's top
+           number with a wrong bottom, a wrong top over the key's own bottom, and
+           the two together - plus the half the topic tells the child to chant. */
+        ...[-1, 0, 1].flatMap(dx =>
+          [e[1]-1, e[1]+1, e[1]-2, e[1]+2, F[1], F[1]-t2, F[1]+t2].map(y => [e[0]+dx, y])),
+        [1, 2]
       ]);
     }
 
@@ -3814,8 +3820,60 @@ for (const g of GENS) {
    bank at or over the 40% WATCH LINE is printed with its numbers on every run and
    carried in the lane note as the declared row-shape class. The negative control
    below is the v6 gAddSame row, rebuilt from its own construction, at 18 / 100%. */
-const ROW_N = 2000, ROW_CAP = 0.40, ROW_MEMO = 60;
+const ROW_N = 6000, ROW_CAP = 0.40, ROW_MEMO = 60;
+/* NINTH PASS 2026-09-16, KILL 2 - THE CLAUSE WAS TESTED ON THE AGGREGATE AND THE
+   SENTENCE IT PRINTED WAS ABOUT EVERY SHAPE. `if (row.shapes < SHAPE_MEMO &&
+   row.sRate >= SHAPE_CAP)` with SHAPE_CAP = 1.0 compares a DRAW-WEIGHTED AVERAGE
+   over every shape against 1.0, so it can only ever fire on a bank with a single
+   shape: it is numerically incapable of returning the verdict its own sentence
+   promises. Tested per shape, 32 of gSimplest's 37 masked shapes and 37 of
+   gSimplestError's 39 named the key's slot on 100% of their OWN draws, covering
+   73.4% and 83.0% of draws.
+
+   THE CLAUSE IS PER SHAPE NOW, on the PM's thresholds: no masked shape that covers
+   SHAPE_BIG or more of a bank's draws may name the key's slot on more than
+   SHAPE_PURE of its own held-out draws. A shape under 5% of draws is a picture a
+   child meets about once a term and is reported, not gated.
+
+   AND THE SCOPE IS PRINTED RATHER THAN ASSUMED, which is the honest half. Run
+   across the topic the clause is red on fourteen banks - gAddSame, gSubSame,
+   gSubFromOne, gMakeOne, gAddWords, gPicIdentify, gPicUnshaded, gSubRelated,
+   gBetween, gPickEquiv, gOrderThree, gGreatest4, gCompareUnit and gCompareSameD -
+   and three of those cannot pass it at any seating: gCompareUnit, gCompareSameD
+   and gGreatest4 ask for an EXTREME of the row, so the key's slot in a
+   value-ordered row is one of two by definition and their single shape sits at
+   ~50% forever. Failing fourteen banks fails the topic, which is the sixth pass's
+   own finding and the standing PM ruling that put the row-shape class in wave 2:
+   "putting four bottom numbers in order is whole-number work standing in for
+   fraction work, not NO mathematics." So the clause GATES every bank not on the
+   carve-out below, the carve-out is printed in full with each bank's own numbers
+   on every run, and the sentence at the bottom of the table says exactly that.
+   gSimplest and gSimplestError are NOT on it - they are repaired on merit this
+   pass, and their v9 constructions are the two negative controls. */
 const SHAPE_CAP = 1.0, SHAPE_WATCH = 0.40, SHAPE_MEMO = 60;
+const SHAPE_BIG = 0.05, SHAPE_PURE = 0.45;
+/* the sixth pass's standing carve-out, bank by bank, each carried in the lane note
+   with its measured numbers. A bank leaves this list by being rebuilt, never by
+   being quiet. */
+const SHAPE_EXEMPT = new Set([
+  'fractions.gAddSame', 'fractions.gSubSame', 'fractions.gSubFromOne', 'fractions.gMakeOne',
+  'fractions.gAddWords', 'fractions.gPicIdentify', 'fractions.gPicUnshaded',
+  'fractions.gSubRelated', 'fractions.gBetween', 'fractions.gPickEquiv',
+  'fractions.gOrderThree', 'fractions.gGreatest4', 'fractions.gCompareUnit',
+  'fractions.gCompareSameD',
+  /* NINTH PASS 2026-09-16: gAddRelated joins the carve-out with its numbers rather
+     than quietly. Its grid row takes the aggregate from 78.2% to 52.5% and the
+     worst never-wrong shape from 100% over 18.9% of draws to 100% over 3.9%, but
+     its ONE big shape sits at ~45.6% and cannot go lower: the row is written in
+     twelfths on most draws, D + 1 is off the P3 scale, so the grid's second bottom
+     number is always BELOW D and only two of the four slots are reachable. */
+  'fractions.gAddRelated',
+  /* NINTH PASS 2026-09-16: gPicTakeAway sits ON the line rather than over it - its
+     one big masked shape measured 26.8, 28.5, 44.3 and 48.5% across seeds at three
+     draw counts, so the clause's verdict on it is a coin flip rather than a
+     finding. Declared here with that range rather than left to flap. */
+  'fractions.gPicTakeAway'
+]);
 const rowKeyOf = q => (q.choices || []).map(strip).slice().sort().join(' ~ ');
 /* a rendered fraction is two numerals with no separator once the markup is gone,
    so it is opened out BEFORE stripping or the two collapse into one number */
@@ -3867,24 +3925,35 @@ function rowBank(draw, n) {
     return modal.indexOf(a) >= 0 ? 1 / modal.length : 0;
   };
   let score = 0, sScore = 0, tested = 0;
+  const per = new Map();
   for (let i = 0; i < n; i++) {
     let q; try { q = draw(); } catch (e) { break; }
     if (!q || !(q.choices || []).length || !(q.correct >= 0)) continue;
     tested++;
     const m = seen.get(rowKeyOf(q));
     score += m ? modalOf(m, strip(q.choices[q.correct])) : 0.25;
-    const m2 = shapes.get(shapeKeyOf(q));
-    sScore += m2 ? modalOf(m2, shapeSlotOf(q)) : 0.25;
+    const sh = shapeKeyOf(q), m2 = shapes.get(sh);
+    const sv = m2 ? modalOf(m2, shapeSlotOf(q)) : 0.25;
+    sScore += sv;
+    if (!per.has(sh)) per.set(sh, [0, 0]);
+    const e = per.get(sh); e[0] += sv; e[1]++;
+  }
+  /* the PER-SHAPE reading: the worst shape that covers a non-trivial share */
+  let big = null;
+  for (const [sh, e] of per) {
+    const share = tested ? e[1] / tested : 0, rate = e[1] ? e[0] / e[1] : 0;
+    if (share < SHAPE_BIG) continue;
+    if (!big || rate > big.rate) big = { shape: sh, share, rate };
   }
   return { rows: seen.size, n: tested, rate: tested ? score / tested : 0,
-           shapes: shapes.size, sRate: tested ? sScore / tested : 0 };
+           shapes: shapes.size, sRate: tested ? sScore / tested : 0, big };
 }
-function rowVerdict(row) {
+function rowVerdict(row, name) {
   if (!row.n) return null;
   if (row.rows < ROW_MEMO && row.rate >= ROW_CAP)
     return `row-only tell: the option row alone names the key on ${(100 * row.rate).toFixed(1)}% of draws over a space of only ${row.rows} distinct rows - a child who has met the bank recognises the row and never reads the stem`;
-  if (row.shapes < SHAPE_MEMO && row.sRate >= SHAPE_CAP)
-    return `row-SHAPE tell: the masked shape of the option row names the key's SLOT on ${(100 * row.sRate).toFixed(1)}% of held-out draws over only ${row.shapes} shapes - a sight rule that is never wrong is not a heuristic, it is the answer printed in a pattern`;
+  if (row.big && row.big.rate > SHAPE_PURE && !SHAPE_EXEMPT.has(name))
+    return `row-SHAPE tell, PER SHAPE: the masked shape "${row.big.shape}" covers ${(100 * row.big.share).toFixed(1)}% of this bank's draws and names the key's SLOT on ${(100 * row.big.rate).toFixed(1)}% of its own held-out draws - over the ${Math.round(100 * SHAPE_PURE)}% line, on a picture the child meets one draw in ${Math.round(1 / row.big.share)}`;
   return null;
 }
 const rowRows = [];
@@ -3893,7 +3962,7 @@ for (const g of GENS) {
   const row = rowBank(g.fn, ROW_N);
   if (!row.n) continue;
   row.name = g.topic + '.' + g.name;
-  row.err = rowVerdict(row);
+  row.err = rowVerdict(row, row.name);
   rowRows.push(row);
   if (row.err) failures++;
 }
@@ -4462,7 +4531,57 @@ for (const g of GENS) {
 
    Live banks after the ninth-pass rebuild: the four exempted ones at 70.3-77.7% on
    their own method, and nothing else over 50%. --- */
+/* ---------- SERVICE RATE, measured through the real feed ---------------------
+   SWEEP FRACTIONS REFUTATION, NINTH PASS 2026-09-16. The PM's second limb is
+   "served >= 1 item a session", so the file has to KNOW that number rather than
+   inherit it from a note. Sessions are run through MQI.createFeed with the app's
+   own 3-right-up / 2-wrong-down climb, at the two accuracies the lane has always
+   reported, and the WORSE of the two is what the gate reads - a bank that is quiet
+   for a fluent child and busy for a struggling one is busy. Each generator is
+   identified by stamping its own name on the question it returns, which is what
+   tools/feed-sim.mjs does; the pools are restored immediately afterwards so
+   nothing downstream sees a wrapped generator. */
+const SERVE_SESSIONS = 200, SERVE_LEN = 30;
+const serveTally = new Map();
+(function measureService() {
+  for (const tid of Object.keys(TOPICS)) {
+    if (!TOK_TOPICS.has(tid)) continue;
+    const def = TOPICS[tid], saved = { 1: def.pools[1], 2: def.pools[2], 3: def.pools[3] };
+    for (const lvl of [1, 2, 3])
+      def.pools[lvl] = def.pools[lvl].map(pr => {
+        const fn = pr[0], id = fn.name || '(anonymous)';
+        return [() => { const q = fn(); q.__gen = id; return q; }, pr[1]];
+      });
+    for (const acc of [0.8, 0.45]) {
+      const tally = new Map();
+      for (let sN = 0; sN < SERVE_SESSIONS; sN++) {
+        let feed; try { feed = MQI.createFeed(tid); } catch (e) { break; }
+        let level = 1, right = 0, wrong = 0;
+        for (let i = 0; i < SERVE_LEN; i++) {
+          let q; try { q = feed.next(level); } catch (e) { break; }
+          if (!q) break;
+          tally.set(q.__gen, (tally.get(q.__gen) || 0) + 1);
+          if (Math.random() < acc) { right++; wrong = 0; if (right >= 3 && level < 3) { level++; right = 0; } }
+          else { wrong++; right = 0; if (wrong >= 2 && level > 1) { level--; wrong = 0; } }
+        }
+      }
+      for (const [id, c] of tally) {
+        const key = tid + '.' + id, r = c / SERVE_SESSIONS;
+        serveTally.set(key, Math.max(serveTally.get(key) || 0, r));
+      }
+    }
+    for (const lvl of [1, 2, 3]) def.pools[lvl] = saved[lvl];
+  }
+})();
+const serveRate = (tid, name) => serveTally.get(tid + '.' + name) || 0;
+
 const HALF_N = 2000, HALF_CAP = 0.60;
+/* NINTH PASS 2026-09-16, KILL 1 - THE SECOND LIMB. The PM's ruling: no bank served
+   ONCE A SESSION OR MORE may be answered by a half-key route on 40% of draws
+   without a named, premise-checked exemption. HALF_SERVE is that line and
+   HALF_WATCH is the rate; the service rate is measured below through the real
+   createFeed rather than assumed. */
+const HALF_WATCH = 0.40, HALF_SERVE = 1.0;
 /* (bank, expression) -> the mathematics that expression IS, in the item's own
    words. Adding a line here is a claim about the SYLLABUS, not about the file. The
    match is by VALUE: any spelling of the same arithmetic is the same exemption. */
@@ -4470,24 +4589,80 @@ const HALF_METHOD = {
   'fractions.gAddSame|n0+n2': 'add the two top numbers and keep the bottom number',
   'fractions.gSubSame|n0-n2': 'take the second top number from the first and keep the bottom number',
   'fractions.gSubFromOne|n2-n1': 'one whole is d/d, so take the top number from the bottom number',
-  'fractions.gMakeOne|n1-n0': 'what is missing from one whole is the bottom number less the top number'
+  'fractions.gMakeOne|n1-n0': 'what is missing from one whole is the bottom number less the top number',
+  /* NINTH PASS 2026-09-16, WOUND 1 - the two BARE-NUMBER banks are in scope now
+     (halfPair used to return null on a bare-number option and dropped them before
+     they were measured), and each is exempt on its own method and nothing else. */
+  'fractions.gEqMissing|(n0/n1)*n2': 'the bottom number was multiplied to reach the new one, so multiply the top number by the same amount',
+  'fractions.gEqMissingDen|(n1/n0)*n2': 'the top number was multiplied to reach the new one, so multiply the bottom number by the same amount',
+  /* NINTH PASS 2026-09-16, KILL 1's second limb, and both premises are checked in
+     the lane note against 20,000 draws on two seeds. */
+  'fractions.gMakeOneIn|n3': 'the stem asks for the answer WRITTEN IN Dths, so the bottom number is printed in the question itself',
+  'fractions.gSimplest|n1/n0': 'when the top number divides the bottom number the common factor IS the top number, so the bottom divided by the top is the simplest form’s bottom number - the item working, and undefined on every other draw',
+  'fractions.gSimplestError|n1/n0': 'when the top number divides the bottom number the common factor IS the top number, so the bottom divided by the top is the simplest form’s bottom number - the item working, and undefined on every other draw'
 };
 /* every expression any exemption is written in, for the value-alias test below */
 const HALF_METHOD_EXPRS = [...new Set(Object.keys(HALF_METHOD).map(k => k.split('|')[1]))];
-/* ONE operation over the stem's numerals, then a SECOND over the result. Walked
-   rather than materialised: the library is ~1,400 values on an eight-numeral stem
-   and building an array of it on every draw is most of the running time. */
-/* the v8 library, kept so a control can show that the WIDENING is what reads the
-   two-operation route and not the rest of the rule */
-function halfWalk1(ns, cb) {
-  ns.forEach((v, i) => { cb('n' + i, v); cb('n' + i + '+1', v + 1); cb('n' + i + '-1', v - 1); });
-  for (let x = 0; x < ns.length; x++) for (let y = 0; y < ns.length; y++) if (x !== y) {
-    cb('n' + x + '+n' + y, ns[x] + ns[y]);
-    cb('n' + x + '-n' + y, ns[x] - ns[y]);
-    cb('n' + x + '*n' + y, ns[x] * ns[y]);
+
+/* NINTH PASS 2026-09-16, KILL 1 - THE LIBRARY WAS TWO OPERATIONS AND THE TELL WAS
+   THREE, and the missing operation was DIVISION at the first level.
+
+   v9's base list was n_i, n_i +- 1 and n_x {+,-,*} n_y with x !== y, and one more
+   operation on top. `(n3/n1)+n2` - divide the second bottom number by the first,
+   add the second top number - therefore needed three: n3, /n1, +n2. It named
+   gAddRelated's key on 82.2 / 82.4% of draws and answered the item on 65.8%, and
+   the gate printed 49.4%.
+
+   THE LIBRARY NOW. Level one is n_i, n_i +- 1, n_i +- 2 and n_x OP n_y for ALL x
+   and y INCLUDING x === y, with OP over + - * AND /: division is a base, and
+   n0/n0 puts the CONSTANTS inside reach (v9 had none, and "the answer is thirds"
+   was worth 35.5% on a bank nothing scored it on). Level two composes each of
+   those once more with +- 1 2 3, * 2 3 4, / 2 3 4 5 6, +- * / n_k, and the eight
+   RATIONAL SCALINGS *2/3 *3/2 *3/4 *4/3 *2/5 *5/2 *5/6 *6/5 - a scaling is itself
+   two operations, so the deepest recipe here is THREE over the stem's numerals.
+   ~3,100 recipes on a four-numeral stem, walked rather than materialised.
+
+   AND THE SELECTION IS BY ROUTE, NOT BY NAMING. v9 shortlisted the twelve
+   expressions that NAMED a half most often and took the worst of those. Naming is
+   a proxy and it was wrong on six banks: it under-reported gAddRelated by 16.2
+   points, gMakeOneIn by 15.2, gAddWords by 14.8 and gBetween by 9.9. Every
+   candidate's ANSWER rate is scored on the learn pass now; the top 50 by that
+   rate, de-aliased by value, are carried into the held-out pass; and the bank's
+   verdict is the worst of them that is NOT exempt - which also closes the ninth
+   pass's wound 7, where `halfBank` returned one winner and every route beneath an
+   exempted method was invisible by construction. */
+const HALF_CONST = [['+',1],['-',1],['+',2],['-',2],['+',3],['-',3],
+                    ['*',2],['*',3],['*',4],['/',2],['/',3],['/',4],['/',5],['/',6]];
+const HALF_RAT = [[2,3],[3,2],[3,4],[4,3],[2,5],[5,2],[5,6],[6,5]];
+/* Walks EVERY recipe in a fixed order for a given numeral count - the value may be
+   NaN or a fraction, and the caller decides - so a recipe's index is stable across
+   draws and the learn pass can score into a flat array instead of a Map. */
+function halfWalk(ns, cb) {
+  const base = [];
+  const one = (nm, v) => { base.push([nm, v]); cb(nm, v); };
+  ns.forEach((v, i) => { one('n'+i, v); one('n'+i+'+1', v+1); one('n'+i+'-1', v-1);
+                         one('n'+i+'+2', v+2); one('n'+i+'-2', v-2); });
+  for (let x = 0; x < ns.length; x++) for (let y = 0; y < ns.length; y++) {
+    one('n'+x+'+n'+y, ns[x] + ns[y]);
+    one('n'+x+'-n'+y, ns[x] - ns[y]);
+    one('n'+x+'*n'+y, ns[x] * ns[y]);
+    one('n'+x+'/n'+y, ns[y] ? ns[x] / ns[y] : NaN);
+  }
+  for (const [nm, v] of base) {
+    for (const [o, c] of HALF_CONST)
+      cb('(' + nm + ')' + o + c, o === '+' ? v + c : o === '-' ? v - c : o === '*' ? v * c : v / c);
+    for (let k = 0; k < ns.length; k++) {
+      cb('(' + nm + ')+n' + k, v + ns[k]);
+      cb('(' + nm + ')-n' + k, v - ns[k]);
+      cb('(' + nm + ')*n' + k, v * ns[k]);
+      cb('(' + nm + ')/n' + k, ns[k] ? v / ns[k] : NaN);
+    }
+    for (const [pp, qq] of HALF_RAT) cb('(' + nm + ')*' + pp + '/' + qq, v * pp / qq);
   }
 }
-function halfWalk(ns, cb) {
+/* the v9 library, kept so a control can show that the WIDENING is what reads the
+   three-operation route and not the rest of the rule */
+function halfWalk9(ns, cb) {
   const base = [];
   const one = (nm, v) => { base.push([nm, v]); cb(nm, v); };
   ns.forEach((v, i) => { one('n' + i, v); one('n' + i + '+1', v + 1); one('n' + i + '-1', v - 1); });
@@ -4497,18 +4672,17 @@ function halfWalk(ns, cb) {
     one('n' + x + '*n' + y, ns[x] * ns[y]);
   }
   const done = new Set();
-  const two = (nm, v) => { if (Number.isInteger(v)) cb(nm, v); };
   for (const [nm, v] of base) {
     if (done.has(v)) continue;
     done.add(v);
-    two('(' + nm + ')/2', v / 2); two('(' + nm + ')/3', v / 3); two('(' + nm + ')*2', v * 2);
-    two('(' + nm + ')+1', v + 1); two('(' + nm + ')-1', v - 1);
-    two('(' + nm + ')+2', v + 2); two('(' + nm + ')-2', v - 2);
+    cb('(' + nm + ')/2', v / 2); cb('(' + nm + ')/3', v / 3); cb('(' + nm + ')*2', v * 2);
+    cb('(' + nm + ')+1', v + 1); cb('(' + nm + ')-1', v - 1);
+    cb('(' + nm + ')+2', v + 2); cb('(' + nm + ')-2', v - 2);
     for (let k = 0; k < ns.length; k++) {
-      two('(' + nm + ')+n' + k, v + ns[k]);
-      two('(' + nm + ')-n' + k, v - ns[k]);
-      two('(' + nm + ')*n' + k, v * ns[k]);
-      if (ns[k]) two('(' + nm + ')/n' + k, v / ns[k]);
+      cb('(' + nm + ')+n' + k, v + ns[k]);
+      cb('(' + nm + ')-n' + k, v - ns[k]);
+      cb('(' + nm + ')*n' + k, v * ns[k]);
+      if (ns[k]) cb('(' + nm + ')/n' + k, v / ns[k]);
     }
   }
 }
@@ -4519,17 +4693,24 @@ function halfWalk(ns, cb) {
 const halfBase = (nm, ns) => {
   let m = /^n(\d+)$/.exec(nm);
   if (m) return ns[+m[1]];
-  m = /^n(\d+)([+-])1$/.exec(nm);
-  if (m) return ns[+m[1]] === undefined ? undefined : ns[+m[1]] + (m[2] === '+' ? 1 : -1);
-  m = /^n(\d+)([+\-*])n(\d+)$/.exec(nm);
+  m = /^n(\d+)([+-])([12])$/.exec(nm);
+  if (m) return ns[+m[1]] === undefined ? undefined : ns[+m[1]] + (m[2] === '+' ? +m[3] : -m[3]);
+  m = /^n(\d+)([+\-*/])n(\d+)$/.exec(nm);
   if (!m) return undefined;
   const a = ns[+m[1]], b = ns[+m[3]];
   if (a === undefined || b === undefined) return undefined;
-  return m[2] === '+' ? a + b : m[2] === '-' ? a - b : a * b;
+  return m[2] === '+' ? a + b : m[2] === '-' ? a - b : m[2] === '*' ? a * b : (b ? a / b : undefined);
 };
 function halfEval(nm, ns) {
-  const m = /^\((.+)\)([+\-*/])(\d+|n\d+)$/.exec(nm);
-  if (!m) return halfBase(nm, ns);
+  let m = /^\((.+)\)\*(\d+)\/(\d+)$/.exec(nm);
+  if (m) {
+    const a = halfBase(m[1], ns);
+    if (a === undefined) return undefined;
+    const v = a * (+m[2]) / (+m[3]);
+    return Number.isInteger(v) ? v : undefined;
+  }
+  m = /^\((.+)\)([+\-*/])(\d+|n\d+)$/.exec(nm);
+  if (!m) { const v = halfBase(nm, ns); return Number.isInteger(v) ? v : undefined; }
   const a = halfBase(m[1], ns);
   if (a === undefined) return undefined;
   const b = m[3][0] === 'n' ? ns[+m[3].slice(1)] : Number(m[3]);
@@ -4537,14 +4718,23 @@ function halfEval(nm, ns) {
   const v = m[2] === '+' ? a + b : m[2] === '-' ? a - b : m[2] === '*' ? a * b : (b ? a / b : NaN);
   return Number.isInteger(v) ? v : undefined;
 }
+/* NINTH PASS 2026-09-16, WOUND 1. A BARE-NUMBER option is the whole key, so both
+   halves of it are that number and the bank is measured like every other rather
+   than dropped before it is measured. */
 const halfPair = o => {
   const m = String(o).match(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/);
-  return m ? [Number(m[1]), Number(m[2])] : null;
+  if (m) return [Number(m[1]), Number(m[2])];
+  const t = strip(String(o));
+  return /^-?\d+$/.test(t) ? [Number(t), Number(t)] : null;
 };
+const HALF_TOP = 50;
 function halfBank(draw, n, walk) {
   const lib = walk || halfWalk;
+  const acc = new Map();    /* numeral count -> Float64Array [scoreNum, namesNum, scoreDen, namesDen] */
+  const nameOf = new Map(); /* numeral count -> String[] */
+  const fing = new Map();   /* numeral count -> Int32Array, a value fingerprint for de-aliasing */
   const cnt = new Map();
-  const bump = (k, i) => { const v = cnt.get(k) || [0, 0]; v[i]++; cnt.set(k, v); };
+  const hitN = new Int32Array(13), hitD = new Int32Array(13);
   let drew = 0;
   for (let i = 0; i < n; i++) {
     let q; try { q = draw(); } catch (e) { break; }
@@ -4552,34 +4742,66 @@ function halfBank(draw, n, walk) {
     const k = halfPair(q.choices[q.correct]);
     if (!k) continue;
     drew++;
-    const sn = new Set(), sd = new Set();
-    lib(numsOfHtml(q.q), (nm, v) => { if (v === k[0]) sn.add(nm); if (v === k[1]) sd.add(nm); });
-    for (const nm of sn) bump(nm, 0);
-    for (const nm of sd) bump(nm, 1);
+    const ns = numsOfHtml(q.q), m = ns.length;
+    if (!m) continue;
+    hitN.fill(0); hitD.fill(0);
+    for (let j = 0; j < 4; j++) {
+      const p = halfPair(q.choices[j]);
+      if (!p) continue;
+      if (p[0] >= 1 && p[0] <= 12) hitN[p[0]] |= (1 << j);
+      if (p[1] >= 1 && p[1] <= 12) hitD[p[1]] |= (1 << j);
+    }
+    const corr = 1 << q.correct;
+    const sc = mask => {
+      if (!mask) return 0.25;
+      let c = 0, z = mask;
+      while (z) { c += z & 1; z >>= 1; }
+      return (mask & corr) ? 1 / c : 0;
+    };
+    if (!cnt.has(m)) {
+      cnt.set(m, 0);
+      const names = [];
+      lib(ns, nm => names.push(nm));
+      nameOf.set(m, names);
+      acc.set(m, new Float64Array(names.length * 4));
+      fing.set(m, new Int32Array(names.length));
+    }
+    cnt.set(m, cnt.get(m) + 1);
+    const hashing = cnt.get(m) <= 48;
+    const A = acc.get(m), F = fing.get(m);
+    let idx = 0;
+    lib(ns, (nm, v) => {
+      const j = idx++;
+      if (j * 4 + 3 >= A.length) return;
+      const ok = Number.isInteger(v);
+      A[j * 4]     += ok ? sc(v >= 1 && v <= 12 ? hitN[v] : 0) : 0.25;
+      A[j * 4 + 2] += ok ? sc(v >= 1 && v <= 12 ? hitD[v] : 0) : 0.25;
+      if (ok && v === k[0]) A[j * 4 + 1]++;
+      if (ok && v === k[1]) A[j * 4 + 3]++;
+      if (hashing) F[j] = (Math.imul(F[j], 31) + (ok ? v + 977 : 0)) | 0;
+    });
   }
   if (!drew) return { n: 0 };
-  /* EIGHTH PASS 2026-09-16. v8 learnt the ONE expression that names a half most
-     often and reported its route. That is not the same as the best ROUTE: naming
-     the key's bottom number on 77% is worth less than naming it on 71% if the
-     first one leaves three options standing and the second isolates. On the v8
-     gSimplest control the two tie at ~71% and the ruler picked whichever the
-     library happened to emit first - 42% instead of 66%. The HALF_TOP candidates
-     by naming frequency are all carried into the test pass now and the WORST of
-     them is the bank's verdict, which is the honest reading of "a child who has
-     found the rule" and costs one integer evaluation per candidate per draw. */
-  const HALF_TOP = 12;
+  /* the shortlist: by LEARN-PASS ANSWER RATE, de-aliased by value fingerprint so
+     the fifty are fifty distinct RULES and not fifty spellings of four */
   const cands = [];
-  for (const [k, v] of cnt) { cands.push([k, 0, v[0]]); cands.push([k, 1, v[1]]); }
-  cands.sort((a, b) => b[2] - a[2] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-  const picks = cands.slice(0, HALF_TOP).map(c => ({
-    expr: c[0], half: c[1], names: 0, score: 0, alias: new Set(HALF_METHOD_EXPRS)
-  }));
-  /* SEVENTH PASS 2026-09-16. A stem with NO numeral in it has no expression to
-     learn, and a ruler that drops such a bank from its table is the failure mode
-     this whole pass is about - five of the seven kills landed on the surface the
-     newest ruler did not read. v8's gPicTakeAway prints no numeral by design, so
-     it is reported at zero rather than omitted. */
-  if (!picks.length) return { n: drew, expr: '-none-', half: 'n/a', names: 0, rate: 0, aliases: [] };
+  for (const [m, A] of acc) {
+    const names = nameOf.get(m), c = cnt.get(m), F = fing.get(m);
+    for (let j = 0; j < names.length; j++) {
+      cands.push({ expr: names[j], half: 0, h: F[j], learn: A[j * 4] / c });
+      cands.push({ expr: names[j], half: 1, h: F[j], learn: A[j * 4 + 2] / c });
+    }
+  }
+  if (!cands.length) return { n: drew, expr: '-none-', half: 'n/a', names: 0, rate: 0, aliases: [], all: [] };
+  cands.sort((x, y) => y.learn - x.learn || (x.expr < y.expr ? -1 : x.expr > y.expr ? 1 : 0));
+  const seen = new Set(), picks = [];
+  for (const c of cands) {
+    const key2 = c.half + '|' + c.h;
+    if (seen.has(key2)) continue;
+    seen.add(key2);
+    picks.push({ expr: c.expr, half: c.half, names: 0, score: 0, alias: new Set(HALF_METHOD_EXPRS) });
+    if (picks.length >= HALF_TOP) break;
+  }
   let tested = 0;
   for (let i = 0; i < n; i++) {
     let q; try { q = draw(); } catch (e) { break; }
@@ -4604,22 +4826,37 @@ function halfBank(draw, n, walk) {
     }
   }
   if (!tested) return { n: 0 };
-  let win = picks[0];
-  for (const p of picks) if (p.score > win.score) win = p;
-  return { n: tested, expr: win.expr, half: win.half ? 'denominator' : 'numerator',
-           aliases: [...win.alias], names: win.names / tested, rate: win.score / tested };
+  const all = picks.map(p => ({ expr: p.expr, half: p.half ? 'denominator' : 'numerator',
+                                aliases: [...p.alias], names: p.names / tested, rate: p.score / tested }))
+                   .sort((x, y) => y.rate - x.rate);
+  return { n: tested, all, expr: all[0].expr, half: all[0].half, aliases: all[0].aliases,
+           names: all[0].names, rate: all[0].rate };
 }
-/* The exemption this row qualifies for under `name`, by spelling OR by value. */
-function halfMethodOf(row, name) {
-  if (!row || !row.expr) return null;
-  for (const e of [row.expr].concat(row.aliases || []))
+/* The exemption a candidate qualifies for under `name`, by spelling OR by value. */
+function halfMethodFor(c, name) {
+  if (!c || !c.expr) return null;
+  for (const e of [c.expr].concat(c.aliases || []))
     if (HALF_METHOD[name + '|' + e]) return HALF_METHOD[name + '|' + e];
   return null;
 }
+function halfMethodOf(row, name) { return halfMethodFor(row, name); }
+/* NINTH PASS 2026-09-16, WOUND 7. v9 took ONE winner and inspected only that, so
+   on an exempted bank every route beneath the method was invisible by
+   construction - measured at 41.9 to 55.7% and never once printed. The verdict is
+   the worst candidate that is NOT exempt; the exempted top route is reported
+   beside it so the table still says what the item's own mathematics is worth. */
+function halfWorst(row, name) {
+  if (!row || !row.all || !row.all.length) return null;
+  for (const c of row.all) if (!halfMethodFor(c, name)) return c;
+  return null;
+}
 function halfVerdict(row, name) {
-  if (!row.n || row.rate < HALF_CAP) return null;
-  if (halfMethodOf(row, name)) return null;
-  return `half-key tell: the single expression "${row.expr}" over the stem's numerals names the key's ${row.half} on ${(100 * row.names).toFixed(1)}% of draws, and taking the options that carry it answers the item on ${(100 * row.rate).toFixed(1)}% - at or over the ${Math.round(100 * HALF_CAP)}% ceiling, with the other half of the key settled by the OPTION ROW and the item's own mathematics never done`;
+  if (!row.n || row.bare) return null;
+  const w = halfWorst(row, name);
+  if (!w) return null;
+  if (w.rate >= HALF_CAP)
+    return `half-key tell: the single expression "${w.expr}" over the stem's numerals names the key's ${w.half} on ${(100 * w.names).toFixed(1)}% of draws, and taking the options that carry it answers the item on ${(100 * w.rate).toFixed(1)}% - at or over the ${Math.round(100 * HALF_CAP)}% ceiling, with the other half of the key settled by the OPTION ROW and the item's own mathematics never done`;
+  return null;
 }
 const halfRows = [];
 for (const g of GENS) {
@@ -4627,8 +4864,23 @@ for (const g of GENS) {
   const row = halfBank(g.fn, HALF_N);
   if (!row.n) continue;
   row.name = g.topic + '.' + g.name;
+  row.serve = serveRate(g.topic, g.name);
+  /* WOUND 1's scope fix, and the LIMIT of it. A bare-number option IS the whole
+     key, so "half the key, and the row settles the rest" has no second half to
+     settle: an expression that names it ANSWERS the item, which is RULE 12's
+     arithmetic column and is the item working on a bank that draws no picture.
+     The two banks are measured and printed here - the ninth pass's wound was that
+     they were silently DROPPED, so the sentence this rule printed was false about
+     the topic - and the gate on them is RULE 12's, where it belongs. */
+  {
+    let probe = null; try { probe = g.fn(); } catch (e) { probe = null; }
+    row.bare = !!(probe && (probe.choices || []).length &&
+                  probe.choices.every(c => !/<span class="n">/.test(String(c)) && /^-?\d+$/.test(strip(String(c)))));
+  }
   row.method = halfMethodOf(row, row.name);
+  row.worst = halfWorst(row, row.name);
   row.err = halfVerdict(row, row.name);
+  row.limbB = !row.bare && row.worst && row.serve >= HALF_SERVE && row.worst.rate >= HALF_WATCH;
   halfRows.push(row);
   if (row.err) failures++;
 }
@@ -5284,13 +5536,126 @@ control('RULE 14 two operations - the v8 gSimplest row ("(n1)/2" halves the prin
   const two = halfBank(V8_SIMPLEST, HALF_N);
   if (!two.n) return null;
   const v = halfVerdict(two, 'control.v8Simplest');
-  if (process.env.CTL_DEBUG) console.log(`    [debug] v8 gSimplest control: two-op "${two.expr}" names the ${two.half} on ${(100 * two.names).toFixed(2)}%, route ${(100 * two.rate).toFixed(2)}%`);
-  if (!v) return null;
-  const one = halfBank(V8_SIMPLEST, HALF_N, halfWalk1);
-  if (one.n && halfVerdict(one, 'control.v8Simplest'))
-    return null;   /* the v8 library caught it too, so this is not a two-operation control */
-  return `${v} - and the v8 ONE-operation library learnt "${one.expr}" at ${(100 * one.rate).toFixed(1)}%, under the ceiling, which is how this route shipped`;
+  if (process.env.CTL_DEBUG) console.log(`    [debug] v8 gSimplest control: worst "${(two.worst||two).expr}" route ${(100 * (halfWorst(two, 'control.v8Simplest')||{rate:0}).rate).toFixed(2)}%`);
+  return v;
 });
+
+/* 19d. RULE 14's LIBRARY IS THREE OPERATIONS NOW, and this is the row that proves
+        the widening rather than asserting it: v9's gAddRelated, rebuilt from its
+        own draw and its own candidate bank. `a = ri(1, d-1)` under the guard
+        k*a + b + 2 < D puts the first top number at 1 on ~82% of draws, so
+        "(n3/n1)+n2" - divide the second bottom number by the first, add the second
+        top number - names the key's TOP number on ~82% and settles the row at
+        ~66%. The v9 TWO-operation library is run over the SAME construction in the
+        same control and must stay under the ceiling: if it did not, the widening
+        would not be what catches this. */
+const V9_ADDRELATED = () => {
+  const rnd = (x, y) => x + Math.floor(Math.random() * (y - x + 1));
+  const sh = arr => arr.slice().sort(() => Math.random() - 0.5);
+  const val = p => p[0] / p[1];
+  const ok = p => Array.isArray(p) && p[0] >= 1 && p[1] >= 2 && p[0] < p[1] && p[1] <= 12;
+  const rank = rnd(1, 4);
+  let d = 4, k = 3, D = 12, a = 1, b = 2, key = [5, 12], slips = [];
+  for (let tr = 0; tr < 300; tr++) {
+    d = [2, 3, 4, 5, 6][rnd(0, 4)]; k = [2, 3, 4, 5, 6][rnd(0, 4)]; D = k * d;
+    a = rnd(1, Math.max(1, d - 1)); b = rnd(1, Math.max(1, D - 1));
+    key = [k * a + b, D];
+    if (!(D <= 12 && a < d && k * a + b + 2 < D && gcd(k * a + b, D) === 1)) { slips = []; continue; }
+    const flat = Math.random() < 0.5;
+    const cands = [[a + b, D], [a + k * b, D], [k * a + k * b, D], [k * a + b + 1, D],
+                   [k * a + b + 1, D - 1], [k * a + b, D - 1], [k * a + b - 1, D],
+                   [k * a + b - 2, D], [k * (a - 1) + b, D], [k * a + b - 1, D - 1]]
+      .filter(p => ok(p) && val(p) !== val(key) && (!flat || p[1] === D));
+    const u = [];
+    for (const c of sh(cands)) { const i = u.findIndex(z => val(z) === val(c)); if (i < 0) u.push(c); else if (c[1] < u[i][1]) u[i] = c; }
+    const small = arr => arr.filter(c => c[1] < key[1]).concat(arr.filter(c => c[1] >= key[1]));
+    const above = small(sh(u.filter(c => val(c) > val(key)))), below = small(sh(u.filter(c => val(c) < val(key))));
+    const want = 4 - rank;
+    if (want > above.length || 3 - want > below.length) { slips = []; continue; }
+    slips = above.slice(0, want).concat(below.slice(0, 3 - want));
+    if (new Set([key].concat(slips).map(val)).size === 4) break;
+    slips = [];
+  }
+  if (slips.length !== 3) { d = 4; k = 3; D = 12; a = 1; b = 2; key = [5, 12]; slips = [[3, 12], [7, 12], [4, 11]]; }
+  const row = [key].concat(slips);
+  const order = row.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { q: 'Add: ' + FR(a, d) + ' + ' + FR(b, D) + ' = ?', extra: '',
+           choices: order.map(i => FR(row[i][0], row[i][1])), correct: order.indexOf(0),
+           answerText: FR(key[0], key[1]), explain: '' };
+};
+control('RULE 14 three operations - the v9 gAddRelated row ("(n3/n1)+n2" is division then an addition)', () => {
+  const wide = halfBank(V9_ADDRELATED, HALF_N);
+  if (!wide.n) return null;
+  const v = halfVerdict(wide, 'control.v9AddRelated');
+  const w = halfWorst(wide, 'control.v9AddRelated') || { expr: '-', rate: 0 };
+  const narrow = halfBank(V9_ADDRELATED, HALF_N, halfWalk9);
+  const nw = halfWorst(narrow, 'control.v9AddRelated') || { expr: '-', rate: 0 };
+  if (process.env.CTL_DEBUG) console.log(`    [debug] v9 gAddRelated control: wide "${w.expr}" ${(100 * w.rate).toFixed(2)}%, v9 library "${nw.expr}" ${(100 * nw.rate).toFixed(2)}%`);
+  if (!v) return null;
+  if (narrow.n && halfVerdict(narrow, 'control.v9AddRelated'))
+    return null;   /* the v9 library caught it too, so this is not a widening control */
+  return `${v} - and the v9 TWO-operation library learnt "${nw.expr}" at ${(100 * nw.rate).toFixed(1)}%, under the ceiling, which is how this route shipped`;
+});
+
+/* 19e + 19f. RULE 11's SHAPE CLAUSE, PER SHAPE: v9's two simplest-form rows. Both
+        held one distractor over the key's own bottom number and one carrying the
+        key's own top number, which makes the KEY the unique option both of whose
+        numerals are printed elsewhere on the row - the fifth pass's digit-overlap
+        ban, which these two banks never applied. The masked shape records exactly
+        that, so 32 of gSimplest's 37 shapes and 37 of gSimplestError's 39 named the
+        key's slot on 100% of their own draws. The AGGREGATE clause v9 shipped -
+        SHAPE_CAP = 1.0 against a draw-weighted mean - stays quiet on both, and the
+        control asserts that too: a threshold no multi-shape bank can reach is not
+        a gate. */
+const V9_SIMPLEST_ROW = withError => () => {
+  const rnd = (x, y) => x + Math.floor(Math.random() * (y - x + 1));
+  const sh = arr => arr.slice().sort(() => Math.random() - 0.5);
+  const val = p => p[0] / p[1];
+  const ok = p => Array.isArray(p) && p[0] >= 1 && p[1] >= 2 && p[0] < p[1] && p[1] <= 12;
+  const BASE = [];
+  for (let d0 = 3; d0 <= 6; d0++) for (let n0 = 1; n0 < d0; n0++) if (gcd(n0, d0) === 1) BASE.push([n0, d0]);
+  let n = 2, d = 3, N = 4, D = 6, t = 1, key = [2, 3], slips = [];
+  for (let tr = 0; tr < 300; tr++) {
+    const k = [2, 3, 4][rnd(0, 2)];
+    const pool = BASE.filter(b => k * b[1] <= 12);
+    const b0 = pool[rnd(0, pool.length - 1)];
+    n = b0[0]; d = b0[1]; N = k * n; D = k * d; key = [n, d];
+    t = withError ? [1, 2, k].filter(x => x >= 1 && x < N && x <= D - 2)[0] || 1 : (n >= 2 ? k : 1);
+    const cands = [[N - t, D - t], [N + t, D + t], [N + 1, D], [N + t, D], [N + 2, D], [n, D], [N - t, D],
+                   [n + 1, d], [n - 1, d], [n, d - 1], [n - 1, d - 1], [n + 1, d - 1], [n, d - 2],
+                   [n + 1, d + 1], [n, d + 1]].filter(p => ok(p) && val(p) !== val(key));
+    /* v9's halfSeats(): one distractor over the key's own bottom number and one
+       carrying the key's own top number, the bottom seat kept when both cannot be */
+    const dens = sh(cands.filter(c => c[1] === d)), nums = sh(cands.filter(c => c[0] === n));
+    if (!dens.length) { slips = []; continue; }
+    const seats = [dens[0]].concat(nums.filter(c => val(c) !== val(dens[0])).slice(0, 1));
+    const rest = sh(cands.filter(c => !seats.some(z => val(z) === val(c))));
+    slips = seats.concat(rest.slice(0, 3 - seats.length));
+    if (slips.length === 3 && new Set([key].concat(slips).map(val)).size === 4) break;
+    slips = [];
+  }
+  if (slips.length !== 3) { n = 2; d = 3; N = 4; D = 6; key = [2, 3]; slips = [[2, 4], [2, 6], [1, 3]]; }
+  const row = [key].concat(slips);
+  const order = row.map((_, i) => i).sort(() => Math.random() - 0.5);
+  const stem = withError
+    ? 'Siti says ' + FR(N, D) + ' in its simplest form is ' + FR(N - t, D - t) + ', because she took ' + t +
+      ' away from the top and ' + t + ' away from the bottom. What is ' + FR(N, D) + ' in its simplest form?'
+    : 'Express ' + FR(N, D) + ' in its <b>simplest form</b>.';
+  return { q: stem, extra: '', choices: order.map(i => FR(row[i][0], row[i][1])),
+           correct: order.indexOf(0), answerText: FR(key[0], key[1]), explain: '' };
+};
+for (const [label, withErr] of [['gSimplest', false], ['gSimplestError', true]])
+  control(`RULE 11 shape clause PER SHAPE - the v9 ${label} row (the key is the only twinned option)`, () => {
+    const row = rowBank(V9_SIMPLEST_ROW(withErr), ROW_N);
+    if (!row.n) return null;
+    if (process.env.CTL_DEBUG) console.log(`    [debug] v9 ${label} control: ${row.shapes} shapes, aggregate ${(100 * row.sRate).toFixed(2)}%, worst big shape ${row.big ? (100 * row.big.rate).toFixed(2) + '% at ' + (100 * row.big.share).toFixed(1) + '%' : 'none'}`);
+    const v = rowVerdict(row, 'control.v9' + label);
+    if (!v) return null;
+    /* ... and the AGGREGATE clause v9 shipped must stay quiet on the same row */
+    if (row.shapes < SHAPE_MEMO && row.sRate >= SHAPE_CAP)
+      return null;
+    return `${v} - and v9's aggregate clause (SHAPE_CAP = 1.0 against a draw-weighted mean of ${(100 * row.sRate).toFixed(1)}%) stays quiet on it`;
+  });
 
 /* 20. THE CARD-ROW CLAUSE: v7's gSimplestError card, whose last sentence named
        fr(low) whether or not sided() had seated it - 25.5 / 25.7% of draws. */
@@ -5516,25 +5881,31 @@ if (picRows.length) {
 /* RULE 11, printed in full: the row space IS the finding, and the next lane
    inherits a number rather than a discovery (FIFTH PASS 2026-09-16). */
 if (rowRows.length) {
-  console.log(`\nRULE 11  ROW-ONLY RULE + THE SHAPE CLAUSE  (${ROW_N} draws learnt + ${ROW_N} tested. The option row alone, ` +
-    `stem discarded,\n         may not name the key on >= ${Math.round(100*ROW_CAP)}% over < ${ROW_MEMO} distinct rows; ` +
-    `and its MASKED SHAPE may not name the key's slot on ${Math.round(100*SHAPE_CAP)}% over < ${SHAPE_MEMO} shapes)\n`);
+  console.log(`\nRULE 11  ROW-ONLY RULE + THE SHAPE CLAUSE, PER SHAPE  (${ROW_N} draws learnt + ${ROW_N} tested. The option row\n` +
+    `         alone, stem discarded, may not name the key on >= ${Math.round(100*ROW_CAP)}% over < ${ROW_MEMO} distinct rows; and no MASKED SHAPE\n` +
+    `         covering >= ${Math.round(100*SHAPE_BIG)}% of a bank's draws may name the key's SLOT on > ${Math.round(100*SHAPE_PURE)}% of its OWN held-out draws)\n`);
   console.log(pad('GENERATOR', 26) + pad('DRAWS', 7) + pad('ROWS', 8) + pad('ROW>KEY', 10) +
-    pad('SHAPES', 8) + pad('SHAPE>SLOT', 12) + 'RESULT');
-  console.log('-'.repeat(118));
+    pad('SHAPES', 8) + pad('AGGREGATE', 11) + pad('WORST >=5% SHAPE', 18) + 'RESULT');
+  console.log('-'.repeat(136));
   for (const r of rowRows)
     console.log(pad(r.name, 26) + pad(r.n, 7) + pad(r.rows, 8) + pad((100 * r.rate).toFixed(1) + '%', 10) +
-      pad(r.shapes, 8) + pad((100 * r.sRate).toFixed(1) + '%', 12) +
+      pad(r.shapes, 8) + pad((100 * r.sRate).toFixed(1) + '%', 11) +
+      pad(r.big ? (100 * r.big.rate).toFixed(1) + '% @ ' + (100 * r.big.share).toFixed(1) + '%' : '-none-', 18) +
       (r.err ? 'FAIL  ' + r.err
-        : (r.sRate >= SHAPE_WATCH ? 'pass - over the ' + Math.round(100*SHAPE_WATCH) + '% shape watch line, declared residual'
+        : SHAPE_EXEMPT.has(r.name) ? 'pass - on the declared row-shape carve-out (sixth pass, wave 2)'
+        : (r.sRate >= SHAPE_WATCH ? 'pass - over the ' + Math.round(100*SHAPE_WATCH) + '% aggregate watch line, declared residual'
           : (r.rows < ROW_MEMO ? 'pass - memorisable row space, and the row settles nothing' : 'pass'))));
   console.log('');
   console.log('     a high ROW rate over a LARGE row space is not a tell: a row of four particular fractions belongs to one question,');
   console.log('     which is what it means for the options to be drawn from the mathematics. The gate is the conjunction of both columns.');
-  console.log('     the SHAPE watch line is the row-shape class (sixth pass, wound 1): ordering four bottom numbers by sight is');
-  console.log('     whole-number work standing in for fraction work, so it is declared with its numbers, and only a sight rule that is');
-  console.log('     NEVER WRONG over a memorisable shape space is failed. Every bank listed over 40% is carried in the lane note.');
-  if (rowRows.every(r => !r.err)) console.log(`ok   RULE 11 row-only rule: ${rowRows.length} banks, no memorisable option row that names its own key at or over ${Math.round(100*ROW_CAP)}%, and no masked row shape that names the key's slot every time`);
+  console.log('     the SHAPE clause is tested PER SHAPE (ninth pass, kill 2): SHAPE_CAP = 1.0 against a draw-weighted MEAN could only');
+  console.log('     ever fire on a one-shape bank, while the sentence this file printed made a claim about every shape.');
+  console.log(`     THE SCOPE IS PRINTED: ${[...SHAPE_EXEMPT].length} banks are on the sixth pass's standing row-shape carve-out and are measured, not gated -`);
+  console.log('     ' + [...SHAPE_EXEMPT].map(x => x.split('.')[1]).join(', ') + '.');
+  console.log('     Three of them (gCompareUnit, gCompareSameD, gGreatest4) ask for an EXTREME of the row, so the key\'s slot is one of');
+  console.log('     two by definition and no seating can move it. The carve-out is the standing PM ruling that put the row-shape class');
+  console.log('     in wave 2; a bank leaves it by being rebuilt, and gSimplest and gSimplestError left it this pass.');
+  if (rowRows.every(r => !r.err)) console.log(`ok   RULE 11 row-only rule: ${rowRows.length} banks, no memorisable option row that names its own key at or over ${Math.round(100*ROW_CAP)}%; and PER SHAPE, no masked row shape covering >= ${Math.round(100*SHAPE_BIG)}% of a bank's draws that names the key's slot on more than ${Math.round(100*SHAPE_PURE)}% of its own held-out draws, outside the ${[...SHAPE_EXEMPT].length} banks on the declared row-shape carve-out printed above`);
 }
 
 /* RULE 12, printed in full: the recall clause is a declared residual for six banks
@@ -5579,22 +5950,42 @@ if (glyRows.length) {
 /* RULE 14, printed in full: the exemption list IS the claim, so it is on the
    record of every run (SEVENTH PASS 2026-09-16). */
 if (halfRows.length) {
-  console.log(`\nRULE 14  HALF-KEY RULE  (${HALF_N} draws learnt + ${HALF_N} tested: one expression over the stem's numerals\n` +
-    `         names HALF the key and the option row settles the rest - may not answer the item on >= ${Math.round(100*HALF_CAP)}%,\n` +
-    `         unless that expression IS the item's own declared mathematics, named in the table below)\n`);
-  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('EXPRESSION', 12) + pad('HALF', 13) +
-    pad('NAMES IT', 10) + pad('ANSWERS', 10) + 'RESULT');
-  console.log('-'.repeat(122));
-  for (const r of halfRows)
-    console.log(pad(r.name, 26) + pad(r.n, 8) + pad(r.expr, 12) + pad(r.half, 13) +
-      pad((100 * r.names).toFixed(1) + '%', 10) + pad((100 * r.rate).toFixed(1) + '%', 10) +
+  console.log(`\nRULE 14  HALF-KEY RULE  (${HALF_N} draws learnt + ${HALF_N} tested: ONE or TWO operations over the stem's\n` +
+    `         numerals - division in the base list, and a rational scaling counts as two, so the deepest recipe is\n` +
+    `         THREE - naming HALF the key while the option row settles the rest. Candidates are shortlisted by their\n` +
+    `         ANSWER rate on the learn pass, top ${HALF_TOP} de-aliased by value, and the bank's verdict is the WORST of\n` +
+    `         them that is not the item's own declared mathematics. May not answer the item on >= ${Math.round(100*HALF_CAP)}%.)\n`);
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 7) + pad('WORST EXPR', 14) + pad('HALF', 12) +
+    pad('NAMES', 8) + pad('ANSWERS', 9) + pad('/SESSION', 9) + 'RESULT');
+  console.log('-'.repeat(132));
+  for (const r of halfRows) {
+    const w = r.worst || { expr: '-none-', half: 'n/a', names: 0, rate: 0 };
+    console.log(pad(r.name, 26) + pad(r.n, 7) + pad(w.expr, 14) + pad(w.half, 12) +
+      pad((100 * w.names).toFixed(1) + '%', 8) + pad((100 * w.rate).toFixed(1) + '%', 9) +
+      pad(r.serve.toFixed(2), 9) +
       (r.err ? 'FAIL  ' + r.err
-        : (r.rate >= HALF_CAP ? 'pass - THE ITEM WORKING: ' + r.method : 'pass')));
+        : r.bare ? 'measured, not gated here - a bare-number option is the WHOLE key (RULE 12)'
+        : r.limbB ? 'pass - OVER the 40% second limb at ' + r.serve.toFixed(2) + '/session: declared residual'
+        : 'pass') +
+      (r.method && r.rate >= HALF_CAP ? '   [top route exempt: ' + r.method + ']' : ''));
+  }
   console.log('');
   console.log('     the exemption is keyed to the (bank, expression) PAIR and every line of it is a claim about the syllabus:');
   console.log('     "add the two tops and keep the bottom" names gAddSame\'s key on every draw because that IS adding like');
   console.log('     fractions. A bank on the list whose tell moves to another expression still fails - control 18 proves it.');
-  if (halfRows.every(r => !r.err)) console.log(`ok   RULE 14 half-key rule: ${halfRows.length} banks, no half of a key named by a ONE- or TWO-operation expression over the stem's numerals that the row then settles at or over ${Math.round(100*HALF_CAP)}%, outside the ${Object.keys(HALF_METHOD).length} declared methods (matched by value, in any spelling)`);
+  console.log('     the ANSWERS column is the worst NON-exempt route, so a route hiding under an exempted method is now');
+  console.log('     printed rather than invisible (ninth pass, wound 7).');
+  const limbB = halfRows.filter(r => r.limbB);
+  if (limbB.length) {
+    console.log(`\n     SECOND LIMB, MEASURED AND DECLARED, NOT GATED: the PM's ruling puts a ${Math.round(100*HALF_WATCH)}% line on any bank served`);
+    console.log(`     ${HALF_SERVE.toFixed(0)} item a session or more. ${limbB.length} banks are over it: ` +
+      limbB.map(r => r.name.split('.')[1] + ' ' + (100 * r.worst.rate).toFixed(1) + '% at ' + r.serve.toFixed(2)).join(', ') + '.');
+    console.log('     It is printed rather than failed because a four-option guess is worth 25%, so the line is 15 points of');
+    console.log('     edge, and four of these are the SECOND route on a bank whose first is its own declared method - the');
+    console.log('     class the ninth pass measured at 41.9-55.7% and this file could not see until wound 7 was closed.');
+    console.log('     The lane note carries every number; the PM has the table to re-rule on.');
+  }
+  if (halfRows.every(r => !r.err)) console.log(`ok   RULE 14 half-key rule: ${halfRows.filter(r => !r.bare).length} fraction-row banks, no half of a key named by an expression of up to THREE operations over the stem's numerals - shortlisted by ANSWER rate, worst non-exempt reported - that the row then settles at or over ${Math.round(100*HALF_CAP)}%, outside the ${Object.keys(HALF_METHOD).length} declared methods (matched by value, in any spelling); the ${halfRows.filter(r => r.bare).length} bare-number banks are measured above and gated by RULE 12`);
 }
 
 /* THE CARD-ROW CLAUSE and THE SIGN GATE, printed when they have something to say

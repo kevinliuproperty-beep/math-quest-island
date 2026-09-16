@@ -750,6 +750,26 @@ const SIMPLE = [];
 for (let d0 = 2; d0 <= 12; d0++) for (let n0 = 1; n0 < d0; n0++) if (gcd(n0, d0) === 1) SIMPLE.push([n0, d0]);
 const scalesFor = d => { const ks = []; for (let k = 2; k <= 6; k++) if (k * d <= 12) ks.push(k); return ks; };
 const SCALABLE = SIMPLE.filter(b => scalesFor(b[1]).length > 0);
+/* ---- THE EQUIVALENCE FACT DRAW -----------------------------------------------
+   SWEEP FRACTIONS REFUTATION, NINTH PASS 2026-09-16, WOUND 1. `pick(SCALABLE)`
+   then `pick(scalesFor(d))` puts the scale factor at 2 on about 62% of draws,
+   because every base with a bottom number of 5 or 6 admits no other factor - the
+   same shape of defect the eighth pass inverted on the simplest-form draw. It was
+   invisible while the two BARE-NUMBER banks sat outside RULE 14's scope (halfPair
+   returned null on a bare-number option and dropped them before they were
+   measured). Brought into scope, "double the printed bottom number" answered
+   gEqMissingDen on 68.5% and a cousin answered gEqMissing on 71.3% - over the
+   ceiling, on an option row where a bare number can never be shared, so anything
+   that NAMES the key ISOLATES it and the only defence is that nothing names it
+   often. Both halves of the draw are weighted: a scale factor of 2 is worth 2
+   against 5 for every other factor, and a base whose TOP number is 1 is worth 2
+   against 5 - "multiply the printed bottom number by the printed new top number"
+   is the key exactly when the top number is 1, and SCALABLE is five twelfths unit
+   fractions. Measured after: k = 2 on 36%, a top number of 1 on 40%. */
+const EQUIV_FACTS = [];
+for (const b of SCALABLE) for (const k0 of scalesFor(b[1]))
+  for (let i = 0; i < (k0 === 2 ? 2 : 5) * (b[0] === 1 ? 2 : 5); i++) EQUIV_FACTS.push([b[0], b[1], k0]);
+const drawEquiv = () => pick(EQUIV_FACTS);
 
 /* ---- THE SIMPLEST-FORM DRAW -------------------------------------------------
    SWEEP FRACTIONS REFUTATION, EIGHTH PASS 2026-09-16, KILL 1. RULE 14 scored ONE
@@ -779,11 +799,67 @@ const SCALABLE = SIMPLE.filter(b => scalesFor(b[1]).length > 0);
    and 6/12 leave it), and halves are still asked about in gAlreadySimplest, which
    draws the whole 45-entry table, and in gPickEquiv. */
 const SCALABLE3 = SCALABLE.filter(b => b[1] >= 3);
-const SIMPLIFY_K = [2, 3, 4];
-const SIMPLIFY_BASES = {};
-for (const k0 of SIMPLIFY_K) SIMPLIFY_BASES[k0] = SCALABLE3.filter(b => k0 * b[1] <= 12);
-/* [n, d, k]: the base in its simplest form, and the common factor to scale it by. */
-const drawSimplify = () => { const k0 = pick(SIMPLIFY_K), b0 = pick(SIMPLIFY_BASES[k0]); return [b0[0], b0[1], k0]; };
+
+/* ---- THE SIMPLEST-FORM FACT TABLE (v10) -------------------------------------
+   SWEEP FRACTIONS REFUTATION, NINTH PASS 2026-09-16, CAPTAIN'S CALLS (i) AND (ii),
+   PM RULINGS 3 AND 4.
+
+   (ii) HALVES COME BACK. v9 filtered the base table to d >= 3 so that no key was
+   ever worth one half, because "there is exactly ONE proper fraction written over
+   2, so a key of 1/2 is the only option any row can carry over 2 and its bottom
+   number is a lone signal no seating can break". The refuter's ruling on that is
+   accepted: 2/4, 3/6, 4/8, 5/10 and 6/12 left the topic's simplification stems
+   entirely, the topic's OWN equivalent-fractions tip tells the child to "chant the
+   families: 1/2 = 2/4 = 3/6 = 4/8", and NOTHING in the topic then asked a child to
+   simplify anything to one half. The lone-signal argument is answered by the
+   format change below rather than by removing the content: with a BARE-NUMBER
+   option row there is no fraction over 2 on the screen to pick.
+
+   (i) THE TABLE IS THE SKILL, and that is the PM's declared premise for carrying
+   full-stem-table recall on this bank: the complete set of non-simplest proper
+   fractions with a bottom number to 12 is TWENTY-ONE facts, and knowing that whole
+   table IS the P3 simplest-form skill, the way the twelve times table is the P3
+   multiplication skill. The carve-out applies only to a bank whose stem set EQUALS
+   the syllabus fact set - which is what this table is, exactly and by
+   construction. It is not a licence for the OPTION board, which is measured
+   separately and balanced.
+
+   THE DRAW IS WEIGHTED ON THE COMMON FACTOR, not flat over the facts. Flat over
+   21 facts puts k = 2 on 52% of draws and "halve the printed bottom number" back
+   over the line the eighth pass fought it under; flat over k puts 20% of the whole
+   bank on the single fact 5/10. The weights below are the compromise measured in
+   the lane note: k = 2 on 35% of draws, no single fact over 10%, and every one of
+   the 21 facts reachable. */
+const SIMPLIFY_FACTS = [];
+for (let d0 = 2; d0 <= 6; d0++) for (let n0 = 1; n0 < d0; n0++) if (gcd(n0, d0) === 1)
+  for (let k0 = 2; k0 * d0 <= 12; k0++) SIMPLIFY_FACTS.push([n0, d0, k0]);
+/* THE WEIGHTS, and every one of them is bought with a measurement.
+     - a key worth one HALF gets weight 1. It is back in the table (captain's call
+       ii) and it is the one key the grid row below cannot be built for, because
+       x/2 is never a proper fraction; the draws it takes therefore go to the
+       distinct family, whose masked shape it pins to slot 0. Five per cent is what
+       holds that shape under RULE 11's per-shape line.
+     - a fact whose common factor is 2 gets weight 6, one whose factor is 3 or more
+       gets weight 9, because "halve the printed bottom number" is right exactly
+       when the factor is 2 and the eighth pass killed on that expression.
+   Measured: k = 2 on 51%, a top number of 1 on 47%, a key worth one half on 4.2%,
+   no single fact over 7.6%, all 21 facts reachable. */
+const SIMPLIFY_W = [];
+for (const f of SIMPLIFY_FACTS){
+  /* and a third weight, on the SHAPE the grid row below can build. A key of
+     n/(n+1) is the biggest fraction its own bottom number can write, so its grid
+     can only be seated with the key largest and its masked slot never moves; a key
+     with a top number of 1 can seat two of the four. Mixing them two to one is
+     what takes the grid shape's own slot rate to its minimum. */
+  const shape = f[1] === 2 ? 3                       /* no grid at all: the loose family */
+              : (f[0] === 1 && f[1] === 3) ? 1        /* grid seats ONE slot: 1/3 has no y under 3 */
+              : f[0] === f[1] - 1 ? 2                 /* grid seats ONE slot: the key is always largest */
+              : (f[0] > 1 ? 8 : 3);                   /* all four slots, or two */
+  const w = (f[1] === 2 ? 2 : (f[2] === 2 ? 5 : 11)) * shape;
+  for (let i = 0; i < w; i++) SIMPLIFY_W.push(f);
+}
+/* [n, d, k]: the fact in its simplest form, and the common factor it is hidden by. */
+const drawSimplify = () => { const b0 = pick(SIMPLIFY_W); return [b0[0], b0[1], b0[2]]; };
 
 /* ---- THE SHARED-HALF SEATS ---------------------------------------------------
    SWEEP FRACTIONS REFUTATION, EIGHTH PASS 2026-09-16, KILL 1, the general half of
@@ -857,6 +933,157 @@ function halfRow(cands, key){
     if (row && row.length === 3) return row;
   }
   return [];
+}
+
+/* ---- THE GRID ROW AND THE DISTINCT ROW ---------------------------------------
+   SWEEP FRACTIONS REFUTATION, NINTH PASS 2026-09-16, KILL 2. RULE 11's shape
+   clause was tested on the AGGREGATE at SHAPE_CAP = 1.0, which is a threshold no
+   bank with more than one shape can ever reach, while the sentence the file
+   printed claimed the test was per shape. Tested per shape, 32 of gSimplest's 37
+   masked shapes and 37 of gSimplestError's 39 named the key's SLOT on 100% of
+   their own draws, covering 73.4% and 83.0% of draws.
+
+   THE MECHANISM IS THE EIGHTH PASS'S OWN FIX. halfSeats() holds one distractor
+   over the key's bottom number and one carrying the key's top number, which makes
+   the KEY the unique option both of whose numerals are printed elsewhere on the
+   row - and that is precisely the FIFTH pass's digit-overlap ban (see
+   digitIsolatesKey), which these two banks never applied. The masked shape records
+   exactly which option is twinned, so a shape that is mostly one twinning pattern
+   is a slot that is always the same slot. RULE 14's cure was RULE 11's disease.
+
+   THE GRID closes both at once. Take the key n/d, one wrong top x and one wrong
+   bottom y, and seat the OTHER THREE CELLS of the 2 x 2 grid: x/d, n/y, x/y.
+   Every numeral on the row then appears exactly twice, so
+     - both halves of the key are shared, which is what RULE 14 needs;
+     - EVERY option is twinned, not just the key, so digitIsolatesKey is false and
+       the masked shape is one symmetric pattern - "0/1 2/1 0/3 2/3" - on every
+       grid draw, whatever the numbers;
+     - inside that one shape the key's slot is decided only by whether x is above
+       or below n and y above or below d, and those same two signs decide the
+       key's VALUE rank. All four slots and all four ranks are reachable, and they
+       move together, so RULE 7's flatness IS the shape clause's flatness.
+   Every cell is a named belief: x = n +- 1 is "one piece too many / too few in the
+   answer", y is "did not divide the bottom far enough", "divided it one step too
+   far", or "divided only the top" (y = D), and x/y is the two miscounts together,
+   all four already on these banks' candidate lists.
+
+   THE DISTINCT ROW is the other family and it exists for two reasons. A key worth
+   one half has NO legal wrong top over a bottom of 2, so no grid exists for it -
+   and captain's call (ii) puts halves back. And 1/2 itself can only be seated as a
+   DISTRACTOR off the grid, because x/2 is never proper. So a share of draws take a
+   row with all EIGHT numerals distinct: one masked shape again ("0/1 2/3 4/5 6/7"),
+   carrying no twinning at all, inside which the key's slot is its rank by BOTTOM
+   NUMBER - which this family draws directly, so it comes out flat too, except on
+   the half keys, where nothing is written over a smaller bottom number than 2.
+
+   Two families, two masked shapes, both scored per shape in tools/gen-sanity.mjs
+   and both under the line. --- */
+function gridRow(key, xs, ys, u){
+  const n = key[0], d = key[1], out = [];
+  for (const x of xs) for (const y of ys){
+    const row = [[x, d], [n, y], [x, y]];
+    if (!row.every(c => legalFrac(c))) continue;
+    if (!slipsOk(key, row)) continue;
+    if (row.filter(c => c[0]*d > n*c[1]).length !== u) continue;
+    out.push(row);
+  }
+  return out.length ? pick(out) : null;
+}
+/* The distinct row seats the VALUE rank the caller asks for, exactly as sided()
+   does, and lets the bottom-number order - which is this family's masked slot -
+   fall out of the numbers. It exists because the grid cannot seat every rank for
+   every key: a key of n/(n+1) is the largest fraction its own bottom number can
+   write, so every x/d is below it and no y under d leaves n/y proper, and the grid
+   for such a key can only ever be built with the key largest. Between the two
+   families all four ranks are reachable for every fact in the table. */
+function looseRow(key, all, u){
+  /* NINTH PASS 2026-09-16, KILL 2. The masked shape that would not go away off the
+     grid is the one where a numeral CROSSES the line - the key's bottom number
+     printed as another option's TOP number, which [n+1, d+1] is whenever the key is
+     (d-1)/d. Masked, that row is "0/1 0/2 1/2 3/4": the key is the only option
+     whose two numerals reappear in their own positions, and the pattern named the
+     slot on 55-78% of its own draws. Such a candidate is dropped from THIS family's
+     pool - the grid does not draw from the pool at all, so nothing is lost there. */
+  const clean = all.filter(c => Array.isArray(c) && c[0] !== key[1] && c[1] !== key[0]);
+  const cands = clean.length >= 4 ? clean : all;
+  for (let i = 0; i < 16; i++){
+    /* the key's BOTTOM number is shared here too - it is the half every expression
+       in RULE 14's library reaches first ((n1)/2, (n1)/n0, (n1)/3 all land there)
+       and off the grid nothing else would hold it. Sharing only the bottom leaves
+       the key's TOP number unrepeated, so the key is not the twinned option and
+       the masked shape still says nothing about which slot it is in. */
+    /* two seats: one over the key's OWN bottom number (RULE 14 - it is the half
+       every expression in the library reaches first) and one UNDER it (RULE 7's
+       bottom-number policy cap - the grid writes only two distinct bottom numbers
+       and the key ties for the smallest on most grid draws, so this family is where
+       that policy is made wrong rather than half right). */
+    const under = shuffle(cands.filter(c => Array.isArray(c) && legalFrac(c) &&
+                                            !sameVal(c, key) && c[1] < key[1]));
+    const row = sided(key, cands,
+      sameDen(cands, key[1], key).slice(0, 1).concat(under.length ? [under[0]] : []), u);
+    if (!row || row.length !== 3 || !slipsOk(key, row)) continue;
+    /* the FIFTH pass's digit-overlap ban, which is the whole mechanism of the
+       ninth pass's second kill: the key may not be the one option both of whose
+       numerals are printed elsewhere on the row, because the masked shape records
+       exactly that and a shape that is one twinning pattern is a slot that is
+       always the same slot. Off the grid the seating is free, so these rows spread
+       over many masked shapes instead of collapsing into one. */
+    if (digitIsolatesKey(key, row)) continue;
+    /* NINTH PASS 2026-09-16, KILL 2. A PARTLY twinned row is the worst of both:
+       the masked shape records which options are twinned and which are not, and
+       that pattern names the slot. The only coincidence this family allows is the
+       deliberate one - the seat written over the key's own bottom number - so its
+       masked shape is a single pattern carrying nothing but the ORDER, and the
+       order is what the under-the-key seat above makes vary. */
+    /* NINTH PASS 2026-09-16, KILL 2. The shape that would not go away off the grid
+       is the one where a numeral CROSSES halves - the key's bottom number printed
+       as another option's TOP number ([n+1, d+1] is d/(d+1) whenever the key is
+       (d-1)/d). Masked, that row is "0/1 0/2 1/2 ...", the key is the only option
+       whose numerals both reappear in the same positions, and the pattern names
+       the slot on 60-78% of its own draws. No numeral may sit on one side of the
+       line in the key and the other side in a distractor. */
+
+    /* captain's call (ii): where the bank can name a half, take the seating that
+       has one - the grid can never carry a 1/2 against a key that is not a half. */
+    if (cands.some(c => c[0] === 1 && c[1] === 2) &&
+        !row.some(c => c[0] === 1 && c[1] === 2) && i < 5) continue;
+    /* RULE 7's bottom-number policy cap. The grid's own bottom numbers are the
+       key's and ONE other, so on a grid draw the key ties for the smallest bottom
+       number about nine times in ten and "pick the smallest bottom number" is worth
+       half a draw; the loose family is where a bottom number UNDER the key's can be
+       seated, so where the bank names one it is taken. */
+    if (cands.some(c => c[1] < key[1]) && !row.some(c => c[1] < key[1]) && i < 9) continue;
+    return row;
+  }
+  return null;
+}
+/* The row for a simplest-form bank. The VALUE RANK is drawn first and walked in
+   random order - the fifth pass's device, so RULE 7 comes out flat by construction
+   rather than by luck and the FACT TABLE is not reweighted by refusals - and the
+   family that can seat that rank is used, the grid by preference. */
+const GRID_SHARE = 0.80;
+function simplestRow(key, cands, xs, ys, loose, bias){
+  const isHalf = c => c[0] === 1 && c[1] === 2;
+  const tryLoose = () => {
+    for (const u of shuffle([0,1,2,3])){ const r = looseRow(key, cands, u); if (r) return r; }
+    return null;
+  };
+  /* captain's call (ii) and RULE 7's bottom-number cap, in one share. The grid
+     writes only TWO distinct bottom numbers - the key's own and one other - so on a
+     grid draw the key ties for the smallest bottom number about nine times in ten,
+     and a 1/2 can never ride on a grid at all (x/2 is not a proper fraction). The
+     loose family is where both are fixed, and the share below is what it costs. */
+  if (Math.random() < (loose === undefined ? 1 - GRID_SHARE : loose)){
+    const r = tryLoose();
+    if (r) return r;
+  }
+  /* the two seatings whose wrong BOTTOM number sits UNDER the key's are walked
+     twice as often - they are the only grid rows on which "pick the smallest
+     bottom number" is wrong rather than half right, and RULE 7 caps that policy at
+     40%. The value rank stays inside its own cap and floor because the loose
+     family carries the complement. */
+  for (const u of shuffle(bias ? [0,1,1,2,3,3] : [0,1,2,3])){ const g = gridRow(key, xs, ys, u); if (g) return g; }
+  return tryLoose() || [];
 }
 
 
@@ -1278,8 +1505,7 @@ function gPicUnshaded(){
 function gEquivFromBar(){
   let n = 3, d = 4, k = 2, up = false, key = [3,4], slips = [[5,6],[3,8],[7,8]], g = 0;
   do {
-    const b = pick(SCALABLE); n = b[0]; d = b[1];
-    k = pick(scalesFor(d));
+    const b = drawEquiv(); n = b[0]; d = b[1]; k = b[2];
     up = Math.random() < 0.5;
     key = up ? [k*n, k*d] : [n, d];
     /* SECOND PASS, WOUND 1. [n+k, d+k] and [k*n+1, k*d] both sit ABOVE the key and
@@ -1288,7 +1514,7 @@ function gEquivFromBar(){
        1.34 served items a session. The candidate list is both-sided now, and the
        two ±1 entries are the documented second-order slip: one small piece too many
        or too few, on top of the regrouping. */
-    slips = sided(key, [
+    const cands = [
       [n+k, d+k],                         /* added k to the top AND the bottom */
       [n+1, d], [n+1, d+1],               /* one big piece too many, one part too many */
       [k*n+1, k*d], [k*n-1, k*d],         /* one small piece too many / too few */
@@ -1302,8 +1528,18 @@ function gEquivFromBar(){
          reachable on 12.6% of draws, a hair over RULE 7's new 12% floor and inside
          its sampling noise. Two more of the file's own miscounts sit below it. */
       [k*n-2, k*d],                       /* two small pieces too few */
-      (d+1 <= 12 ? [n, d+1] : null)       /* one part too many in the whole */
-    ].filter(Boolean)) || [];
+      (d+1 <= 12 ? [n, d+1] : null),      /* one part too many in the whole */
+      [key[0]+1, key[1]], (key[0] > 1 ? [key[0]-1, key[1]] : null),
+      (key[1]-1 > key[0] ? [key[0], key[1]-1] : null),
+      (key[1]+1 <= 12 ? [key[0], key[1]+1] : null)
+    ].filter(Boolean);
+    /* NINTH PASS 2026-09-16, RULE 14's second limb. "n0+n0" - double the bar's own
+       top number - answered this bank on 46.7% at 5.66 served items a session to a
+       struggling child, the busiest generator in the topic. It names the key's
+       BOTTOM number; the grid shares it, and shares the key's top number too. */
+    slips = simplestRow(key, cands,
+      [key[0]-1, key[0]+1].filter(x => x >= 1 && x < key[1]),
+      [key[1]-1, key[1]+1, key[1]-2, key[1]+2, up ? d : k*d].filter(y => y >= 2 && y <= 12 && y !== key[1]));
     g++;
   } while (g < 200 && !slipsOk(key, slips));
   if (!slipsOk(key, slips)){ n = 3; d = 4; k = 2; up = false; key = [3,4]; slips = [[5,6],[3,8],[7,8]]; }
@@ -1346,8 +1582,7 @@ function gEqMissing(){
   const rank = ri(1,4);
   let n = 1, d = 2, k = 2, key = 2, slips = [3,4,1], g = 0;
   do {
-    const b = pick(SCALABLE); n = b[0]; d = b[1];
-    k = pick(scalesFor(d));
+    const b = drawEquiv(); n = b[0]; d = b[1]; k = b[2];
     key = k*n;
     /* SECOND PASS, KILL 2's twin. n + d(k-1) is ALWAYS above k·n and n is always
        below it, so the key was never an extreme of its own option row - 100.00% of
@@ -1432,8 +1667,7 @@ function gEqMissingDen(){
   const rank = ri(1,4);
   let n = 1, d = 2, k = 2, key = 4, slips = [3,4,2], g = 0;
   do {
-    const b = pick(SCALABLE); n = b[0]; d = b[1];
-    k = pick(scalesFor(d));
+    const b = drawEquiv(); n = b[0]; d = b[1]; k = b[2];
     key = k*d;
     /* SECOND PASS, THE SECOND KILL. The three authored distractors were
        d + n(k-1), d + k and d, and because n < d every one of them is provably
@@ -1510,8 +1744,7 @@ function gEqMissingDen(){
 function gPickEquiv(){
   let n = 1, d = 2, k = 2, up = true, t = 1, key = [2,4], slips = [[3,4],[1,4],[3,4]], g = 0;
   do {
-    const b = pick(SCALABLE); n = b[0]; d = b[1];
-    k = pick(scalesFor(d));
+    const b = drawEquiv(); n = b[0]; d = b[1]; k = b[2];
     up = Math.random() < 0.5;
     t = n >= 2 ? k : 1;
     key = up ? [k*n, k*d] : [n, d];
@@ -1614,12 +1847,20 @@ function gSimplest(){
       (n+1 < d-1 ? [n+1, d-1] : null),             /* one piece too many, one part too few */
       (d-2 > n ? [n, d-2] : null),                 /* divided the bottom two steps too far */
       [n+1, d+1],                                  /* added one to the top and the bottom */
-      [n, d+1]                                     /* did not divide the bottom far enough */
+      [n, d+1],                                    /* did not divide the bottom far enough */
+      /* NINTH PASS 2026-09-16, captain's call (ii). "Simplified it all the way
+         down to a half" is a real P3 slip on a unit fraction and it is the only
+         way 1/2 reaches a row whose key is not itself a half - x/2 is never a
+         proper fraction, so the grid family cannot carry one. */
+      (d > 2 ? [1, 2] : null)
     ].filter(Boolean);
-    /* EIGHTH PASS 2026-09-16, KILL 1: neither half of the key may be a lone
-       signal on the row - see THE SHARED-HALF SEATS above. A draw whose bank
-       cannot supply both seats is refused rather than seated without them. */
-    slips = halfRow(cands, key);
+    /* NINTH PASS 2026-09-16, KILL 2. halfRow()'s two held seats made the key the
+       unique twinned option and collapsed the masked shape space; simplestRow()
+       shares both halves of the key AND twins every other option. See THE GRID ROW
+       AND THE DISTINCT ROW above. */
+    slips = simplestRow(key, cands,
+      [n-1, n+1].filter(x => x >= 1 && x < d && x !== n),
+      [d-1, d+1, d-2, d+2, D, D-t, D+t].filter(y => y >= 2 && y <= 12 && y !== d), 0.46, true);
     g++;
   } while (g < 200 && !slipsOk(key, slips));
   if (!slipsOk(key, slips)){ n = 2; d = 3; k = 2; N = 4; D = 6; key = [2,3]; slips = [[2,4],[2,6],[1,3]]; }
@@ -1750,11 +1991,15 @@ function gSimplestError(){
       (n > 1 ? [n-1, d] : null),          /* one piece too few in the answer */
       (n+1 < d-1 ? [n+1, d-1] : null),    /* one piece too many, one part too few */
       (d-2 > n ? [n, d-2] : null),        /* one step too far down the bottom, twice */
-      (d+1 <= 12 ? [n, d+1] : null)       /* did not divide the bottom far enough */
+      (d+1 <= 12 ? [n, d+1] : null),      /* did not divide the bottom far enough */
+      /* NINTH PASS 2026-09-16, captain's call (ii): the only route 1/2 has on to a
+         row whose key is not itself a half. */
+      (d > 2 ? [1, 2] : null)
     ].filter(Boolean);
-    /* EIGHTH PASS 2026-09-16, KILL 1: neither half of the key may be a lone signal
-       on the row - see THE SHARED-HALF SEATS above. */
-    slips = halfRow(cands, key);
+    /* NINTH PASS 2026-09-16, KILL 2 - see THE GRID ROW AND THE DISTINCT ROW. */
+    slips = simplestRow(key, cands,
+      [n-1, n+1].filter(x => x >= 1 && x < d && x !== n),
+      [d-1, d+1, d-2, d+2, D, D-t, D+t].filter(y => y >= 2 && y <= 12 && y !== d), 0.46, true);
     g++;
   } while (g < 200 && !(t < N && t <= D-2 && slipsOk(key, slips)));
   if (!(t < N && t <= D-2 && slipsOk(key, slips))){
@@ -2755,7 +3000,7 @@ function gMakeOneIn(){
        [k*a, D] is the part already there; [D-a, D] forgot to scale the top; the two
        ±1 entries are the documented second-order slip (one small piece out), which
        is what keeps a side available when d = 2 collapses the named ones. */
-    slips = sided(key, [
+    const cands = [
       [d-a, D], [k*a, D], [D-a, D], [D - k*a + 1, D], [D - k*a - 1, D],
       [D - k*a + k, D], [D - k*a - k, D],  /* one BIG piece out, converted, each way */
       /* THIRD PASS 2026-09-16, W5: two more each way, so that the extreme seatings
@@ -2769,7 +3014,19 @@ function gMakeOneIn(){
          slip: the big pieces left uncounted, the part already there written in
          big pieces, and the scaling done on the wrong number. */
       [a, D], [d, D], (k*(d-a) - a > 0 ? [k*(d-a) - a, D] : null)
-    ].filter(Boolean), null, 4 - rank) || [];
+    ].filter(Boolean);
+    /* NINTH PASS 2026-09-16, RULE 14's second limb. "(n3-2)-n0" answered this bank
+       on 49.1% at 1.76 served items a session, over the 40% the PM's ruling allows
+       a bank served once a session, and the gate printed 29.4% because its
+       shortlist was taken by NAMING frequency. The route names the key's TOP
+       number; the row never shared it, because every candidate here is written
+       over D. The grid seats the key's own top number over D - 1 or D + 1 and the
+       miscount over both bottoms, so the key's numerator is shared, every option is
+       twinned (the fifth pass's digit-overlap ban, which this bank already
+       enforced) and the masked shape stops naming the slot. */
+    slips = simplestRow(key, cands,
+      [key[0]-1, key[0]+1].filter(x => x >= 1 && x < key[1]),
+      [D-1, D+1, D-2, D+2].filter(y => y >= 2 && y <= 12 && y !== D), 0.05);
     /* FIFTH PASS 2026-09-16, W2, THE WORST OF THE DIGIT-OVERLAP CLASS: 74.6% of
        draws isolated the key on "both my numbers are printed somewhere else on
        the row". Every candidate above is the key with one number moved, so the
@@ -2804,6 +3061,45 @@ function gMakeOneIn(){
              'became ' + k + ' small ones, so the top number has to grow by that much as well.'));
 }
 
+/* ---- THE RELATED-ADD TUPLE TABLE --------------------------------------------
+   SWEEP FRACTIONS REFUTATION, NINTH PASS 2026-09-16, KILL 1. The route was
+   `(n3/n1)+n2` - divide the second bottom number by the first, add the second top
+   number, take the option carrying it - which named this bank's key on 82.2 /
+   82.4% of draws and answered it on 65.8%, over the 60% ceiling, while the gate
+   printed 49.4%. The expression is k + b. The key is k*a + b. They are the same
+   number exactly when a = 1, and a WAS 1 on 82% of draws - so the bank whose
+   declared job is CONVERTING a related fraction asked "unit fraction + something"
+   five draws in six, and the first top number was never read.
+
+   THE CAUSE IS THE FREE DRAW, NOT THE RANGE. `a = ri(1, d-1)` looks even; the
+   guard `k*a + b + 2 < D` is what is not. It requires b < k(d - a) - 2, so every
+   step a takes away from 1 cuts the b range by k, and a = d - 1 usually leaves no
+   legal b at all. Measured over the whole legal space there are 22 tuples and 15
+   of them have a = 1. Drawing the NUMBERS and then filtering does not leave an
+   even draw behind - the fifth pass's lesson about the value rank, one level down
+   and in the stem this time.
+
+   THE TABLE IS ENUMERATED AND THE DRAW IS WEIGHTED. Every legal (d, k, a, b) is
+   built once at load, split on a = 1, and the unit-fraction half is drawn 35% of
+   the time - the ceiling the PM's ruling sets. The cost, declared: the seven
+   a > 1 stems go from 2.6% each to 9.3% each and the fifteen a = 1 stems from
+   5.5% to 2.3%, so the six-row stem reading moves 65.1% -> ~67%; the stem-space
+   class is wave 2 and this is inside its declared noise. --- */
+const ADD_REL = [];
+for (const d0 of [2,3,4,5,6]) for (const k0 of [2,3,4,5,6]) {
+  const D0 = k0*d0;
+  if (D0 > 12) continue;
+  for (let a0 = 1; a0 < d0; a0++) for (let b0 = 1; b0 < D0; b0++){
+    if (!(k0*a0 + b0 + 2 < D0)) continue;
+    if (gcd(k0*a0 + b0, D0) !== 1) continue;
+    ADD_REL.push([d0, k0, a0, b0]);
+  }
+}
+const ADD_REL_UNIT = ADD_REL.filter(t => t[2] === 1);
+const ADD_REL_MULTI = ADD_REL.filter(t => t[2] > 1);
+const drawAddRel = () => (Math.random() < 0.35 || !ADD_REL_MULTI.length)
+  ? pick(ADD_REL_UNIT) : pick(ADD_REL_MULTI);
+
 /* FORMAT 4e - RELATED fractions, add (pool 3, 2 steps). MOE P3 3.2 names related
    fractions explicitly and the shipped bank had none of them: every add and
    subtract was a like-fraction item, which is why pool 3 added no step. The two
@@ -2812,17 +3108,23 @@ function gAddRelated(){
   /* SEVENTH PASS 2026-09-16, W1. The flat row family narrows which seatings a draw
      can supply, and a filter applied after a FREE rank draw does not leave a free
      draw behind - the fifth pass wrote that down for the coupling seats and it is
-     the same effect here (41.1% second-largest with `u` left free). The rank is
-     drawn FIRST and sided() must seat it; the retry loop redraws the numbers until
-     it can. */
-  const rank = ri(1,4);
+     the same effect here (41.1% second-largest with `u` left free).
+
+     NINTH PASS 2026-09-16, KILL 1. The rank used to be drawn once OUTSIDE the
+     loop and the NUMBERS redrawn until it could be seated, which is the same
+     defect one level up: it reweights the stem table towards the tuples that can
+     seat any rank, and the tuple table is now enumerated precisely so that it
+     STAYS as drawn. halfRow()'s device is used instead - walk the four ranks in
+     random order and take the first this tuple can seat - so the rank is uniform
+     over what the bank can actually do and the stem weighting is exact. */
   let d = 4, k = 3, D = 12, a = 1, b = 2, key = [5,12], slips = [[3,12],[7,12],[4,11]], g = 0;
   do {
     /* WOUND 2: the scale factor ran to 4, which is why only nine (d, k) pairs
        were reachable. It runs to 6 now - the D <= 12 guard below is the real
-       cap - which puts 1/2 + b/12 and 1/2 - b/12 on the table. */
-    d = pick([2,3,4,5,6]); k = pick([2,3,4,5,6]); D = k*d;
-    a = ri(1, Math.max(1, d-1)); b = ri(1, Math.max(1, D-1));
+       cap - which puts 1/2 + b/12 and 1/2 - b/12 on the table.
+       NINTH PASS, KILL 1: drawn from the enumerated table above, not free. */
+    const T = drawAddRel();
+    d = T[0]; k = T[1]; a = T[2]; b = T[3]; D = k*d;
     key = [k*a + b, D];
     /* SECOND PASS, WOUND 1: the key was the LARGEST of four by value on 67.7% of
        draws, over the 45% the topic-wide gate allows. Scaling the SECOND fraction
@@ -2852,8 +3154,40 @@ function gAddRelated(){
        composition after the change is in the lane note, with its exposure: this is
        a widening, not a closure, and the stem half (27 and 24 distinct stems) is
        the stem-space class, wave 2, and out of this lane's fence. */
-    const flat = Math.random() < 0.5;
-    slips = sided(key, [
+    /* NINTH PASS 2026-09-16, KILL 1, the ROW half of the fix, and it is TWO seats.
+
+       (i) THE SCALE-FACTOR SEAT. Re-weighting the draw takes `a = 1` from 82% to
+       35%; on the other 65% the route k + b has to land on a WRONG option or it is
+       still worth a free elimination. It lands on a named belief: the child cuts
+       each big part into k small ones and writes the SCALE FACTOR as the new top
+       number instead of multiplying the top number by it - k over D rather than
+       k*a over D. It is the commonest step-2 slip in related-fraction addition and
+       the card teaches against it. Held wherever it is legal, so "divide the bottom
+       numbers, add the second top number, take that option" is WRONG whenever
+       a > 1 and right only inside the 35%.
+
+       (ii) THE SHARED-TOP SEAT, which is what makes the fix a CLASS fix rather than
+       one more expression closed. The tuple space this format has is 22 tuples
+       wide - the guard k*a + b + 2 < D costs k of the b range for every step a
+       takes off 1 - and six of its seven a > 1 tuples have k = 2, so a draw that
+       flattens `a` necessarily concentrates `k`: closing k + b on its own handed
+       the bank straight to 2a + b at 69.5% naming. Neither expression is beaten by
+       arithmetic; both are beaten by the row. One seat carries the KEY'S OWN TOP
+       NUMBER over a different bottom number (the file's own "counted the pieces
+       right, the size one short" slip), so ANY expression that names the key's
+       numerator - k + b, 2a + b, or a spelling nobody has thought of yet - leaves
+       two options standing and is worth half a draw. The eighth pass's shared-half
+       seats, on the bank the ninth pass killed.
+
+       THE FLAT ROW FAMILY IS GONE, and that is the price. The seventh pass seated
+       all three slips over D on half the draws to collapse the masked shape space;
+       a seat over D - 1 or D + 1 cannot live inside it. The shapes come back and
+       the half-key route goes under the ceiling - RULE 11's declared row-shape
+       class against RULE 14's gated one, and the gated one wins. */
+    const sf = (a > 1 && k + b >= 1 && k + b < D) ? [k + b, D] : null;
+    const tops = [[k*a + b, D-1]].concat(D + 1 <= 12 ? [[k*a + b, D+1]] : []);
+    const topSeat = pick(tops);
+    const cands = [
       [a+b, D],                         /* did not convert the first fraction */
       [a + k*b, D],                     /* scaled the wrong fraction */
       [k*a + k*b, D],                   /* scaled BOTH fractions before adding */
@@ -2868,22 +3202,49 @@ function gAddRelated(){
          over D and both below the key, put the fourth seating back. */
       (k*a + b - 2 >= 1 ? [k*a + b - 2, D] : null),   /* two small pieces too few */
       (k*(a-1) + b >= 1 ? [k*(a-1) + b, D] : null),   /* one BIG piece too few, converted */
-      [k*a + b - 1, D-1]                /* one piece too few AND the size one short */
-    ].filter(Boolean).filter(c => !flat || c[1] === D), null, 4 - rank) || [];
+      [k*a + b - 1, D-1],               /* one piece too few AND the size one short */
+      (D + 1 <= 12 ? [k*a + b, D+1] : null),  /* the size one long */
+      topSeat,                          /* the pieces right, the size out by one */
+      sf                                /* wrote the scale factor as the new top */
+    ].filter(Boolean);
+    /* FIFTH PASS's stem-option coupling seat, kept: with the flat family gone the
+       stem's own converted bottom number D is a LONE signal again unless a second
+       option is written over it - `n3` alone answered 57.1% without it. The
+       scale-factor seat is itself written over D, so it doubles as the coupling
+       seat wherever it is legal. */
+    /* NINTH PASS 2026-09-16, KILL 2's lesson applied here in the same sitting.
+       Holding the two seats above by hand made the key the unique TWINNED option
+       and took this bank's masked shape space to 17 shapes with 16 of them never
+       wrong - the exact defect KILL 2 is about, created by KILL 1's fix. The grid
+       seats the same two beliefs as two cells of a 2 x 2 and twins every option:
+       the scale-factor slip (or a one-piece miscount) over D, the key's own top
+       number over D +- 1, and the two together. */
+    slips = simplestRow(key, cands,
+      [(sf ? sf[0] : null), key[0]-1, key[0]+1].filter(x => x >= 1 && x < D && x !== key[0]),
+      [D-1, D+1, D-2, D+2].filter(y => y >= 2 && y <= 12 && y !== D), 0.20);
     g++;
     /* k*a + b + 1 < D: the gcd(key, D) = 1 guard hugely over-selects the key
        (D-1)/D - for D = 12 it is one of only four legal tops - and at (D-1)/D
        every fraction above the key is improper, so the key was the largest of four
        on 52% of draws. Barring the top step leaves the overshoot reachable on
-       every draw. Measured cost in distinct stems is recorded in the lane note. */
+       every draw. Both guards are now enforced by the tuple table above; they are
+       re-asserted here because the fallback row depends on them. */
   } while (g < 200 && !(D <= 12 && a < d && k*a + b + 2 < D && gcd(k*a + b, D) === 1 &&
                         slipsOk(key, slips)));
   if (!(D <= 12 && a < d && k*a + b + 2 < D && gcd(k*a + b, D) === 1 && slipsOk(key, slips))){
     d = 4; k = 3; D = 12; a = 1; b = 2; key = [5,12]; slips = [[3,12],[7,12],[4,11]];
   }
+  /* NINTH PASS 2026-09-16, KILL 1. The scale-factor slip is named on the card in
+     the form the ROW prints it wherever it is seated, and in words where it is
+     not - the seventh pass's card-row clause, applied to the new belief. */
+  const sfRow = slips.find(s => s[0] === k + b && s[1] === D && k + b !== k*a + b);
   return mcFrac('Add: ' + fr(a,d) + ' + ' + fr(b,D) + ' = ?', key, slips,
     'The pieces are different sizes, so make them the same first. ' + d + ' × ' + k + ' = ' + D +
     ', so cut each of the ' + d + ' parts into ' + k + ': ' + fr(a,d) + ' = ' + fr(k*a, D) + '. ' +
+    (sfRow ? 'Writing the ' + k + ' straight down as the new top number gives ' + fr(k + b, D) +
+             ', which forgets that there are ' + a + ' big pieces and each one became ' + k +
+             ' small ones: ' + a + ' × ' + k + ' = ' + (k*a) + '. '
+           : '') +
     'Now both are ' + D + 'ths and you can count them: ' + (k*a) + ' + ' + b + ' = ' + (k*a + b) +
     /* EIGHTH PASS 2026-09-16, KILL 2. "a top number of 2 over a bottom number of
        12" is the fraction 2/12 written in words, and on every draw where d + D is

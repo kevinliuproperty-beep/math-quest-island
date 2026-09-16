@@ -3757,7 +3757,26 @@ const CPL_PREDS = [
       if (!all.every(x => DEC_PURE.test(x))) return false;
       const v = cplNums(o); if (!v.length) return false;
       const sorted = s => s.replace('.', '').split('').sort().join('');
-      return v.some(x => st.numerals.some(u => sorted(u) === sorted(x))); } }
+      return v.some(x => st.numerals.some(u => sorted(u) === sorted(x))); } },
+  /* ---- the relation the SIXTH pass found the gate blind to (THE KILL) -----------
+     The gate scored a numeral's DIGITS against the stem and a numeral's PARTS
+     against another option, and a point move changes both parts at once: "3.7" and
+     "0.37" share neither a whole part ("3" against "0") nor a fractional part ("7"
+     against "37"). The whole DIGIT STRING across two options was the missing
+     corner, and it is where every point-placement slip in this file lives. Paired
+     with "its decimal depth is the commonest on the row" it settled seven
+     generators on 75-94% of their draws at 100.000% accuracy - "two of these are
+     the same digits with the point in a different place; take the one written to as
+     many decimal places as another number on the row" - while every shipped
+     relation read 18-39%. Bare-number option sets only, the same restriction the
+     other option-to-option relations carry: matching digit strings across two
+     CALCULATIONS is a relation no child reads. */
+  { k: 'it shares its digit string with another option', of: (o, st, all) => {
+      if (!all.every(x => DEC_PURE.test(x))) return false;
+      const bare = c => { const v = cplNums(c); if (!v.length) return null;
+        return v[v.length - 1].replace('.', '').replace(/^0+(?=\d)/, ''); };
+      const mine = bare(o); if (mine === null) return false;
+      return all.filter(x => bare(x) === mine).length > 1; } }
 ];
 const CPL_FEATS = [
   { k: 'the operand-and-operator shape it is written in', of: o => { const sh = cplShape(o); return sh.length > 1 ? sh : null; } },
@@ -3961,6 +3980,95 @@ function ctlV5DigitValue() {
   return { q: `What is the value of the digit <b>${d}</b> in <b>${whole}.${dec.join('')}</b>?`,
            extra: '', choices: all, correct: all.indexOf(opts[0]), answerText: opts[0],
            explain: 'A negative control.' };
+}
+
+/* ---- the SIXTH pass's KILL, rebuilt exactly as the two worst banks shipped at
+   5a5fb3b: the v6 candidate lists and the v6 rank picker - a spread rank and RULE
+   D1's single preference, with NOTHING steering the point-placement twin. Both
+   were green on every arm in this file on the day they were killed, so if the
+   digit-string relation above does not turn both red, it is measuring nothing. */
+function v6Rand(n) { return Math.floor(Math.random() * n); }
+function v6Sh(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = v6Rand(i + 1); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+const v6Ri = (a, b) => a + v6Rand(b - a + 1);
+function v6RankPick(pool, cmp, dpOf, keyDp) {
+  const musts = pool.filter(c => c.must), rest = pool.filter(c => !c.must);
+  const need = 3 - musts.length;
+  const above = rest.filter(c => cmp(c) > 0), below = rest.filter(c => cmp(c) < 0);
+  const hi = Math.min(need, above.length), lo = Math.max(0, need - below.length);
+  if (lo > hi) return null;
+  let fallback = null;
+  for (let t = 0; t < 30; t++) {
+    const a = v6Ri(lo, hi);
+    const sel = musts.concat(v6Sh(above).slice(0, a), v6Sh(below).slice(0, need - a));
+    if (sel.length !== 3) continue;
+    if (!fallback) fallback = sel;
+    if (keyDp == null || sel.some(c => dpOf(c) === keyDp)) return sel;
+  }
+  return fallback;
+}
+function v6McDec(stem, key, cands, unit) {
+  const pool = [];
+  for (const c of cands) {
+    if (!c || !Number.isFinite(c.n) || c.n <= 0) continue;
+    if (DEQ(c, key) || pool.some(k => DEQ(k, c))) continue;
+    pool.push(c);
+  }
+  let kept = v6RankPick(pool, c => DCMP(c, key), c => c.dp, key.dp) || pool.slice(0, 3);
+  let t = 1;
+  while (kept.length < 3 && t < 90) {
+    for (const cand of [DV(key.n + t, key.dp), DV(key.n - t, key.dp)]) {
+      if (kept.length >= 3) break;
+      if (cand.n <= 0 || DEQ(cand, key) || kept.some(k => DEQ(k, cand))) continue;
+      kept = kept.concat([cand]);
+    }
+    t++;
+  }
+  const u = unit ? ' ' + unit : '';
+  const keyStr = DTXT(key) + u;
+  const all = v6Sh([keyStr].concat(kept.slice(0, 3).map(c => DTXT(c) + u)));
+  return { q: stem, extra: '', choices: all, correct: all.indexOf(keyStr), answerText: keyStr,
+           explain: 'A negative control.' };
+}
+function ctlV6AddSub() {
+  const dwDiff = (a, b, dp) => {
+    let out = 0, mul = 1, x = a, y = b;
+    for (let i = 0; i <= dp; i++) {
+      const da = i < dp ? x % 10 : x, db = i < dp ? y % 10 : y;
+      out += Math.abs(da - db) * mul;
+      if (i < dp) { x = Math.floor(x / 10); y = Math.floor(y / 10); mul *= 10; }
+    }
+    return out;
+  };
+  const dp = v6Ri(1, 2), scale = TEN(dp), addMode = Math.random() < 0.5;
+  let a = 0, b = 0, key = 0, noCarry = 0, other = 0, overCarry = 0, rounded = 0, guard = 0;
+  do {
+    guard++;
+    if (addMode) {
+      a = v6Ri(scale + 1, 6 * scale); b = v6Ri(scale + 1, 3 * scale);
+      key = a + b; noCarry = key - scale; other = Math.abs(a - b); overCarry = key + scale;
+    } else {
+      a = v6Ri(3 * scale, 9 * scale); b = v6Ri(scale + 1, a - scale);
+      key = a - b; noCarry = dwDiff(a, b, dp); other = a + b; overCarry = key + scale;
+    }
+    rounded = addMode ? a + Math.ceil(b / scale) * scale : a - Math.ceil(b / scale) * scale;
+  } while (guard < 300 && !(key > scale && noCarry > 0 && other > 0 && rounded > 0 &&
+           a % 10 !== 0 && b % 10 !== 0 &&
+           new Set([key, noCarry, other, overCarry, key - scale, rounded]).size === (addMode ? 5 : 6)));
+  const K = DV(key, dp);
+  return v6McDec(`<b>${DTXT(DV(a, dp))} ${addMode ? '+' : '−'} ${DTXT(DV(b, dp))} = ?</b>`, K,
+    [DV(noCarry, dp), DV(other, dp), DV(overCarry, dp), DV(key - scale, dp), DV(rounded, dp),
+     DV(key, Math.max(0, dp - 1)), dp < 3 ? DV(key, dp + 1) : null], '');
+}
+function ctlV6Track() {
+  let lap = 4, laps = 6, guard = 0;
+  do { lap = v6Ri(2, 9); laps = v6Ri(4, 9); guard++; }
+  while (guard < 200 && !(lap !== laps && (lap * laps) % 10 !== 0 &&
+         (lap * (laps - 1)) % 10 !== 0 && (lap * (laps + 1)) % 10 !== 0));
+  const key = DV(lap * laps, 1);
+  return v6McDec(`One lap of the running track at the stadium is <b>${DTXT(DV(lap, 1))} km</b>. Siti runs ` +
+    `<b>${laps}</b> laps. <b>How far does Siti run altogether?</b>`, key,
+    [DV(lap + laps * 10, 1), DV(lap * laps, 2), DV(lap * laps, 0),
+     DV(lap * (laps - 1), 1), DV(lap * (laps + 1), 1)], 'km');
 }
 
 const couplingRows = [];
@@ -4196,6 +4304,10 @@ const negRows = [];
     ctlV5MulConcept, 'the stem-option coupling ceiling');
   couplingCtl('FIFTH-PASS KILL 2 - v5 gDecDigitValue, the commonest depth ending in the named digit',
     ctlV5DigitValue, 'the stem-option coupling ceiling');
+  couplingCtl('SIXTH-PASS KILL - v6 gDecAddSub, the point-placement twin with a depth-mate',
+    ctlV6AddSub, 'the stem-option coupling ceiling');
+  couplingCtl('SIXTH-PASS KILL - v6 gDecTrack, the point-placement twin with a depth-mate',
+    ctlV6Track, 'the stem-option coupling ceiling');
   /* and the control on those controls: a generator that borrows nothing from its
      stem must pass, or the ceiling is just failing every bank that prints a number */
   {
@@ -4423,10 +4535,13 @@ if (couplingRows.length) {
         (r.at === '(whole bank)' ? '' : `  [inside one of its ${r.shapes} stem shapes]`));
     }
   } else {
-    const w = judged.sort((a, b) => b.worst.settle - a.worst.settle)[0];
+    /* the worst THREE, not the worst one: a lane that has just moved the top bank
+       down needs to see what is now underneath it, and a single name hides that. */
+    const top = judged.sort((a, b) => b.worst.settle - a.worst.settle).slice(0, 3);
     console.log(`  ok   no rule built from the stem and the option list together settles ` +
       `${(CPL_CEILING * 100).toFixed(0)}% of any generator's draws at ${(CPL_ACC * 100).toFixed(0)}% accuracy` +
-      (w ? `  (worst: ${w.name} ${(100 * w.worst.settle).toFixed(2)}% at ${(100 * w.worst.acc).toFixed(1)}%)` : ''));
+      (top.length ? `  (worst three: ` + top.map(w =>
+        `${w.name} ${(100 * w.worst.settle).toFixed(2)}% at ${(100 * w.worst.acc).toFixed(1)}%`).join(', ') + ')' : ''));
   }
 }
 

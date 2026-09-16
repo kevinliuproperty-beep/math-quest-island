@@ -1596,21 +1596,41 @@ function oracle(q, topic) {
          top or a bottom number with the blue fraction so that every comparison is
          a P3 rule, and the row must be split 2-2 between the two conditions so it
          cannot degenerate back into a single-threshold question. */
-      if ((m = text.match(/^The bar below shows one fraction shaded blue\. Which of these fractions has the same (bottom|top) number as the bar AND is (greater|less) than the blue fraction\?$/))) {
-        const byBottom = m[1] === 'bottom', wantGreater = m[2] === 'greater';
+      /* FOURTH PASS 2026-09-16, W1. The two-condition stem above still never needed
+         the picture: the row was always exactly two pairs, the stem named which
+         pair, and the blue fraction sat strictly BETWEEN the named pair's two
+         members on 100.00% of draws - so "find the pair sharing the named feature
+         and take the direction extreme of those two" answered it on 100.00% and
+         reading the bar changed the answer on 0.00% of 20,000 draws.
+
+         A threshold condition cannot escape that: the unique option past a
+         threshold IS an extreme of the row. The stem asks for the NEAREST option
+         past it instead - the smallest still greater, or the greatest still less -
+         so the answer moves when the shading moves, and the row on its own cannot
+         say which of the four it is. This oracle re-derives that from the DRAWN
+         bar: all four options must be comparable with the blue fraction by ONE P3
+         rule (all four over its bottom number, or all four carrying its top), the
+         nearest option past the threshold must exist and be unique, and it must be
+         the key. RULE 10 gates the rest - that no option-row-only policy answers
+         the item - over every bank in the topic that draws a picture. */
+      if ((m = text.match(/^The bar below shows one fraction shaded blue\. Which of these fractions is the (smallest|greatest) one that is still (greater|less) than the blue fraction\?$/))) {
+        const wantGreater = m[2] === 'greater';
+        if ((m[1] === 'smallest') !== wantGreater)
+          return `bar compare: the stem asks for the ${m[1]} option that is ${m[2]} than the blue fraction, which names no option at all`;
         if (fOpts.length !== 4 || fOpts.some(o => !o)) return 'bar compare: an option is not a rendered fraction';
         if (fOpts.some(o => o[0] === on && o[1] === total)) return 'bar compare: the shaded fraction itself is one of the options';
-        if (fOpts.some(o => o[1] !== total && o[0] !== on))
-          return 'bar compare: an option shares neither the top nor the bottom number with the blue fraction, so no P3 comparing rule applies';
-        const named = fOpts.filter(o => byBottom ? o[1] === total : o[0] === on);
-        if (named.length !== 2)
-          return `bar compare: ${named.length} of the four options carry the ${m[1]} number the stem asks for, expected 2`;
-        const dirOK = o => wantGreater ? o[0] * total > on * o[1] : o[0] * total < on * o[1];
-        if (fOpts.filter(dirOK).length !== 2)
-          return `bar compare: ${fOpts.filter(dirOK).length} of the four options are ${m[2]} than ${on}/${total}, expected 2`;
-        const hits = named.filter(dirOK);
-        if (hits.length !== 1) return `bar compare: ${hits.length} options meet both conditions, expected exactly 1`;
-        return fEq(hits[0], keyF) ? null : `bar compare: expected ${show(hits[0])}, key is ${show(keyF)}`;
+        const allD = fOpts.every(o => o[1] === total), allN = fOpts.every(o => o[0] === on);
+        if (!allD && !allN)
+          return 'bar compare: the four options are not all written over the bar\'s bottom number nor all carrying its top number, so one of them cannot be compared with the picture by a P3 rule';
+        for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++)
+          if (fEq(fOpts[i], fOpts[j])) return `bar compare: ${show(fOpts[i])} is on the row twice`;
+        const side = fOpts.filter(o => wantGreater ? o[0] * total > on * o[1] : o[0] * total < on * o[1]);
+        if (!side.length) return `bar compare: no option is ${m[2]} than ${on}/${total}`;
+        side.sort((p, q2) => (p[0] * q2[1] - q2[0] * p[1]) * (wantGreater ? 1 : -1));
+        const want = side[0];
+        if (side.length > 1 && want[0] * side[1][1] === side[1][0] * want[1])
+          return `bar compare: two options tie for the ${m[1]} one ${m[2]} than ${on}/${total}`;
+        return fEq(want, keyF) ? null : `bar compare: expected ${show(want)}, key is ${show(keyF)}`;
       }
       return 'bar model: rendered a bar model but no oracle matched the stem';
     }
@@ -1627,10 +1647,22 @@ function oracle(q, topic) {
          100.00% of 20,000 draws. The key is reworded and every content word in it
          is now printed by at least one distractor; RULE 8 below gates that over the
          whole generator, and the v3 option set is its negative control. */
-      const want = 'A fraction counts parts that are of equal size, and these ' + d + ' pieces are different sizes.';
+      /* FOURTH PASS 2026-09-16, THE KILL AGAIN. The v4 key was the only option on the
+         row carrying "counts" - the distractor printed "count" - and the only
+         COMPOUND sentence, which handed a child "and", "these" and "that" as well.
+         All four sentences are one shape now and the whole row is re-derived here:
+         the same frame, the same parts-word, and the four named beliefs. RULE 9 is
+         the general form of this check and runs on every prose bank in the topic. */
+      const P = /\bparts\b/.test(strip(q.answerText)) ? 'parts' : 'pieces';
+      const frame = 'A fraction needs the whole cut into ';
+      const want = frame + P + ' of the same size.';
       if (strip(q.answerText) !== want) return `equal parts: expected "${want}", got "${strip(q.answerText)}"`;
-      if (q.choices.filter(c => /^Nothing is wrong/.test(strip(c))).length !== 1)
-        return 'equal parts: the "any 1 of N pieces is 1/N" misconception is not offered exactly once';
+      const wantRow = [want, frame + P + ' of one shape.',
+        frame + d + ' ' + P + ' of any size.',
+        frame + 'an even number of ' + P + ' of the same size.'];
+      const got = (q.choices || []).map(strip).slice().sort();
+      if (got.join(' | ') !== wantRow.slice().sort().join(' | '))
+        return `equal parts: the option row is not the four named beliefs (${got.join(' | ')})`;
       if (strip(q.answerText).indexOf('not all the same size') >= 0)
         return 'equal parts: the key repeats the stem\'s own clause, so the item is answered by matching words';
       return null;
@@ -2099,6 +2131,13 @@ function oracle(q, topic) {
          in place of "the stop-after-step-1 answer must be offered" - which, with
          "subtracted only one share", held the key at the bottom of the row on 56.8%
          of draws. */
+      /* FOURTH PASS 2026-09-16, W4(a). The stop-after-step-1 answer is the belief
+         this format exists to catch, every earlier pass named it, and v4 quietly
+         stopped offering it on two draws in three (65.3% -> 35.3%) because the
+         value-rank seating reaches for whichever candidates balance the row. It is
+         asserted here rather than left to the generator's good intentions. */
+      if (!fOpts.some(o => o && o[0] === eaten && o[1] === A[1]))
+        return `cake left: the stop-after-step-1 answer ${eaten}/${A[1]} is not on the row, so the two-step item's own belief is not offered`;
       const badC = fromList('cake left', [
         [eaten, A[1]], [A[1]-A[0], A[1]], [A[1]-B[0], A[1]],
         /* THIRD PASS 2026-09-16, W4: [eaten, 2*A[1]] - "added the bottom numbers as
@@ -3041,6 +3080,42 @@ function pilotGates(q, topic) {
     const kf = String(q.answerText).match(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/);
     if (kf && Number(kf[2]) > 12)
       return `the key ${kf[1]}/${kf[2]} carries a denominator past the P3 limit of 12`;
+    /* FOURTH PASS 2026-09-16, W2. RULE 4 has never looked at an option that is a
+       NUMBER rather than a fraction, and the two completion formats are the only
+       place in the file where the option IS a bottom (or top) number: the child
+       puts it into the stem's blank, so the row is a row of fractions that happen
+       to be printed one half at a time. gEqMissingDen offered a bottom number past
+       12 on 51.3% of draws, largest 22, while every rendered fraction in the file
+       was inside 12 - the gate scanned for markup and this option is the string
+       "18". The completed fraction is reconstructed here and held to the same rule.
+
+       ASYMMETRY, DECLARED. The numerator row is also held to PROPER (a top number
+       under the printed bottom), because the generator can afford that filter. The
+       denominator row is held to the cap only: refusing every option that completes
+       an improper fraction as well would leave that bank too few candidates to seat
+       all four value ranks, and the lane note carries it as a declared residual. */
+    const stemRaw = String(q.q);
+    const bare = (q.choices || []).map(c => strip(c));
+    if (bare.length === 4 && bare.every(t => /^\d+$/.test(t))) {
+      let mm2 = stemRaw.match(/<span class="n">(\d+)<\/span><span class="d">\?<\/span>/);
+      if (mm2 && /missing <b>denominator<\/b>/.test(stemRaw)) {
+        const N = Number(mm2[1]);
+        for (const t of bare) {
+          const D = Number(t);
+          if (D > 12) return `option "${t}" completes ${N}/${D}, a bottom number past the P3 limit of 12 - the option row of a completion stem IS a fraction`;
+          if (D < 2) return `option "${t}" completes ${N}/${D}, which is not a fraction of a whole`;
+        }
+      }
+      mm2 = stemRaw.match(/<span class="n">\?<\/span><span class="d">(\d+)<\/span>/);
+      if (mm2 && /missing <b>numerator<\/b>/.test(stemRaw)) {
+        const D = Number(mm2[1]);
+        for (const t of bare) {
+          const N = Number(t);
+          if (D > 12) return `the completion stem prints a bottom number of ${D}, past the P3 limit of 12`;
+          if (N >= D) return `option "${t}" completes ${N}/${D}, which is not a proper fraction`;
+        }
+      }
+    }
   }
   return null;
 }
@@ -3311,6 +3386,225 @@ for (const g of GENS) {
   if (err) failures++;
 }
 
+/* ---------- RULE 9: THE TOKEN RULER ------------------------------------------
+   SWEEP FRACTIONS REFUTATION, FOURTH PASS 2026-09-16, THE KILL.
+
+   NOTHING IN THIS HARNESS HAS EVER READ THE WHOLE ROW. RULE 1 reads option FORM,
+   RULE 5 the SENTENCE FRAME, RULE 6 the LENGTH, RULE 7 the MAGNITUDE, and RULE 8 -
+   the one written for exactly this class - reads only the words that appear in the
+   STEM. gEqualParts has now been killed on the same axis three passes running, and
+   the third time the gate written for it measured the bank at 0.0% and passed it:
+   the stem says "cuts", the key said "counts", the distractor said "count", and the
+   fix missed by one letter. Three more words - "and", "these", "that" - were unique
+   to the key on 100% of draws for a reason no measurement had ever looked for: the
+   key was the only COMPOUND sentence on the row.
+
+   THE RULER. For every prose bank in the topic, draw 2,000 items; strip the markup,
+   lowercase, cut each option into tokens (runs of letters and digits) and every
+   adjacent PAIR of tokens. Per draw, tally (a) every feature in the KEY and in none
+   of the three distractors, and (b) every feature in all THREE distractors and not
+   in the key. A bank fails when one feature clears 60% of its draws either way. (a)
+   is a child picking the key out by a word; (b) is a child crossing three options
+   off with one. Function words are IN - "and", "these" and "that" are three of this
+   pass's four kills - and so are the numerals.
+
+   RAW AND STEMMED, BOTH. Light stemming (a trailing s / es / ed / ing) is what
+   makes "counts" and "count" the same word, which is the right reading of the
+   rewrite requirement - and it is also exactly what would have HIDDEN the v4
+   defect, because the two forms collapse. So the ruler runs twice over each row and
+   a feature unique to the key in EITHER normalisation fails the bank. The negative
+   control below is the v4 gEqualParts option set and goes red on the raw "counts".
+
+   60% is clear of the honest structural halves this topic has: gCompareError's two
+   flavours put a word in the key and nowhere else on about half its draws, which is
+   its own two-way design showing through rather than a shortcut past it. Those are
+   reported in the table and not failed. --- */
+const TOK_TOPICS = new Set(['fractions']);
+const TOK_N = 2000, TOK_CAP = 0.60;
+const tokWords = (s, stemIt) => (strip(s).toLowerCase().match(/[a-z0-9]+/g) || [])
+  .map(w => stemIt ? w.replace(/(ies|es|ed|ing|s)$/, x => (x === 'ies' ? 'y' : '')) : w);
+function tokFeats(s, stemIt) {
+  const t = tokWords(s, stemIt);
+  const out = new Set(t);
+  for (let i = 0; i + 1 < t.length; i++) out.add(t[i] + ' ' + t[i + 1]);
+  return out;
+}
+const bump = (m2, k2) => m2.set(k2, (m2.get(k2) || 0) + 1);
+function tokBank(draw, n) {
+  const keyOnly = new Map(), wrongOnly = new Map();
+  let seen = 0, sample = null;
+  for (let i = 0; i < n; i++) {
+    let q;
+    try { q = draw(); } catch (e) { break; }
+    const opts = q.choices || [];
+    if (opts.length !== 4 || !(q.correct >= 0) || !allProse(opts)) continue;
+    const k = q.correct, w = [0, 1, 2, 3].filter(j => j !== k);
+    for (const stemIt of [false, true]) {
+      const F = opts.map(o => tokFeats(o, stemIt)), tag = stemIt ? '~' : '';
+      for (const f of F[k]) if (w.every(j => !F[j].has(f))) bump(keyOnly, tag + f);
+      for (const f of F[w[0]]) if (F[w[1]].has(f) && F[w[2]].has(f) && !F[k].has(f)) bump(wrongOnly, tag + f);
+    }
+    if (!sample) sample = opts.map(strip);
+    seen++;
+  }
+  return { n: seen, keyOnly, wrongOnly, sample };
+}
+const tokTop = m2 => [...m2.entries()].reduce((a, e) => e[1] > a[1] ? e : a, ['-', 0]);
+function tokVerdict(row) {
+  if (!row.n) return null;
+  const k = tokTop(row.keyOnly), w = tokTop(row.wrongOnly);
+  const shown = f => f.charAt(0) === '~' ? `"${f.slice(1)}" (stemmed)` : `"${f}"`;
+  const opts = row.sample ? `  (${row.sample.join(' | ')})` : '';
+  if (k[1] / row.n >= TOK_CAP)
+    return `token ruler: ${shown(k[0])} is in the KEY and in no distractor on ${k[1]} of ${row.n} draws (${(100 * k[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child picks the key out by that word alone${opts}`;
+  if (w[1] / row.n >= TOK_CAP)
+    return `token ruler: ${shown(w[0])} is in ALL THREE distractors and not in the key on ${w[1]} of ${row.n} draws (${(100 * w[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child crosses three options off with that word alone${opts}`;
+  return null;
+}
+const tokRows = [];
+for (const g of GENS) {
+  if (!TOK_TOPICS.has(g.topic)) continue;
+  const row = tokBank(g.fn, TOK_N);
+  if (row.n < TOK_N / 2) continue;               /* not a prose bank */
+  row.name = g.topic + '.' + g.name;
+  row.err = tokVerdict(row);
+  tokRows.push(row);
+  if (row.err) failures++;
+}
+
+/* ---------- RULE 10: THE PICTURE RULER ---------------------------------------
+   SWEEP FRACTIONS REFUTATION, FOURTH PASS 2026-09-16, WOUND 1. gCompareBar renders
+   a bar on 100% of draws and was read on 0.00% of them, twice running, under two
+   different designs and two different declared fixes. Nothing here has ever asked
+   the only question that matters about a picture: DOES THE ANSWER MOVE WHEN THE
+   PICTURE MOVES? The gate is the contrapositive, measured where a child stands -
+   an item that draws a picture may not be answerable from its option row alone.
+
+   For every bank in the topic that draws a figure, 2,000 draws are sorted by STEM
+   SHAPE (the stem with its numerals removed, so "greater" and "less" are different
+   attacks, as they must be - v4's killer policy read the feature word out of the
+   stem), and inside each shape every option-row-only policy is scored: each of the
+   four value ranks, the smallest and largest top and bottom number, and - the v4
+   killer - the larger and the smaller member of the one pair that shares a top or a
+   bottom number with itself. Ties score 1/k, an inapplicable policy scores a guess.
+   The bank's number is the weighted average of the BEST policy in each stem shape,
+   which is what a child who has noticed the pattern actually gets.
+
+   TWO LINES, AND THE REASON FOR BOTH. The CEILING is 60%, which is the PM's own
+   termination bar ("answerable with NO mathematics on >= 60% of draws") and RULE 9's
+   number. It is not 40%, and the first run of this rule is why: the three banks that
+   read a fraction OFF a picture sit at 39.8% (gPicIdentify), 43.3% (gEquivFromBar)
+   and 47.5% (gPicUnshaded) against 25% for chance, and none of them is a shortcut
+   past the mathematics. It is the format's own shape showing through - the key is
+   written over the bar's part count and the named miscounts are that count plus or
+   minus one, so three of the four options share a bottom number with each other by
+   construction and "pick one of those" is worth a third of a row before any child
+   has thought about anything. A rule set under that line would fail four honest
+   banks to catch one dishonest one.
+
+   The WATCH LINE is 40%, printed beside every bank and carried in the lane note as
+   a declared residual rather than being quietly dropped: the mirror of RULE 7's
+   "pick the smallest bottom number" - pick the LARGEST - is what puts gEquivFromBar
+   and gPicUnshaded where they are, and nothing has ever gated that direction. It is
+   named here so the fifth pass inherits a number rather than a discovery.
+
+   gCompareBar, the bank this rule was written for, measures 27.4% against 100.00%
+   for the v4 row - which is the negative control, rebuilt from its own construction
+   and scoring 100.0%. */
+const PIC_N = 2000, PIC_CAP = 0.60, PIC_WATCH = 0.40;
+function optFracPairs(q) {
+  const out = [];
+  for (const o of (q.choices || [])) {
+    const fs = [...String(o).matchAll(/<span class="n">(\d+)<\/span><span class="d">(\d+)<\/span>/g)];
+    if (fs.length !== 1 || /[A-Za-z]/.test(strip(o))) return null;
+    out.push([Number(fs[0][1]), Number(fs[0][2])]);
+  }
+  return out.length === 4 ? out : null;
+}
+/* Every policy a child can run on the option row with the picture covered up. */
+function picPolicies(fo, correct) {
+  const val = p => p[0] / p[1];
+  const score = sel => {                       /* sel: array of chosen indices */
+    if (!sel.length) return 0.25;              /* the policy does not apply: a guess */
+    return sel.indexOf(correct) >= 0 ? 1 / sel.length : 0;
+  };
+  const byExtreme = (f, want) => {
+    const xs = fo.map(f), m2 = want === 'min' ? Math.min(...xs) : Math.max(...xs);
+    return score(xs.map((x, i) => x === m2 ? i : -1).filter(i => i >= 0));
+  };
+  const out = {};
+  const sorted = fo.map((p, i) => [val(p), i]).sort((a, b) => a[0] - b[0]);
+  for (let r = 0; r < 4; r++) {
+    const v = sorted[r][0];
+    out['rank ' + (r + 1)] = score(sorted.filter(s => s[0] === v).map(s => s[1]));
+  }
+  out['smallest bottom'] = byExtreme(p => p[1], 'min');
+  out['largest bottom'] = byExtreme(p => p[1], 'max');
+  out['smallest top'] = byExtreme(p => p[0], 'min');
+  out['largest top'] = byExtreme(p => p[0], 'max');
+  /* the pair rule: the one pair sharing a bottom (or a top) number with itself */
+  for (const [label, idx] of [['bottom', 1], ['top', 0]]) {
+    const groups = new Map();
+    fo.forEach((p, i) => { const k2 = p[idx]; groups.set(k2, (groups.get(k2) || []).concat(i)); });
+    const pairs = [...groups.values()].filter(v => v.length === 2);
+    const pr = pairs.length === 1 ? pairs[0] : null;
+    for (const side of ['bigger', 'smaller']) {
+      let sel = [];
+      if (pr) {
+        const a = pr[0], b = pr[1], av = val(fo[a]), bv = val(fo[b]);
+        sel = av === bv ? [a, b] : [side === 'bigger' ? (av > bv ? a : b) : (av < bv ? a : b)];
+      }
+      out[`${side} of the ${label}-sharing pair`] = score(sel);
+    }
+  }
+  return out;
+}
+function picBank(draw, n) {
+  const shapes = new Map();                    /* stem shape -> { n, scores } */
+  let seen = 0, drew = 0, sample = null;
+  for (let i = 0; i < n; i++) {
+    let q;
+    try { q = draw(); } catch (e) { break; }
+    if (!q || !q.figure) continue;
+    drew++;
+    const fo = optFracPairs(q);
+    if (!fo || !(q.correct >= 0)) continue;
+    const shape = strip(q.q).replace(/\d+/g, '#');
+    if (!shapes.has(shape)) shapes.set(shape, { n: 0, s: new Map() });
+    const row = shapes.get(shape);
+    row.n++;
+    const pol = picPolicies(fo, q.correct);
+    for (const [k2, v] of Object.entries(pol)) row.s.set(k2, (row.s.get(k2) || 0) + v);
+    if (!sample) sample = (q.choices || []).map(strip);
+    seen++;
+  }
+  if (!seen) return { n: 0, drew };
+  let total = 0, best = '-', bestRate = 0;
+  for (const row of shapes.values()) {
+    let mx = 0, mxName = '-';
+    for (const [k2, v] of row.s.entries()) if (v > mx) { mx = v; mxName = k2; }
+    total += mx;
+    if (mx / row.n > bestRate) { bestRate = mx / row.n; best = mxName; }
+  }
+  return { n: seen, drew, rate: total / seen, best, bestRate, shapes: shapes.size, sample };
+}
+function picVerdict(row) {
+  if (!row.n) return null;
+  return row.rate >= PIC_CAP
+    ? `picture ruler: the best option-row-only policy - "${row.best}", read off ${row.shapes} stem shape(s) - answers the item on ${(100 * row.rate).toFixed(1)}% of ${row.n} draws, at or over the ${Math.round(100 * PIC_CAP)}% ceiling, so the picture is decoration (${(row.sample || []).join(' | ')})`
+    : null;
+}
+const picRows = [];
+for (const g of GENS) {
+  if (!TOK_TOPICS.has(g.topic)) continue;
+  const row = picBank(g.fn, PIC_N);
+  if (!row.n || row.n < PIC_N / 2) continue;    /* not a figure bank with a fraction row */
+  row.name = g.topic + '.' + g.name;
+  row.err = picVerdict(row);
+  picRows.push(row);
+  if (row.err) failures++;
+}
+
 /* ---------- NEGATIVE CONTROLS for the third pass's new gates -----------------
    SWEEP FRACTIONS REFUTATION, THIRD PASS 2026-09-16. Four rules went in or were
    widened this pass, and a rule that has never been shown to go red is a comment,
@@ -3448,6 +3742,64 @@ control('RULE 7 without the gCompareBar exemption - the v3 one-sided bar row', (
   };
   const row = rankBank(draw, 4000);
   return rankVerdict(row.rate, row.ranked, row.den, row.denDraws);
+});
+
+/* 7. RULE 9, the TOKEN RULER: v4's gEqualParts option set, rebuilt from its own
+      strings so the control does not depend on the topic file still carrying the
+      defect. The key is the only option printing "counts" (the distractor prints
+      "count") and the only compound sentence, so "and", "these" and "that" isolate
+      it too. It must go red, and on the RAW "counts" - a stemmed-only ruler would
+      collapse count / counts and see nothing, which is why RULE 9 runs both. */
+control('RULE 9 token ruler - the v4 gEqualParts option set (the "counts" kill)', () => {
+  const NM = [['Siti', 'she'], ['Kumar', 'he'], ['Ravi', 'he']];
+  const draw = () => {
+    const d = 4 + Math.floor(Math.random() * 9), nm = NM[Math.floor(Math.random() * NM.length)];
+    const key = 'A fraction counts parts that are of equal size, and these ' + d + ' pieces are different sizes.';
+    const opts = [key,
+      'Nothing is wrong: any ' + d + ' pieces of one whole are always ' + d + ' equal parts, at different sizes.',
+      'The bottom number should count only the pieces of the same size as the piece ' + nm[1] + ' took.',
+      'A fraction can only be written when the whole is cut into an even number of equal parts.'];
+    return { q: 'v4 gEqualParts control', extra: '', choices: opts, correct: 0, answerText: opts[0] };
+  };
+  const v = tokVerdict(tokBank(draw, TOK_N));
+  return v && /counts/.test(v) ? v : (v || null);
+});
+
+/* 8. RULE 10, the PICTURE RULER: v4's gCompareBar row, rebuilt from its own
+      construction - two options carrying the feature the stem names, two carrying
+      the other one, the blue fraction between the named pair. "Find the pair that
+      shares the named feature, take the direction extreme of those two" answers it
+      without the bar ever being counted. It must go red. */
+control('RULE 10 picture ruler - the v4 gCompareBar two-pair row', () => {
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pk = arr => arr[Math.floor(Math.random() * arr.length)];
+  const draw = () => {
+    let d = 8, n = 3, mode = 'sameD', dir = 'greater', key = [5, 8], others = [[3, 4], [2, 8], [3, 10]], g = 0, ok = false;
+    do {
+      d = rnd(4, 12); n = rnd(1, d - 1);
+      mode = Math.random() < 0.5 ? 'sameD' : 'sameN';
+      dir = Math.random() < 0.5 ? 'greater' : 'less';
+      const up = dir === 'greater';
+      const right = p => up ? p[0] * d > n * p[1] : p[0] * d < n * p[1];
+      const wrong = p => up ? p[0] * d < n * p[1] : p[0] * d > n * p[1];
+      const bankD = [], bankN = [];
+      for (let x = 1; x <= d - 1; x++) if (x !== n) bankD.push([x, d]);
+      for (let e = n + 1; e <= 12; e++) if (e !== d) bankN.push([n, e]);
+      const named = mode === 'sameD' ? bankD : bankN, off = mode === 'sameD' ? bankN : bankD;
+      const kB = named.filter(right), aB = off.filter(right), bB = named.filter(wrong), cB = off.filter(wrong);
+      ok = kB.length && aB.length && bB.length && cB.length;
+      if (ok) { key = pk(kB); others = [pk(aB), pk(bB), pk(cB)]; }
+      g++;
+    } while (g < 200 && !ok);
+    const pairs = [key].concat(others);
+    const order = pairs.map((_, i) => i).sort(() => Math.random() - 0.5);
+    return { q: 'The bar below shows one fraction shaded blue. Which of these fractions has the <b>same ' +
+                (mode === 'sameD' ? 'bottom' : 'top') + ' number</b> as the bar AND is <b>' + dir + '</b> than the blue fraction?',
+             extra: '', figure: { type: 'fractionBar', parts: d, filled: n },
+             choices: order.map(i => FR(pairs[i][0], pairs[i][1])), correct: order.indexOf(0),
+             answerText: FR(key[0], key[1]) };
+  };
+  return picVerdict(picBank(draw, PIC_N));
 });
 
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
@@ -3591,6 +3943,41 @@ if (proseRows.length) {
         : (r.exempt ? 'exempt (declared: a fixed 4-sentence set outside this lane)'
           : (r.solo === null ? 'pass (RULE 6 only - RULE 8 is scoped to fractions)' : 'pass'))));
   }
+}
+
+/* RULE 9, printed in full: the table IS the finding, and the second column is the
+   one three passes of this generator's history did not have (FOURTH PASS). */
+if (tokRows.length) {
+  console.log(`\nRULE 9  TOKEN RULER  (${TOK_N} draws per prose bank, raw and stemmed: no token or two-word ` +
+    `phrase in the key alone - or in all three distractors alone - on >= ${Math.round(100*TOK_CAP)}% of draws)\n`);
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('KEY-ONLY', 22) + pad('RATE', 9) + pad('ALL-WRONG', 20) + pad('RATE', 9) + 'RESULT');
+  console.log('-'.repeat(110));
+  for (const r of tokRows) {
+    const k = tokTop(r.keyOnly), w = tokTop(r.wrongOnly);
+    console.log(pad(r.name, 26) + pad(r.n, 8) +
+      pad('"' + k[0] + '"', 22) + pad((100 * k[1] / r.n).toFixed(1) + '%', 9) +
+      pad('"' + w[0] + '"', 20) + pad((100 * w[1] / r.n).toFixed(1) + '%', 9) +
+      (r.err ? 'FAIL  ' + r.err : 'pass'));
+  }
+  console.log('');
+  console.log('     a leading ~ marks the stemmed pass (a trailing s / es / ed / ing removed), where "counts" and "count" are one word.');
+  if (tokRows.every(r => !r.err)) console.log(`ok   RULE 9 token ruler: ${tokRows.length} prose banks, no key-only and no all-distractor word or phrase at or over ${Math.round(100*TOK_CAP)}% of draws`);
+}
+
+/* RULE 10, printed in full (FOURTH PASS 2026-09-16, W1). */
+if (picRows.length) {
+  console.log(`\nRULE 10  PICTURE RULER  (${PIC_N} draws per figure bank: the best option-row-only policy, ` +
+    `taken per stem shape, under ${Math.round(100*PIC_CAP)}%; watch line ${Math.round(100*PIC_WATCH)}%, chance 25%)\n`);
+  console.log(pad('GENERATOR', 26) + pad('DRAWS', 8) + pad('SHAPES', 8) + pad('BEST BLIND POLICY', 34) + pad('RATE', 9) + 'RESULT');
+  console.log('-'.repeat(110));
+  for (const r of picRows)
+    console.log(pad(r.name, 26) + pad(r.n, 8) + pad(r.shapes, 8) + pad(r.best, 34) +
+      pad((100 * r.rate).toFixed(1) + '%', 9) + (r.err ? 'FAIL  ' + r.err
+        : (r.rate >= PIC_WATCH ? 'pass - over the ' + Math.round(100*PIC_WATCH) + '% watch line, declared residual' : 'pass')));
+  console.log('');
+  console.log('     the watch line is not a failure: the three banks that read a fraction OFF a picture share a bottom number across');
+  console.log('     three of their four options by construction, which is worth a third of a row to nobody who has done the mathematics.');
+  if (picRows.every(r => !r.err)) console.log(`ok   RULE 10 picture ruler: ${picRows.length} figure banks, no option-row-only policy at or over ${Math.round(100*PIC_CAP)}% - every picture in the topic is load-bearing`);
 }
 
 /* The negative controls, on the record of every run (THIRD PASS 2026-09-16). */

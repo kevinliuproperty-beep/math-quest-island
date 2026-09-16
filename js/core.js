@@ -382,9 +382,16 @@ function typedRejectReason(raw, q){
      generators keep a fixed stem and vary only the choices ("Which number is the
      smallest?"), so under a round-robin that key made the SECOND draw of such a
      skill a permanent duplicate and starved the skill out of the carousel for the
-     rest of the session. This is the same identity tools/gen-sanity.mjs uses. */
+     rest of the session. This is the same identity tools/gen-sanity.mjs uses.
+
+     INTEGRATOR (wave 1): the options are joined in SORTED order. mcNum and its
+     siblings shuffle the row, so the SAME four options in two shipped orders were
+     two different identities and the no-exact-duplicate guard let a child meet the
+     same item twice in one session. Sorting makes the identity the option SET,
+     which is what the guard has always meant, and tools/feed-sim.mjs's shapeKey
+     agrees with it. */
   function qIdentity(q){
-    const opts = q.typed ? String(q.answer) : (q.choices || []).join('');
+    const opts = q.typed ? String(q.answer) : (q.choices || []).slice().sort().join('');
     return (q.q + '|' + (q.extra || '') + '|' + opts).replace(/\s+/g, '');
   }
 

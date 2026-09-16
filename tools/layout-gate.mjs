@@ -161,7 +161,10 @@ const FIGURE_TOPICS = [
     wide: { type: 'bar', title: 'Sandwiches sold at the school canteen last Wednesday', scale: 5, maxUnit: 10, unitLabel: 'sandwiches',
       cats: ['Chrysanthemum tea', 'Wholemeal bread', 'Bandung', 'Barley water', 'Milo dinosaur'], units: [10, 7, 4, 9, 2] } },
   { type: 'fractionBar', topic: 'fractions', grade: 'P3', find: 'fraction of the bar',
-    wide: { type: 'fractionBar', total: 12, filled: 7 } },
+    /* INTEGRATOR (wave 1): `total` -> `parts`. js/figures.js fractionBar() loops on
+       f.parts; with `total` the worst-case spec rendered ZERO segments and the
+       widest fraction bar the gate claims to measure was never on the glass. */
+    wide: { type: 'fractionBar', parts: 12, filled: 7 } },
   { type: 'rect', topic: 'geometry', grade: 'P3', find: 'this rectangle',
     wide: { type: 'rect', length: 40, breadth: 3, unit: 'cm' } },
   { type: 'lshape', topic: 'p4area', grade: 'P4', find: 'this figure',

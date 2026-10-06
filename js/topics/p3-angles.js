@@ -49,7 +49,7 @@
   const PANEL_LETTERS = ['A', 'B', 'C', 'D'];
   const LABEL_SETS = [['A', 'B', 'C', 'D', 'E', 'F', 'G'], ['P', 'Q', 'R', 'S', 'T', 'U', 'V'],
                       ['J', 'K', 'L', 'M', 'N', 'P', 'Q'], ['R', 'S', 'T', 'U', 'V', 'W', 'X']];
-  const R2 = v => Math.round(v * 100) / 100;
+  const R2 = v => Math.round(v * 1000) / 1000;
   /* A child's name opens every picture item. Not decoration: the feed's identity key
      (core.js qIdentity, frozen) reads the stem and the options but cannot see a
      figure, so a fixed stem over fixed "Angle A..D" options was ONE identity per
@@ -378,6 +378,8 @@
     const lens = pts.map(armLen);
     const longest = lens.indexOf(Math.max(...lens));
     if (longest === key) return gLargestAngle();
+    const runnerUp = Math.max(...lens.filter((_, i) => i !== longest));
+    if (lens[longest] - runnerUp < 0.2) return gLargestAngle();   /* the longest arms must LOOK longest */
     if (Math.max(...lens) - Math.min(...lens) < 0.8) return gLargestAngle();
     const word = big ? 'largest' : 'smallest';
     return fig(finishLetters(who() + ' drew four angles. Which angle is the ' + word + '?', key,

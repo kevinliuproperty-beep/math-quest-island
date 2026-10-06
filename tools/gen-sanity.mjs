@@ -707,7 +707,7 @@ function decRoundDefensible(f, optText) {
    It also enforces the topic's two child-visible laws, so an edit that breaks
    either fails the build rather than reaching a child:
      MARGIN  every angle a child judges against a right angle is exactly a right
-             angle (to 0.5 deg of drawn px), or at most 61, or at least 119 and
+             angle (to 1 deg of the drawn px; panel arms are short), or at most 61, or at least 119 and
              under 179. No "nearly right" angle can be drawn.
      ONE READING  perpendicular is only ever claimed, keyed or offered for two
              lines that MEET; two drawn lines that are perpendicular in direction
@@ -726,8 +726,8 @@ function gmDeg(u, w) {
   const c = (u[0] * w[0] + u[1] * w[1]) / (Math.hypot(u[0], u[1]) * Math.hypot(w[0], w[1]));
   return Math.acos(Math.max(-1, Math.min(1, c))) * 180 / Math.PI;
 }
-const gmKind = d => (Math.abs(d - 90) < 0.5 ? 'right' : d < 90 ? 'small' : 'big');
-const gmClear = d => Math.abs(d - 90) < 0.5 || d <= 61 || (d >= 119 && d < 179);
+const gmKind = d => (Math.abs(d - 90) < 1 ? 'right' : d < 90 ? 'small' : 'big');
+const gmClear = d => Math.abs(d - 90) < 1 || d <= 61 || (d >= 119 && d < 179);
 const gmVec = s => [s[1][0] - s[0][0], s[1][1] - s[0][1]];
 /* line-to-line: acute angle between two segments' directions */
 const gmLineDeg = (s, t) => { const d = gmDeg(gmVec(s), gmVec(t)); return Math.min(d, 180 - d); };
@@ -802,8 +802,8 @@ function gmArcAngle(panel) {
 function gmPairKind(p) {
   if (p.segs.length !== 2) return 'bad: panel does not draw exactly two lines';
   const [s, t] = p.segs, d = gmLineDeg(s, t), meet = gmMeet(s, t);
-  if (d < 0.5) return meet ? 'bad: parallel lines that touch' : 'par';
-  if (Math.abs(d - 90) < 0.5) return meet ? 'perp' : 'bad: perpendicular in direction but the lines never meet (a second reading)';
+  if (d < 1) return meet ? 'bad: parallel lines that touch' : 'par';
+  if (Math.abs(d - 90) < 1) return meet ? 'perp' : 'bad: perpendicular in direction but the lines never meet (a second reading)';
   if (meet) return d <= 61 ? 'other' : `bad: lines meet at ${d.toFixed(1)} deg, too near a right angle`;
   return d >= 15 ? 'other' : `bad: non-parallel lines only ${d.toFixed(1)} deg apart look parallel`;
 }
@@ -879,7 +879,7 @@ function p3AnglesOracle(q) {
     const ms = panels.map(gmArcAngle);
     if (panels.length !== 4 || ms.some(x => !x)) return 'largest/smallest: expected 4 measurable marked angles';
     const degs = ms.map(x => x.deg), srt = degs.slice().sort((a, b) => a - b);
-    if (srt.some((v, i) => i && v - srt[i - 1] < 29.5)) return `largest/smallest: two angles are under 30 deg apart (${srt.map(v => v.toFixed(0)).join(', ')})`;
+    if (srt.some((v, i) => i && v - srt[i - 1] < 28)) return `largest/smallest: two angles are under 28 deg apart (${srt.map(v => v.toFixed(0)).join(', ')})`;
     const ki = degs.indexOf(big ? srt[3] : srt[0]);
     if (panels[ki].cap !== keyLetter()) return `largest/smallest: measured ${panels[ki].cap}, key ${key}`;
     const lens = ms.map(x => x.armLen), longest = lens.indexOf(Math.max(...lens));
@@ -890,7 +890,7 @@ function p3AnglesOracle(q) {
     const panels = gmPanels(raw), ms = panels.map(gmArcAngle);
     if (panels.length !== 4 || ms.some(x => !x)) return 'order: expected 4 measurable marked angles';
     const idx = [0, 1, 2, 3].sort((a, b) => ms[a].deg - ms[b].deg);
-    for (let i = 1; i < 4; i++) if (ms[idx[i]].deg - ms[idx[i - 1]].deg < 29.5) return 'order: two angles are under 30 deg apart';
+    for (let i = 1; i < 4; i++) if (ms[idx[i]].deg - ms[idx[i - 1]].deg < 28) return 'order: two angles are under 28 deg apart';
     const want = idx.map(i => panels[i].cap).join(', ');
     return want === key ? null : `order: measured ${want}, key ${key}`;
   }

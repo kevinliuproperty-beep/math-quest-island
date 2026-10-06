@@ -1477,6 +1477,150 @@ function decGates(q, topic) {
   return null;
 }
 
+/* ===== P3 TIME (js/topics/p3-time.js, lane/p3-time 2026-10-06) ==============
+ * Dispatched on the topic id like decimals, and EXHAUSTIVE: p3timeOracle never
+ * returns `false`, so a p3time stem no branch can read is a build failure.
+ * Every key is re-derived from the RENDERED stem, in minutes after midnight, and
+ * the whole option row is read back: exactly ONE option may be worth the key
+ * (a second option worth the same time or duration is a second right answer).
+ * Scope clamps enforced here, not trusted to the generator:
+ *   - every printed 12-hour time is h.mm a.m./p.m. with h 1..12 and mm < 60, or
+ *     "12 noon"; no stem prints a time in the 12 a.m. hour;
+ *   - every printed 24-hour time is 4 digits, hh < 24, mm < 60 (no 2400, no 1375);
+ *   - every printed duration has minutes < 60 and is longer than 0;
+ *   - the teaching card states the key.
+ * The unit-sense table is a SECOND copy of the activity list, kept here on
+ * purpose: the generator's own table cannot vouch for itself. */
+const TIME_T12 = '(\\d{1,2}\\.\\d{2} [ap]\\.m\\.|12 noon)';
+const TIME_DUR = '((?:\\d+ h)?(?: ?\\d+ min)?)';
+function tParse12(s) {
+  s = String(s).trim();
+  if (s === '12 noon') return 720;
+  const m = s.match(/^(\d{1,2})\.(\d{2}) ([ap])\.m\.$/);
+  if (!m) return NaN;
+  const h = Number(m[1]), mm = Number(m[2]);
+  if (h < 1 || h > 12 || mm > 59) return NaN;
+  return ((h % 12) + (m[3] === 'p' ? 12 : 0)) * 60 + mm;
+}
+function tParse24(s) {
+  const m = String(s).trim().match(/^(\d{2})(\d{2})$/);
+  if (!m) return NaN;
+  const h = Number(m[1]), mm = Number(m[2]);
+  if (h > 23 || mm > 59) return NaN;
+  return h * 60 + mm;
+}
+function tParseDur(s) {
+  const m = String(s).trim().match(/^(?:(\d+) h)?\s*(?:(\d+) min)?$/);
+  if (!m || (m[1] === undefined && m[2] === undefined)) return NaN;
+  const h = Number(m[1] || 0), mm = Number(m[2] || 0);
+  if (mm > 59 || (m[2] !== undefined && mm === 0)) return NaN;
+  const d = h * 60 + mm;
+  return d > 0 ? d : NaN;
+}
+const TIME_SENSE = [
+  ['Blinking your eyes once takes about', 'second'], ['Writing your own name takes about', 'second'],
+  ['Clapping your hands 5 times takes about', 'second'], ['Running 50 m on sports day takes about', 'second'],
+  ['Tying your shoelaces takes about', 'second'], ['Saying "Good morning, teacher!" takes about', 'second'],
+  ['Brushing your teeth takes about', 'minute'], ['Eating a plate of chicken rice takes about', 'minute'],
+  ['Taking a shower takes about', 'minute'], ['Recess at school lasts about', 'minute'],
+  ['Boiling an egg takes about', 'minute'], ['Singing "Majulah Singapura" takes about', 'minute'],
+  ['A night of sleep for a P3 pupil lasts about', 'hour'], ['A school day lasts about', 'hour'],
+  ['A flight from Singapore to Tokyo takes about', 'hour'], ['A movie at the cinema lasts about', 'hour'],
+  ['The June school holidays last about', 'day'], ['A long-weekend family trip to Malaysia lasts about', 'day'],
+  ['A bunch of bananas stays fresh for about', 'day']
+];
+function p3timeOracle(q) {
+  const text = strip(q.q), ex = strip(q.explain || '');
+  const opts = (q.choices || []).map(strip);
+  const key = strip(q.answerText);
+  let m;
+  /* clamp 1: every 12-hour and 24-hour time printed in the stem is a real time */
+  for (const t of text.match(/\d{1,2}\.\d{2} [ap]\.m\./g) || []) {
+    const v = tParse12(t);
+    if (!Number.isFinite(v)) return `p3time: the stem prints an impossible time "${t}"`;
+    if (v < 60) return `p3time: the stem prints a time in the 12 a.m. hour ("${t}")`;
+  }
+  for (const t of text.match(/\b\d{4}\b/g) || [])
+    if (!Number.isFinite(tParse24(t))) return `p3time: the stem prints an impossible 24-hour time "${t}"`;
+  /* every MC row is read back with ONE reader; exactly one option may be worth `want` */
+  const row = (reader, want, what) => {
+    if (opts.length !== 4) return `p3time ${what}: expected 4 options, got ${opts.length}`;
+    const vals = opts.map(reader);
+    const bad = opts.find((o, i) => !Number.isFinite(vals[i]));
+    if (bad !== undefined) return `p3time ${what}: option "${bad}" is not a real ${what === 'clock24' ? '24-hour time' : 'time or duration'}`;
+    const hits = vals.filter(v => v === want).length;
+    if (hits !== 1) return `p3time ${what}: ${hits} options are worth the key (${opts.join(' | ')})`;
+    if (reader(key) !== want) return `p3time ${what}: key "${key}" is not the re-derived answer`;
+    if (ex.indexOf(key) < 0) return `p3time ${what}: the teaching card never states the key "${key}"`;
+    return null;
+  };
+  const typedOk = (want, unit, what) => {
+    if (!q.typed) return `p3time ${what}: expected a typed item`;
+    if (q.answer !== want) return `p3time ${what}: expected ${want}, got ${q.answer}`;
+    if (ctx.MQI.unitList(q.unit)[0] !== unit) return `p3time ${what}: q.unit should be "${unit}", got ${JSON.stringify(q.unit)}`;
+    if (ex.indexOf(String(want)) < 0) return `p3time ${what}: the teaching card never states ${want}`;
+    return null;
+  };
+
+  if ((m = text.match(/^Which word fits best\? (.+) (\d+) ____\.$/))) {
+    const hit = TIME_SENSE.find(r => r[0] === m[1]);
+    if (!hit) return `p3time sense: activity "${m[1]}" is not in the harness's own table`;
+    const n = Number(m[2]), pl = u => (n === 1 ? u : u + 's');
+    const want = ['second', 'minute', 'hour', 'day'].map(pl);
+    if ([...opts].sort().join() !== [...want].sort().join()) return `p3time sense: options ${opts.join(' | ')} are not the four units`;
+    return key === pl(hit[1]) ? null : `p3time sense: expected ${pl(hit[1])}, got ${key}`;
+  }
+  if ((m = text.match(/^(\d+) h (\d+) min = \? min$/))) {
+    if (Number(m[2]) > 59) return 'p3time h-min: minutes part is 60 or more';
+    return typedOk(Number(m[1]) * 60 + Number(m[2]), 'min', 'h-min');
+  }
+  if ((m = text.match(/^Write (\d+) min in hours and minutes\.$/)))
+    return row(tParseDur, Number(m[1]), 'min->h-min');
+  if ((m = text.match(new RegExp('started at ' + TIME_T12 + ' and ended at ' + TIME_T12 + '\\.? How long did it last, in minutes\\?$')))) {
+    const d = tParse12(m[2]) - tParse12(m[1]);
+    if (!(d > 0 && d < 60)) return `p3time minutes: ${m[1]} to ${m[2]} is not under an hour`;
+    return typedOk(d, 'min', 'minutes');
+  }
+  if ((m = text.match(new RegExp('started at ' + TIME_T12 + ' and lasted ' + TIME_DUR + '\\. What time did it end\\?$'))))
+    return row(tParse12, tParse12(m[1]) + tParseDur(m[2]), 'finish');
+  if ((m = text.match(new RegExp('ended at ' + TIME_T12 + '\\.? It lasted ' + TIME_DUR + '\\. What time did it start\\?$')))) {
+    const s = tParse12(m[1]) - tParseDur(m[2]);
+    if (!(s >= 60)) return 'p3time start: the start time falls before 1 a.m.';
+    return row(tParse12, s, 'start');
+  }
+  if ((m = text.match(new RegExp('started at ' + TIME_T12 + ' and ended at ' + TIME_T12 + '\\.? How long did it take\\?$')))) {
+    const d = tParse12(m[2]) - tParse12(m[1]);
+    if (!(d > 0)) return 'p3time duration: the trip ends before it starts';
+    return row(tParseDur, d, 'duration');
+  }
+  if ((m = text.match(new RegExp('^Write ' + TIME_T12 + ' in the 24-hour clock\\.$'))))
+    return row(tParse24, tParse12(m[1]), 'clock24');
+  if ((m = text.match(/ (\d{4})\. What is this time in the 12-hour clock\?$/)))
+    return row(tParse12, tParse24(m[1]), '24->12');
+  if ((m = text.match(new RegExp('started .+ at ' + TIME_T12 + '\\.? (?:He|She) spent (\\d+) min on .+ and then (\\d+) min on .+\\. What time did (?:he|she) finish\\?$'))))
+    return row(tParse12, tParse12(m[1]) + Number(m[2]) + Number(m[3]), 'two parts');
+  if ((m = text.match(/The first (?:lap|round) took (\d+) min (\d+) s and the second took (\d+) min (\d+) s\. How many seconds (did .+ take for both .+ altogether|faster was the (first|second) one)\?$/))) {
+    if (Number(m[2]) > 59 || Number(m[4]) > 59) return 'p3time laps: a seconds part is 60 or more';
+    const a = Number(m[1]) * 60 + Number(m[2]), b = Number(m[3]) * 60 + Number(m[4]);
+    if (!m[6]) return typedOk(a + b, 's', 'laps total');
+    const faster = a < b ? 'first' : (b < a ? 'second' : null);
+    if (m[6] !== faster) return `p3time laps: the stem asks how much faster the ${m[6]} one was, but the ${faster || 'neither'} one was faster`;
+    return typedOk(Math.abs(a - b), 's', 'laps difference');
+  }
+  if ((m = text.match(/ left at (\d{4}) and arrived at (\d{4})\. How long was the journey\?$/))) {
+    const d = tParse24(m[2]) - tParse24(m[1]);
+    if (!(d > 0)) return 'p3time journey: arrives before it leaves';
+    return row(tParseDur, d, 'journey');
+  }
+  if ((m = text.match(new RegExp('started at ' + TIME_T12 + ' and lasted ' + TIME_DUR + '\\. When did it end\\? Give the time in the 24-hour clock\\.$')))) {
+    const e = tParse12(m[1]) + tParseDur(m[2]);
+    if (e > 23 * 60 + 59) return 'p3time end24: the show ends after midnight';
+    return row(tParse24, e, 'end24');
+  }
+  return 'p3time: no oracle matched this stem - every generator in js/topics/p3-time.js must ship its oracle ' +
+    'in the same commit (js/topics/README.md): ' + text;
+}
+
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
 /* Return: null = verified, string = failure, false = no oracle matched.
    `topic` is the registered topic id the generator was drawn from. It is used by
@@ -1488,6 +1632,8 @@ function oracle(q, topic) {
   /* SWEEP 2026-09-15: the decimals bank is dispatched first and exhaustively, so
      no looser branch below can claim one of its stems and no stem can escape. */
   if (topic === 'decimals') return decimalsOracle(q);
+  /* lane/p3-time 2026-10-06: exhaustive, like decimals (see p3timeOracle). */
+  if (topic === 'p3time') return p3timeOracle(q);
   const text = strip(q.q);
   const extra = strip(q.extra || '');
   const ansNum = parseFloat(strip(q.answerText));

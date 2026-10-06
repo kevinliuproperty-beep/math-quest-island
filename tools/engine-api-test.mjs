@@ -74,7 +74,7 @@ const b = call('build').build;
 const stampInFile = (bundleSrc.match(/\/\* ENGINE_BUILD ([^\s*]+) \*\//) || [])[1];
 ok(!!stampInFile, 'the bundle file carries an ENGINE_BUILD line');
 ok(b.stamp === stampInFile, 'build().stamp "' + b.stamp + '" == the file stamp "' + stampInFile + '"');
-ok(b.topicCount === 28, 'build().topicCount == 28 (got ' + b.topicCount + ')');
+ok(b.topicCount === 29, 'build().topicCount == 29 (got ' + b.topicCount + ')');
 ok(b.generatorCount > 0, 'build().generatorCount > 0 (got ' + b.generatorCount + ')');
 console.log('  ok    ' + b.stamp + '  topics ' + b.topicCount + '  pool entries ' + b.generatorCount +
             '  distinct generators ' + b.distinctGenerators);
@@ -82,7 +82,7 @@ console.log('  ok    ' + b.stamp + '  topics ' + b.topicCount + '  pool entries 
 /* ---------- 3. listTopics ---------- */
 section('listTopics()');
 const lt = call('listTopics');
-ok(lt.count === 28, 'listTopics().count == 28 (got ' + lt.count + ')');
+ok(lt.count === 29, 'listTopics().count == 29 (got ' + lt.count + ')');
 ok(lt.generatorCount === b.generatorCount, 'generator count agrees with build() (' + lt.generatorCount + ')');
 const refs = [];
 for (const t of lt.topics) {
@@ -96,7 +96,7 @@ for (const t of lt.topics) {
   }
 }
 ok(refs.length === b.generatorCount, 'every pool entry got a ref (' + refs.length + ')');
-console.log('  ok    28 topics, ' + refs.length + ' generator refs');
+console.log('  ok    29 topics, ' + refs.length + ' generator refs');
 
 /* ---------- 4. every generator: draw, grade its own key, grade a wrong answer ---------- */
 section('per-generator draws (' + DRAWS + ' each, ' + refs.length + ' generators)');

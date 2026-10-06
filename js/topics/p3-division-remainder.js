@@ -27,7 +27,7 @@
     const d = ri(4, 9), q = ri(6, 20), r = ri(1, d - 1), n = d*q + r;
     const who = pick(NAMES), item = pick(SNACKS);
     return finishTyped(who + ' packs ' + n + ' ' + item + ' into boxes of ' + d + '. How many boxes are needed to hold all of them?',
-      q + 1, n + ' / ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + ' left over still need a box, so ' + who + ' needs ' + (q+1) + ' boxes.');
+      q + 1, n + ' / ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + (r === 1 ? ' left over still needs a box,' : ' left over still need a box,') + ' so ' + who + ' needs ' + (q+1) + ' boxes.');
   }
 
   function gMulAlgo(){

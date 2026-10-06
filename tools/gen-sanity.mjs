@@ -9063,7 +9063,12 @@ const AGREE_BAD = [
   [/\b1 of (?:them|these|those|the \w+|the \w+ \w+) (?:are|were|have)\b/i, '"1 of them ARE"'],
   [/\b(?!1\b)\d+ of (?:them|these|those|the \w+|the \w+ \w+) (?:is|was|has)\b/i, '"<more than one> of them IS"'],
   [/\b1 (?:pieces|parts|slices) (?:are|were|have)\b/i, '"1 pieces ARE"'],
-  [/\b(?!1\b)\d+ (?:piece|part|slice) (?:is|was|has)\b/i, '"<more than one> piece IS"']
+  [/\b(?!1\b)\d+ (?:piece|part|slice) (?:is|was|has)\b/i, '"<more than one> piece IS"'],
+  /* P3 POLISH 2026-10-06: the bare count. gPicUnshaded's card printed "8 − 7 = 1
+     parts, which is 1/8" and gAddWords' "... = 1 pieces, which is ..." - no verb
+     follows, so the two verb patterns above read straight past both. A "1" that is
+     the bottom of a fraction (" / 1 parts") is excluded. */
+  [/(?<![\d\/]\s?)\b1 (?:pieces|parts|slices)\b/i, '"1 parts"']
 ];
 const agreeRows = [];
 for (const g of GENS) {
@@ -10143,6 +10148,13 @@ control('RULE 11 shape clause - the v6 gAddSame row (677 rows, 18 shapes, key sl
        hard-coded plural verb. */
 control('prose agreement - the v6 gEquivFromBar sentence ("1 of them are blue")', () => {
   const text = 'The bar below is cut into 5 equal parts, and 1 of them are blue. Which fraction is equivalent to the blue fraction?';
+  for (const [re, lab] of AGREE_BAD) if (re.test(text)) return 'prose agreement: ' + lab + ' caught';
+  return null;
+});
+
+/* 15b. THE PROSE AGREEMENT CLAUSE, bare count: the pre-2026-10-06 gPicUnshaded card. */
+control('prose agreement - the pre-p3-polish gPicUnshaded card ("= 1 parts, which is 1/8")', () => {
+  const text = 'Step 2: the whole bar is 8 / 8 , so the part that is not blue is 8 − 7 = 1 parts, which is 1 / 8 .';
   for (const [re, lab] of AGREE_BAD) if (re.test(text)) return 'prose agreement: ' + lab + ' caught';
   return null;
 });

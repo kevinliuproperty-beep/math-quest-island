@@ -1479,7 +1479,7 @@ function gPicUnshaded(){
     'Step 1: the bar is cut into ' + d + ' equal parts and ' + n + ' ' + (n === 1 ? 'is' : 'are') +
     ' blue, so the blue part is ' + fr(n,d) + '. ' +
     'Step 2: the whole bar is ' + fr(d,d) + ', so the part that is not blue is ' + d + ' − ' + n + ' = ' + (d-n) +
-    ' parts, which is ' + fr(d-n,d) + '.' +
+    ((d-n) === 1 ? ' part' : ' parts') + ', which is ' + fr(d-n,d) + '.' +
     /* SECOND PASS, W2: "n/d is the blue part, not the answer" named the KEY when
        the bar was half shaded - 22.6% of draws telling the child the right answer
        is the wrong part. */
@@ -3548,7 +3548,7 @@ function gAddWords(){
     ' of the same ' + cake + '. <b>What fraction of the ' + cake + ' is left?</b>', key, slips,
     'Step 1: together they eat ' + fr(a,d) + ' + ' + fr(b,d) + ' = ' + fr(a+b, d) + '. ' +
     'Step 2: the whole ' + cake + ' is ' + fr(d,d) + ', so what is left is ' + d + ' − ' + (a+b) + ' = ' +
-    (d-a-b) + ' pieces, which is ' + fr(d-a-b, d) + '. Stopping after step 1 gives ' + fr(a+b, d) +
+    (d-a-b) + ((d-a-b) === 1 ? ' piece' : ' pieces') + ', which is ' + fr(d-a-b, d) + '. Stopping after step 1 gives ' + fr(a+b, d) +
     ', which is the part that was eaten, not the part left.');
 }
 

@@ -134,7 +134,9 @@
   function gComparePrinters() {
     const ra = ri(30, 80), rb = ri(10, ra - 8), ta = ri(2, 9), tb = ri(2, 9);
     const pa = ra * ta, pb = rb * tb, d = ra - rb;
-    const cs = clean(d, [pa - pb, ra + rb, ra, rb, ra + d, pa - pb + ra]);
+    /* P3 GAPS LANE 2026-10-06: a difference of 1 printed "1 pages" as an option
+       (the unit rides every choice). Candidates below 2 are dropped. */
+    const cs = clean(d, [pa - pb, ra + rb, ra, rb, ra + d, pa - pb + ra].filter(c => c >= 2));
     if (cs.length < 3) return gComparePrinters();
     return finishNum('Printer A prints ' + pa + ' pages in ' + ta + ' minutes. Printer B prints ' + pb +
       ' pages in ' + tb + ' minutes. How many more pages than Printer B does Printer A print in 1 minute?',

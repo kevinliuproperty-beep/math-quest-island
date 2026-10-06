@@ -54,6 +54,7 @@
     ['angbaos','angbao','red','in the drawer']
   ];
   const CAKES = ['pandan cakes','ondeh ondeh','pizzas','watermelons','kaya toast sets','mooncakes'];
+  const CAKE1 = ['pandan cake','ondeh ondeh','pizza','watermelon','kaya toast set','mooncake'];
 
   function red(n, d){ const k = gcd(n, d) || 1; return [n / k, d / k]; }
   /* Mixed-number markup: "2 <frac>3/4</frac>". The harness reads the RAW html,
@@ -93,7 +94,8 @@
     const people = pick([3, 4, 5, 6, 8, 9, 10, 12]);
     const cakes  = ri(1, people - 1);            /* proper fraction, and never 0 */
     const r = red(cakes, people);
-    const food = pick(CAKES);
+    /* P3 GAPS LANE 2026-10-06: "share 1 pizzas" - one count, one noun. */
+    const food = cakes === 1 ? CAKE1[CAKES.indexOf(pick(CAKES))] : pick(CAKES);
     const who = pick(NAMES);
     return withFrac(finishTyped(
       who + ' and ' + (people - 1) + ' friends share ' + cakes + ' ' + food +

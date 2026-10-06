@@ -36,6 +36,46 @@
       'Split ' + a + ' into ' + (Math.floor(a/10)*10) + ' + ' + (a%10) + '. ' + (Math.floor(a/10)*10) + ' x ' + b + ' = ' +
       (Math.floor(a/10)*10*b) + ' and ' + (a%10) + ' x ' + b + ' = ' + ((a%10)*b) + '. Add them: ' + (a*b) + '.');
   }
+  /* P3 GAPS LANE 2026-10-06 (MOE P3 3.4, multiplication algorithm up to 3 digits
+     by 1 digit). gMulAlgo above stops at 2 digits, so until this lane no bank in
+     the game asked for 3-digit x 1-digit. Every draw REGROUPS at least once - the
+     carry is the whole point of the written method - and about half carry twice.
+     The product stays inside 4 digits (999 x 9 = 8991), the P3 number ceiling. */
+  function carries3(a, b){
+    let c = 0, n = 0;
+    for (let x = a; x > 0; x = Math.floor(x / 10)){
+      const s = (x % 10) * b + c;
+      c = Math.floor(s / 10);
+      if (c > 0 && x >= 10) n++;           /* a carry into a column that exists */
+    }
+    return n;
+  }
+  function mulSplit(a, b){
+    const h = Math.floor(a / 100) * 100, t = Math.floor(a / 10) % 10 * 10, o = a % 10;
+    const parts = [[h, h * b], [t, t * b], [o, o * b]].filter(p => p[0] > 0);
+    return 'Split ' + a + ' into ' + parts.map(p => p[0]).join(' + ') + '. ' +
+      parts.map(p => p[0] + ' x ' + b + ' = ' + p[1]).join(', ') + '. Add them: ' +
+      parts.map(p => p[1]).join(' + ') + ' = ' + (a * b) + '.';
+  }
+  function draw3(){
+    let a = 347, b = 6, g = 0;
+    do { a = ri(102, 999); b = ri(3, 9); g++; }
+    while (g < 200 && !(carries3(a, b) >= 1 && a % 10 !== 0));
+    return [a, b];
+  }
+  function gMulAlgo3(){
+    const ab = draw3(), a = ab[0], b = ab[1];
+    return finishTyped(a + ' x ' + b + ' = ?', a*b,
+      mulSplit(a, b) + ' On paper, start with the ones and carry each ten into the next column.');
+  }
+  const PACKS = [['packet','stickers'],['box','beads'],['bag','marbles'],['tub','stickers']];
+  function gMulWord(){
+    const ab = draw3(), per = ab[0], n = ab[1];
+    const kid = pick(NAMES), pk = pick(PACKS);
+    return finishTyped('Each ' + pk[0] + ' has ' + per + ' ' + pk[1] + '. ' + kid + ' buys ' + n + ' ' + pk[0] +
+      (pk[0] === 'box' ? 'es' : 's') + '. How many ' + pk[1] + ' are there altogether?', per*n,
+      n + ' groups of ' + per + ' is ' + per + ' x ' + n + '. ' + mulSplit(per, n), pk[1]);
+  }
   function gDivAlgo(){
     /* scope clamp (MOE p.35 item 3.4): up to 3 digits by 1 digit, so d*q <= 999 */
     const d = ri(3, 9), q = ri(20, Math.floor(999/d)), n = d*q;
@@ -62,8 +102,8 @@
     },
     pools:{
       1:[[gLeftOver,'remainder'],[gMulAlgo,'algo']],
-      2:[[gQuotient,'remainder'],[gDivAlgo,'algo']],
-      3:[[gBoxesNeeded,'remainder'],[gTwoStep,'word']]
+      2:[[gQuotient,'remainder'],[gDivAlgo,'algo'],[gMulAlgo3,'algo']],
+      3:[[gBoxesNeeded,'remainder'],[gTwoStep,'word'],[gMulWord,'word']]
     }
   });
 })();

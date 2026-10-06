@@ -345,7 +345,10 @@
     const cats = p.cats, vals = p.vals;
     const ord = shuffle(cats.map((_, i) => i));
     const pairs = [[ord[0], ord[1]], [ord[1], ord[2]], [ord[2], ord[3]], [ord[3], ord[0]]];
-    const say = (i, j, n) => cats[i] + ' shows ' + n + ' more ' + p.thing + ' than ' + cats[j] + '.';
+    /* P3 GAPS LANE 2026-10-06: "1 more books" - one count, one noun (every set's
+       thing is a regular plural: pupils, drinks, books). */
+    const say = (i, j, n) => cats[i] + ' shows ' + n + ' more ' +
+      (n === 1 ? p.thing.slice(0, -1) : p.thing) + ' than ' + cats[j] + '.';
     const opts = [];
     for (const [i, j] of pairs) {
       const hi = vals[i] >= vals[j] ? i : j, lo = vals[i] >= vals[j] ? j : i;

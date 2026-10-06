@@ -40,6 +40,9 @@
     2: 'halves', 3: 'thirds', 4: 'quarters', 5: 'fifths', 6: 'sixths',
     7: 'sevenths', 8: 'eighths', 9: 'ninths', 10: 'tenths', 11: 'elevenths', 12: 'twelfths'
   };
+  /* P3 GAPS LANE 2026-10-06: "= 1 quarters" printed on gSubLike / gSubRelated
+     teaching cards whenever the difference was one unit. One count, one noun. */
+  const unitsOf = (n, d) => n + ' ' + (n === 1 ? (d === 2 ? 'half' : UNITS[d].slice(0, -1)) : UNITS[d]);
   const DENS = [3, 4, 5, 6, 8, 9, 10, 12];
   /* [small, big] with big a multiple of small, both <= 12: the "related" pairs */
   const RELATED = [[2, 4], [2, 6], [2, 8], [2, 10], [2, 12], [3, 6], [3, 9], [3, 12],
@@ -162,8 +165,7 @@
     return finishFrac(fr(n1, d) + ' + ' + fr(n2, d) + ' = ?', '', ans,
       [[n1 + n2, d + d],                       /* added the denominators too */
        [n1 * n2, d], [n1 + n2 + 1, d], [Math.max(1, n1 + n2 - 1), d]],
-      'The denominators are the same, so add the numerators only: ' + n1 + ' + ' + n2 + ' = ' + (n1 + n2) +
-      ' ' + UNITS[d] + ', which is ' + ans[0] + ' out of ' + ans[1] + '.');
+      'The denominators are the same, so add the numerators only: ' + n1 + ' + ' + n2 + ' = ' + unitsOf(n1 + n2, d) + ', which is ' + ans[0] + ' out of ' + ans[1] + '.');
   }
   function gSubLike() {
     const d = pick(DENS);
@@ -172,8 +174,7 @@
     return finishFrac(fr(n1, d) + ' - ' + fr(n2, d) + ' = ?', '', ans,
       [[n1 + n2, d],                           /* added instead of subtracted */
        [n2, d], [n1 - n2 + 1, d], [Math.max(1, n1 - n2 - 1), d]],
-      'The denominators are the same, so subtract the numerators only: ' + n1 + ' - ' + n2 + ' = ' + (n1 - n2) +
-      ' ' + UNITS[d] + ', which is ' + ans[0] + ' out of ' + ans[1] + '.');
+      'The denominators are the same, so subtract the numerators only: ' + n1 + ' - ' + n2 + ' = ' + unitsOf(n1 - n2, d) + ', which is ' + ans[0] + ' out of ' + ans[1] + '.');
   }
   function gAddRelated() {
     const p = pick(RELATED), s = p[0], big = p[1], k = big / s;
@@ -182,7 +183,7 @@
     return finishFrac(fr(n1, s) + ' + ' + fr(n2, big) + ' = ?', '', ans,
       [[n1 + n2, big], [n1 + n2, s + big], [n1 * k + n2 + 1, big], [Math.max(1, n1 * k + n2 - 1), big]],
       big + ' is ' + k + ' x ' + s + ', so ' + n1 + ' out of ' + s + ' is the same as ' + (n1 * k) + ' out of ' + big +
-      '. Then ' + (n1 * k) + ' + ' + n2 + ' = ' + (n1 * k + n2) + ' ' + UNITS[big] + ', which is ' +
+      '. Then ' + (n1 * k) + ' + ' + n2 + ' = ' + unitsOf(n1 * k + n2, big) + ', which is ' +
       ans[0] + ' out of ' + ans[1] + '.');
   }
   function gSubRelated() {
@@ -193,7 +194,7 @@
     return finishFrac(fr(n2, big) + ' - ' + fr(n1, s) + ' = ?', '', ans,
       [[n2 - n1, big], [n2 - n1, big - s], [n2 - n1 * k + 1, big], [Math.max(1, n2 - n1 * k - 1), big]],
       big + ' is ' + k + ' x ' + s + ', so ' + n1 + ' out of ' + s + ' is the same as ' + (n1 * k) + ' out of ' + big +
-      '. Then ' + n2 + ' - ' + (n1 * k) + ' = ' + (n2 - n1 * k) + ' ' + UNITS[big] + ', which is ' +
+      '. Then ' + n2 + ' - ' + (n1 * k) + ' = ' + unitsOf(n2 - n1 * k, big) + ', which is ' +
       ans[0] + ' out of ' + ans[1] + '.');
   }
 

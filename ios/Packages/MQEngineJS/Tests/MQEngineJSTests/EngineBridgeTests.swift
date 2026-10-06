@@ -32,11 +32,11 @@ struct EngineBridgeTests {
                 "build() reports \(build.stamp) but the bundle file says \(stampInFile ?? "nothing")")
 
         #expect(build.platform == "javascriptcore", "the host shim should see a JSContext, not a Node vm")
-        #expect(build.topicCount == 28)
+        #expect(build.topicCount == 29)
         #expect(build.files.first == "js/core.js", "core.js registers the kit everything else uses")
         #expect(build.files.contains("js/registry.js"))
-        #expect(build.files.filter { $0.hasPrefix("js/topics/") }.count == 28)
-        #expect(build.fileCount >= 30, "core.js + 28 topic files + registry.js, plus any engine file added since")
+        #expect(build.files.filter { $0.hasPrefix("js/topics/") }.count == 29)
+        #expect(build.fileCount >= 30, "core.js + 29 topic files + registry.js, plus any engine file added since")
         // The app shell and the mode files are UI/session concerns the native app
         // rewrites in Swift; they must never be inside the engine bundle.
         #expect(!build.files.contains("js/app.js"))
@@ -62,7 +62,7 @@ struct EngineBridgeTests {
         // engine output reaches the host instead of vanishing into the system log.
         #expect(try await e.evaluateForDiagnostics("typeof console.log") == "function")
         #expect(try await e.evaluateForDiagnostics("MQI_HOST.platform") == "javascriptcore")
-        #expect(try await e.evaluateForDiagnostics("String(Object.keys(MQI.topics).length)") == "28")
+        #expect(try await e.evaluateForDiagnostics("String(Object.keys(MQI.topics).length)") == "29")
 
         // The buffered console really buffers rather than throwing.
         _ = try await e.evaluateForDiagnostics("console.warn('bridge gate probe'), 'ok'")
@@ -72,13 +72,13 @@ struct EngineBridgeTests {
 
     // MARK: - 2. The catalogue
 
-    @Test("listTopics returns the whole island: 28 topics, 250 generator refs")
+    @Test("listTopics returns the whole island: 29 topics, 250 generator refs")
     func listTopicsReturnsTheIsland() async throws {
         let e = try engine()
         let cat = try await e.listTopics()
 
-        #expect(cat.count == 28, "28 topics ship today")
-        #expect(cat.topics.count == 28)
+        #expect(cat.count == 29, "29 topics ship today")
+        #expect(cat.topics.count == 29)
         #expect(cat.grades == ["P2", "P3", "P4", "P5", "P6"])
 
         for t in cat.topics {
@@ -108,7 +108,7 @@ struct EngineBridgeTests {
 
         // Locked nodes stay visible on the map but are not playable.
         #expect(cat.nodes.contains { !$0.playable }, "the map should still carry Coming-soon nodes")
-        #expect(cat.nodes.filter(\.playable).count == 28)
+        #expect(cat.nodes.filter(\.playable).count == 29)
     }
 
     // MARK: - 3. THE GATE: every generator, 200 draws, self-key grading

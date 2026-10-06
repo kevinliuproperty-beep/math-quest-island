@@ -16,6 +16,7 @@ const MAP_NODES=[
   {id:'p3money',   e:'💵', name:'Hawker Coins',        blurb:'Adding & subtracting money in dollars and cents. TYPE your answer! (P3)', grades:['P3']},
   {id:'p3measure', e:'📏', name:'Compound Cove',       blurb:'Length, mass & volume in compound units (P3)', grades:['P3']},
   {id:'p3bargraph',e:'📊', name:'Data Docks',          blurb:'Reading bar graphs, including scaled axes (P3)', grades:['P3']},
+  {id:'p3time',    e:'⏰', name:'Clocktower Quay',     blurb:'Seconds, start and finish times, how long, and the 24-hour clock (P3)', grades:['P3']},
   {id:'geometry',  e:'🏰', name:'Perimeter Palace',    blurb:'Area & perimeter of squares and rectangles (P3, P4)', grades:['P3','P4']},
   {id:'heuristics',e:'🧩', name:'Puzzle Caves',        blurb:'Patterns & puzzles. TYPE your answer, no choices!', grades:['P2','P3','P4','P5','P6']},
   /* ---- P4 ---- */

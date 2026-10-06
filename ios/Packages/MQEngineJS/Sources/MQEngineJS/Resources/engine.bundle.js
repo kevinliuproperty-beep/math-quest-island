@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20261006-9ebd034 */
-/* ENGINE_BUILD_META {"stamp":"20261006-9ebd034","date":"2026-10-06","sha":"9ebd034","dirty":false,"payloadHash":"895a8c9b72079d58","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":32,"topicFileCount":29,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20261006-9ebd034","date":"2026-10-06","sha":"9ebd034","dirty":false,"payloadHash":"895a8c9b72079d58","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":32,"topicFileCount":29,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20261006-df8a93b */
+/* ENGINE_BUILD_META {"stamp":"20261006-df8a93b","date":"2026-10-06","sha":"df8a93b","dirty":false,"payloadHash":"5b510cde292f9ea0","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":32,"topicFileCount":29,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20261006-df8a93b","date":"2026-10-06","sha":"df8a93b","dirty":false,"payloadHash":"5b510cde292f9ea0","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":32,"topicFileCount":29,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -2912,7 +2912,7 @@ function gCompareError(){
  *   you cannot take away, you take one from the column on the left. Regrouping
  *   IS the idea, and the two classic slips (never carry; always take the small
  *   digit from the big one) are named distractors, not padding.
- *   gAddConcept, gAddRegroup, gSubRegroup, gMissingAddend, gMentalMake,
+ *   gAddConcept, gAddRegroup, gSubRegroup, gMissingAddend, gMentalMake, gMentalTakeTens,
  *   gAddError, gSubError, gTwoStepWord, gBackFromTotal.
  *
  * NO GENERATOR SITS IN TWO POOLS. Pool 3 holds 11 slots and TEN of them are
@@ -2996,8 +2996,8 @@ function gCompareError(){
  * 1.4 comparing and ordering, 1.5 patterns in number sequences. Addition and
  * Subtraction: 2.1 algorithms up to 4 digits, 2.2 mental calculation of two
  * 2-digit numbers. NOT here: rounding (P4 1.5), numbers past 9999, negative
- * results, reading and writing numbers in WORDS (needs a words-to-numeral typed
- * input the finishers do not support - a separate lane's call).
+ * results. Numbers in WORDS (1.3) joined on 2026-10-06 as multiple choice both
+ * ways round (gWordsToNum, gNumToWords), which needs no new input type.
  *
  * FENCE against `heuristics` (Puzzle Caves, which also owns a `pattern` skill):
  * Puzzle Caves draws 1- and 2-digit typed sequences ("What comes next? 3, 6, 9,
@@ -3862,6 +3862,120 @@ function gZeroFix(){
     (sg === 1 ? '+' : '−') + ' ' + step + ' = ' + ans + '.');
 }
 
+
+/* FORMATS 8 and 9 - NUMBERS IN NUMERALS AND IN WORDS (P3 GAPS LANE 2026-10-06,
+   MOE P3 1.3 "reading and writing numbers in numerals and in words"). Left out
+   until now because the finishers have no words-to-numeral typed input; asked
+   here as multiple choice instead, both ways round, so no new input type.
+   Singapore / UK convention: "three thousand, four hundred and five",
+   "four thousand and six", "two thousand and fifty".
+   EVERY number drawn holds at least one ZERO after its thousands digit, because
+   the zero is the whole difficulty: "four thousand and six" has no hundreds and
+   no tens said out loud, and the P3 slips are exactly
+     - a zero DROPPED (4006 -> 406: wrote what was heard, the hundreds slot lost),
+     - the zero in the WRONG place / digits swapped (4006 -> 4060, 4600, 6004),
+     - teen and ty confused (5014 "five thousand and fourteen" -> 5040).
+   Distractors come only from that family, through slipSet, so the key's place
+   among the four printed numbers moves from draw to draw. The `reject` filter
+   also refuses a row on which the key is the only option of its roundness
+   (ends in 00 / ends in 0 / neither), which is the shape-ruler route. */
+const ONES_W = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS_W = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+function twoWords(r){ return r < 20 ? ONES_W[r] : TENS_W[Math.floor(r / 10)] + (r % 10 ? '-' + ONES_W[r % 10] : ''); }
+function inWords(n){
+  const th = Math.floor(n / 1000), h = Math.floor(n / 100) % 10, r = n % 100;
+  let w = th ? ONES_W[th] + ' thousand' : '';
+  if (h) w += (w ? ', ' : '') + ONES_W[h] + ' hundred';
+  if (r) w += (w ? ' and ' : '') + twoWords(r);
+  return w;
+}
+const roundSig = n => n % 100 === 0 ? 2 : n % 10 === 0 ? 1 : 0;
+/* `rich`: draw only the shapes with enough non-zero digits to move
+   (4035, 4605, 4650) - see gWordsToNum for why. */
+function zeroNumber(rich){
+  const th = ri(1, 9);
+  const shape = rich ? pick(['0to', '0to', 'h0o', 'ht0'])
+                     : pick(['00o', '0t0', '0to', '0to', '0to', 'h0o', 'ht0', 'h00']);
+  const dz = () => ri(1, 9);
+  const h = shape[0] === 'h' ? dz() : 0, t = shape[1] === 't' ? dz() : 0, o = shape[2] === 'o' ? dz() : 0;
+  /* the '0to' shape draws a teen on about one draw in three, the fourteen/forty slip's home */
+  if (shape === '0to' && ri(0, 2) === 0) return th*1000 + 10 + ri(3, 9);
+  return th*1000 + h*100 + t*10 + o;
+}
+function wordSlips(n){
+  const s = String(n), out = new Set();
+  /* a placeholder zero dropped - one that holds a place BEFORE a digit that is
+     said ("four thousand and six" -> 406). A trailing zero is never the slip:
+     nobody writes "eight thousand and thirty" as 803. */
+  for (let i = 1; i < 4; i++)
+    if (s[i] === '0' && /[1-9]/.test(s.slice(i + 1))) out.add(Number(s.slice(0, i) + s.slice(i + 1)));
+  /* the thousands digit kept (it is the part a child hears first and gets right)
+     and the last three digits in another order: the zero in the wrong place, or
+     two digits swapped. A slip that moved the thousands digit would be a free
+     cross-out - the stem says "four thousand" and the option starts with 6. */
+  const perm = (pre, rest) => {
+    if (!rest.length){ out.add(Number(pre.join(''))); return; }
+    for (let i = 0; i < rest.length; i++) perm(pre.concat(rest[i]), rest.slice(0, i).concat(rest.slice(i + 1)));
+  };
+  perm([s[0]], s.slice(1).split(''));
+  /* teen <-> ty */
+  const r = n % 100, base = n - r;
+  if (r >= 13 && r <= 19) out.add(base + (r - 10) * 10);
+  if (r % 10 === 0 && r >= 30) out.add(base + 10 + r / 10);
+  out.delete(n);
+  return [...out].filter(ok);
+}
+/* the same slips made two at a time (a zero dropped AND one moved, 4006 -> 460),
+   kept to 3 and 4 digits with the thousands digit still first. One-slip rows of
+   a zero number are column-wise consensus rows - every option a one-swap of the
+   key - and the column rule reads the key straight off them; the compounds are
+   what let slipSet seat a row that rule cannot read (see slipSet). */
+function wordSlips2(n){
+  /* a compound must still be written with the key's OWN digits (or with one of
+     its zeros lost): a teen/ty swap on top of a reorder makes digits nobody said */
+  const sig = x => String(x).split('').sort().join('');
+  const s0 = String(n), full = sig(n), lost = sig(s0.slice(0, s0.indexOf('0', 1)) + s0.slice(s0.indexOf('0', 1) + 1));
+  const one = wordSlips(n), out = new Set(one), lead = s0[0];
+  for (const v of one) for (const w of wordSlips(v))
+    if (w !== n && String(w)[0] === lead && w >= 100 && (sig(w) === full || sig(w) === lost)) out.add(w);
+  return [...out];
+}
+function wordsRow(rich){
+  let n = 4006, cands = null, g = 0;
+  do {
+    n = zeroNumber(rich);
+    const ks = roundSig(n);
+    /* at most ONE 3-digit slip: two of them tie the row 2-2 on width with the key
+       always in the 4-digit pair (the width-class ruler's tie clause, see widthTie) */
+    const bad = c => c.filter(v => roundSig(v) === ks).length === 0 || c.filter(v => v < 1000).length > 1;
+    cands = slipSet(n, wordSlips2(n), { reject: bad });
+    g++;
+  } while (g < 400 && !(cands && optsOk(n, cands) && cands.some(v => roundSig(v) === roundSig(n)) &&
+           cands.filter(v => v < 1000).length <= 1));
+  return { n: n, cands: cands };
+}
+function wordsWhy(n){
+  const d = digitsOf(n);
+  return inWords(n).charAt(0).toUpperCase() + inWords(n).slice(1) + ' is ' + placeList(d) + ', so it is written ' + n +
+    '. A place that is not said out loud still needs its 0, or every digit after it slides into the wrong place.';
+}
+/* THE COLUMN RULE AND THE TWO-ZERO NUMBERS. 4006, 4060 and 3400 have exactly
+   two non-zero digits, so every real slip is a one-swap of the key and the row is
+   a column-wise consensus: crossing out each column's minority digit leaves the
+   key alone (gen-sanity COLUMN RULER, which reads only NUMERIC rows). Those
+   numbers are therefore asked mostly the OTHER way round, in gNumToWords, whose
+   options are words; here they are one draw in seven, which holds the column
+   rule's value under its 40% cap. */
+function gWordsToNum(){
+  const w = wordsRow(ri(1, 7) !== 1);
+  return mcNum('Which number is <b>' + inWords(w.n) + '</b>?', '', w.n, w.cands, '', wordsWhy(w.n));
+}
+function gNumToWords(){
+  const w = wordsRow();
+  return mcText('How is <b>' + w.n + '</b> written in words?', '', inWords(w.n), w.cands.map(inWords),
+    wordsWhy(w.n));
+}
 
 /* =========================================================================
    PRINCIPLE 2 - COMPARING, ORDERING AND NUMBER PATTERNS
@@ -5338,6 +5452,41 @@ function gMentalMake(){
       : ''));
 }
 
+/* FORMAT 5b - mental strategy: take away the tens, then the ones (P3 GAPS LANE
+   2026-10-06, MOE P3 2.2, two 2-digit numbers; pool 2, 2 steps). The second
+   strategy beside gMentalMake. Every draw needs regrouping in the ones (82 - 47:
+   82 - 40 = 42, then 42 - 7 crosses the ten), because that second step is where
+   the mental slips live. Named slips, as single offsets from the key and then
+   two at a time (twoAtATime) so they land on BOTH sides and compound into a
+   lattice the column rule cannot read:
+     +10      took one ten too few (the borrowed ten never taken away)
+     -10      took one ten too many
+     +2*ob    added the ones instead of taking them away (42 + 7)
+     -oa      took the ones from the round ten and lost the rest (40 - 7)
+   plus "the smaller ones digit from the bigger" (82 - 47 -> 45). */
+function gMentalTakeTens(){
+  let a = 82, b = 47, key = 35, cands = null, fam = [], g = 0;
+  do {
+    const oa = ri(3, 6), ob = ri(oa + 1, 9), ta = ri(4, 9), tb = ri(1, ta - 2);
+    a = ta*10 + oa; b = tb*10 + ob; key = a - b;
+    const m = a - tb*10;
+    fam = [[(ta - tb)*10 + (ob - oa), 'Taking the smaller ones digit from the bigger one (' + ob + ' − ' + oa + ')']]
+      .concat(twoAtATime(key, [
+        [10, 'Working out 1' + oa + ' − ' + ob + ' but never taking that ten from the ' + (m - oa)],
+        [-10, 'Taking away one ten too many'],
+        [2*ob, 'Adding the ' + ob + ' instead of taking it away'],
+        [-oa, 'Taking the ' + ob + ' from ' + (m - oa) + ' and losing the ' + oa]]));
+    cands = slipSet(key, fam.map(p => p[0]), { minGap: 3,
+      reject: c => !sameWidth(key, c) || widthTie(key, c) });
+    g++;
+  } while (g < 300 && !(key >= 12 && key !== b && cands && optsOk(key, cands) && sameWidth(key, cands) && !widthTie(key, cands)));
+  const tb10 = Math.floor(b / 10) * 10, ob = b % 10, m = a - tb10;
+  const why = slipWhy(cands, fam);
+  return mcNum('Take away the tens first, then the ones. <b>What is ' + a + ' − ' + b + '?</b>', '', key, cands, '',
+    a + ' − ' + tb10 + ' = ' + m + ', then ' + m + ' − ' + ob + ' = ' + key + ' (count back ' + (m % 10) +
+    ' to ' + (m - m % 10) + ', then ' + (ob - m % 10) + ' more).' + (why ? ' ' + why[1] + ' gives ' + why[0] + '.' : ''));
+}
+
 /* FORMAT 6 - error spotting, DIAGNOSE (pool 3, 2 steps). The claim is produced
    by exactly one named misconception; the two filler options are re-checked
    against this draw, so neither is ever a second defensible answer. */
@@ -5549,12 +5698,12 @@ function gBackFromTotal(){
                tip:'Line the columns up and work from the right. Ten in a column moves one place LEFT; if you cannot take away, take one from the left and turn it into ten. Check a subtraction by adding the answer back.'}
     },
     pools:{
-      1:[[gStandsEasy,'place'],[gWhichDigit,'place'],
+      1:[[gStandsEasy,'place'],[gWhichDigit,'place'],[gWordsToNum,'place'],
          [gGreatest,'compare'],[gCompareTrue,'compare'],
          [gPatternConcept,'pattern'],[gAddConcept,'addsub'],[gAddRegroup,'addsub']],
-      2:[[gExpanded,'place'],[gBuildNum,'place'],[gSmallest,'compare'],[gBetween,'compare'],
+      2:[[gExpanded,'place'],[gBuildNum,'place'],[gNumToWords,'place'],[gSmallest,'compare'],[gBetween,'compare'],
          [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
-         [gMissingAddend,'addsub'],[gMentalMake,'addsub']],
+         [gMissingAddend,'addsub'],[gMentalMake,'addsub'],[gMentalTakeTens,'addsub']],
       3:[[gStandsCompare,'place'],[gStandsFix,'place'],[gZeroFix,'place'],
          [gOrder,'compare'],[gBetweenWorded,'compare'],
          [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],
@@ -5820,6 +5969,46 @@ function gDivError(){
       'Split ' + a + ' into ' + (Math.floor(a/10)*10) + ' + ' + (a%10) + '. ' + (Math.floor(a/10)*10) + ' x ' + b + ' = ' +
       (Math.floor(a/10)*10*b) + ' and ' + (a%10) + ' x ' + b + ' = ' + ((a%10)*b) + '. Add them: ' + (a*b) + '.');
   }
+  /* P3 GAPS LANE 2026-10-06 (MOE P3 3.4, multiplication algorithm up to 3 digits
+     by 1 digit). gMulAlgo above stops at 2 digits, so until this lane no bank in
+     the game asked for 3-digit x 1-digit. Every draw REGROUPS at least once - the
+     carry is the whole point of the written method - and about half carry twice.
+     The product stays inside 4 digits (999 x 9 = 8991), the P3 number ceiling. */
+  function carries3(a, b){
+    let c = 0, n = 0;
+    for (let x = a; x > 0; x = Math.floor(x / 10)){
+      const s = (x % 10) * b + c;
+      c = Math.floor(s / 10);
+      if (c > 0 && x >= 10) n++;           /* a carry into a column that exists */
+    }
+    return n;
+  }
+  function mulSplit(a, b){
+    const h = Math.floor(a / 100) * 100, t = Math.floor(a / 10) % 10 * 10, o = a % 10;
+    const parts = [[h, h * b], [t, t * b], [o, o * b]].filter(p => p[0] > 0);
+    return 'Split ' + a + ' into ' + parts.map(p => p[0]).join(' + ') + '. ' +
+      parts.map(p => p[0] + ' x ' + b + ' = ' + p[1]).join(', ') + '. Add them: ' +
+      parts.map(p => p[1]).join(' + ') + ' = ' + (a * b) + '.';
+  }
+  function draw3(){
+    let a = 347, b = 6, g = 0;
+    do { a = ri(102, 999); b = ri(3, 9); g++; }
+    while (g < 200 && !(carries3(a, b) >= 1 && a % 10 !== 0));
+    return [a, b];
+  }
+  function gMulAlgo3(){
+    const ab = draw3(), a = ab[0], b = ab[1];
+    return finishTyped(a + ' x ' + b + ' = ?', a*b,
+      mulSplit(a, b) + ' On paper, start with the ones and carry each ten into the next column.');
+  }
+  const PACKS = [['packet','stickers'],['box','beads'],['bag','marbles'],['tub','stickers']];
+  function gMulWord(){
+    const ab = draw3(), per = ab[0], n = ab[1];
+    const kid = pick(NAMES), pk = pick(PACKS);
+    return finishTyped('Each ' + pk[0] + ' has ' + per + ' ' + pk[1] + '. ' + kid + ' buys ' + n + ' ' + pk[0] +
+      (pk[0] === 'box' ? 'es' : 's') + '. How many ' + pk[1] + ' are there altogether?', per*n,
+      n + ' groups of ' + per + ' is ' + per + ' x ' + n + '. ' + mulSplit(per, n), pk[1]);
+  }
   function gDivAlgo(){
     /* scope clamp (MOE p.35 item 3.4): up to 3 digits by 1 digit, so d*q <= 999 */
     const d = ri(3, 9), q = ri(20, Math.floor(999/d)), n = d*q;
@@ -5846,8 +6035,8 @@ function gDivError(){
     },
     pools:{
       1:[[gLeftOver,'remainder'],[gMulAlgo,'algo']],
-      2:[[gQuotient,'remainder'],[gDivAlgo,'algo']],
-      3:[[gBoxesNeeded,'remainder'],[gTwoStep,'word']]
+      2:[[gQuotient,'remainder'],[gDivAlgo,'algo'],[gMulAlgo3,'algo']],
+      3:[[gBoxesNeeded,'remainder'],[gTwoStep,'word'],[gMulWord,'word']]
     }
   });
 })();
@@ -10409,6 +10598,35 @@ function gPeriFence(){
     '. Multiplying the area by the rate answers a different question: fencing goes around the edge, not over the ground.');
 }
 
+/* FORMAT 7 - perimeter of a RECTILINEAR figure (P3 GAPS LANE 2026-10-06, MOE P3
+   1.3 "perimeter of rectilinear figure, rectangle and square"). Until this lane
+   the L-shape lived only in p4area, a node a P3 player never sees. Same figure
+   primitive ({type:'lshape'} drawn by js/figures.js, every one of the six sides
+   printed), same draw limits as p4area's makeL (the 2/3 cut cap and the
+   perimeter != area ban, both re-checked by the harness off the rendered labels).
+   PERIMETER ONLY: the area of a composite figure is P4 1.3 and is not asked.
+   Distractors are the walk-around slips: the two notch sides left out (adding
+   only the four outer sides, as for a rectangle), one side missed, one or both
+   notch sides counted twice. How many land below the key is drawn first, so the
+   key's place among the four printed numbers moves from draw to draw. */
+const capCut = n => Math.max(2, Math.min(n - 3, Math.floor(2 * n / 3)));
+function gRectiPeri(){
+  let W=13,H=11,a=4,b=3,per=48,fam=[],g=0;
+  do {
+    W=ri(7,16); H=ri(6,14); a=ri(2,capCut(W)); b=ri(2,capCut(H));
+    per=2*(W+H);
+    /* how many slips land below the key is drawn first, 0..3, so the key is the
+       smallest, the largest or in the middle of the four by construction */
+    const lo=shuffle([per-a-b, per-a, per-b]), hi=shuffle([per+a, per+b, per+a+b]), r=ri(0,3);
+    fam=lo.slice(0,r).concat(hi.slice(0,3-r));
+    g++;
+  } while (g<400 && !(per !== W*H-a*b && a !== b && optsOk(per, fam)));
+  if (!(per !== W*H-a*b && a !== b && optsOk(per, fam))){ W=13; H=11; a=4; b=3; per=48; fam=[41,44,52]; }
+  return fig(mcNum('What is the <b>perimeter</b> of this figure?','',per,fam,'cm',
+    'Perimeter is the walk all the way around, so add all six sides: '+(W-a)+' + '+b+' + '+a+' + '+
+    (H-b)+' + '+W+' + '+H+' = '+per+' cm. The two sides at the cut-out corner are the ones most often left out.'),
+    { type:'lshape', W:W, H:H, a:a, b:b, unit:'cm' });
+}
 
   MQI.registerTopic({
     id:'geometry', level:'P3', strand:'Measurement and Geometry',
@@ -10426,8 +10644,8 @@ function gPeriFence(){
          [gSquarePA,'peri'] entry already showed an area stem on half its draws;
          without it the split would silently delete area from level 1. */
       1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area']],
-      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri']],
-      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area']]
+      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri'],[gRectiPeri,'peri']],
+      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area'],[gRectiPeri,'peri']]
     }
   });
 })();
@@ -14378,6 +14596,9 @@ function gDecShareMass() {
     2: 'halves', 3: 'thirds', 4: 'quarters', 5: 'fifths', 6: 'sixths',
     7: 'sevenths', 8: 'eighths', 9: 'ninths', 10: 'tenths', 11: 'elevenths', 12: 'twelfths'
   };
+  /* P3 GAPS LANE 2026-10-06: "= 1 quarters" printed on gSubLike / gSubRelated
+     teaching cards whenever the difference was one unit. One count, one noun. */
+  const unitsOf = (n, d) => n + ' ' + (n === 1 ? (d === 2 ? 'half' : UNITS[d].slice(0, -1)) : UNITS[d]);
   const DENS = [3, 4, 5, 6, 8, 9, 10, 12];
   /* [small, big] with big a multiple of small, both <= 12: the "related" pairs */
   const RELATED = [[2, 4], [2, 6], [2, 8], [2, 10], [2, 12], [3, 6], [3, 9], [3, 12],
@@ -14500,8 +14721,7 @@ function gDecShareMass() {
     return finishFrac(fr(n1, d) + ' + ' + fr(n2, d) + ' = ?', '', ans,
       [[n1 + n2, d + d],                       /* added the denominators too */
        [n1 * n2, d], [n1 + n2 + 1, d], [Math.max(1, n1 + n2 - 1), d]],
-      'The denominators are the same, so add the numerators only: ' + n1 + ' + ' + n2 + ' = ' + (n1 + n2) +
-      ' ' + UNITS[d] + ', which is ' + ans[0] + ' out of ' + ans[1] + '.');
+      'The denominators are the same, so add the numerators only: ' + n1 + ' + ' + n2 + ' = ' + unitsOf(n1 + n2, d) + ', which is ' + ans[0] + ' out of ' + ans[1] + '.');
   }
   function gSubLike() {
     const d = pick(DENS);
@@ -14510,8 +14730,7 @@ function gDecShareMass() {
     return finishFrac(fr(n1, d) + ' - ' + fr(n2, d) + ' = ?', '', ans,
       [[n1 + n2, d],                           /* added instead of subtracted */
        [n2, d], [n1 - n2 + 1, d], [Math.max(1, n1 - n2 - 1), d]],
-      'The denominators are the same, so subtract the numerators only: ' + n1 + ' - ' + n2 + ' = ' + (n1 - n2) +
-      ' ' + UNITS[d] + ', which is ' + ans[0] + ' out of ' + ans[1] + '.');
+      'The denominators are the same, so subtract the numerators only: ' + n1 + ' - ' + n2 + ' = ' + unitsOf(n1 - n2, d) + ', which is ' + ans[0] + ' out of ' + ans[1] + '.');
   }
   function gAddRelated() {
     const p = pick(RELATED), s = p[0], big = p[1], k = big / s;
@@ -14520,7 +14739,7 @@ function gDecShareMass() {
     return finishFrac(fr(n1, s) + ' + ' + fr(n2, big) + ' = ?', '', ans,
       [[n1 + n2, big], [n1 + n2, s + big], [n1 * k + n2 + 1, big], [Math.max(1, n1 * k + n2 - 1), big]],
       big + ' is ' + k + ' x ' + s + ', so ' + n1 + ' out of ' + s + ' is the same as ' + (n1 * k) + ' out of ' + big +
-      '. Then ' + (n1 * k) + ' + ' + n2 + ' = ' + (n1 * k + n2) + ' ' + UNITS[big] + ', which is ' +
+      '. Then ' + (n1 * k) + ' + ' + n2 + ' = ' + unitsOf(n1 * k + n2, big) + ', which is ' +
       ans[0] + ' out of ' + ans[1] + '.');
   }
   function gSubRelated() {
@@ -14531,7 +14750,7 @@ function gDecShareMass() {
     return finishFrac(fr(n2, big) + ' - ' + fr(n1, s) + ' = ?', '', ans,
       [[n2 - n1, big], [n2 - n1, big - s], [n2 - n1 * k + 1, big], [Math.max(1, n2 - n1 * k - 1), big]],
       big + ' is ' + k + ' x ' + s + ', so ' + n1 + ' out of ' + s + ' is the same as ' + (n1 * k) + ' out of ' + big +
-      '. Then ' + n2 + ' - ' + (n1 * k) + ' = ' + (n2 - n1 * k) + ' ' + UNITS[big] + ', which is ' +
+      '. Then ' + n2 + ' - ' + (n1 * k) + ' = ' + unitsOf(n2 - n1 * k, big) + ', which is ' +
       ans[0] + ' out of ' + ans[1] + '.');
   }
 
@@ -15324,6 +15543,7 @@ function gDecShareMass() {
     ['angbaos','angbao','red','in the drawer']
   ];
   const CAKES = ['pandan cakes','ondeh ondeh','pizzas','watermelons','kaya toast sets','mooncakes'];
+  const CAKE1 = ['pandan cake','ondeh ondeh','pizza','watermelon','kaya toast set','mooncake'];
 
   function red(n, d){ const k = gcd(n, d) || 1; return [n / k, d / k]; }
   /* Mixed-number markup: "2 <frac>3/4</frac>". The harness reads the RAW html,
@@ -15363,7 +15583,8 @@ function gDecShareMass() {
     const people = pick([3, 4, 5, 6, 8, 9, 10, 12]);
     const cakes  = ri(1, people - 1);            /* proper fraction, and never 0 */
     const r = red(cakes, people);
-    const food = pick(CAKES);
+    /* P3 GAPS LANE 2026-10-06: "share 1 pizzas" - one count, one noun. */
+    const food = cakes === 1 ? CAKE1[CAKES.indexOf(pick(CAKES))] : pick(CAKES);
     const who = pick(NAMES);
     return withFrac(finishTyped(
       who + ' and ' + (people - 1) + ' friends share ' + cakes + ' ' + food +
@@ -15958,7 +16179,9 @@ function gDecShareMass() {
   function gComparePrinters() {
     const ra = ri(30, 80), rb = ri(10, ra - 8), ta = ri(2, 9), tb = ri(2, 9);
     const pa = ra * ta, pb = rb * tb, d = ra - rb;
-    const cs = clean(d, [pa - pb, ra + rb, ra, rb, ra + d, pa - pb + ra]);
+    /* P3 GAPS LANE 2026-10-06: a difference of 1 printed "1 pages" as an option
+       (the unit rides every choice). Candidates below 2 are dropped. */
+    const cs = clean(d, [pa - pb, ra + rb, ra, rb, ra + d, pa - pb + ra].filter(c => c >= 2));
     if (cs.length < 3) return gComparePrinters();
     return finishNum('Printer A prints ' + pa + ' pages in ' + ta + ' minutes. Printer B prints ' + pb +
       ' pages in ' + tb + ' minutes. How many more pages than Printer B does Printer A print in 1 minute?',
@@ -16530,7 +16753,10 @@ function gDecShareMass() {
     const cats = p.cats, vals = p.vals;
     const ord = shuffle(cats.map((_, i) => i));
     const pairs = [[ord[0], ord[1]], [ord[1], ord[2]], [ord[2], ord[3]], [ord[3], ord[0]]];
-    const say = (i, j, n) => cats[i] + ' shows ' + n + ' more ' + p.thing + ' than ' + cats[j] + '.';
+    /* P3 GAPS LANE 2026-10-06: "1 more books" - one count, one noun (every set's
+       thing is a regular plural: pupils, drinks, books). */
+    const say = (i, j, n) => cats[i] + ' shows ' + n + ' more ' +
+      (n === 1 ? p.thing.slice(0, -1) : p.thing) + ' than ' + cats[j] + '.';
     const opts = [];
     for (const [i, j] of pairs) {
       const hi = vals[i] >= vals[j] ? i : j, lo = vals[i] >= vals[j] ? j : i;
@@ -17845,4 +18071,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20261006-9ebd034 */
+/* ENGINE_BUILD_END 20261006-df8a93b */

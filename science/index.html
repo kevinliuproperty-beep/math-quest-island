@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Science Quest</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --ground:#FFF7E4; --paper:#FFFFFF; --ink:#2B2540; --ink-soft:#6B6480; --line:#EADFC4;
+  --accent:#F4622E; --accent-ink:#FFFFFF; --teal:#1FA9A0; --teal-soft:#D9F3F0;
+  --gold:#FFC53D; --gold-soft:#FFF0C2; --plum-soft:#EFE8FF; --rose:#E85D75; --rose-soft:#FDE3E8;
+  --leaf:#3FA34D; --shadow:0 6px 0 rgba(43,37,64,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#1B1826; --paper:#262238; --ink:#F4EFFF; --ink-soft:#B4ACCB; --line:#3A3550;
+    --accent:#FF7A45; --accent-ink:#1B1826; --teal:#3AD1C6; --teal-soft:#1E3F3E;
+    --gold:#FFC53D; --gold-soft:#4A3A12; --plum-soft:#332C4E; --rose:#FF7E93; --rose-soft:#4A2330;
+    --leaf:#6FD27C; --shadow:0 6px 0 rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#1B1826; --paper:#262238; --ink:#F4EFFF; --ink-soft:#B4ACCB; --line:#3A3550;
+  --accent:#FF7A45; --accent-ink:#1B1826; --teal:#3AD1C6; --teal-soft:#1E3F3E;
+  --gold:#FFC53D; --gold-soft:#4A3A12; --plum-soft:#332C4E; --rose:#FF7E93; --rose-soft:#4A2330;
+  --leaf:#6FD27C; --shadow:0 6px 0 rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5;padding-block:0 48px;padding-inline:16px;overflow-x:hidden}
+h1,h2,h3,.display{font-family:ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic ProN",system-ui,sans-serif;font-weight:600;letter-spacing:.01em;text-wrap:balance;margin:0}
+button{font-family:inherit;font-size:inherit;cursor:pointer;min-height:44px;color:inherit}
+button,a,.opt,.tile,summary,label.key{touch-action:manipulation;-webkit-tap-highlight-color:rgba(31,169,160,.28)}
+button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.wrap{max-width:760px;margin:0 auto}
+.sitelinks{display:flex;gap:10px;flex-wrap:wrap;padding-top:12px}
+.sitelinks a{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 14px;border-radius:999px;border:2px solid var(--line);background:var(--paper);color:var(--ink-soft);text-decoration:none;font-weight:800;font-size:.8rem;letter-spacing:.06em}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;text-align:left}
+.brand .logo{font-size:2rem;line-height:1}
+.brand h1{font-size:1.5rem}
+.brand small{display:block;font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.countdown{display:flex;align-items:center;gap:8px;background:var(--gold-soft);border:2px solid var(--gold);border-radius:999px;padding:6px 14px;font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-weight:600;font-size:1rem;font-variant-numeric:tabular-nums}
+.stage{background:var(--paper);border:2px solid var(--line);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.eyebrow{font-weight:800;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px}
+.stage h2{font-size:1.6rem;margin-bottom:6px}
+.lead{color:var(--ink-soft);margin:0 0 16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.btn{border:0;border-radius:14px;padding:12px 20px;font-family:ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic ProN",system-ui,sans-serif;font-weight:600;font-size:1.1rem;background:var(--accent);color:var(--accent-ink);box-shadow:0 5px 0 rgba(0,0,0,.18);transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:none}
+.btn.ghost{background:var(--plum-soft);color:var(--ink);box-shadow:0 5px 0 rgba(0,0,0,.08)}
+.btn.teal{background:var(--teal);color:#fff}
+.btn.small{padding:8px 14px;font-size:.95rem;border-radius:12px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.link{background:none;border:0;color:var(--ink-soft);font-weight:800;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 0}
+/* home */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:8px}
+.tile{border:2px solid var(--line);border-radius:18px;padding:14px;background:var(--ground);display:flex;flex-direction:column;gap:4px;text-align:left;font-family:inherit;color:var(--ink);box-shadow:var(--shadow);transition:transform .1s}
+.tile:active{transform:translateY(3px);box-shadow:none}
+.tile .em{font-size:2rem;line-height:1.1}
+.tile .display{font-size:1.1rem;line-height:1.25}
+.tile small{color:var(--ink-soft);font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:auto}
+.bar i{display:block;height:100%;background:var(--teal);border-radius:99px}
+.pct{font-weight:800;font-size:.8rem;color:var(--teal);letter-spacing:.06em}
+.big2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px}
+.tile.wide{flex-direction:row;align-items:center;gap:14px;background:var(--gold-soft);border-color:var(--gold)}
+.badge{display:inline-block;background:var(--plum-soft);color:var(--ink);border-radius:99px;padding:1px 8px}
+.tile.wide.weak{background:var(--rose-soft);border-color:var(--rose)}
+.tile.wide .em{font-size:2.4rem}
+.tile.wide p{margin:2px 0 0;color:var(--ink-soft);font-size:.92rem}
+.section{margin-top:20px}
+.section h3{font-size:1.1rem;margin-bottom:6px}
+/* learn */
+.card{background:var(--ground);border:2px solid var(--line);border-radius:20px;padding:20px;min-height:220px;user-select:none;-webkit-user-select:none;touch-action:pan-y}
+.card h3{font-size:1.3rem;margin-bottom:10px}
+.card p{margin:0 0 .6em;font-size:1.15rem;line-height:1.6;white-space:pre-line}
+.dots{display:flex;gap:6px;justify-content:center;margin:14px 0}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--teal)}
+/* quiz */
+.steps{display:flex;gap:4px;margin:8px 0 14px}
+.steps i{flex:1;height:8px;border-radius:99px;background:var(--line)}
+.steps i.on{background:var(--gold)}
+.steps i.ok{background:var(--teal)}
+.steps i.bad{background:var(--rose)}
+.steps i.part{background:var(--gold)}
+.fig{border:2px solid var(--line);border-radius:16px;background:#fff;color:#2B2540;padding:8px;margin:0 0 14px;overflow-x:auto;max-width:100%}
+.fig svg{display:block;width:100%;max-width:640px;max-height:min(60vh,520px);height:auto;margin:0 auto}
+.fig table{border-collapse:collapse;margin:0 auto;min-width:min(100%,360px);font-size:1rem;background:#fff;color:#2B2540}
+.fig th,.fig td{border:1.5px solid #9C94B0;padding:6px 10px;text-align:center;vertical-align:middle}
+.fig th{background:#F3EEFF;font-weight:700}
+.fig caption{caption-side:top;font-weight:700;padding:4px;color:#2B2540}
+.stem{font-size:1.2rem;line-height:1.55;margin:0 0 14px;white-space:pre-line}
+.marks{display:inline-block;font-weight:800;font-size:.85rem;color:var(--ink-soft);margin-left:6px;white-space:nowrap}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;border:2px solid var(--line);background:var(--ground);border-radius:14px;padding:12px 14px;font-size:1.08rem;line-height:1.4;transition:transform .08s}
+.opt:active{transform:translateY(2px)}
+.opt .n{font-weight:800;color:var(--ink-soft);flex:none;min-width:2em}
+.opt.picked{border-color:var(--gold);background:var(--gold-soft)}
+.opt.right{border-color:var(--teal);background:var(--teal-soft)}
+.opt.wrong{border-color:var(--rose);background:var(--rose-soft)}
+.opt[disabled]{cursor:default}
+.fb{margin-top:14px;border-radius:14px;padding:12px 14px;border:2px solid var(--line);background:var(--ground)}
+.fb.ok{border-color:var(--teal);background:var(--teal-soft)}
+.fb.no{border-color:var(--rose);background:var(--rose-soft)}
+.fb b.h{display:block;font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-size:1.15rem;margin-bottom:2px}
+.fb p{margin:4px 0 0;white-space:pre-line}
+textarea{width:100%;min-height:110px;border:2px solid var(--line);border-radius:14px;padding:12px;font:inherit;font-size:1.1rem;background:var(--ground);color:var(--ink);resize:vertical}
+.model{background:var(--teal-soft);border:2px solid var(--teal);border-radius:14px;padding:12px 14px;margin-top:14px}
+.model p{margin:4px 0 0;font-size:1.1rem;white-space:pre-line}
+.model mark{background:var(--gold);color:#2B2540;border-radius:4px;padding:0 2px}
+.yours{margin-top:10px;font-size:1rem;color:var(--ink-soft);white-space:pre-line}
+.keys{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+label.key{display:flex;gap:12px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--paper);cursor:pointer;min-height:48px}
+label.key input{width:26px;height:26px;flex:none;accent-color:var(--teal)}
+label.key.on{border-color:var(--teal)}
+.nav{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:18px;flex-wrap:wrap}
+.timer{font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-weight:600;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.timer.warn{color:var(--accent)}
+.score{font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-size:3rem;font-weight:700;line-height:1;margin:8px 0}
+table.tbl{width:100%;border-collapse:collapse;font-size:.98rem}
+table.tbl th,table.tbl td{padding:8px 6px;border-bottom:1.5px solid var(--line);text-align:left;vertical-align:top}
+table.tbl th{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+table.tbl td.num,table.tbl th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+ul.rev{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+ul.rev li{border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--ground)}
+ul.rev .r{font-weight:800;margin-right:6px}
+ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-line}
+.choice{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.choice button{border:2px solid var(--line);background:var(--ground);border-radius:12px;padding:8px 14px;font-weight:700}
+.choice button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--ground)}
+.empty{color:var(--ink-soft);padding:12px 0}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--ground);padding:12px 22px;border-radius:999px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:480px){
+  .stage{padding:18px 14px;border-radius:20px}
+  .brand h1{font-size:1.3rem}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .tile{padding:12px}
+  .stem{font-size:1.12rem}
+  .fig{padding:6px}
+  .fig{padding:4px}
+  .fig table{font-size:.8rem;line-height:1.3}
+  .fig th,.fig td{padding:4px 3px;overflow-wrap:break-word;hyphens:auto}
+  .fig caption{font-size:.85rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="sitelinks" aria-label="Other apps">
+    <a href="/">← Math Quest Island</a>
+    <a href="/oral">🎤 Oral Quest</a>
+  </nav>
+  <div class="top">
+    <button class="brand" data-act="home" aria-label="Science Quest home">
+      <span class="logo">🔬</span>
+      <span><small>Primary 3 Science</small><h1>Science Quest</h1></span>
+    </button>
+    <div class="countdown" id="countdown" hidden></div>
+  </div>
+  <main class="stage" id="view" aria-live="polite"></main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ---------- SCI: the topic registry the content files call ----------
+   Content contract: "P3 Science Brief — 2026-10-06" (vault). A topic file calls
+   SCI.registerTopic({...}). Anything malformed is dropped with a console.warn so one
+   bad item (or one bad file) never takes the app down. */
+(function () {
+  var topics = [], byId = {}, items = {}, warnings = [];
+  function warn(msg) { warnings.push(msg); try { console.warn('[SCI] ' + msg); } catch (e) {} }
+  function str(x) { return typeof x === 'string' && x.trim().length > 0; }
+  function okItem(it, tid) {
+    if (!it || !str(it.id)) { warn(tid + ': item without id dropped'); return false; }
+    if (items[it.id]) { warn(tid + ': duplicate item id ' + it.id + ' dropped'); return false; }
+    if (!str(it.stem)) { warn(it.id + ': no stem, dropped'); return false; }
+    if (it.type === 'mcq') {
+      if (!Array.isArray(it.options) || it.options.length < 2) { warn(it.id + ': mcq needs options'); return false; }
+      if (!(Number.isInteger(it.answer) && it.answer >= 0 && it.answer < it.options.length)) { warn(it.id + ': answer out of range'); return false; }
+      return true;
+    }
+    if (it.type === 'oeq') {
+      if (!str(it.model)) { warn(it.id + ': oeq without model answer dropped'); return false; }
+      return true;
+    }
+    warn(it.id + ': unknown type ' + it.type); return false;
+  }
+  window.SCI = {
+    topics: topics, byId: byId, items: items, warnings: warnings,
+    registerTopic: function (t) {
+      try {
+        if (!t || !str(t.id)) { warn('topic without id ignored'); return; }
+        if (byId[t.id]) { warn('topic ' + t.id + ' registered twice; second ignored'); return; }
+        var clean = [];
+        (Array.isArray(t.items) ? t.items : []).forEach(function (it) {
+          if (!okItem(it, t.id)) return;
+          var level = [1, 2, 3].indexOf(it.level) >= 0 ? it.level : 2;
+          var o = { id: it.id, topic: t.id, type: it.type, level: level, stem: it.stem,
+            figure: typeof it.figure === 'string' && it.figure.trim() ? it.figure : null,
+            explain: str(it.explain) ? it.explain : '' };
+          if (it.type === 'mcq') { o.options = it.options.map(String); o.answer = it.answer; o.marks = 2; }   /* SG EOY Section A: 2 marks per MCQ */
+          else {
+            o.model = it.model;
+            var keys = Array.isArray(it.keys) ? it.keys.map(function (k) {
+              return (Array.isArray(k) ? k : [k]).filter(str).map(String);
+            }).filter(function (k) { return k.length; }) : [];
+            o.keys = keys.length ? keys : [['the whole answer']];
+            o.noKeys = !keys.length;
+            o.marks = Number.isInteger(it.marks) && it.marks > 0 ? it.marks : o.keys.length;
+          }
+          items[o.id] = o; clean.push(o);
+        });
+        var topic = { id: t.id, title: str(t.title) ? t.title : t.id, emoji: str(t.emoji) ? t.emoji : '🔬',
+          theme: str(t.theme) ? t.theme : '', extra: t.extra === true || t.id === 'plant-parts', moeRef: str(t.moeRef) ? t.moeRef : '',
+          notes: (Array.isArray(t.notes) ? t.notes : []).filter(function (n) { return n && (str(n.title) || str(n.body)); }),
+          items: clean };
+        byId[t.id] = topic; topics.push(topic);
+      } catch (e) { warn('registerTopic failed for ' + (t && t.id) + ': ' + e.message); }
+    }
+  };
+})();
+</script>
+<!-- Topic files: one per content lane. A missing or broken file simply leaves its topic out. -->
+<script src="topics/living-things.js"></script>
+<script src="topics/materials.js"></script>
+<script src="topics/life-cycles.js"></script>
+<script src="topics/magnets.js"></script>
+<script src="topics/plant-parts.js"></script>
+<script src="topics/process-skills.js"></script>
+<script src="topics/_sample.js"></script>
+
+<script>
+"use strict";
+(function () {
+var SCI = window.SCI;
+var KEY = 'sq1';
+var ORDER = ['living-things', 'materials', 'life-cycles', 'magnets', 'plant-parts', 'process-skills'];
+var EXAM_DATE = new Date(2026, 9, 27);
+var view = document.getElementById('view');
+
+/* ---------- storage (per-viewer, try/catch-wrapped) ---------- */
+function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full' }; }
+function load() {
+  try { var s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && s.items) return Object.assign(fresh(), s); } catch (e) {}
+  return fresh();
+}
+var S = load();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function record(it, score) {
+  var r = S.items[it.id] || (S.items[it.id] = { a: 0, c: 0, miss: 0, last: 0, t: 0 });
+  r.a += 1; r.c = Math.round((r.c + score) * 1000) / 1000; r.last = score; r.t = Date.now();
+  if (score < 1) r.miss += 1;
+}
+
+/* ---------- helpers ---------- */
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function pct(x) { return Math.round(x * 100) + '%'; }
+var toastT;
+function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 1800); }
+
+function shownTopics() {
+  var real = SCI.topics.filter(function (t) { return t.id.charAt(0) !== '_' && t.items.length; });
+  real.sort(function (a, b) {
+    var ia = ORDER.indexOf(a.id), ib = ORDER.indexOf(b.id);
+    return ((a.extra ? 1000 : 0) + (ia < 0 ? 99 : ia)) - ((b.extra ? 1000 : 0) + (ib < 0 ? 99 : ib));
+  });
+  var wantSample = /[?&]sample=1/.test(location.search);
+  if (!real.length || wantSample) real = real.concat(SCI.topics.filter(function (t) { return t.id.charAt(0) === '_' && t.items.length; }));
+  return real;
+}
+/* P4-preview topics (extra: true, e.g. plant-parts) stay out of the mock paper and weak spots */
+function examTopics() { return shownTopics().filter(function (t) { return !t.extra; }); }
+function topicStats(t) {
+  var att = 0, sc = 0, mastered = 0, seen = 0, weak = 0;
+  t.items.forEach(function (it) {
+    var r = S.items[it.id]; if (!r) return;
+    seen++; att += r.a; sc += r.c; if (r.last >= 1) mastered++; else weak++;
+  });
+  return { n: t.items.length, seen: seen, att: att, acc: att ? sc / att : null, mastered: mastered, weak: weak,
+    pct: t.items.length ? Math.round(mastered / t.items.length * 100) : 0 };
+}
+function weakItems() {
+  var out = [];
+  examTopics().forEach(function (t) { t.items.forEach(function (it) { var r = S.items[it.id]; if (r && r.last < 1) out.push(it); }); });
+  out.sort(function (a, b) { var ra = S.items[a.id], rb = S.items[b.id]; return (rb.miss - ra.miss) || (ra.c / ra.a - rb.c / rb.a); });
+  return out;
+}
+/* weighting: missed items come back first, unseen next, mastered rarely */
+function weight(it) { var r = S.items[it.id]; if (!r) return 3; if (r.last < 1) return 6 + Math.min(r.miss, 4); return 1; }
+function pickWeighted(pool, k, avoid) {
+  pool = pool.filter(function (it) { return !avoid || !avoid[it.id]; });
+  var out = [];
+  while (out.length < k && pool.length) {
+    var tot = 0; pool.forEach(function (it) { tot += weight(it); });
+    var x = Math.random() * tot, i = 0;
+    for (; i < pool.length - 1; i++) { x -= weight(pool[i]); if (x < 0) break; }
+    out.push(pool.splice(i, 1)[0]);
+  }
+  return out;
+}
+function byLevel(a, b) { return a.level - b.level; }
+function practiceSet(t) {
+  var m = t.items.filter(function (i) { return i.type === 'mcq'; }), o = t.items.filter(function (i) { return i.type === 'oeq'; });
+  var nO = Math.min(4, o.length), nM = Math.min(10 - nO, m.length);
+  if (nM + nO < 10) nO = Math.min(o.length, 10 - nM);
+  return pickWeighted(m, nM).sort(byLevel).concat(pickWeighted(o, nO).sort(byLevel));
+}
+function spreadPick(topics, type, k) {
+  var used = {}, out = [], ts = shuffle(topics), guard = 0;
+  while (out.length < k && guard++ < k * 10) {
+    var got = null;
+    for (var j = 0; j < ts.length && !got; j++) {
+      var tt = ts[(out.length + j) % ts.length];
+      got = pickWeighted(tt.items.filter(function (i) { return i.type === type; }), 1, used)[0];
+    }
+    if (!got) break;
+    used[got.id] = 1; out.push(got);
+  }
+  return out;
+}
+
+/* ---------- figures ---------- */
+function figHTML(f) { return f ? '<div class="fig">' + f + '</div>' : ''; }
+function fixFigures(root) {
+  root.querySelectorAll('.fig svg').forEach(function (svg) {
+    var wa = svg.getAttribute('width') || '', ha = svg.getAttribute('height') || '';
+    var w = /%/.test(wa) ? 0 : parseFloat(wa), h = /%/.test(ha) ? 0 : parseFloat(ha);
+    if (!svg.getAttribute('viewBox') && w && h) svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    /* figures fill the content width (to 640 px on iPad), whatever cap the file set */
+    svg.style.maxWidth = ''; svg.style.width = '';
+    svg.removeAttribute('width'); svg.removeAttribute('height');
+    if (!svg.getAttribute('preserveAspectRatio')) svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  });
+}
+
+/* ---------- marking-point highlight ---------- */
+/* whole-word match (plural s/es allowed): "air" must not fire inside "fair test" */
+function wordRe(syn) {
+  return new RegExp('(^|[^a-z0-9-])(' + syn.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:e?s)?)(?=[^a-z0-9]|$)', 'g');
+}
+function highlight(text, keys) {
+  var lo = text.toLowerCase(), ranges = [];
+  keys.forEach(function (k) { k.forEach(function (syn) {
+    var s = syn.toLowerCase(); if (!s) return;
+    var re = wordRe(s), m;
+    while ((m = re.exec(lo))) { var st = m.index + m[1].length; ranges.push([st, st + m[2].length]); if (!m[0].length) re.lastIndex++; }
+  }); });
+  ranges.sort(function (a, b) { return a[0] - b[0]; });
+  var merged = [];
+  ranges.forEach(function (r) { var l = merged[merged.length - 1]; if (l && r[0] <= l[1]) l[1] = Math.max(l[1], r[1]); else merged.push(r.slice()); });
+  var out = '', pos = 0;
+  merged.forEach(function (r) { out += esc(text.slice(pos, r[0])) + '<mark>' + esc(text.slice(r[0], r[1])) + '</mark>'; pos = r[1]; });
+  return out + esc(text.slice(pos));
+}
+/* Marking is self-tick only (conn ruling): typed text is never auto-matched against keys */
+function blankTicks(it) { return it.keys.map(function () { return false; }); }
+function oeqScore(it, ticks) { var n = ticks.filter(Boolean).length; return Math.min(n, it.marks) / it.marks; }
+
+/* ---------- routing ---------- */
+var session = null, learn = null, timerId = null;
+function go(h) { if (location.hash !== '#' + h) location.hash = h; else route(); }
+function route() {
+  var h = location.hash.replace(/^#\/?/, ''), p = h.split('/');
+  clearInterval(timerId); timerId = null;
+  if (p[0] === 'topic' && SCI.byId[p[1]]) return renderTopic(SCI.byId[p[1]]);
+  if (p[0] === 'learn' && SCI.byId[p[1]]) return renderLearn(SCI.byId[p[1]]);
+  if (p[0] === 'quiz' && session) return renderQuiz();
+  if (p[0] === 'exam') return renderExamSetup();
+  if (p[0] === 'parent') return renderParent();
+  renderHome();
+}
+function paint(html) { view.innerHTML = html; fixFigures(view); window.scrollTo(0, 0); }
+
+/* ---------- home ---------- */
+function countdown() {
+  var el = document.getElementById('countdown');
+  var now = new Date(); now.setHours(0, 0, 0, 0);
+  var d = Math.round((EXAM_DATE - now) / 86400000);
+  if (d < 0) { el.hidden = true; return; }
+  el.hidden = false; el.textContent = d === 0 ? '📝 Exam day — you can do it!' : '📝 ' + d + (d === 1 ? ' day' : ' days') + ' to the exam';
+}
+function renderHome() {
+  var ts = shownTopics(), weak = weakItems();
+  var tiles = ts.map(function (t) {
+    var s = topicStats(t);
+    return '<button class="tile" data-act="topic" data-id="' + esc(t.id) + '">' +
+      '<span class="em">' + esc(t.emoji) + '</span><span class="display">' + esc(t.title) + '</span>' +
+      '<small>' + (t.extra ? '<span class="badge">P4 preview</span>' : esc(t.theme || 'Topic')) + '</small>' +
+      '<span class="pct">' + s.pct + '% mastered</span><span class="bar"><i style="width:' + s.pct + '%"></i></span></button>';
+  }).join('');
+  paint(
+    '<p class="eyebrow">Revise · practise · ace it</p><h2>Pick a topic</h2>' +
+    (ts.length ? '<div class="grid">' + tiles + '</div>' : '<p class="empty">No topics have loaded yet.</p>') +
+    '<div class="big2">' +
+      '<button class="tile wide" data-act="exam"><span class="em">📝</span><span><span class="display">Mixed exam practice</span><p>Section A (MCQ) then Section B (open-ended), all P3 topics.</p></span></button>' +
+      '<button class="tile wide weak" data-act="weak"><span class="em">🎯</span><span><span class="display">Weak spots</span><p>' +
+        (weak.length ? weak.length + ' question' + (weak.length === 1 ? '' : 's') + ' to fix' : 'Nothing to fix yet. Practise first!') + '</p></span></button>' +
+    '</div>' +
+    '<div class="spread section"><button class="link" data-act="parent">👪 Grown-ups: progress report</button></div>'
+  );
+}
+
+/* ---------- topic ---------- */
+function renderTopic(t) {
+  var s = topicStats(t), m = t.items.filter(function (i) { return i.type === 'mcq'; }).length;
+  paint(
+    '<button class="link" data-act="home">← All topics</button>' +
+    '<p class="eyebrow" style="margin-top:8px">' + esc(t.theme) + '</p>' +
+    '<h2>' + esc(t.emoji) + ' ' + esc(t.title) + '</h2>' +
+    '<p class="lead">' + t.items.length + ' questions (' + m + ' MCQ, ' + (t.items.length - m) + ' open-ended) · ' +
+      s.pct + '% mastered' + (s.acc != null ? ' · accuracy ' + pct(s.acc) : '') + '</p>' +
+    '<div class="bar" style="margin-bottom:18px"><i style="width:' + s.pct + '%"></i></div>' +
+    '<div class="big2" style="margin-top:0">' +
+      (t.notes.length ? '<button class="tile wide" data-act="learn" data-id="' + esc(t.id) + '"><span class="em">📖</span><span><span class="display">Learn</span><p>' + t.notes.length + ' revision cards</p></span></button>' : '') +
+      '<button class="tile wide weak" data-act="practice" data-id="' + esc(t.id) + '"><span class="em">✏️</span><span><span class="display">Practice</span><p>About 10 questions, mixed levels</p></span></button>' +
+    '</div>'
+  );
+}
+
+/* ---------- learn ---------- */
+function renderLearn(t) {
+  if (!learn || learn.id !== t.id) learn = { id: t.id, i: 0 };
+  var n = t.notes.length, i = Math.max(0, Math.min(learn.i, n - 1)), c = t.notes[i] || { title: 'No cards yet', body: '' };
+  S.notes[t.id] = Math.max(S.notes[t.id] || 0, i + 1); save();
+  var dots = ''; for (var k = 0; k < n; k++) dots += '<i class="' + (k === i ? 'on' : '') + '"></i>';
+  paint(
+    '<div class="spread"><button class="link" data-act="topic" data-id="' + esc(t.id) + '">← ' + esc(t.title) + '</button>' +
+    '<span class="eyebrow" style="margin:0">Card ' + (i + 1) + ' of ' + n + '</span></div>' +
+    '<div class="card" id="learnCard"><h3>' + esc(c.title) + '</h3><p>' + esc(c.body) + '</p></div>' +
+    '<div class="dots">' + dots + '</div>' +
+    '<div class="nav"><button class="btn ghost" data-act="lprev"' + (i === 0 ? ' disabled' : '') + '>← Back</button>' +
+    (i < n - 1 ? '<button class="btn teal" data-act="lnext">Next →</button>'
+               : '<button class="btn" data-act="practice" data-id="' + esc(t.id) + '">Start practice ✏️</button>') + '</div>'
+  );
+  var card = document.getElementById('learnCard'), x0 = null;
+  card.addEventListener('pointerdown', function (e) { x0 = e.clientX; });
+  card.addEventListener('pointerup', function (e) {
+    if (x0 == null) return; var dx = e.clientX - x0; x0 = null;
+    if (dx < -50 && learn.i < n - 1) { learn.i++; renderLearn(t); }
+    else if (dx > 50 && learn.i > 0) { learn.i--; renderLearn(t); }
+  });
+}
+
+/* ---------- sessions ---------- */
+function startSession(kind, title, list, extra) {
+  if (!list.length) { toast('No questions available yet'); return; }
+  session = Object.assign({ kind: kind, title: title, items: list, i: 0,
+    ans: list.map(function () { return { choice: null, text: '', ticks: null, score: null, shown: false }; }),
+    phase: 'answer' }, extra || {});
+  go('quiz');
+}
+function startPractice(t) { startSession('practice', t.title, practiceSet(t), { topicId: t.id }); }
+function startWeak() {
+  var w = weakItems().slice(0, 10);
+  if (!w.length) { toast('No weak spots yet — practise a topic first'); return; }
+  var m = w.filter(function (i) { return i.type === 'mcq'; }), o = w.filter(function (i) { return i.type === 'oeq'; });
+  startSession('weak', 'Weak spots', m.concat(o));
+}
+
+function renderExamSetup() {
+  var ts = examTopics();
+  var nm = ts.reduce(function (a, t) { return a + t.items.filter(function (i) { return i.type === 'mcq'; }).length; }, 0);
+  paint(
+    '<button class="link" data-act="home">← All topics</button>' +
+    '<p class="eyebrow" style="margin-top:8px">Mixed exam practice</p><h2>📝 Mock paper</h2>' +
+    '<p class="lead">Like the end-of-year paper: Section A is multiple choice (2 marks each). Section B is open-ended — write your answer, then mark it with the answer key at the end. Questions come from ' + ts.length + ' P3 topic' + (ts.length === 1 ? '' : 's') + '.</p>' +
+    '<p class="eyebrow">Length</p><div class="choice">' +
+      '<button data-act="esize" data-v="full" aria-pressed="' + (S.size !== 'short') + '">Full paper · 21 MCQ + 10 OEQ · ~70 marks</button>' +
+      '<button data-act="esize" data-v="short" aria-pressed="' + (S.size === 'short') + '">Short · 8 MCQ + 3 OEQ</button></div>' +
+    '<p class="eyebrow">Timer</p><div class="choice">' +
+      '<button data-act="etimer" data-v="1" aria-pressed="' + !!S.timer + '">⏱️ On (' + (S.size === 'short' ? 'about 25' : '75') + ' min)</button>' +
+      '<button data-act="etimer" data-v="0" aria-pressed="' + !S.timer + '">Off</button></div>' +
+    '<div class="nav"><span></span><button class="btn" data-act="estart"' + (nm ? '' : ' disabled') + '>Start the paper →</button></div>'
+  );
+}
+function startExam() {
+  var ts = examTopics(), full = S.size !== 'short';
+  var a = spreadPick(ts, 'mcq', full ? 21 : 8), b = spreadPick(ts, 'oeq', full ? 10 : 3);
+  /* Section B of the real paper is 2-4 mark questions, ~28 marks in 10. Lift the
+     marks total toward that by swapping the cheapest picks for unused bigger ones. */
+  var target = Math.round(b.length * 2.8), used = {};
+  b.forEach(function (it) { used[it.id] = 1; });
+  var spare = [];
+  ts.forEach(function (t) { t.items.forEach(function (it) { if (it.type === 'oeq' && !used[it.id]) spare.push(it); }); });
+  spare = shuffle(spare).sort(function (x, y) { return y.marks - x.marks; });
+  for (var g = 0; g < 40; g++) {
+    var tot = b.reduce(function (n, it) { return n + it.marks; }, 0);
+    if (tot >= target || !spare.length) break;
+    var lo = 0; b.forEach(function (it, k) { if (it.marks < b[lo].marks) lo = k; });
+    if (spare[0].marks <= b[lo].marks) break;
+    b[lo] = spare.shift();
+  }
+  b.sort(byLevel);
+  var max = a.concat(b).reduce(function (n, it) { return n + it.marks; }, 0);
+  var mins = full ? 75 : Math.max(10, Math.round(75 * max / 70));   /* EOY pace: 70 marks in 75 min */
+  startSession('exam', 'Mock paper', a.concat(b), { nA: a.length, timerEnd: S.timer ? Date.now() + mins * 60000 : null, mins: mins });
+}
+
+/* ---------- quiz ---------- */
+function stepsHTML() {
+  var s = '';
+  session.items.forEach(function (it, k) {
+    var a = session.ans[k], c = '';
+    if (session.kind !== 'exam' && a.score != null) c = a.score >= 1 ? 'ok' : a.score > 0 ? 'part' : 'bad';
+    else if (session.kind === 'exam' && (a.choice != null || a.text)) c = 'ok';
+    if (k === session.i) c = 'on';
+    s += '<i class="' + c + '"></i>';
+  });
+  return '<div class="steps">' + s + '</div>';
+}
+function timerText() {
+  var left = Math.max(0, session.timerEnd - Date.now()), m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
+  return left ? '⏱️ ' + m + ':' + (s < 10 ? '0' : '') + s : '⏱️ Time up — finish off!';
+}
+function tickTimer() {
+  var el = document.getElementById('timer'); if (!el || !session || !session.timerEnd) return;
+  el.textContent = timerText(); el.classList.toggle('warn', session.timerEnd - Date.now() < 120000);
+}
+function renderQuiz() {
+  var se = session;
+  if (se.phase === 'report') return renderReport();
+  if (se.phase === 'markB') return renderMarking();
+  var it = se.items[se.i], a = se.ans[se.i], exam = se.kind === 'exam', t = SCI.byId[it.topic];
+  var label = exam ? (se.i < se.nA ? 'Section A · Q' + (se.i + 1) : 'Section B · Q' + (se.i + 1)) : 'Question ' + (se.i + 1) + ' of ' + se.items.length;
+  var h = '<div class="spread"><button class="link" data-act="quit">✕ Stop</button>' +
+    (exam && se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '<span class="eyebrow" style="margin:0">' + esc(se.kind === 'practice' ? se.title : (t ? t.emoji + ' ' + t.title : '')) + '</span>') + '</div>';
+  h += stepsHTML();
+  h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + '</p>';
+  h += figHTML(it.figure);
+  h += '<p class="stem">' + esc(it.stem) + (it.type === 'oeq' ? '<span class="marks">[' + it.marks + ' mark' + (it.marks === 1 ? '' : 's') + ']</span>' : '') + '</p>';
+  if (it.type === 'mcq') {
+    var locked = !exam && a.choice != null;
+    h += '<div class="opts">' + it.options.map(function (o, k) {
+      var cls = 'opt';
+      if (locked) { if (k === it.answer) cls += ' right'; else if (k === a.choice) cls += ' wrong'; }
+      else if (a.choice === k) cls += ' picked';
+      return '<button class="' + cls + '" data-act="pick" data-k="' + k + '"' + (locked ? ' disabled' : '') + ' aria-pressed="' + (a.choice === k) + '"><span class="n">(' + (k + 1) + ')</span><span>' + esc(o) + '</span></button>';
+    }).join('') + '</div>';
+    if (locked) {
+      var ok = a.choice === it.answer;
+      h += '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b class="h">' + (ok ? '✅ Correct!' : '❌ Not quite — the answer is (' + (it.answer + 1) + ')') + '</b>' +
+        (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') + '</div>';
+    }
+  } else {
+    h += '<textarea id="oeqText" placeholder="Type your answer here, or write it on paper (optional)"' + (a.shown && !exam ? ' readonly' : '') + '>' + esc(a.text) + '</textarea>';
+    if (!exam && a.shown) h += markingHTML(it, a);
+  }
+  var last = se.i === se.items.length - 1;
+  var next = '';
+  if (exam) {
+    if (se.i === se.nA - 1 && se.nA < se.items.length) next = '<button class="btn teal" data-act="next">On to Section B →</button>';
+    else next = last ? '<button class="btn" data-act="finishExam">Finish &amp; mark →</button>' : '<button class="btn teal" data-act="next">Next →</button>';
+  } else if (it.type === 'mcq') {
+    next = a.choice != null ? '<button class="btn teal" data-act="next">' + (last ? 'See results →' : 'Next →') + '</button>' : '';
+  } else {
+    next = a.shown ? '<button class="btn teal" data-act="saveMark">' + (last ? 'Save mark &amp; see results →' : 'Save mark &amp; next →') + '</button>'
+                   : '<button class="btn" data-act="reveal">Show answer</button>';
+  }
+  h += '<div class="nav">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + next + '</div>';
+  paint(h);
+  if (exam && se.timerEnd) timerId = setInterval(tickTimer, 1000);
+}
+function markingHTML(it, a) {
+  if (!a.ticks) a.ticks = blankTicks(it);
+  var h = '<div class="model"><b>Model answer</b><p>' + highlight(it.model, it.noKeys ? [] : it.keys) + '</p></div>';
+  if (a.text && a.text.trim() && session.kind === 'exam') h += '<div class="yours"><b>Your answer:</b> ' + esc(a.text) + '</div>';
+  h += '<p class="eyebrow" style="margin-top:14px">Compare with the model answer. Tick each point your answer has</p>';
+  h += '<div class="keys">' + it.keys.map(function (k, j) {
+    return '<label class="key' + (a.ticks[j] ? ' on' : '') + '"><input type="checkbox" data-act="tick" data-j="' + j + '"' + (a.ticks[j] ? ' checked' : '') + '><span>' + esc(k.join(' / ')) + '</span></label>';
+  }).join('') + '</div>';
+  h += '<p class="lead" style="margin-top:8px" id="markNow">Marks: ' + Math.min(a.ticks.filter(Boolean).length, it.marks) + ' / ' + it.marks + '</p>';
+  if (it.explain) h += '<div class="fb"><b class="h">💡 Why</b><p>' + esc(it.explain) + '</p></div>';
+  return h;
+}
+function renderMarking() {
+  var se = session, idx = se.markIdx, it = se.items[idx], a = se.ans[idx], t = SCI.byId[it.topic];
+  a.shown = true;
+  var nB = se.items.length - se.nA, pos = idx - se.nA + 1;
+  var h = '<p class="eyebrow">Marking Section B · ' + pos + ' of ' + nB + (t ? ' · ' + esc(t.title) : '') + '</p>';
+  h += figHTML(it.figure) + '<p class="stem">' + esc(it.stem) + '<span class="marks">[' + it.marks + ']</span></p>';
+  if (!a.text || !a.text.trim()) h += '<div class="yours">No typed answer — mark what you wrote on paper.</div>';
+  h += markingHTML(it, a);
+  h += '<div class="nav"><span></span><button class="btn teal" data-act="markNext">' + (idx === se.items.length - 1 ? 'See my report →' : 'Next →') + '</button></div>';
+  paint(h);
+}
+function finishSession() {
+  var se = session;
+  if (se.kind === 'exam') {
+    se.items.forEach(function (it, k) {
+      var a = se.ans[k];
+      a.score = it.type === 'mcq' ? (a.choice === it.answer ? 1 : 0) : oeqScore(it, a.ticks || it.keys.map(function () { return false; }));
+      record(it, a.score);
+    });
+    var by = {}, got = 0, max = 0;
+    se.items.forEach(function (it, k) {
+      var b = by[it.topic] || (by[it.topic] = { got: 0, max: 0 });
+      var g = se.ans[k].score * it.marks; b.got += g; b.max += it.marks; got += g; max += it.marks;
+    });
+    S.exams.unshift({ t: Date.now(), got: Math.round(got * 10) / 10, max: max, by: by, size: S.size });
+    S.exams = S.exams.slice(0, 20);
+  }
+  save();
+  se.phase = 'report'; renderQuiz();
+}
+function renderReport() {
+  var se = session, got = 0, max = 0, by = {}, missed = [];
+  se.items.forEach(function (it, k) {
+    var a = se.ans[k], sc = a.score || 0, g = sc * it.marks;
+    got += g; max += it.marks;
+    var b = by[it.topic] || (by[it.topic] = { got: 0, max: 0 }); b.got += g; b.max += it.marks;
+    if (sc < 1) missed.push(k);
+  });
+  got = Math.round(got * 10) / 10;
+  var ratio = max ? got / max : 0;
+  var cheer = ratio >= 0.85 ? '🌟 Superb!' : ratio >= 0.6 ? '👍 Good work!' : '💪 Keep going — every miss is a lesson.';
+  var h = '<p class="eyebrow">' + esc(se.kind === 'exam' ? 'Mock paper report' : se.kind === 'weak' ? 'Weak spots' : 'Practice · ' + se.title) + '</p>' +
+    '<h2>' + cheer + '</h2><div class="score">' + got + ' / ' + max + '</div>';
+  if (se.kind === 'exam') {
+    var aGot = 0, aMax = 0, bGot = 0, bMax = 0;
+    se.items.forEach(function (it, k) { if (k < se.nA) { aGot += se.ans[k].score * it.marks; aMax += it.marks; } else { bGot += se.ans[k].score * it.marks; bMax += it.marks; } });
+    h += '<p class="lead">Section A: ' + aGot + ' / ' + aMax + ' · Section B: ' + (Math.round(bGot * 10) / 10) + ' / ' + bMax + '</p>';
+  }
+  h += '<div class="section"><h3>By topic</h3><table class="tbl"><tr><th>Topic</th><th class="num">Marks</th><th class="num">%</th></tr>' +
+    Object.keys(by).map(function (id) { var t = SCI.byId[id], b = by[id];
+      return '<tr><td>' + esc(t ? t.emoji + ' ' + t.title : id) + '</td><td class="num">' + (Math.round(b.got * 10) / 10) + ' / ' + b.max + '</td><td class="num">' + pct(b.max ? b.got / b.max : 0) + '</td></tr>'; }).join('') +
+    '</table></div>';
+  if (missed.length) {
+    h += '<div class="section"><h3>Look again</h3><ul class="rev">' + missed.map(function (k) {
+      var it = se.items[k], a = se.ans[k];
+      var ansTxt = it.type === 'mcq' ? 'Answer: (' + (it.answer + 1) + ') ' + it.options[it.answer] + (a.choice != null ? ' · you chose (' + (a.choice + 1) + ')' : ' · not answered') : 'Model: ' + it.model;
+      return '<li><span class="r">' + (a.score > 0 ? '½' : '✗') + '</span>' + esc(it.stem) + '<small>' + esc(ansTxt) + (it.explain ? '\n' + esc(it.explain) : '') + '</small></li>';
+    }).join('') + '</ul></div>';
+  }
+  h += '<div class="nav">' + (missed.length ? '<button class="btn" data-act="retryMissed">Try the missed ones again</button>' : '<span></span>') +
+    '<button class="btn ghost" data-act="home">Home</button></div>';
+  paint(h);
+}
+
+/* ---------- parent ---------- */
+function renderParent() {
+  var ts = shownTopics();
+  var rows = ts.map(function (t) { var s = topicStats(t);
+    return '<tr><td>' + esc(t.emoji + ' ' + t.title) + (t.extra ? ' <span class="badge">P4</span>' : '') + '</td><td class="num">' + s.seen + ' / ' + s.n + '</td><td class="num">' + (s.acc == null ? '—' : pct(s.acc)) + '</td><td class="num">' + s.pct + '%</td></tr>'; }).join('');
+  var most = Object.keys(S.items).filter(function (id) { return SCI.items[id] && S.items[id].miss > 0; })
+    .sort(function (a, b) { return (S.items[b].miss - S.items[a].miss) || (S.items[a].c / S.items[a].a - S.items[b].c / S.items[b].a); }).slice(0, 12);
+  var ex = S.exams.slice(0, 6).map(function (e) { var d = new Date(e.t);
+    return '<tr><td>' + d.getDate() + '/' + (d.getMonth() + 1) + ' ' + (e.size === 'short' ? 'short' : 'full') + '</td><td class="num">' + e.got + ' / ' + e.max + '</td><td class="num">' + pct(e.max ? e.got / e.max : 0) + '</td></tr>'; }).join('');
+  paint(
+    '<button class="link" data-act="home">← All topics</button>' +
+    '<p class="eyebrow" style="margin-top:8px">For grown-ups</p><h2>👪 Progress report</h2>' +
+    '<p class="lead">Accuracy counts every attempt (open-ended answers by the marks ticked). Mastered = right on the latest try. Stored on this device only.</p>' +
+    '<div class="section"><h3>By topic</h3><table class="tbl"><tr><th>Topic</th><th class="num">Tried</th><th class="num">Accuracy</th><th class="num">Mastered</th></tr>' + rows + '</table></div>' +
+    '<div class="section"><h3>Most-missed questions</h3>' + (most.length ? '<ul class="rev">' + most.map(function (id) {
+      var it = SCI.items[id], r = S.items[id], t = SCI.byId[it.topic];
+      return '<li><span class="r">' + (r.last >= 1 ? '✓ now' : '✗') + '</span>' + esc(it.stem) + '<small>' + esc((t ? t.title : '') + ' · missed ' + r.miss + ' of ' + r.a + ' tries · ' + it.id) + '</small></li>';
+    }).join('') + '</ul>' : '<p class="empty">Nothing missed yet.</p>') + '</div>' +
+    '<div class="section"><h3>Mock papers</h3>' + (ex ? '<table class="tbl"><tr><th>Date</th><th class="num">Score</th><th class="num">%</th></tr>' + ex + '</table>' : '<p class="empty">No mock paper done yet.</p>') + '</div>' +
+    '<div class="nav"><button class="btn ghost small" data-act="reset">Reset all progress</button></div>'
+  );
+}
+
+/* ---------- events ---------- */
+var A = {
+  home: function () { go(''); },
+  topic: function (el) { go('topic/' + el.dataset.id); },
+  learn: function (el) { learn = { id: el.dataset.id, i: 0 }; go('learn/' + el.dataset.id); },
+  lnext: function () { learn.i++; renderLearn(SCI.byId[learn.id]); },
+  lprev: function () { learn.i--; renderLearn(SCI.byId[learn.id]); },
+  practice: function (el) { startPractice(SCI.byId[el.dataset.id]); },
+  weak: startWeak,
+  exam: function () { go('exam'); },
+  parent: function () { go('parent'); },
+  esize: function (el) { S.size = el.dataset.v; save(); renderExamSetup(); },
+  etimer: function (el) { S.timer = el.dataset.v === '1'; save(); renderExamSetup(); },
+  estart: startExam,
+  pick: function (el) {
+    var se = session, it = se.items[se.i], a = se.ans[se.i], k = +el.dataset.k;
+    if (se.kind === 'exam') { a.choice = k; renderQuiz(); return; }
+    if (a.choice != null) return;
+    a.choice = k; a.score = k === it.answer ? 1 : 0; record(it, a.score); save(); renderQuiz();
+  },
+  reveal: function () { var a = session.ans[session.i]; saveText(); a.shown = true; renderQuiz(); },
+  tick: function (el) {
+    var se = session, idx = se.phase === 'markB' ? se.markIdx : se.i, it = se.items[idx], a = se.ans[idx];
+    a.ticks[+el.dataset.j] = el.checked; el.closest('label').classList.toggle('on', el.checked);
+    var m = document.getElementById('markNow'); if (m) m.textContent = 'Marks: ' + Math.min(a.ticks.filter(Boolean).length, it.marks) + ' / ' + it.marks;
+  },
+  saveMark: function () {
+    var se = session, it = se.items[se.i], a = se.ans[se.i];
+    a.score = oeqScore(it, a.ticks); record(it, a.score); save(); A.next();
+  },
+  next: function () {
+    saveText();
+    if (session.i < session.items.length - 1) { session.i++; renderQuiz(); }
+    else finishSession();
+  },
+  prev: function () { saveText(); if (session.i > 0) { session.i--; renderQuiz(); } },
+  finishExam: function () {
+    saveText();
+    var se = session, unanswered = se.items.filter(function (it, k) { return it.type === 'mcq' && se.ans[k].choice == null; }).length;
+    if (unanswered && !confirm(unanswered + ' MCQ not answered yet. Finish anyway?')) return;
+    clearInterval(timerId);
+    if (se.nA < se.items.length) { se.phase = 'markB'; se.markIdx = se.nA; renderQuiz(); } else finishSession();
+  },
+  markNext: function () { var se = session; if (se.markIdx < se.items.length - 1) { se.markIdx++; renderQuiz(); } else finishSession(); },
+  retryMissed: function () {
+    var se = session, list = se.items.filter(function (it, k) { return (se.ans[k].score || 0) < 1; });
+    startSession(se.kind === 'exam' ? 'weak' : se.kind, se.kind === 'exam' ? 'Missed from mock paper' : se.title, list, { topicId: se.topicId });
+  },
+  quit: function () {
+    if (session && session.phase !== 'report' && !confirm('Stop this set? Answers already marked are kept.')) return;
+    var back = session && session.topicId ? 'topic/' + session.topicId : '';
+    session = null; go(back);
+  },
+  reset: function () { if (confirm('Erase all Science Quest progress on this device?')) { S = fresh(); save(); renderParent(); toast('Progress cleared'); } }
+};
+function saveText() { var ta = document.getElementById('oeqText'); if (ta && session) session.ans[session.i].text = ta.value; }
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  if (el.dataset.act === 'tick') return;   /* checkboxes handled on change */
+  var f = A[el.dataset.act]; if (f) { e.preventDefault(); f(el); }
+});
+document.addEventListener('change', function (e) { var el = e.target; if (el.dataset && el.dataset.act === 'tick') A.tick(el); });
+document.addEventListener('input', function (e) { if (e.target.id === 'oeqText') saveText(); });
+window.addEventListener('hashchange', route);
+countdown();
+route();
+})();
+</script>
+</body>
+</html>

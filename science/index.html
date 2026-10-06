@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<!-- Vercel serves this page at /science with NO trailing slash, which would resolve
+     topics/*.js to /topics/*.js (404, empty home). Pin the base so both URLs work. -->
+<base href="/science/">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-capable" content="yes">

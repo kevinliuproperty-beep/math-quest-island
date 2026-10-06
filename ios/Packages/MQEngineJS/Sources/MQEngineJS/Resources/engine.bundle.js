@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20261006-a8f9d0a */
-/* ENGINE_BUILD_META {"stamp":"20261006-a8f9d0a","date":"2026-10-06","sha":"a8f9d0a","dirty":false,"payloadHash":"4c5c4a286d378915","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":32,"topicFileCount":29,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20261006-a8f9d0a","date":"2026-10-06","sha":"a8f9d0a","dirty":false,"payloadHash":"4c5c4a286d378915","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":32,"topicFileCount":29,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20261006-ec8300b */
+/* ENGINE_BUILD_META {"stamp":"20261006-ec8300b","date":"2026-10-06","sha":"ec8300b","dirty":false,"payloadHash":"d77379fb45635539","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":32,"topicFileCount":29,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20261006-ec8300b","date":"2026-10-06","sha":"ec8300b","dirty":false,"payloadHash":"d77379fb45635539","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":32,"topicFileCount":29,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -10268,7 +10268,7 @@ function gPeriFence(){
   const PANEL_LETTERS = ['A', 'B', 'C', 'D'];
   const LABEL_SETS = [['A', 'B', 'C', 'D', 'E', 'F', 'G'], ['P', 'Q', 'R', 'S', 'T', 'U', 'V'],
                       ['J', 'K', 'L', 'M', 'N', 'P', 'Q'], ['R', 'S', 'T', 'U', 'V', 'W', 'X']];
-  const R2 = v => Math.round(v * 100) / 100;
+  const R2 = v => Math.round(v * 1000) / 1000;
   /* A child's name opens every picture item. Not decoration: the feed's identity key
      (core.js qIdentity, frozen) reads the stem and the options but cannot see a
      figure, so a fixed stem over fixed "Angle A..D" options was ONE identity per
@@ -10597,6 +10597,8 @@ function gPeriFence(){
     const lens = pts.map(armLen);
     const longest = lens.indexOf(Math.max(...lens));
     if (longest === key) return gLargestAngle();
+    const runnerUp = Math.max(...lens.filter((_, i) => i !== longest));
+    if (lens[longest] - runnerUp < 0.2) return gLargestAngle();   /* the longest arms must LOOK longest */
     if (Math.max(...lens) - Math.min(...lens) < 0.8) return gLargestAngle();
     const word = big ? 'largest' : 'smallest';
     return fig(finishLetters(who() + ' drew four angles. Which angle is the ' + word + '?', key,
@@ -18239,4 +18241,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20261006-a8f9d0a */
+/* ENGINE_BUILD_END 20261006-ec8300b */

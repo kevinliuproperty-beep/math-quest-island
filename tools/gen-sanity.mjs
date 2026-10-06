@@ -1770,7 +1770,16 @@ function oracle(q, topic) {
     }
     if ((m = text.match(/^(\d+) x (\d+) = \?$/))) {
       const e = Number(m[1]) * Number(m[2]);
+      /* P3 GAPS LANE 2026-10-06: MOE P3 3.4 caps the algorithm at 3 digits by 1 digit. */
+      if (topic === 'p3divide' && (Number(m[1]) > 999 || Number(m[2]) > 9)) return `typed mul: ${m[1]} x ${m[2]} is past 3 digits by 1 digit`;
       return near(e, q.answer) ? null : `typed mul: expected ${e}, got ${q.answer}`;
+    }
+    /* P3 GAPS LANE 2026-10-06: 3-digit x 1-digit word problem (p3divide.gMulWord). */
+    if ((m = text.match(/^Each (packet|box|bag|tub) has (\d+) ([a-z]+)\. [A-Z][A-Za-z ]+ buys (\d+) \1(?:s|es)\. How many \3 are there altogether\?$/))) {
+      const per = Number(m[2]), n = Number(m[4]);
+      if (per < 100 || per > 999 || n < 2 || n > 9) return `mul word: ${per} x ${n} is not 3 digits by 1 digit`;
+      if (q.unit !== m[3]) return `mul word: stem counts ${m[3]} but q.unit is ${JSON.stringify(q.unit)}`;
+      return near(per * n, q.answer) ? null : `mul word: expected ${per * n}, got ${q.answer}`;
     }
     if ((m = text.match(/^(\d+) \/ (\d+) = \?$/))) {
       const e = Number(m[1]) / Number(m[2]);
@@ -2632,6 +2641,60 @@ function oracle(q, topic) {
   const p3smallFromBig = (a, b) => { const A = p3dig(a), B = p3dig(b); let o = 0; for (let i = 0; i < 4; i++) o += Math.abs(A[i] - B[i]) * P3_POW[i]; return o; };
   const p3digitSum = n => p3dig(n).reduce((s, d) => s + d, 0);
   const p3opts = qq => (qq.choices || []).map(strip);
+
+  /* P3 GAPS LANE 2026-10-06: NUMBERS IN WORDS (MOE P3 1.3), both directions.
+     An independent parser (words -> number) and an independent canonical writer
+     (number -> SG/UK words: "three thousand, four hundred and five"), written here
+     from scratch, not imported. The parser reads every option, so a distractor
+     that is secretly the same number (a second correct option) fails. */
+  const W_UNIT = { one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9, ten:10,
+    eleven:11, twelve:12, thirteen:13, fourteen:14, fifteen:15, sixteen:16, seventeen:17, eighteen:18,
+    nineteen:19, twenty:20, thirty:30, forty:40, fifty:50, sixty:60, seventy:70, eighty:80, ninety:90 };
+  const wordsVal = str => {
+    let total = 0, cur = 0;
+    for (const t of str.toLowerCase().replace(/,/g, ' ').replace(/-/g, ' ').split(/\s+/).filter(Boolean)) {
+      if (t === 'and') continue;
+      if (t === 'hundred') { cur *= 100; continue; }
+      if (t === 'thousand') { total += cur * 1000; cur = 0; continue; }
+      if (!(t in W_UNIT)) return NaN;
+      cur += W_UNIT[t];
+    }
+    return total + cur;
+  };
+  const W_NAMES = Object.keys(W_UNIT);
+  const wordsCanon = n => {
+    const name = v => W_NAMES.find(k => W_UNIT[k] === v);
+    const th = Math.floor(n / 1000), h = Math.floor(n / 100) % 10, r = n % 100;
+    const tail = r === 0 ? '' : (r < 20 || r % 10 === 0) ? name(r) : name(r - r % 10) + '-' + name(r % 10);
+    const head = [th ? name(th) + ' thousand' : '', h ? name(h) + ' hundred' : ''].filter(Boolean).join(', ');
+    return head && tail ? head + ' and ' + tail : head + tail;
+  };
+  const zeroInside = n => String(n).slice(1).includes('0');
+  if ((m = text.match(/^Which number is ([a-z ,-]+)\?$/)) && Number.isFinite(wordsVal(m[1]))) {
+    const n = wordsVal(m[1]);
+    if (!Number.isInteger(n) || n < 1000 || n > 9999) return `p3 words->numeral: "${m[1]}" does not read as a 4-digit number`;
+    if (wordsCanon(n) !== m[1]) return `p3 words->numeral: stem "${m[1]}" is not the SG/UK spelling "${wordsCanon(n)}"`;
+    if (!zeroInside(n)) return `p3 words->numeral: ${n} has no zero after its thousands digit`;
+    if (p3opts(q).filter(o => Number(o) === n).length !== 1) return `p3 words->numeral: ${n} is not on the row exactly once`;
+    return near(n, ansNum) ? null : `p3 words->numeral: expected ${n}, got ${ansNum}`;
+  }
+  /* P3 GAPS LANE 2026-10-06: mental subtraction, tens then ones (gMentalTakeTens). */
+  if ((m = text.match(/^Take away the tens first, then the ones\. What is (\d+) − (\d+)\?$/))) {
+    const a = Number(m[1]), b = Number(m[2]);
+    if (a < 10 || a > 99 || b < 10 || b > 99) return `p3 mental take-tens: ${a} − ${b} is not two 2-digit numbers`;
+    if (a % 10 >= b % 10) return `p3 mental take-tens: ${a} − ${b} needs no regrouping`;
+    if (!/^\d+$/.test(strip(q.answerText))) return 'p3 mental take-tens: key is not a whole number';
+    return near(a - b, ansNum) ? null : `p3 mental take-tens: expected ${a - b}, got ${ansNum}`;
+  }
+  if ((m = text.match(/^How is (\d+) written in words\?$/))) {
+    const n = Number(m[1]);
+    if (n < 1000 || n > 9999 || !zeroInside(n)) return `p3 numeral->words: ${n} is not a 4-digit number with an inner zero`;
+    const vals = p3opts(q).map(wordsVal);
+    if (vals.some(v => !Number.isInteger(v))) return `p3 numeral->words: an option does not parse (${p3opts(q).join(' | ')})`;
+    if (vals.filter(v => v === n).length !== 1) return `p3 numeral->words: ${n} is named by ${vals.filter(v => v === n).length} options`;
+    for (const o of p3opts(q)) if (wordsCanon(wordsVal(o)) !== o) return `p3 numeral->words: option "${o}" is not SG/UK spelling`;
+    return strip(q.answerText) === wordsCanon(n) ? null : `p3 numeral->words: expected "${wordsCanon(n)}", got "${strip(q.answerText)}"`;
+  }
 
   /* PLACE VALUE - compare two digit values inside one number (was gStandsHard) */
   if ((m = text.match(/^In (\d+), how much more does the digit (\d) stand for than the digit (\d)\?$/))) {
@@ -5162,7 +5225,7 @@ function coincidence(q) {
 const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'p2', 'p3numbers', 'fractions', 'decimals']);
 /* every mcNum call site in the three pilot files */
 const PILOT_MCNUM = new Set([
-  'geometry.gPeriCompare', 'geometry.gPeriFence',
+  'geometry.gPeriCompare', 'geometry.gPeriFence', 'geometry.gRectiPeri',
   'tables.gGroups', 'tables.gDoubling', 'tables.gDivShare', 'tables.gDivError',
   'p4area.gLError', 'p4area.gLCompare', 'p4area.gLWords', 'p4area.gLCornerInverse',
   'p4area.gLSkirting', 'p4area.gPeriFromArea', 'p4area.gNotchPerimeter'
@@ -9089,6 +9152,30 @@ for (const g of GENS) {
   agreeRows.push(row);
   if (row.err) failures++;
 }
+
+/* ---------- THE BARE COUNT, EVERY TOPIC (P3 GAPS LANE 2026-10-06) -------------
+   The prose agreement clause above reads `fractions` only. The P3 readiness audit
+   swept every bank at 400 draws and found "1 <plural>" outside it: p4fractions
+   "= 1 quarters", p4pie "1 more books", p5fractions "share 1 pizzas", p5rate a
+   "1 pages" option. Fixed in their files; this keeps them fixed. Narrow on purpose:
+   a bare 1 (not part of 11, 0.1 or "/ 1") directly before a plural noun the bank
+   actually prints, on the stem, every option and the card. */
+const BARE1_N = 500;
+const BARE1 = /(?<![\d\/.]\s?)\b1 (?:more )?(?:halves|thirds|quarters|fifths|sixths|sevenths|eighths|ninths|tenths|elevenths|twelfths|books|pupils|drinks|pizzas|cakes|mooncakes|watermelons|sets|pages|parts|pieces|slices|boxes|stickers|beads|marbles)\b/i;
+let bare1Bad = 0;
+for (const g of GENS) {
+  let bad = 0, sample = null;
+  for (let i = 0; i < BARE1_N; i++) {
+    let q; try { q = g.fn(); } catch (e) { break; }
+    if (!q) continue;
+    const text = [q.q, q.extra || '', q.explain || ''].concat(q.choices || []).map(x => strip(openFrac(x))).join(' | ');
+    const mm = text.match(BARE1);
+    if (mm) { bad++; if (!sample) sample = mm[0]; }
+  }
+  if (bad) { failures++; bare1Bad++; console.log(`FAIL bare count: ${g.topic}.${g.name} prints "${sample}" on ${bad} of ${BARE1_N} draws`); }
+}
+if (BARE1.test(strip('A + B = 1 quarters, which is 1 out of 4.')) !== true) { failures++; console.log('FAIL bare count: negative control (the pre-fix p4fractions.gSubLike card) was not caught'); }
+console.log(`BARE COUNT  every topic, ${BARE1_N} draws per bank: ${bare1Bad ? bare1Bad + ' bank(s) FAIL' : 'pass'} (negative control: the pre-fix "= 1 quarters" card)`);
 
 /* ---------- THE SIGN GATE -----------------------------------------------------
    SWEEP FRACTIONS REFUTATION, SEVENTH PASS 2026-09-16, KILL 2. js/topics/

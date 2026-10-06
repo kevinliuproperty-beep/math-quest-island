@@ -36,7 +36,7 @@
  *   you cannot take away, you take one from the column on the left. Regrouping
  *   IS the idea, and the two classic slips (never carry; always take the small
  *   digit from the big one) are named distractors, not padding.
- *   gAddConcept, gAddRegroup, gSubRegroup, gMissingAddend, gMentalMake,
+ *   gAddConcept, gAddRegroup, gSubRegroup, gMissingAddend, gMentalMake, gMentalTakeTens,
  *   gAddError, gSubError, gTwoStepWord, gBackFromTotal.
  *
  * NO GENERATOR SITS IN TWO POOLS. Pool 3 holds 11 slots and TEN of them are
@@ -120,8 +120,8 @@
  * 1.4 comparing and ordering, 1.5 patterns in number sequences. Addition and
  * Subtraction: 2.1 algorithms up to 4 digits, 2.2 mental calculation of two
  * 2-digit numbers. NOT here: rounding (P4 1.5), numbers past 9999, negative
- * results, reading and writing numbers in WORDS (needs a words-to-numeral typed
- * input the finishers do not support - a separate lane's call).
+ * results. Numbers in WORDS (1.3) joined on 2026-10-06 as multiple choice both
+ * ways round (gWordsToNum, gNumToWords), which needs no new input type.
  *
  * FENCE against `heuristics` (Puzzle Caves, which also owns a `pattern` skill):
  * Puzzle Caves draws 1- and 2-digit typed sequences ("What comes next? 3, 6, 9,
@@ -986,6 +986,120 @@ function gZeroFix(){
     (sg === 1 ? '+' : '−') + ' ' + step + ' = ' + ans + '.');
 }
 
+
+/* FORMATS 8 and 9 - NUMBERS IN NUMERALS AND IN WORDS (P3 GAPS LANE 2026-10-06,
+   MOE P3 1.3 "reading and writing numbers in numerals and in words"). Left out
+   until now because the finishers have no words-to-numeral typed input; asked
+   here as multiple choice instead, both ways round, so no new input type.
+   Singapore / UK convention: "three thousand, four hundred and five",
+   "four thousand and six", "two thousand and fifty".
+   EVERY number drawn holds at least one ZERO after its thousands digit, because
+   the zero is the whole difficulty: "four thousand and six" has no hundreds and
+   no tens said out loud, and the P3 slips are exactly
+     - a zero DROPPED (4006 -> 406: wrote what was heard, the hundreds slot lost),
+     - the zero in the WRONG place / digits swapped (4006 -> 4060, 4600, 6004),
+     - teen and ty confused (5014 "five thousand and fourteen" -> 5040).
+   Distractors come only from that family, through slipSet, so the key's place
+   among the four printed numbers moves from draw to draw. The `reject` filter
+   also refuses a row on which the key is the only option of its roundness
+   (ends in 00 / ends in 0 / neither), which is the shape-ruler route. */
+const ONES_W = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS_W = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+function twoWords(r){ return r < 20 ? ONES_W[r] : TENS_W[Math.floor(r / 10)] + (r % 10 ? '-' + ONES_W[r % 10] : ''); }
+function inWords(n){
+  const th = Math.floor(n / 1000), h = Math.floor(n / 100) % 10, r = n % 100;
+  let w = th ? ONES_W[th] + ' thousand' : '';
+  if (h) w += (w ? ', ' : '') + ONES_W[h] + ' hundred';
+  if (r) w += (w ? ' and ' : '') + twoWords(r);
+  return w;
+}
+const roundSig = n => n % 100 === 0 ? 2 : n % 10 === 0 ? 1 : 0;
+/* `rich`: draw only the shapes with enough non-zero digits to move
+   (4035, 4605, 4650) - see gWordsToNum for why. */
+function zeroNumber(rich){
+  const th = ri(1, 9);
+  const shape = rich ? pick(['0to', '0to', 'h0o', 'ht0'])
+                     : pick(['00o', '0t0', '0to', '0to', '0to', 'h0o', 'ht0', 'h00']);
+  const dz = () => ri(1, 9);
+  const h = shape[0] === 'h' ? dz() : 0, t = shape[1] === 't' ? dz() : 0, o = shape[2] === 'o' ? dz() : 0;
+  /* the '0to' shape draws a teen on about one draw in three, the fourteen/forty slip's home */
+  if (shape === '0to' && ri(0, 2) === 0) return th*1000 + 10 + ri(3, 9);
+  return th*1000 + h*100 + t*10 + o;
+}
+function wordSlips(n){
+  const s = String(n), out = new Set();
+  /* a placeholder zero dropped - one that holds a place BEFORE a digit that is
+     said ("four thousand and six" -> 406). A trailing zero is never the slip:
+     nobody writes "eight thousand and thirty" as 803. */
+  for (let i = 1; i < 4; i++)
+    if (s[i] === '0' && /[1-9]/.test(s.slice(i + 1))) out.add(Number(s.slice(0, i) + s.slice(i + 1)));
+  /* the thousands digit kept (it is the part a child hears first and gets right)
+     and the last three digits in another order: the zero in the wrong place, or
+     two digits swapped. A slip that moved the thousands digit would be a free
+     cross-out - the stem says "four thousand" and the option starts with 6. */
+  const perm = (pre, rest) => {
+    if (!rest.length){ out.add(Number(pre.join(''))); return; }
+    for (let i = 0; i < rest.length; i++) perm(pre.concat(rest[i]), rest.slice(0, i).concat(rest.slice(i + 1)));
+  };
+  perm([s[0]], s.slice(1).split(''));
+  /* teen <-> ty */
+  const r = n % 100, base = n - r;
+  if (r >= 13 && r <= 19) out.add(base + (r - 10) * 10);
+  if (r % 10 === 0 && r >= 30) out.add(base + 10 + r / 10);
+  out.delete(n);
+  return [...out].filter(ok);
+}
+/* the same slips made two at a time (a zero dropped AND one moved, 4006 -> 460),
+   kept to 3 and 4 digits with the thousands digit still first. One-slip rows of
+   a zero number are column-wise consensus rows - every option a one-swap of the
+   key - and the column rule reads the key straight off them; the compounds are
+   what let slipSet seat a row that rule cannot read (see slipSet). */
+function wordSlips2(n){
+  /* a compound must still be written with the key's OWN digits (or with one of
+     its zeros lost): a teen/ty swap on top of a reorder makes digits nobody said */
+  const sig = x => String(x).split('').sort().join('');
+  const s0 = String(n), full = sig(n), lost = sig(s0.slice(0, s0.indexOf('0', 1)) + s0.slice(s0.indexOf('0', 1) + 1));
+  const one = wordSlips(n), out = new Set(one), lead = s0[0];
+  for (const v of one) for (const w of wordSlips(v))
+    if (w !== n && String(w)[0] === lead && w >= 100 && (sig(w) === full || sig(w) === lost)) out.add(w);
+  return [...out];
+}
+function wordsRow(rich){
+  let n = 4006, cands = null, g = 0;
+  do {
+    n = zeroNumber(rich);
+    const ks = roundSig(n);
+    /* at most ONE 3-digit slip: two of them tie the row 2-2 on width with the key
+       always in the 4-digit pair (the width-class ruler's tie clause, see widthTie) */
+    const bad = c => c.filter(v => roundSig(v) === ks).length === 0 || c.filter(v => v < 1000).length > 1;
+    cands = slipSet(n, wordSlips2(n), { reject: bad });
+    g++;
+  } while (g < 400 && !(cands && optsOk(n, cands) && cands.some(v => roundSig(v) === roundSig(n)) &&
+           cands.filter(v => v < 1000).length <= 1));
+  return { n: n, cands: cands };
+}
+function wordsWhy(n){
+  const d = digitsOf(n);
+  return inWords(n).charAt(0).toUpperCase() + inWords(n).slice(1) + ' is ' + placeList(d) + ', so it is written ' + n +
+    '. A place that is not said out loud still needs its 0, or every digit after it slides into the wrong place.';
+}
+/* THE COLUMN RULE AND THE TWO-ZERO NUMBERS. 4006, 4060 and 3400 have exactly
+   two non-zero digits, so every real slip is a one-swap of the key and the row is
+   a column-wise consensus: crossing out each column's minority digit leaves the
+   key alone (gen-sanity COLUMN RULER, which reads only NUMERIC rows). Those
+   numbers are therefore asked mostly the OTHER way round, in gNumToWords, whose
+   options are words; here they are one draw in seven, which holds the column
+   rule's value under its 40% cap. */
+function gWordsToNum(){
+  const w = wordsRow(ri(1, 7) !== 1);
+  return mcNum('Which number is <b>' + inWords(w.n) + '</b>?', '', w.n, w.cands, '', wordsWhy(w.n));
+}
+function gNumToWords(){
+  const w = wordsRow();
+  return mcText('How is <b>' + w.n + '</b> written in words?', '', inWords(w.n), w.cands.map(inWords),
+    wordsWhy(w.n));
+}
 
 /* =========================================================================
    PRINCIPLE 2 - COMPARING, ORDERING AND NUMBER PATTERNS
@@ -2462,6 +2576,41 @@ function gMentalMake(){
       : ''));
 }
 
+/* FORMAT 5b - mental strategy: take away the tens, then the ones (P3 GAPS LANE
+   2026-10-06, MOE P3 2.2, two 2-digit numbers; pool 2, 2 steps). The second
+   strategy beside gMentalMake. Every draw needs regrouping in the ones (82 - 47:
+   82 - 40 = 42, then 42 - 7 crosses the ten), because that second step is where
+   the mental slips live. Named slips, as single offsets from the key and then
+   two at a time (twoAtATime) so they land on BOTH sides and compound into a
+   lattice the column rule cannot read:
+     +10      took one ten too few (the borrowed ten never taken away)
+     -10      took one ten too many
+     +2*ob    added the ones instead of taking them away (42 + 7)
+     -oa      took the ones from the round ten and lost the rest (40 - 7)
+   plus "the smaller ones digit from the bigger" (82 - 47 -> 45). */
+function gMentalTakeTens(){
+  let a = 82, b = 47, key = 35, cands = null, fam = [], g = 0;
+  do {
+    const oa = ri(3, 6), ob = ri(oa + 1, 9), ta = ri(4, 9), tb = ri(1, ta - 2);
+    a = ta*10 + oa; b = tb*10 + ob; key = a - b;
+    const m = a - tb*10;
+    fam = [[(ta - tb)*10 + (ob - oa), 'Taking the smaller ones digit from the bigger one (' + ob + ' − ' + oa + ')']]
+      .concat(twoAtATime(key, [
+        [10, 'Working out 1' + oa + ' − ' + ob + ' but never taking that ten from the ' + (m - oa)],
+        [-10, 'Taking away one ten too many'],
+        [2*ob, 'Adding the ' + ob + ' instead of taking it away'],
+        [-oa, 'Taking the ' + ob + ' from ' + (m - oa) + ' and losing the ' + oa]]));
+    cands = slipSet(key, fam.map(p => p[0]), { minGap: 3,
+      reject: c => !sameWidth(key, c) || widthTie(key, c) });
+    g++;
+  } while (g < 300 && !(key >= 12 && key !== b && cands && optsOk(key, cands) && sameWidth(key, cands) && !widthTie(key, cands)));
+  const tb10 = Math.floor(b / 10) * 10, ob = b % 10, m = a - tb10;
+  const why = slipWhy(cands, fam);
+  return mcNum('Take away the tens first, then the ones. <b>What is ' + a + ' − ' + b + '?</b>', '', key, cands, '',
+    a + ' − ' + tb10 + ' = ' + m + ', then ' + m + ' − ' + ob + ' = ' + key + ' (count back ' + (m % 10) +
+    ' to ' + (m - m % 10) + ', then ' + (ob - m % 10) + ' more).' + (why ? ' ' + why[1] + ' gives ' + why[0] + '.' : ''));
+}
+
 /* FORMAT 6 - error spotting, DIAGNOSE (pool 3, 2 steps). The claim is produced
    by exactly one named misconception; the two filler options are re-checked
    against this draw, so neither is ever a second defensible answer. */
@@ -2673,12 +2822,12 @@ function gBackFromTotal(){
                tip:'Line the columns up and work from the right. Ten in a column moves one place LEFT; if you cannot take away, take one from the left and turn it into ten. Check a subtraction by adding the answer back.'}
     },
     pools:{
-      1:[[gStandsEasy,'place'],[gWhichDigit,'place'],
+      1:[[gStandsEasy,'place'],[gWhichDigit,'place'],[gWordsToNum,'place'],
          [gGreatest,'compare'],[gCompareTrue,'compare'],
          [gPatternConcept,'pattern'],[gAddConcept,'addsub'],[gAddRegroup,'addsub']],
-      2:[[gExpanded,'place'],[gBuildNum,'place'],[gSmallest,'compare'],[gBetween,'compare'],
+      2:[[gExpanded,'place'],[gBuildNum,'place'],[gNumToWords,'place'],[gSmallest,'compare'],[gBetween,'compare'],
          [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
-         [gMissingAddend,'addsub'],[gMentalMake,'addsub']],
+         [gMissingAddend,'addsub'],[gMentalMake,'addsub'],[gMentalTakeTens,'addsub']],
       3:[[gStandsCompare,'place'],[gStandsFix,'place'],[gZeroFix,'place'],
          [gOrder,'compare'],[gBetweenWorded,'compare'],
          [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],

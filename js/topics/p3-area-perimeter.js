@@ -211,6 +211,35 @@ function gPeriFence(){
     '. Multiplying the area by the rate answers a different question: fencing goes around the edge, not over the ground.');
 }
 
+/* FORMAT 7 - perimeter of a RECTILINEAR figure (P3 GAPS LANE 2026-10-06, MOE P3
+   1.3 "perimeter of rectilinear figure, rectangle and square"). Until this lane
+   the L-shape lived only in p4area, a node a P3 player never sees. Same figure
+   primitive ({type:'lshape'} drawn by js/figures.js, every one of the six sides
+   printed), same draw limits as p4area's makeL (the 2/3 cut cap and the
+   perimeter != area ban, both re-checked by the harness off the rendered labels).
+   PERIMETER ONLY: the area of a composite figure is P4 1.3 and is not asked.
+   Distractors are the walk-around slips: the two notch sides left out (adding
+   only the four outer sides, as for a rectangle), one side missed, one or both
+   notch sides counted twice. How many land below the key is drawn first, so the
+   key's place among the four printed numbers moves from draw to draw. */
+const capCut = n => Math.max(2, Math.min(n - 3, Math.floor(2 * n / 3)));
+function gRectiPeri(){
+  let W=13,H=11,a=4,b=3,per=48,fam=[],g=0;
+  do {
+    W=ri(7,16); H=ri(6,14); a=ri(2,capCut(W)); b=ri(2,capCut(H));
+    per=2*(W+H);
+    /* how many slips land below the key is drawn first, 0..3, so the key is the
+       smallest, the largest or in the middle of the four by construction */
+    const lo=shuffle([per-a-b, per-a, per-b]), hi=shuffle([per+a, per+b, per+a+b]), r=ri(0,3);
+    fam=lo.slice(0,r).concat(hi.slice(0,3-r));
+    g++;
+  } while (g<400 && !(per !== W*H-a*b && a !== b && optsOk(per, fam)));
+  if (!(per !== W*H-a*b && a !== b && optsOk(per, fam))){ W=13; H=11; a=4; b=3; per=48; fam=[41,44,52]; }
+  return fig(mcNum('What is the <b>perimeter</b> of this figure?','',per,fam,'cm',
+    'Perimeter is the walk all the way around, so add all six sides: '+(W-a)+' + '+b+' + '+a+' + '+
+    (H-b)+' + '+W+' + '+H+' = '+per+' cm. The two sides at the cut-out corner are the ones most often left out.'),
+    { type:'lshape', W:W, H:H, a:a, b:b, unit:'cm' });
+}
 
   MQI.registerTopic({
     id:'geometry', level:'P3', strand:'Measurement and Geometry',
@@ -228,8 +257,8 @@ function gPeriFence(){
          [gSquarePA,'peri'] entry already showed an area stem on half its draws;
          without it the split would silently delete area from level 1. */
       1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area']],
-      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri']],
-      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area']]
+      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri'],[gRectiPeri,'peri']],
+      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area'],[gRectiPeri,'peri']]
     }
   });
 })();

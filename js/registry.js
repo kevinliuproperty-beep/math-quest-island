@@ -17,6 +17,7 @@ const MAP_NODES=[
   {id:'p3measure', e:'📏', name:'Compound Cove',       blurb:'Length, mass & volume in compound units (P3)', grades:['P3']},
   {id:'p3bargraph',e:'📊', name:'Data Docks',          blurb:'Reading bar graphs, including scaled axes (P3)', grades:['P3']},
   {id:'geometry',  e:'🏰', name:'Perimeter Palace',    blurb:'Area & perimeter of squares and rectangles (P3, P4)', grades:['P3','P4']},
+  {id:'p3angles',  e:'📐', name:'Right Angle Rock',    blurb:'Angles, right angles, and parallel & perpendicular lines (P3)', grades:['P3']},
   {id:'heuristics',e:'🧩', name:'Puzzle Caves',        blurb:'Patterns & puzzles. TYPE your answer, no choices!', grades:['P2','P3','P4','P5','P6']},
   /* ---- P4 ---- */
   {id:'p4numbers', e:'🏝️', name:'Ten Thousand Bay',    blurb:'Numbers to 100 000: place value, rounding & patterns (P4)', grades:['P4']},

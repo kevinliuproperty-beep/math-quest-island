@@ -693,6 +693,312 @@ function decRoundDefensible(f, optText) {
   return i === f.ci ? correctly !== went : correctly === went;
 }
 
+/* ---------- P3 ANGLES ORACLE (lane/p3-angles, 2026-10-06) --------------------
+   Right Angle Rock (js/topics/p3-angles.js). Dispatched by topic, first and
+   exhaustively like the decimals bank, so no looser branch can claim one of its
+   stems and none of its stems can escape: an unknown stem fails.
+
+   Every answer is RE-MEASURED OFF THE RENDERED DRAWING, the way a child reads it:
+   the `.gm-seg` lines, the `.gm-pt` + `.gm-name` point labels, the `.gm-ang` arcs
+   (an arc from one arm to the other, radius 14 px about its vertex), the
+   `.gm-panel` groups with their `.gm-cap` letters, and the `.ck-face` clocks with
+   their `.ck-min` / `.ck-hour` hands. Nothing is read from the spec.
+
+   It also enforces the topic's two child-visible laws, so an edit that breaks
+   either fails the build rather than reaching a child:
+     MARGIN  every angle a child judges against a right angle is exactly a right
+             angle (to 0.5 deg of drawn px), or at most 61, or at least 119 and
+             under 179. No "nearly right" angle can be drawn.
+     ONE READING  perpendicular is only ever claimed, keyed or offered for two
+             lines that MEET; two drawn lines that are perpendicular in direction
+             but do not touch fail any item that asks about perpendicular. Angle
+             items draw convex shapes only (no inside corner to argue about). */
+const GM_NUM = '(-?[\\d.]+)';
+const GM_SEG_RE = new RegExp('<line class="gm-seg" x1="' + GM_NUM + '" y1="' + GM_NUM + '" x2="' + GM_NUM + '" y2="' + GM_NUM + '"', 'g');
+const GM_PT_RE = /<circle class="gm-pt" cx="(-?[\d.]+)" cy="(-?[\d.]+)"[^>]*\/><text class="gm-name"[^>]*>([A-Z])<\/text>/g;
+const GM_ARC_RE = /<path class="gm-arc" d="M (-?[\d.]+) (-?[\d.]+) A 14 14 0 0 [01] (-?[\d.]+) (-?[\d.]+)"/g;
+const GM_PHRASE = { 'a right angle': 'right', 'smaller than a right angle': 'small', 'greater than a right angle': 'big',
+                    'an angle smaller than a right angle': 'small', 'an angle greater than a right angle': 'big' };
+const gmSegs = raw => [...String(raw).matchAll(GM_SEG_RE)].map(m => [[+m[1], +m[2]], [+m[3], +m[4]]]);
+const gmDist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+const gmSame = (a, b) => gmDist(a, b) < 0.25;
+function gmDeg(u, w) {
+  const c = (u[0] * w[0] + u[1] * w[1]) / (Math.hypot(u[0], u[1]) * Math.hypot(w[0], w[1]));
+  return Math.acos(Math.max(-1, Math.min(1, c))) * 180 / Math.PI;
+}
+const gmKind = d => (Math.abs(d - 90) < 0.5 ? 'right' : d < 90 ? 'small' : 'big');
+const gmClear = d => Math.abs(d - 90) < 0.5 || d <= 61 || (d >= 119 && d < 179);
+const gmVec = s => [s[1][0] - s[0][0], s[1][1] - s[0][1]];
+/* line-to-line: acute angle between two segments' directions */
+const gmLineDeg = (s, t) => { const d = gmDeg(gmVec(s), gmVec(t)); return Math.min(d, 180 - d); };
+function gmDistSeg(p, s) {
+  const a = s[0], b = s[1], vx = b[0] - a[0], vy = b[1] - a[1], L = vx * vx + vy * vy;
+  const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / L));
+  return Math.hypot(p[0] - a[0] - t * vx, p[1] - a[1] - t * vy);
+}
+function gmMeet(s, t) {
+  const cr = (o, p, r) => (p[0] - o[0]) * (r[1] - o[1]) - (p[1] - o[1]) * (r[0] - o[0]);
+  const d1 = cr(t[0], t[1], s[0]), d2 = cr(t[0], t[1], s[1]), d3 = cr(s[0], s[1], t[0]), d4 = cr(s[0], s[1], t[1]);
+  if (d1 * d2 < 0 && d3 * d4 < 0) return true;
+  return Math.min(gmDistSeg(s[0], t), gmDistSeg(s[1], t), gmDistSeg(t[0], s), gmDistSeg(t[1], s)) < 0.6;
+}
+/* polygons out of the drawn segments: every corner has exactly two lines */
+function gmPolys(segs) {
+  const V = [], key = p => { let i = V.findIndex(v => gmSame(v, p)); if (i < 0) { V.push(p); i = V.length - 1; } return i; };
+  const adj = new Map();
+  for (const s of segs) {
+    const a = key(s[0]), b = key(s[1]);
+    if (!adj.has(a)) adj.set(a, []); if (!adj.has(b)) adj.set(b, []);
+    adj.get(a).push(b); adj.get(b).push(a);
+  }
+  for (const [, nb] of adj) if (nb.length !== 2) return null;
+  const seen = new Set(), polys = [];
+  for (const start of adj.keys()) {
+    if (seen.has(start)) continue;
+    const cyc = [start]; seen.add(start);
+    let prev = start, cur = adj.get(start)[0];
+    while (cur !== start) { cyc.push(cur); seen.add(cur); const nb = adj.get(cur); const nx = nb[0] === prev ? nb[1] : nb[0]; prev = cur; cur = nx; }
+    const P = cyc.map(i => V[i]), n = P.length;
+    const angles = [], turns = [];
+    for (let i = 0; i < n; i++) {
+      const a = P[(i + n - 1) % n], v = P[i], b = P[(i + 1) % n];
+      angles.push(gmDeg([a[0] - v[0], a[1] - v[1]], [b[0] - v[0], b[1] - v[1]]));
+      turns.push(Math.sign((v[0] - a[0]) * (b[1] - v[1]) - (v[1] - a[1]) * (b[0] - v[0])));
+    }
+    const convex = turns.every(t => t === turns[0] && t !== 0);
+    const edges = P.map((p, i) => [p, P[(i + 1) % n]]);
+    polys.push({ P, angles, convex, edges, minX: Math.min(...P.map(p => p[0])) });
+  }
+  return polys.sort((x, y) => x.minX - y.minX);
+}
+function gmPanels(raw) {
+  return String(raw).split('<g class="gm-panel">').slice(1).map(chunk => {
+    const cap = chunk.match(/<text class="gm-cap"[^>]*>([A-D])<\/text>/);
+    const segs = gmSegs(chunk);
+    const arcs = [...chunk.matchAll(GM_ARC_RE)].map(m => [[+m[1], +m[2]], [+m[3], +m[4]]]);
+    return { cap: cap ? cap[1] : null, segs, arcs };
+  });
+}
+/* the angle a panel's arc marks: find its vertex (a drawn line end 14 px from both
+   arc ends) and check both arc ends really sit ON a drawn arm through it */
+function gmArcAngle(panel) {
+  if (panel.arcs.length !== 1) return null;
+  const [A, B] = panel.arcs[0];
+  const ends = panel.segs.flat();
+  const v = ends.find(p => Math.abs(gmDist(p, A) - 14) < 0.3 && Math.abs(gmDist(p, B) - 14) < 0.3);
+  if (!v) return null;
+  const onArm = q => panel.segs.some(s => (gmSame(s[0], v) || gmSame(s[1], v)) && gmDistSeg(q, s) < 0.3);
+  if (!onArm(A) || !onArm(B)) return null;
+  /* measure along the whole arm, not the 14 px arc chord: 0.1 px rounding on a 14 px
+     radius is half a degree, on a 40 px arm it is a fifth of that */
+  const armThrough = q => panel.segs.find(s => (gmSame(s[0], v) || gmSame(s[1], v)) && gmDistSeg(q, s) < 0.3);
+  const far = s => (gmSame(s[0], v) ? s[1] : s[0]);
+  const sa = armThrough(A), sb = armThrough(B);
+  if (sa === sb) return null;
+  const fa = far(sa), fb = far(sb);
+  const armLen = Math.max(gmDist(v, fa), gmDist(v, fb));
+  return { deg: gmDeg([fa[0] - v[0], fa[1] - v[1]], [fb[0] - v[0], fb[1] - v[1]]), armLen };
+}
+function gmPairKind(p) {
+  if (p.segs.length !== 2) return 'bad: panel does not draw exactly two lines';
+  const [s, t] = p.segs, d = gmLineDeg(s, t), meet = gmMeet(s, t);
+  if (d < 0.5) return meet ? 'bad: parallel lines that touch' : 'par';
+  if (Math.abs(d - 90) < 0.5) return meet ? 'perp' : 'bad: perpendicular in direction but the lines never meet (a second reading)';
+  if (meet) return d <= 61 ? 'other' : `bad: lines meet at ${d.toFixed(1)} deg, too near a right angle`;
+  return d >= 15 ? 'other' : `bad: non-parallel lines only ${d.toFixed(1)} deg apart look parallel`;
+}
+function gmNamed(raw) {
+  const pts = {};
+  for (const m of String(raw).matchAll(GM_PT_RE)) pts[m[3]] = [+m[1], +m[2]];
+  return pts;
+}
+function p3AnglesOracle(q) {
+  const full = strip(q.q), raw = String(q.extra || ''), key = strip(q.answerText);
+  const opts = (q.choices || []).map(strip);
+  let m;
+  /* every picture item opens with a child's name and what they drew (it widens the
+     feed's identity key, which cannot see a figure); the sentence must say what the
+     drawing actually is, and is stripped before the stem is matched */
+  const intro = full.match(/^[A-Z][a-z]+(?: [A-Z][a-z]+)? (drew this shape on dot paper|drew these two shapes on dot paper|drew four angles|drew four pairs of lines|looked at four clocks)\. /);
+  const text = intro ? full.slice(intro[0].length) : full;
+  const said = intro ? intro[1] : '';
+  const nPolys = () => { const pp = gmPolys(gmSegs(raw)); return pp ? pp.length : 0; };
+  if (said === 'drew this shape on dot paper' && nPolys() !== 1) return 'intro says one shape, drawing has ' + nPolys();
+  if (said === 'drew these two shapes on dot paper' && nPolys() !== 2) return 'intro says two shapes, drawing has ' + nPolys();
+  if (/four/.test(said) && (raw.split(/<g class="(?:gm-panel|ck-face)">/).length - 1) !== 4) return 'intro says four, drawing has a different count';
+  if ((said === 'drew four angles') !== /^Which angle is |^Arrange them in order/.test(text)) return 'angle-panel stem without its intro, or the reverse';
+  const keyLetter = () => (key.match(/^(?:Angle|Clock|Drawing) ([A-D])$/) || [])[1];
+
+  /* --- 1.2 clock times, no drawing --- */
+  if ((m = text.match(/^At which of these times do the hour hand and the minute hand of a clock make (a right angle|an angle smaller than a right angle|an angle greater than a right angle)\?$/))) {
+    const want = GM_PHRASE[m[1]];
+    let hits = 0;
+    for (const o of opts) {
+      const h = Number((o.match(/^(\d+) o'clock$/) || [])[1]);
+      if (!(h >= 1 && h <= 12) || h === 6 || h === 12) return `clock time: option "${o}" is not an allowed o'clock time (6 and 12 make no angle to judge)`;
+      const deg = 30 * Math.min(h, 12 - h);
+      if (!gmClear(deg)) return `clock time: ${h} o'clock is too near a right angle`;
+      if (gmKind(deg) === want) { hits++; if (o !== key) return `clock time: ${o} also makes ${m[1]}`; }
+    }
+    return hits === 1 ? null : `clock time: ${hits} options make ${m[1]}`;
+  }
+
+  /* --- clocks --- */
+  if ((m = text.match(/^On which clock do the two hands make (a right angle|an angle smaller than a right angle|an angle greater than a right angle)\?$/))) {
+    const want = GM_PHRASE[m[1]];
+    const faces = raw.split('<g class="ck-face">').slice(1);
+    if (faces.length !== 4) return `clock pick: ${faces.length} clocks drawn, expected 4`;
+    let hits = 0;
+    for (const f of faces) {
+      const mn = f.match(/<line class="ck-min" x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)"/);
+      const hr = f.match(/<line class="ck-hour" x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)"/);
+      const cap = (f.match(/<text class="ck-cap"[^>]*>([A-D])<\/text>/) || [])[1];
+      if (!mn || !hr || !cap) return 'clock pick: a clock is missing a hand or its letter';
+      const deg = gmDeg([+mn[3] - +mn[1], +mn[4] - +mn[2]], [+hr[3] - +hr[1], +hr[4] - +hr[2]]);
+      if (!gmClear(deg)) return `clock pick: clock ${cap}'s hands make ${deg.toFixed(1)} deg, not clearly judged`;
+      if (gmKind(deg) === want) { hits++; if (cap !== keyLetter()) return `clock pick: clock ${cap} also makes ${m[1]}, key ${key}`; }
+    }
+    return hits === 1 ? null : `clock pick: ${hits} clocks make ${m[1]}`;
+  }
+
+  /* --- one angle per panel --- */
+  if ((m = text.match(/^Which angle is (a right angle|smaller than a right angle|greater than a right angle)\?$/))) {
+    const want = GM_PHRASE[m[1]], panels = gmPanels(raw);
+    if (panels.length !== 4) return 'angle pick: expected 4 panels';
+    let hits = 0;
+    for (const p of panels) {
+      const a = gmArcAngle(p);
+      if (!a) return `angle pick: panel ${p.cap} has no measurable marked angle`;
+      if (!gmClear(a.deg)) return `angle pick: panel ${p.cap} draws ${a.deg.toFixed(1)} deg, too near a right angle`;
+      if (gmKind(a.deg) === want) { hits++; if (p.cap !== keyLetter()) return `angle pick: angle ${p.cap} is also ${m[1]}`; }
+    }
+    return hits === 1 ? null : `angle pick: ${hits} angles are ${m[1]}`;
+  }
+  if ((m = text.match(/^Which angle is the (largest|smallest)\?$/))) {
+    const panels = gmPanels(raw), big = m[1] === 'largest';
+    const ms = panels.map(gmArcAngle);
+    if (panels.length !== 4 || ms.some(x => !x)) return 'largest/smallest: expected 4 measurable marked angles';
+    const degs = ms.map(x => x.deg), srt = degs.slice().sort((a, b) => a - b);
+    if (srt.some((v, i) => i && v - srt[i - 1] < 29.5)) return `largest/smallest: two angles are under 30 deg apart (${srt.map(v => v.toFixed(0)).join(', ')})`;
+    const ki = degs.indexOf(big ? srt[3] : srt[0]);
+    if (panels[ki].cap !== keyLetter()) return `largest/smallest: measured ${panels[ki].cap}, key ${key}`;
+    const lens = ms.map(x => x.armLen), longest = lens.indexOf(Math.max(...lens));
+    if (longest === ki) return 'largest/smallest: the key also has the longest arms, so the arm-length slip scores';
+    return null;
+  }
+  if (text === 'Arrange them in order, starting with the smallest.') {
+    const panels = gmPanels(raw), ms = panels.map(gmArcAngle);
+    if (panels.length !== 4 || ms.some(x => !x)) return 'order: expected 4 measurable marked angles';
+    const idx = [0, 1, 2, 3].sort((a, b) => ms[a].deg - ms[b].deg);
+    for (let i = 1; i < 4; i++) if (ms[idx[i]].deg - ms[idx[i - 1]].deg < 29.5) return 'order: two angles are under 30 deg apart';
+    const want = idx.map(i => panels[i].cap).join(', ');
+    return want === key ? null : `order: measured ${want}, key ${key}`;
+  }
+
+  /* --- line pairs per panel --- */
+  if ((m = text.match(/^Which drawing shows a pair of (parallel|perpendicular) lines\?$/))) {
+    const want = m[1] === 'parallel' ? 'par' : 'perp', panels = gmPanels(raw);
+    if (panels.length !== 4) return 'line pick: expected 4 panels';
+    let hits = 0;
+    for (const p of panels) {
+      const k = gmPairKind(p);
+      if (k.startsWith('bad')) return `line pick: drawing ${p.cap} ${k}`;
+      if (k === want) { hits++; if (p.cap !== keyLetter()) return `line pick: drawing ${p.cap} also shows ${m[1]} lines`; }
+    }
+    return hits === 1 ? null : `line pick: ${hits} drawings show ${m[1]} lines`;
+  }
+
+  /* --- shapes on the dot grid --- */
+  const segs = gmSegs(raw);
+  const polys = /class="gmfig"/.test(raw) && !/gm-panel/.test(raw) ? gmPolys(segs) : null;
+  if (!polys) return `p3angles: no shape could be read off the drawing for "${text}"`;
+  const convexOk = () => {
+    for (const p of polys) {
+      if (!p.convex) return 'an angle item drew a shape that is not convex';
+      for (const a of p.angles) if (!gmClear(a)) return `a corner measures ${a.toFixed(1)} deg, too near a right angle`;
+    }
+    return null;
+  };
+  if (text === 'How many angles does the shape have?') {
+    if (polys.length !== 1) return 'count angles: expected one shape';
+    const bad = convexOk(); if (bad) return 'count angles: ' + bad;
+    return near(polys[0].P.length, parseFloat(key)) ? null : `count angles: measured ${polys[0].P.length}, key ${key}`;
+  }
+  if (text === 'How many right angles are there in the shape?') {
+    if (polys.length !== 1) return 'count right: expected one shape';
+    const bad = convexOk(); if (bad) return 'count right: ' + bad;
+    const e = polys[0].angles.filter(a => gmKind(a) === 'right').length;
+    return near(e, parseFloat(key)) ? null : `count right: measured ${e}, key ${key}`;
+  }
+  if ((m = text.match(/^How many angles in the two shapes are (smaller than a right angle|greater than a right angle)\?$/))) {
+    if (polys.length !== 2) return `count kind: expected two shapes, read ${polys.length}`;
+    const bad = convexOk(); if (bad) return 'count kind: ' + bad;
+    const want = GM_PHRASE[m[1]];
+    const e = polys.reduce((t, p) => t + p.angles.filter(a => gmKind(a) === want).length, 0);
+    return near(e, parseFloat(key)) ? null : `count kind: measured ${e}, key ${key}`;
+  }
+  if (text === 'How many pairs of parallel lines are there in the shape?') {
+    if (polys.length !== 1) return 'parallel pairs: expected one shape';
+    const E = polys[0].edges;
+    let pairs = 0;
+    for (let i = 0; i < E.length; i++) {
+      let same = 0;
+      for (let j = 0; j < E.length; j++) if (i !== j && gmLineDeg(E[i], E[j]) < 0.5) same++;
+      if (same > 1) return 'parallel pairs: three sides share a direction, so "pairs" has more than one count';
+      pairs += same;
+    }
+    pairs /= 2;
+    return near(pairs, parseFloat(key)) ? null : `parallel pairs: measured ${pairs}, key ${key}`;
+  }
+
+  /* --- labelled shape: lines named by their end letters --- */
+  const P = gmNamed(raw);
+  const line = nm => {
+    const a = P[nm[0]], b = P[nm[1]];
+    if (!a || !b) return null;
+    return segs.find(s => (gmSame(s[0], a) && gmSame(s[1], b)) || (gmSame(s[0], b) && gmSame(s[1], a))) || null;
+  };
+  const touchL = (s, t) => [s[0], s[1]].some(p => gmSame(p, t[0]) || gmSame(p, t[1]));
+  if ((m = text.match(/^Look at the shape\. Which line is (parallel|perpendicular) to ([A-Z]{2})\?$/))) {
+    const XY = line(m[2]);
+    if (!XY) return `side relation: ${m[2]} is not a drawn line`;
+    let hits = 0;
+    for (const o of opts) {
+      const s = line(o);
+      if (!s) return `side relation: option ${o} is not a drawn line`;
+      const d = gmLineDeg(s, XY);
+      if (m[1] === 'parallel') {
+        if (d < 0.5) { hits++; if (o !== key) return `side relation: ${o} is also parallel to ${m[2]}`; }
+      } else {
+        if (Math.abs(d - 90) < 0.5) {
+          if (!touchL(s, XY)) return `side relation: ${o} is perpendicular in direction to ${m[2]} but never meets it (a second reading)`;
+          hits++; if (o !== key) return `side relation: ${o} is also perpendicular to ${m[2]}`;
+        }
+      }
+    }
+    return hits === 1 ? null : `side relation: ${hits} options are ${m[1]} to ${m[2]}`;
+  }
+  if (text === 'Look at the shape. Which one of these is true?') {
+    let hits = 0;
+    for (const o of opts) {
+      const mm = o.match(/^([A-Z]{2}) is (parallel|perpendicular) to ([A-Z]{2})\.$/);
+      if (!mm) return `statement: cannot read "${o}"`;
+      const s = line(mm[1]), t = line(mm[3]);
+      if (!s || !t || s === t) return `statement: "${o}" does not name two different drawn lines`;
+      const d = gmLineDeg(s, t);
+      let truth;
+      if (mm[2] === 'parallel') truth = d < 0.5;
+      else {
+        if (Math.abs(d - 90) < 0.5 && !touchL(s, t)) return `statement: "${o}" is about two lines that never meet (a second reading)`;
+        truth = Math.abs(d - 90) < 0.5;
+      }
+      if (truth) { hits++; if (o !== key) return `statement: "${o}" is also true`; }
+    }
+    return hits === 1 ? null : `statement: ${hits} statements are true`;
+  }
+  return `p3angles: no oracle for "${text}"`;
+}
+
 function decimalsOracle(q) {
   const text = strip(q.q);
   const ans = decOf(strip(q.answerText));
@@ -1488,6 +1794,8 @@ function oracle(q, topic) {
   /* SWEEP 2026-09-15: the decimals bank is dispatched first and exhaustively, so
      no looser branch below can claim one of its stems and no stem can escape. */
   if (topic === 'decimals') return decimalsOracle(q);
+  /* lane/p3-angles: Right Angle Rock is re-measured off its own drawing, exhaustively. */
+  if (topic === 'p3angles') return p3AnglesOracle(q);
   const text = strip(q.q);
   const extra = strip(q.extra || '');
   const ansNum = parseFloat(strip(q.answerText));

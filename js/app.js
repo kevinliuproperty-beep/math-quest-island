@@ -168,7 +168,8 @@ function renderMap(){
     c.innerHTML='<div class="mkTitle">📝 P3 Mock Paper <small>exam practice, marks at the end</small></div>'+
       '<div class="mkBtns"><button class="mkGo" data-v="quick">Quick paper<small>15 min · 30 marks</small></button>'+
       '<button class="mkGo" data-v="full">Full paper<small>80 min · 80 marks</small></button></div>'+
-      '<button class="mkHist">📜 Paper history'+(DB.mockPapers.length?' ('+DB.mockPapers.length+')':'')+'</button>';
+      '<button class="mkHist">📜 Paper history'+(DB.mockPapers.length?' ('+DB.mockPapers.length+')':'')+'</button>'+
+      '<a class="mkHist" id="mkSciLink" href="/science">🔬 Science Quest</a>';
     c.querySelectorAll('.mkGo').forEach(b=>b.addEventListener('click',()=>newMockGame(b.dataset.v)));
     c.querySelector('.mkHist').addEventListener('click',()=>renderMockHistory('mapScreen'));
     mp.appendChild(c);

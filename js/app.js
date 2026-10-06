@@ -25,7 +25,18 @@ let FEED=null;
 /* A mode may install its own question feed (Patchwerk draws across every unlocked
    topic for the chosen class level). Null = the normal single-topic quiz set. */
 let MODE_FEED=null;
+/* P3 Mock Paper: WEAK = the [{topic, skill}] a "practise my weak spots" run drills;
+   MOCK_MS = a debug-only paper length override; MOCK_BACK = where history returns to. */
+let WEAK=null, MOCK_MS=0, MOCK_BACK=null;
+/* Every served item carries the topic it was drawn from (P3 Exam Readiness Audit §b):
+   skill ids repeat across topics (compare, addsub, pattern, word), so a mixed
+   session must record topic+skill, never the bare skill under the last topic drawn. */
 function makeQuestion(level){
+  const q=makeQuestionRaw(level);
+  if(q && !q.topic) q.topic=TOPIC;
+  return q;
+}
+function makeQuestionRaw(level){
   if(MODE_FEED) return MODE_FEED(level);
   if(FEED) return FEED.next(level);
   if(QSET && QSET[level] && QSET[level].length) return QSET[level].shift();
@@ -53,6 +64,8 @@ DB.timed=!!DB.timed;
 if(['relax','timed','patchwerk'].indexOf(DB.gameMode)===-1) DB.gameMode = DB.timed?'timed':'relax';
 DB.pwTier = DB.pwTier || 'normal';
 DB.pwFame = Array.isArray(DB.pwFame) ? DB.pwFame : [];
+/* P3 Mock Paper history (js/modes/p3-mock.js): one summary row per finished paper. */
+DB.mockPapers = Array.isArray(DB.mockPapers) ? DB.mockPapers : [];
 if(!GRADES.includes(DB.grade)) DB.grade='P3';
 
 /* ---------------- Sound ---------------- */
@@ -147,6 +160,19 @@ $('modePatch').addEventListener('click',()=>{ DB.gameMode='patchwerk'; DB.timed=
 function renderMap(){
   const mp=$('mapPath'); mp.innerHTML='';
   $('mapSub').textContent='Quests for '+DB.grade+'. Where will you adventure today?';
+  WEAK=null;
+  /* P3 exam rehearsal sits at the top of the P3 map, above the islands. */
+  if(DB.grade==='P3' && MQI.modes['p3-mock']){
+    const c=document.createElement('div');
+    c.className='mockCard';
+    c.innerHTML='<div class="mkTitle">📝 P3 Mock Paper <small>exam practice, marks at the end</small></div>'+
+      '<div class="mkBtns"><button class="mkGo" data-v="quick">Quick paper<small>15 min · 30 marks</small></button>'+
+      '<button class="mkGo" data-v="full">Full paper<small>80 min · 80 marks</small></button></div>'+
+      '<button class="mkHist">📜 Paper history'+(DB.mockPapers.length?' ('+DB.mockPapers.length+')':'')+'</button>';
+    c.querySelectorAll('.mkGo').forEach(b=>b.addEventListener('click',()=>newMockGame(b.dataset.v)));
+    c.querySelector('.mkHist').addEventListener('click',()=>renderMockHistory('mapScreen'));
+    mp.appendChild(c);
+  }
   MAP_NODES.filter(n=>n.grades.includes(DB.grade)).forEach((n,i)=>{
     if(i>0){ const d=document.createElement('div'); d.className='pathDots'; d.textContent='• • •'; mp.appendChild(d); }
     const b=document.createElement('button');
@@ -161,16 +187,18 @@ function renderMap(){
 
 /* ----- battle ----- */
 function newGame(){
-  if(DB.gameMode==='patchwerk'){ newPatchwerkGame(); return; }
+  if(WEAK){ TOPIC=WEAK[0].topic; }
+  else if(DB.gameMode==='patchwerk'){ newPatchwerkGame(); return; }
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
   MODE_FEED=null;
   QSET=null;
-  FEED=MQI.createFeed(TOPIC);
+  FEED=WEAK ? weakFeed(WEAK) : MQI.createFeed(TOPIC);
   S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
       rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
       wrongs:[], skills:{}, busy:false, t0:Date.now(), timed:DB.timed };
   $('heroSprite').textContent=DB.avatar;
   $('heroName').textContent=DB.name+' the '+avClass();
+  $('modeHud').innerHTML='';   /* a finished mode's HUD must not linger into a quest */
   $('timerWrap').classList.toggle('on',S.timed);
   $('runClock').textContent='';
   if(clockTimer) clearInterval(clockTimer);
@@ -191,7 +219,7 @@ function newGame(){
      The post-answer banners are deliberately NOT delayed: CRITICAL HIT is a reward
      that should ride over the next question, and now that it has its own band it can
      do that without covering a word of it. */
-  banner(TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
+  banner(WEAK ? '🎯 Weak spots! ⭐' : TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
   setTimeout(nextQuestion,950);
 }
 /* ---------------- Patchwerk (js/modes/patchwerk.js) ---------------- */
@@ -308,9 +336,9 @@ function endPatchwerk(record){
   DB.pwFame.push(record);
   DB.pwFame.sort((x,y)=>y.damage-x.damage);
   if(DB.pwFame.length>60) DB.pwFame=DB.pwFame.slice(0,60);
-  DB.sessions.push({ t:Date.now(), topic:TOPIC, won:true, correct:S.correct, total:S.total,
+  DB.sessions.push({ t:Date.now(), topic:null, won:true, correct:S.correct, total:S.total,
                      best:S.best, crystals:0, maxLevel:S.maxLevel, skills:S.skills,
-                     ms:record.durationMs, timed:false, mode:'patchwerk',
+                     ms:record.durationMs, timed:false, mode:'patchwerk', tally:S.tally||{},
                      wrongs:S.wrongs.slice(0,10) });
   if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
   saveData();
@@ -336,6 +364,150 @@ function endPatchwerk(record){
       .slice(0,8).map(w=>'<div class="revItem">'+w.q+'<br><span class="ansIs">Answer: '+w.a+'</span><br><span class="how">'+(w.ex||'')+'</span></div>').join('');
   }
   show('endScreen');
+}
+
+/* ---------------- P3 Mock Paper (js/modes/p3-mock.js) ----------------
+   Exam conditions: no sounds, no right/wrong colours, no explanations until the
+   report. The mode builds and marks the paper; the shell draws it. Items come from
+   EVERY live node registered for P3, so a new P3 node joins the paper on merge. */
+function mockNodes(){
+  return (MQI.levelNodes.P3||[])
+    .filter(id => MQI.mapNodes.some(n=>n.id===id && n.status==='live') && MQI.topics[id])
+    .map(id => { const t=MQI.topics[id], sk={};
+      for(const k in t.skills) sk[k]=(t.skills[k]&&t.skills[k].label)||k;
+      return { id, label:t.short||t.label||id, skills:sk }; });
+}
+function newMockGame(variant){
+  const mode=MQI.modes['p3-mock'];
+  if(!mode) return;
+  WEAK=null;
+  DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
+  const fmt=mode.config.FORMATS[variant]||mode.config.FORMATS.quick;
+  const feeds={};
+  const draw=(id,lvl)=>{ if(!feeds[id]) feeds[id]=MQI.createFeed(id,{alternateL3:false}); return feeds[id].next(lvl); };
+  QSET=null; FEED=null;
+  MODE_FEED=function(){
+    const it=mode.current();
+    if(!it) return Q;
+    TOPIC=it.topic; if(S) S.level=it.q.level||1;
+    return it.q;
+  };
+  stopQTimer();
+  if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
+  S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
+      rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
+      wrongs:[], skills:{}, busy:false, t0:Date.now(), timed:false, mock:true };
+  $('timerWrap').classList.remove('on');
+  $('runClock').textContent=''; $('streakBox').textContent='';
+  $('feedback').innerHTML=''; $('monsterDots').innerHTML='';
+  show('battleScreen');
+  MQI.startMode('p3-mock',{ variant:fmt.id, durationMs:MOCK_MS||fmt.minutes*60000, nodes:mockNodes(), draw,
+    parse:MQI.parseTypedAnswer, grade:MQI.gradeTyped, shapeOf:MQI.shapeKey, onEnd:endMock });
+}
+/* One answer on the paper: recorded, never shown. */
+function mockResolve(right, given, skipped){
+  const a=MQI.activeMode;
+  if(!a || a.mode.id!=='p3-mock'){ S.busy=false; return; }
+  S.total++; if(right) S.correct++;
+  recSkill(Q.skill,right);
+  a.mode.onAnswer(a.ctx,right,{ given, skipped:!!skipped });
+  if(a.mode.done()) endMock(MQI.endMode());
+}
+function mockSkip(){
+  if(!S || !S.mock || S.busy || !Q) return;
+  S.busy=true;
+  mockResolve(false,null,true);
+}
+function endMock(rec){
+  MODE_FEED=null;
+  if(S) S.busy=true;
+  document.body.removeAttribute('data-mode-theme');
+  $('modeHud').innerHTML='';
+  if(!rec){ renderStart(); show('startScreen'); return; }
+  try{
+    DB.mockPapers.push({ t:rec.t, variant:rec.variant, label:rec.label, marks:rec.marks, total:rec.total,
+      pct:rec.pct, usedMs:rec.usedMs, timedOut:rec.timedOut, attempted:rec.attempted, items:rec.items,
+      weakTopics:rec.weakTopics, topics:rec.byTopic.map(x=>[x.label,x.got,x.total]) });
+    if(DB.mockPapers.length>40) DB.mockPapers=DB.mockPapers.slice(-40);
+    /* the paper also feeds the parents corner, through the same topic-true tally */
+    DB.sessions.push({ t:rec.t, topic:null, won:rec.pct>=50, correct:S.correct, total:S.total, best:0,
+      crystals:0, maxLevel:3, skills:S.skills, tally:S.tally||{}, ms:rec.usedMs, timed:true, mode:'mock',
+      wrongs:rec.review.filter(r=>r.attempted&&!r.correct).slice(0,10)
+        .map(r=>({ q:r.q.q+figHtml(r.q), a:r.q.answerText, ex:r.q.explain, skill:r.q.skill })) });
+    if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
+    saveData();
+  }catch(e){}
+  renderMockReport(rec);
+}
+function mkBarRow(label, sub, got, total){
+  const pct=total?Math.round(got/total*100):0;
+  const col=pct>=80?'#2ecc71':pct>=60?'#ffd166':'#ff6f61';
+  return '<div class="skillRow"><div class="skillName">'+label+'<br><small>'+sub+'</small></div>'+
+    '<div class="accBar"><div style="width:'+pct+'%;background:'+col+'"></div></div>'+
+    '<div class="accPct" style="color:'+col+'">'+got+'/'+total+'</div></div>';
+}
+function renderMockReport(rec){
+  $('mkScore').textContent=rec.marks+' / '+rec.total;
+  $('mkPct').textContent=rec.pct+'%';
+  $('mkMeta').textContent=rec.label+' · '+fmtDate(rec.t)+' · time used '+fmtMs(rec.usedMs)+
+    (rec.timedOut?' (time ran out)':'')+' · '+rec.attempted+' of '+rec.items+' answered';
+  $('mkSections').innerHTML=rec.sections.map(s=>'<div class="statBox"><div class="v">'+s.got+'/'+s.total+'</div><div class="k">'+s.name+'</div></div>').join('');
+  $('mkTopics').innerHTML=rec.byTopic.map(x=>mkBarRow(x.label,(x.total?Math.round(x.got/x.total*100):0)+'%',x.got,x.total)).join('');
+  $('mkSkills').innerHTML=rec.bySkill.map(x=>mkBarRow(x.label,x.topicLabel,x.got,x.total)).join('');
+  const wb=$('mkWeakBtn');
+  if(rec.weakSkills.length){
+    wb.style.display='';
+    wb.innerHTML='🎯 Practise my weak spots<small>'+rec.weakSkills.map(s=>esc(s.label)).join(' · ')+'</small>';
+    wb.onclick=()=>{ WEAK=rec.weakSkills.map(s=>({ topic:s.topic, skill:s.skill })); newGame(); };
+  } else wb.style.display='none';
+  const miss=rec.review.filter(r=>!r.correct);
+  $('mkReview').innerHTML = miss.length ? miss.map(r=>{
+    const q=r.q;
+    const yours = r.attempted ? (q.typed ? esc(String(r.given||'')) : (r.given||'')) : '<i>not answered</i>';
+    return '<div class="revItem"><b>Q'+r.n+'</b> <small class="mkTag">'+r.section+' · '+r.marks+' marks</small><br>'+
+      q.q+figHtml(q)+'<br><span class="mkYours">Your answer: '+yours+'</span><br>'+
+      '<span class="ansIs">Answer: '+q.answerText+'</span><br><span class="how">'+(q.explain||'')+'</span></div>';
+  }).join('') : '<div style="text-align:center;color:#7dffb0">Full marks! Nothing to review. 🎉</div>';
+  show('mockScreen');
+  $('mockScreen').scrollTop=0;
+}
+function renderMockHistory(backTo){
+  MOCK_BACK=backTo||null;
+  const ps=DB.mockPapers.slice().reverse();
+  $('mkHistTable').innerHTML = ps.length
+    ? '<tr><th>Date</th><th>Paper</th><th>Score</th><th>Weakest topics</th></tr>'+
+      ps.map(p=>'<tr><td>'+fmtDate(p.t)+'</td><td>'+esc(p.variant==='full'?'Full':'Quick')+'</td><td>'+
+        p.marks+'/'+p.total+' <small>('+p.pct+'%)</small></td><td>'+
+        (p.weakTopics&&p.weakTopics.length?p.weakTopics.map(esc).join(', '):'none')+'</td></tr>').join('')
+    : '<tr><td style="text-align:center;padding:10px">No papers yet. Try a Quick paper from the P3 map.</td></tr>';
+  show('mockHistScreen');
+}
+/* the drill behind "Practise my weak spots": the two skills alternate, each drawn
+   only from its own topic's generators for that skill */
+function weakFeed(pairs){
+  const per=pairs.map(p=>{
+    const t=TOPICS[p.topic], pools={};
+    for(const L of [1,2,3]) pools[L]=t ? t.pools[L].filter(pr=>pr[1]===p.skill) : [];
+    return { p, pools };
+  }).filter(e=>e.pools[1].length||e.pools[2].length||e.pools[3].length);
+  let k=0, lastGen=null;
+  const seen=new Set();
+  return { next(level){
+    const e=per[k++ % per.length];
+    let pool=null;
+    for(const L of [level,2,1,3]) if(e.pools[L] && e.pools[L].length){ pool=e.pools[L]; break; }
+    let q=null, g=null;
+    for(let t=0;t<12;t++){
+      const pr=pick(pool);
+      if(pr[0]===lastGen && pool.length>1 && t<6) continue;
+      q=pr[0](); g=pr[0]; q.skill=pr[1];
+      const key=q.q+'|'+(q.extra||'')+'|'+(q.typed?q.answer:(q.choices||[]).slice().sort().join(''));
+      if(seen.has(key) && t<11) continue;
+      seen.add(key); break;
+    }
+    lastGen=g; q.level=level; q.topic=e.p.topic;
+    return q;
+  } };
 }
 
 function renderDots(){
@@ -530,6 +702,12 @@ function lockButtons(){
 function recSkill(skill,right){
   if(!S.skills[skill]) S.skills[skill]={r:0,w:0};
   S.skills[skill][right?'r':'w']++;
+  /* the topic-true tally: { topic: { skill: {r,w} } } - what the parents corner reads */
+  const tp=(Q&&Q.topic)||TOPIC;
+  if(!S.tally) S.tally={};
+  if(!S.tally[tp]) S.tally[tp]={};
+  if(!S.tally[tp][skill]) S.tally[tp][skill]={r:0,w:0};
+  S.tally[tp][skill][right?'r':'w']++;
 }
 function monsterCounterattack(){
   $('monsterSprite').classList.add('lungeL');
@@ -644,6 +822,7 @@ function answer(i,btn){
     pwResolve(right);
     return;
   }
+  if(S.mock){ mockResolve(right, Q.choices[i]); return; }
   S.total++;
   recSkill(Q.skill,right);
   lockButtons();
@@ -663,6 +842,7 @@ function answerTyped(){
   const right = MQI.gradeTyped(v, Q);
   $('typedInput').disabled=true;
   if(S.patchwerk){ pwResolve(right); return; }
+  if(S.mock){ mockResolve(right, v); return; }
   S.total++;
   recSkill(Q.skill,right);
   resolve(right);
@@ -698,9 +878,10 @@ function endGame(win){
   if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
   const ms=Date.now()-S.t0;
   DB.sessions.push({
-    t:Date.now(), topic:TOPIC, won:win, correct:S.correct, total:S.total,
+    t:Date.now(), topic:WEAK?null:TOPIC, won:win, correct:S.correct, total:S.total,
     best:S.best, crystals:S.mi, maxLevel:S.maxLevel, skills:S.skills,
-    ms, timed:S.timed, wrongs:S.wrongs.slice(0,10)
+    ms, timed:S.timed, wrongs:S.wrongs.slice(0,10), tally:S.tally||{},
+    mode:WEAK?'weakspots':(S.timed?'timed':'relax')
   });
   if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
 
@@ -727,7 +908,7 @@ function endGame(win){
   $('endEmoji').textContent=win?'🏆':'💪';
   $('endTitle').textContent=win?'VICTORY!':'So close, '+esc(DB.name)+'!';
   let msg = win
-    ? esc(DB.name)+' the '+avClass()+' saved all 6 Star Crystals of '+TOPICS[TOPIC].label+'!'
+    ? esc(DB.name)+' the '+avClass()+' saved all 6 Star Crystals of '+(WEAK?'the weak spots':TOPICS[TOPIC].label)+'!'
     : 'You rescued '+S.mi+' crystal'+(S.mi===1?'':'s')+' this time. Every battle makes your magic stronger. Try again!';
   if(win && fameRank===0) msg+=' 🥇 NEW RECORD, fastest run ever!';
   else if(win && fameRank>0) msg+=' You made the Hall of Fame at #'+(fameRank+1)+'!';
@@ -830,6 +1011,17 @@ function renderParent(){
   /* aggregate per topic+skill */
   const agg={};
   ss.forEach(s=>{
+    /* topic-true tally first; a pre-fix Patchwerk row filed every skill under the last
+       topic drawn, so its bare skills are not trusted */
+    if(s.tally){
+      for(const tp in s.tally) for(const k in s.tally[tp]){
+        const key=tp+'|'+k;
+        if(!agg[key])agg[key]={r:0,w:0};
+        agg[key].r+=s.tally[tp][k].r; agg[key].w+=s.tally[tp][k].w;
+      }
+      return;
+    }
+    if(s.mode==='patchwerk') return;
     for(const k in (s.skills||{})){
       const key=(s.topic||'fractions')+'|'+k;
       if(!agg[key])agg[key]={r:0,w:0};
@@ -858,7 +1050,7 @@ function renderParent(){
 
   const recent=ss.slice(-10).reverse();
   $('histTable').innerHTML='<tr><th>Date</th><th>Land</th><th>Mode</th><th>Result</th><th>Score</th><th>Acc</th><th>Time</th></tr>'+
-    recent.map(s=>'<tr><td>'+fmtDate(s.t)+'</td><td>'+(TOPICS[s.topic]?TOPICS[s.topic].e:'')+'</td><td>'+(s.timed?'⏱️':'🌙')+'</td><td>'+
+    recent.map(s=>'<tr><td>'+fmtDate(s.t)+'</td><td>'+(TOPICS[s.topic]?TOPICS[s.topic].e:'🗺️')+'</td><td>'+({patchwerk:'💀',mock:'📝',weakspots:'🎯'}[s.mode]||(s.timed?'⏱️':'🌙'))+'</td><td>'+
       (s.won?'🏆':'💪')+'</td><td>'+s.correct+'/'+s.total+'</td><td>'+
       (s.total?Math.round(s.correct/s.total*100):0)+'%</td><td>'+(s.ms?fmtMs(s.ms):'-')+'</td></tr>').join('');
 
@@ -989,6 +1181,17 @@ MQI.boot = function () {
   $('tabGlobal').addEventListener('click',()=>{ fameTab='global'; renderFame(); });
   $('tabLocal').addEventListener('click',()=>{ fameTab='local'; renderFame(); });
   $('tabPatch').addEventListener('click',()=>{ fameTab='patchwerk'; renderFame(); });
+  $('mockSkip').addEventListener('click',mockSkip);
+  $('mkHistBtn').addEventListener('click',()=>renderMockHistory('mockScreen'));
+  $('mkMapBtn').addEventListener('click',()=>{ DB.grade='P3'; saveData(); renderMap(); });
+  $('mkHomeBtn').addEventListener('click',()=>{ renderStart(); show('startScreen'); });
+  $('parentMockBtn').addEventListener('click',()=>renderMockHistory('parentScreen'));
+  $('mkHistBackBtn').addEventListener('click',()=>{
+    if(MOCK_BACK==='parentScreen') renderParent();
+    else if(MOCK_BACK==='mapScreen') renderMap();
+    else if(MOCK_BACK==='mockScreen') show('mockScreen');
+    else { renderStart(); show('startScreen'); }
+  });
 
   renderStart();
   autoplayHook();
@@ -1091,6 +1294,30 @@ function autoplayHook(){
         }
       },150); }
     }
+    return;
+  }
+  /* ?autoplay=mock&variant=quick|full&bot=1&acc=70&delay=300&ms=<paper length>
+     drives a real P3 Mock Paper for the headless gate. Inert without the query. */
+  if(p.get('autoplay')==='mock'){
+    DB.grade='P3';
+    const ms=parseInt(p.get('ms'),10); if(ms>0) MOCK_MS=ms;
+    renderStart();
+    const acc=(parseInt(p.get('acc'),10)||70)/100, delay=parseInt(p.get('delay'),10)||300;
+    setTimeout(()=>{
+      newMockGame(p.get('variant')||'quick');
+      if(p.get('bot')!=='1') return;
+      const bot=setInterval(()=>{
+        if(!S || !S.mock || !Q || S.busy || !MQI.activeMode){ if(S && !S.mock) clearInterval(bot); return; }
+        const right=Math.random()<acc;
+        if(Q.typed){
+          $('typedInput').value = right ? String(Q.answer) : String((Number(Q.answer)||0)+1);
+          answerTyped();
+        } else {
+          const n=Q.choices.length;
+          answer(right?Q.correct:(Q.correct+1)%n, null);
+        }
+      }, delay);
+    }, 400);
     return;
   }
   if(p.get('autoplay')!=='patchwerk') return;

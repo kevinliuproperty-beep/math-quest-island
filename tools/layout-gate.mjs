@@ -151,7 +151,7 @@ const CHROME = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   '/usr/bin/google-chrome', '/usr/bin/chromium'].find(p => fs.existsSync(p));
 if (!CHROME) { console.log('FAIL  no Chrome/Chromium found - the layout gate needs a real browser'); process.exit(1); }
 
-/* The seven figure types, the live topic each one is drawn by, and a stem substring
+/* The nine figure types, the live topic each one is drawn by, and a stem substring
    that pins the `?shot=q&find=` sweep to a generator of THAT type. Attempts
    alternate a plain draw (pool 1) with a find sweep (pool 3), so each type is
    measured in both bands. `wide` is the deliberately worst-case spec of that type,
@@ -178,12 +178,24 @@ const FIGURE_TOPICS = [
   { type: 'pie', topic: 'p4pie', grade: 'P4', find: 'pie chart',
     wide: { type: 'pie', title: 'Fruit the Primary 4 pupils brought to school', caption: 'The pie chart shows the fruit brought to school.',
       cats: ['Chrysanthemum', 'Watermelon', 'Dragonfruit', 'Mangosteen', 'Rambutan'],
-      weights: [12, 9, 8, 6, 4], labels: ['12', '9', '8', '6', '4'] } }
+      weights: [12, 9, 8, 6, 4], labels: ['12', '9', '8', '6', '4'] } },
+  /* lane/p3-angles: the two P3 Geometry figures. `geom` is swept on a stem every one of
+     its single-drawing items carries ("dot paper"); the plain draws land on its panel
+     items. The wide geom is the largest single drawing the generators can emit (two
+     shapes side by side, 13 x 6 grid units, every point named). */
+  { type: 'geom', topic: 'p3angles', grade: 'P3', find: 'dot paper',
+    wide: { type: 'geom', cols: 13, rows: 6, grid: 1,
+      px: [1, 6, 6, 1, 8, 12, 12, 8], py: [1, 1, 5, 5, 1, 1, 5, 5],
+      names: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+      segs: [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4]], arcs: [], arcNames: [], panels: [] } },
+  { type: 'clocks', topic: 'p3angles', grade: 'P3', find: 'four clocks',
+    wide: { type: 'clocks', hours: [11, 4, 9, 2], names: ['A', 'B', 'C', 'D'] } }
 ];
 /* the figure root each renderer emits, so a shot can be attributed to a type */
 const FIG_SEL = {
   bar: '.bargraph', line: '.linegraph', table: '.dtable', pie: '.piechart',
-  lshape: '.lfig', rect: '.rectBox', fractionBar: '.barModel'
+  lshape: '.lfig', rect: '.rectBox', fractionBar: '.barModel',
+  geom: '.gmfig', clocks: '.ckfig'
 };
 
 /* ---------------- tiny CDP client (no dependency) ---------------- */

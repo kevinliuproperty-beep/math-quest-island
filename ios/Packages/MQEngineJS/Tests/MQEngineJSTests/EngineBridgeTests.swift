@@ -32,11 +32,11 @@ struct EngineBridgeTests {
                 "build() reports \(build.stamp) but the bundle file says \(stampInFile ?? "nothing")")
 
         #expect(build.platform == "javascriptcore", "the host shim should see a JSContext, not a Node vm")
-        #expect(build.topicCount == 29)
+        #expect(build.topicCount == 30)
         #expect(build.files.first == "js/core.js", "core.js registers the kit everything else uses")
         #expect(build.files.contains("js/registry.js"))
-        #expect(build.files.filter { $0.hasPrefix("js/topics/") }.count == 29)
-        #expect(build.fileCount >= 30, "core.js + 29 topic files + registry.js, plus any engine file added since")
+        #expect(build.files.filter { $0.hasPrefix("js/topics/") }.count == 30)
+        #expect(build.fileCount >= 30, "core.js + 30 topic files + registry.js, plus any engine file added since")
         // The app shell and the mode files are UI/session concerns the native app
         // rewrites in Swift; they must never be inside the engine bundle.
         #expect(!build.files.contains("js/app.js"))
@@ -78,7 +78,7 @@ struct EngineBridgeTests {
         let cat = try await e.listTopics()
 
         #expect(cat.count == 29, "29 topics ship today")
-        #expect(cat.topics.count == 29)
+        #expect(cat.topics.count == 30)
         #expect(cat.grades == ["P2", "P3", "P4", "P5", "P6"])
 
         for t in cat.topics {
@@ -108,7 +108,7 @@ struct EngineBridgeTests {
 
         // Locked nodes stay visible on the map but are not playable.
         #expect(cat.nodes.contains { !$0.playable }, "the map should still carry Coming-soon nodes")
-        #expect(cat.nodes.filter(\.playable).count == 29)
+        #expect(cat.nodes.filter(\.playable).count == 30)
     }
 
     // MARK: - 3. THE GATE: every generator, 200 draws, self-key grading

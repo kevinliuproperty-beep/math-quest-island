@@ -3,8 +3,8 @@
  *
  * ONE renderer for every diagram in the game. Generators emit PURE DATA
  * (`q.figure = { type: 'bar' | 'line' | 'pie' | 'rect' | 'lshape' |
- * 'fractionBar' | 'table', ...fields }`) and never a byte of markup; this file
- * turns a spec into the SVG/HTML the web app paints. A native renderer (SwiftUI,
+ * 'fractionBar' | 'table' | 'geom' | 'clocks', ...fields }`) and never a byte of
+ * markup; this file turns a spec into the SVG/HTML the web app paints. A native renderer (SwiftUI,
  * `MQFigures`) is written against the same spec, from the documentation in
  * js/topics/README.md alone — that is the whole point of the split.
  *
@@ -502,6 +502,162 @@
       '<div style="margin-top:6px;font-size:.85em;color:#475569">' + f.caption + '</div></div>';
   }
 
+  /* ---------------- geom: lines, angles and shapes (p3angles) ----------------
+   * { type:'geom', cols, rows, grid, px:[], py:[], names:[], segs:[[i,j]],
+   *   arcs:[[v,a,b]], arcNames:[], panels:[] }
+   *
+   * Points live on an abstract grid: point i is at (px[i], py[i]) in GRID UNITS,
+   * x to the right and y DOWN, inside 0..cols x 0..rows. No pixels in the spec.
+   *
+   *   segs      each [i, j] is a straight line drawn from point i to point j.
+   *   names[i]  printed beside point i ('' = an unnamed point, no dot, no label).
+   *             The label is pushed OUTSIDE the corner, away from the lines that
+   *             meet there, so it never sits on a line.
+   *   arcs      each [v, a, b] marks the angle at point v between the arms towards
+   *             a and b with a small arc, always across the SMALLER opening, and
+   *             prints arcNames[k] ('' = arc only) just outside the arc.
+   *   grid      1 draws a light dot at every whole grid point (the squared-dot
+   *             paper a P3 child knows), so a square corner reads as square.
+   *   panels    [] = one drawing. ['A','B','C','D'] = that many SEPARATE small
+   *             drawings in ONE row (2 x 2 hid C and D below the fold on a
+   *             375 x 548 SE), each captioned with its letter under it;
+   *             then cols x rows is the size of ONE panel and `pp[i]` names the
+   *             panel point i belongs to. A segment is drawn in its points' panel.
+   *
+   * Strictly to scale, one px-per-unit on both axes (the `rect` rule):
+   *   one drawing   s = min(24, 236 / cols, 160 / rows)
+   *   panels        s = min(22, 72 / cols, 60 / rows), 12 px between panels
+   * so an angle's size on the glass is exactly the angle in the spec - which is
+   * the whole point, because the question is usually "is it bigger or smaller
+   * than a right angle". Labels are 13-14 px TEXT inside a viewBox svg that
+   * declares data-fit, so the shell may shrink the picture only down to the
+   * reading floor (js/app.js syncFigures), never the words below it.
+   *
+   * Every coordinate the oracle needs is the drawing itself: `.gm-seg` lines,
+   * `.gm-pt` + `.gm-name` pairs, `.gm-ang` groups (an arc from one arm to the
+   * other, centred on its vertex), `.gm-panel` groups with a `.gm-cap` letter.
+   * tools/gen-sanity.mjs re-measures every angle off these. */
+  const GM_PAD = 20, GM_PGAP = 12, GM_CAPH = 20, GM_ARC = 14;
+
+  function geom(f) {
+    const panels = Array.isArray(f.panels) ? f.panels : [];
+    const np = panels.length;
+    const cols = f.cols, rows = f.rows;
+    const s = np ? Math.min(22, 72 / cols, 60 / rows) : Math.min(24, 236 / cols, 160 / rows);
+    const cw = cols * s, ch = rows * s;
+    const ncol = np || 1;
+    const pad = np ? 6 : GM_PAD;
+    const W = pad * 2 + ncol * cw + (ncol - 1) * (np ? GM_PGAP : 0);
+    const H = pad * 2 + ch + (np ? GM_CAPH : 0);
+    const r1 = v => +v.toFixed(1);
+    const ox = k => pad + k * (cw + GM_PGAP);
+    const oy = () => pad;
+    const pp = i => (np && Array.isArray(f.pp) ? f.pp[i] : 0);
+    const X = i => r1(ox(pp(i)) + f.px[i] * s), Y = i => r1(oy(pp(i)) + f.py[i] * s);
+    const segs = f.segs || [], arcs = f.arcs || [], names = f.names || [];
+    const parts = [];
+    for (let k = 0; k < Math.max(np, 1); k++) parts.push([]);
+
+    if (!np && f.grid) {
+      let dots = '';
+      for (let gx = 0; gx <= cols; gx++) for (let gy = 0; gy <= rows; gy++) {
+        dots += '<circle cx="' + r1(pad + gx * s) + '" cy="' + r1(pad + gy * s) + '" r="1.4" fill="#cbd5e1"/>';
+      }
+      parts[0].push(dots);
+    }
+    if (np) {
+      for (let k = 0; k < np; k++) {
+        parts[k].push('<rect x="' + r1(ox(k) - 4) + '" y="' + r1(oy(k) - 4) + '" width="' + r1(cw + 8) + '" height="' +
+          r1(ch + GM_CAPH + 4) + '" rx="6" fill="none" stroke="#e2e8f0" stroke-width="1"/>');
+      }
+    }
+    for (const sg of segs) {
+      parts[pp(sg[0])].push('<line class="gm-seg" x1="' + X(sg[0]) + '" y1="' + Y(sg[0]) + '" x2="' + X(sg[1]) +
+        '" y2="' + Y(sg[1]) + '" stroke="#1d4ed8" stroke-width="2.5" stroke-linecap="round"/>');
+    }
+    /* unit vector from point i towards point j, in drawn px */
+    const unit = (i, j) => { const dx = X(j) - X(i), dy = Y(j) - Y(i), d = Math.hypot(dx, dy) || 1; return [dx / d, dy / d]; };
+    for (let k = 0; k < arcs.length; k++) {
+      const v = arcs[k][0], ua = unit(v, arcs[k][1]), ub = unit(v, arcs[k][2]);
+      const ax = r1(X(v) + ua[0] * GM_ARC), ay = r1(Y(v) + ua[1] * GM_ARC);
+      const bx = r1(X(v) + ub[0] * GM_ARC), by = r1(Y(v) + ub[1] * GM_ARC);
+      const sweep = (ua[0] * ub[1] - ua[1] * ub[0]) > 0 ? 1 : 0;   /* the short way round */
+      let mx = ua[0] + ub[0], my = ua[1] + ub[1];
+      const md = Math.hypot(mx, my) || 1; mx /= md; my /= md;
+      const nm = (f.arcNames && f.arcNames[k]) || '';
+      parts[pp(v)].push('<g class="gm-ang"><path class="gm-arc" d="M ' + ax + ' ' + ay + ' A ' + GM_ARC + ' ' + GM_ARC +
+        ' 0 0 ' + sweep + ' ' + bx + ' ' + by + '" fill="none" stroke="#ea580c" stroke-width="2"/>' +
+        (nm ? '<text class="gm-mark" x="' + r1(X(v) + mx * (GM_ARC + 11)) + '" y="' + r1(Y(v) + my * (GM_ARC + 11) + 5) +
+          '" text-anchor="middle" font-size="14" font-weight="700" font-style="italic" fill="#c2410c">' + nm + '</text>' : '') +
+        '</g>');
+    }
+    for (let i = 0; i < f.px.length; i++) {
+      if (!names[i]) continue;
+      /* push the label away from every line that meets at this point */
+      let dx = 0, dy = 0;
+      for (const sg of segs) {
+        if (sg[0] === i) { const u = unit(i, sg[1]); dx -= u[0]; dy -= u[1]; }
+        if (sg[1] === i) { const u = unit(i, sg[0]); dx -= u[0]; dy -= u[1]; }
+      }
+      const d = Math.hypot(dx, dy);
+      if (d < 1e-6) { dx = 0; dy = -1; } else { dx /= d; dy /= d; }
+      parts[pp(i)].push('<circle class="gm-pt" cx="' + X(i) + '" cy="' + Y(i) + '" r="3" fill="#0f172a"/>' +
+        '<text class="gm-name" x="' + r1(X(i) + dx * 12) + '" y="' + r1(Y(i) + dy * 12 + 5) +
+        '" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">' + names[i] + '</text>');
+    }
+    let body = '';
+    if (np) {
+      for (let k = 0; k < np; k++) {
+        body += '<g class="gm-panel">' + parts[k].join('') + '<text class="gm-cap" x="' + r1(ox(k) + cw / 2) + '" y="' +
+          r1(oy(k) + ch + 15) + '" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">' + panels[k] +
+          '</text></g>';
+      }
+    } else body = parts[0].join('');
+    return '<div class="gmfig" style="display:inline-block;background:#fff;color:#0f172a;padding:8px 10px;' +
+      'border-radius:8px;font-size:13px;max-width:100%">' +
+      '<svg class="geomfig" data-fit="1" width="' + r1(W) + '" height="' + r1(H) + '" viewBox="0 0 ' + r1(W) + ' ' + r1(H) +
+      '" style="display:block;margin:0 auto;font-family:inherit;' + FIG_FIT + '">' + body + '</svg></div>';
+  }
+
+  /* ---------------- clocks: clock faces in a row (p3angles) ----------------
+   * { type:'clocks', hours:[h], names:[] }
+   * One clock face per entry of `hours` (1..12), each showing exactly h o'clock:
+   * the minute hand straight up at 12, the hour hand ON the h. names[k] is printed
+   * under clock k ('' = no caption). Twelve hour ticks, the four at 12, 3, 6 and 9 longer and
+   * heavier. No numerals: a printed "12" sat under the minute hand, and the question
+   * is always the angle between the hands, never the time. Faces are r = 30 px, in ONE row, 10 px apart: four clocks are
+   * 4 x 72 + 3 x 10 = 318 px, which is a viewBox that scales to a phone card. */
+  const CK_R = 30, CK_CELL = 72, CK_GAP = 10, CK_CAPH = 20;
+
+  function clocks(f) {
+    const hours = f.hours, n = hours.length, names = f.names || [];
+    const W = n * CK_CELL + (n - 1) * CK_GAP, H = CK_CELL + (names.some(Boolean) ? CK_CAPH : 0);
+    const r1 = v => +v.toFixed(1);
+    let body = '';
+    for (let k = 0; k < n; k++) {
+      const cx = k * (CK_CELL + CK_GAP) + CK_CELL / 2, cy = CK_CELL / 2;
+      let face = '<circle cx="' + cx + '" cy="' + cy + '" r="' + CK_R + '" fill="#fff" stroke="#0f172a" stroke-width="2"/>';
+      for (let t = 0; t < 12; t++) {
+        const a = t * Math.PI / 6, sx = Math.sin(a), sy = -Math.cos(a);
+        const tl = t % 3 === 0 ? 8 : 4;
+        face += '<line x1="' + r1(cx + sx * (CK_R - tl)) + '" y1="' + r1(cy + sy * (CK_R - tl)) + '" x2="' + r1(cx + sx * CK_R) +
+          '" y2="' + r1(cy + sy * CK_R) + '" stroke="#64748b" stroke-width="' + (t % 3 === 0 ? 2.2 : 1.2) + '"/>';
+      }
+      const ha = (hours[k] % 12) * Math.PI / 6;
+      face += '<line class="ck-min" x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + r1(cy - (CK_R - 6)) +
+        '" stroke="#1d4ed8" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<line class="ck-hour" x1="' + cx + '" y1="' + cy + '" x2="' + r1(cx + Math.sin(ha) * (CK_R - 13)) + '" y2="' +
+        r1(cy - Math.cos(ha) * (CK_R - 13)) + '" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>' +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="2.5" fill="#0f172a"/>';
+      body += '<g class="ck-face">' + face + (names[k] ? '<text class="ck-cap" x="' + cx + '" y="' + (CK_CELL + 15) +
+        '" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">' + names[k] + '</text>' : '') + '</g>';
+    }
+    return '<div class="ckfig" style="display:inline-block;background:#fff;color:#0f172a;padding:8px 10px;' +
+      'border-radius:8px;font-size:13px;max-width:100%">' +
+      '<svg class="clockfig" data-fit="1" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H +
+      '" style="display:block;margin:0 auto;font-family:inherit;' + FIG_FIT + '">' + body + '</svg></div>';
+  }
+
   /* ---------------- the documented stylesheet block (WOUND 8) ----------------
    * Six of the seven renderers are self-contained: every declaration they need is
    * inline in the string they build, so this file IS the reference drawing the
@@ -529,7 +685,7 @@
 
   /* ---------------- the registry ---------------- */
 
-  const RENDERERS = { bar, rect, fractionBar, lshape, table, line, pie };
+  const RENDERERS = { bar, rect, fractionBar, lshape, table, line, pie, geom, clocks };
 
   function renderFigure(fig) {
     if (!fig) return '';

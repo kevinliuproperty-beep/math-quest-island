@@ -1935,6 +1935,297 @@ function p3timeOracle(q) {
     'in the same commit (js/topics/README.md): ' + text;
 }
 
+/* ===== P3 WORD PROBLEMS (js/topics/p3-word-problems.js, lane/p3-wordprobs 2026-10-07) =====
+ * Model Method Marina. Dispatched on the topic id and EXHAUSTIVE: a p3word stem no
+ * branch can read is a build failure, never a silent 0% coverage.
+ * Every key is re-derived from the RENDERED stem by a DIFFERENT path from the one
+ * the generator teaches: the generator uses the unit (bar-model) method; this
+ * oracle SEARCHES the candidate answers and simulates the story forward (give,
+ * pack, buy one at a time), keeping the single candidate that satisfies every
+ * sentence. Two or zero candidates is a failure (a second right reading, or none).
+ * Scope clamps enforced here, not trusted to the generator:
+ *   - every printed whole number is <= 10 000 and every answer is a positive integer
+ *     (fractional people / beads / notes are rejected); counts are >= 2 so the
+ *     asked-for noun is a true plural;
+ *   - every division the bar-model method needs is at most 3 digits by 1 digit
+ *     (MOE P3 3.4); no 2-digit divisor anywhere;
+ *   - fractions are of ONE whole: proper, denominators <= 12 and related (one
+ *     divides the other), the key carried as q.fracAnswer and typed as n/d;
+ *   - the declared unit is the noun the question asks for ($ for money, the
+ *     smaller unit for measurement, none for a fraction);
+ *   - the item is tagged q.exam = 'problem' (the mock's Booklet B reads it), and
+ *     the teaching card states the key. */
+const WP_N = '([A-Z][a-z]+(?: [A-Z][a-z]+)?)';
+const WP_TIMES = '(twice|\\d+ times)';
+const wpTimes = s => (s === 'twice' ? 2 : parseInt(s, 10));
+/* the harness's OWN legs/wheels table: the generator's table cannot vouch for itself */
+const WP_LEGS = { bicycles: 2, tricycles: 3, motorcycles: 2, cars: 4, stools: 3, chairs: 4, chickens: 2, goats: 4 };
+const WP_PAIRS = { 'ℓ|ml': 1000, 'kg|g': 1000, 'm|cm': 100 };
+function wpSolve(lo, hi, pred) {
+  const hits = [];
+  for (let x = lo; x <= hi && hits.length < 2; x++) if (pred(x)) hits.push(x);
+  return hits;
+}
+function p3wordOracle(q) {
+  const raw = String(q.q), text = strip(raw), ex = String(q.explain || ''), exT = strip(ex);
+  if (!q.typed) return 'p3word: every item is a typed Booklet B answer';
+  if (q.exam !== 'problem') return 'p3word: item is not tagged q.exam = "problem" (the mock paper reads it)';
+  if (q.band !== 2 && q.band !== 3) return `p3word: q.band must be 2 or 3, got ${JSON.stringify(q.band)}`;
+  if (q.stretch && q.band !== 3) return 'p3word: a stretch item must be band 3';
+  for (const n of (text.match(/\d+/g) || []).map(Number))
+    if (n > 10000) return `p3word: the stem prints ${n}, past the P3 limit of 10 000`;
+  const unit0 = ctx.MQI.unitList(q.unit)[0] || '';
+  const div = (a, b, what) => (b > 9 || a > 999 || b < 2) ? `p3word ${what}: the method divides ${a} by ${b}, past 3 digits by 1 digit` : null;
+  /* one candidate, the key, the unit, and the card */
+  const done = (hits, unit, what, money) => {
+    if (hits.length !== 1) return `p3word ${what}: ${hits.length} answers satisfy the stem (${hits.join(', ')})`;
+    const want = hits[0];
+    if (!Number.isInteger(want) || want < 1) return `p3word ${what}: answer ${want} is not a positive whole number`;
+    if (!money && want < 2) return `p3word ${what}: a count of ${want} makes the asked-for plural false`;
+    if (q.answer !== want) return `p3word ${what}: expected ${want}, got ${q.answer}`;
+    if (unit0 !== unit) return `p3word ${what}: q.unit should be "${unit}", got ${JSON.stringify(q.unit)}`;
+    const said = money ? '$' + want : String(want);
+    if (strip(q.answerText) !== (money ? said : want + ' ' + unit)) return `p3word ${what}: answerText "${q.answerText}" is not "${money ? said : want + ' ' + unit}"`;
+    if (exT.indexOf(said) < 0) return `p3word ${what}: the teaching card never states ${said}`;
+    return null;
+  };
+  const first = s => s.split(' ')[0];
+  let m;
+
+  /* ---- fractions of one whole: read the two fractions off the RAW stem ---- */
+  if (/What fraction of the .+ (?:did they eat altogether|was left)\?|How much more of the wall did .+ paint than .+\?/.test(text)) {
+    const fs = allFracs(raw);
+    if (fs.length !== 2) return `p3word fraction: expected 2 fractions in the stem, read ${fs.length}`;
+    for (const [n, d] of fs) {
+      if (!(n >= 1 && n < d)) return `p3word fraction: ${n}/${d} is not a proper fraction of one whole`;
+      if (d > 12) return `p3word fraction: denominator ${d} is past the P3 limit of 12`;
+      if (gcd(n, d) !== 1) return `p3word fraction: ${n}/${d} is printed unreduced`;
+    }
+    const [[a, b], [c, d]] = fs;
+    if (b % d && d % b) return `p3word fraction: ${b} and ${d} are not related denominators (P3 adds like and related only)`;
+    if (/same|\bthe (pizza|cake|pie|watermelon|bar of chocolate|wall)\b/.test(text) === false) return 'p3word fraction: the stem never says both shares are of the same whole';
+    /* cross-multiplied over b*d - a different path from the generator's "make the bottoms the same" */
+    let N, D = b * d;
+    if (/altogether/.test(text)) N = a * d + c * b;
+    else if (/was left/.test(text)) N = D - a * d - c * b;
+    else N = a * d - c * b;
+    if (!(N > 0 && N < D)) return `p3word fraction: the result ${N}/${D} is not a proper fraction of the whole (more eaten than there was?)`;
+    const g0 = gcd(N, D), rn = N / g0, rd = D / g0;
+    if (!Array.isArray(q.fracAnswer) || q.fracAnswer[0] * rd !== rn * q.fracAnswer[1]) return `p3word fraction: expected ${rn}/${rd}, fracAnswer ${JSON.stringify(q.fracAnswer)}`;
+    if (!near(q.answer, rn / rd)) return `p3word fraction: answer ${q.answer} is not ${rn}/${rd}`;
+    if (unit0) return `p3word fraction: a fraction of the whole declares no unit, got ${JSON.stringify(q.unit)}`;
+    if (strip(q.answerText) !== rn + '/' + rd) return `p3word fraction: answerText "${q.answerText}" is not ${rn}/${rd}`;
+    if (ex.indexOf('<span class="n">' + rn + '</span><span class="d">' + rd + '</span>') < 0) return `p3word fraction: the teaching card never states ${rn}/${rd}`;
+    if (/simplest/i.test(text)) return 'p3word fraction: the stem asks for simplest form, which the grader does not enforce';
+    return null;
+  }
+
+  /* ---- part-whole ---- */
+  if ((m = text.match(/^A [a-z ]+ had (\d+) ([a-z -]+)\. It sold (\d+) \2 on Saturday and (\d+) \2 on Sunday\. How many \2 were left\?$/))) {
+    const T = +m[1], a = +m[3], b = +m[4];
+    return done(wpSolve(0, T, x => a + b + x === T), m[2], 'part-whole');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' had (\\d+) ([a-z]+)\\. ' + WP_N + ' gave \\1 (\\d+) more \\3\\. \\1 then gave away (\\d+) \\3\\. How many \\3 does \\1 have now\\?$')))) {
+    if (m[1] === m[4]) return 'p3word part-whole: the giver and the getter are the same child';
+    let have = +m[2]; have += +m[5]; have -= +m[6];
+    return done(wpSolve(0, 10000, x => x === have), m[3], 'part-whole give');
+  }
+  /* ---- comparison ---- */
+  if ((m = text.match(new RegExp('^' + WP_N + ' has (\\d+) ([a-z]+)\\. ' + WP_N + ' has (\\d+) (more|fewer) \\3 than \\1\\. How many \\3 do they have altogether\\?$')))) {
+    const a = +m[2], d = +m[5];
+    const b = m[6] === 'more' ? a + d : a - d;
+    if (b < 2) return 'p3word more/fewer: the second child has fewer than 2';
+    return done(wpSolve(0, 10000, x => x - a === b), m[3], 'more-altogether');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' has ' + WP_TIMES + ' as many ([a-z]+) as ' + WP_N + '\\. They have (\\d+) \\3 altogether\\. How many (more )?\\3 does ' + WP_N + ' have( than ' + WP_N + ')?\\?$')))) {
+    const k = wpTimes(m[2]), T = +m[5];
+    const Bs = wpSolve(1, T, B => B + k * B === T);
+    if (Bs.length !== 1) return `p3word times-total: ${Bs.length} ways to split ${T}`;
+    const B = Bs[0], w = m[6] ? k * B - B : (m[7] === m[1] ? k * B : m[7] === m[4] ? B : NaN);
+    if (m[6] && !(m[7] === m[1] && m[9] === m[4])) return 'p3word times-total: "how many more" asks the wrong way round';
+    return div(T, k + 1, 'times-total') || done(Number.isFinite(w) ? [w] : [], m[3], 'times-total');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' and ' + WP_N + ' have (\\d+) ([a-z]+) altogether\\. \\1 has (\\d+) more \\4 than \\2\\. How many \\4 does ' + WP_N + ' have\\?$')))) {
+    const T = +m[3], d = +m[5];
+    const Bs = wpSolve(1, T, B => B + (B + d) === T);
+    if (Bs.length !== 1) return `p3word more-total: ${Bs.length} ways`;
+    const w = m[6] === m[1] ? Bs[0] + d : m[6] === m[2] ? Bs[0] : NaN;
+    return div(T - d, 2, 'more-total') || done(Number.isFinite(w) ? [w] : [], m[4], 'more-total');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' has ' + WP_TIMES + ' as many ([a-z]+) as ' + WP_N + '\\. ' + WP_N + ' has (\\d+) (more|fewer) \\3 than \\4\\. The three children have (\\d+) \\3 altogether\\. How many \\3 does ' + WP_N + ' have\\?$')))) {
+    if (new Set([m[1], m[4], m[5]]).size !== 3) return 'p3word three-units: two of the three children share a name';
+    const k = wpTimes(m[2]), d = +m[6], T = +m[8], sg = m[7] === 'more' ? 1 : -1;
+    const Bs = wpSolve(1, T, B => k * B + B + (B + sg * d) === T && B + sg * d >= 2);
+    if (Bs.length !== 1) return `p3word three-units: ${Bs.length} ways`;
+    const B = Bs[0], w = m[9] === m[1] ? k * B : m[9] === m[4] ? B : m[9] === m[5] ? B + sg * d : NaN;
+    return div(T - sg * d, k + 2, 'three-units') || done(Number.isFinite(w) ? [w] : [], m[3], 'three-units');
+  }
+  /* ---- before-after ---- */
+  if ((m = text.match(new RegExp('^' + WP_N + ' had (\\d+) ([a-z]+) and ' + WP_N + ' had (\\d+) \\3\\. How many \\3 must \\1 give to \\4 so that they both have the same number of \\3\\?$')))) {
+    const a = +m[2], b = +m[5];
+    return div(a - b, 2, 'give-equal') || done(wpSolve(1, a, g => a - g === b + g), m[3], 'give-equal');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' and ' + WP_N + ' had the same number of ([a-z]+)\\. \\1 gave (\\d+) \\3 to \\2\\. How many more \\3 does \\2 have than \\1 now\\?$')))) {
+    const g = +m[4], s0 = 5000;   /* any equal start works: the gap does not depend on it */
+    const gap = (s0 + g) - (s0 - g);
+    return done(wpSolve(1, 10000, x => x === gap), m[3], 'same-then-give');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' had ' + WP_TIMES + ' as many ([a-z]+) as ' + WP_N + '\\. After \\1 gave (\\d+) \\3 to \\4, they had the same number of \\3\\. How many \\3 (?:did ' + WP_N + ' have at first|did (each) of them have in the end)\\?$')))) {
+    const k = wpTimes(m[2]), g = +m[5];
+    const Bs = wpSolve(1, 10000, B => k * B - g === B + g);
+    if (Bs.length !== 1) return `p3word give-to-equal: ${Bs.length} ways`;
+    const B = Bs[0], w = m[7] ? B + g : m[6] === m[1] ? k * B : m[6] === m[4] ? B : NaN;
+    return (k > 2 ? div(2 * g, k - 1, 'give-to-equal') : null) || done(Number.isFinite(w) ? [w] : [], m[3], 'give-to-equal');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' and ' + WP_N + ' had (\\d+) ([a-z]+) altogether\\. After \\1 gave (\\d+) \\4 to \\2, \\2 had ' + WP_TIMES + ' as many \\4 as \\1\\. How many \\4 did ' + WP_N + ' have at first\\?$')))) {
+    const T = +m[3], g = +m[5], k = wpTimes(m[6]);
+    const As = wpSolve(g + 1, T, a0 => (T - a0) >= 2 && (T - a0) + g === k * (a0 - g));
+    if (As.length !== 1) return `p3word total-after: ${As.length} ways`;
+    const w = m[7] === m[1] ? As[0] : m[7] === m[2] ? T - As[0] : NaN;
+    return div(T, k + 1, 'total-after') || done(Number.isFinite(w) ? [w] : [], m[4], 'total-after');
+  }
+  /* ---- grouping ---- */
+  if ((m = text.match(new RegExp('^' + WP_N + ' had (\\d+) ([a-z]+)\\. \\1 gave (\\d+) \\3 to ' + WP_N + ' and packed the rest into ([a-z]+) of (\\d+)\\. The last ([a-z]+) was not full\\. How many more \\3 does \\1 need to fill the last \\8\\?$')))) {
+    const n = +m[2], k = +m[4], g = +m[7];
+    let rest = n - k, inLast = 0;
+    while (rest > 0) { inLast = rest >= g ? g : rest; rest -= inLast; }   /* pack one container at a time */
+    if (inLast === g || inLast === 0) return 'p3word need-more: the last container is full, so "was not full" is a false premise';
+    return div(n - k, g, 'need-more') || done(wpSolve(1, g, x => inLast + x === g), m[3], 'need-more');
+  }
+  /* ---- money ---- */
+  if ((m = text.match(new RegExp('^A ([a-z -]+) costs \\$(\\d+) and a ([a-zA-Z -]+) costs \\$(\\d+)\\. ' + WP_N + ' buys (\\d+) ([a-z -]+) and 1 \\3\\. How much does \\5 pay altogether\\?$')))) {
+    let paid = 0; for (let i = 0; i < +m[6]; i++) paid += +m[2]; paid += +m[4];
+    return done(wpSolve(1, 10000, x => x === paid), '$', 'money-buy', true);
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' had \\$(\\d+)\\. \\1 bought (\\d+) ([a-z -]+) at \\$(\\d+) each and a ([a-zA-Z -]+) for \\$(\\d+)\\. How much money did \\1 have left\\?$')))) {
+    let purse = +m[2]; for (let i = 0; i < +m[3]; i++) purse -= +m[5]; purse -= +m[7];
+    if (purse < 1) return 'p3word money-change: the child cannot afford it';
+    return done(wpSolve(1, +m[2], x => x === purse), '$', 'money-change', true);
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' wants to buy (\\d+) ([a-z -]+) at \\$(\\d+) each and a ([a-zA-Z -]+) for \\$(\\d+)\\. \\1 has \\$(\\d+)\\. How much more money does \\1 need\\?$')))) {
+    let cost = 0; for (let i = 0; i < +m[2]; i++) cost += +m[4]; cost += +m[6];
+    return done(wpSolve(1, cost, x => +m[7] + x === cost), '$', 'money-short', true);
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' had \\$(\\d+)\\. \\1 bought (\\d+) ([a-z -]+) at \\$(\\d+) each\\. With the rest of the money, \\1 bought as many ([a-z -]+) as possible at \\$(\\d+) each\\. (?:How many \\6 did \\1 buy|How much money did \\1 have (left) after that)\\?$')))) {
+    let purse = +m[2]; for (let i = 0; i < +m[3]; i++) purse -= +m[5];
+    const rest = purse, p = +m[7];
+    let bought = 0; while (purse >= p) { purse -= p; bought++; }   /* one at a time */
+    if (m[8]) return div(rest, p, 'money-rest') || (purse < 1 ? 'p3word money-rest: nothing is left, so "how much left" is a trick question' : done([purse], '$', 'money-rest left', true));
+    return div(rest, p, 'money-rest') || done([bought], first(m[6]), 'money-rest');
+  }
+  /* ---- measurement ---- */
+  if ((m = text.match(new RegExp('^A (jug|bag|roll) had (\\d+) (ℓ|kg|m) (\\d+) (ml|g|cm) of ([a-z]+)\\. ' + WP_N + ' (?:poured out|used|cut off) (\\d+) (?:cups|scoops|pieces) of (\\d+) \\5 each\\. How much \\6 was left (?:in|on) the \\1\\? Give your answer in \\5\\.$')))) {
+    const f = WP_PAIRS[m[3] + '|' + m[5]];
+    if (!f) return `p3word measure: ${m[3]}/${m[5]} is not a P3 unit pair`;
+    if (+m[4] >= f) return `p3word measure: ${m[4]} ${m[5]} should have been carried into ${m[3]}`;
+    let left = +m[2] * f + +m[4];
+    for (let i = 0; i < +m[8]; i++) left -= +m[9];
+    if (left < 1) return 'p3word measure: more was taken than there was';
+    return done(wpSolve(1, 10000, x => x === left), m[5], 'measure');
+  }
+  /* ---- heuristics ---- */
+  if ((m = text.match(/^A baker packed some ([a-z]+) equally into (\d+) boxes\. The baker sold (\d+) of the boxes\. Then (\d+) \1 from the boxes that were left were eaten\. (\d+) \1 remained\. How many \1 did the baker pack at first\?$/))) {
+    const k = +m[2], s = +m[3], e = +m[4], r = +m[5];
+    if (!(s >= 2 && k - s >= 2)) return 'p3word backwards: boxes sold / left are not plural';
+    const totals = wpSolve(1, 10000, tot => tot % k === 0 && (tot / k) * (k - s) - e === r);
+    return div(r + e, k - s, 'backwards') || done(totals, m[1], 'backwards boxes');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' had some ([a-z]+)\\. \\1 gave (\\d+) \\2 to ' + WP_N + '\\. Then \\1 bought (\\d+) packets of \\2 with (\\d+) \\2 in each packet\\. Now \\1 has (\\d+) \\2\\. How many \\2 did \\1 have at first\\?$')))) {
+    const a = +m[3], k = +m[5], p = +m[6], now = +m[7];
+    const starts = wpSolve(a + 1, 10000, s0 => s0 - a + k * p === now);   /* forward, from every start */
+    return done(starts, m[2], 'backwards stickers');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' has (\\d+) notes\\. Some are \\$(\\d+) notes and the rest are \\$(\\d+) notes\\. They are worth \\$(\\d+) altogether\\. How many \\$(\\d+) notes does \\1 have\\?$')))) {
+    const n = +m[2], lo = +m[3], hi = +m[4], V = +m[5], ask = +m[6];
+    if (ask !== lo && ask !== hi) return 'p3word notes: asks about a note that is not in the stem';
+    if (hi - lo > 9) return `p3word notes: the swap step divides by ${hi - lo}, a 2-digit divisor`;
+    const H = wpSolve(1, n - 1, h => h * hi + (n - h) * lo === V);   /* guess and check, every guess */
+    return done(H.length === 1 ? [ask === hi ? H[0] : n - H[0]] : H, 'notes', 'notes');
+  }
+  if ((m = text.match(/^There are (\d+) ([a-z]+) and ([a-z]+) (?:in a shop|in a car park|in a hall|on a farm)\. They have (\d+) (wheels|legs) altogether\. How many ([a-z]+) are there\?$/))) {
+    const n = +m[1], la = WP_LEGS[m[2]], lb = WP_LEGS[m[3]], w = +m[4];
+    if (!la || !lb) return `p3word wheels: "${m[2]}"/"${m[3]}" not in the harness's own table`;
+    if (m[6] !== m[2] && m[6] !== m[3]) return 'p3word wheels: asks about something not in the stem';
+    const B = wpSolve(1, n - 1, b => (n - b) * la + b * lb === w);
+    return done(B.length === 1 ? [m[6] === m[3] ? B[0] : n - B[0]] : B, m[6], 'wheels');
+  }
+  /* ---- W1 (calibration L0) shapes ---- */
+  if ((m = text.match(new RegExp('^' + WP_N + ' has ' + WP_TIMES + ' as many ([a-z]+) as ' + WP_N + '\\. ' + WP_N + ' has ' + WP_TIMES + ' as many \\3 as \\1\\. The three children have (\\d+) \\3 altogether\\. How many \\3 does ' + WP_N + ' have\\?$')))) {
+    if (new Set([m[1], m[4], m[5]]).size !== 3) return 'p3word three-party: two of the three children share a name';
+    const a = wpTimes(m[2]), b = wpTimes(m[6]), T = +m[7];
+    const Qs = wpSolve(1, T, Q => Q + a * Q + b * a * Q === T);
+    if (Qs.length !== 1) return `p3word three-party: ${Qs.length} ways`;
+    const Q = Qs[0], w = m[8] === m[4] ? Q : m[8] === m[1] ? a * Q : m[8] === m[5] ? a * b * Q : NaN;
+    return div(T, 1 + a + a * b, 'three-party') || done(Number.isFinite(w) ? [w] : [], m[3], 'three-party');
+  }
+  if ((m = text.match(new RegExp('^There are (\\d+) ([a-z]+) in a box\\. They are ([a-z]+), ([a-z]+) or ([a-z]+)\\. There are ' + WP_TIMES + ' as many ([a-z]+) \\2 as ([a-z]+) \\2\\. (\\d+) of the \\2 are ([a-z]+)\\. How many ([a-z]+) \\2 are there\\?$')))) {
+    const cols = [m[3], m[4], m[5]];
+    if (new Set(cols).size !== 3 || new Set([m[7], m[8], m[10]]).size !== 3 || ![m[7], m[8], m[10]].every(c => cols.includes(c)))
+      return 'p3word extra-fixed: the colours in the sentences are not the three colours listed';
+    const T = +m[1], k = wpTimes(m[6]), y = +m[9];
+    const Gs = wpSolve(1, T, g => k * g + g + y === T);
+    if (Gs.length !== 1) return `p3word extra-fixed: ${Gs.length} ways`;
+    const w = m[11] === m[7] ? k * Gs[0] : m[11] === m[8] ? Gs[0] : NaN;
+    return div(T - y, k + 1, 'extra-fixed') || done(Number.isFinite(w) ? [w] : [], m[2], 'extra-fixed');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' has (\\d+) times as many ([a-z]+) as ' + WP_N + '\\. \\1 has (\\d+) more \\3 than \\4\\. How many \\3 (?:do they have (altogether)|does ' + WP_N + ' have)\\?$')))) {
+    const k = +m[2], D = +m[5];
+    const Bs = wpSolve(1, D, B => k * B - B === D);
+    if (Bs.length !== 1) return `p3word times-diff: ${Bs.length} ways`;
+    const B = Bs[0], w = m[6] ? k * B + B : m[7] === m[1] ? k * B : m[7] === m[4] ? B : NaN;
+    return div(D, k - 1, 'times-diff') || done(Number.isFinite(w) ? [w] : [], m[3], 'times-diff');
+  }
+  if ((m = text.match(/^A ([a-z ]+) and a ([a-z ]+) cost \$(\d+) altogether\. The \1 costs \$(\d+) more than the \2\. How much does the ([a-z ]+) cost\?$/))) {
+    const S = +m[3], d = +m[4];
+    const Ss = wpSolve(1, S, x => x + (x + d) === S);
+    if (Ss.length !== 1) return `p3word sum-diff: ${Ss.length} ways`;
+    const w = m[5] === m[2] ? Ss[0] : m[5] === m[1] ? Ss[0] + d : NaN;
+    return div(S - d, 2, 'sum-diff') || done(Number.isFinite(w) ? [w] : [], '$', 'sum-diff', true);
+  }
+  const LEN = '(?:(\\d+) m)? ?(?:(\\d+) cm)?';
+  if ((m = text.match(new RegExp('^Two (ribbons|ropes|pieces of wire) are ' + LEN + ' long altogether\\. One (ribbon|rope|piece of wire) is ' + LEN + ' longer than the other\\. How long is the (shorter|longer) \\4\\? Give your answer in cm\\.$')))) {
+    if (+(m[3] || 0) > 99 || +(m[6] || 0) > 99) return 'p3word sum-diff length: a cm part is 100 or more';
+    const S = +(m[2] || 0) * 100 + +(m[3] || 0), d = +(m[5] || 0) * 100 + +(m[6] || 0);
+    if (!(S > 0 && d > 0)) return 'p3word sum-diff length: unreadable length';
+    const Ss = wpSolve(1, S, x => x + (x + d) === S);
+    if (Ss.length !== 1) return `p3word sum-diff length: ${Ss.length} ways`;
+    return div(S - d, 2, 'sum-diff length') || done([m[7] === 'shorter' ? Ss[0] : Ss[0] + d], 'cm', 'sum-diff length');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' bought (\\d+) things\\. Some were ([a-z]+) at \\$(\\d+) each and the rest were ([a-z]+) at \\$(\\d+) each\\. \\1 paid \\$(\\d+) altogether\\. How many ([a-z]+) did \\1 buy\\?$')))) {
+    const n = +m[2], lo = +m[4], hi = +m[6], V = +m[7];
+    if (m[8] !== m[3] && m[8] !== m[5]) return 'p3word two-prices: asks about something not bought';
+    if (hi - lo > 9 || hi === lo) return 'p3word two-prices: the price gap is not a 1-digit divisor';
+    const H = wpSolve(1, n - 1, h => (n - h) * lo + h * hi === V);
+    return done(H.length === 1 ? [m[8] === m[5] ? H[0] : n - H[0]] : H, m[8], 'two-prices');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' and ' + WP_N + ' had the same number of ([a-z]+) at first\\. \\1 gave away (\\d+) \\3 and \\2 gave away (\\d+) \\3\\. Now \\2 has ' + WP_TIMES + ' as many \\3 as \\1\\. How many \\3 (?:did each of them have (at first)|does \\1 have (now))\\?$')))) {
+    if (!q.stretch) return 'p3word ratio-after: a stretch shape must carry q.stretch';
+    const a = +m[4], b = +m[5], k = wpTimes(m[6]);
+    const Ss = wpSolve(Math.max(a, b) + 1, 10000, s0 => (s0 - b) === k * (s0 - a));
+    if (Ss.length !== 1) return `p3word ratio-after: ${Ss.length} ways`;
+    return (k > 2 ? div(a - b, k - 1, 'ratio-after') : null) || done([m[7] ? Ss[0] : Ss[0] - a], m[3], 'ratio-after');
+  }
+  if ((m = text.match(new RegExp('^' + WP_N + ' had (\\d+) more ([a-z]+) than ' + WP_N + '\\. Then \\1 gave away (\\d+) \\3\\. Now \\1 has ' + WP_TIMES + ' as many \\3 as \\4\\. How many \\3 did ' + WP_N + ' have at first\\?$')))) {
+    if (!q.stretch) return 'p3word ratio-after: a stretch shape must carry q.stretch';
+    const D = +m[2], g = +m[5], k = wpTimes(m[6]);
+    const Bs = wpSolve(1, 10000, B => (B + D - g) === k * B);
+    if (Bs.length !== 1) return `p3word ratio-after diff: ${Bs.length} ways`;
+    const w = m[7] === m[4] ? Bs[0] : m[7] === m[1] ? Bs[0] + D : NaN;
+    return (k > 2 ? div(D - g, k - 1, 'ratio-after diff') : null) || done(Number.isFinite(w) ? [w] : [], m[3], 'ratio-after diff');
+  }
+  if ((m = text.match(/^(\d+) ([a-z]+) and (\d+) ([a-z]+) cost \$(\d+)\. \1 \2 and (\d+) ([a-z]+) cost \$(\d+)\. Each ([a-z]+) costs the same and each ([a-z]+) costs the same\. How much (?:do (\d+) ([a-z]+) cost|does 1 ([a-z]+) cost)\?$/))) {
+    if (!q.stretch) return 'p3word elimination: a stretch shape must carry q.stretch';
+    const n = +m[1], p1 = +m[3], V1 = +m[5], p2 = +m[6], V2 = +m[8];
+    const sols = [];
+    for (let c = 1; c <= V1; c++) for (let p = 1; p <= V1; p++) if (n * c + p1 * p === V1 && n * c + p2 * p === V2) sols.push([c, p]);
+    if (sols.length !== 1) return `p3word elimination: ${sols.length} price pairs fit`;
+    const [c, p] = sols[0];
+    return done([m[11] ? +m[11] * p : c], '$', 'elimination', true);
+  }
+  return 'p3word: no oracle matched this stem - every generator in js/topics/p3-word-problems.js must ship its oracle ' +
+    'in the same commit (js/topics/README.md): ' + text;
+}
+
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
 /* Return: null = verified, string = failure, false = no oracle matched.
    `topic` is the registered topic id the generator was drawn from. It is used by
@@ -1950,6 +2241,8 @@ function oracle(q, topic) {
   if (topic === 'p3time') return p3timeOracle(q);
   /* lane/p3-angles: Right Angle Rock is re-measured off its own drawing, exhaustively. */
   if (topic === 'p3angles') return p3AnglesOracle(q);
+  /* lane/p3-wordprobs 2026-10-07: Model Method Marina, exhaustive (see p3wordOracle). */
+  if (topic === 'p3word') return p3wordOracle(q);
   const text = strip(q.q);
   const extra = strip(q.extra || '');
   const ansNum = parseFloat(strip(q.answerText));

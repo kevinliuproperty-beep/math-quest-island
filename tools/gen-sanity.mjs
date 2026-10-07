@@ -1935,6 +1935,133 @@ function p3timeOracle(q) {
     'in the same commit (js/topics/README.md): ' + text;
 }
 
+/* ---------- HARD LANE: p3numbers typed items (lane/hard-numbers, 2026-10-07) ----
+   Thousand Isles had no typed item before this lane, so every typed p3numbers stem
+   is dispatched here first and EXHAUSTIVELY: a typed stem no branch reads fails.
+   Each answer is re-derived from the RENDERED stem by brute force - every
+   arrangement of the cards, every number of the stated width against every clue,
+   the pattern walked figure by figure - never from the generator's own helpers.
+   Premises checked as well: four different cards; a clue set that leaves exactly
+   one number when it asks for "the number" and at least two when it asks for the
+   greatest/smallest; a printed table that really is a constant jump; a pile that
+   really leaves a remainder smaller than the jump. Every item must carry q.band. */
+function p3HardNumbersOracle(q) {
+  const raw = String(q.q), text = strip(raw), ex = strip(q.explain || '');
+  const fail = s => 'p3numbers hard: ' + s;
+  if (q.band !== 2 && q.band !== 3) return fail(`q.band must be 2 or 3, got ${JSON.stringify(q.band)}`);
+  if (ex.indexOf(String(q.answer)) < 0) return fail(`the teaching card never states the key ${q.answer}`);
+  const unit = Array.isArray(q.unit) ? q.unit[0] : (q.unit || '');
+  let m;
+
+  /* N1a digit cards */
+  if ((m = text.match(/^\S+(?: \S+)? has four digit cards: (\d), (\d), (\d), (\d)\. (?:He|She) uses each card once to make a 4-digit number\. What is the (smallest|greatest) (?:(odd|even) )?number (?:he|she) can make\?$/))) {
+    const c = [1, 2, 3, 4].map(i => Number(m[i]));
+    if (new Set(c).size !== 4) return fail('digit cards: two cards carry the same digit');
+    let best = null;
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) for (let k = 0; k < 4; k++) for (let l = 0; l < 4; l++) {
+      if (new Set([i, j, k, l]).size !== 4) continue;
+      const v = c[i] * 1000 + c[j] * 100 + c[k] * 10 + c[l];
+      if (v < 1000) continue;
+      if (m[6] === 'odd' && v % 2 !== 1) continue;
+      if (m[6] === 'even' && v % 2 !== 0) continue;
+      if (best === null || (m[5] === 'greatest' ? v > best : v < best)) best = v;
+    }
+    if (best === null) return fail('digit cards: no arrangement meets the stem');
+    if (unit) return fail('digit cards: a 4-digit number carries no unit');
+    return q.answer === best ? null : fail(`digit cards: expected ${best}, got ${q.answer}`);
+  }
+
+  /* N1b digit clues - read line by line off the raw stem */
+  if ((m = text.match(/^\S+(?: \S+)? is thinking of a ([34])-digit number\. These are (?:his|her) clues:/))) {
+    const nd = Number(m[1]);
+    const lines = raw.split('<br>');
+    const ask = strip(lines[lines.length - 1]);
+    const clueLines = lines.slice(1, -1).map(s => strip(s));
+    const PL = { thousands: 3, hundreds: 2, tens: 1, ones: 0 };   /* power of ten */
+    const dig = (v, p) => Math.floor(v / Math.pow(10, p)) % 10;
+    const placeOk = w => (w in PL) && PL[w] < nd;
+    const tests = [];
+    for (const cl of clueLines) {
+      let c;
+      if (!cl.startsWith('• ')) return fail(`digit clues: clue line "${cl}" has no bullet`);
+      const s = cl.slice(2);
+      if ((c = s.match(/^The (\w+) digit is (\d)\.$/))) {
+        if (!placeOk(c[1])) return fail(`digit clues: no ${c[1]} place in a ${nd}-digit number`);
+        const p = PL[c[1]], v = Number(c[2]); tests.push(n => dig(n, p) === v);
+      } else if ((c = s.match(/^The (\w+) digit is (twice|three times|four times) the (\w+) digit\.$/))) {
+        if (!placeOk(c[1]) || !placeOk(c[3]) || c[1] === c[3]) return fail(`digit clues: bad places in "${s}"`);
+        const a = PL[c[1]], b = PL[c[3]], k = { twice: 2, 'three times': 3, 'four times': 4 }[c[2]];
+        tests.push(n => dig(n, a) === k * dig(n, b));
+      } else if ((c = s.match(/^The (\w+) digit is (\d) more than the (\w+) digit\.$/))) {
+        if (!placeOk(c[1]) || !placeOk(c[3]) || c[1] === c[3]) return fail(`digit clues: bad places in "${s}"`);
+        const a = PL[c[1]], b = PL[c[3]], k = Number(c[2]);
+        tests.push(n => dig(n, a) - dig(n, b) === k);
+      } else if (s === 'All its digits are different.') {
+        tests.push(n => new Set(String(n)).size === nd);
+      } else if ((c = s.match(/^It is an (odd|even) number\.$/))) {
+        const odd = c[1] === 'odd'; tests.push(n => (n % 2 === 1) === odd);
+      } else if ((c = s.match(/^Its digits add up to (\d+)\.$/))) {
+        const S = Number(c[1]); tests.push(n => String(n).split('').reduce((t, x) => t + Number(x), 0) === S);
+      } else return fail(`digit clues: no reader for the clue "${s}"`);
+    }
+    const sols = [];
+    for (let n = Math.pow(10, nd - 1); n < Math.pow(10, nd); n++) if (tests.every(t => t(n))) sols.push(n);
+    if (unit) return fail('digit clues: a number carries no unit');
+    if (ask === 'What is the number?') {
+      if (sols.length !== 1) return fail(`digit clues: "the number" but ${sols.length} numbers fit (${sols.slice(0, 8).join(', ')})`);
+      return q.answer === sols[0] ? null : fail(`digit clues: expected ${sols[0]}, got ${q.answer}`);
+    }
+    const am = ask.match(/^What is the (greatest|smallest) number it can be\?$/);
+    if (!am) return fail(`digit clues: unknown question "${ask}"`);
+    if (sols.length < 2) return fail(`digit clues: asks for the ${am[1]} but only ${sols.length} number fits`);
+    const e = am[1] === 'greatest' ? sols[sols.length - 1] : sols[0];
+    return q.answer === e ? null : fail(`digit clues: expected ${e}, got ${q.answer}`);
+  }
+
+  /* N2 figure patterns */
+  if ((m = text.match(/^\S+(?: \S+)? makes a pattern of figures with (\w+)\./))) {
+    const T = m[1];
+    const rowRe = new RegExp('Figure (\\d+): (\\d+) ' + T, 'g');
+    const rows = [...text.matchAll(rowRe)].map(r => [Number(r[1]), Number(r[2])]);
+    if (rows.length < 3) return fail('pattern: fewer than three figures printed');
+    if (!rows.every((r, i) => r[0] === i + 1)) return fail('pattern: the figures are not printed 1, 2, 3...');
+    const jump = rows[1][1] - rows[0][1];
+    if (!(jump > 0) || !rows.every((r, i) => i === 0 || r[1] - rows[i - 1][1] === jump)) return fail('pattern: the printed figures do not go up by one fixed jump');
+    /* walk the pattern; never a closed formula */
+    const walk = upTo => { let v = rows[0][1]; for (let f = 2; f <= upTo; f++) v += jump; return v; };
+    let c;
+    if ((c = text.match(new RegExp('How many ' + T + ' are there in Figure (\\d+)\\?$')))) {
+      if (unit !== T) return fail(`pattern: count answer should declare "${T}", got "${unit}"`);
+      const e = walk(Number(c[1]));
+      return q.answer === e ? null : fail(`pattern fwd: expected ${e}, got ${q.answer}`);
+    }
+    if ((c = text.match(new RegExp('Which figure uses (\\d+) ' + T + '\\? Type the figure number\\.$')))) {
+      if (unit) return fail('pattern inv: a figure number carries no unit');
+      const want = Number(c[1]); let f = 1;
+      while (walk(f) < want && f < 1000) f++;
+      if (walk(f) !== want) return fail(`pattern inv: no figure uses exactly ${want}`);
+      return q.answer === f ? null : fail(`pattern inv: expected ${f}, got ${q.answer}`);
+    }
+    if ((c = text.match(new RegExp('How many more ' + T + ' does Figure (\\d+) use than Figure (\\d+)\\?$')))) {
+      if (unit !== T) return fail(`pattern more: count answer should declare "${T}", got "${unit}"`);
+      const hi = Number(c[1]), lo = Number(c[2]);
+      if (hi <= lo) return fail('pattern more: the later figure is not the bigger one');
+      const e = walk(hi) - walk(lo);
+      return q.answer === e ? null : fail(`pattern more: expected ${e}, got ${q.answer}`);
+    }
+    if ((c = text.match(new RegExp('(?:He|She) has (\\d+) ' + T + ' and makes just one figure from the pattern\\. What is the biggest figure number (?:he|she) can make\\?$')))) {
+      if (unit) return fail('pattern pile: a figure number carries no unit');
+      const P = Number(c[1]); let f = 0;
+      while (walk(f + 1) <= P) f++;
+      if (f < 1) return fail('pattern pile: not even Figure 1 can be made');
+      if (walk(f) === P) return fail('pattern pile: nothing is left over, so the remainder step the item teaches is absent');
+      return q.answer === f ? null : fail(`pattern pile: expected ${f}, got ${q.answer}`);
+    }
+    return fail('pattern: no reader for the question: ' + text);
+  }
+  return fail('no oracle matched this typed stem - every typed p3numbers generator must ship its oracle: ' + text);
+}
+
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
 /* Return: null = verified, string = failure, false = no oracle matched.
    `topic` is the registered topic id the generator was drawn from. It is used by
@@ -1950,6 +2077,8 @@ function oracle(q, topic) {
   if (topic === 'p3time') return p3timeOracle(q);
   /* lane/p3-angles: Right Angle Rock is re-measured off its own drawing, exhaustively. */
   if (topic === 'p3angles') return p3AnglesOracle(q);
+  /* lane/hard-numbers 2026-10-07: every typed p3numbers stem, exhaustively. */
+  if (topic === 'p3numbers' && q.typed) return p3HardNumbersOracle(q);
   const text = strip(q.q);
   const extra = strip(q.extra || '');
   const ansNum = parseFloat(strip(q.answerText));

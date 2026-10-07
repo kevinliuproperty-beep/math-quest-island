@@ -39,6 +39,11 @@
  *   gAddConcept, gAddRegroup, gSubRegroup, gMissingAddend, gMentalMake, gMentalTakeTens,
  *   gAddError, gSubError, gTwoStepWord, gBackFromTotal.
  *
+ * HARD LANE (2026-10-07) added three TYPED, band-tagged banks - gDigitCards
+ * (pool 2), gDigitClues and gFigurePattern (pool 3) - so pool 3 now holds 13
+ * slots, 12 of them multi-step; see the block just above registerTopic. The
+ * paragraph below is the sweep's count of the original eleven.
+ *
  * NO GENERATOR SITS IN TWO POOLS. Pool 3 holds 11 slots and TEN of them are
  * two-step. The eleventh is gSubError ("what is the correct answer?"), and it is
  * DECLARED here rather than counted as two: a child who simply works out a − b
@@ -2802,6 +2807,270 @@ function gBackFromTotal(){
 }
 
 
+/* =========================================================================
+   HARD LANE (lane/hard-numbers, 2026-10-07) - exam-shaped items the P3 EOY
+   calibration found missing ([[Math Hardness Calibration — 2026-10-07]], cards
+   N1 and N2). All four are TYPED, the way real Booklet B prints them ("Ans: ___"),
+   so none of them enters the option-row rulers above; every one is re-derived from
+   its rendered stem by an oracle in tools/gen-sanity.mjs. Each item carries
+   q.band (2 = standard, 3 = exam-hard multi-step) for the mock's slot routing.
+   ========================================================================= */
+  const finishTyped = G.finishTyped;
+  const band = (q, b) => (q.band = b, q);
+
+  /* every ordering of a short list (4 cards = 24 orders) */
+  function perms(a){
+    if (a.length <= 1) return [a.slice()];
+    const out = [];
+    for (let i = 0; i < a.length; i++){
+      const rest = a.slice(0, i).concat(a.slice(i + 1));
+      for (const p of perms(rest)) out.push([a[i]].concat(p));
+    }
+    return out;
+  }
+  const joinDigits = d => d.reduce((s, x) => s * 10 + x, 0);
+  /* best arrangement of `cards` with no leading zero: greatest = biggest first;
+     smallest = the smallest NON-ZERO card first, then the rest smallest first */
+  function bestOrder(cards, want){
+    const c = cards.slice().sort((x, y) => x - y);
+    if (want === 'greatest') return c.reverse();
+    const lead = c.find(x => x !== 0);
+    const rest = c.slice(); rest.splice(rest.indexOf(lead), 1);
+    return [lead].concat(rest);
+  }
+
+/* N1a - DIGIT CARDS (pool 2, band 2). "Use the cards once each: the smallest odd
+   4-digit number." The traps the explanation names are the real ones: a 0 put
+   first (that is a 3-digit number), the parity clue ignored, and "smallest" read
+   as "greatest". The parity case is solved by TRYING EACH CARD THAT MAY END THE
+   NUMBER - a systematic list - because the shortcut "save the biggest even card
+   for the ones place" is false when 0 is a card: from 0, 2, 5, 7 the smallest
+   even number is 2570, not 5072. */
+function gDigitCards(){
+  let cards, want, par, ans, g = 0;
+  do {
+    const pool = shuffle([1,2,3,4,5,6,7,8,9]);
+    cards = ri(1, 10) <= 6 ? [0].concat(pool.slice(0, 3)) : pool.slice(0, 4);
+    cards = shuffle(cards);
+    want = pick(['smallest', 'greatest']);
+    par = pick(['', 'odd', 'even', 'odd', 'even']);
+    ans = null;
+    for (const p of perms(cards)){
+      if (p[0] === 0) continue;
+      const n = joinDigits(p);
+      if (par === 'odd' && n % 2 === 0) continue;
+      if (par === 'even' && n % 2 === 1) continue;
+      if (ans === null || (want === 'greatest' ? n > ans : n < ans)) ans = n;
+    }
+    g++;
+  } while (g < 200 && ans === null);
+  const kid = pick(KIDS), who = kid[0], Pron = kid[1], pron = Pron.toLowerCase();
+  const show = cards.map(c => '<b>' + c + '</b>').join(', ');
+  const stem = who + ' has four digit cards: ' + show + '. ' + Pron + ' uses each card once to make a ' +
+    '4-digit number. <b>What is the ' + want + (par ? ' ' + par : '') + ' number ' + pron + ' can make?</b>';
+  const big = want === 'greatest';
+  const parts = [];
+  const zeroNote = cards.indexOf(0) >= 0 && !big
+    ? ' The 0 cannot go first: a number that starts with 0 is not a 4-digit number.' : '';
+  if (!par){
+    const o = bestOrder(cards, want);
+    if (big) parts.push('For the greatest number, put the biggest card in the biggest place: thousands, then hundreds, tens and ones. ' +
+      'From biggest to smallest the cards are ' + andList(o.map(String)) + ', so the number is ' + ans + '.');
+    else parts.push('For the smallest number, put the smallest card in the biggest place.' + zeroNote +
+      ' So the thousands place takes ' + o[0] + ', and the other cards follow from smallest to biggest: ' +
+      andList(o.slice(1).map(String)) + '. The number is ' + ans + '.');
+  } else {
+    const ends = cards.filter(c => (c % 2 === 1) === (par === 'odd')).sort((x, y) => x - y);
+    const tries = ends.map(e => {
+      const rest = cards.slice(); rest.splice(rest.indexOf(e), 1);
+      return { e: e, n: joinDigits(bestOrder(rest, want).concat([e])) };
+    });
+    parts.push('An ' + (par === 'odd' ? 'odd number ends in 1, 3, 5, 7 or 9' : 'even number ends in 0, 2, 4, 6 or 8') +
+      ', so the ones card must be ' + (ends.length === 1 ? ends[0] + ', the only ' + par + ' card.' :
+      andList(ends.map(String)).replace(/ and /, ' or ') + '.'));
+    if (ends.length === 1){
+      parts.push('Then make the ' + want + ' number you can from the other three cards in front of it.' + zeroNote +
+        ' The number is ' + ans + '.');
+    } else {
+      parts.push('Try each one in the ones place, and each time make the ' + want +
+        ' number you can from the other three cards.' + zeroNote);
+      parts.push(tries.map(t => 'With ' + t.e + ' last: ' + t.n).join('. ') + '.');
+      parts.push('The ' + (big ? 'greatest' : 'smallest') + ' of these is ' + ans + '.');
+    }
+    /* the parity clue ignored */
+    const free = joinDigits(bestOrder(cards, want));
+    if (free !== ans) parts.push('(' + free + ' is ' + (big ? 'greater' : 'smaller') + ', but it is ' +
+      (par === 'odd' ? 'even' : 'odd') + ', so it does not count.)');
+  }
+  return band(finishTyped(stem, ans, parts.join(' ')), 2);
+}
+
+/* N1b - DIGIT CLUES (pool 3). "I am a 3-digit number. The ones digit is 4. The
+   hundreds digit is twice the tens digit. It is even..." The method taught is the
+   exam one: write down the digits you are TOLD, LIST every pair the linking clue
+   allows (and say why the list stops), then cross out with the last clue. Three
+   shapes: greatest/smallest straight off the list (band 2), greatest/smallest
+   after a crossing-out clue that changes the answer (band 3), and "what is the
+   number?" pinned by the digit sum (band 3). */
+const CL_PLACES4 = ['thousands', 'hundreds', 'tens', 'ones'];
+const CL_TIMES = { 2: 'twice', 3: 'three times', 4: 'four times' };
+function gDigitClues(){
+  let r, g = 0;
+  do { r = clueDraw(); g++; } while (g < 400 && !r);
+  return r;
+}
+function clueDraw(){
+  const nd = ri(1, 10) <= 7 ? 3 : 4;
+  const places = CL_PLACES4.slice(4 - nd);           /* index 0 is the leading place */
+  const ia = ri(0, nd - 1); let ib; do { ib = ri(0, nd - 1); } while (ib === ia);
+  const rel = ri(0, 1) === 0 ? { kind: 'times', k: ri(2, 4) } : { kind: 'more', k: ri(2, 6) };
+  const relOf = b => rel.kind === 'times' ? rel.k * b : b + rel.k;
+  const fixed = [];
+  for (let i = 0; i < nd; i++) if (i !== ia && i !== ib) fixed.push(i);
+  const digits = new Array(nd).fill(-1);
+  for (const i of fixed) digits[i] = i === 0 ? ri(1, 9) : ri(0, 9);
+  /* every (A, B) the linking clue allows, B counted up from 0 */
+  const cand = [];
+  for (let b = 0; b <= 9; b++){
+    const a = relOf(b);
+    if (a > 9) break;
+    const d = digits.slice(); d[ia] = a; d[ib] = b;
+    if (d[0] === 0) continue;
+    cand.push({ a: a, b: b, n: joinDigits(d), d: d });
+  }
+  if (cand.length < 2 || cand.length > 7) return null;
+  const shape = pick(['plain', 'cross', 'cross', 'sum', 'sum']);
+  const want = pick(['greatest', 'smallest']);
+  const big = want === 'greatest';
+  const ext = list => list.reduce((m, c) => (m === null || (big ? c.n > m.n : c.n < m.n)) ? c : m, null);
+  let survivors = cand, filter = null, key;
+  if (shape === 'plain'){
+    key = ext(cand).n;
+  } else if (shape === 'cross'){
+    const opts = ['distinct'];
+    if (ia === nd - 1 || ib === nd - 1) opts.push('odd', 'even', 'odd', 'even');
+    filter = pick(opts);
+    survivors = cand.filter(c => filter === 'distinct' ? new Set(c.d).size === nd
+      : (c.n % 2 === 1) === (filter === 'odd'));
+    if (survivors.length < 2 || survivors.length === cand.length) return null;
+    if (ext(survivors).n === ext(cand).n) return null;   /* the clue must change the answer */
+    key = ext(survivors).n;
+  } else {
+    if (cand.length < 3) return null;
+    const pickC = pick(cand);
+    filter = 'sum';
+    const S = pickC.d.reduce((s, x) => s + x, 0);
+    survivors = cand.filter(c => c.d.reduce((s, x) => s + x, 0) === S);
+    if (survivors.length !== 1) return null;
+    key = pickC.n;
+    filter = { sum: S };
+  }
+  const kid = pick(KIDS), who = kid[0], pron = kid[1].toLowerCase();
+  const his = kid[1] === 'He' ? 'his' : 'her';
+  const relText = 'The ' + places[ia] + ' digit is ' + (rel.kind === 'times'
+    ? CL_TIMES[rel.k] + ' the ' + places[ib] + ' digit.'
+    : rel.k + ' more than the ' + places[ib] + ' digit.');
+  const clues = fixed.map(i => 'The ' + places[i] + ' digit is ' + digits[i] + '.');
+  clues.push(relText);
+  if (filter === 'distinct') clues.push('All its digits are different.');
+  else if (filter === 'odd' || filter === 'even') clues.push('It is an ' + filter + ' number.');
+  else if (filter && filter.sum) clues.push('Its digits add up to ' + filter.sum + '.');
+  const order = shuffle(clues);
+  const ask = shape === 'sum' ? 'What is the number?' : 'What is the ' + want + ' number it can be?';
+  const stem = who + ' is thinking of a ' + nd + '-digit number. These are ' + his + ' clues:<br>• ' +
+    order.join('<br>• ') + '<br><b>' + ask + '</b>';
+  /* ---- the worked method ---- */
+  const ex = [];
+  if (fixed.length) ex.push('Write down the digits you are told: ' +
+    andList(fixed.map(i => 'the ' + places[i] + ' digit is ' + digits[i])) + '.');
+  const pairTxt = cand.map(c => places[ib] + ' ' + c.b + ' and ' + places[ia] + ' ' + c.a);
+  let why = '';
+  const bNext = cand[cand.length - 1].b + 1;
+  if (relOf(bNext) > 9) why = ' (With ' + places[ib] + ' ' + bNext + ', the ' + places[ia] +
+    ' digit would be ' + relOf(bNext) + ', which is not a digit.)';
+  let whyZero = '';
+  if (cand[0].b > 0) whyZero = ' The ' + places[ib] + ' digit cannot be 0 here, or the number would start with 0.';
+  ex.push(relText.replace(/\.$/, '') + ', so list every pair that works: ' + pairTxt.join('; ') + '.' + why + whyZero);
+  ex.push('So the number could be ' + andList(cand.map(c => String(c.n))).replace(/ and (\d+)$/, ' or $1') + '.');
+  if (filter === 'distinct'){
+    const out = cand.filter(c => survivors.indexOf(c) < 0).map(c => String(c.n));
+    ex.push('All its digits are different, so cross out ' + andList(out) + ' (each has a digit twice). That leaves ' +
+      andList(survivors.map(c => String(c.n))) + '.');
+  } else if (filter === 'odd' || filter === 'even'){
+    const out = cand.filter(c => survivors.indexOf(c) < 0).map(c => String(c.n));
+    ex.push('It is ' + filter + ', so its ones digit must be ' + filter + ': cross out ' + andList(out) +
+      '. That leaves ' + andList(survivors.map(c => String(c.n))) + '.');
+  } else if (filter && filter.sum){
+    ex.push('Now add up the digits of each one: ' + cand.map(c => c.d.join(' + ') + ' = ' +
+      c.d.reduce((s, x) => s + x, 0)).join('; ') + '. Only ' + key + ' has digits that add up to ' + filter.sum + '.');
+  }
+  if (shape !== 'sum'){
+    ex.push('The ' + want + ' of these is ' + key + '.');
+    if (shape === 'cross') ex.push('(Without the last step you would choose ' + ext(cand).n +
+      ', but it breaks the clue \u201c' + clues[clues.length - 1] + '\u201d)');
+  }
+  return band(finishTyped(stem, key, ex.join(' ')), shape === 'plain' ? 2 : 3);
+}
+
+/* N2 - FIGURE PATTERNS (pool 3, band 3). A text table of the first figures in a
+   stick / tile pattern, then: how many in Figure n; which figure uses N; how many
+   more in Figure m than Figure n; and the biggest figure you can make from a pile
+   (division with a remainder, read correctly). The off-by-one trap - "Figure 10 is
+   10 jumps" - is the misconception every explanation names. Kept here rather than
+   in Puzzle Caves (`heuristics`), which serves P2 to P6, so a P3-hard item cannot
+   leak to P2. */
+const FP_THINGS = [['sticks', 'stick'], ['straws', 'straw'], ['toothpicks', 'toothpick'], ['tiles', 'tile'], ['counters', 'counter']];
+function gFigurePattern(){
+  let d, a, g = 0;
+  do { d = ri(2, 9); a = ri(2, 12); g++; } while (g < 50 && a === d);
+  const thing = pick(FP_THINGS), T = thing[0];
+  const shown = pick([3, 3, 4]);
+  const at = n => a + (n - 1) * d;
+  const kid = pick(KIDS), who = kid[0], Pron = kid[1], pron = Pron.toLowerCase();
+  const rows = [];
+  for (let n = 1; n <= shown; n++) rows.push('Figure ' + n + ': ' + at(n) + ' ' + T);
+  const head = who + ' makes a pattern of figures with ' + T + '.<br>' + rows.join('<br>') +
+    '<br>The pattern goes on in the same way. ';
+  const jumpTxt = 'Find the jump first: ' + rows.map((_, i) => at(i + 1)).join(' → ') + ', so each figure uses ' +
+    d + ' more ' + T + ' than the one before.';
+  const kind = pick(['fwd', 'inv', 'more', 'pile']);
+  if (kind === 'fwd'){
+    const n = ri(8, 25), v = at(n);
+    return band(finishTyped(head + '<b>How many ' + T + ' are there in Figure ' + n + '?</b>', v,
+      jumpTxt + ' From Figure 1 to Figure ' + n + ' there are ' + n + ' − 1 = ' + (n - 1) + ' jumps. ' +
+      'Figure ' + n + ' uses ' + a + ' + ' + (n - 1) + ' × ' + d + ' = ' + a + ' + ' + ((n - 1) * d) + ' = ' + v + ' ' + T +
+      '. (Careful: Figure ' + n + ' is not ' + n + ' jumps - Figure 1 already has ' + a + ' ' + T + '.)', T), 3);
+  }
+  if (kind === 'inv'){
+    const n = ri(8, 30), v = at(n);
+    return band(finishTyped(head + '<b>Which figure uses ' + v + ' ' + T + '? Type the figure number.</b>', n,
+      jumpTxt + ' ' + v + ' − ' + a + ' = ' + (v - a) + ', which is how many more ' + T + ' than Figure 1. ' +
+      (v - a) + ' ÷ ' + d + ' = ' + (n - 1) + ' jumps after Figure 1, so it is Figure 1 + ' + (n - 1) + ' = Figure ' + n +
+      '. (Careful: ' + (n - 1) + ' is the number of jumps, not the figure number.)'), 3);
+  }
+  if (kind === 'more'){
+    const lo = ri(5, 15), hi = lo + ri(2, 6), v = (hi - lo) * d;
+    return band(finishTyped(head + '<b>How many more ' + T + ' does Figure ' + hi + ' use than Figure ' + lo + '?</b>', v,
+      jumpTxt + ' From Figure ' + lo + ' to Figure ' + hi + ' there are ' + hi + ' − ' + lo + ' = ' + (hi - lo) +
+      ' jumps, and each jump adds ' + d + ' ' + T + ': ' + (hi - lo) + ' × ' + d + ' = ' + v +
+      '. You do not need to work out either figure. (Check: Figure ' + lo + ' uses ' + at(lo) + ' and Figure ' + hi +
+      ' uses ' + at(hi) + '; ' + at(hi) + ' − ' + at(lo) + ' = ' + v + '.)', T), 3);
+  }
+  /* pile: the biggest figure that a pile can make, with some left over */
+  const n = ri(6, 20), left = ri(1, d - 1), pile = at(n) + left;
+  const q1 = Math.floor((pile - a) / d);
+  return band(finishTyped(head + Pron + ' has ' + pile + ' ' + T +
+    ' and makes just one figure from the pattern. <b>What is the biggest figure number ' + pron +
+    ' can make?</b>', n,
+    jumpTxt + ' Figure 1 uses ' + a + ' ' + T + ', so take those away first: ' + pile + ' − ' + a + ' = ' + (pile - a) +
+    ' ' + T + ' are left for the jumps. ' +
+    (pile - a) + ' ÷ ' + d + ' = ' + q1 + ' remainder ' + ((pile - a) % d) + ', so there are enough for ' + q1 +
+    ' jumps after Figure 1: that is Figure ' + n + ', which uses ' + at(n) + ' ' + T + '. Figure ' + (n + 1) +
+    ' would need ' + at(n + 1) + ', more than ' + pron + ' has. ' + (left === 1 ? 'The 1 ' + thing[1] + ' left over is' : 'The ' + left + ' ' + T + ' left over are') +
+    ' not enough for another jump.'), 3);
+}
+
+
   MQI.registerTopic({
     id:'p3numbers', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Numbers up to 10 000: number notation, representations and place values (thousands, hundreds, tens, ones); comparing and ordering numbers; patterns in number sequences. Addition and Subtraction: addition and subtraction algorithms (up to 4 digits); mental calculation involving addition and subtraction of two 2-digit numbers",
@@ -2827,11 +3096,13 @@ function gBackFromTotal(){
          [gPatternConcept,'pattern'],[gAddConcept,'addsub'],[gAddRegroup,'addsub']],
       2:[[gExpanded,'place'],[gBuildNum,'place'],[gNumToWords,'place'],[gSmallest,'compare'],[gBetween,'compare'],
          [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
-         [gMissingAddend,'addsub'],[gMentalMake,'addsub'],[gMentalTakeTens,'addsub']],
+         [gMissingAddend,'addsub'],[gMentalMake,'addsub'],[gMentalTakeTens,'addsub'],
+         [gDigitCards,'place']],
       3:[[gStandsCompare,'place'],[gStandsFix,'place'],[gZeroFix,'place'],
          [gOrder,'compare'],[gBetweenWorded,'compare'],
          [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],
-         [gAddError,'addsub'],[gSubError,'addsub'],[gTwoStepWord,'addsub'],[gBackFromTotal,'addsub']]
+         [gAddError,'addsub'],[gSubError,'addsub'],[gTwoStepWord,'addsub'],[gBackFromTotal,'addsub'],
+         [gDigitClues,'place'],[gFigurePattern,'pattern']]
     }
   });
 })();

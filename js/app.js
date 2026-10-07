@@ -378,12 +378,12 @@ function mockNodes(){
       for(const k in t.skills) sk[k]=(t.skills[k]&&t.skills[k].label)||k;
       return { id, label:t.short||t.label||id, skills:sk }; });
 }
-function newMockGame(variant){
+function newMockGame(variant, resume){
   const mode=MQI.modes['p3-mock'];
   if(!mode) return;
   WEAK=null;
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
-  const fmt=mode.config.FORMATS[variant]||mode.config.FORMATS.quick;
+  const fmt=mode.config.FORMATS[resume?resume.paper.variant:variant]||mode.config.FORMATS.quick;
   const feeds={};
   const draw=(id,lvl)=>{ if(!feeds[id]) feeds[id]=MQI.createFeed(id,{alternateL3:false}); return feeds[id].next(lvl); };
   QSET=null; FEED=null;
@@ -402,26 +402,129 @@ function newMockGame(variant){
   $('runClock').textContent=''; $('streakBox').textContent='';
   $('feedback').innerHTML=''; $('monsterDots').innerHTML='';
   show('battleScreen');
+  mockConfirm(false);
   MQI.startMode('p3-mock',{ variant:fmt.id, durationMs:MOCK_MS||fmt.minutes*60000, nodes:mockNodes(), draw,
-    parse:MQI.parseTypedAnswer, grade:MQI.gradeTyped, shapeOf:MQI.shapeKey, onEnd:endMock });
+    parse:MQI.parseTypedAnswer, grade:MQI.gradeTyped, shapeOf:MQI.shapeKey, onEnd:endMock, resume:resume||null });
+  mockSave();
 }
-/* One answer on the paper: recorded, never shown. */
-function mockResolve(right, given, skipped){
-  const a=MQI.activeMode;
-  if(!a || a.mode.id!=='p3-mock'){ S.busy=false; return; }
-  S.total++; if(right) S.correct++;
-  recSkill(Q.skill,right);
-  a.mode.onAnswer(a.ctx,right,{ given, skipped:!!skipped });
-  if(a.mode.done()) endMock(MQI.endMode());
+/* ---- the exam navigator (Exam Navigator lane, 2026-10-07) ----
+   Like a real paper: skip, come back, change an answer, flag one to check, and hand
+   in when ready. Answers are recorded, never shown; marking happens at hand-in. The
+   pattern is WineQuiz's exam screen (wset-l2-quiz app/exam/ExamQuiz.tsx): Prev/Next
+   plus a numbered grid, current / answered / not-answered. */
+const MOCK_LIVE='mqi_mock_live';
+function mockActive(){ const a=MQI.activeMode; return (a && a.mode.id==='p3-mock' && S && S.mock) ? a : null; }
+function mockSave(){
+  const a=mockActive(); if(!a) return;
+  try{ const snap=a.mode.snapshot(a.ctx); if(snap){ snap.t=Date.now(); localStorage.setItem(MOCK_LIVE,JSON.stringify(snap)); } }catch(e){}
 }
-function mockSkip(){
-  if(!S || !S.mock || S.busy || !Q) return;
-  S.busy=true;
-  mockResolve(false,null,true);
+function mockClearSaved(){ try{ localStorage.removeItem(MOCK_LIVE); }catch(e){} }
+/* A reload mid-paper puts her straight back on it; the clock kept running meanwhile.
+   A paper whose time ran out while the page was away is marked as it stands. */
+function mockResume(){
+  let snap=null;
+  try{ snap=JSON.parse(localStorage.getItem(MOCK_LIVE)||'null'); }catch(e){ snap=null; }
+  if(!snap || !snap.paper || !Array.isArray(snap.paper.items) || !snap.paper.items.length || !MQI.modes['p3-mock']) return false;
+  snap.elapsedMs=(snap.elapsedMs||0)+Math.max(0,Date.now()-(snap.t||Date.now()));
+  try{ DB.grade='P3'; newMockGame(null, snap); return true; }
+  catch(e){ mockClearSaved(); return false; }
+}
+/* typed answers live in the box until she leaves the question; keep what is there */
+function mockCommitTyped(){
+  const a=mockActive(); if(!a || !Q || !Q.typed) return;
+  const v=$('typedInput').value.trim(), i=a.mode._i;
+  a.mode.record(i, v==='' ? null : { correct:MQI.gradeTyped(v,Q), given:v, raw:v });
+}
+function mockGo(i){
+  const a=mockActive(); if(!a) return;
+  mockCommitTyped();
+  a.mode.goto(a.ctx,i);
+  mockSave();
+}
+function mockPick(i){
+  const a=mockActive(); if(!a || !Q) return;
+  const idx=a.mode._i, fresh=!a.mode._answers[idx];
+  a.mode.record(idx,{ correct:i===Q.correct, given:Q.choices[i], choice:i });
+  mockPaint(); mockSave();
+  /* a first answer moves on, as the paper always has; changing one stays put */
+  if(fresh && idx<a.mode._paper.items.length-1){
+    S.busy=true;
+    setTimeout(()=>{ if(mockActive() && a.mode._i===idx) mockGo(idx+1); else if(S) S.busy=false; },260);
+  } else S.busy=false;
+}
+function mockTyped(){
+  const a=mockActive(); if(!a || !Q) return;
+  if($('typedInput').value.trim()==='') return;
+  const idx=a.mode._i;
+  mockCommitTyped(); mockSave();
+  if(idx<a.mode._paper.items.length-1) mockGo(idx+1); else mockPaint();
+}
+/* paints the navigator, the chosen option and the restored typed text */
+function mockPaint(){
+  const a=mockActive(); if(!a) return;
+  const m=a.mode, idx=m._i, ans=m._answers[idx], st=m.status();
+  if(Q && !Q.typed){
+    document.querySelectorAll('#answers .ansBtn').forEach((b,k)=>b.classList.toggle('pick', !!ans && ans.choice===k));
+  }
+  let html='', sec=null;
+  st.forEach((x,k)=>{
+    const s=x.section.charAt(0);
+    if(s!==sec){ sec=s; html+='<span class="mkGrp">'+s+'</span>'; }
+    html+='<button class="mkNum'+(x.current?' cur':'')+(x.answered?' done':'')+(x.flagged?' flag':'')+'" data-k="'+k+'" aria-label="Question '+x.n+
+      (x.answered?', answered':', not answered')+(x.flagged?', flagged':'')+'">'+x.n+'</button>';
+  });
+  const grid=$('mkGrid'); grid.innerHTML=html;
+  const cur=grid.querySelector('.mkNum.cur');
+  if(cur && grid.scrollWidth>grid.clientWidth+1){
+    const gr=grid.getBoundingClientRect(), cr=cur.getBoundingClientRect();
+    if(cr.left<gr.left+8 || cr.right>gr.right-8) grid.scrollLeft+=(cr.left+cr.width/2)-(gr.left+gr.width/2);
+  }
+  $('mkPrev').disabled=idx<=0;
+  $('mkNext').disabled=idx>=st.length-1;
+  const f=$('mkFlag'); f.classList.toggle('on', !!m._flags[idx]); f.setAttribute('aria-pressed', m._flags[idx]?'true':'false');
+}
+function mockFlag(){
+  const a=mockActive(); if(!a) return;
+  a.mode.toggleFlag(a.mode._i); mockPaint(); mockSave();
+}
+/* The in-app hand-in check: counts, the numbers themselves (tap one to go there), Go back. */
+function mockConfirm(open){
+  const box=$('mkConfirm');
+  if(!open){ box.classList.remove('on'); return; }
+  const a=mockActive(); if(!a) return;
+  mockCommitTyped(); mockSave();
+  const st=a.mode.status();
+  const un=st.filter(x=>!x.answered), fl=st.filter(x=>x.flagged);
+  const chips=list=>list.map(x=>'<button class="mkNum'+(x.answered?' done':'')+(x.flagged?' flag':'')+'" data-k="'+(x.n-1)+'">'+x.n+'</button>').join('');
+  $('mkCfBody').innerHTML=
+    '<div class="mkCfLine">✅ <b>'+(st.length-un.length)+'</b> of '+st.length+' answered</div>'+
+    (un.length?'<div class="mkCfLine">⬜ <b>'+un.length+'</b> not answered yet</div><div class="mkCfChips">'+chips(un)+'</div>'
+              :'<div class="mkCfLine">Every question has an answer. 🎉</div>')+
+    (fl.length?'<div class="mkCfLine">🚩 <b>'+fl.length+'</b> flagged to check</div><div class="mkCfChips">'+chips(fl)+'</div>':'');
+  box.classList.add('on');
+}
+function mockHandIn(){
+  const a=mockActive(); if(!a) return;
+  mockCommitTyped();
+  mockConfirm(false);
+  a.mode.submit();
+  endMock(MQI.endMode());
 }
 function endMock(rec){
   MODE_FEED=null;
+  mockConfirm(false);
+  mockClearSaved();
   if(S) S.busy=true;
+  /* the session tally is taken from the FINAL answers, once, at hand-in (an answer
+     can change until then), through the same topic-true path a live answer uses */
+  if(rec && S){
+    S.total=0; S.correct=0; S.skills={}; S.tally={};
+    const keepQ=Q;
+    rec.review.forEach(r=>{ if(!r.attempted && !r.skipped) return;
+      S.total++; if(r.correct) S.correct++;
+      Q=r.q; recSkill(r.q.skill, !!r.correct); });
+    Q=keepQ;
+  }
   document.body.removeAttribute('data-mode-theme');
   $('modeHud').innerHTML='';
   if(!rec){ renderStart(); show('startScreen'); return; }
@@ -692,6 +795,11 @@ function nextQuestion(){
   S.busy=false;
   S.qAt=Date.now();
   if(S.timed) startQTimer();
+  if(S.mock){
+    const a=mockActive(), ans=a && a.mode._answers[a.mode._i];
+    if(Q.typed && ans && ans.raw!=null) $('typedInput').value=ans.raw;
+    mockPaint();
+  }
 }
 function lockButtons(){
   if(Q && Q.typed){ $('typedInput').disabled=true; return; }
@@ -823,7 +931,7 @@ function answer(i,btn){
     pwResolve(right);
     return;
   }
-  if(S.mock){ mockResolve(right, Q.choices[i]); return; }
+  if(S.mock){ mockPick(i); return; }
   S.total++;
   recSkill(Q.skill,right);
   lockButtons();
@@ -834,6 +942,7 @@ function answerTyped(){
   if(!S || S.busy || !Q || !Q.typed || inputLocked()) return;
   const v=$('typedInput').value.trim();
   if(v==='') return;
+  if(S.mock){ mockTyped(); return; }
   S.busy=true;
   stopQTimer();
   const c=ac(); if(c&&c.resume) c.resume();
@@ -843,7 +952,6 @@ function answerTyped(){
   const right = MQI.gradeTyped(v, Q);
   $('typedInput').disabled=true;
   if(S.patchwerk){ pwResolve(right); return; }
-  if(S.mock){ mockResolve(right, v); return; }
   S.total++;
   recSkill(Q.skill,right);
   resolve(right);
@@ -1182,7 +1290,15 @@ MQI.boot = function () {
   $('tabGlobal').addEventListener('click',()=>{ fameTab='global'; renderFame(); });
   $('tabLocal').addEventListener('click',()=>{ fameTab='local'; renderFame(); });
   $('tabPatch').addEventListener('click',()=>{ fameTab='patchwerk'; renderFame(); });
-  $('mockSkip').addEventListener('click',mockSkip);
+  $('mkPrev').addEventListener('click',()=>{ const a=mockActive(); if(a && !S.busy) mockGo(a.mode._i-1); });
+  $('mkNext').addEventListener('click',()=>{ const a=mockActive(); if(a && !S.busy) mockGo(a.mode._i+1); });
+  $('mkFlag').addEventListener('click',mockFlag);
+  $('mkHandIn').addEventListener('click',()=>mockConfirm(true));
+  $('mkCfBack').addEventListener('click',()=>mockConfirm(false));
+  $('mkCfGo').addEventListener('click',mockHandIn);
+  const jump=e=>{ const b=e.target.closest('.mkNum'); if(!b || !mockActive()) return; mockConfirm(false); mockGo(+b.dataset.k); };
+  $('mkGrid').addEventListener('click',jump);
+  $('mkCfBody').addEventListener('click',jump);
   $('mkHistBtn').addEventListener('click',()=>renderMockHistory('mockScreen'));
   $('mkMapBtn').addEventListener('click',()=>{ DB.grade='P3'; saveData(); renderMap(); });
   $('mkHomeBtn').addEventListener('click',()=>{ renderStart(); show('startScreen'); });
@@ -1195,6 +1311,7 @@ MQI.boot = function () {
   });
 
   renderStart();
+  if(!/[?&](autoplay|shot)=/.test(location.search)) mockResume();
   autoplayHook();
 };
 
@@ -1309,6 +1426,8 @@ function autoplayHook(){
       if(p.get('bot')!=='1') return;
       const bot=setInterval(()=>{
         if(!S || !S.mock || !Q || S.busy || !MQI.activeMode){ if(S && !S.mock) clearInterval(bot); return; }
+        const m=MQI.activeMode.mode;
+        if(m.status().every(x=>x.answered)){ mockHandIn(); return; }
         const right=Math.random()<acc;
         if(Q.typed){
           $('typedInput').value = right ? String(Q.answer) : String((Number(Q.answer)||0)+1);

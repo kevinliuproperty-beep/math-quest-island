@@ -92,6 +92,20 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .steps i.ok{background:var(--teal)}
 .steps i.bad{background:var(--rose)}
 .steps i.part{background:var(--gold)}
+/* exam navigator (Exam Navigator lane, 2026-10-07): WineQuiz's numbered grid -
+   current (ringed), answered (filled), not answered (outline), flagged (corner) */
+.qnav{margin-top:16px;border-top:2px dashed var(--line);padding-top:12px}
+.qnav .grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.qnav .grp b{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);width:100%}
+.qn{position:relative;width:44px;height:44px;min-height:44px;padding:0;border:2px solid var(--line);border-radius:12px;background:var(--paper);font-weight:800;font-size:1rem;color:var(--ink-soft);overflow:hidden}
+.qn.done{background:var(--teal-soft);border-color:var(--teal);color:var(--ink)}
+.qn.cur{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink);color:var(--ink)}
+.qn.flag::after{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 14px 14px 0;border-color:transparent var(--accent) transparent transparent}
+.btn.flagon{background:var(--gold-soft);color:var(--ink);box-shadow:0 0 0 2px var(--gold) inset}
+.handin{width:100%;margin-top:10px}
+.cfm{border:2px solid var(--gold);background:var(--gold-soft);border-radius:18px;padding:16px;margin-top:6px}
+.cfm p{margin:6px 0}
+.cfm .chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
 .fig{border:2px solid var(--line);border-radius:16px;background:#fff;color:#2B2540;padding:8px;margin:0 0 14px;overflow-x:auto;max-width:100%}
 .fig svg{display:block;width:100%;max-width:640px;max-height:min(60vh,520px);height:auto;margin:0 auto}
 .fig table{border-collapse:collapse;margin:0 auto;min-width:min(100%,360px);font-size:1rem;background:#fff;color:#2B2540}
@@ -506,7 +520,7 @@ function startExam() {
   b.sort(byLevel);
   var max = a.concat(b).reduce(function (n, it) { return n + it.marks; }, 0);
   var mins = full ? 75 : Math.max(10, Math.round(75 * max / 70));   /* EOY pace: 70 marks in 75 min */
-  startSession('exam', 'Mock paper', a.concat(b), { nA: a.length, timerEnd: S.timer ? Date.now() + mins * 60000 : null, mins: mins });
+  startSession('exam', 'Mock paper', a.concat(b), { nA: a.length, timerEnd: S.timer ? Date.now() + mins * 60000 : null, mins: mins, flags: [] });
 }
 
 /* ---------- quiz ---------- */
@@ -537,7 +551,8 @@ function renderQuiz() {
   var label = exam ? (se.i < se.nA ? 'Section A · Q' + (se.i + 1) : 'Section B · Q' + (se.i + 1)) : 'Question ' + (se.i + 1) + ' of ' + se.items.length;
   var h = '<div class="spread"><button class="link" data-act="quit">✕ Stop</button>' +
     (exam && se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '<span class="eyebrow" style="margin:0">' + esc(se.kind === 'practice' ? se.title : (t ? t.emoji + ' ' + t.title : '')) + '</span>') + '</div>';
-  h += stepsHTML();
+  if (exam && se.confirm) return renderConfirm();
+  if (!exam) h += stepsHTML();
   h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + '</p>';
   h += figHTML(it.figure);
   h += '<p class="stem">' + esc(it.stem) + (it.type === 'oeq' ? '<span class="marks">[' + it.marks + ' mark' + (it.marks === 1 ? '' : 's') + ']</span>' : '') + '</p>';
@@ -561,8 +576,9 @@ function renderQuiz() {
   var last = se.i === se.items.length - 1;
   var next = '';
   if (exam) {
-    if (se.i === se.nA - 1 && se.nA < se.items.length) next = '<button class="btn teal" data-act="next">On to Section B →</button>';
-    else next = last ? '<button class="btn" data-act="finishExam">Finish &amp; mark →</button>' : '<button class="btn teal" data-act="next">Next →</button>';
+    next = '<button class="btn small ghost' + (se.flags[se.i] ? ' flagon' : '') + '" data-act="flag" aria-pressed="' + !!se.flags[se.i] + '">🚩 Flag</button>' +
+      (last ? '<button class="btn teal" data-act="finishExam">Hand in →</button>'
+            : '<button class="btn teal" data-act="next">' + (se.i === se.nA - 1 && se.nA < se.items.length ? 'On to Section B →' : 'Next →') + '</button>');
   } else if (it.type === 'mcq') {
     next = a.choice != null ? '<button class="btn teal" data-act="next">' + (last ? 'See results →' : 'Next →') + '</button>' : '';
   } else {
@@ -570,8 +586,61 @@ function renderQuiz() {
                    : '<button class="btn" data-act="reveal">Show answer</button>';
   }
   h += '<div class="nav">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + next + '</div>';
+  if (exam) h += qnavHTML() + '<button class="btn handin" data-act="finishExam">✋ Hand in paper</button>';
   paint(h);
+  if (exam) examSave();
+  clearInterval(timerId); timerId = null;
   if (exam && se.timerEnd) timerId = setInterval(tickTimer, 1000);
+}
+/* ---------- exam navigator + hand-in check (Exam Navigator lane, 2026-10-07) ---------- */
+function answered(k) { var a = session.ans[k]; return a.choice != null || !!(a.text && a.text.trim()); }
+function qnBtn(k) {
+  var se = session;
+  return '<button class="qn' + (answered(k) ? ' done' : '') + (k === se.i && !se.confirm ? ' cur' : '') + (se.flags[k] ? ' flag' : '') +
+    '" data-act="jump" data-k="' + k + '" aria-label="Question ' + (k + 1) + (answered(k) ? ', answered' : ', not answered') + (se.flags[k] ? ', flagged' : '') + '">' + (k + 1) + '</button>';
+}
+function qnavHTML() {
+  var se = session, a = '', b = '';
+  se.items.forEach(function (it, k) { if (k < se.nA) a += qnBtn(k); else b += qnBtn(k); });
+  return '<div class="qnav" aria-label="Questions"><div class="grp"><b>Section A</b>' + a + '</div>' + (b ? '<div class="grp"><b>Section B</b>' + b + '</div>' : '') + '</div>';
+}
+function renderConfirm() {
+  var se = session, un = [], ob = [], fl = [];
+  se.items.forEach(function (it, k) {
+    if (!answered(k)) (it.type === 'mcq' ? un : ob).push(k);
+    if (se.flags[k]) fl.push(k);
+  });
+  var chips = function (l) { return '<div class="chips">' + l.map(qnBtn).join('') + '</div>'; };
+  var h = '<div class="spread"><span class="eyebrow" style="margin:0">Mock paper</span>' + (se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '') + '</div>' +
+    '<h2>✋ Hand in your paper?</h2><div class="cfm">' +
+    '<p>✅ <b>' + (se.items.length - un.length - ob.length) + '</b> of ' + se.items.length + ' answered</p>' +
+    (un.length ? '<p>⬜ <b>' + un.length + '</b> multiple-choice not answered</p>' + chips(un) : '') +
+    (ob.length ? '<p>✏️ <b>' + ob.length + '</b> open-ended with nothing typed (fine if you wrote it on paper)</p>' + chips(ob) : '') +
+    (fl.length ? '<p>🚩 <b>' + fl.length + '</b> flagged to check</p>' + chips(fl) : '') +
+    (!un.length && !ob.length && !fl.length ? '<p>Every question has an answer. 🎉</p>' : '') +
+    '</div><div class="nav"><button class="btn ghost" data-act="cfBack">← Go back</button><button class="btn" data-act="handIn">Hand in &amp; mark →</button></div>';
+  paint(h);
+  clearInterval(timerId); timerId = null;
+  if (se.timerEnd) timerId = setInterval(tickTimer, 1000);
+}
+/* A reload mid-paper resumes it (per-device localStorage, try/catch). */
+var EXAM_KEY = 'sq1-exam';
+function examSave() {
+  var se = session; if (!se || se.kind !== 'exam' || se.phase !== 'answer') return;
+  try { localStorage.setItem(EXAM_KEY, JSON.stringify({ ids: se.items.map(function (it) { return it.id; }), nA: se.nA, i: se.i,
+    ans: se.ans.map(function (a) { return { choice: a.choice, text: a.text }; }), flags: se.flags, timerEnd: se.timerEnd, mins: se.mins })); } catch (e) {}
+}
+function examClear() { try { localStorage.removeItem(EXAM_KEY); } catch (e) {} }
+function examResume() {
+  var d = null;
+  try { d = JSON.parse(localStorage.getItem(EXAM_KEY) || 'null'); } catch (e) {}
+  if (!d || !Array.isArray(d.ids) || !d.ids.length) return false;
+  var items = d.ids.map(function (id) { return SCI.items[id]; });
+  if (items.some(function (it) { return !it; })) { examClear(); return false; }   /* the bank changed under it */
+  session = { kind: 'exam', title: 'Mock paper', items: items, i: Math.min(d.i || 0, items.length - 1), nA: d.nA, phase: 'answer',
+    timerEnd: d.timerEnd || null, mins: d.mins, flags: Array.isArray(d.flags) ? d.flags : [],
+    ans: items.map(function (it, k) { var a = (d.ans || [])[k] || {}; return { choice: a.choice != null ? a.choice : null, text: a.text || '', ticks: null, score: null, shown: false }; }) };
+  return true;
 }
 function markingHTML(it, a) {
   if (!a.ticks) a.ticks = blankTicks(it);
@@ -708,13 +777,17 @@ var A = {
     else finishSession();
   },
   prev: function () { saveText(); if (session.i > 0) { session.i--; renderQuiz(); } },
-  finishExam: function () {
-    saveText();
-    var se = session, unanswered = se.items.filter(function (it, k) { return it.type === 'mcq' && se.ans[k].choice == null; }).length;
-    if (unanswered && !confirm(unanswered + ' MCQ not answered yet. Finish anyway?')) return;
+  /* Hand in: an in-app check first (never window.confirm), then marking as before */
+  finishExam: function () { saveText(); examSave(); session.confirm = true; renderQuiz(); },
+  cfBack: function () { session.confirm = false; renderQuiz(); },
+  handIn: function () {
+    var se = session;
+    se.confirm = false; examClear();
     clearInterval(timerId);
     if (se.nA < se.items.length) { se.phase = 'markB'; se.markIdx = se.nA; renderQuiz(); } else finishSession();
   },
+  jump: function (el) { saveText(); session.confirm = false; session.i = +el.dataset.k; renderQuiz(); },
+  flag: function () { var se = session; se.flags[se.i] = !se.flags[se.i]; renderQuiz(); },
   markNext: function () { var se = session; if (se.markIdx < se.items.length - 1) { se.markIdx++; renderQuiz(); } else finishSession(); },
   retryMissed: function () {
     var se = session, list = se.items.filter(function (it, k) { return (se.ans[k].score || 0) < 1; });
@@ -723,11 +796,12 @@ var A = {
   quit: function () {
     if (session && session.phase !== 'report' && !confirm('Stop this set? Answers already marked are kept.')) return;
     var back = session && session.topicId ? 'topic/' + session.topicId : '';
+    if (session && session.kind === 'exam') examClear();
     session = null; go(back);
   },
   reset: function () { if (confirm('Erase all Science Quest progress on this device?')) { S = fresh(); save(); renderParent(); toast('Progress cleared'); } }
 };
-function saveText() { var ta = document.getElementById('oeqText'); if (ta && session) session.ans[session.i].text = ta.value; }
+function saveText() { var ta = document.getElementById('oeqText'); if (ta && session) { session.ans[session.i].text = ta.value; examSave(); } }
 document.addEventListener('click', function (e) {
   var el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
   if (el.dataset.act === 'tick') return;   /* checkboxes handled on change */
@@ -737,6 +811,7 @@ document.addEventListener('change', function (e) { var el = e.target; if (el.dat
 document.addEventListener('input', function (e) { if (e.target.id === 'oeqText') saveText(); });
 window.addEventListener('hashchange', route);
 countdown();
+if (examResume()) { if (location.hash !== '#quiz') location.hash = 'quiz'; }
 route();
 })();
 </script>

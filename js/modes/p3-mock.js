@@ -228,20 +228,25 @@
 
     start: function (ctx) {
       var o = (ctx && ctx.options) || {};
+      var r = o.resume || null;          /* a paper reloaded mid-sit (shell's localStorage copy) */
       this._nodes = o.nodes || [];
-      this._paper = buildPaper(o);
-      if (o.durationMs > 0) this._paper.durationMs = o.durationMs;
-      this._i = 0;
-      this._answers = [];
+      this._paper = r ? r.paper : buildPaper(o);
+      if (!r && o.durationMs > 0) this._paper.durationMs = o.durationMs;
+      this._answers = r ? (r.answers || []) : [];
+      this._visited = r ? (r.visited || []) : [];
+      this._flags = r ? (r.flags || []) : [];
+      this._offsetMs = r ? (r.elapsedMs || 0) : 0;   /* the clock kept running while the page was away */
+      this._submitted = false;
       this._ended = false;
+      this._i = -1;
       this._lastSec = null;
       if (ctx && ctx.ui) {
         ctx.ui.setTheme("mode-mock");
-        ctx.ui.setHud(renderHud(this._paper, 0, this._paper.durationMs));
-        ctx.ui.setBanner("<b>" + this._paper.label + "</b> · marks at the end");
+        ctx.ui.setHud(renderHud(this._paper, 0, this._paper.durationMs - this._offsetMs));
+        ctx.ui.setBanner("<b>" + this._paper.label + "</b> · " + (r ? "paper resumed" : "marks at the end"));
       }
-      this._lastSec = this._paper.items.length ? this._paper.items[0].sectionName : null;
-      if (ctx && ctx.nextQuestion) ctx.nextQuestion();
+      this._lastSec = null;
+      this.goto(ctx, r ? (r.i || 0) : 0, true);
       return this._paper;
     },
 
@@ -250,27 +255,65 @@
       var p = this._paper;
       return p && p.items[this._i] ? p.items[this._i] : null;
     },
-    done: function () { return !!(this._paper && this._i >= this._paper.items.length); },
+    /* The paper ends only when it is handed in (or the clock runs out). */
+    done: function () { return !!this._submitted; },
 
+    /* Exam navigation: any question, any order, answers kept until hand-in. */
+    goto: function (ctx, i, quiet) {
+      var p = this._paper;
+      if (!p || this._ended || !p.items.length) return null;
+      i = Math.max(0, Math.min(p.items.length - 1, i | 0));
+      this._i = i;
+      this._visited[i] = true;
+      var it = p.items[i];
+      if (ctx && ctx.ui && !quiet && this._lastSec && it.sectionName !== this._lastSec) {
+        ctx.ui.setBanner("<b>" + it.sectionName + "</b>" + (it.q.typed ? " · type your answers" : ""));
+      }
+      this._lastSec = it.sectionName;
+      if (ctx && ctx.nextQuestion) ctx.nextQuestion();
+      return it;
+    },
+    /* answer = { correct, given, choice?, raw? } or null to clear it */
+    record: function (i, answer) {
+      if (!this._paper || this._ended || !this._paper.items[i]) return;
+      this._answers[i] = answer || undefined;
+    },
+    toggleFlag: function (i) {
+      if (!this._paper || this._ended || !this._paper.items[i]) return false;
+      this._flags[i] = !this._flags[i];
+      return this._flags[i];
+    },
+    /* what the navigator draws: one entry per item */
+    status: function () {
+      var self = this, p = this._paper;
+      if (!p) return [];
+      return p.items.map(function (it, i) {
+        return { n: it.n, section: it.section, sectionName: it.sectionName, answered: !!self._answers[i],
+                 flagged: !!self._flags[i], current: i === self._i };
+      });
+    },
+    elapsedMs: function (ctx) { return this._offsetMs + ((ctx && typeof ctx.elapsedMs === "number") ? ctx.elapsedMs : 0); },
+    /* a JSON-safe copy the shell keeps in localStorage so a reload resumes the paper */
+    snapshot: function (ctx) {
+      if (!this._paper || this._ended) return null;
+      return { paper: this._paper, answers: this._answers, visited: this._visited, flags: this._flags,
+               i: this._i, elapsedMs: this.elapsedMs(ctx) };
+    },
+    submit: function () { if (this._paper && !this._ended) this._submitted = true; },
+
+    /* Legacy one-way flow (kept for the mode contract): answer the item on the
+       paper and move to the next one. Never hands the paper in by itself. */
     onAnswer: function (ctx, correct, meta) {
       if (!this._paper || this._ended || this.done()) return { ignored: true };
       meta = meta || {};
-      this._answers[this._i] = { correct: !!correct, given: meta.given, skipped: !!meta.skipped };
-      this._i++;
-      if (!this.done()) {
-        var it = this.current();
-        if (ctx && ctx.ui && this._lastSec && it.sectionName !== this._lastSec) {
-          ctx.ui.setBanner("<b>" + it.sectionName + "</b> · type your answers");
-        }
-        this._lastSec = it.sectionName;
-        if (ctx && ctx.nextQuestion) ctx.nextQuestion();
-      }
+      this._answers[this._i] = meta.skipped ? undefined : { correct: !!correct, given: meta.given };
+      if (this._i < this._paper.items.length - 1) this.goto(ctx, this._i + 1);
       return { ignored: false };
     },
 
     tick: function (ctx) {
       if (!this._paper || this._ended) return;
-      var left = this._paper.durationMs - ((ctx && typeof ctx.elapsedMs === "number") ? ctx.elapsedMs : 0);
+      var left = this._paper.durationMs - this.elapsedMs(ctx);
       if (ctx && ctx.ui) ctx.ui.setHud(renderHud(this._paper, this._i, left));
       if (this.done() || left <= 0) return this.end(ctx);
     },
@@ -279,15 +322,20 @@
       if (!this._paper || this._ended) return null;
       this._ended = true;
       var p = this._paper;
+      /* An item she opened and left blank counts exactly as a Skip used to; one she
+         never reached (the clock took it) stays undefined, as before. */
+      for (var k = 0; k < p.items.length; k++) {
+        if (!this._answers[k] && this._visited[k]) this._answers[k] = { correct: false, given: null, skipped: true };
+      }
       var sc = scorePaper(p, this._answers, this._nodes);
-      var used = (ctx && typeof ctx.elapsedMs === "number") ? Math.min(ctx.elapsedMs, p.durationMs) : p.durationMs;
+      var used = Math.min(this.elapsedMs(ctx), p.durationMs);
       var self = this;
       sc.mode = "p3-mock";
       sc.variant = p.variant;
       sc.label = p.label;
       sc.durationMs = p.durationMs;
       sc.usedMs = used;
-      sc.timedOut = !this.done();
+      sc.timedOut = !this._submitted;
       sc.t = Date.now();
       sc.review = p.items.map(function (it, i) {
         var a = self._answers[i];
@@ -337,6 +385,15 @@
       ok(sc.marks === want2, v + ": score adds up (" + sc.marks + ")");
       ok(sc.weakSkills.length === 2, v + ": two weakest skills named");
     });
+    /* navigation: answers survive jumps; opened-but-blank = skipped; unopened = clock took it */
+    var nm = Object.create(mode);
+    nm.start({ options: { variant: "quick", nodes: nodes, draw: draw, parse: parse, grade: grade, rng: rng } });
+    nm.record(0, { correct: true, given: "x" }); nm.goto(null, 4); nm.goto(null, 2); nm.goto(null, 0);
+    nm.record(0, { correct: false, given: "y" }); nm.toggleFlag(2); nm.submit();
+    var rec = nm.end({ elapsedMs: 1000 });
+    ok(rec.review[0].given === "y" && !rec.review[0].correct, "a changed answer is the one marked");
+    ok(rec.review[2].skipped && rec.review[4].skipped && !rec.review[1].skipped && !rec.review[1].attempted, "blank-opened = skipped, never-opened = untouched");
+    ok(!rec.timedOut && rec.attempted === 1, "handed in, one attempted");
     ok(toTyped({ q: "Which is the biggest?", choices: ["1", "2", "3", "4"], correct: 2 }, parse, grade) === null, "a 'which' stem stays MCQ");
     ok(toTyped({ q: "12 + 7 = ?", choices: ["19", "18", "two", "20"], correct: 0 }, parse, grade) === null, "a non-number option keeps it MCQ");
     var c = toTyped({ q: "12 + 7 = ?", choices: ["19", "18", "21", "20"], correct: 0 }, parse, grade);

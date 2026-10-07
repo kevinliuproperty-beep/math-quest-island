@@ -384,10 +384,47 @@
   .mk-q { font-size:15px; color:#d5cdff; }
   .mk-clock { font-size:19px; color:#9ef0ff; }
   .mk-clock.mk-low { color:#ff8f8f; }
-  #mockSkip { display:none; align-self:center; font-family:inherit; font-size:14px; font-weight:700; color:#d5cdff;
-              background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.2); border-radius:12px;
-              padding:8px 18px; margin-bottom:6px; cursor:pointer; }
-  body[data-mode-theme="mode-mock"] #mockSkip { display:block; }
+  /* The exam navigator (Exam Navigator lane, 2026-10-07): numbered buttons grouped by
+     booklet - current (yellow ring), answered (filled), not answered (outline), flagged
+     (red corner) - then Back / Flag / Next / Hand in. The strip scrolls sideways INSIDE
+     its own box on a phone; on a tall wide screen it wraps so the whole paper shows.
+     Every tap target is >= 42 px. Never green/red: nothing here says right or wrong. */
+  #mkNav { display:none; flex-direction:column; gap:8px; padding-bottom:4px; flex:0 0 auto; }
+  body[data-mode-theme="mode-mock"] #mkNav { display:flex; }
+  #mkGrid { display:flex; gap:6px; overflow-x:auto; overflow-y:hidden; padding:3px 2px; min-width:0;
+            overscroll-behavior-x:contain; scrollbar-width:thin; }
+  .mkGrp { flex:0 0 auto; align-self:center; font-size:13px; font-weight:900; color:#ffe66d; padding:0 2px 0 4px; }
+  .mkNum { position:relative; flex:0 0 auto; width:42px; height:42px; font-family:inherit; font-size:16px; font-weight:900;
+           color:#d5cdff; background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.32); border-radius:10px;
+           cursor:pointer; padding:0; overflow:hidden; }
+  .mkNum.done { background:#5a4bbf; border-color:#8f83ec; color:#fff; }
+  .mkNum.cur { border-color:#ffe66d; box-shadow:0 0 0 2px #ffe66d; color:#fff; }
+  .mkNum.flag::after { content:""; position:absolute; top:0; right:0; border-style:solid; border-width:0 13px 13px 0;
+                       border-color:transparent #ff8f5a transparent transparent; }
+  #mkBar { display:grid; grid-template-columns:1fr 1fr 1fr 1.25fr; gap:8px; }
+  #mkBar button { min-height:44px; font-family:inherit; font-size:15px; font-weight:800; color:#e2dcff; cursor:pointer;
+                  background:rgba(255,255,255,.09); border:2px solid rgba(255,255,255,.22); border-radius:12px; padding:4px 6px; }
+  #mkBar button:disabled { opacity:.35; cursor:default; }
+  #mkFlag.on { background:rgba(255,143,90,.25); border-color:#ff8f5a; color:#fff; }
+  #mkHandIn { background:linear-gradient(180deg,#ffe66d,#ffb84d) !important; color:#3a2200 !important; border:none !important; }
+  .ansBtn.pick { border-color:#ffe66d; box-shadow:0 0 0 3px #ffe66d inset; background:linear-gradient(180deg,#7465d8,#5a4bbf); }
+  @media (min-width:700px) and (min-height:900px) {
+    #mkGrid { flex-wrap:wrap; overflow:visible; justify-content:center; }
+    .mkGrp { flex-basis:100%; text-align:center; padding:0; }   /* each booklet starts its own line */
+    .mkNum { width:44px; height:44px; }
+  }
+  #mkConfirm { display:none; position:fixed; inset:0; z-index:60; background:rgba(10,6,30,.72);
+               align-items:center; justify-content:center; padding:16px; }
+  #mkConfirm.on { display:flex; }
+  .mkCfCard { width:min(440px,100%); max-height:100%; overflow-y:auto; background:#3b2a7a; border:2px solid #ffe66d;
+              border-radius:20px; padding:18px 16px; text-align:center; }
+  .mkCfCard h3 { font-size:22px; color:#ffe66d; margin-bottom:10px; }
+  .mkCfLine { font-size:17px; color:#e2dcff; margin:8px 0 4px; }
+  .mkCfChips { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+  .mkCfBtns { display:flex; gap:10px; margin-top:16px; }
+  .mkCfBtns button { flex:1; min-height:50px; font-family:inherit; font-size:17px; font-weight:900; border-radius:14px; cursor:pointer; }
+  #mkCfBack { color:#e2dcff; background:rgba(255,255,255,.1); border:2px solid rgba(255,255,255,.3); }
+  #mkCfGo { color:#3a2200; background:linear-gradient(180deg,#ffe66d,#ffb84d); border:none; }
   body[data-mode-theme="mode-mock"] #arena,
   body[data-mode-theme="mode-mock"] #monsterDots,
   body[data-mode-theme="mode-mock"] #streakBox,
@@ -516,7 +553,22 @@
     <div id="feedback"></div>
     <div id="answers"></div>
     <div id="typedWrap"><input id="typedInput" type="text" inputmode="decimal" autocomplete="off" maxlength="14" placeholder="Type your answer"><button id="typedGo">⚔️</button></div>
-    <button id="mockSkip">Skip this question ⏭</button>
+    <div id="mkNav">
+      <div id="mkGrid" aria-label="Questions"></div>
+      <div id="mkBar">
+        <button id="mkPrev">◀ Back</button>
+        <button id="mkFlag" aria-pressed="false">🚩 Flag</button>
+        <button id="mkNext">Next ▶</button>
+        <button id="mkHandIn">Hand in ✋</button>
+      </div>
+    </div>
+  </div>
+  <div id="mkConfirm" role="dialog" aria-modal="true" aria-labelledby="mkCfTitle">
+    <div class="mkCfCard">
+      <h3 id="mkCfTitle">Hand in your paper?</h3>
+      <div id="mkCfBody"></div>
+      <div class="mkCfBtns"><button id="mkCfBack">← Go back</button><button id="mkCfGo">Hand in ✋</button></div>
+    </div>
   </div>
 
   <!-- ============ END ============ -->

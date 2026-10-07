@@ -1838,6 +1838,95 @@ const TIME_SENSE = [
   ['The June school holidays last about', 'day'], ['A long-weekend family trip to Malaysia lasts about', 'day'],
   ['A bunch of bananas stays fresh for about', 'day']
 ];
+/* lane/hard-money 2026-10-07: Hawker Coins, dispatched first. The new bundle /
+   reverse-change / multi-step shapes are re-derived here by a DIFFERENT path from
+   the generator (exhaustive search, repeated addition, a balance with roles); the
+   pre-existing pilot stems fall through (undefined) to the generic money branch.
+   Anything else is a failure, so no stem can escape unchecked. */
+function p3moneyOracle(q) {
+  const text = strip(q.q), key = strip(q.answerText);
+  const toC = s => { const m = String(s).match(/^\$(\d+)(?:\.(\d{2}))?$/); return m ? Number(m[1]) * 100 + Number(m[2] || 0) : NaN; };
+  const amounts = [...text.matchAll(/\$\d+(?:\.\d{2})?|\d+¢/g)].map(x => /¢$/.test(x[0]) ? Number(x[0].slice(0, -1)) : toC(x[0]));
+  if (amounts.some(c => !Number.isFinite(c) || c % 5 !== 0)) return `p3money: an amount is not cash-payable in 5¢ steps (${text})`;
+  const bandBad = () => (q.band !== 2 && q.band !== 3) ? `p3money: q.band must be 2 or 3, got ${q.band}` : null;
+  const typedMoney = want => {
+    if (bandBad()) return bandBad();
+    if (q.unit !== '$') return `p3money: typed money item must declare '$', got ${JSON.stringify(q.unit)}`;
+    if (toC(key) !== want || !/^\$\d+\.\d{2}$/.test(key)) return `p3money: expected answerText ${(want / 100).toFixed(2)} as $x.xx, got ${key}`;
+    return near(Math.round(q.answer * 100), want) ? null : `p3money: expected ${want / 100}, got ${q.answer}`;
+  };
+  const mcqMoney = want => {
+    if (bandBad()) return bandBad();
+    const opts = (q.choices || []).map(strip).map(toC);
+    if (opts.some(v => !Number.isFinite(v))) return `p3money MCQ: an option is not a $ amount (${q.choices.join(' | ')})`;
+    if (opts.filter(v => v === want).length !== 1) return `p3money MCQ: ${want / 100} appears ${opts.filter(v => v === want).length} times among the options`;
+    return opts[q.correct] === want ? null : `p3money MCQ: keyed ${strip(q.choices[q.correct])}, expected $${(want / 100).toFixed(2)}`;
+  };
+  let m;
+  /* Mo1a - least cost: try every number of bundles, INCLUDING over-buying one,
+     and require the cheapest exact purchase to be the cheapest overall. */
+  if ((m = text.match(/^At .+, .+ cost \$(\d+) each, or (\d+) for \$(\d+)\. .+ needs (\d+) .+\. What is the least amount .+ must pay\?/))) {
+    const [S, B, P, N] = m.slice(1, 5).map(Number);
+    let exact = Infinity, any = Infinity;
+    for (let k = 0; k * B <= N + B; k++) {
+      const c = k * P + Math.max(0, N - k * B) * S;
+      any = Math.min(any, c);
+      if (k * B <= N) exact = Math.min(exact, c);
+    }
+    if (any < exact) return `p3money least-cost: over-buying a bundle is cheaper ($${any} < $${exact}), so "least amount" has two readings`;
+    if (P >= B * S) return 'p3money least-cost: the bundle is no saving';
+    return typedMoney(exact * 100);
+  }
+  /* Mo1b - packets with free items: count packets by repeated addition. */
+  if ((m = text.match(/a packet of (\d+) .+ costs \$(\d+), and every packet comes with (\d+) free .+ are sold only in packets\. What is the least amount .+ must pay to get at least (\d+) /))) {
+    const [K, P, F, N] = m.slice(1, 5).map(Number);
+    let got = 0, packs = 0;
+    while (got < N) { got += K + F; packs++; }
+    return mcqMoney(packs * P * 100);
+  }
+  /* Mo1c - how many, from the money spent: buy groups one at a time until the money is gone. */
+  if ((m = text.match(/sold at (\d+) for \$(\d+)/)) && /How many (\w+) did .+ buy\?$/.test(text)) {
+    const Gs = Number(m[1]), P = Number(m[2]);
+    const noun = text.match(/How many (\w+) did/)[1];
+    let spend;
+    if ((m = text.match(/had \$(\d+)\. .+ and had \$(\d+) left\./))) spend = Number(m[1]) - Number(m[2]);
+    else if ((m = text.match(/ spent \$(\d+) on /))) spend = Number(m[1]);
+    else return 'p3money how-many: cannot find the money spent';
+    let paid = 0, fruit = 0;
+    while (paid < spend) { paid += P; fruit += Gs; }
+    if (paid !== spend) return `p3money how-many: $${spend} is not a whole number of groups at $${P}`;
+    if (bandBad()) return bandBad();
+    if (q.unit !== noun) return `p3money how-many: unit should be "${noun}", got ${JSON.stringify(q.unit)}`;
+    return near(fruit, q.answer) ? null : `p3money how-many: expected ${fruit}, got ${q.answer}`;
+  }
+  /* Mo2a - reverse change: paid = every price + change. */
+  if ((m = text.match(/paid with a \$(\d+) note and received (\$\d+\.\d{2}|\d+¢) change\. (.+) How much did the (.+) cost\?/))) {
+    const note = Number(m[1]) * 100;
+    const chg = /¢$/.test(m[2]) ? Number(m[2].slice(0, -1)) : toC(m[2]);
+    const known = [...m[3].matchAll(/cost \$(\d+\.\d{2})/g)].map(x => toC('$' + x[1]));
+    if (/ cost /.test(m[3]) && !known.length) return 'p3money reverse-change: unreadable known price';
+    const u = note - chg - known.reduce((a, b) => a + b, 0);
+    if (u <= 0) return 'p3money reverse-change: the missing price is not positive';
+    return typedMoney(u);
+  }
+  /* Mo2b - missing item from money left: had = prices + left. */
+  if ((m = text.match(/had \$(\d+\.\d{2})\. .+ bought .+ for \$(\d+\.\d{2}), .+ for \$(\d+\.\d{2}) and .+\. .+ had \$(\d+\.\d{2}) left\. How much did the .+ cost\?$/))) {
+    const [H, a, b, L] = m.slice(1, 5).map(x => toC('$' + x));
+    return mcqMoney(H - L - b - a);
+  }
+  /* #13 - "$d more on Y than on X": the bar for Y is X's bar plus d. */
+  if ((m = text.match(/had \$(\d+\.\d{2})\. .+ spent \$(\d+\.\d{2}) on .+ and \$(\d+\.\d{2}) more on .+ than on the .+\. How much money did .+ have left\?/))) {
+    const [H, a, d] = m.slice(1, 4).map(x => toC('$' + x));
+    return typedMoney(H - (a + a + d));
+  }
+  /* #13 standard - two purchases from a sum of money. */
+  if ((m = text.match(/had \$(\d+\.\d{2})\. .+ spent \$(\d+\.\d{2}) on .+ and \$(\d+\.\d{2}) on .+\. How much money did .+ have left\?/))) {
+    const [H, a, b] = m.slice(1, 4).map(x => toC('$' + x));
+    return typedMoney(H - b - a);
+  }
+  if (/change should|in total\?|money is left\?/.test(text)) return undefined;
+  return `p3money: unrecognised stem (${text})`;
+}
 function p3timeOracle(q) {
   const text = strip(q.q), ex = strip(q.explain || '');
   const opts = (q.choices || []).map(strip);
@@ -1948,6 +2037,8 @@ function oracle(q, topic) {
   if (topic === 'decimals') return decimalsOracle(q);
   /* lane/p3-time 2026-10-06: exhaustive, like decimals (see p3timeOracle). */
   if (topic === 'p3time') return p3timeOracle(q);
+  /* lane/hard-money 2026-10-07: exhaustive for the new shapes, see p3moneyOracle. */
+  if (topic === 'p3money') { const r = p3moneyOracle(q); if (r !== undefined) return r; }
   /* lane/p3-angles: Right Angle Rock is re-measured off its own drawing, exhaustively. */
   if (topic === 'p3angles') return p3AnglesOracle(q);
   const text = strip(q.q);

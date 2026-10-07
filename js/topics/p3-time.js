@@ -37,6 +37,7 @@
     const h12 = h % 12 === 0 ? 12 : h % 12;
     return h12 + '.' + pad2(m) + ' ' + (h < 12 ? 'a.m.' : 'p.m.');
   }
+  const T12 = t12;
   const t24 = t => pad2(Math.floor(t / 60)) + ':' + pad2(t % 60);
   function dur(d) {
     const h = Math.floor(d / 60), m = d % 60;
@@ -53,7 +54,8 @@
 
   /* "count on" the way SG pupils draw a timeline: to the next hour, whole hours,
      then the minutes left. Returns one child-readable sentence. */
-  function countOn(s, e) {
+  function countOn(s, e, fmt) {
+    const t12 = fmt || T12;   /* the 24-hour T1 items count on in HH:MM */
     const parts = [], steps = [];
     let cur = s;
     if (cur % 60 && ceilH(cur) <= e) {
@@ -99,6 +101,10 @@
     for (let i = 0; i < 500; i++) { const q = f(); if (q) return q; }
     throw new Error('p3time: generator could not draw a valid item');
   }
+  /* difficulty band for the mock (hard lane 2026-10-07): 2 = standard, 3 = exam-hard multi-step;
+     stretch marks a shape beyond the core exam (a slow watch) */
+  const band3 = (q, stretch) => { if (q) { q.band = 3; if (stretch) q.stretch = true; } return q; };
+  const band2 = q => { if (q) q.band = 2; return q; };
   const times = ts => ts.every(okT) ? ts.map(t12) : [];
 
   /* =====================================================================
@@ -173,7 +179,7 @@
   /* pool 3, two steps: change both laps to seconds, then add or compare */
   const SPORTS = [['swam', 'lap', 'laps', 'of the pool'], ['ran', 'round', 'rounds', 'of the school field'], ['cycled', 'round', 'rounds', 'of the park']];
   function gTwoLaps() {
-    return redraw(() => {
+    return band2(redraw(() => {
       const who = pick(NAMES), [verb, one, many, where] = pick(SPORTS);
       const a = 60 * ri(1, 2) + ri(5, 55), b = 60 * ri(1, 2) + ri(5, 55);
       if (a === b) return null;
@@ -189,7 +195,7 @@
       return typed(who + ' ' + verb + ' 2 ' + many + ' ' + where + '. The first ' + one + ' took ' + ms(a) + ' and the second took ' +
         ms(b) + '. How many seconds faster was the ' + which + ' one?', slow - fast,
         '1 min = 60 s. ' + conv(a) + ' ' + conv(b) + ' Then ' + slow + ' s - ' + fast + ' s = ' + (slow - fast) + ' s.', 's');
-    });
+    }));
   }
 
   /* =====================================================================
@@ -267,7 +273,7 @@
   const TASKS = [['her homework', 'Maths', 'English'], ['her chores', 'washing the dishes', 'folding the clothes'],
                  ['his homework', 'Science', 'Chinese'], ['his practice', 'the piano', 'the violin']];
   function gTwoActivities() {
-    return redraw(() => {
+    return band2(redraw(() => {
       const [what, a, b] = pick(TASKS);
       const he = what.startsWith('his');
       const who = he ? pick(['Wei Jie', 'Jun Hao', 'Daryl', 'Farhan']) : pick(['Aisyah', 'Kavitha', 'Siti', 'Priya', 'Xin Yi', 'Charlotte']);
@@ -279,7 +285,7 @@
         ' and then ' + y + ' min on ' + b + '. What time did ' + (he ? 'he' : 'she') + ' finish?', t12(e), cands,
         'First add the two parts: ' + x + ' min + ' + y + ' min = ' + dur(x + y) + '. Then count on from ' + t12(s) + ' by ' +
         dur(x + y) + ': the answer is ' + t12(e) + '.');
-    });
+    }));
   }
 
   /* =====================================================================
@@ -325,7 +331,7 @@
   /* pool 3, two steps: read two 24-hour times, then find the duration */
   const JOURNEYS = ['A train', 'A coach to Malacca', 'A ferry', 'A plane'];
   function gTrain24() {
-    return redraw(() => {
+    return band2(redraw(() => {
       const s = 60 * ri(6, 12) + m5(5, 55), d = m5(95, 290), e = s + d;
       if (!okT(e) || e > 21 * 60 + 55 || e % 60 === 0 || e < 12 * 60) return null;
       const borrow = (e % 60) < (s % 60);
@@ -337,12 +343,12 @@
       const opts = cands.filter(c => c > 0).map(dur);
       return mcStr(pick(JOURNEYS) + ' left at ' + t24(s) + ' and arrived at ' + t24(e) + '. How long was the journey?', dur(d), opts,
         t24(s) + ' is ' + t12(s) + ' and ' + t24(e) + ' is ' + t12(e) + '. ' + countOn(s, e));
-    });
+    }));
   }
 
   /* pool 3, two steps: find the finishing time across noon, then write it in the 24-hour clock */
   function gEnd24() {
-    return redraw(() => {
+    return band2(redraw(() => {
       const s = 60 * ri(9, 11) + m5(5, 55), dh = ri(1, 3), dm = m5(5, 55), d = dh * 60 + dm, e = s + d;
       if (e < 12 * 60 + 5 || e % 60 === 0 || e > 17 * 60 + 55) return null;
       const cands = [e - 720, e - 60, e + 60, floorH(s) + d, ceilH(s) + d].filter(c => okT(c) && c !== e).map(t24);
@@ -351,6 +357,179 @@
         t24(e), cands,
         t12(s) + ' + ' + dh + ' h = ' + t12(s + dh * 60) + ', then + ' + dm + ' min = ' + t12(e) + '. In the 24-hour clock, ' + t12(e) +
         ' is ' + t24(e) + '.');
+    }));
+  }
+
+  /* =====================================================================
+     T1 (hard lane 2026-10-07): multi-segment timelines, exam-hard (band 3).
+     Every item strings three or more parts together on one timeline, and at
+     least one step needs an interpretation: a part to leave out, a time to work
+     back from, or a watch that is behind the real time. Distractors are the
+     named slips: no carry past 60 (1 h read as 100 min), a part left out, an
+     hour gained or lost, the a.m./p.m. slip, and the 12-hour hour written into
+     a 24-hour answer (03:10 for 15:10).
+     ===================================================================== */
+  const GIRLS = ['Aisyah', 'Kavitha', 'Siti', 'Priya', 'Xin Yi', 'Mei Ling', 'Charlotte', 'Nurul'];
+  const BOYS = ['Wei Jie', 'Jun Hao', 'Daryl', 'Farhan', 'Ken', 'Arjun'];
+  const anyName = () => pick(GIRLS.concat(BOYS));
+  /* "13:35 + 2 h = 15:35, then 15:35 + 10 min = 15:45" */
+  function stepOn(s, d, fmt) {
+    const h = Math.floor(d / 60), m = d % 60, parts = [];
+    let cur = s;
+    if (h) { parts.push(fmt(cur) + ' + ' + h + ' h = ' + fmt(cur + h * 60)); cur += h * 60; }
+    if (m) { parts.push(fmt(cur) + ' + ' + m + ' min = ' + fmt(cur + m)); }
+    return parts.join(', then ');
+  }
+  function stepBack(e, d, fmt) {
+    const h = Math.floor(d / 60), m = d % 60, parts = [];
+    let cur = e;
+    if (h) { parts.push(fmt(cur) + ' - ' + h + ' h = ' + fmt(cur - h * 60)); cur -= h * 60; }
+    if (m) { parts.push(fmt(cur) + ' - ' + m + ' min = ' + fmt(cur - m)); }
+    return parts.join(', then ');
+  }
+  /* add the parts in minutes: "1 h 5 min = 65 min. 40 min + 65 min + 25 min = 130 min = 2 h 10 min." */
+  function sumParts(ds) {
+    const conv = ds.filter(d => d >= 60).map(d => dur(d) + ' = ' + d + ' min. ').join('');
+    const tot = ds.reduce((a, b) => a + b, 0);
+    return conv + ds.map(d => d + ' min').join(' + ') + ' = ' + tot + ' min' + (tot >= 60 ? ' = ' + dur(tot) : '') + '.';
+  }
+  /* the "1 h = 100 min" slip when adding: the minutes column carries at 100, not 60 */
+  function slip100On(s, tot) {
+    const v = (s % 60) + tot;
+    if (v < 60 || v % 100 >= 60) return null;
+    return floorH(s) + 60 * Math.floor(v / 100) + (v % 100);
+  }
+  /* Pick the three distractors so the key's place in the row (earliest .. latest,
+     shortest .. longest) is spread evenly: misconceptions that all land on one side
+     of the key would let a child answer by picking the latest time. Returns [] when
+     the draw cannot balance, and mcStr then redraws. */
+  function balance(key, below, above, fmt, ok) {
+    const uniq = (xs, side) => [...new Set(xs.filter(x => x !== null && ok(x) && side(x)))];
+    const lo = uniq(below, x => x < key), hi = uniq(above, x => x > key);
+    const feasible = [0, 1, 2, 3].filter(r => lo.length >= r && hi.length >= 3 - r);
+    if (!feasible.length) return [];
+    const r = pick(feasible);
+    return shuffle(lo).slice(0, r).concat(shuffle(hi).slice(0, 3 - r)).map(fmt);
+  }
+  const okClock = x => okT(x) && x >= 60;
+  const okDur = x => x > 0 && x < 12 * 60;
+  const PAPER = t => ' (An exam paper may print ' + t24(t) + ' as ' + t24(t).replace(':', ' ') + ', with a space. It means the same time.)';
+
+  /* T1a: three parts on one afternoon, answer in the 24-hour clock */
+  const JOBS = ['Maths homework', 'piano practice', 'Chinese spelling', 'a jigsaw puzzle', 'tidying the room', 'reading a storybook', 'a Science project'];
+  function gChain24() {
+    return redraw(() => {
+      const who = anyName(), [A, B, C] = shuffle(JOBS).slice(0, 3);
+      const s = 60 * ri(13, 17) + m5(5, 55), a = m5(15, 55), b = ri(0, 1) ? m5(65, 105) : m5(15, 55), c = m5(15, 55);
+      const tot = a + b + c, e = s + tot;
+      if (!okT(e) || e > 21 * 60 + 55 || e % 60 === 0) return null;
+      const cands = balance(e,
+        [e - 720, e - 60, e - a, e - b, e - c, slip100On(s, tot)],   /* 12-h hour kept; no carry; a part left out; carried at 100 */
+        [e + 60, ceilH(s) + tot, e + c, b >= 60 ? e + 40 : null],    /* an hour too many; counted from the next o'clock; a part twice; 1 h 5 min read as 105 min */
+        t24, okClock);
+      return band3(mcStr(who + ' started work at ' + t24(s) + '. ' + who + ' spent ' + dur(a) + ' on ' + A + ', ' + dur(b) + ' on ' + B +
+        ' and then ' + dur(c) + ' on ' + C + '. At what time did ' + who + ' finish? Give the time in the 24-hour clock.', t24(e), cands,
+        'First add the three parts. ' + sumParts([a, b, c]) + ' Then count on from ' + t24(s) + ': ' + stepOn(s, tot, t24) +
+        '. So ' + who + ' finished at ' + t24(e) + '. Afternoon hours stay above 12 in the 24-hour clock.' + PAPER(e)));
+    });
+  }
+
+  /* T1b: wait, then a show, then a bus ride home, all in the 12-hour clock */
+  const OUTINGS = ['the Esplanade', 'the Science Centre', 'the Singapore Zoo', 'Gardens by the Bay', 'the National Museum'];
+  function gTimeline12() {
+    return redraw(() => {
+      const who = anyName(), where = pick(OUTINGS);
+      const s = 60 * ri(10, 16) + m5(5, 55), w = m5(10, 40), show = m5(65, 135), bus = m5(15, 55);
+      const tot = w + show + bus, e = s + tot;
+      if (!okT(e) || e % 60 === 0 || e === 720 || e > 20 * 60 + 55) return null;
+      if (s >= 720 === e >= 720 && ri(0, 1)) return null;          /* half the draws cross 12 noon */
+      const opts = balance(e,
+        [e - 60, e - bus, e - w, slip100On(s, tot), s < 720 && e >= 780 ? e - 720 : null],   /* ...; kept the a.m. */
+        [e + 60, ceilH(s) + tot, e + 40, e < 720 ? e + 720 : null],     /* ...; 1 h 45 min read as 145 min; wrote p.m. */
+        t12, okClock);
+      return band3(mcStr(who + ' arrived at ' + where + ' at ' + t12(s) + '. ' + who + ' waited ' + w + ' min for a show to start, watched the ' +
+        dur(show) + ' show and then took a ' + bus + ' min bus ride home. What time did ' + who + ' get home?', t12(e), opts,
+        'Draw a timeline with three parts: the wait, the show and the bus ride. ' + sumParts([w, show, bus]) + ' Then count on from ' + t12(s) + ': ' +
+        stepOn(s, tot, t12) + '. So ' + who + ' got home at ' + t12(e) + '.'));
+    });
+  }
+
+  /* T1c: opening hours are given, but only the leaving time matters (the opening time is not needed) */
+  const VENUES = [['The library', 'the library'], ['The swimming complex', 'the swimming complex'], ['The Science Centre', 'the Science Centre'],
+                  ['The community club', 'the community club']];
+  function gStayDuration() {
+    return redraw(() => {
+      const who = anyName(), [V, v] = pick(VENUES);
+      const o = 60 * ri(8, 10) + pick([0, 30]), c = 60 * ri(17, 21) + pick([0, 15, 30, 45]);
+      const a = o + m5(40, 240), k = m5(15, 55), l = c - k, d = l - a;
+      if (d < 65 || d > 270 || d % 60 === 0 || l % 60 === 0) return null;
+      const borrow = (l % 60) < (a % 60);
+      if (!borrow && ri(0, 2)) return null;
+      const opts = balance(d,
+        [d - 60, floorH(l) - a, l - ceilH(a)],                      /* lost an hour; dropped the minutes after the last o'clock; began at the next o'clock */
+        [c - a, l - o, d + 60, borrow ? d + 40 : null],             /* stayed till closing; counted from opening; ...; 1 h treated as 100 min */
+        dur, okDur);
+      return band3(mcStr(V + ' is open from ' + t24(o) + ' to ' + t24(c) + '. ' + who + ' arrived at ' + t24(a) + ' and left ' + k +
+        ' min before it closed. How long was ' + who + ' at ' + v + '?', dur(d), opts,
+        'First find when ' + who + ' left: ' + stepBack(c, k, t24) + '. The opening time, ' + t24(o) + ', is not needed. ' +
+        'Then count on from ' + t24(a) + ' to ' + t24(l) + '. ' + countOn(a, l, t24) +
+        (countOn(a, l, t24).indexOf('Altogether') < 0 ? ' So ' + who + ' was there for ' + dur(d) + '.' : '')));
+    });
+  }
+
+  /* T1d: work backwards from a deadline over three parts */
+  function gLatestStart() {
+    return redraw(() => {
+      const who = anyName();
+      const e = 60 * ri(16, 21) + m5(5, 55), a = m5(20, 45), b = m5(15, 55), c = ri(0, 1) ? m5(25, 55) : m5(65, 95);
+      const tot = a + b + c, s = e - tot;
+      if (s < 13 * 60 + 5 || s % 60 === 0 || e > 21 * 60 + 55) return null;
+      const borrow = (e % 60) < tot % 60;
+      const opts = balance(s,
+        [s - 720, s - 60, floorH(e) - tot],                         /* 12-h hour; ...; counted back from the o'clock before */
+        [s + 60, s + c, s + a, e + tot, borrow ? s + 40 : null],    /* ...; taxi left out; gave the time to start packing; counted on; borrowed 100 min */
+        t24, okClock);
+      return band3(mcStr(who + ' has to reach Changi Airport by ' + t24(e) + '. Before leaving home, ' + who + ' will eat dinner for ' + a +
+        ' min and then pack for ' + b + ' min. The taxi ride to the airport takes ' + dur(c) + '. What is the latest time ' + who +
+        ' can start eating dinner? Give the time in the 24-hour clock.', t24(s), opts,
+        'Work backwards from ' + t24(e) + '. The three parts are the dinner, the packing and the taxi ride. ' + sumParts([a, b, c]) +
+        ' Count back from ' + t24(e) + ': ' + stepBack(e, tot, t24) + '. So the latest time to start dinner is ' + t24(s) +
+        '. Check: ' + t24(s) + ' + ' + dur(tot) + ' = ' + t24(e) + '.'));
+    });
+  }
+
+  /* T1e: a timeline with a gap to find, typed in minutes */
+  const STOPS = ['Changi Airport', 'Jurong East', 'Woodlands', 'HarbourFront', 'Pasir Ris', 'Bishan'];
+  function gJourneyMin() {
+    return redraw(() => {
+      const who = anyName(), stop = pick(STOPS);
+      const s = 60 * ri(7, 17) + m5(5, 55), bus = m5(15, 45), wait = m5(5, 20), train = m5(25, 95);
+      const board = s + bus + wait, arr = board + train;
+      if (!okT(arr) || arr > 21 * 60 + 55 || train === 60 || Math.floor(arr / 60) === Math.floor(board / 60)) return null;
+      return band3(typed(who + ' left home at ' + t24(s) + '. The bus ride to the MRT station took ' + bus + ' min. Then ' + who +
+        ' waited ' + wait + ' min for a train. The train reached ' + stop + ' at ' + t24(arr) + '. How many minutes did the train ride take?',
+        train,
+        'Draw a timeline. ' + who + ' got off the bus at ' + t24(s) + ' + ' + bus + ' min = ' + t24(s + bus) + '. The train left at ' +
+        t24(s + bus) + ' + ' + wait + ' min = ' + t24(board) + '. Then count on from ' + t24(board) + ' to ' + t24(arr) + '. ' +
+        countOn(board, arr, t24) + (train > 60 ? ' ' + dur(train) + ' = 60 min + ' + (train - 60) + ' min = ' + train + ' min.' : '') +
+        ' The train ride took ' + train + ' min.', 'min'));
+    });
+  }
+
+  /* T1 stretch: a slow watch */
+  function gSlowWatch() {
+    return redraw(() => {
+      const who = anyName(), k = pick([5, 10, 15]);
+      const w = 60 * ri(13, 19) + m5(5, 55), d = m5(65, 150), r = w + k, e = r + d;
+      if (!okT(e) || e > 21 * 60 + 55 || e % 60 === 0 || r % 60 === 0 && ri(0, 1)) return null;
+      const cands = balance(e,
+        [e - 2 * k, e - k, e - 60, e - 720],                        /* took the slow minutes off; ignored the watch; ...; 12-h hour */
+        [e + 60, e + 40, ceilH(r) + d],                             /* ...; 1 h 25 min read as 125 min; counted from the next o'clock */
+        t24, okClock);
+      return band3(mcStr(who + "'s watch is " + k + ' min slow. When a movie started, the watch showed ' + t24(w) + '. The movie lasted ' +
+        dur(d) + '. What was the real time when the movie ended? Give the time in the 24-hour clock.', t24(e), cands,
+        'A slow watch is behind the real time, so the real time is ' + k + ' min later than the watch shows. When the movie started, the real time was ' +
+        t24(w) + ' + ' + k + ' min = ' + t24(r) + '. Then count on by ' + dur(d) + ': ' + stepOn(r, d, t24) + '. The real time was ' + t24(e) + '.'), true);
     });
   }
 
@@ -361,12 +540,14 @@
     skills: {
       units:    { label: 'Seconds, hours and minutes', tip: '1 h = 60 min and 1 min = 60 s, never 100. Ask "is that seconds, minutes or hours?" about everyday jobs.' },
       duration: { label: 'Start, finish and how long', tip: 'Draw a timeline: count on to the next o\'clock first, then whole hours, then the minutes left.' },
-      clock24:  { label: 'The 24-hour clock', tip: 'For p.m. times from 1 p.m. on, add 12 to the hours (3.15 p.m. is 15:15). Always write 2 digits for the hours: 9.05 a.m. is 09:05. Read train and bus timetables together.' }
+      clock24:  { label: 'The 24-hour clock', tip: 'For p.m. times from 1 p.m. on, add 12 to the hours (3.15 p.m. is 15:15). Always write 2 digits for the hours: 9.05 a.m. is 09:05. Read train and bus timetables together. Exam papers often print 24-hour times with a space instead of a colon (14 25 means 14:25). For a journey with several parts, draw a timeline and mark each part on it.' }
     },
     pools: {
       1: [[gUnitJudge, 'units'], [gHMinToMin, 'units'], [gDurationMin, 'duration'], [gTo24, 'clock24']],
       2: [[gMinToHMin, 'units'], [gFinishTime, 'duration'], [gStartTime, 'duration'], [gDurationHMin, 'duration'], [gFrom24, 'clock24']],
-      3: [[gTwoActivities, 'duration'], [gTwoLaps, 'units'], [gTrain24, 'clock24'], [gEnd24, 'clock24']]
+      3: [[gTwoActivities, 'duration'], [gTwoLaps, 'units'], [gTrain24, 'clock24'], [gEnd24, 'clock24'],
+          [gChain24, 'clock24'], [gTimeline12, 'duration'], [gStayDuration, 'clock24'], [gLatestStart, 'clock24'],
+          [gJourneyMin, 'duration'], [gSlowWatch, 'clock24']]
     }
   });
 })();

@@ -1935,6 +1935,167 @@ function p3timeOracle(q) {
     'in the same commit (js/topics/README.md): ' + text;
 }
 
+/* lane/hard-measure 2026-10-07: the exam-hard p3measure items (calibration cards M1,
+   M2). Dispatched first for p3measure; returns undefined for the older pilot stems,
+   which fall through to the generic compound-units branch further down. Every key
+   is re-derived by a DIFFERENT path from the generator: unit values and gaps are
+   found by brute-force search, pours and post lines are simulated step by step,
+   and compound options are read back from their printed text. */
+const PM_BIG = { km: ['m', 1000], m: ['cm', 100], kg: ['g', 1000], 'ℓ': ['ml', 1000] };
+const PM_SMALL_OF = { g: 'kg', ml: 'ℓ', cm: 'm' };
+/* "2 kg 350 g" | "2 kg" | "350 g" -> value in the small unit, plus that unit; null otherwise */
+function pmParseC(s) {
+  let m = String(s).trim().match(/^(\d+) (km|m|kg|ℓ) (\d+) (m|cm|g|ml)$/);
+  if (m) {
+    const [small, f] = PM_BIG[m[2]];
+    if (small !== m[4] || Number(m[3]) >= f || Number(m[3]) === 0 || Number(m[1]) === 0) return null;
+    return { v: Number(m[1]) * f + Number(m[3]), unit: small, full: true };
+  }
+  if ((m = String(s).trim().match(/^(\d+) (kg|ℓ)$/))) return { v: Number(m[1]) * 1000, unit: PM_BIG[m[2]][0], full: false };
+  return null;
+}
+function pmOrdOk(text) {
+  for (const m of text.matchAll(/\b(\d+)(st|nd|rd|th)\b/g)) {
+    const n = Number(m[1]), t = n % 100;
+    const want = (t >= 11 && t <= 13) ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th');
+    if (m[2] !== want) return `p3measure: ordinal "${m[0]}" should be ${n}${want}`;
+  }
+  return null;
+}
+/* the gap that turns `gaps` gaps into `span` m, by search; null unless exactly one */
+function pmGap(span, gaps) {
+  const hits = [];
+  for (let g = 1; g <= span; g++) if (g * gaps === span) hits.push(g);
+  return hits.length === 1 ? hits[0] : null;
+}
+function p3measureOracle(q) {
+  const text = strip(q.q), ex = strip(q.explain || '');
+  const opts = (q.choices || []).map(strip);
+  const key = strip(q.answerText);
+  let m;
+  const ordBad = pmOrdOk(text);
+  const numMC = (want, unit, what) => {
+    if (q.typed || opts.length !== 4) return `p3measure ${what}: expected a 4-option MCQ`;
+    const vals = opts.map(o => { const mm = o.match(/^(\d+) (ml|g|m|cm)$/); return mm && mm[2] === unit ? Number(mm[1]) : NaN; });
+    if (vals.some(v => !Number.isFinite(v))) return `p3measure ${what}: an option is not "<n> ${unit}" (${opts.join(' | ')})`;
+    if (vals.filter(v => v === want).length !== 1) return `p3measure ${what}: ${vals.filter(v => v === want).length} options are worth ${want} ${unit}`;
+    if (key !== want + ' ' + unit) return `p3measure ${what}: key "${key}", expected ${want} ${unit}`;
+    if (ex.indexOf(String(want)) < 0) return `p3measure ${what}: the teaching card never states ${want}`;
+    return null;
+  };
+  const compMC = (want, unit, what) => {
+    if (q.typed || opts.length !== 4) return `p3measure ${what}: expected a 4-option MCQ`;
+    const vals = opts.map(pmParseC);
+    if (vals.some(v => !v || !v.full || v.unit !== unit)) return `p3measure ${what}: options are not all full "a ${PM_SMALL_OF[unit]} b ${unit}" (${opts.join(' | ')})`;
+    if (vals.filter(v => v.v === want).length !== 1) return `p3measure ${what}: ${vals.filter(v => v.v === want).length} options are worth ${want} ${unit}`;
+    const kv = pmParseC(key);
+    if (!kv || kv.v !== want) return `p3measure ${what}: key "${key}" is not ${want} ${unit}`;
+    if (ex.indexOf(key) < 0) return `p3measure ${what}: the teaching card never states "${key}"`;
+    return null;
+  };
+  const typedOk = (want, unit, what) => {
+    if (!q.typed) return `p3measure ${what}: expected a typed item`;
+    if (q.answer !== want) return `p3measure ${what}: expected ${want}, got ${q.answer}`;
+    if (ctx.MQI.unitList(q.unit)[0] !== unit) return `p3measure ${what}: q.unit should be "${unit}", got ${JSON.stringify(q.unit)}`;
+    if (ex.indexOf(String(want)) < 0) return `p3measure ${what}: the teaching card never states ${want}`;
+    return null;
+  };
+  const band = (want, stretch) => (q.band !== want ? `p3measure: q.band should be ${want}, got ${q.band}` :
+    (!!q.stretch !== !!stretch ? `p3measure: q.stretch should be ${!!stretch}` : null));
+  const done = (...rs) => rs.find(r => r) || null;
+
+  /* M1a: N times as much, together T */
+  if ((m = text.match(/^A (.+?) (?:holds|is) (\d+) times as (?:much water|heavy) as a (.+?)\. Together they (?:hold|weigh) (.+?)\. (How much more water does|How much heavier is|How much water does|What is the mass of) .+, in (ml|g)\?$/))) {
+    const N = Number(m[2]), T = pmParseC(m[4]);
+    if (!T || T.unit !== m[6]) return `p3measure times: total "${m[4]}" is not a ${m[6]} quantity`;
+    if (T.v > (m[6] === 'ml' ? 2000 : 4000)) return `p3measure times: total ${T.v} ${m[6]} is past the P3 range`;
+    const hits = [];
+    for (let b = 1; b <= T.v; b++) if (b + N * b === T.v) hits.push(b);
+    if (hits.length !== 1) return `p3measure times: ${hits.length} whole-number unit values fit`;
+    const more = /more|heavier/.test(m[5]);
+    return done(ordBad, band(3), numMC(more ? N * hits[0] - hits[0] : N * hits[0], m[6], 'times'));
+  }
+  /* M1b: use some, share the rest */
+  if ((m = text.match(/ had (.+?) of [a-z ]+\. (?:He|She) (?:used|cooked|drank) (\d+) (g|ml|cm) and (?:packed the rest equally into|poured the rest equally into|cut the rest into) (\d+) (?:bags|containers|cups|equal pieces)\. .+, in (g|ml|cm)\?$/))) {
+    const T = pmParseC(m[1]), used = Number(m[2]), n = Number(m[4]);
+    if (!T || T.unit !== m[3] || m[5] !== m[3]) return `p3measure share: units do not agree ("${m[1]}", ${m[3]}, asked ${m[5]})`;
+    const hits = [];
+    for (let e = 1; e <= T.v; e++) if (n * e + used === T.v) hits.push(e);
+    if (hits.length !== 1) return `p3measure share: ${hits.length} equal shares fit`;
+    return done(ordBad, band(3), typedOk(hits[0], m[5], 'share'));
+  }
+  /* M1c: pour into a jug */
+  if ((m = text.match(/with (\d+) ml of water and a beaker with (\d+) ml of water\. .+ jug that can hold (.+?)\. How much (water overflows|more water is needed to fill the jug), in ml\?$/))) {
+    const C = pmParseC(m[3]);
+    if (!C || C.unit !== 'ml') return `p3measure pour: capacity "${m[3]}" is not litres/ml`;
+    let level = 0, spilt = 0;
+    for (const a of [Number(m[1]), Number(m[2])]) { level += a; if (level > C.v) { spilt += level - C.v; level = C.v; } }
+    const over = m[4] === 'water overflows';
+    if (over !== spilt > 0) return `p3measure pour: the stem asks "${m[4]}" but ${spilt} ml spills`;
+    return done(ordBad, band(3), numMC(over ? spilt : C.v - level, 'ml', 'pour'));
+  }
+  /* M1d: comparison, then total */
+  if ((m = text.match(/^(.+?)'s (parcel|ribbon) (?:weighs|is) (.+?)(?: long)?\. (.+?)'s \2 is (\d+) (g|cm) (heavier|lighter|longer|shorter) than \1's\. What is the total (mass|length) of the two (?:parcels|ribbons)\?$/))) {
+    const W = pmParseC(m[3]);
+    if (!W || W.unit !== m[6]) return `p3measure compare: "${m[3]}" is not a ${m[6]} quantity`;
+    if ((m[2] === 'parcel') !== (m[8] === 'mass') || (m[6] === 'g') !== (m[2] === 'parcel')) return 'p3measure compare: thing, unit and quantity disagree';
+    const up = m[7] === 'heavier' || m[7] === 'longer';
+    if ((m[6] === 'g') !== (m[7] === 'heavier' || m[7] === 'lighter')) return `p3measure compare: "${m[7]}" with ${m[6]}`;
+    const other = up ? W.v + Number(m[5]) : W.v - Number(m[5]);
+    if (other <= 0) return 'p3measure compare: the second item has no mass/length';
+    return done(ordBad, band(3), compMC(W.v + other, m[6], 'compare'));
+  }
+  /* M1e: working backwards from equal packs plus a leftover */
+  if ((m = text.match(/into (\d+) bags of (\d+) g each\. (?:He|She) had (\d+) g of sugar left over\. How much sugar did (?:he|she) have at first\?$/)) ||
+      (m = text.match(/into (\d+) cups\. Each cup held (\d+) ml, and (\d+) ml was left in the jug\. How much soya bean milk was there at first\?$/))) {
+    let v = Number(m[3]);
+    for (let i = 0; i < Number(m[1]); i++) v += Number(m[2]);
+    return done(ordBad, band(3), compMC(v, /bags/.test(m[0]) ? 'g' : 'ml', 'backwards'));
+  }
+  /* M2a: one span, another span */
+  if ((m = text.match(/^.+? (?:stand|hang) equally far apart [^.]+\. The (\d+)(?:st|nd|rd|th) (.+?) is (\d+) m from the (\d+)(?:st|nd|rd|th) \2\. How far is the (\d+)(?:st|nd|rd|th) \2 from the (\d+)(?:st|nd|rd|th) \2\?$/))) {
+    const [i, span, j, k, l] = [m[1], m[3], m[4], m[5], m[6]].map(Number);
+    const g = pmGap(span, j - i);
+    if (g === null) return `p3measure span: ${span} m does not split into ${j - i} whole gaps`;
+    const pos = p => { let x = 0; for (let t = 1; t < p; t++) x += g; return x; };
+    return done(ordBad, band(3), numMC(pos(l) - pos(k), 'm', 'span'));
+  }
+  /* M2b: both ends, count or length */
+  if ((m = text.match(/^(?:Flags are placed|Trees are planted|Cones are placed|Poles are put up) (\d+) m apart .+? that is (\d+) m long, with one (\w+) at each end\. How many (\w+) are there\?$/))) {
+    const g = Number(m[1]), L = Number(m[2]);
+    if (L % g) return `p3measure ends: ${L} m is not a whole number of ${g} m gaps`;
+    if (m[4] !== m[3] + 's') return `p3measure ends: counts "${m[4]}" but places "${m[3]}"`;
+    let c = 0;
+    for (let x = 0; x <= L; x += g) c++;
+    return done(ordBad, band(2), typedOk(c, m[4], 'ends count'));
+  }
+  if ((m = text.match(/^There are (\d+) (\w+) [^,]+, (\d+) m apart, with one (\w+) at each end\. How long is the [a-z ]+, in m\?$/))) {
+    if (m[2] !== m[4] + 's') return `p3measure ends: counts "${m[2]}" but places "${m[4]}"`;
+    let x = 0;
+    for (let c = 1; c < Number(m[1]); c++) x += Number(m[3]);
+    return done(ordBad, band(2), typedOk(x, 'm', 'ends length'));
+  }
+  /* M2c: a span gives the gap, the count gives the line */
+  if ((m = text.match(/with one at each end\. The 1st (.+?) is (\d+) m from the (\d+)(?:st|nd|rd|th) \1\. There are (\d+) [a-z ]+ altogether\. How long is the line of [a-z ]+, from the first to the last\?$/))) {
+    const g = pmGap(Number(m[2]), Number(m[3]) - 1);
+    if (g === null) return `p3measure line: ${m[2]} m does not split into whole gaps`;
+    let x = 0;
+    for (let c = 1; c < Number(m[4]); c++) x += g;
+    return done(ordBad, band(3), numMC(x, 'm', 'line'));
+  }
+  /* M2d (stretch): two spans */
+  if ((m = text.match(/\. The 1st (\w+) is (\d+) m from the (\d+)(?:st|nd|rd|th) \1\. The (\d+)(?:st|nd|rd|th) \1 is (\d+) m from the last \1\. How many (\w+) are there altogether\?$/))) {
+    const g = pmGap(Number(m[2]), Number(m[3]) - 1);
+    if (g === null) return `p3measure two spans: ${m[2]} m does not split into whole gaps`;
+    let at = Number(m[4]), d = 0;
+    while (d < Number(m[5])) { d += g; at++; }
+    if (d !== Number(m[5])) return `p3measure two spans: ${m[5]} m is not a whole number of ${g} m gaps`;
+    if (m[6] !== m[1] + 's') return `p3measure two spans: counts "${m[6]}" but names "${m[1]}"`;
+    return done(ordBad, band(3, true), typedOk(at, m[6], 'two spans'));
+  }
+  return undefined;
+}
+
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
 /* Return: null = verified, string = failure, false = no oracle matched.
    `topic` is the registered topic id the generator was drawn from. It is used by
@@ -1950,6 +2111,8 @@ function oracle(q, topic) {
   if (topic === 'p3time') return p3timeOracle(q);
   /* lane/p3-angles: Right Angle Rock is re-measured off its own drawing, exhaustively. */
   if (topic === 'p3angles') return p3AnglesOracle(q);
+  /* lane/hard-measure 2026-10-07: new p3measure stems; older ones fall through. */
+  if (topic === 'p3measure') { const r = p3measureOracle(q); if (r !== undefined) return r; }
   const text = strip(q.q);
   const extra = strip(q.extra || '');
   const ansNum = parseFloat(strip(q.answerText));

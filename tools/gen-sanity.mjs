@@ -1935,6 +1935,120 @@ function p3timeOracle(q) {
     'in the same commit (js/topics/README.md): ' + text;
 }
 
+/* ===== P3 DIVIDE HARD LANE (js/topics/p3-division-remainder.js, lane/hard-divide 2026-10-07)
+   Cards D1 (interpreting remainders over 2-3 steps), D2 (pack then repack) and
+   D3 (inverse division). Dispatched first for p3divide so no looser branch can
+   claim these stems; returns false for the topic's older stems, which keep their
+   branches in the typed block below. Every key is re-derived by COUNTING, not by
+   the generator's arithmetic: groups are filled one at a time until the rule the
+   wording names is met ("least ... needed" = the first count that holds them all,
+   "greatest" = the last count that fits, "how many more for one more" = the first
+   top-up that completes a group). It also gates the P3 scope (3 digits by 1 digit,
+   totals under 10 000), the stem's count noun against q.unit, and the q.band tag. */
+const DIV_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+function divCountUp(total, size) { let k = 0; while (k * size < total) k++; return k; }        /* least groups that hold all */
+function divCountDown(total, size) { let k = 0; while ((k + 1) * size <= total) k++; return k; } /* most full groups */
+function divRepeatAdd(n, times) { let s = 0; for (let i = 0; i < times; i++) s += n; return s; }
+function divShareExact(total, groups) {                                                      /* deal one round at a time */
+  let each = 0, left = total;
+  while (left >= groups) { left -= groups; each++; }
+  return left === 0 ? each : null;
+}
+function p3divideHardOracle(q) {
+  const text = strip(q.q);
+  const u0 = Array.isArray(q.unit) ? q.unit[0] : q.unit;
+  const scope = (dividend, divisor, tag) =>
+    (dividend > 999 || divisor < 2 || divisor > 9) ? `${tag}: ${dividend} / ${divisor} is past 3 digits by 1 digit` : null;
+  const bandIs = (b, tag) => q.band === b ? null : `${tag}: q.band is ${JSON.stringify(q.band)}, expected ${b}`;
+  const unitIs = (noun, tag) => u0 === noun ? null : `${tag}: stem counts ${noun} but q.unit is ${JSON.stringify(q.unit)}`;
+  const key = (e, tag) => near(e, q.answer) ? null : `${tag}: expected ${e}, got ${q.answer}`;
+  const first = (...xs) => xs.find(x => x) || null;
+  let m;
+
+  /* D1a: subtract, divide, round up */
+  if ((m = text.match(/^A bakery makes (\d+) ([a-z ]+)\. (\d+) of them [a-z ]+\. The rest are packed into ([a-z]+) of (\d+)\. What is the least number of \4 needed to pack all the rest\?$/))) {
+    const rest = Number(m[1]) - Number(m[3]), d = Number(m[5]);
+    if (!q.typed) return 'divide packRest: expected a typed item';
+    if (rest % d === 0) return 'divide packRest: no remainder, so nothing to interpret';
+    return first(scope(rest, d, 'divide packRest'), bandIs(3, 'divide packRest'), unitIs(m[4], 'divide packRest'),
+      key(divCountUp(rest, d), 'divide packRest'));
+  }
+  /* D1b: multiply, add, divide, round up */
+  if ((m = text.match(/^(\d+) classes of (\d+) pupils each and (\d+) teachers go on a trip to [A-Za-z' ]+\. Each ([a-z]+) can carry (\d+) people\. What is the least number of ([a-z]+) needed to carry everyone at the same time\?$/))) {
+    const people = divRepeatAdd(Number(m[2]), Number(m[1])) + Number(m[3]), d = Number(m[5]);
+    if (m[6] !== m[4] + 's') return `divide trips: "${m[4]}" and "${m[6]}" do not agree`;
+    if (people % d === 0) return 'divide trips: no remainder, so nothing to interpret';
+    return first(scope(people, d, 'divide trips'), bandIs(3, 'divide trips'), unitIs(m[6], 'divide trips'),
+      key(divCountUp(people, d), 'divide trips'));
+  }
+  /* D1c: multiply, divide, top up to one more group */
+  if ((m = text.match(/^([A-Z][A-Za-z ]+) has (\d+) [a-z]+ of ([a-z]+) with (\d+) \3 in each [a-z]+\. Each [a-z ]+ (?:needs|uses) (\d+) \3\. \1 [a-z]+ as many [a-z ]+ as possible\. How many more \3 are needed to [a-z]+ one more [a-z ]+\?$/))) {
+    const tot = divRepeatAdd(Number(m[4]), Number(m[2])), d = Number(m[5]);
+    if (tot % d === 0) return 'divide oneMore: no remainder, so "one more" needs a whole group';
+    let top = 1; while ((tot + top) % d !== 0) top++;
+    return first(scope(tot, d, 'divide oneMore'), bandIs(3, 'divide oneMore'), unitIs(m[3], 'divide oneMore'),
+      top < 2 ? 'divide oneMore: an answer of 1 reads "1 ' + m[3] + '"' : null, key(top, 'divide oneMore'));
+  }
+  /* D1d (money): subtract twice, divide, round down */
+  if ((m = text.match(/^([A-Z][A-Za-z ]+) has \$(\d+)\. \1 spends \$(\d+) on a storybook and \$(\d+) on a water bottle\. With the money left, \1 buys as many ([a-z]+) as possible\. Each [a-z]+ costs \$(\d+)\. What is the greatest number of \5 \1 can buy\?$/))) {
+    const left = Number(m[2]) - Number(m[3]) - Number(m[4]), d = Number(m[6]);
+    if (left <= 0) return 'divide mostMoney: nothing left to spend';
+    return first(scope(left, d, 'divide mostMoney'), bandIs(3, 'divide mostMoney'), unitIs(m[5], 'divide mostMoney'),
+      key(divCountDown(left, d), 'divide mostMoney'));
+  }
+  /* D1d (ribbon): subtract twice, divide, round down */
+  if ((m = text.match(/^A roll of ribbon is (\d+) cm long\. ([A-Z][A-Za-z ]+) cuts off (\d+) cm for a bow and (\d+) cm to tie a box\. \2 then cuts the rest of the ribbon into pieces that are each (\d+) cm long\. What is the greatest number of \5 cm pieces \2 can cut\?$/))) {
+    const left = Number(m[1]) - Number(m[3]) - Number(m[4]), d = Number(m[5]);
+    if (left % d === 0) return 'divide mostRibbon: no remainder, so nothing to interpret';
+    return first(scope(left, d, 'divide mostRibbon'), bandIs(3, 'divide mostRibbon'), unitIs('pieces', 'divide mostRibbon'),
+      key(divCountDown(left, d), 'divide mostRibbon'));
+  }
+  /* D2a (compare): a x b shared onto e groups, how many more per new group */
+  if ((m = text.match(/^There are (\d+) [a-z]+ of ([a-z ]+) with (\d+) \2 in each ([a-z]+)\. All the \2 are put equally (on|in)to (\d+) [a-z]+\. How many more \2 are there \5 each [a-z]+ than in each \4\?$/))) {
+    const a = Number(m[1]), b = Number(m[3]), e = Number(m[6]), tot = divRepeatAdd(b, a), each = divShareExact(tot, e);
+    if (each === null) return `divide repackMore: ${tot} does not share equally onto ${e}`;
+    if (each <= b) return 'divide repackMore: the new groups are not bigger, so "how many more" is false';
+    if (each - b === b) return 'divide repackMore: the key equals a number printed in the stem';
+    return first(scope(tot, e, 'divide repackMore'), bandIs(3, 'divide repackMore'), unitIs(m[2], 'divide repackMore'),
+      key(each - b, 'divide repackMore'));
+  }
+  /* D2a (take away): a x b, minus x, shared onto e groups */
+  if ((m = text.match(/^There are (\d+) [a-z]+ of ([a-z ]+) with (\d+) \2 in each [a-z]+\. (\d+) of the \2 [a-z ]+\. The rest are put equally (on|in)to (\d+) [a-z]+\. How many \2 are there \5 each [a-z]+\?$/))) {
+    const left = divRepeatAdd(Number(m[3]), Number(m[1])) - Number(m[4]), e = Number(m[6]), each = divShareExact(left, e);
+    if (each === null) return `divide repackRest: ${left} does not share equally onto ${e}`;
+    return first(scope(left, e, 'divide repackRest'), bandIs(3, 'divide repackRest'), unitIs(m[2], 'divide repackRest'),
+      key(each, 'divide repackRest'));
+  }
+  /* D2b: a run of days -> one day -> part of the run, days counted inclusively */
+  if ((m = text.match(/^([A-Z][A-Za-z ]+) (read|folded|made|collected) (\d+) [a-z ]+ from ([A-Z][a-z]+day) to ([A-Z][a-z]+day)\. \1 \2 the same number of ([a-z ]+) each day\. How many \6 did \1 [a-z]+ from ([A-Z][a-z]+day) to ([A-Z][a-z]+day)\?$/))) {
+    const [i0, i1, j0, j1] = [m[4], m[5], m[7], m[8]].map(x => DIV_DAYS.indexOf(x));
+    if ([i0, i1, j0, j1].some(i => i < 0)) return 'divide daysPart: unknown day name';
+    if (!(i0 < i1 && j0 < j1 && i0 <= j0 && j1 <= i1)) return `divide daysPart: ${m[7]} to ${m[8]} is not inside ${m[4]} to ${m[5]}`;
+    const days = DIV_DAYS.slice(i0, i1 + 1).length, part = DIV_DAYS.slice(j0, j1 + 1).length;
+    if (part >= days) return 'divide daysPart: the part is the whole run';
+    const per = divShareExact(Number(m[3]), days);
+    if (per === null) return `divide daysPart: ${m[3]} does not share equally over ${days} days`;
+    return first(scope(Number(m[3]), days, 'divide daysPart'), bandIs(3, 'divide daysPart'), unitIs(m[6], 'divide daysPart'),
+      key(divRepeatAdd(per, part), 'divide daysPart'));
+  }
+  /* D3: inverse division, MCQ - search for the dividend that gives this quotient and remainder */
+  if ((m = text.match(/^([A-Z][A-Za-z ]+) puts some ([a-z]+) equally into (\d+) [a-z]+\. There are (\d+) \2 in each [a-z]+ and (\d+) [a-z]+ (is|are) left over\. How many \2 were there at first\?$/))) {
+    const d = Number(m[3]), qq = Number(m[4]), r = Number(m[5]);
+    if (q.typed) return 'divide inverse: expected an MCQ';
+    if (!(r >= 1 && r < d)) return `divide inverse: remainder ${r} is not between 1 and ${d - 1}`;
+    if ((r === 1) !== (m[6] === 'is')) return 'divide inverse: is/are does not agree with the remainder';
+    let n = 0; while (!(divCountDown(n, d) === qq && n - divRepeatAdd(d, qq) === r)) n++;
+    const vals = q.choices.map(c => parseFloat(strip(c)));
+    if (q.choices.some(c => !strip(c).endsWith(' ' + m[2]))) return 'divide inverse: a choice does not carry the unit ' + m[2];
+    if (vals.filter(v => v === n).length !== 1) return `divide inverse: ${n} is not exactly one of the choices`;
+    return first(scope(n, d, 'divide inverse'), bandIs(2, 'divide inverse'),
+      near(n, ansNumOf(q)) ? null : `divide inverse: expected ${n}, got ${strip(q.answerText)}`,
+      vals[q.correct] === n ? null : 'divide inverse: choices[correct] is not the key');
+  }
+  return false;
+}
+const ansNumOf = q => parseFloat(strip(q.answerText));
+
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
 /* Return: null = verified, string = failure, false = no oracle matched.
    `topic` is the registered topic id the generator was drawn from. It is used by
@@ -1950,6 +2064,8 @@ function oracle(q, topic) {
   if (topic === 'p3time') return p3timeOracle(q);
   /* lane/p3-angles: Right Angle Rock is re-measured off its own drawing, exhaustively. */
   if (topic === 'p3angles') return p3AnglesOracle(q);
+  /* lane/hard-divide 2026-10-07: the D1/D2/D3 stems first; older p3divide stems fall through. */
+  if (topic === 'p3divide') { const r = p3divideHardOracle(q); if (r !== false) return r; }
   const text = strip(q.q);
   const extra = strip(q.extra || '');
   const ansNum = parseFloat(strip(q.answerText));

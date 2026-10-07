@@ -4479,6 +4479,73 @@ function oracle(q, topic) {
       if (a === null || b === null) return 'bar graph: summed category is not on the graph';
       return near(a + b, ansNum) ? null : `bar total: expected ${a + b}, got ${ansNum}`;
     }
+    /* B1 HARD LANE (2026-10-07): multi-step sales graphs, Monday to Friday. Values
+       come from the rendered `bars` above; a missing bar is rebuilt from the words;
+       money is read off the stem's own price. A different path from the generator:
+       it works from day NAMES and printed values, never from bar units. */
+    const days5 = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    const dollars = parseFloat(strip(q.answerText).replace(/^\$/, ''));
+    const priceM = text.match(/ Each (.+?) was sold for \$(\d+)\. /);
+    if (priceM) {
+      const p = Number(priceM[2]);
+      if (names.length !== 5) return 'bar sales: a priced graph must show all five days';
+      if ((m = text.match(/How much more money did .+? collect on (\w+) than on (\w+)\?$/))) {
+        const a = val(m[1]), b = val(m[2]);
+        if (a === null || b === null || a <= b) return 'bar money diff: days missing or not larger';
+        if (!/^\$\d+$/.test(strip(q.answerText))) return 'bar money: answer is not written as $n';
+        return near((a - b) * p, dollars) ? null : `bar money diff: expected ${(a - b) * p}, got ${dollars}`;
+      }
+      if ((m = text.match(/How much money did .+? collect on (\w+) and (\w+) altogether\?$/))) {
+        const a = val(m[1]), b = val(m[2]);
+        if (a === null || b === null) return 'bar money total: day not on the graph';
+        if (!/^\$\d+$/.test(strip(q.answerText))) return 'bar money: answer is not written as $n';
+        return near((a + b) * p, dollars) ? null : `bar money total: expected ${(a + b) * p}, got ${dollars}`;
+      }
+      if ((m = text.match(/On which day did .+? collect \$(\d+)\?$/))) {
+        const target = Number(m[1]);
+        const hits = names.filter(c => bars[c] * p === target);
+        if (hits.length !== 1) return `bar which-day: ${hits.length} days collected $${target}`;
+        const opts = (q.choices || []).map(strip);
+        if (opts.filter(o => o === hits[0]).length !== 1) return 'bar which-day: the right day is not an option exactly once';
+        if (!opts.every(o => days5.includes(o))) return 'bar which-day: an option is not a weekday';
+        return strip(q.answerText) === hits[0] ? null : `bar which-day: expected ${hits[0]}, got ${strip(q.answerText)}`;
+      }
+      return 'bar sales: priced stem but no money oracle matched';
+    }
+    if ((m = text.match(/The bar for (\w+) has been left out\. On \1, .+? sold (twice as many|three times as many|(\d+) more|(\d+) fewer) .+? (?:as|than) on (\w+)\. /))) {
+      const h = m[1];
+      if (h in bars) return 'bar missing: the left-out day is drawn after all';
+      if (names.length !== 4 || !names.every(c => days5.includes(c))) return 'bar missing: expected the other four weekdays drawn';
+      const ref = val(m[5]);
+      if (ref === null) return 'bar missing: reference day not on the graph';
+      const hv = m[2] === 'twice as many' ? 2 * ref : m[2] === 'three times as many' ? 3 * ref
+        : m[3] ? ref + Number(m[3]) : ref - Number(m[4]);
+      if (!(hv > 0)) return 'bar missing: the left-out day comes to ' + hv;
+      const all = Object.assign({}, bars, { [h]: hv });
+      let mm;
+      if (/How many .+? did .+? sell altogether from Monday to Friday\?$/.test(text)) {
+        const tot = days5.reduce((s, d) => s + all[d], 0);
+        return near(tot, ansNum) ? null : `bar missing total: expected ${tot}, got ${ansNum}`;
+      }
+      if ((mm = text.match(/How many more .+? did .+? sell on (\w+) than on (\w+)\?$/))) {
+        const e = all[mm[1]] - all[mm[2]];
+        if (!(e > 0)) return 'bar missing diff: not a positive difference';
+        return near(e, ansNum) ? null : `bar missing diff: expected ${e}, got ${ansNum}`;
+      }
+      return 'bar missing: no question oracle matched';
+    }
+    if ((m = text.match(/How many more .+? were sold on (\w+) and (\w+) together than on (\w+)\?$/))) {
+      const a = val(m[1]), b = val(m[2]), c = val(m[3]);
+      if (a === null || b === null || c === null) return 'bar two-step: day not on the graph';
+      if (!(a + b - c > 0)) return 'bar two-step: not a positive difference';
+      return near(a + b - c, ansNum) ? null : `bar two-step: expected ${a + b - c}, got ${ansNum}`;
+    }
+    if ((m = text.match(/hoped to sell (\d+) .+? from Monday to Friday\. How many more .+? to reach that number\?$/))) {
+      if (names.length !== 5) return 'bar target: all five days must be drawn';
+      const tot = names.reduce((s, c) => s + bars[c], 0), e = Number(m[1]) - tot;
+      if (!(e > 0)) return 'bar target: the target is already reached';
+      return near(e, ansNum) ? null : `bar target: expected ${e}, got ${ansNum}`;
+    }
     return 'bar graph: rendered a graph but no oracle matched the stem';
   }
 

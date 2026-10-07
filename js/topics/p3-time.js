@@ -11,7 +11,9 @@
  * NOTATION (Singapore textbook / exam style, used consistently):
  *   12-hour clock   9.45 a.m., 12.15 p.m.  (a dot between hours and minutes)
  *                   a full hour in an explanation prints as 10.00 a.m.; noon as "12 noon"
- *   24-hour clock   four digits, no colon, no space, no "h":  0945, 1315, 2130
+ *   24-hour clock   HH:MM, 2-digit hours and 2-digit minutes with a colon, leading
+ *                   zero kept, no "h", no "hrs":  09:45, 13:15, 21:30, 00:25
+ *                   (Kev's ruling 2026-10-07; was 4 bare digits "0945" before)
  *   durations       1 h 35 min, 45 min, 2 h
  * No item ever prints a time after 11.55 p.m. or a stem time in the 12 a.m. hour,
  * and nothing prints 24xx or a minute value of 60 or more.
@@ -35,7 +37,7 @@
     const h12 = h % 12 === 0 ? 12 : h % 12;
     return h12 + '.' + pad2(m) + ' ' + (h < 12 ? 'a.m.' : 'p.m.');
   }
-  const t24 = t => pad2(Math.floor(t / 60)) + pad2(t % 60);
+  const t24 = t => pad2(Math.floor(t / 60)) + ':' + pad2(t % 60);
   function dur(d) {
     const h = Math.floor(d / 60), m = d % 60;
     if (!h) return m + ' min';
@@ -290,11 +292,11 @@
       if (kind === 0) {
         t = 60 * ri(6, 11) + m5(5, 55);
         cands = [t + 720, t + 600, t + 60, t - 60];
-        why = 'An a.m. time keeps its hours. Write it with 4 digits, putting a 0 in front of a one-digit hour: ' + t12(t) + ' is ' + t24(t) + '.';
+        why = 'An a.m. time keeps its hours. Write the hours with 2 digits, putting a 0 in front of a one-digit hour, then a colon and the minutes: ' + t12(t) + ' is ' + t24(t) + '.';
       } else if (kind === 1) {
         t = 720 + m5(5, 55);
         cands = [t - 720, t - 120, t + 60, t + 120];
-        why = t12(t) + ' is just after 12 noon, so the hours stay at 12: ' + t24(t) + '. Only add 12 to p.m. hours from 1 to 11.';
+        why = t12(t) + ' is just after 12 noon, so the hours stay at 12. So ' + t12(t) + ' is ' + t24(t) + '. Only add 12 to p.m. hours from 1 to 11. (00:' + t24(t).slice(3) + ' would be just after midnight.)';
       } else {
         t = 60 * ri(13, 22) + m5(5, 55);
         cands = [t - 720, t - 120, t - 60, t + 60, t + 120];
@@ -315,7 +317,7 @@
       const h = Math.floor(t / 60);
       const why = h === 12
         ? t24(t) + ' starts with 12, which is the hour just after 12 noon. So it is ' + t12(t) + '.'
-        : t24(t) + ' is after 1200, so it is a p.m. time. Take away 12 from the hours: ' + h + ' - 12 = ' + (h - 12) + '. So it is ' + t12(t) + '.';
+        : t24(t) + ' is after 12:00, so it is a p.m. time. Take away 12 from the hours: ' + h + ' - 12 = ' + (h - 12) + '. So it is ' + t12(t) + '.';
       return mcStr(pick(PLACES) + ' ' + t24(t) + '. What is this time in the 12-hour clock?', t12(t), cands, why);
     });
   }
@@ -359,7 +361,7 @@
     skills: {
       units:    { label: 'Seconds, hours and minutes', tip: '1 h = 60 min and 1 min = 60 s, never 100. Ask "is that seconds, minutes or hours?" about everyday jobs.' },
       duration: { label: 'Start, finish and how long', tip: 'Draw a timeline: count on to the next o\'clock first, then whole hours, then the minutes left.' },
-      clock24:  { label: 'The 24-hour clock', tip: 'For p.m. times from 1 p.m. on, add 12 to the hours (3.15 p.m. is 1515). Read train and bus timetables together.' }
+      clock24:  { label: 'The 24-hour clock', tip: 'For p.m. times from 1 p.m. on, add 12 to the hours (3.15 p.m. is 15:15). Always write 2 digits for the hours: 9.05 a.m. is 09:05. Read train and bus timetables together.' }
     },
     pools: {
       1: [[gUnitJudge, 'units'], [gHMinToMin, 'units'], [gDurationMin, 'duration'], [gTo24, 'clock24']],

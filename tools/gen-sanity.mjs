@@ -1935,6 +1935,84 @@ function p3timeOracle(q) {
     'in the same commit (js/topics/README.md): ' + text;
 }
 
+/* ---------- HARD LANE geom (2026-10-07): cards G1 + G2 in p3-area-perimeter.js ----------
+   Each branch re-derives the key by a DIFFERENT path from the generator: rows of
+   squares by length x breadth (generator: squares x one square) or by counting
+   unit edges; L/T/row shapes by their bounding rectangle (a rectilinear shape
+   with no dents has the perimeter of its bounding box); cut squares by counting
+   new edges per cut; wire and joined cards by the joined dimensions. Also asserts
+   the band tag, exactly one option worth the key, the declared typed unit, and
+   the P3 scope clamp (every shared length divides exactly). Returns false when
+   no G1/G2 stem matched, so the older geometry branches still run. */
+function geomHardOracle(q) {
+  const text = strip(q.q);
+  let m;
+  const want = (e, b, what) => {
+    if (q.band !== b) return `geom ${what}: q.band is ${q.band}, expected ${b}`;
+    if (q.typed) {
+      if (q.unit !== 'cm') return `geom ${what}: typed unit "${q.unit}" is not cm`;
+      return near(e, q.answer) ? null : `geom ${what}: expected ${e}, got ${q.answer}`;
+    }
+    const vals = (q.choices || []).map(c => parseFloat(strip(c)));
+    if (vals.filter(v => near(v, e)).length !== 1) return `geom ${what}: ${vals.filter(v => near(v, e)).length} options worth ${e} (${vals.join(', ')})`;
+    return near(e, parseFloat(strip(q.answerText))) ? null : `geom ${what}: expected ${e}, got ${strip(q.answerText)}`;
+  };
+  if ((m = text.match(/^(\d+) identical squares (?:are placed side by side in a row|are arranged in (\d+) rows of (\d+)) to make a rectangle\. The rectangle is (\d+) cm long\. What is the (area|perimeter) of the rectangle\?$/))) {
+    const N = +m[1], rows = m[2] ? +m[2] : 1, n = m[3] ? +m[3] : N, X = +m[4];
+    if (rows * n !== N) return `geom squares-row: ${rows} rows of ${n} is not ${N} squares`;
+    if (rows >= n) return `geom squares-row: ${rows} rows of ${n} - the printed length is not the long side`;
+    if (X % n) return `geom squares-row: ${X} cm does not share equally among ${n} squares`;
+    const s = X / n, B = rows * s;
+    if (m[5] === 'area') return want(X * B, 3, 'squares-row area');
+    return want(2 * (n + rows) * s, 3, 'squares-row perimeter');   /* unit edges around the outside */
+  }
+  if ((m = text.match(/ lays (\d+) identical rectangular tiles side by side in one row\. Together they make a rectangle (\d+) cm long and (\d+) cm wide\. What is the (area|perimeter) of one tile\?$/))) {
+    const K = +m[1], X = +m[2], Y = +m[3];
+    if (X % K) return `geom tile: ${X} cm does not share equally among ${K} tiles`;
+    if (X / K === Y) return 'geom tile: the "rectangular" tile is a square';
+    if (m[4] === 'area') return want(X * Y / K, 2, 'tile area');
+    return want(2 * X / K + 2 * Y, 3, 'tile perimeter');
+  }
+  if ((m = text.match(/^(\d+) identical squares are joined (.+)\. Each square has sides of (\d+) cm\. What is the perimeter of the shape\?$/))) {
+    const N = +m[1], how = m[2], s = +m[3];
+    let bw, bh;   /* bounding box, in squares */
+    if (/^side by side in a row$/.test(how)) { bw = N; bh = 1; }
+    else if (N === 3 && how === 'to make an L shape: 2 squares side by side, with the third square on top of the left-hand one') { bw = 2; bh = 2; }
+    else if (N === 4 && /^to make an? [LT] shape: 3 squares side by side in a row, with the fourth square on top of the (left-hand|middle) one$/.test(how)) { bw = 3; bh = 2; }
+    else if (N === 4 && how === 'in 2 rows of 2 to make a big square') { bw = 2; bh = 2; }
+    else return `geom squares-shape: unrecognised arrangement "${how}"`;
+    if (2 * (bw + bh) * s === N * s * s) return `geom squares-shape: perimeter and area are both ${N * s * s}`;
+    return want(2 * (bw + bh) * s, 3, 'squares-shape perimeter');
+  }
+  if ((m = text.match(/^A rectangle is made of (\d+) identical squares in a row\. It is (\d+) cm long\. .+ cuts it apart into the \1 squares\. How much greater is the total perimeter of the \1 squares than the perimeter of the rectangle\? Give your answer in cm\.$/))) {
+    const n = +m[1], X = +m[2];
+    if (X % n) return `geom cut-squares: ${X} cm does not share equally among ${n} squares`;
+    return want((n - 1) * 2 * (X / n), 3, 'cut-squares');   /* each cut opens two new sides */
+  }
+  if ((m = text.match(/ bends a piece of wire into a rectangle (\d+) cm long and (\d+) cm wide\. A second piece of wire is bent into a square\. Each side of the square is (half the length|the same as the breadth) of the rectangle\. How much wire is used altogether\? Give your answer in cm\.$/))) {
+    const L = +m[1], B = +m[2];
+    if (m[3] === 'half the length' && L % 2) return `geom wire: half of ${L} is not whole`;
+    const side = m[3] === 'half the length' ? L / 2 : B;
+    return want(L + B + L + B + side + side + side + side, 3, 'wire');
+  }
+  if ((m = text.match(/^Rectangle A is (\d+) cm by (\d+) cm\. Rectangle B is (\d+) cm by (\d+) cm\. Both rectangles have the same perimeter\. How much greater is the area of B than the area of A\?$/))) {
+    const [a, b, c, d] = m.slice(1, 5).map(Number);
+    if (a + b !== c + d) return `geom same-perimeter: ${a}+${b} != ${c}+${d}, the stem's premise is false`;
+    if (c * d <= a * b) return 'geom same-perimeter: B is not the larger area';
+    return want(c * d - a * b, 2, 'same-perimeter');
+  }
+  if ((m = text.match(/ has 2 identical rectangular cards\. Each card is (\d+) cm long and (\d+) cm wide\. They are put together, with a (long|short) side of one card touching a \3 side of the other, to make a bigger rectangle\. (What is the perimeter of the bigger rectangle\?|How much shorter is the perimeter of the bigger rectangle than the perimeters of the 2 cards added together\?)$/))) {
+    const L = +m[1], B = +m[2];
+    if (L <= B) return 'geom join: "long" is not longer than "wide"';
+    const t = m[3] === 'long' ? L : B;          /* the touching side */
+    const sep = 2 * 2 * (L + B);
+    const joined = sep - 2 * t;                 /* the two touching sides go inside */
+    if (/^What/.test(m[4])) return want(joined, 3, 'join perimeter');
+    return want(sep - joined, 3, 'join difference');
+  }
+  return false;
+}
+
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
 /* Return: null = verified, string = failure, false = no oracle matched.
    `topic` is the registered topic id the generator was drawn from. It is used by
@@ -1950,6 +2028,7 @@ function oracle(q, topic) {
   if (topic === 'p3time') return p3timeOracle(q);
   /* lane/p3-angles: Right Angle Rock is re-measured off its own drawing, exhaustively. */
   if (topic === 'p3angles') return p3AnglesOracle(q);
+  if (topic === 'geometry') { const gh = geomHardOracle(q); if (gh !== false) return gh; }
   const text = strip(q.q);
   const extra = strip(q.extra || '');
   const ansNum = parseFloat(strip(q.answerText));
@@ -5688,6 +5767,8 @@ const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'p2', 'p3numbers',
 /* every mcNum call site in the three pilot files */
 const PILOT_MCNUM = new Set([
   'geometry.gPeriCompare', 'geometry.gPeriFence', 'geometry.gRectiPeri',
+  'geometry.gSqRowArea', 'geometry.gSqRowPeri', 'geometry.gTileArea', 'geometry.gTilePeri',
+  'geometry.gSqShapePeri', 'geometry.gSamePerimArea', 'geometry.gJoinRects',
   'tables.gGroups', 'tables.gDoubling', 'tables.gDivShare', 'tables.gDivError',
   'p4area.gLError', 'p4area.gLCompare', 'p4area.gLWords', 'p4area.gLCornerInverse',
   'p4area.gLSkirting', 'p4area.gPeriFromArea', 'p4area.gNotchPerimeter'

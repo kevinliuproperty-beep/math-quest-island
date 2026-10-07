@@ -241,6 +241,194 @@ function gRectiPeri(){
     { type:'lshape', W:W, H:H, a:a, b:b, unit:'cm' });
 }
 
+/* ==== HARD LANE geom (2026-10-07, Math Hardness Calibration cards G1 + G2) ====
+   Real P3 EOY papers ask composite area/perimeter from identical squares or tiles
+   (11 of 16 papers) and wire/combined-shape problems; this file had neither.
+   SCOPE CLAMP (unchanged): nothing below goes from a perimeter or an area back
+   to a side - that is P4 1.1/1.2. Every side a child needs is either printed or
+   comes from SHARING A PRINTED LENGTH equally among identical squares or tiles
+   ("4 squares in a row make 20 cm, so each is 5 cm"), which is P3 division.
+   Every item is tagged q.band (3 = exam-hard multi-step, 2 = standard) for the
+   mock's router. Text only, no new figure type. Each stem is re-derived by a
+   different path in tools/gen-sanity.mjs (geomHardOracle). */
+const band = (q, b) => (q.band = b, q);
+const NAMES = ['Mei Ling','Ravi','Siti','Jun Hao','Aisha','Kumar','Wei Ling','Farid','Priya','Hui Min'];
+
+/* G1a/b. N identical squares in a row (or in 2 rows of n) make a rectangle whose
+   LENGTH is printed. Side = length / n; then area or perimeter of the rectangle. */
+function sqRowDraw(kind){
+  let rows=1,n=4,s=5,X=20,Bd=5,N=4,key=0,d=[],g=0;
+  do {
+    rows = ri(1,2); n = rows===1 ? ri(3,6) : ri(3,5); s = ri(2,9);
+    X = n*s; Bd = rows*s; N = rows*n;
+    if (kind === 'area'){
+      key = N*s*s;
+      d = rows===1 ? [2*(X+Bd), s*s, X*N] : [2*(X+Bd), X*s, s*s];
+    } else {
+      key = 2*(X+Bd);
+      d = [4*N*s, N*s*s, X+Bd];
+    }
+    g++;
+  } while (g<300 && !(paOk(X,Bd) && optsOk(key,d)));
+  return {rows,n,s,X,Bd,N,key,d};
+}
+function sqRowStem(t, ask){
+  const lay = t.rows===1 ? 'are placed side by side in a row to make a rectangle'
+                         : 'are arranged in 2 rows of '+t.n+' to make a rectangle';
+  return t.N+' identical squares '+lay+'. The rectangle is '+t.X+' cm long. What is the <b>'+ask+'</b> of the rectangle?';
+}
+function gSqRowArea(){
+  const t = sqRowDraw('area');
+  return band(mcNum(sqRowStem(t,'area'),'',t.key,t.d,'cm²',
+    'The squares are all the same size, and '+t.n+' of them fit along the '+t.X+' cm length, so each side is '+
+    t.X+' ÷ '+t.n+' = '+t.s+' cm. One square has an area of '+t.s+' × '+t.s+' = '+(t.s*t.s)+' cm², and there are '+
+    t.N+' squares: '+t.N+' × '+(t.s*t.s)+' = '+t.key+' cm². Check: the rectangle is '+t.X+' cm by '+t.Bd+' cm, and '+
+    t.X+' × '+t.Bd+' = '+t.key+' cm².'), 3);
+}
+function gSqRowPeri(){
+  const t = sqRowDraw('peri');
+  return band(mcNum(sqRowStem(t,'perimeter'),'',t.key,t.d,'cm',
+    'Each square side is '+t.X+' ÷ '+t.n+' = '+t.s+' cm, because '+t.n+' equal squares fit along the '+t.X+
+    ' cm length. The rectangle is '+t.X+' cm long and '+(t.rows===1 ? 'one square ('+t.s+' cm)' : 'two squares ('+t.Bd+' cm)')+
+    ' wide. Perimeter = '+t.X+' + '+t.Bd+' + '+t.X+' + '+t.Bd+' = '+t.key+' cm. Do not add up every square\'s perimeter: '+
+    'the sides where two squares touch are inside the rectangle, not around it.'), 3);
+}
+
+/* G1c. K identical rectangular tiles in ONE ROW along the length make an X by Y
+   rectangle. Each tile is X/K long and Y wide. Area of one tile is standard (2
+   steps, band 2); perimeter of one tile needs the "the tile is as wide as the
+   rectangle" reading plus three operations (band 3). */
+function tileDraw(kind){
+  let K=5,w=6,Y=12,X=30,key=0,d=[],g=0;
+  do {
+    K = ri(3,6); w = ri(2,9); Y = ri(3,14); X = K*w;
+    if (kind === 'area'){ key = w*Y; d = [X*Y, 2*(X+Y), 2*(w+Y)]; }
+    else { key = 2*(w+Y); d = [w*Y, 2*(X+Y), w+Y]; }
+    g++;
+  } while (g<300 && !(X>Y && w!==Y && paOk(X,Y) && paOk(w,Y) && optsOk(key,d)));
+  return {K,w,Y,X,key,d,who:pick(NAMES)};
+}
+function tileStem(t, ask){
+  return t.who+' lays '+t.K+' identical rectangular tiles side by side in one row. Together they make a rectangle '+
+    t.X+' cm long and '+t.Y+' cm wide. What is the <b>'+ask+'</b> of one tile?';
+}
+function gTileArea(){
+  const t = tileDraw('area');
+  return band(mcNum(tileStem(t,'area'),'',t.key,t.d,'cm²',
+    'The '+t.K+' tiles share the '+t.X+' cm length equally, so each tile measures '+t.X+' ÷ '+t.K+' = '+t.w+
+    ' cm along the row. Its other side is as wide as the whole row: '+t.Y+' cm. Area of one tile = '+t.w+' × '+t.Y+' = '+t.key+
+    ' cm². (The whole rectangle is '+t.X+' × '+t.Y+' = '+(t.X*t.Y)+' cm², and '+(t.X*t.Y)+' ÷ '+t.K+' = '+t.key+' cm² too.)'), 2);
+}
+function gTilePeri(){
+  const t = tileDraw('peri');
+  return band(mcNum(tileStem(t,'perimeter'),'',t.key,t.d,'cm',
+    'The '+t.K+' tiles share the '+t.X+' cm length equally, so each tile measures '+t.X+' ÷ '+t.K+' = '+t.w+
+    ' cm along the row. Its other side is as wide as the whole row: '+t.Y+' cm. Perimeter of one tile = '+t.w+' + '+t.Y+' + '+
+    t.w+' + '+t.Y+' = '+t.key+' cm. The question asks about ONE tile, not the whole rectangle.'), 3);
+}
+
+/* G1d. Identical squares of a PRINTED side joined into a row, an L, a T or a big
+   square: count the square sides on the outside. The named slip is adding every
+   square's own perimeter (the touching sides counted). */
+const SQ_SHAPES = [
+  { k:'row3', N:3, edges:8,  say:'3 identical squares are joined side by side in a row' },
+  { k:'row4', N:4, edges:10, say:'4 identical squares are joined side by side in a row' },
+  { k:'row5', N:5, edges:12, say:'5 identical squares are joined side by side in a row' },
+  { k:'L3',   N:3, edges:8,  say:'3 identical squares are joined to make an L shape: 2 squares side by side, with the third square on top of the left-hand one' },
+  { k:'L4',   N:4, edges:10, say:'4 identical squares are joined to make an L shape: 3 squares side by side in a row, with the fourth square on top of the left-hand one' },
+  { k:'T4',   N:4, edges:10, say:'4 identical squares are joined to make a T shape: 3 squares side by side in a row, with the fourth square on top of the middle one' },
+  { k:'big4', N:4, edges:8,  say:'4 identical squares are joined in 2 rows of 2 to make a big square' }
+];
+function gSqShapePeri(){
+  let sh=SQ_SHAPES[0],s=5,key=40,d=[],g=0;
+  do {
+    sh = pick(SQ_SHAPES); s = ri(2,12); key = sh.edges*s;
+    d = [4*sh.N*s, sh.N*s*s, (sh.edges-2)*s];
+    g++;
+  } while (g<300 && !(key !== sh.N*s*s && optsOk(key,d)));
+  return band(mcNum(sh.say+'. Each square has sides of '+s+' cm. What is the <b>perimeter</b> of the shape?','',key,d,'cm',
+    'Walk around the outside of the shape and count the square sides you pass: '+sh.edges+' of them. '+
+    'The sides where two squares touch are inside the shape, so they are not part of the perimeter. '+
+    'Perimeter = '+sh.edges+' × '+s+' = '+key+' cm. Adding all '+sh.N+' squares\' perimeters ('+sh.N+' × '+(4*s)+' = '+(4*sh.N*s)+
+    ' cm) counts the inside sides too.'), 3);
+}
+
+/* G1e. Cut a row of identical squares apart: how much more perimeter? Typed. */
+function gCutSquares(){
+  const n = ri(3,6), s = ri(2,9), X = n*s, who = pick(NAMES);
+  const all = 4*n*s, rect = 2*(X+s), key = all-rect;
+  return band(finishTyped('A rectangle is made of '+n+' identical squares in a row. It is '+X+' cm long. '+who+
+    ' cuts it apart into the '+n+' squares. How much <b>greater</b> is the total perimeter of the '+n+
+    ' squares than the perimeter of the rectangle? Give your answer in cm.', key,
+    'Each square side is '+X+' ÷ '+n+' = '+s+' cm. The '+n+' squares together: '+n+' × 4 × '+s+' = '+all+
+    ' cm. The rectangle: '+X+' + '+s+' + '+X+' + '+s+' = '+rect+' cm. Difference: '+all+' − '+rect+' = '+key+
+    ' cm. Shortcut: each of the '+(n-1)+' cuts makes 2 new sides of '+s+' cm, and '+(n-1)+' × 2 × '+s+' = '+key+' cm.',
+    'cm'), 3);
+}
+
+/* G2a. Two wires: a rectangle with PRINTED sides, then a square whose side is
+   tied to the rectangle (half its length, or equal to its breadth). Typed. */
+function gWireTwo(){
+  let L=18,B=7,half=true,g=0;
+  do { half = ri(0,1)===1; L = half ? 2*ri(4,13) : ri(6,20); B = ri(3,L-2); g++; }
+  while (g<300 && !(paOk(L,B) && (half ? L/2 !== B : true)));
+  const sq = half ? L/2 : B, pr = 2*(L+B), ps = 4*sq, key = pr+ps, who = pick(NAMES);
+  const tie = half ? 'half the length of the rectangle' : 'the same as the breadth of the rectangle';
+  return band(finishTyped(who+' bends a piece of wire into a rectangle '+L+' cm long and '+B+' cm wide. '+
+    'A second piece of wire is bent into a square. Each side of the square is '+tie+
+    '. How much wire is used <b>altogether</b>? Give your answer in cm.', key,
+    'Wire for the rectangle = its perimeter: '+L+' + '+B+' + '+L+' + '+B+' = '+pr+' cm. Each side of the square is '+
+    (half ? L+' ÷ 2 = '+sq : sq)+' cm, so its wire is 4 × '+sq+' = '+ps+' cm. Altogether: '+pr+' + '+ps+' = '+key+
+    ' cm. Wire goes around the edge, so it is perimeter, not area.', 'cm'), 3);
+}
+
+/* G2b. Same perimeter, different area (band 2: two products and a difference).
+   B is the squarer one, so B's area is the larger; never a square. */
+function gSamePerimArea(){
+  let a=9,b=4,c=7,d=6,dd=[],g=0;
+  do {
+    const half = ri(8,16);
+    a = ri(Math.ceil(half/2)+2, half-2); b = half-a;
+    c = ri(Math.ceil(half/2), a-1); d = half-c;
+    dd = [c*d, 2*(a+b), a*b];
+    g++;
+  } while (g<300 && !(c>d && a>c && paOk(a,b) && paOk(c,d) && optsOk(c*d-a*b, dd)));
+  const key = c*d-a*b, P = 2*(a+b);
+  return band(mcNum('Rectangle A is '+a+' cm by '+b+' cm. Rectangle B is '+c+' cm by '+d+
+    ' cm. Both rectangles have the same perimeter. How much <b>greater</b> is the area of B than the area of A?','',
+    key, dd, 'cm²',
+    'Same perimeter does not mean same area. Both perimeters are '+P+' cm, but area of A = '+a+' × '+b+' = '+(a*b)+
+    ' cm² and area of B = '+c+' × '+d+' = '+(c*d)+' cm². B is greater by '+(c*d)+' − '+(a*b)+' = '+key+' cm².'), 2);
+}
+
+/* G2c. Two identical rectangles joined along their long (or short) sides make a
+   bigger rectangle: its perimeter, or how much perimeter the join hides. */
+function gJoinRects(){
+  let L=9,B=4,longT=true,diff=false,key=0,dd=[],g=0;
+  do {
+    L = ri(5,15); B = ri(2,L-1); longT = ri(0,1)===1; diff = ri(0,1)===1;
+    const bigL = longT ? L : 2*L, bigB = longT ? 2*B : B, other = longT ? 2*(2*L+B) : 2*(L+2*B);
+    if (!diff){ key = 2*(bigL+bigB); dd = [4*(L+B), other, 2*L*B]; }
+    else { key = longT ? 2*L : 2*B; dd = longT ? [L, 2*B, 2*(L+2*B)] : [B, 2*L, 2*(2*L+B)]; }
+    g++;
+  } while (g<300 && !(paOk(L,B) && L !== 2*B && optsOk(key,dd)));
+  const touch = longT ? 'long' : 'short', who = pick(NAMES);
+  const bigL = longT ? L : 2*L, bigB = longT ? 2*B : B;
+  const dims = longT ? 'the bigger rectangle is '+L+' cm by '+B+' + '+B+' = '+(2*B)+' cm'
+                     : 'the bigger rectangle is '+L+' + '+L+' = '+(2*L)+' cm by '+B+' cm';
+  const stem = who+' has 2 identical rectangular cards. Each card is '+L+' cm long and '+B+' cm wide. '+
+    'They are put together, with a '+touch+' side of one card touching a '+touch+' side of the other, to make a bigger rectangle. ' +
+    (diff ? 'How much <b>shorter</b> is the perimeter of the bigger rectangle than the perimeters of the 2 cards added together?'
+          : 'What is the <b>perimeter</b> of the bigger rectangle?');
+  const P = 2*(bigL+bigB), tot = 4*(L+B), hid = longT ? L : B;
+  const explain = diff
+    ? 'The 2 cards add up to 2 × ('+L+' + '+B+' + '+L+' + '+B+') = '+tot+' cm. When they touch, '+dims+', so its perimeter is 2 × ('+
+      bigL+' + '+bigB+') = '+P+' cm. Shorter by '+tot+' − '+P+' = '+key+' cm: the two touching '+touch+' sides ('+hid+' cm each) are now inside.'
+    : 'When the '+touch+' sides touch, '+dims+'. Perimeter = '+bigL+' + '+bigB+' + '+bigL+' + '+bigB+' = '+P+
+      ' cm. Adding both cards\' perimeters ('+tot+' cm) wrongly counts the two touching sides, which are inside the bigger rectangle.';
+  return band(mcNum(stem,'',key,dd,'cm',explain), 3);
+}
+
   MQI.registerTopic({
     id:'geometry', level:'P3', strand:'Measurement and Geometry',
     moeSubTopic:"Area and Perimeter: concepts of area and perimeter of a plane figure; area of rectangle/square",
@@ -257,8 +445,13 @@ function gRectiPeri(){
          [gSquarePA,'peri'] entry already showed an area stem on half its draws;
          without it the split would silently delete area from level 1. */
       1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area']],
-      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri'],[gRectiPeri,'peri']],
-      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area'],[gRectiPeri,'peri']]
+      /* HARD LANE geom 2026-10-07: the two band-2 shapes (tile area, same
+         perimeter / different area) join pool 2; the seven band-3 shapes join pool 3. */
+      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri'],[gRectiPeri,'peri'],
+         [gTileArea,'area'],[gSamePerimArea,'area']],
+      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area'],[gRectiPeri,'peri'],
+         [gSqRowArea,'area'],[gSqRowPeri,'peri'],[gTilePeri,'peri'],[gSqShapePeri,'peri'],
+         [gCutSquares,'peri'],[gWireTwo,'peri'],[gJoinRects,'peri']]
     }
   });
 })();

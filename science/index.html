@@ -111,6 +111,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .fig table{border-collapse:collapse;margin:0 auto;min-width:min(100%,360px);font-size:1rem;background:#fff;color:#2B2540}
 .fig th,.fig td{border:1.5px solid #9C94B0;padding:6px 10px;text-align:center;vertical-align:middle}
 .fig th{background:#F3EEFF;font-weight:700}
+@media (max-width:420px){.fig th,.fig td{padding:6px 6px}}
 .fig caption{caption-side:top;font-weight:700;padding:4px;color:#2B2540}
 .stem{font-size:1.2rem;line-height:1.55;margin:0 0 14px;white-space:pre-line}
 .marks{display:inline-block;font-weight:800;font-size:.85rem;color:var(--ink-soft);margin-left:6px;white-space:nowrap}
@@ -332,9 +333,23 @@ function practiceSet(t) {
   if (nM + nO < 10) nO = Math.min(o.length, 10 - nM);
   return pickWeighted(m, nM).sort(byLevel).concat(pickWeighted(o, nO).sort(byLevel));
 }
+/* Real P3 EOY papers (12 school papers, 2024-25) split marks roughly evenly across the four
+   content areas, with experiments embedded in each. Process skills is cross-cutting, so it
+   gets half a share; every other topic gets one. */
+var EXAM_WEIGHT = { 'process-skills': 0.5 };
 function spreadPick(topics, type, k) {
   var used = {}, out = [], ts = shuffle(topics), guard = 0;
-  while (out.length < k && guard++ < k * 10) {
+  var w = ts.map(function (t) { return EXAM_WEIGHT[t.id] != null ? EXAM_WEIGHT[t.id] : 1; });
+  var tw = w.reduce(function (a, x) { return a + x; }, 0) || 1;
+  var quota = w.map(function (x) { return Math.floor(k * x / tw); });
+  var rest = k - quota.reduce(function (a, x) { return a + x; }, 0);
+  /* hand the leftover seats out by largest remainder (ties broken by the shuffle) */
+  ts.map(function (t, j) { return j; }).sort(function (x, y) { return (k * w[y] / tw - quota[y]) - (k * w[x] / tw - quota[x]); })
+    .slice(0, rest).forEach(function (j) { quota[j]++; });
+  ts.forEach(function (tt, j) {
+    pickWeighted(tt.items.filter(function (i) { return i.type === type; }), quota[j], used).forEach(function (it) { used[it.id] = 1; out.push(it); });
+  });
+  while (out.length < k && guard++ < k * 10) {   /* a topic ran short: top up round-robin */
     var got = null;
     for (var j = 0; j < ts.length && !got; j++) {
       var tt = ts[(out.length + j) % ts.length];
@@ -343,7 +358,7 @@ function spreadPick(topics, type, k) {
     if (!got) break;
     used[got.id] = 1; out.push(got);
   }
-  return out;
+  return shuffle(out);
 }
 
 /* ---------- figures ---------- */
@@ -509,13 +524,25 @@ function startExam() {
   b.forEach(function (it) { used[it.id] = 1; });
   var spare = [];
   ts.forEach(function (t) { t.items.forEach(function (it) { if (it.type === 'oeq' && !used[it.id]) spare.push(it); }); });
-  spare = shuffle(spare).sort(function (x, y) { return y.marks - x.marks; });
+  spare = shuffle(spare);
+  /* Swap the cheapest pick for a bigger question, same topic if possible, so the topic balance
+     holds and the mark mix lands near the real paper (about 4 x 2, 4 x 3, 2 x 4 marks in 10):
+     bring in 4-mark questions until a fifth of Section B is 4 marks, then the smallest bigger. */
+  var want4 = Math.round(b.length * 0.2);
   for (var g = 0; g < 40; g++) {
     var tot = b.reduce(function (n, it) { return n + it.marks; }, 0);
     if (tot >= target || !spare.length) break;
     var lo = 0; b.forEach(function (it, k) { if (it.marks < b[lo].marks) lo = k; });
-    if (spare[0].marks <= b[lo].marks) break;
-    b[lo] = spare.shift();
+    var need4 = b.filter(function (it) { return it.marks >= 4; }).length < want4;
+    var rank = function (it) {   /* lower is better; null = not a candidate */
+      if (it.marks <= b[lo].marks) return null;
+      var r = need4 ? (it.marks >= 4 ? 0 : 10 + it.marks) : it.marks;
+      return r * 2 + (it.topic === b[lo].topic ? 0 : 1);
+    };
+    var best = -1, bestR = null;
+    spare.forEach(function (it, k) { var r = rank(it); if (r != null && (bestR == null || r < bestR)) { best = k; bestR = r; } });
+    if (best < 0) break;
+    b[lo] = spare.splice(best, 1)[0];
   }
   b.sort(byLevel);
   var max = a.concat(b).reduce(function (n, it) { return n + it.marks; }, 0);

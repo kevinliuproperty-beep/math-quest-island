@@ -1931,6 +1931,57 @@ function p3timeOracle(q) {
     if (e > 23 * 60 + 59) return 'p3time end24: the show ends after midnight';
     return row(tParse24, e, 'end24');
   }
+  /* ---- T1 multi-segment timelines (hard lane 2026-10-07). A DIFFERENT path from the
+     generator: the generator adds minutes after midnight; these branches read every
+     printed time and duration as [hours, minutes] and walk the timeline with column
+     arithmetic (carry and borrow at 60), one leg at a time. Each must be tagged band 3. */
+  const T1_D = '(\\d+ h \\d+ min|\\d+ h|\\d+ min)', T1_24 = '(\\d{2}:\\d{2})';
+  const hm24 = x => { const k = String(x).split(':'); return [Number(k[0]), Number(k[1])]; };
+  const hm12 = x => { const v = tParse12(x); return [Math.floor(v / 60), v % 60]; };   /* only the a.m./p.m. read */
+  const hmD = x => { const h = /(\d+) h/.exec(x), mm = /(\d+) min/.exec(x); return [h ? Number(h[1]) : 0, mm ? Number(mm[1]) : 0]; };
+  const hmAdd = (a, b) => { let h = a[0] + b[0], mm = a[1] + b[1]; while (mm >= 60) { mm -= 60; h++; } return [h, mm]; };
+  const hmSub = (a, b) => { let h = a[0] - b[0], mm = a[1] - b[1]; while (mm < 0) { mm += 60; h--; } return [h, mm]; };
+  const hmV = a => a[0] * 60 + a[1];
+  const t1Band = (r, stretch) => r || (q.band !== 3 ? `p3time T1: expected q.band = 3, got ${q.band}`
+    : (!!q.stretch !== !!stretch ? `p3time T1: q.stretch should be ${!!stretch}` : null));
+  const t1Day = (a, what) => (a[0] < 1 || hmV(a) > 23 * 60 + 59) ? `p3time ${what}: the timeline leaves the day (${a.join(':')})` : null;
+  if ((m = text.match(new RegExp('^(.+?) started work at ' + T1_24 + '\\. \\1 spent ' + T1_D + ' on [^,]+, ' + T1_D + ' on .+? and then ' + T1_D +
+      ' on .+\\. At what time did \\1 finish\\? Give the time in the 24-hour clock\\.$')))) {
+    let t = hm24(m[2]);
+    for (const leg of [m[3], m[4], m[5]]) t = hmAdd(t, hmD(leg));
+    return t1Band(t1Day(t, 'chain24') || row(tParse24, hmV(t), 'chain24'));
+  }
+  if ((m = text.match(new RegExp('^(.+?) arrived at .+ at ' + TIME_T12 + '\\.? \\1 waited (\\d+) min for a show to start, watched the ' + T1_D +
+      ' show and then took a (\\d+) min bus ride home\\. What time did \\1 get home\\?$')))) {
+    let t = hm12(m[2]);
+    for (const leg of [m[3] + ' min', m[4], m[5] + ' min']) t = hmAdd(t, hmD(leg));
+    return t1Band(t1Day(t, 'timeline12') || row(tParse12, hmV(t), 'timeline12'));
+  }
+  if ((m = text.match(new RegExp('^.+ is open from ' + T1_24 + ' to ' + T1_24 + '\\. (.+?) arrived at ' + T1_24 + ' and left (\\d+) min before it closed\\. How long was \\3 at .+\\?$')))) {
+    const open = hm24(m[1]), left = hmSub(hm24(m[2]), [0, Number(m[5])]), arr = hm24(m[4]);
+    if (hmV(arr) < hmV(open)) return 'p3time stay: arrives before the place opens';
+    const d = hmSub(left, arr);
+    if (!(hmV(d) > 0)) return 'p3time stay: leaves before arriving';
+    return t1Band(row(tParseDur, hmV(d), 'stay'));
+  }
+  if ((m = text.match(new RegExp('^(.+?) has to reach Changi Airport by ' + T1_24 + '\\. Before leaving home, \\1 will eat dinner for (\\d+) min and then pack for (\\d+) min\\. ' +
+      'The taxi ride to the airport takes ' + T1_D + '\\. What is the latest time \\1 can start eating dinner\\? Give the time in the 24-hour clock\\.$')))) {
+    let t = hm24(m[2]);
+    for (const leg of [m[5], m[4] + ' min', m[3] + ' min']) t = hmSub(t, hmD(leg));   /* taxi, packing, dinner: backwards */
+    return t1Band(t1Day(t, 'latest') || row(tParse24, hmV(t), 'latest'));
+  }
+  if ((m = text.match(new RegExp('^(.+?) left home at ' + T1_24 + '\\. The bus ride to the MRT station took (\\d+) min\\. Then \\1 waited (\\d+) min for a train\\. ' +
+      'The train reached .+ at ' + T1_24 + '\\. How many minutes did the train ride take\\?$')))) {
+    const board = hmAdd(hmAdd(hm24(m[2]), [0, Number(m[3])]), [0, Number(m[4])]);
+    const d = hmSub(hm24(m[5]), board);
+    if (!(hmV(d) > 0)) return 'p3time journey-min: the train arrives before it leaves';
+    return t1Band(typedOk(hmV(d), 'min', 'journey-min'));
+  }
+  if ((m = text.match(new RegExp("^(.+?)'s watch is (\\d+) min slow\\. When a movie started, the watch showed " + T1_24 + '\\. The movie lasted ' + T1_D +
+      '\\. What was the real time when the movie ended\\? Give the time in the 24-hour clock\\.$')))) {
+    const t = hmAdd(hmAdd(hm24(m[3]), [0, Number(m[2])]), hmD(m[4]));   /* slow = behind: real = shown + k */
+    return t1Band(t1Day(t, 'slow watch') || row(tParse24, hmV(t), 'slow watch'), true);
+  }
   return 'p3time: no oracle matched this stem - every generator in js/topics/p3-time.js must ship its oracle ' +
     'in the same commit (js/topics/README.md): ' + text;
 }

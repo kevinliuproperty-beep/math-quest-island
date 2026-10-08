@@ -8,6 +8,8 @@
     "test:deep": "SAMPLES=50000 node tools/gen-sanity.mjs",
     "test:layout": "node --experimental-websocket tools/layout-gate.mjs",
     "test:feed": "node tools/feed-sim.mjs",
+    "test:mock": "node tools/mock-sim.mjs",
+    "test:mock-gate": "node tools/mock-gate.mjs",
     "serve": "python3 -m http.server 8765",
     "test:answers": "node tools/answer-parse-test.mjs",
     "build:engine": "node tools/build-engine.mjs",

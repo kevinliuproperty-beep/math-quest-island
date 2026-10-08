@@ -1983,6 +1983,60 @@ function oracle(q, topic) {
     const saysIt = s => String(q.explain).indexOf(String(s)) >= 0;
     const PER = { 'm|km': 1000, 'cm|m': 100, 'g|kg': 1000, 'ml|l': 1000 };
 
+    /* ===== HARD LANE 2026-10-07 (lane/hard-fractions), card F2: TYPED P3 fractions.
+       Scoped to `fractions`. Each key is re-derived from the RENDERED stem by
+       integer cross-multiplication over the two printed fractions - the generator
+       renames into the larger bottom number, this path never renames at all - and
+       q.fracAnswer is held to the same value, because the grader marks against it.
+       The P3 clamps ride along: proper fractions, bottom numbers to 12, the two
+       bottom numbers RELATED (one a multiple of the other), and no stem may ask for
+       a particular form of the fraction, since gradeTyped accepts 6/8 for 3/4. */
+    if (topic === 'fractions') {
+      const fsT = allFracs(q.q);
+      const properP3 = f => f[0] >= 1 && f[0] < f[1] && f[1] <= 12;
+      const related = (a, b) => Math.max(a[1], b[1]) % Math.min(a[1], b[1]) === 0;
+      if (/simplest|lowest terms/i.test(text)) return 'p3 typed fraction: the stem asks for a form the grader does not enforce';
+      if ((m = text.match(/^Find the value of .+ (\+|−) .+\. \(Type a fraction, for example 2\/7\.\)$/))) {
+        if (fsT.length !== 2) return `p3 typed +-: ${fsT.length} fractions in the stem, expected 2`;
+        const [A, B] = fsT;
+        if (!properP3(A) || !properP3(B)) return 'p3 typed +-: a printed fraction is not proper with a bottom number to 12';
+        if (A[1] === B[1] || !related(A, B)) return `p3 typed +-: ${A[1]} and ${B[1]} are not unlike related bottom numbers`;
+        const n = m[1] === '+' ? A[0] * B[1] + B[0] * A[1] : A[0] * B[1] - B[0] * A[1], d = A[1] * B[1];
+        if (n < 1 || n >= d) return `p3 typed +-: the result ${n}/${d} is not a proper fraction`;
+        if (q.band !== 2) return `p3 typed +-: q.band is ${q.band}, expected 2 (one rename, one operation)`;
+        if (!fracKeyOk(n, d)) return `p3 typed +-: expected key ${n}/${d}, got ${JSON.stringify(q.fracAnswer)}`;
+        return near(n / d, q.answer) ? null : `p3 typed +-: expected ${n / d}, got ${q.answer}`;
+      }
+      if ((m = text.match(/^How many (sixths|eighths|tenths|twelfths) must be (added to|taken away from) .+ (to make|to leave) .+\?$/))) {
+        const D = { sixths: 6, eighths: 8, tenths: 10, twelfths: 12 }[m[1]];
+        if (fsT.length !== 2) return `p3 typed pieces: ${fsT.length} fractions in the stem, expected 2`;
+        const [A, B] = fsT;
+        if (!properP3(A) || !properP3(B)) return 'p3 typed pieces: a printed fraction is not proper with a bottom number to 12';
+        if (D % A[1] || D % B[1]) return `p3 typed pieces: ${A[1]} or ${B[1]} does not go into ${m[1]}`;
+        if (A[1] === B[1]) return 'p3 typed pieces: both fractions print the same bottom number, so the item is not about unlike fractions';
+        if ((m[2] === 'added to') !== (m[3] === 'to make')) return 'p3 typed pieces: the stem mixes "added" with "leave"';
+        /* (B - A) x D, as one fraction over A[1] x B[1] */
+        const num = (B[0] * A[1] - A[0] * B[1]) * D, den = A[1] * B[1];
+        if (num % den) return 'p3 typed pieces: the difference is not a whole number of the named pieces';
+        const k = num / den;
+        if (m[2] === 'added to' ? k < 2 : k > -2) return `p3 typed pieces: ${k} ${m[1]} does not run the way the stem says, or is fewer than 2`;
+        if (q.band !== 3) return `p3 typed pieces: q.band is ${q.band}, expected 3 (two renames and a difference)`;
+        if (ctx.MQI.unitList(q.unit)[0] !== m[1]) return `p3 typed pieces: q.unit is ${JSON.stringify(q.unit)}, expected "${m[1]}"`;
+        return near(Math.abs(k), q.answer) ? null : `p3 typed pieces: expected ${Math.abs(k)}, got ${q.answer}`;
+      }
+      if (/^.+ had .+\. (She|He) .+ of it .+ and .+ of it .+\. What fraction of .+ was left\? \(Type a fraction, for example 2\/7\.\)$/.test(text)) {
+        if (fsT.length !== 2) return `p3 typed left: ${fsT.length} fractions in the stem, expected 2`;
+        const [A, B] = fsT;
+        if (!properP3(A) || !properP3(B)) return 'p3 typed left: a printed fraction is not proper with a bottom number to 12';
+        if (A[1] === B[1] || !related(A, B)) return `p3 typed left: ${A[1]} and ${B[1]} are not unlike related bottom numbers`;
+        const d = A[1] * B[1], n = d - A[0] * B[1] - B[0] * A[1];
+        if (n < 1) return 'p3 typed left: nothing is left';
+        if (q.band !== 3) return `p3 typed left: q.band is ${q.band}, expected 3 (rename, add, take from one whole)`;
+        if (!fracKeyOk(n, d)) return `p3 typed left: expected key ${n}/${d}, got ${JSON.stringify(q.fracAnswer)}`;
+        return near(n / d, q.answer) ? null : `p3 typed left: expected ${n / d}, got ${q.answer}`;
+      }
+    }
+
     /* P5 FRACTIONS 1.1 - dividing a whole number by a whole number, quotient as a fraction */
     if ((m = text.match(/share (\d+) [^.]*equally among the (\d+) of them\. What fraction of one does each get\?/))) {
       const n = Number(m[1]), d = Number(m[2]);
@@ -4101,6 +4155,66 @@ function oracle(q, topic) {
       }
       return null;
     };
+
+    /* ===== HARD LANE 2026-10-07 (lane/hard-fractions), card F1: compare and
+       order UNLIKE related fractions. Both oracles read the RENDERED fractions and
+       compare them as decimals - the generator renames into the largest bottom
+       number, this path never renames - and both enforce the shape that makes the
+       item exam-hard: the bottom numbers differ and are related to the largest
+       one (to 12), so neither one-rule P3 shortcut applies, and the two
+       whole-number beliefs (the bigger top number / the bigger bottom number is
+       the bigger fraction) do NOT land on the key. Kept above every other compare
+       branch so the loose ones never claim these stems. */
+    if ((m = text.match(/^Arrange these fractions in order, beginning with the (smallest|greatest): .+\. Which order is correct\?$/))) {
+      const asc = m[1] === 'smallest';
+      const shown = allFracs(q.q);
+      if (shown.length !== 3) return `related order: ${shown.length} fractions in the stem, expected 3`;
+      if (shown.some(f => f[0] < 1 || f[0] >= f[1] || f[1] > 12)) return 'related order: a fraction is not proper with a bottom number to 12';
+      /* a common multiple to 12 by search, not by the generator's lcm */
+      let common = 0;
+      for (let c = 2; c <= 12 && !common; c++) if (shown.every(f => c % f[1] === 0)) common = c;
+      if (!common || new Set(shown.map(f => f[1])).size < 2)
+        return 'related order: the bottom numbers are all the same, or share no common multiple up to 12';
+      if (q.band !== 3) return `related order: q.band is ${q.band}, expected 3`;
+      const v = f => f[0] / f[1];
+      const mono = o => o.length === 3 && (asc ? v(o[0]) < v(o[1]) && v(o[1]) < v(o[2]) : v(o[0]) > v(o[1]) && v(o[1]) > v(o[2]));
+      const sig = o => o.map(f => f[0] + '/' + f[1]).join(' ');
+      const opts = (q.choices || []).map(allFracs);
+      if (opts.length !== 4 || opts.some(o => o.length !== 3)) return 'related order: an option does not list exactly three fractions';
+      const setOf = o => o.map(f => f[0] + '/' + f[1]).sort().join(' ');
+      if (opts.some(o => setOf(o) !== setOf(shown))) return 'related order: an option lists a fraction that is not in the stem';
+      if (new Set(opts.map(sig)).size !== 4) return 'related order: two options are the same order';
+      const hits = opts.map((o, i) => mono(o) ? i : -1).filter(i => i >= 0);
+      if (hits.length !== 1) return `related order: ${hits.length} options run ${m[1]} first`;
+      if (mono(shown)) return 'related order: the stem already lists the fractions in the answer order';
+      const byTop = shown.slice().sort((a, b) => asc ? a[0] - b[0] : b[0] - a[0]);
+      /* the bottom-number belief: order the bottoms as whole numbers, and where two
+         are the same, by their tops */
+      const byBot = shown.slice().sort((a, b) => asc ? (a[1] - b[1] || a[0] - b[0]) : (b[1] - a[1] || b[0] - a[0]));
+      if (new Set(shown.map(f => f[0])).size !== 3) return 'related order: two top numbers are the same, so the top-number belief names no single order';
+      if (mono(byTop) || mono(byBot)) return 'related order: ordering the top or the bottom numbers as whole numbers already gives the right order';
+      return hits[0] === q.correct ? null : `related order: expected ${sig(opts[hits[0]])}, key is ${sig(opts[q.correct])}`;
+    }
+    if ((m = text.match(/^.+ each had a same-(?:size|length) .+\. .+\. Who (drank|used) the (most|least) .+\?$/))) {
+      const most = m[2] === 'most';
+      const pairs = [...String(q.q).matchAll(/([A-Z][a-z]+) (?:drank|used) <span class="frac"><span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span><\/span> of (?:his|hers)/g)]
+        .map(x => [x[1], Number(x[2]), Number(x[3])]);
+      if (pairs.length !== 4) return `related who: ${pairs.length} name+fraction pairs found, expected 4`;
+      if (pairs.some(p => p[1] < 1 || p[1] >= p[2] || p[2] > 12)) return 'related who: a share is not proper with a bottom number to 12';
+      const big = Math.max(...pairs.map(p => p[2]));
+      if (pairs.some(p => big % p[2]) || new Set(pairs.map(p => p[2])).size < 3)
+        return 'related who: the bottom numbers are not at least three different divisors of the largest one';
+      if (q.band !== 3) return `related who: q.band is ${q.band}, expected 3`;
+      const vals = pairs.map(p => p[1] / p[2]);
+      const ext = xs => { const t = most ? Math.max(...xs) : Math.min(...xs); return xs.filter(x => near(x, t)).length === 1 ? xs.findIndex(x => near(x, t)) : -1; };
+      const k = ext(vals);
+      if (k < 0) return 'related who: the answer is not unique';
+      if (ext(pairs.map(p => p[1])) === k || ext(pairs.map(p => p[2])) === k)
+        return 'related who: the biggest (smallest) top or bottom number already names the answer, so no comparing is needed';
+      const opts = q.choices.map(strip);
+      if (new Set(opts).size !== 4 || !pairs.every(p => opts.includes(p[0]))) return 'related who: the four options are not the four names in the stem';
+      return strip(q.answerText) === pairs[k][0] ? null : `related who: expected ${pairs[k][0]}, got ${strip(q.answerText)}`;
+    }
 
     /* --- the three picture formats, read off the rendered bar model ---------
        The oracle counts `seg` / `seg fill` divs exactly as a child counts parts

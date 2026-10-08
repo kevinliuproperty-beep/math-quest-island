@@ -3553,6 +3553,278 @@ function gAddWords(){
 }
 
 
+/* ===========================================================================
+   HARD LANE 2026-10-07 (lane/hard-fractions) - cards F1 and F2 of the Math
+   Hardness Calibration (16 real 2023-2025 P3 EOY papers). Every item below is
+   ORIGINAL; the papers were read for item SHAPE only.
+
+   F1  compare and order UNLIKE related fractions at exam difficulty. Every bank
+       above compares with one P3 rule (same top or same bottom number); the real
+       papers ask "order 2/3, 5/6, 7/12" and "who drank the most" over different
+       bottom numbers, where the only route is to rename into the largest bottom
+       number first. Distractors are the two whole-number beliefs a P3 child
+       brings to that: the bigger TOP number is the bigger fraction, and the
+       bigger BOTTOM number is (or, over-learned from unit fractions, is NOT) the
+       bigger fraction.
+   F2  TYPED fraction short answers, so fractions can sit in Booklet B. The key is
+       carried as q.fracAnswer and graded cross-reduced, so 6/8 and 3/4 are both
+       right - which is why no stem here ever asks for a particular form of the
+       fraction. A typed stem declares the form it wants ("type a fraction") and
+       nothing more.
+
+   Band tags (q.band) are what the mock's B2 routing reads: 3 = exam-hard
+   multi-step (rename, then combine or compare, then answer the question asked),
+   2 = standard. All tables are enumerated at load, so every draw is legal by
+   construction and the stem weighting is exact.
+   =========================================================================== */
+const band = (q, b) => (q.band = b, q);
+const D_WORD = { 4:'quarters', 6:'sixths', 8:'eighths', 9:'ninths', 10:'tenths', 12:'twelfths' };
+/* A "related family": every bottom number divides the largest one, which is at
+   most 12 - the whole of what P3 means by unlike fractions it can compare. */
+const REL_FAMS = { 6:[2,3,6], 8:[2,4,8], 10:[2,5,10], 12:[2,3,4,6,12] };
+const relFracs = D => {
+  const out = [];
+  for (const d of REL_FAMS[D]) for (let n = 1; n < d; n++) if (gcd(n, d) === 1) out.push([n, d]);
+  return out;
+};
+const byValue = (p, q2) => p[0]*q2[1] - q2[0]*p[1];
+/* "a/b = c/D", with the multiplier shown, or "a/D is already in D-ths". */
+const renameTo = (p, D) => p[1] === D
+  ? fr(p[0], p[1]) + ' is already in ' + D_WORD[D]
+  : fr(p[0], p[1]) + ' = ' + fr(p[0]*(D/p[1]), D) + ' (top and bottom × ' + (D/p[1]) + ')';
+/* "1 twelfth", "5 twelfths" - one count, one noun. */
+const pcs = (n, D) => n + ' ' + (n === 1 ? D_WORD[D].slice(0, -1) : D_WORD[D]);
+const listAnd = xs => xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length-1];
+const TYPE_FRAC = ' (Type a fraction, for example 2/7.)';
+
+/* ---- F1a. ORDER three unlike related fractions (pool 3, band 3) ------------
+   Three fractions over at least two different bottom numbers, whose common
+   multiple D is at most 12; three top numbers, all different. So neither P3 rule applies to the row as printed
+   and the child must rename into D-ths before anything can be ordered.
+   The table only keeps triples where ordering by the top numbers, or by the
+   bottom numbers (bigger bottom = bigger fraction), as whole numbers, is WRONG -
+   so neither whole-number shortcut answers the item. The top-number order is the
+   commonest error and is on the row on about 85% of draws (see THE ROW below). */
+/* The family is the three bottom numbers' common multiple, D <= 12. Usually D is
+   one of the three (2/3, 5/6, 7/12); where it is not (2/3, 3/4, 5/6 in twelfths)
+   BOTH-renaming is needed and the explanation names D out loud. */
+const ORDER_REL = [];
+const lcm = (x, y) => x / gcd(x, y) * y;
+{
+  const F = SIMPLE.filter(p => p[1] <= 12);
+  for (let i = 0; i < F.length; i++) for (let j = i+1; j < F.length; j++) for (let k = j+1; k < F.length; k++) {
+    const t = [F[i], F[j], F[k]];
+    const D = lcm(lcm(t[0][1], t[1][1]), t[2][1]);
+    if (D > 12 || !D_WORD[D] || new Set(t.map(p => p[1])).size < 2) continue;
+    if (new Set(t.map(p => p[0])).size !== 3) continue;
+    if (new Set(t.map(p => p[0]*(D/p[1]))).size !== 3) continue;
+    for (const asc of [true, false]) {
+      const s = (f) => t.slice().sort(f);
+      const dir = f => asc ? f : (a, b) => f(b, a);
+      const right = s(dir(byValue));
+      const key = o => o.map(p => p[0] + '/' + p[1]).join(',');
+      const top = s(dir((a, b) => a[0] - b[0]));    /* bigger top number = bigger fraction */
+      /* bigger bottom number = bigger fraction; where two bottom numbers are the
+         same, the child compares that pair by the tops, which is right for them */
+      const bot = s(dir((a, b) => a[1] - b[1] || a[0] - b[0]));
+      if (key(top) === key(right) || key(bot) === key(right)) continue;
+      ORDER_REL.push({ D, t, asc, right, top });
+    }
+  }
+}
+function gOrderRelated(){
+  const T = pick(ORDER_REL), D = T.D;
+  const render = o => o.map(p => fr(p[0], p[1])).join(', ');
+  const same = (a, b) => a.every((p, i) => p[0] === b[i][0] && p[1] === b[i][1]);
+  const top = { o: T.top };
+  const sig = o => o.map(p => p[0] + '/' + p[1]).join(',');
+  const perms = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]].map(ix => ix.map(i => T.right[i]));
+  /* THE ROW. The top-number order is held on three draws in four (and lands by
+     chance on most of the rest); the other seats are drawn from ALL the wrong
+     orders, the named bottom-number and turned-round orders among them. Holding
+     every named belief on every row was measured first and failed RULE 11's shape
+     clause: four fixed beliefs over three fractions make a row whose PATTERN of
+     repeats names the key's slot (48-54% on its biggest shape, over the 45% line).
+     At 3 in 4 no masked shape covers 5% of draws. */
+  const wr = perms.filter(o => sig(o) !== sig(T.right));
+  let three = shuffle(wr).slice(0, 3);
+  if (Math.random() < 0.75 && !three.some(o => sig(o) === sig(top.o)))
+    three = [top.o].concat(shuffle(wr.filter(o => sig(o) !== sig(top.o))).slice(0, 2));
+  const rows = shuffle([T.right].concat(three));
+  let shown = shuffle(T.t.slice());
+  for (let g = 0; g < 20 && same(shown, T.right); g++) shown = shuffle(T.t.slice());
+  if (same(shown, T.right)) shown = [T.right[1], T.right[0], T.right[2]];
+  const word = T.asc ? 'smallest' : 'greatest';
+  const others = [...new Set(T.t.map(p => p[1]).filter(d => d !== D))].sort((a, b) => a - b);
+  const tops = T.right.map(p => p[0]*(D/p[1]));
+  return band({
+    q: 'Arrange these fractions in order, beginning with the <b>' + word + '</b>: ' + render(shown) +
+       '. Which order is correct?',
+    extra: '', choices: rows.map(render), correct: rows.indexOf(T.right),
+    explain: 'The bottom numbers are not all the same, so first make the pieces the same size. ' + D +
+      ' is a multiple of ' + listAnd(others) + ', so change every fraction into ' + D_WORD[D] + ': ' +
+      T.t.map(p => renameTo(p, D)).join('; ') + '. Now every piece is one ' + D_WORD[D].slice(0, -1) +
+      ', so the top numbers decide: ' + tops.join(', ') + '. Beginning with the ' + word + ', the order is ' +
+      render(T.right) + '. Putting the top numbers or the bottom numbers in order as if they were whole ' +
+      'numbers does not work here, because the pieces are different sizes until they are renamed.',
+    answerText: render(T.right)
+  }, 3);
+}
+
+/* ---- F1b. WHO had the most / least, four unlike related fractions (pool 3,
+   band 3). The options are the four NAMES, so the row carries no magnitude and
+   the child must compare the four fractions in the stem. The table keeps only
+   sets where the right person is neither the one with the biggest top number
+   nor the one with the biggest bottom number (smallest, when "least" is asked),
+   so both whole-number beliefs land on a wrong name. ----------------------------- */
+const WHO_REL = [];
+for (const D of [8, 10, 12]) {
+  const F = relFracs(D);
+  const N = F.length;
+  for (let a = 0; a < N; a++) for (let b = a+1; b < N; b++) for (let c = b+1; c < N; c++) for (let e = c+1; e < N; e++) {
+    const s = [F[a], F[b], F[c], F[e]];
+    if (!s.some(p => p[1] === D) || new Set(s.map(p => p[1])).size < 3) continue;
+    if (new Set(s.map(p => p[0]*(D/p[1]))).size !== 4) continue;
+    for (const most of [true, false]) {
+      const arg = f => {
+        const xs = s.map(f), t = most ? Math.max(...xs) : Math.min(...xs);
+        return xs.filter(x => x === t).length === 1 ? xs.indexOf(t) : -1;
+      };
+      const k = arg(p => p[0]*(D/p[1])), bt = arg(p => p[0]), bb = arg(p => p[1]);
+      if (k < 0 || bt < 0 || bb < 0 || k === bt || k === bb) continue;
+      WHO_REL.push({ D, s, most, k });
+    }
+  }
+}
+/* [name, possessive] - one-word names, so the oracle can walk "Name verb a/b". */
+const WHO_KIDS = [['Siti','hers'], ['Kumar','his'], ['Ravi','his'], ['Aisyah','hers'],
+                  ['Devi','hers'], ['Hafiz','his'], ['Farah','hers'], ['Jun','his']];
+const WHO_CTX = [
+  { have:'a same-size bottle of water', verb:'drank', ask:m => 'Who drank the ' + m + ' water?' },
+  { have:'a same-length piece of ribbon', verb:'used', ask:m => 'Who used the ' + m + ' ribbon?' },
+  { have:'a same-size tub of paint', verb:'used', ask:m => 'Who used the ' + m + ' paint?' }
+];
+function gWhoMostRelated(){
+  const T = pick(WHO_REL), D = T.D, cx = pick(WHO_CTX);
+  const kids = shuffle(WHO_KIDS.slice()).slice(0, 4);
+  const m = T.most ? 'most' : 'least';
+  const says = kids.map((kd, i) => kd[0] + ' ' + cx.verb + ' ' + fr(T.s[i][0], T.s[i][1]) + ' of ' + kd[1]);
+  const opts = shuffle(kids.map(kd => kd[0]));
+  const winner = kids[T.k][0];
+  const tops = T.s.map(p => p[0]*(D/p[1]));
+  const others = [...new Set(T.s.map(p => p[1]).filter(d => d !== D))].sort((a, b) => a - b);
+  return band({
+    q: listAnd(kids.map(kd => kd[0])) + ' each had ' + cx.have + '. ' + listAnd(says) + '. <b>' + cx.ask(m) + '</b>',
+    extra: '', choices: opts, correct: opts.indexOf(winner),
+    explain: 'The wholes are all the same size, so the four fractions can be compared - but their bottom ' +
+      'numbers are different, so rename them first. ' + D + ' is a multiple of ' + listAnd(others) +
+      ', so write every fraction in ' + D_WORD[D] + ': ' + T.s.map(p => renameTo(p, D)).join('; ') +
+      '. In ' + D_WORD[D] + ' the top numbers are ' + listAnd(kids.map((kd, i) => kd[0] + ' ' + tops[i])) +
+      ', so ' + winner + ' ' + cx.verb + ' the ' + m + '. The biggest top number or the biggest bottom number ' +
+      'on its own does not tell you, because the pieces are different sizes.',
+    answerText: winner
+  }, 3);
+}
+
+/* ---- F2a. TYPED: add or subtract two related fractions (pool 2, band 2). The
+   card example "1/4 + 3/8 = ?", typed. The answer may come out as 6/8: the
+   grader takes 6/8 and 3/4 alike, and the card says both name one amount. ----- */
+const TYPED_REL = [];
+for (let d = 2; d <= 6; d++) for (let k = 2; k * d <= 12; k++) {
+  const D = k * d;
+  for (let a = 1; a < d; a++) if (gcd(a, d) === 1)
+    for (let b = 1; b < D; b++) if (gcd(b, D) === 1) {
+      if (a*k + b < D) { TYPED_REL.push([d, D, a, b, '+', true]); TYPED_REL.push([d, D, a, b, '+', false]); }
+      if (a*k - b >= 1) TYPED_REL.push([d, D, a, b, '−', true]);
+      if (b - a*k >= 1) TYPED_REL.push([d, D, a, b, '−', false]);
+    }
+}
+function gTypedRelated(){
+  const T = pick(TYPED_REL);
+  const d = T[0], D = T[1], a = T[2], b = T[3], op = T[4], smallFirst = T[5], k = D / d;
+  const A = [a, d], B = [b, D];
+  const first = smallFirst ? A : B, second = smallFirst ? B : A;
+  const top = op === '+' ? a*k + b : (smallFirst ? a*k - b : b - a*k);
+  const g = gcd(top, D);
+  const q = finishTyped('Find the value of ' + fr(first[0], first[1]) + ' ' + op + ' ' + fr(second[0], second[1]) + '.' + TYPE_FRAC,
+    top / D,
+    'The bottom numbers are different, but ' + D + ' is a multiple of ' + d + ', so change ' + fr(a, d) +
+    ' into ' + D_WORD[D] + ': ' + renameTo(A, D) + '. Now both fractions are in ' + D_WORD[D] + ', so work with ' +
+    'the top numbers only: ' + (smallFirst ? (a*k) + ' ' + op + ' ' + b : b + ' ' + op + ' ' + (a*k)) + ' = ' + top +
+    ', and the answer is ' + fr(top, D) + '.' +
+    (g > 1 ? ' ' + fr(top, D) + ' is the same amount as ' + fr(top/g, D/g) + ', and either one is correct.' : ''),
+    '');
+  q.fracAnswer = [top / g, D / g];
+  q.answerText = fr(top / g, D / g);
+  return band(q, 2);
+}
+
+/* ---- F2b. TYPED: how many D-ths must be added / taken away (pool 3, band 3).
+   "How many twelfths must be added to 1/3 to make 3/4?" Rename BOTH fractions
+   into the named pieces, then find the difference: three steps. The two printed
+   bottom numbers always differ, so at least one fraction must be renamed. ------ */
+const PIECES_REL = [];
+for (const D of [6, 8, 10, 12]) {
+  const F = relFracs(D);
+  for (const A of F) for (const B of F) {
+    if (A[1] === B[1]) continue;            /* unlike: the two printed bottom numbers differ */
+    const x = A[0]*(D/A[1]), y = B[0]*(D/B[1]);
+    if (Math.abs(x - y) < 2) continue;
+    PIECES_REL.push([D, A, B]);
+  }
+}
+function gTypedPieces(){
+  const T = pick(PIECES_REL), D = T[0], A = T[1], B = T[2];
+  const x = A[0]*(D/A[1]), y = B[0]*(D/B[1]), add = y > x, n = Math.abs(y - x);
+  const W = D_WORD[D];
+  const q = finishTyped('How many <b>' + W + '</b> must be ' + (add ? 'added to ' : 'taken away from ') +
+    fr(A[0], A[1]) + (add ? ' to make ' : ' to leave ') + fr(B[0], B[1]) + '?',
+    n,
+    'Change both fractions into ' + W + ' first: ' + renameTo(A, D) + ', and ' + renameTo(B, D) + '. ' +
+    (add ? 'From ' + pcs(x, D) + ' up to ' + pcs(y, D) + ' is ' + y + ' − ' + x + ' = ' + n +
+           ', so ' + pcs(n, D) + ' must be added.'
+         : 'From ' + pcs(x, D) + ' down to ' + pcs(y, D) + ' is ' + x + ' − ' + y + ' = ' + n +
+           ', so ' + pcs(n, D) + ' must be taken away.'),
+    W);
+  return band(q, 3);
+}
+
+/* ---- F2c. TYPED: two related parts given away, what is LEFT (pool 3, band 3).
+   Rename, add the two parts, take the total from one whole. The stop-after-
+   step-2 slip (the part given away) is named on the card in words. ------------- */
+const LEFT_REL = [];
+for (let d = 2; d <= 6; d++) for (let k = 2; k * d <= 12; k++) {
+  const D = k * d;
+  for (let a = 1; a < d; a++) if (gcd(a, d) === 1)
+    for (let b = 1; b < D; b++) if (gcd(b, D) === 1 && a*k + b <= D - 1) LEFT_REL.push([d, D, a, b]);
+}
+const LEFT_CTX = [
+  { who:'Mdm Tan', she:'She', what:'a pandan cake', it:'the cake', p1:'gave', t1:'to her neighbour', p2:'gave', t2:'to her sister', pp:'given away' },
+  { who:'Mr Lim', she:'He', what:'a bag of rice', it:'the rice', p1:'cooked', t1:'on Monday', p2:'cooked', t2:'on Tuesday', pp:'cooked' },
+  { who:'Aunty Rosnah', she:'She', what:'a roll of ribbon', it:'the ribbon', p1:'used', t1:'for a gift', p2:'used', t2:'for a hair band', pp:'used' },
+  { who:'Uncle Ahmad', she:'He', what:'a tin of paint', it:'the paint', p1:'used', t1:'on a door', p2:'used', t2:'on a fence', pp:'used' }
+];
+function gTypedLeft(){
+  const T = pick(LEFT_REL), d = T[0], D = T[1], a = T[2], b = T[3], k = D / d;
+  const cx = pick(LEFT_CTX), smallFirst = Math.random() < 0.5;
+  const P = smallFirst ? [[a, d], [b, D]] : [[b, D], [a, d]];
+  const used = a*k + b, left = D - used, g = gcd(left, D);
+  const q = finishTyped(cx.who + ' had ' + cx.what + '. ' + cx.she + ' ' + cx.p1 + ' ' + fr(P[0][0], P[0][1]) + ' of it ' +
+    cx.t1 + ' and ' + cx.p2 + ' ' + fr(P[1][0], P[1][1]) + ' of it ' + cx.t2 + '. <b>What fraction of ' + cx.it +
+    ' was left?</b>' + TYPE_FRAC,
+    left / D,
+    'Step 1: make the pieces the same size. ' + D + ' is a multiple of ' + d + ', so ' + renameTo([a, d], D) + '. ' +
+    'Step 2: the part ' + cx.pp + ' altogether is ' + (a*k) + ' + ' + b + ' = ' + pcs(used, D) + '. Step 3: the whole of ' + cx.it + ' is ' + fr(D, D) + ', so what is left is ' + D + ' − ' + used +
+    ' = ' + pcs(left, D) + ', which is ' + fr(left, D) + '.' +
+    (g > 1 ? ' ' + fr(left, D) + ' is the same amount as ' + fr(left/g, D/g) + ', and either one is correct.' : '') +
+    ' Stopping after step 2 answers a different question - how much was ' + cx.pp + ', not how much was left.',
+    '');
+  q.fracAnswer = [left / g, D / g];
+  q.answerText = fr(left / g, D / g);
+  return band(q, 3);
+}
+
+
   MQI.registerTopic({
     id:'fractions', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Fractions: equivalent fractions; comparing and ordering unlike fractions; addition and subtraction",
@@ -3576,6 +3848,8 @@ function gAddWords(){
        one stem shape by the number of pools it occupied, and gPeri-in-all-three
        was the worst case in the game. Pool 1 = 6 gens / 4 skills, pool 2 = 9 / 5,
        pool 3 = 12 / 5.
+       HARD LANE 2026-10-07: pool 2 = 10 / 5 (+ gTypedRelated), pool 3 = 16 / 5
+       (+ gOrderRelated, gWhoMostRelated, gTypedPieces, gTypedLeft).
 
        WOUND 1 (Sweep fractions Refutation 2026-09-15). The feed serves by SKILL,
        not by slot: createFeed's carousel round-robins the skills inside a pool and
@@ -3597,11 +3871,13 @@ function gAddWords(){
          [gCompareUnit,'compare'],[gCompareBar,'compare'],[gAddSame,'addsub']],
       2:[[gPicUnshaded,'wholes'],[gSubFromOne,'wholes'],[gEqMissing,'equivalent'],
          [gEqMissingDen,'equivalent'],[gPickEquiv,'equivalent'],[gSimplest,'simplest'],
-         [gCompareSameD,'compare'],[gCompareWords,'compare'],[gSubSame,'addsub']],
+         [gCompareSameD,'compare'],[gCompareWords,'compare'],[gSubSame,'addsub'],
+         [gTypedRelated,'addsub']],
       3:[[gMakeOne,'wholes'],[gMakeOneIn,'wholes'],[gAlreadySimplest,'simplest'],
          [gSimplestError,'simplest'],[gBetween,'compare'],[gGreatest4,'compare'],
          [gOrderThree,'order'],[gOrderGap,'order'],
-         [gAddRelated,'addsub'],[gSubRelated,'addsub'],[gAddError,'addsub'],[gAddWords,'addsub']]
+         [gAddRelated,'addsub'],[gSubRelated,'addsub'],[gAddError,'addsub'],[gAddWords,'addsub'],
+         [gOrderRelated,'order'],[gWhoMostRelated,'compare'],[gTypedPieces,'addsub'],[gTypedLeft,'wholes']]
     }
   });
 })();

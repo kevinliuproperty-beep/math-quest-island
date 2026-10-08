@@ -228,6 +228,14 @@
   #feedback { min-height:26px; text-align:center; font-size:18px; font-weight:800; padding-bottom:2px;
               flex:0 1000 auto; overflow-y:auto; overscroll-behavior:contain; }
   #feedback .ok { color:#7dffb0; } #feedback .no { color:#ffc9c2; }
+  /* O-1 (Integration Hard Wave 2026-10-08): with the 1000 shrink above, a worked explanation
+     under a tall bar graph collapsed to ONE line at 1440x900 (32 px holding 102 px of text).
+     A wrong answer's card keeps about three lines; the figure budget (--mqFigMaxH, js/app.js)
+     re-measures around it and the drawing scrolls inside its frame with the cue instead. */
+  #feedback:has(.no) { min-height:4.2em; }
+  /* On a phone the figure floor (96 px) leaves no slack under a tall graph, so three lines would
+     push the drawing out of its card; the mock lane's one-line strip with in-box scroll stays. */
+  @media (max-width:480px) { #feedback:has(.no) { min-height:26px; } }
 
   /* THE BANNER SITS IN A RESERVED BAND, AND COVERS NOTHING (Phone Width Refutation K3).
      Two wrong answers preceded this one:
@@ -691,7 +699,7 @@
      document.write keeps the tags synchronous, so load order is byte-identical to
      the hand-written tags it replaces. -->
 <script>
-  window.MQI_BUILD = "20261007hard";
+  window.MQI_BUILD = "20261008feedback";
   (function () {
     var v = "?v=" + window.MQI_BUILD;
     var files = [

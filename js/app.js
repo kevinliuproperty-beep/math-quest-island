@@ -165,9 +165,11 @@ function renderMap(){
   if(DB.grade==='P3' && MQI.modes['p3-mock']){
     const c=document.createElement('div');
     c.className='mockCard';
+    /* Full (50 marks, 90 min) is the real P3 EOY shape; Long is the 80-mark school variant */
+    const F=MQI.modes['p3-mock'].config.FORMATS, mkB=v=>{ let m=0; F[v].sections.forEach(s=>m+=s.count*s.marks);
+      return '<button class="mkGo'+(v==='full'?' mkMain':'')+'" data-v="'+v+'">'+F[v].label+'<small>'+F[v].minutes+' min · '+m+' marks</small></button>'; };
     c.innerHTML='<div class="mkTitle">📝 P3 Mock Paper <small>exam practice, marks at the end</small></div>'+
-      '<div class="mkBtns"><button class="mkGo" data-v="quick">Quick paper<small>15 min · 30 marks</small></button>'+
-      '<button class="mkGo" data-v="full">Full paper<small>80 min · 80 marks</small></button></div>'+
+      '<div class="mkBtns">'+mkB('full')+mkB('quick')+mkB('long')+'</div>'+
       '<button class="mkHist">📜 Paper history'+(DB.mockPapers.length?' ('+DB.mockPapers.length+')':'')+'</button>'+
       '<a class="mkHist" id="mkSciLink" href="/science">🔬 Science Quest</a>';
     c.querySelectorAll('.mkGo').forEach(b=>b.addEventListener('click',()=>newMockGame(b.dataset.v)));
@@ -385,7 +387,19 @@ function newMockGame(variant, resume){
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
   const fmt=mode.config.FORMATS[resume?resume.paper.variant:variant]||mode.config.FORMATS.quick;
   const feeds={};
-  const draw=(id,lvl)=>{ if(!feeds[id]) feeds[id]=MQI.createFeed(id,{alternateL3:false}); return feeds[id].next(lvl); };
+  /* Each mock feed is built over a stamped copy of the node's pools, so every item
+     carries q.gen = "<node>.<generator>" and the mode can keep the banks the
+     calibration card bars from the long problems (CONFIG.NEVER_PROBLEM) out of them.
+     The registry's own pools are put back at once; normal play never sees the stamp. */
+  const stampedFeed=id=>{
+    const def=MQI.topics[id], keep=def.pools, pools={};
+    for(const l of [1,2,3]) pools[l]=keep[l].map(pr=>{ const fn=pr[0];
+      const w=function(){ const q=fn(); if(q && !q.gen) q.gen=id+'.'+(fn.name||'anon'); return q; };
+      return [w, pr[1]]; });
+    def.pools=pools;
+    try{ return MQI.createFeed(id,{alternateL3:false}); } finally{ def.pools=keep; }
+  };
+  const draw=(id,lvl)=>{ if(!feeds[id]) feeds[id]=stampedFeed(id); return feeds[id].next(lvl); };
   QSET=null; FEED=null;
   MODE_FEED=function(){
     const it=mode.current();
@@ -568,7 +582,7 @@ function renderMockReport(rec){
   $('mkReview').innerHTML = miss.length ? miss.map(r=>{
     const q=r.q;
     const yours = r.attempted ? (q.typed ? esc(String(r.given||'')) : (r.given||'')) : '<i>not answered</i>';
-    return '<div class="revItem"><b>Q'+r.n+'</b> <small class="mkTag">'+r.section+' · '+r.marks+' marks</small><br>'+
+    return '<div class="revItem"><b>Q'+r.n+'</b> <small class="mkTag">'+r.section+' · '+(r.marks===1?'1 mark':r.marks+' marks')+'</small><br>'+
       q.q+figHtml(q)+'<br><span class="mkYours">Your answer: '+yours+'</span><br>'+
       '<span class="ansIs">Answer: '+q.answerText+'</span><br><span class="how">'+(q.explain||'')+'</span></div>';
   }).join('') : '<div style="text-align:center;color:#7dffb0">Full marks! Nothing to review. 🎉</div>';
@@ -580,7 +594,7 @@ function renderMockHistory(backTo){
   const ps=DB.mockPapers.slice().reverse();
   $('mkHistTable').innerHTML = ps.length
     ? '<tr><th>Date</th><th>Paper</th><th>Score</th><th>Weakest topics</th></tr>'+
-      ps.map(p=>'<tr><td>'+fmtDate(p.t)+'</td><td>'+esc(p.variant==='full'?'Full':'Quick')+'</td><td>'+
+      ps.map(p=>'<tr><td>'+fmtDate(p.t)+'</td><td>'+esc(({full:'Full',long:'Long',quick:'Quick'})[p.variant]||'Quick')+'</td><td>'+
         p.marks+'/'+p.total+' <small>('+p.pct+'%)</small></td><td>'+
         (p.weakTopics&&p.weakTopics.length?p.weakTopics.map(esc).join(', '):'none')+'</td></tr>').join('')
     : '<tr><td style="text-align:center;padding:10px">No papers yet. Try a Quick paper from the P3 map.</td></tr>';
@@ -1414,7 +1428,7 @@ function autoplayHook(){
     }
     return;
   }
-  /* ?autoplay=mock&variant=quick|full&bot=1&acc=70&delay=300&ms=<paper length>
+  /* ?autoplay=mock&variant=quick|full|long&bot=1&acc=70&delay=300&ms=<paper length>
      drives a real P3 Mock Paper for the headless gate. Inert without the query. */
   if(p.get('autoplay')==='mock'){
     DB.grade='P3';

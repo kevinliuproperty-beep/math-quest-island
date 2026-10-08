@@ -222,7 +222,11 @@
     background:rgba(255,255,255,.08); border:2px solid transparent; border-radius:12px; padding:8px 18px; cursor:pointer; }
   .fameTab.sel { border-color:#ffe66d; color:#fff; background:rgba(255,230,109,.18); }
 
-  #feedback { min-height:26px; text-align:center; font-size:18px; font-weight:800; padding-bottom:2px; }
+  /* A long worked explanation (word problems: one line per step) scrolls inside its own
+     box. #app is a fixed-height column, so unscrolled it ran under the typed-answer row
+     at 390 px. The big shrink factor makes #feedback give up the room, not the question. */
+  #feedback { min-height:26px; text-align:center; font-size:18px; font-weight:800; padding-bottom:2px;
+              flex:0 1000 auto; overflow-y:auto; overscroll-behavior:contain; }
   #feedback .ok { color:#7dffb0; } #feedback .no { color:#ffc9c2; }
 
   /* THE BANNER SITS IN A RESERVED BAND, AND COVERS NOTHING (Phone Width Refutation K3).
@@ -377,11 +381,13 @@
   .mkGo { flex:1; font-family:inherit; font-size:17px; font-weight:900; color:#2a1a5e; cursor:pointer;
           background:linear-gradient(180deg,#ffe66d,#ffb84d); border:none; border-radius:12px; padding:10px 6px; }
   .mkGo small { display:block; font-size:12px; font-weight:700; color:#5a3d00; }
+  .mkGo.mkMain { flex:1.3; box-shadow:0 0 0 2px #fff6c2 inset; }
   .mkHist { font-family:inherit; font-size:14px; font-weight:700; color:#d5cdff; background:none; border:none;
             cursor:pointer; padding:6px; text-decoration:underline; }
   .mk-hud { display:flex; align-items:center; flex-wrap:wrap; gap:4px 12px; font-weight:900; }
   .mk-sec { font-size:15px; color:#ffe66d; }
   .mk-q { font-size:15px; color:#d5cdff; }
+  .mk-marks { color:#ffe66d; white-space:nowrap; }
   .mk-clock { font-size:19px; color:#9ef0ff; }
   .mk-clock.mk-low { color:#ff8f8f; }
   /* The exam navigator (Exam Navigator lane, 2026-10-07): numbered buttons grouped by
@@ -661,7 +667,7 @@
       <h3>📖 Questions to learn from</h3>
       <div id="mkReview"></div>
     </div>
-    <div class="mkNote">Marked right or wrong only. A real paper also gives method marks for working in Booklet B.</div>
+    <div class="mkNote">Marked right or wrong only, by the marks each question is worth: a 3-mark problem scores 3 or 0. A real paper also gives method marks for working in Booklet B, so show your working there.</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
       <button class="btnGhost" id="mkHistBtn">📜 Paper history</button>
       <button class="btnGhost" id="mkMapBtn">🗺️ P3 map</button>

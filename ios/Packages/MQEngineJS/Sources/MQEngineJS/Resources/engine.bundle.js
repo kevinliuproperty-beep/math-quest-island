@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20261007-d65efef */
-/* ENGINE_BUILD_META {"stamp":"20261007-d65efef","date":"2026-10-07","sha":"d65efef","dirty":false,"payloadHash":"fcfbf943962162d6","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":33,"topicFileCount":30,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20261007-d65efef","date":"2026-10-07","sha":"d65efef","dirty":false,"payloadHash":"fcfbf943962162d6","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":33,"topicFileCount":30,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20261008-0336964 */
+/* ENGINE_BUILD_META {"stamp":"20261008-0336964","date":"2026-10-08","sha":"0336964","dirty":false,"payloadHash":"84c9a1a47e305a03","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20261008-0336964","date":"2026-10-08","sha":"0336964","dirty":false,"payloadHash":"84c9a1a47e305a03","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -3071,6 +3071,11 @@ function gCompareError(){
  *   gAddConcept, gAddRegroup, gSubRegroup, gMissingAddend, gMentalMake, gMentalTakeTens,
  *   gAddError, gSubError, gTwoStepWord, gBackFromTotal.
  *
+ * HARD LANE (2026-10-07) added three TYPED, band-tagged banks - gDigitCards
+ * (pool 2), gDigitClues and gFigurePattern (pool 3) - so pool 3 now holds 13
+ * slots, 12 of them multi-step; see the block just above registerTopic. The
+ * paragraph below is the sweep's count of the original eleven.
+ *
  * NO GENERATOR SITS IN TWO POOLS. Pool 3 holds 11 slots and TEN of them are
  * two-step. The eleventh is gSubError ("what is the correct answer?"), and it is
  * DECLARED here rather than counted as two: a child who simply works out a − b
@@ -5834,6 +5839,270 @@ function gBackFromTotal(){
 }
 
 
+/* =========================================================================
+   HARD LANE (lane/hard-numbers, 2026-10-07) - exam-shaped items the P3 EOY
+   calibration found missing ([[Math Hardness Calibration — 2026-10-07]], cards
+   N1 and N2). All four are TYPED, the way real Booklet B prints them ("Ans: ___"),
+   so none of them enters the option-row rulers above; every one is re-derived from
+   its rendered stem by an oracle in tools/gen-sanity.mjs. Each item carries
+   q.band (2 = standard, 3 = exam-hard multi-step) for the mock's slot routing.
+   ========================================================================= */
+  const finishTyped = G.finishTyped;
+  const band = (q, b) => (q.band = b, q);
+
+  /* every ordering of a short list (4 cards = 24 orders) */
+  function perms(a){
+    if (a.length <= 1) return [a.slice()];
+    const out = [];
+    for (let i = 0; i < a.length; i++){
+      const rest = a.slice(0, i).concat(a.slice(i + 1));
+      for (const p of perms(rest)) out.push([a[i]].concat(p));
+    }
+    return out;
+  }
+  const joinDigits = d => d.reduce((s, x) => s * 10 + x, 0);
+  /* best arrangement of `cards` with no leading zero: greatest = biggest first;
+     smallest = the smallest NON-ZERO card first, then the rest smallest first */
+  function bestOrder(cards, want){
+    const c = cards.slice().sort((x, y) => x - y);
+    if (want === 'greatest') return c.reverse();
+    const lead = c.find(x => x !== 0);
+    const rest = c.slice(); rest.splice(rest.indexOf(lead), 1);
+    return [lead].concat(rest);
+  }
+
+/* N1a - DIGIT CARDS (pool 2, band 2). "Use the cards once each: the smallest odd
+   4-digit number." The traps the explanation names are the real ones: a 0 put
+   first (that is a 3-digit number), the parity clue ignored, and "smallest" read
+   as "greatest". The parity case is solved by TRYING EACH CARD THAT MAY END THE
+   NUMBER - a systematic list - because the shortcut "save the biggest even card
+   for the ones place" is false when 0 is a card: from 0, 2, 5, 7 the smallest
+   even number is 2570, not 5072. */
+function gDigitCards(){
+  let cards, want, par, ans, g = 0;
+  do {
+    const pool = shuffle([1,2,3,4,5,6,7,8,9]);
+    cards = ri(1, 10) <= 6 ? [0].concat(pool.slice(0, 3)) : pool.slice(0, 4);
+    cards = shuffle(cards);
+    want = pick(['smallest', 'greatest']);
+    par = pick(['', 'odd', 'even', 'odd', 'even']);
+    ans = null;
+    for (const p of perms(cards)){
+      if (p[0] === 0) continue;
+      const n = joinDigits(p);
+      if (par === 'odd' && n % 2 === 0) continue;
+      if (par === 'even' && n % 2 === 1) continue;
+      if (ans === null || (want === 'greatest' ? n > ans : n < ans)) ans = n;
+    }
+    g++;
+  } while (g < 200 && ans === null);
+  const kid = pick(KIDS), who = kid[0], Pron = kid[1], pron = Pron.toLowerCase();
+  const show = cards.map(c => '<b>' + c + '</b>').join(', ');
+  const stem = who + ' has four digit cards: ' + show + '. ' + Pron + ' uses each card once to make a ' +
+    '4-digit number. <b>What is the ' + want + (par ? ' ' + par : '') + ' number ' + pron + ' can make?</b>';
+  const big = want === 'greatest';
+  const parts = [];
+  const zeroNote = cards.indexOf(0) >= 0 && !big
+    ? ' The 0 cannot go first: a number that starts with 0 is not a 4-digit number.' : '';
+  if (!par){
+    const o = bestOrder(cards, want);
+    if (big) parts.push('For the greatest number, put the biggest card in the biggest place: thousands, then hundreds, tens and ones. ' +
+      'From biggest to smallest the cards are ' + andList(o.map(String)) + ', so the number is ' + ans + '.');
+    else parts.push('For the smallest number, put the smallest card in the biggest place.' + zeroNote +
+      ' So the thousands place takes ' + o[0] + ', and the other cards follow from smallest to biggest: ' +
+      andList(o.slice(1).map(String)) + '. The number is ' + ans + '.');
+  } else {
+    const ends = cards.filter(c => (c % 2 === 1) === (par === 'odd')).sort((x, y) => x - y);
+    const tries = ends.map(e => {
+      const rest = cards.slice(); rest.splice(rest.indexOf(e), 1);
+      return { e: e, n: joinDigits(bestOrder(rest, want).concat([e])) };
+    });
+    parts.push('An ' + (par === 'odd' ? 'odd number ends in 1, 3, 5, 7 or 9' : 'even number ends in 0, 2, 4, 6 or 8') +
+      ', so the ones card must be ' + (ends.length === 1 ? ends[0] + ', the only ' + par + ' card.' :
+      andList(ends.map(String)).replace(/ and /, ' or ') + '.'));
+    if (ends.length === 1){
+      parts.push('Then make the ' + want + ' number you can from the other three cards in front of it.' + zeroNote +
+        ' The number is ' + ans + '.');
+    } else {
+      parts.push('Try each one in the ones place, and each time make the ' + want +
+        ' number you can from the other three cards.' + zeroNote);
+      parts.push(tries.map(t => 'With ' + t.e + ' last: ' + t.n).join('. ') + '.');
+      parts.push('The ' + (big ? 'greatest' : 'smallest') + ' of these is ' + ans + '.');
+    }
+    /* the parity clue ignored */
+    const free = joinDigits(bestOrder(cards, want));
+    if (free !== ans) parts.push('(' + free + ' is ' + (big ? 'greater' : 'smaller') + ', but it is ' +
+      (par === 'odd' ? 'even' : 'odd') + ', so it does not count.)');
+  }
+  return band(finishTyped(stem, ans, parts.join(' ')), 2);
+}
+
+/* N1b - DIGIT CLUES (pool 3). "I am a 3-digit number. The ones digit is 4. The
+   hundreds digit is twice the tens digit. It is even..." The method taught is the
+   exam one: write down the digits you are TOLD, LIST every pair the linking clue
+   allows (and say why the list stops), then cross out with the last clue. Three
+   shapes: greatest/smallest straight off the list (band 2), greatest/smallest
+   after a crossing-out clue that changes the answer (band 3), and "what is the
+   number?" pinned by the digit sum (band 3). */
+const CL_PLACES4 = ['thousands', 'hundreds', 'tens', 'ones'];
+const CL_TIMES = { 2: 'twice', 3: 'three times', 4: 'four times' };
+function gDigitClues(){
+  let r, g = 0;
+  do { r = clueDraw(); g++; } while (g < 400 && !r);
+  return r;
+}
+function clueDraw(){
+  const nd = ri(1, 10) <= 7 ? 3 : 4;
+  const places = CL_PLACES4.slice(4 - nd);           /* index 0 is the leading place */
+  const ia = ri(0, nd - 1); let ib; do { ib = ri(0, nd - 1); } while (ib === ia);
+  const rel = ri(0, 1) === 0 ? { kind: 'times', k: ri(2, 4) } : { kind: 'more', k: ri(2, 6) };
+  const relOf = b => rel.kind === 'times' ? rel.k * b : b + rel.k;
+  const fixed = [];
+  for (let i = 0; i < nd; i++) if (i !== ia && i !== ib) fixed.push(i);
+  const digits = new Array(nd).fill(-1);
+  for (const i of fixed) digits[i] = i === 0 ? ri(1, 9) : ri(0, 9);
+  /* every (A, B) the linking clue allows, B counted up from 0 */
+  const cand = [];
+  for (let b = 0; b <= 9; b++){
+    const a = relOf(b);
+    if (a > 9) break;
+    const d = digits.slice(); d[ia] = a; d[ib] = b;
+    if (d[0] === 0) continue;
+    cand.push({ a: a, b: b, n: joinDigits(d), d: d });
+  }
+  if (cand.length < 2 || cand.length > 7) return null;
+  const shape = pick(['plain', 'cross', 'cross', 'sum', 'sum']);
+  const want = pick(['greatest', 'smallest']);
+  const big = want === 'greatest';
+  const ext = list => list.reduce((m, c) => (m === null || (big ? c.n > m.n : c.n < m.n)) ? c : m, null);
+  let survivors = cand, filter = null, key;
+  if (shape === 'plain'){
+    key = ext(cand).n;
+  } else if (shape === 'cross'){
+    const opts = ['distinct'];
+    if (ia === nd - 1 || ib === nd - 1) opts.push('odd', 'even', 'odd', 'even');
+    filter = pick(opts);
+    survivors = cand.filter(c => filter === 'distinct' ? new Set(c.d).size === nd
+      : (c.n % 2 === 1) === (filter === 'odd'));
+    if (survivors.length < 2 || survivors.length === cand.length) return null;
+    if (ext(survivors).n === ext(cand).n) return null;   /* the clue must change the answer */
+    key = ext(survivors).n;
+  } else {
+    if (cand.length < 3) return null;
+    const pickC = pick(cand);
+    filter = 'sum';
+    const S = pickC.d.reduce((s, x) => s + x, 0);
+    survivors = cand.filter(c => c.d.reduce((s, x) => s + x, 0) === S);
+    if (survivors.length !== 1) return null;
+    key = pickC.n;
+    filter = { sum: S };
+  }
+  const kid = pick(KIDS), who = kid[0], pron = kid[1].toLowerCase();
+  const his = kid[1] === 'He' ? 'his' : 'her';
+  const relText = 'The ' + places[ia] + ' digit is ' + (rel.kind === 'times'
+    ? CL_TIMES[rel.k] + ' the ' + places[ib] + ' digit.'
+    : rel.k + ' more than the ' + places[ib] + ' digit.');
+  const clues = fixed.map(i => 'The ' + places[i] + ' digit is ' + digits[i] + '.');
+  clues.push(relText);
+  if (filter === 'distinct') clues.push('All its digits are different.');
+  else if (filter === 'odd' || filter === 'even') clues.push('It is an ' + filter + ' number.');
+  else if (filter && filter.sum) clues.push('Its digits add up to ' + filter.sum + '.');
+  const order = shuffle(clues);
+  const ask = shape === 'sum' ? 'What is the number?' : 'What is the ' + want + ' number it can be?';
+  const stem = who + ' is thinking of a ' + nd + '-digit number. These are ' + his + ' clues:<br>• ' +
+    order.join('<br>• ') + '<br><b>' + ask + '</b>';
+  /* ---- the worked method ---- */
+  const ex = [];
+  if (fixed.length) ex.push('Write down the digits you are told: ' +
+    andList(fixed.map(i => 'the ' + places[i] + ' digit is ' + digits[i])) + '.');
+  const pairTxt = cand.map(c => places[ib] + ' ' + c.b + ' and ' + places[ia] + ' ' + c.a);
+  let why = '';
+  const bNext = cand[cand.length - 1].b + 1;
+  if (relOf(bNext) > 9) why = ' (With ' + places[ib] + ' ' + bNext + ', the ' + places[ia] +
+    ' digit would be ' + relOf(bNext) + ', which is not a digit.)';
+  let whyZero = '';
+  if (cand[0].b > 0) whyZero = ' The ' + places[ib] + ' digit cannot be 0 here, or the number would start with 0.';
+  ex.push(relText.replace(/\.$/, '') + ', so list every pair that works: ' + pairTxt.join('; ') + '.' + why + whyZero);
+  ex.push('So the number could be ' + andList(cand.map(c => String(c.n))).replace(/ and (\d+)$/, ' or $1') + '.');
+  if (filter === 'distinct'){
+    const out = cand.filter(c => survivors.indexOf(c) < 0).map(c => String(c.n));
+    ex.push('All its digits are different, so cross out ' + andList(out) + ' (each has a digit twice). That leaves ' +
+      andList(survivors.map(c => String(c.n))) + '.');
+  } else if (filter === 'odd' || filter === 'even'){
+    const out = cand.filter(c => survivors.indexOf(c) < 0).map(c => String(c.n));
+    ex.push('It is ' + filter + ', so its ones digit must be ' + filter + ': cross out ' + andList(out) +
+      '. That leaves ' + andList(survivors.map(c => String(c.n))) + '.');
+  } else if (filter && filter.sum){
+    ex.push('Now add up the digits of each one: ' + cand.map(c => c.d.join(' + ') + ' = ' +
+      c.d.reduce((s, x) => s + x, 0)).join('; ') + '. Only ' + key + ' has digits that add up to ' + filter.sum + '.');
+  }
+  if (shape !== 'sum'){
+    ex.push('The ' + want + ' of these is ' + key + '.');
+    if (shape === 'cross') ex.push('(Without the last step you would choose ' + ext(cand).n +
+      ', but it breaks the clue \u201c' + clues[clues.length - 1] + '\u201d)');
+  }
+  return band(finishTyped(stem, key, ex.join(' ')), shape === 'plain' ? 2 : 3);
+}
+
+/* N2 - FIGURE PATTERNS (pool 3, band 3). A text table of the first figures in a
+   stick / tile pattern, then: how many in Figure n; which figure uses N; how many
+   more in Figure m than Figure n; and the biggest figure you can make from a pile
+   (division with a remainder, read correctly). The off-by-one trap - "Figure 10 is
+   10 jumps" - is the misconception every explanation names. Kept here rather than
+   in Puzzle Caves (`heuristics`), which serves P2 to P6, so a P3-hard item cannot
+   leak to P2. */
+const FP_THINGS = [['sticks', 'stick'], ['straws', 'straw'], ['toothpicks', 'toothpick'], ['tiles', 'tile'], ['counters', 'counter']];
+function gFigurePattern(){
+  let d, a, g = 0;
+  do { d = ri(2, 9); a = ri(2, 12); g++; } while (g < 50 && a === d);
+  const thing = pick(FP_THINGS), T = thing[0];
+  const shown = pick([3, 3, 4]);
+  const at = n => a + (n - 1) * d;
+  const kid = pick(KIDS), who = kid[0], Pron = kid[1], pron = Pron.toLowerCase();
+  const rows = [];
+  for (let n = 1; n <= shown; n++) rows.push('Figure ' + n + ': ' + at(n) + ' ' + T);
+  const head = who + ' makes a pattern of figures with ' + T + '.<br>' + rows.join('<br>') +
+    '<br>The pattern goes on in the same way. ';
+  const jumpTxt = 'Find the jump first: ' + rows.map((_, i) => at(i + 1)).join(' → ') + ', so each figure uses ' +
+    d + ' more ' + T + ' than the one before.';
+  const kind = pick(['fwd', 'inv', 'more', 'pile']);
+  if (kind === 'fwd'){
+    const n = ri(8, 25), v = at(n);
+    return band(finishTyped(head + '<b>How many ' + T + ' are there in Figure ' + n + '?</b>', v,
+      jumpTxt + ' From Figure 1 to Figure ' + n + ' there are ' + n + ' − 1 = ' + (n - 1) + ' jumps. ' +
+      'Figure ' + n + ' uses ' + a + ' + ' + (n - 1) + ' × ' + d + ' = ' + a + ' + ' + ((n - 1) * d) + ' = ' + v + ' ' + T +
+      '. (Careful: Figure ' + n + ' is not ' + n + ' jumps - Figure 1 already has ' + a + ' ' + T + '.)', T), 3);
+  }
+  if (kind === 'inv'){
+    const n = ri(8, 30), v = at(n);
+    return band(finishTyped(head + '<b>Which figure uses ' + v + ' ' + T + '? Type the figure number.</b>', n,
+      jumpTxt + ' ' + v + ' − ' + a + ' = ' + (v - a) + ', which is how many more ' + T + ' than Figure 1. ' +
+      (v - a) + ' ÷ ' + d + ' = ' + (n - 1) + ' jumps after Figure 1, so it is Figure 1 + ' + (n - 1) + ' = Figure ' + n +
+      '. (Careful: ' + (n - 1) + ' is the number of jumps, not the figure number.)'), 3);
+  }
+  if (kind === 'more'){
+    const lo = ri(5, 15), hi = lo + ri(2, 6), v = (hi - lo) * d;
+    return band(finishTyped(head + '<b>How many more ' + T + ' does Figure ' + hi + ' use than Figure ' + lo + '?</b>', v,
+      jumpTxt + ' From Figure ' + lo + ' to Figure ' + hi + ' there are ' + hi + ' − ' + lo + ' = ' + (hi - lo) +
+      ' jumps, and each jump adds ' + d + ' ' + T + ': ' + (hi - lo) + ' × ' + d + ' = ' + v +
+      '. You do not need to work out either figure. (Check: Figure ' + lo + ' uses ' + at(lo) + ' and Figure ' + hi +
+      ' uses ' + at(hi) + '; ' + at(hi) + ' − ' + at(lo) + ' = ' + v + '.)', T), 3);
+  }
+  /* pile: the biggest figure that a pile can make, with some left over */
+  const n = ri(6, 20), left = ri(1, d - 1), pile = at(n) + left;
+  const q1 = Math.floor((pile - a) / d);
+  return band(finishTyped(head + Pron + ' has ' + pile + ' ' + T +
+    ' and makes just one figure from the pattern. <b>What is the biggest figure number ' + pron +
+    ' can make?</b>', n,
+    jumpTxt + ' Figure 1 uses ' + a + ' ' + T + ', so take those away first: ' + pile + ' − ' + a + ' = ' + (pile - a) +
+    ' ' + T + ' are left for the jumps. ' +
+    (pile - a) + ' ÷ ' + d + ' = ' + q1 + ' remainder ' + ((pile - a) % d) + ', so there are enough for ' + q1 +
+    ' jumps after Figure 1: that is Figure ' + n + ', which uses ' + at(n) + ' ' + T + '. Figure ' + (n + 1) +
+    ' would need ' + at(n + 1) + ', more than ' + pron + ' has. ' + (left === 1 ? 'The 1 ' + thing[1] + ' left over is' : 'The ' + left + ' ' + T + ' left over are') +
+    ' not enough for another jump.'), 3);
+}
+
+
   MQI.registerTopic({
     id:'p3numbers', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Numbers up to 10 000: number notation, representations and place values (thousands, hundreds, tens, ones); comparing and ordering numbers; patterns in number sequences. Addition and Subtraction: addition and subtraction algorithms (up to 4 digits); mental calculation involving addition and subtraction of two 2-digit numbers",
@@ -5859,11 +6128,13 @@ function gBackFromTotal(){
          [gPatternConcept,'pattern'],[gAddConcept,'addsub'],[gAddRegroup,'addsub']],
       2:[[gExpanded,'place'],[gBuildNum,'place'],[gNumToWords,'place'],[gSmallest,'compare'],[gBetween,'compare'],
          [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
-         [gMissingAddend,'addsub'],[gMentalMake,'addsub'],[gMentalTakeTens,'addsub']],
+         [gMissingAddend,'addsub'],[gMentalMake,'addsub'],[gMentalTakeTens,'addsub'],
+         [gDigitCards,'place']],
       3:[[gStandsCompare,'place'],[gStandsFix,'place'],[gZeroFix,'place'],
          [gOrder,'compare'],[gBetweenWorded,'compare'],
          [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],
-         [gAddError,'addsub'],[gSubError,'addsub'],[gTwoStepWord,'addsub'],[gBackFromTotal,'addsub']]
+         [gAddError,'addsub'],[gSubError,'addsub'],[gTwoStepWord,'addsub'],[gBackFromTotal,'addsub'],
+         [gDigitClues,'place'],[gFigurePattern,'pattern']]
     }
   });
 })();
@@ -6096,7 +6367,7 @@ function gDivError(){
  */
 (function () {
   const G = MQI.gen;
-  const ri = G.ri, pick = G.pick, finishTyped = G.finishTyped;
+  const ri = G.ri, pick = G.pick, finishTyped = G.finishTyped, finishNum = G.finishNum;
 
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Nurul'];
   const SNACKS = ['curry puffs','kaya toasts','pineapple tarts','otah sticks','soya bean cartons','ang ku kueh'];
@@ -6180,6 +6451,192 @@ function gDivError(){
       (trays*each) + ' - ' + drop + ' = ' + (trays*each - drop) + '.');
   }
 
+  /* ===== HARD LANE "divide" 2026-10-07 (calibration cards D1, D2, D3) ==========
+     Real P3 EOY papers set remainder problems as 2-3 step long questions, where the
+     remainder has to be INTERPRETED (round up, round down, or "how many more for
+     one more group"), and pack-then-repack problems. Every new item carries
+     q.band (3 = exam-hard multi-step, 2 = standard) for the mock's router.
+     Scope (MOE p.35): every division here is at most 3 digits by 1 digit, every
+     multiplication at most 2 digits by 1 digit, and every total stays under 10 000.
+     Answers are never 1, so a plural count noun always reads correctly. */
+  const band = (q, b) => (q.band = b, q);
+  const sOrP = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+  /* a two-word count noun also accepts its last word: "42 tarts" on "pineapple tarts" */
+  const unitOf = noun => noun.indexOf(' ') < 0 ? noun : [noun, noun.split(' ').pop()];
+  const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  /* rest = d*q + r with 1 <= r <= d-1, rest in [lo, hi] */
+  function drawRem(d, lo, hi, rMin){
+    const q = ri(Math.ceil((lo + d) / d), Math.floor((hi - d) / d));
+    const r = ri(rMin || 1, d - 1);
+    return { q: q, r: r, n: d*q + r };
+  }
+
+  /* D1a: subtract, divide, ROUND UP. Traps: the bare quotient (forgets the leftover
+     needs a container too), the remainder itself, and dividing the whole batch. */
+  const PACK_ITEMS = ['curry puffs','pineapple tarts','ang ku kueh','kaya buns','egg tarts'];
+  const PACK_BOX = [['box','boxes'],['bag','bags'],['packet','packets']];
+  const PACK_FIRST = ['are sold at the counter','are sent to a school canteen','are given to a home for the elderly'];
+  function gPackRest(){
+    const d = ri(4, 9), R = drawRem(d, 120, 990), sold = ri(12, 90) * 10, total = R.n + sold;
+    const item = pick(PACK_ITEMS), bx = pick(PACK_BOX);
+    const stem = 'A bakery makes ' + total + ' ' + item + '. ' + sold + ' of them ' + pick(PACK_FIRST) +
+      '. The rest are packed into ' + bx[1] + ' of ' + d + '. What is the least number of ' + bx[1] +
+      ' needed to pack all the rest?';
+    const ex = 'Step 1: find the rest. ' + total + ' - ' + sold + ' = ' + R.n + '. ' +
+      'Step 2: ' + R.n + ' / ' + d + ' = ' + R.q + ' remainder ' + R.r + '. ' +
+      'Step 3: ' + R.q + ' ' + bx[1] + ' hold ' + (R.q*d) + ', so ' + sOrP(R.r, item.replace(/s$/, ''), item) +
+      ' would still be left out. ' + (R.r === 1 ? 'It needs' : 'They need') + ' one more ' + bx[0] +
+      ', so the answer is ' + R.q + ' + 1 = ' + (R.q + 1) + ' ' + bx[1] + '. ' +
+      '"Least number needed" means round UP: every one must be packed.';
+    return band(finishTyped(stem, R.q + 1, ex, bx[1]), 3);
+  }
+
+  /* D1b: multiply, add, divide, ROUND UP (everyone must get a seat). */
+  const RIDES = [['van','vans',[7,8,9],['the Science Centre','the Botanic Gardens','the Bird Paradise','the Singapore Zoo']],
+                 ['boat','boats',[5,6,7,8],['Pulau Ubin','Kusu Island','St John\'s Island']]];
+  function gTripsNeeded(){
+    let k, n, t, d, tot, rd, g = 0;
+    do {
+      rd = pick(RIDES); d = pick(rd[2]); k = ri(2, 6); n = ri(24, 40); t = ri(2, 9);
+      tot = k*n + t; g++;
+    } while (g < 200 && (tot % d === 0 || tot > 999));
+    const place = pick(rd[3]);
+    const stem = k + ' classes of ' + n + ' pupils each and ' + t + ' teachers go on a trip to ' + place +
+      '. Each ' + rd[0] + ' can carry ' + d + ' people. What is the least number of ' + rd[1] +
+      ' needed to carry everyone at the same time?';
+    const q = Math.floor(tot / d), r = tot % d;
+    const ex = 'Step 1: pupils. ' + k + ' x ' + n + ' = ' + (k*n) + '. ' +
+      'Step 2: add the teachers. ' + (k*n) + ' + ' + t + ' = ' + tot + ' people. ' +
+      'Step 3: ' + tot + ' / ' + d + ' = ' + q + ' remainder ' + r + '. ' +
+      q + ' ' + rd[1] + ' carry ' + (q*d) + ' people, and ' + sOrP(r, 'person is', 'people are') + ' still left behind, so one more ' + rd[0] +
+      ' is needed: ' + q + ' + 1 = ' + (q + 1) + ' ' + rd[1] + '. Do not forget the teachers - they need seats too.';
+    return band(finishTyped(stem, q + 1, ex, rd[1]), 3);
+  }
+
+  /* D1c: multiply, divide, then "how many MORE for one more" = group size - remainder.
+     Traps: giving the remainder, or the number of groups made. */
+  const ONE_MORE = [
+    { who:'Mrs Lim', pack:'tray', packs:'trays', per:30, thing:'eggs', one:'egg', make:'cake', makes:'cakes', verb:'bakes', verbTo:'bake', need:'needs' },
+    { who:'Uncle Ravi', pack:'carton', packs:'cartons', per:12, thing:'eggs', one:'egg', make:'kaya jar', makes:'kaya jars', verb:'makes', verbTo:'make', need:'needs' },
+    { who:'NAME', pack:'packet', packs:'packets', per:25, thing:'beads', one:'bead', make:'bracelet', makes:'bracelets', verb:'makes', verbTo:'make', need:'uses' },
+    { who:'NAME', pack:'box', packs:'boxes', per:20, thing:'crayons', one:'crayon', make:'art set', makes:'art sets', verb:'makes', verbTo:'make', need:'uses' }
+  ];
+  function gOneMore(){
+    let c, k, d, tot, r, g = 0;
+    do {
+      c = pick(ONE_MORE); k = ri(3, 9); d = ri(4, 9); tot = k * c.per; r = tot % d; g++;
+    } while (g < 200 && (r === 0 || d - r < 2 || tot > 999));
+    const who = c.who === 'NAME' ? pick(NAMES) : c.who, q = Math.floor(tot / d), more = d - r;
+    const stem = who + ' has ' + k + ' ' + c.packs + ' of ' + c.thing + ' with ' + c.per + ' ' + c.thing + ' in each ' + c.pack +
+      '. Each ' + c.make + ' ' + c.need + ' ' + d + ' ' + c.thing + '. ' + who + ' ' + c.verb + ' as many ' + c.makes +
+      ' as possible. How many more ' + c.thing + ' are needed to ' + c.verbTo + ' one more ' + c.make + '?';
+    const ex = 'Step 1: ' + k + ' x ' + c.per + ' = ' + tot + ' ' + c.thing + '. ' +
+      'Step 2: ' + tot + ' / ' + d + ' = ' + q + ' remainder ' + r + ', so ' + q + ' ' + c.makes + ' are made and ' +
+      sOrP(r, c.one, c.thing) + ' ' + (r === 1 ? 'is' : 'are') + ' left. ' +
+      'Step 3: one more ' + c.make + ' needs ' + d + ', and ' + r + ' are already there, so ' + d + ' - ' + r + ' = ' + more +
+      ' more ' + c.thing + '. The remainder (' + r + ') is what is LEFT, not what is NEEDED.';
+    return band(finishTyped(stem, more, ex, c.thing), 3);
+  }
+
+  /* D1d: subtract twice, divide, ROUND DOWN (a leftover too small for one more).
+     Trap: rounding up as if it were a "how many needed" question. */
+  function gMostAfter(){
+    const who = pick(NAMES);
+    if (ri(0, 1)){
+      const d = ri(3, 9), R = drawRem(d, 40, 150), a = ri(6, 25), b = ri(5, 20), T = R.n + a + b;
+      const item = pick([['pen','pens'],['notebook','notebooks'],['keychain','keychains'],['file','files']]);
+      const stem = who + ' has $' + T + '. ' + who + ' spends $' + a + ' on a storybook and $' + b +
+        ' on a water bottle. With the money left, ' + who + ' buys as many ' + item[1] + ' as possible. Each ' + item[0] +
+        ' costs $' + d + '. What is the greatest number of ' + item[1] + ' ' + who + ' can buy?';
+      const ex = 'Step 1: money spent. $' + a + ' + $' + b + ' = $' + (a + b) + '. ' +
+        'Step 2: money left. $' + T + ' - $' + (a + b) + ' = $' + R.n + '. ' +
+        'Step 3: ' + R.n + ' / ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The $' + R.r + ' left is not enough for another ' +
+        item[0] + ', so round DOWN: ' + R.q + ' ' + item[1] + '.';
+      return band(finishTyped(stem, R.q, ex, item[1]), 3);
+    }
+    const d = ri(4, 9), R = drawRem(d, 120, 900), a = ri(3, 18) * 5, b = ri(4, 16) * 5, T = R.n + a + b;
+    const stem = 'A roll of ribbon is ' + T + ' cm long. ' + who + ' cuts off ' + a + ' cm for a bow and ' + b +
+      ' cm to tie a box. ' + who + ' then cuts the rest of the ribbon into pieces that are each ' + d +
+      ' cm long. What is the greatest number of ' + d + ' cm pieces ' + who + ' can cut?';
+    const ex = 'Step 1: ' + a + ' + ' + b + ' = ' + (a + b) + ' cm is cut off first. ' +
+      'Step 2: ' + T + ' - ' + (a + b) + ' = ' + R.n + ' cm is left. ' +
+      'Step 3: ' + R.n + ' / ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The last ' + R.r + ' cm is too short to make another ' +
+      d + ' cm piece, so round DOWN: ' + R.q + ' pieces.';
+    return band(finishTyped(stem, R.q, ex, 'pieces'), 3);
+  }
+
+  /* D2a: pack, then repack. a x b, then take some away OR compare, then share equally.
+     Traps: stopping after the multiplication, or after the division. */
+  /* [item, old group, old groups, new group, new groups, preposition for the new group] */
+  const REPACK = [['pineapple tarts','box','boxes','tray','trays','on'],['curry puffs','box','boxes','plate','plates','on'],
+                  ['ang ku kueh','tray','trays','plate','plates','on'],['oranges','bag','bags','basket','baskets','in'],
+                  ['muffins','box','boxes','tray','trays','on']];
+  function gRepack(){
+    const c = pick(REPACK);
+    let a, b, e, x, g = 0;
+    if (ri(0, 1)){
+      /* compare: (a*b)/e - b, so the new groups must be BIGGER: e < a */
+      /* a === 2e would make the answer equal b, a number printed in the stem */
+      do { a = ri(4, 9); b = ri(12, 60); e = ri(3, a - 1); g++; } while (g < 300 && (a*b % e !== 0 || a*b > 999 || a === 2*e));
+      const each = a*b / e;
+      const stem = 'There are ' + a + ' ' + c[2] + ' of ' + c[0] + ' with ' + b + ' ' + c[0] + ' in each ' + c[1] +
+        '. All the ' + c[0] + ' are put equally ' + c[5] + 'to ' + e + ' ' + c[4] + '. How many more ' + c[0] + ' are there ' + c[5] + ' each ' +
+        c[3] + ' than in each ' + c[1] + '?';
+      const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' x ' + b + ' = ' + (a*b) + '. ' +
+        'Step 2: share them ' + c[5] + 'to the ' + c[4] + '. ' + (a*b) + ' / ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '. ' +
+        'Step 3: compare. ' + each + ' - ' + b + ' = ' + (each - b) + '. Read the question to the end: it asks how many MORE, not how many ' + c[5] + ' each ' + c[3] + '.';
+      return band(finishTyped(stem, each - b, ex, unitOf(c[0])), 3);
+    }
+    do { a = ri(3, 9); b = ri(12, 60); x = ri(2, 30); e = ri(3, 9); g++; }
+    while (g < 300 && (e === a || (a*b - x) % e !== 0 || a*b > 999 || (a*b - x) / e < 2));
+    const left = a*b - x, each = left / e;
+    const verb = pick(['are eaten at a party','are given to the neighbours','are sold']);
+    const stem = 'There are ' + a + ' ' + c[2] + ' of ' + c[0] + ' with ' + b + ' ' + c[0] + ' in each ' + c[1] + '. ' +
+      x + ' of the ' + c[0] + ' ' + verb + '. The rest are put equally ' + c[5] + 'to ' + e + ' ' + c[4] +
+      '. How many ' + c[0] + ' are there ' + c[5] + ' each ' + c[3] + '?';
+    const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' x ' + b + ' = ' + (a*b) + '. ' +
+      'Step 2: take away ' + x + '. ' + (a*b) + ' - ' + x + ' = ' + left + '. ' +
+      'Step 3: share equally. ' + left + ' / ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '.';
+    return band(finishTyped(stem, each, ex, unitOf(c[0])), 3);
+  }
+
+  /* D2b: total over a run of days -> one day -> a part of the run. The interpretation
+     step is counting the days INCLUSIVELY (Friday to Sunday is 3 days, not 2). */
+  const DAILY = [['read','pages','pages of a storybook'],['folded','paper cranes','paper cranes'],
+                 ['made','origami stars','origami stars'],['collected','seashells','seashells at the beach']];
+  function gDaysPart(){
+    const span = pick([[0, 6], [0, 4], [0, 5], [1, 5]]);    /* Mon-Sun, Mon-Fri, Mon-Sat, Tue-Sat */
+    const days = span[1] - span[0] + 1;
+    const per = ri(12, Math.floor(999 / days));
+    let s, t;
+    do { s = ri(span[0], span[1] - 1); t = ri(s + 1, span[1]); } while (t - s + 1 >= days);
+    const part = t - s + 1, who = pick(NAMES), c = pick(DAILY);
+    const stem = who + ' ' + c[0] + ' ' + (per*days) + ' ' + c[2] + ' from ' + DAYS[span[0]] + ' to ' + DAYS[span[1]] +
+      '. ' + who + ' ' + c[0] + ' the same number of ' + c[1] + ' each day. How many ' + c[1] + ' did ' + who + ' ' +
+      ({read:'read',folded:'fold',made:'make',collected:'collect'})[c[0]] + ' from ' + DAYS[s] + ' to ' + DAYS[t] + '?';
+    const ex = 'Step 1: count the days. ' + DAYS[span[0]] + ' to ' + DAYS[span[1]] + ' is ' + days + ' days (' +
+      DAYS.slice(span[0], span[1] + 1).join(', ') + '). ' +
+      'Step 2: one day. ' + (per*days) + ' / ' + days + ' = ' + per + ' ' + c[1] + '. ' +
+      'Step 3: ' + DAYS[s] + ' to ' + DAYS[t] + ' is ' + part + ' days (' + DAYS.slice(s, t + 1).join(', ') + '), counting both ends. ' +
+      part + ' x ' + per + ' = ' + (part*per) + ' ' + c[1] + '.';
+    return band(finishTyped(stem, part*per, ex, unitOf(c[1])), 3);
+  }
+
+  /* D3: inverse division, MCQ. dividend = quotient x divisor + remainder.
+     Distractors: forgets the remainder (q*d), takes the remainder away (q*d - r),
+     and counts the leftover as one more full group ((q+1)*d). */
+  const INV = [['sweets','sweet','bags','bag'],['marbles','marble','boxes','box'],['stickers','sticker','packets','packet'],
+               ['erasers','eraser','tins','tin'],['buttons','button','jars','jar']];
+  function gInverseDiv(){
+    const c = pick(INV), d = ri(3, 9), q = ri(12, Math.floor((999 - 8) / d)), r = ri(1, d - 1), n = q*d + r;
+    const who = pick(NAMES);
+    const stem = who + ' puts some ' + c[0] + ' equally into ' + d + ' ' + c[2] + '. There are ' + q + ' ' + c[0] +
+      ' in each ' + c[3] + ' and ' + sOrP(r, c[1] + ' is', c[0] + ' are') + ' left over. How many ' + c[0] + ' were there at first?';
+    const ex = 'Put the groups back together, then add the leftover. ' + d + ' x ' + q + ' = ' + (q*d) + ' in the ' + c[2] +
+      '. ' + (q*d) + ' + ' + r + ' = ' + n + '. Check: ' + n + ' / ' + d + ' = ' + q + ' remainder ' + r + '.';
+    return band(finishNum(stem, '', n, [q*d, q*d - r, (q + 1)*d], c[0], ex), 2);
+  }
+
   MQI.registerTopic({
     id:'p3divide', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Multiplication and Division: division with remainder; multiplication and division algorithms (up to 3 digits by 1 digit)",
@@ -6191,8 +6648,10 @@ function gDivError(){
     },
     pools:{
       1:[[gLeftOver,'remainder'],[gMulAlgo,'algo']],
-      2:[[gQuotient,'remainder'],[gDivAlgo,'algo'],[gMulAlgo3,'algo']],
-      3:[[gBoxesNeeded,'remainder'],[gTwoStep,'word'],[gMulWord,'word']]
+      2:[[gQuotient,'remainder'],[gDivAlgo,'algo'],[gMulAlgo3,'algo'],[gInverseDiv,'remainder']],
+      3:[[gBoxesNeeded,'remainder'],[gTwoStep,'word'],[gMulWord,'word'],
+         [gPackRest,'remainder'],[gTripsNeeded,'remainder'],[gOneMore,'remainder'],[gMostAfter,'remainder'],
+         [gRepack,'word'],[gDaysPart,'word']]
     }
   });
 })();
@@ -9754,6 +10213,278 @@ function gAddWords(){
 }
 
 
+/* ===========================================================================
+   HARD LANE 2026-10-07 (lane/hard-fractions) - cards F1 and F2 of the Math
+   Hardness Calibration (16 real 2023-2025 P3 EOY papers). Every item below is
+   ORIGINAL; the papers were read for item SHAPE only.
+
+   F1  compare and order UNLIKE related fractions at exam difficulty. Every bank
+       above compares with one P3 rule (same top or same bottom number); the real
+       papers ask "order 2/3, 5/6, 7/12" and "who drank the most" over different
+       bottom numbers, where the only route is to rename into the largest bottom
+       number first. Distractors are the two whole-number beliefs a P3 child
+       brings to that: the bigger TOP number is the bigger fraction, and the
+       bigger BOTTOM number is (or, over-learned from unit fractions, is NOT) the
+       bigger fraction.
+   F2  TYPED fraction short answers, so fractions can sit in Booklet B. The key is
+       carried as q.fracAnswer and graded cross-reduced, so 6/8 and 3/4 are both
+       right - which is why no stem here ever asks for a particular form of the
+       fraction. A typed stem declares the form it wants ("type a fraction") and
+       nothing more.
+
+   Band tags (q.band) are what the mock's B2 routing reads: 3 = exam-hard
+   multi-step (rename, then combine or compare, then answer the question asked),
+   2 = standard. All tables are enumerated at load, so every draw is legal by
+   construction and the stem weighting is exact.
+   =========================================================================== */
+const band = (q, b) => (q.band = b, q);
+const D_WORD = { 4:'quarters', 6:'sixths', 8:'eighths', 9:'ninths', 10:'tenths', 12:'twelfths' };
+/* A "related family": every bottom number divides the largest one, which is at
+   most 12 - the whole of what P3 means by unlike fractions it can compare. */
+const REL_FAMS = { 6:[2,3,6], 8:[2,4,8], 10:[2,5,10], 12:[2,3,4,6,12] };
+const relFracs = D => {
+  const out = [];
+  for (const d of REL_FAMS[D]) for (let n = 1; n < d; n++) if (gcd(n, d) === 1) out.push([n, d]);
+  return out;
+};
+const byValue = (p, q2) => p[0]*q2[1] - q2[0]*p[1];
+/* "a/b = c/D", with the multiplier shown, or "a/D is already in D-ths". */
+const renameTo = (p, D) => p[1] === D
+  ? fr(p[0], p[1]) + ' is already in ' + D_WORD[D]
+  : fr(p[0], p[1]) + ' = ' + fr(p[0]*(D/p[1]), D) + ' (top and bottom × ' + (D/p[1]) + ')';
+/* "1 twelfth", "5 twelfths" - one count, one noun. */
+const pcs = (n, D) => n + ' ' + (n === 1 ? D_WORD[D].slice(0, -1) : D_WORD[D]);
+const listAnd = xs => xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length-1];
+const TYPE_FRAC = ' (Type a fraction, for example 2/7.)';
+
+/* ---- F1a. ORDER three unlike related fractions (pool 3, band 3) ------------
+   Three fractions over at least two different bottom numbers, whose common
+   multiple D is at most 12; three top numbers, all different. So neither P3 rule applies to the row as printed
+   and the child must rename into D-ths before anything can be ordered.
+   The table only keeps triples where ordering by the top numbers, or by the
+   bottom numbers (bigger bottom = bigger fraction), as whole numbers, is WRONG -
+   so neither whole-number shortcut answers the item. The top-number order is the
+   commonest error and is on the row on about 85% of draws (see THE ROW below). */
+/* The family is the three bottom numbers' common multiple, D <= 12. Usually D is
+   one of the three (2/3, 5/6, 7/12); where it is not (2/3, 3/4, 5/6 in twelfths)
+   BOTH-renaming is needed and the explanation names D out loud. */
+const ORDER_REL = [];
+const lcm = (x, y) => x / gcd(x, y) * y;
+{
+  const F = SIMPLE.filter(p => p[1] <= 12);
+  for (let i = 0; i < F.length; i++) for (let j = i+1; j < F.length; j++) for (let k = j+1; k < F.length; k++) {
+    const t = [F[i], F[j], F[k]];
+    const D = lcm(lcm(t[0][1], t[1][1]), t[2][1]);
+    if (D > 12 || !D_WORD[D] || new Set(t.map(p => p[1])).size < 2) continue;
+    if (new Set(t.map(p => p[0])).size !== 3) continue;
+    if (new Set(t.map(p => p[0]*(D/p[1]))).size !== 3) continue;
+    for (const asc of [true, false]) {
+      const s = (f) => t.slice().sort(f);
+      const dir = f => asc ? f : (a, b) => f(b, a);
+      const right = s(dir(byValue));
+      const key = o => o.map(p => p[0] + '/' + p[1]).join(',');
+      const top = s(dir((a, b) => a[0] - b[0]));    /* bigger top number = bigger fraction */
+      /* bigger bottom number = bigger fraction; where two bottom numbers are the
+         same, the child compares that pair by the tops, which is right for them */
+      const bot = s(dir((a, b) => a[1] - b[1] || a[0] - b[0]));
+      if (key(top) === key(right) || key(bot) === key(right)) continue;
+      ORDER_REL.push({ D, t, asc, right, top });
+    }
+  }
+}
+function gOrderRelated(){
+  const T = pick(ORDER_REL), D = T.D;
+  const render = o => o.map(p => fr(p[0], p[1])).join(', ');
+  const same = (a, b) => a.every((p, i) => p[0] === b[i][0] && p[1] === b[i][1]);
+  const top = { o: T.top };
+  const sig = o => o.map(p => p[0] + '/' + p[1]).join(',');
+  const perms = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]].map(ix => ix.map(i => T.right[i]));
+  /* THE ROW. The top-number order is held on three draws in four (and lands by
+     chance on most of the rest); the other seats are drawn from ALL the wrong
+     orders, the named bottom-number and turned-round orders among them. Holding
+     every named belief on every row was measured first and failed RULE 11's shape
+     clause: four fixed beliefs over three fractions make a row whose PATTERN of
+     repeats names the key's slot (48-54% on its biggest shape, over the 45% line).
+     At 3 in 4 no masked shape covers 5% of draws. */
+  const wr = perms.filter(o => sig(o) !== sig(T.right));
+  let three = shuffle(wr).slice(0, 3);
+  if (Math.random() < 0.75 && !three.some(o => sig(o) === sig(top.o)))
+    three = [top.o].concat(shuffle(wr.filter(o => sig(o) !== sig(top.o))).slice(0, 2));
+  const rows = shuffle([T.right].concat(three));
+  let shown = shuffle(T.t.slice());
+  for (let g = 0; g < 20 && same(shown, T.right); g++) shown = shuffle(T.t.slice());
+  if (same(shown, T.right)) shown = [T.right[1], T.right[0], T.right[2]];
+  const word = T.asc ? 'smallest' : 'greatest';
+  const others = [...new Set(T.t.map(p => p[1]).filter(d => d !== D))].sort((a, b) => a - b);
+  const tops = T.right.map(p => p[0]*(D/p[1]));
+  return band({
+    q: 'Arrange these fractions in order, beginning with the <b>' + word + '</b>: ' + render(shown) +
+       '. Which order is correct?',
+    extra: '', choices: rows.map(render), correct: rows.indexOf(T.right),
+    explain: 'The bottom numbers are not all the same, so first make the pieces the same size. ' + D +
+      ' is a multiple of ' + listAnd(others) + ', so change every fraction into ' + D_WORD[D] + ': ' +
+      T.t.map(p => renameTo(p, D)).join('; ') + '. Now every piece is one ' + D_WORD[D].slice(0, -1) +
+      ', so the top numbers decide: ' + tops.join(', ') + '. Beginning with the ' + word + ', the order is ' +
+      render(T.right) + '. Putting the top numbers or the bottom numbers in order as if they were whole ' +
+      'numbers does not work here, because the pieces are different sizes until they are renamed.',
+    answerText: render(T.right)
+  }, 3);
+}
+
+/* ---- F1b. WHO had the most / least, four unlike related fractions (pool 3,
+   band 3). The options are the four NAMES, so the row carries no magnitude and
+   the child must compare the four fractions in the stem. The table keeps only
+   sets where the right person is neither the one with the biggest top number
+   nor the one with the biggest bottom number (smallest, when "least" is asked),
+   so both whole-number beliefs land on a wrong name. ----------------------------- */
+const WHO_REL = [];
+for (const D of [8, 10, 12]) {
+  const F = relFracs(D);
+  const N = F.length;
+  for (let a = 0; a < N; a++) for (let b = a+1; b < N; b++) for (let c = b+1; c < N; c++) for (let e = c+1; e < N; e++) {
+    const s = [F[a], F[b], F[c], F[e]];
+    if (!s.some(p => p[1] === D) || new Set(s.map(p => p[1])).size < 3) continue;
+    if (new Set(s.map(p => p[0]*(D/p[1]))).size !== 4) continue;
+    for (const most of [true, false]) {
+      const arg = f => {
+        const xs = s.map(f), t = most ? Math.max(...xs) : Math.min(...xs);
+        return xs.filter(x => x === t).length === 1 ? xs.indexOf(t) : -1;
+      };
+      const k = arg(p => p[0]*(D/p[1])), bt = arg(p => p[0]), bb = arg(p => p[1]);
+      if (k < 0 || bt < 0 || bb < 0 || k === bt || k === bb) continue;
+      WHO_REL.push({ D, s, most, k });
+    }
+  }
+}
+/* [name, possessive] - one-word names, so the oracle can walk "Name verb a/b". */
+const WHO_KIDS = [['Siti','hers'], ['Kumar','his'], ['Ravi','his'], ['Aisyah','hers'],
+                  ['Devi','hers'], ['Hafiz','his'], ['Farah','hers'], ['Jun','his']];
+const WHO_CTX = [
+  { have:'a same-size bottle of water', verb:'drank', ask:m => 'Who drank the ' + m + ' water?' },
+  { have:'a same-length piece of ribbon', verb:'used', ask:m => 'Who used the ' + m + ' ribbon?' },
+  { have:'a same-size tub of paint', verb:'used', ask:m => 'Who used the ' + m + ' paint?' }
+];
+function gWhoMostRelated(){
+  const T = pick(WHO_REL), D = T.D, cx = pick(WHO_CTX);
+  const kids = shuffle(WHO_KIDS.slice()).slice(0, 4);
+  const m = T.most ? 'most' : 'least';
+  const says = kids.map((kd, i) => kd[0] + ' ' + cx.verb + ' ' + fr(T.s[i][0], T.s[i][1]) + ' of ' + kd[1]);
+  const opts = shuffle(kids.map(kd => kd[0]));
+  const winner = kids[T.k][0];
+  const tops = T.s.map(p => p[0]*(D/p[1]));
+  const others = [...new Set(T.s.map(p => p[1]).filter(d => d !== D))].sort((a, b) => a - b);
+  return band({
+    q: listAnd(kids.map(kd => kd[0])) + ' each had ' + cx.have + '. ' + listAnd(says) + '. <b>' + cx.ask(m) + '</b>',
+    extra: '', choices: opts, correct: opts.indexOf(winner),
+    explain: 'The wholes are all the same size, so the four fractions can be compared - but their bottom ' +
+      'numbers are different, so rename them first. ' + D + ' is a multiple of ' + listAnd(others) +
+      ', so write every fraction in ' + D_WORD[D] + ': ' + T.s.map(p => renameTo(p, D)).join('; ') +
+      '. In ' + D_WORD[D] + ' the top numbers are ' + listAnd(kids.map((kd, i) => kd[0] + ' ' + tops[i])) +
+      ', so ' + winner + ' ' + cx.verb + ' the ' + m + '. The biggest top number or the biggest bottom number ' +
+      'on its own does not tell you, because the pieces are different sizes.',
+    answerText: winner
+  }, 3);
+}
+
+/* ---- F2a. TYPED: add or subtract two related fractions (pool 2, band 2). The
+   card example "1/4 + 3/8 = ?", typed. The answer may come out as 6/8: the
+   grader takes 6/8 and 3/4 alike, and the card says both name one amount. ----- */
+const TYPED_REL = [];
+for (let d = 2; d <= 6; d++) for (let k = 2; k * d <= 12; k++) {
+  const D = k * d;
+  for (let a = 1; a < d; a++) if (gcd(a, d) === 1)
+    for (let b = 1; b < D; b++) if (gcd(b, D) === 1) {
+      if (a*k + b < D) { TYPED_REL.push([d, D, a, b, '+', true]); TYPED_REL.push([d, D, a, b, '+', false]); }
+      if (a*k - b >= 1) TYPED_REL.push([d, D, a, b, '−', true]);
+      if (b - a*k >= 1) TYPED_REL.push([d, D, a, b, '−', false]);
+    }
+}
+function gTypedRelated(){
+  const T = pick(TYPED_REL);
+  const d = T[0], D = T[1], a = T[2], b = T[3], op = T[4], smallFirst = T[5], k = D / d;
+  const A = [a, d], B = [b, D];
+  const first = smallFirst ? A : B, second = smallFirst ? B : A;
+  const top = op === '+' ? a*k + b : (smallFirst ? a*k - b : b - a*k);
+  const g = gcd(top, D);
+  const q = finishTyped('Find the value of ' + fr(first[0], first[1]) + ' ' + op + ' ' + fr(second[0], second[1]) + '.' + TYPE_FRAC,
+    top / D,
+    'The bottom numbers are different, but ' + D + ' is a multiple of ' + d + ', so change ' + fr(a, d) +
+    ' into ' + D_WORD[D] + ': ' + renameTo(A, D) + '. Now both fractions are in ' + D_WORD[D] + ', so work with ' +
+    'the top numbers only: ' + (smallFirst ? (a*k) + ' ' + op + ' ' + b : b + ' ' + op + ' ' + (a*k)) + ' = ' + top +
+    ', and the answer is ' + fr(top, D) + '.' +
+    (g > 1 ? ' ' + fr(top, D) + ' is the same amount as ' + fr(top/g, D/g) + ', and either one is correct.' : ''),
+    '');
+  q.fracAnswer = [top / g, D / g];
+  q.answerText = fr(top / g, D / g);
+  return band(q, 2);
+}
+
+/* ---- F2b. TYPED: how many D-ths must be added / taken away (pool 3, band 3).
+   "How many twelfths must be added to 1/3 to make 3/4?" Rename BOTH fractions
+   into the named pieces, then find the difference: three steps. The two printed
+   bottom numbers always differ, so at least one fraction must be renamed. ------ */
+const PIECES_REL = [];
+for (const D of [6, 8, 10, 12]) {
+  const F = relFracs(D);
+  for (const A of F) for (const B of F) {
+    if (A[1] === B[1]) continue;            /* unlike: the two printed bottom numbers differ */
+    const x = A[0]*(D/A[1]), y = B[0]*(D/B[1]);
+    if (Math.abs(x - y) < 2) continue;
+    PIECES_REL.push([D, A, B]);
+  }
+}
+function gTypedPieces(){
+  const T = pick(PIECES_REL), D = T[0], A = T[1], B = T[2];
+  const x = A[0]*(D/A[1]), y = B[0]*(D/B[1]), add = y > x, n = Math.abs(y - x);
+  const W = D_WORD[D];
+  const q = finishTyped('How many <b>' + W + '</b> must be ' + (add ? 'added to ' : 'taken away from ') +
+    fr(A[0], A[1]) + (add ? ' to make ' : ' to leave ') + fr(B[0], B[1]) + '?',
+    n,
+    'Change both fractions into ' + W + ' first: ' + renameTo(A, D) + ', and ' + renameTo(B, D) + '. ' +
+    (add ? 'From ' + pcs(x, D) + ' up to ' + pcs(y, D) + ' is ' + y + ' − ' + x + ' = ' + n +
+           ', so ' + pcs(n, D) + ' must be added.'
+         : 'From ' + pcs(x, D) + ' down to ' + pcs(y, D) + ' is ' + x + ' − ' + y + ' = ' + n +
+           ', so ' + pcs(n, D) + ' must be taken away.'),
+    W);
+  return band(q, 3);
+}
+
+/* ---- F2c. TYPED: two related parts given away, what is LEFT (pool 3, band 3).
+   Rename, add the two parts, take the total from one whole. The stop-after-
+   step-2 slip (the part given away) is named on the card in words. ------------- */
+const LEFT_REL = [];
+for (let d = 2; d <= 6; d++) for (let k = 2; k * d <= 12; k++) {
+  const D = k * d;
+  for (let a = 1; a < d; a++) if (gcd(a, d) === 1)
+    for (let b = 1; b < D; b++) if (gcd(b, D) === 1 && a*k + b <= D - 1) LEFT_REL.push([d, D, a, b]);
+}
+const LEFT_CTX = [
+  { who:'Mdm Tan', she:'She', what:'a pandan cake', it:'the cake', p1:'gave', t1:'to her neighbour', p2:'gave', t2:'to her sister', pp:'given away' },
+  { who:'Mr Lim', she:'He', what:'a bag of rice', it:'the rice', p1:'cooked', t1:'on Monday', p2:'cooked', t2:'on Tuesday', pp:'cooked' },
+  { who:'Aunty Rosnah', she:'She', what:'a roll of ribbon', it:'the ribbon', p1:'used', t1:'for a gift', p2:'used', t2:'for a hair band', pp:'used' },
+  { who:'Uncle Ahmad', she:'He', what:'a tin of paint', it:'the paint', p1:'used', t1:'on a door', p2:'used', t2:'on a fence', pp:'used' }
+];
+function gTypedLeft(){
+  const T = pick(LEFT_REL), d = T[0], D = T[1], a = T[2], b = T[3], k = D / d;
+  const cx = pick(LEFT_CTX), smallFirst = Math.random() < 0.5;
+  const P = smallFirst ? [[a, d], [b, D]] : [[b, D], [a, d]];
+  const used = a*k + b, left = D - used, g = gcd(left, D);
+  const q = finishTyped(cx.who + ' had ' + cx.what + '. ' + cx.she + ' ' + cx.p1 + ' ' + fr(P[0][0], P[0][1]) + ' of it ' +
+    cx.t1 + ' and ' + cx.p2 + ' ' + fr(P[1][0], P[1][1]) + ' of it ' + cx.t2 + '. <b>What fraction of ' + cx.it +
+    ' was left?</b>' + TYPE_FRAC,
+    left / D,
+    'Step 1: make the pieces the same size. ' + D + ' is a multiple of ' + d + ', so ' + renameTo([a, d], D) + '. ' +
+    'Step 2: the part ' + cx.pp + ' altogether is ' + (a*k) + ' + ' + b + ' = ' + pcs(used, D) + '. Step 3: the whole of ' + cx.it + ' is ' + fr(D, D) + ', so what is left is ' + D + ' − ' + used +
+    ' = ' + pcs(left, D) + ', which is ' + fr(left, D) + '.' +
+    (g > 1 ? ' ' + fr(left, D) + ' is the same amount as ' + fr(left/g, D/g) + ', and either one is correct.' : '') +
+    ' Stopping after step 2 answers a different question - how much was ' + cx.pp + ', not how much was left.',
+    '');
+  q.fracAnswer = [left / g, D / g];
+  q.answerText = fr(left / g, D / g);
+  return band(q, 3);
+}
+
+
   MQI.registerTopic({
     id:'fractions', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Fractions: equivalent fractions; comparing and ordering unlike fractions; addition and subtraction",
@@ -9777,6 +10508,8 @@ function gAddWords(){
        one stem shape by the number of pools it occupied, and gPeri-in-all-three
        was the worst case in the game. Pool 1 = 6 gens / 4 skills, pool 2 = 9 / 5,
        pool 3 = 12 / 5.
+       HARD LANE 2026-10-07: pool 2 = 10 / 5 (+ gTypedRelated), pool 3 = 16 / 5
+       (+ gOrderRelated, gWhoMostRelated, gTypedPieces, gTypedLeft).
 
        WOUND 1 (Sweep fractions Refutation 2026-09-15). The feed serves by SKILL,
        not by slot: createFeed's carousel round-robins the skills inside a pool and
@@ -9798,11 +10531,13 @@ function gAddWords(){
          [gCompareUnit,'compare'],[gCompareBar,'compare'],[gAddSame,'addsub']],
       2:[[gPicUnshaded,'wholes'],[gSubFromOne,'wholes'],[gEqMissing,'equivalent'],
          [gEqMissingDen,'equivalent'],[gPickEquiv,'equivalent'],[gSimplest,'simplest'],
-         [gCompareSameD,'compare'],[gCompareWords,'compare'],[gSubSame,'addsub']],
+         [gCompareSameD,'compare'],[gCompareWords,'compare'],[gSubSame,'addsub'],
+         [gTypedRelated,'addsub']],
       3:[[gMakeOne,'wholes'],[gMakeOneIn,'wholes'],[gAlreadySimplest,'simplest'],
          [gSimplestError,'simplest'],[gBetween,'compare'],[gGreatest4,'compare'],
          [gOrderThree,'order'],[gOrderGap,'order'],
-         [gAddRelated,'addsub'],[gSubRelated,'addsub'],[gAddError,'addsub'],[gAddWords,'addsub']]
+         [gAddRelated,'addsub'],[gSubRelated,'addsub'],[gAddError,'addsub'],[gAddWords,'addsub'],
+         [gOrderRelated,'order'],[gWhoMostRelated,'compare'],[gTypedPieces,'addsub'],[gTypedLeft,'wholes']]
     }
   });
 })();
@@ -9815,13 +10550,19 @@ function gAddWords(){
  * Scope limit (MOE Oct 2025, p.35): adding and subtracting money in decimal
  * notation ONLY. No multiplication or division of money (that is P4 decimals),
  * amounts kept under $100, answers never negative.
+ * lane/hard-money 2026-10-07 (Math Hardness Calibration cards Mo1, Mo2, #13):
+ * bundle / least-cost items print WHOLE DOLLARS only, so their x and / are P3
+ * whole-number operations ("4 for $10", 3 bundles = 3 x 10), never decimal
+ * x or /. Every amount carrying cents is only ever added or subtracted.
+ * q.band: 2 = standard, 3 = exam-hard multi-step (>= 3 operations, one of them
+ * a model or an interpretation step). The mock routes on it.
  * Unit convention: the unit lives in the QUESTION STEM ("in dollars, e.g. 4.75")
  * and the typed answer is a bare number, per js/topics/README.md - but every
  * finishTyped here ALSO declares '$' so gradeTyped rejects a wrong unit.
  */
 (function () {
   const G = MQI.gen;
-  const ri = G.ri, pick = G.pick, finishTyped = G.finishTyped;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishTyped = G.finishTyped;
 
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Mei Ling'];
   const STALLS = ['the hawker centre','the kopitiam','NTUC FairPrice','the wet market','the MRT station kiosk'];
@@ -9871,12 +10612,12 @@ function gAddWords(){
     const who = pick(NAMES), a = cents(150, 700), b = cents(120, 600);
     const c = cents(90, 500);
     const t = a + b + c;
-    return asMoney(finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ', ' + pick(CHEAP) + ' for ' + money(b) +
+    return band(asMoney(finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ', ' + pick(CHEAP) + ' for ' + money(b) +
       ' and ' + pick(CHEAP) + ' for ' + money(c) + ' at ' + pick(STALLS) +
       '. How much does the food cost in total? (in dollars, e.g. 9.85)',
       dollars(t),
       'Add two at a time: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + ', then ' + money(a+b) + ' + ' + money(c) + ' = ' + money(t) + '.',
-      '$'), t);
+      '$'), t), 2);
   }
   function gSubSmall(){
     const who = pick(NAMES), have = cents(600, 990);
@@ -9903,12 +10644,205 @@ function gAddWords(){
     const note = pick([1000, 2000, 5000]);
     const given = (a + b) < note ? note : 5000;
     const chg = given - a - b;
-    return asMoney(finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ' and ' + pick(CHEAP) + ' for ' + money(b) +
+    return band(asMoney(finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ' and ' + pick(CHEAP) + ' for ' + money(b) +
       ' at ' + pick(STALLS) + ', then hands the stallholder ' + money(given) +
       '. How much change should ' + who + ' get? (in dollars, e.g. 3.15)',
       dollars(chg),
       'First find the cost: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + '. Then ' + money(given) + ' - ' + money(a+b) + ' = ' + money(chg) + '.',
-      '$'), chg);
+      '$'), chg), 2);
+  }
+
+  /* ===== lane/hard-money 2026-10-07 ===================================== */
+  const band = (q, b) => (q.band = b, q);
+  const usd = d => '$' + d;                         /* whole dollars, as papers print "4 for $10" */
+  const an = w => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
+  const cap1 = w => w.charAt(0).toUpperCase() + w.slice(1);
+  /* A change amount under a dollar is printed in cents ("75¢") half the time, so
+     the child has to read 75¢ as $0.75 - not $7.50 (card Mo2's named slip). */
+  const chgText = c => c < 100 && Math.random() < 0.5 ? c + '¢' : money(c);
+  /* A money MCQ: the four options are amounts, so finishNum (integers + a word
+     unit) cannot carry them. Distractors come only from named slips. */
+  function moneyMcq(q, keyC, slips, fmt, explain){
+    const seen = [keyC], opts = [keyC];
+    for (const c of shuffle(slips)) {
+      if (opts.length >= 4) break;
+      if (c > 0 && Number.isInteger(c) && !seen.includes(c)) { seen.push(c); opts.push(c); }
+    }
+    const step = fmt === usd ? 1 : 10;
+    for (let t = 1; opts.length < 4 && t < 80; t++)
+      for (const c of [keyC + t * step, keyC - t * step])
+        if (opts.length < 4 && c > 0 && !seen.includes(c)) { seen.push(c); opts.push(c); }
+    const order = shuffle(opts.map((_, i) => i));
+    const choices = order.map(i => fmt(opts[i]));
+    return { q, extra:'', choices, correct: order.indexOf(0), explain, answerText: fmt(keyC) };
+  }
+
+  /* Items a P3 child believes cost $2-$6 each, so the whole-dollar singles read true. */
+  const BUNDLE = [
+    {s:'cup of bubble tea', p:'cups of bubble tea', at:'a shop in Tampines'},
+    {s:'notebook', p:'notebooks', at:'the school bookshop'},
+    {s:'bottle of juice', p:'bottles of juice', at:'a shop in Jurong Point'},
+    {s:'tub of cookies', p:'tubs of cookies', at:'a stall at the pasar malam'},
+    {s:'box of crayons', p:'boxes of crayons', at:'the school bookshop'},
+    {s:'packet of ang ku kueh', p:'packets of ang ku kueh', at:'a bakery in Toa Payoh'}
+  ];
+  /* Mo1a. "$3 each, or 4 for $10 - least you pay for 11?" The bundle price sits
+     strictly between (B-1) singles and B singles, so the cheapest way is unique:
+     as many bundles as fit, the rest as singles (over-buying a bundle always
+     costs more than the leftover singles). 4 operations: divide, two products, add. */
+  function gBundleLeast(){
+    for (;;) {
+      const it = pick(BUNDLE), who = pick(NAMES);
+      const S = ri(2, 6), B = ri(3, 6), P = ri((B - 1) * S + 1, B * S - 1);
+      const N = ri(B + 1, 5 * B - 1);
+      const q = Math.floor(N / B), r = N % B, T = q * P + r * S;
+      if (T > 99 || N * S > 120) continue;
+      const one = n => n === 1 ? it.s : it.p;
+      const ex = 'Buying ' + B + ' ' + it.p + ' one by one costs ' + B + ' × ' + usd(S) + ' = ' + usd(B * S) +
+        ', but ' + B + ' for ' + usd(P) + ' is cheaper, so buy as many bundles as you can. ' +
+        N + ' ÷ ' + B + ' = ' + q + (r ? ' remainder ' + r : '') + ', so ' + q + ' bundle' + (q === 1 ? '' : 's') +
+        ' cost ' + q + ' × ' + usd(P) + ' = ' + usd(q * P) + '. ' +
+        (r ? 'The ' + r + ' ' + one(r) + ' left over cost ' + r + ' × ' + usd(S) + ' = ' + usd(r * S) +
+             ' (cheaper than one more bundle at ' + usd(P) + '). Total: ' + usd(q * P) + ' + ' + usd(r * S) + ' = ' + usd(T) + '.'
+           : 'There are none left over, so the total is ' + usd(T) + '.') +
+        ' Buying all ' + N + ' one by one would cost ' + usd(N * S) + '.';
+      return band(asMoney(finishTyped('At ' + it.at + ', ' + it.p + ' cost ' + usd(S) + ' each, or ' + B + ' for ' + usd(P) +
+        '. ' + who + ' needs ' + N + ' ' + it.p + '. What is the least amount ' + who + ' must pay? (in dollars, e.g. 4.75)',
+        T, ex, '$'), T * 100), 3);
+    }
+  }
+
+  const PACKS = [{s:'pen', p:'pens'}, {s:'marker', p:'markers'}, {s:'eraser', p:'erasers'}, {s:'sticker sheet', p:'sticker sheets'}, {s:'exercise book', p:'exercise books'}];
+  /* Mo1b. "A packet of 5 pens costs $8 and comes with 2 free pens; pens are sold
+     only in packets. Least you pay for at least 42?" MCQ - the slips are the card's:
+     free pens ignored, free pens counted only once, the packet count given as the
+     answer, and no round-up when the packets do not come out exact. */
+  function gBundlePacks(){
+    for (;;) {
+      const it = pick(PACKS), who = pick(NAMES);
+      const K = ri(3, 6), F = ri(1, K - 1), P = ri(2, 9), per = K + F;
+      const m = ri(3, 8), exact = Math.random() < 0.5;
+      const N = exact ? m * per : m * per - ri(1, per - 1);
+      const packs = Math.ceil(N / per), T = packs * P;
+      if (T > 80 || N > 90) continue;
+      const slips = [Math.ceil(N / K) * P, Math.ceil((N - F) / K) * P, packs, Math.floor(N / per) * P, (packs + 1) * P];
+      const ex = 'Each packet gives ' + K + ' + ' + F + ' = ' + per + ' ' + it.p + ' (the free ones count too). ' +
+        N + ' ÷ ' + per + ' = ' + (exact ? packs : Math.floor(N / per) + ' remainder ' + (N % per) +
+        ', and the packets come whole, so ' + Math.floor(N / per) + ' packets are not enough: buy ' + packs) +
+        ' packets. ' + packs + ' × ' + usd(P) + ' = ' + usd(T) + '. ' + packs + ' is the number of packets, not the cost.';
+      return band(moneyMcq('At the school bookshop, a packet of ' + K + ' ' + it.p + ' costs ' + usd(P) + ', and every packet comes with ' +
+        F + ' free ' + (F === 1 ? it.s : it.p) + '. ' + cap1(it.p) + ' are sold only in packets. What is the least amount ' + who +
+        ' must pay to get at least ' + N + ' ' + it.p + '?', T, slips, usd, ex), 3);
+    }
+  }
+
+  const FRUIT = ['apples', 'oranges', 'pears', 'mangoes', 'guavas'];
+  /* Mo1c. "Apples are 3 for $4. Mei spent $24. How many apples?" With money left
+     over it is 3 operations (band 3); without, 2 (band 2). The unit is the fruit. */
+  function gBundleHowMany(){
+    for (;;) {
+      const f = pick(FRUIT), who = pick(NAMES);
+      const Gs = ri(2, 5), P = ri(2, 9), g = ri(3, 9), S = g * P, N = g * Gs;
+      if (S > 60 || P === Gs) continue;
+      const hard = Math.random() < 0.6, L = ri(1, 15), H = S + L;
+      const tail = S + ' ÷ ' + P + ' = ' + g + ' groups. Each group has ' + Gs + ' ' + f + ', so ' + g + ' × ' + Gs + ' = ' + N +
+        ' ' + f + '. (' + g + ' is the number of groups, not the number of ' + f + '.)';
+      const stem = hard
+        ? who + ' had ' + usd(H) + '. ' + who + ' bought some ' + f + ' at the wet market, where they are sold at ' + Gs + ' for ' + usd(P) +
+          ', and had ' + usd(L) + ' left. How many ' + f + ' did ' + who + ' buy?'
+        : 'At the wet market, ' + f + ' are sold at ' + Gs + ' for ' + usd(P) + '. ' + who + ' spent ' + usd(S) + ' on ' + f +
+          '. How many ' + f + ' did ' + who + ' buy?';
+      const ex = (hard ? 'First find the money spent: ' + usd(H) + ' - ' + usd(L) + ' = ' + usd(S) + '. ' : '') +
+        'Every ' + usd(P) + ' buys one group of ' + Gs + '. ' + tail;
+      return band(finishTyped(stem, N, ex, f), hard ? 3 : 2);
+    }
+  }
+
+  const GOODS = ['bag', 'cap', 'T-shirt', 'water bottle', 'pair of shoes', 'jacket', 'umbrella', 'watch'];
+  const MALLS = ['VivoCity', 'Northpoint City', 'Jurong Point', 'Tampines Mall', 'Causeway Point'];
+  /* Mo2a. Reverse change: "paid with a $50 note, got 75¢ change, the bag cost
+     $19.40; how much were the shoes?" Two known items is 3 subtractions (band 3);
+     one known item is 2 (band 2). */
+  function gReverseChange(){
+    for (;;) {
+      const who = pick(NAMES), three = Math.random() < 0.5;
+      const items = shuffle(GOODS).slice(0, three ? 3 : 2);
+      const note = pick([20, 50, 100]) * 100;
+      const c = Math.random() < 0.55 ? cents(5, 95) : cents(105, 950);
+      const spent = note - c;
+      const known = items.slice(0, -1).map(() => cents(Math.max(300, note / 8), Math.min(4500, note / 2)));
+      const u = spent - known.reduce((a, b) => a + b, 0);
+      if (u < 300 || u > note * 0.7 || known.includes(c) || known.includes(u) || known[0] === known[1]) continue;
+      const unk = items[items.length - 1];
+      const ct = chgText(c);
+      const list = three ? an(items[0]) + ', ' + an(items[1]) + ' and ' + an(items[2]) : an(items[0]) + ' and ' + an(items[1]);
+      const knowns = three
+        ? 'The ' + items[0] + ' cost ' + money(known[0]) + ' and the ' + items[1] + ' cost ' + money(known[1]) + '.'
+        : 'The ' + items[0] + ' cost ' + money(known[0]) + '.';
+      const stem = who + ' bought ' + list + ' at ' + pick(MALLS) + '. ' + who + ' paid with a ' + usd(note / 100) +
+        ' note and received ' + ct + ' change. ' + knowns + ' How much did the ' + unk + ' cost? (in dollars, e.g. 4.75)';
+      let ex = 'Change is money given back, so it was not spent. ' +
+        (/¢/.test(ct) ? ct + ' is ' + money(c) + ' (not ' + money(c * 10) + '). ' : '') +
+        'Money spent: ' + money(note) + ' - ' + money(c) + ' = ' + money(spent) + '. ';
+      ex += three
+        ? 'Take away the two known prices: ' + money(spent) + ' - ' + money(known[0]) + ' = ' + money(spent - known[0]) +
+          ', then ' + money(spent - known[0]) + ' - ' + money(known[1]) + ' = ' + money(u) + '.'
+        : 'Take away the known price: ' + money(spent) + ' - ' + money(known[0]) + ' = ' + money(u) + '.';
+      ex += ' Check: the prices add up to ' + money(spent) + ', and ' + money(spent) + ' + ' + money(c) + ' change = ' + money(note) + '.';
+      return band(asMoney(finishTyped(stem, dollars(u), ex, '$'), u), three ? 3 : 2);
+    }
+  }
+
+  const STATIONERY = ['storybook', 'file', 'ruler', 'pencil case', 'calculator', 'water bottle'];
+  /* Mo2b. Missing item from money left: "had $25; bought a book, a file and a pen;
+     had $6.20 left; how much was the pen?" 3 subtractions. MCQ - the slips are money
+     left ignored, money left added, and each known price forgotten. */
+  function gMissingItem(){
+    for (;;) {
+      const who = pick(NAMES), [x, y, z] = shuffle(STATIONERY).slice(0, 3);
+      const H = pick([2000, 2500, 3000, 4000, 5000, cents(1800, 4500)]);
+      const a = cents(250, 1500), b = cents(120, 900), L = cents(120, 1200);
+      const u = H - a - b - L;
+      if (u < 80) continue;
+      const slips = [H - a - b, H - a - b + L, H - a - L, H - b - L, a + b + L];
+      const ex = 'Bar model: ' + money(H) + ' is split into the ' + x + ', the ' + y + ', the ' + z + ' and the money left. ' +
+        'Money spent: ' + money(H) + ' - ' + money(L) + ' = ' + money(H - L) + '. ' +
+        'Take away the prices you know: ' + money(H - L) + ' - ' + money(a) + ' - ' + money(b) + ' = ' + money(u) + '. ' +
+        'The money left was not spent, so it must be taken away too.';
+      return band(moneyMcq(who + ' had ' + money(H) + '. ' + who + ' bought ' + an(x) + ' for ' + money(a) + ', ' + an(y) + ' for ' +
+        money(b) + ' and ' + an(z) + '. ' + who + ' had ' + money(L) + ' left. How much did the ' + z + ' cost?', u, slips, money, ex), 3);
+    }
+  }
+
+  /* #13 multi-step money. "spent $a on X and $d more on Y than on X; how much
+     left?" 3 operations: Y's price, the total spent, the money left. */
+  function gMoreThanLeft(){
+    for (;;) {
+      const who = pick(NAMES), H = pick([5000, 10000, cents(4000, 9500)]);
+      const [x, y] = shuffle(GOODS).slice(0, 2);
+      const a = cents(450, 2600), d = cents(105, 1500), yb = a + d, L = H - a - yb;
+      if (L < 100) continue;
+      const ex = 'The ' + y + ' cost ' + money(d) + ' MORE than the ' + x + ', so it cost ' + money(a) + ' + ' + money(d) + ' = ' + money(yb) +
+        ' (' + money(d) + ' is the difference, not the price). Spent: ' + money(a) + ' + ' + money(yb) + ' = ' + money(a + yb) +
+        '. Left: ' + money(H) + ' - ' + money(a + yb) + ' = ' + money(L) + '.';
+      return band(asMoney(finishTyped(who + ' had ' + money(H) + '. ' + who + ' spent ' + money(a) + ' on ' + an(x) + ' and ' + money(d) +
+        ' more on ' + an(y) + ' than on the ' + x + '. How much money did ' + who + ' have left? (in dollars, e.g. 4.75)',
+        dollars(L), ex, '$'), L), 3);
+    }
+  }
+
+  /* #13 standard: "$100; spends $34.70 and $18.45; how much left?" 2 operations. */
+  function gSpendTwoLeft(){
+    for (;;) {
+      const who = pick(NAMES), H = pick([5000, 10000, 10000, cents(3000, 9500)]);
+      const [x, y] = shuffle(GOODS).slice(0, 2);
+      const a = cents(450, 4500), b = cents(250, 3500), L = H - a - b;
+      if (L < 50) continue;
+      const ex = 'Add what was spent first: ' + money(a) + ' + ' + money(b) + ' = ' + money(a + b) + '. Then ' + money(H) + ' - ' +
+        money(a + b) + ' = ' + money(L) + '. Change one dollar into 100 cents whenever the cents will not subtract.';
+      return band(asMoney(finishTyped(who + ' had ' + money(H) + '. ' + who + ' spent ' + money(a) + ' on ' + an(x) + ' and ' + money(b) +
+        ' on ' + an(y) + '. How much money did ' + who + ' have left? (in dollars, e.g. 4.75)', dollars(L), ex, '$'), L), 2);
+    }
   }
 
   MQI.registerTopic({
@@ -9918,12 +10852,15 @@ function gAddWords(){
     skills:{
       add:   {label:'Adding money',   tip:'At the hawker centre, let your child add the two stall prices before you pay.'},
       sub:   {label:'Subtracting money', tip:'Cents will not subtract? Change one dollar into 100 cents, the same as borrowing a ten.'},
-      change:{label:'Working out change', tip:'Two steps: total the items first, then take that away from the note handed over.'}
+      change:{label:'Working out change', tip:'Two steps: total the items first, then take that away from the note handed over.'},
+      bundle:{label:'Bundles and best buys', tip:'At the shop, ask: is "3 for $4" cheaper than buying one by one? How many bundles fit, and what is left over?'},
+      reverse:{label:'Working backwards with money', tip:'Change and money left were NOT spent: take them away from what was paid first, then take away the prices you know.'}
     },
     pools:{
       1:[[gAddTwo,'add'],[gSubSmall,'sub']],
-      2:[[gAddBig,'add'],[gSubBorrow,'sub']],
-      3:[[gChange,'change'],[gAddThree,'add']]
+      2:[[gAddBig,'add'],[gSubBorrow,'sub'],[gSpendTwoLeft,'sub']],
+      3:[[gChange,'change'],[gAddThree,'add'],[gBundleLeast,'bundle'],[gBundlePacks,'bundle'],[gBundleHowMany,'bundle'],
+         [gReverseChange,'reverse'],[gMissingItem,'reverse'],[gMoreThanLeft,'sub']]
     }
   });
 })();
@@ -9941,7 +10878,7 @@ function gAddWords(){
  */
 (function () {
   const G = MQI.gen;
-  const ri = G.ri, pick = G.pick, finishNum = G.finishNum;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishNum = G.finishNum, finishTyped = G.finishTyped;
 
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Nurul'];
   /* [big unit, small unit, factor] - the four pairs the syllabus names */
@@ -10021,6 +10958,245 @@ function gAddWords(){
       'Change both to ' + S + ' first: ' + a + ' ' + S + ' and ' + b + ' ' + S + '. Then ' + a + ' - ' + b + ' = ' + (a - b) + ' ' + S + '.');
   }
 
+  /* ===== lane/hard-measure 2026-10-07: exam-hard items (calibration cards M1, M2) =====
+     Every item carries q.band (3 = exam-hard multi-step, 2 = standard) and stretch
+     items carry q.stretch, which the mock routes on. Typed answers are ONE unit;
+     compound answers are MCQ, and every option is written in the same compound form
+     (never "900 g" beside "2 kg 350 g": a form tell). */
+  const PEOPLE = [['Wei Jie','He','he'],['Aisyah','She','she'],['Kavitha','She','she'],['Jun Hao','He','he'],
+    ['Siti','She','she'],['Priya','She','she'],['Daryl','He','he'],['Xin Yi','She','she'],['Farhan','He','he'],
+    ['Nurul','She','she'],['Mdm Tan','She','she'],['Mr Lim','He','he']];
+  const tag = (q, band, stretch) => { q.band = band; if (stretch) q.stretch = true; return q; };
+  /* base-unit value -> "2 kg 350 g" / "2 kg" / "350 g" */
+  const fmtC = (v, B, S, f) => {
+    const b = Math.floor(v / f), s = v % f;
+    return b && s ? b + ' ' + B + ' ' + s + ' ' + S : (b ? b + ' ' + B : s + ' ' + S);
+  };
+  const ord = n => n + ((n % 100 >= 11 && n % 100 <= 13) ? 'th' : ({1:'st', 2:'nd', 3:'rd'}[n % 10] || 'th'));
+  /* MCQ with compound options. Every option must be a full "a B b S" with both parts
+     non-zero; returns null when the named slips cannot fill three such options, and
+     the caller redraws. */
+  function finishCompound(stem, key, cands, B, S, f, explain){
+    const ok = v => Number.isInteger(v) && v > f && v % f !== 0;
+    if (!ok(key)) return null;
+    const vals = [key];
+    for (const c of shuffle(cands)) if (vals.length < 4 && ok(c) && vals.indexOf(c) < 0) vals.push(c);
+    if (vals.length < 4) return null;
+    const order = shuffle([0, 1, 2, 3]);
+    return { q:stem, extra:'', choices:order.map(i => fmtC(vals[i], B, S, f)), correct:order.indexOf(0),
+             explain, answerText:fmtC(key, B, S, f) };
+  }
+
+  /* M1a. Units model inside a measurement: "N times as much; together T". */
+  function gTimesAsMuch(){
+    const ctx = pick([
+      {kind:'vol', a:'jug', b:'bottle', stuff:'water', rel:'holds', relN:'as much water as', tog:'Together they hold', moreQ:'How much more water does the jug hold than the bottle', oneQ:'How much water does the jug hold'},
+      {kind:'vol', a:'pail', b:'kettle', stuff:'water', rel:'holds', relN:'as much water as', tog:'Together they hold', moreQ:'How much more water does the pail hold than the kettle', oneQ:'How much water does the pail hold'},
+      {kind:'mass', a:'bag of rice', b:'bag of sugar', rel:'is', relN:'as heavy as', tog:'Together they weigh', moreQ:'How much heavier is the bag of rice than the bag of sugar', oneQ:'What is the mass of the bag of rice'},
+      {kind:'mass', a:'watermelon', b:'papaya', rel:'is', relN:'as heavy as', tog:'Together they weigh', moreQ:'How much heavier is the watermelon than the papaya', oneQ:'What is the mass of the watermelon'}
+    ]);
+    const [B, S, f, cap] = ctx.kind === 'vol' ? ['ℓ', 'ml', 1000, 2000] : ['kg', 'g', 1000, 4000];
+    const N = ri(3, 5);
+    let u, T;
+    do { u = 50 * ri(2, Math.floor(cap / (N + 1) / 50)); T = (N + 1) * u; } while (T < 1000);
+    const askMore = Math.random() < 0.6;
+    const key = askMore ? (N - 1) * u : N * u;
+    const oneUnitWrong = T % N === 0 ? [T / N, (N - 1) * (T / N)] : [];
+    const cands = (askMore ? [u, N * u, T] : [u, (N - 1) * u, T]).concat(oneUnitWrong).filter(c => c !== key);
+    const stem = 'A ' + ctx.a + ' ' + ctx.rel + ' ' + N + ' times ' + ctx.relN + ' a ' + ctx.b + '. ' + ctx.tog + ' ' +
+      fmtC(T, B, S, f) + '. ' + (askMore ? ctx.moreQ : ctx.oneQ) + ', in ' + S + '?';
+    const explain = 'Draw a model. The ' + ctx.b + ' is 1 unit and the ' + ctx.a + ' is ' + N + ' units, so together they are ' +
+      (N + 1) + ' units. Change to ' + S + ': ' + fmtC(T, B, S, f) + ' = ' + T + ' ' + S + '. 1 unit = ' + T + ' ÷ ' + (N + 1) +
+      ' = ' + u + ' ' + S + '. ' + (askMore
+        ? 'The ' + ctx.a + ' has ' + N + ' - 1 = ' + (N - 1) + ' more units than the ' + ctx.b + ': ' + (N - 1) + ' × ' + u + ' = ' + key + ' ' + S + '.'
+        : 'The ' + ctx.a + ' is ' + N + ' units: ' + N + ' × ' + u + ' = ' + key + ' ' + S + '.');
+    const q = finishNum(stem, '', key, cands, S, explain);
+    q.authored = cands;
+    return tag(q, 3);
+  }
+
+  /* M1b. Use some, then share the rest equally (typed, one unit). */
+  function gUseThenShare(){
+    const [who, He] = pick(PEOPLE);
+    const ctx = pick([
+      {B:'kg', S:'g', f:1000, stuff:'flour', used:'used', rest:'packed the rest equally into', box:'bags', ask:'How much flour is in each bag'},
+      {B:'kg', S:'g', f:1000, stuff:'rice', used:'cooked', rest:'packed the rest equally into', box:'containers', ask:'How much rice is in each container'},
+      {B:'ℓ', S:'ml', f:1000, stuff:'bandung', used:'drank', rest:'poured the rest equally into', box:'cups', ask:'How much bandung is in each cup'},
+      {B:'m', S:'cm', f:100, stuff:'ribbon', used:'used', rest:'cut the rest into', box:'equal pieces', ask:'How long is each piece'}
+    ]);
+    let n, each, used, total;
+    do {
+      n = ri(3, 8);
+      if (ctx.S === 'g')       { each = 10 * ri(12, 60); used = 50 * ri(2, 18); }
+      else if (ctx.S === 'ml') { each = 10 * ri(10, 40); used = 50 * ri(2, 12); }
+      else                     { each = ri(15, 90);      used = 5 * ri(4, 19); }
+      total = n * each + used;
+    } while (total <= ctx.f || total % ctx.f === 0 || total > (ctx.S === 'g' ? 4000 : ctx.S === 'ml' ? 2000 : 900));
+    const rest = total - used;
+    const stem = who + ' had ' + fmtC(total, ctx.B, ctx.S, ctx.f) + ' of ' + ctx.stuff + '. ' + He + ' ' + ctx.used + ' ' +
+      used + ' ' + ctx.S + ' and ' + ctx.rest + ' ' + n + ' ' + ctx.box + '. ' + ctx.ask + ', in ' + ctx.S + '?';
+    const explain = 'Change to ' + ctx.S + ' first: ' + fmtC(total, ctx.B, ctx.S, ctx.f) + ' = ' + total + ' ' + ctx.S +
+      '. Take away what was ' + ctx.used + ': ' + total + ' - ' + used + ' = ' + rest + ' ' + ctx.S +
+      '. Share it equally: ' + rest + ' ÷ ' + n + ' = ' + each + ' ' + ctx.S + '.';
+    return tag(finishTyped(stem, each, explain, ctx.S), 3);
+  }
+
+  /* M1c. Pour two amounts into a container: overflow, or how much more to fill it. */
+  function gPourIn(){
+    const [who, He, he] = pick(PEOPLE);
+    const over = Math.random() < 0.5;
+    /* two pours of at most 950 ml can never overflow 2 l, so 2 l is a "fill it" jug only */
+    const C = over ? pick([1000, 1000, 1200, 1500]) : pick([1000, 1500, 2000]);
+    let a, b;
+    do { a = 10 * ri(25, 95); b = 10 * ri(25, 95); }
+    while (a === b || a >= C || b >= C || (over ? a + b <= C + 50 : a + b >= C - 50));
+    const key = over ? a + b - C : C - a - b;
+    const cands = [...new Set([a + b, C - a, C - b, Math.abs(a - b)])].filter(c => c > 0 && c !== key);
+    if (cands.length < 3) return gPourIn();   /* three named slips or redraw: never a padded +1 */
+    const stem = who + ' has a bottle with ' + a + ' ml of water and a beaker with ' + b + ' ml of water. ' + He +
+      ' pours all of it into an empty jug that can hold ' + fmtC(C, 'ℓ', 'ml', 1000) + '. ' +
+      (over ? 'How much water overflows, in ml?' : 'How much more water is needed to fill the jug, in ml?');
+    const explain = 'Change to ml: ' + fmtC(C, 'ℓ', 'ml', 1000) + ' = ' + C + ' ml. Water poured in: ' + a + ' + ' + b + ' = ' +
+      (a + b) + ' ml. ' + (over
+        ? 'The jug holds only ' + C + ' ml, so ' + (a + b) + ' - ' + C + ' = ' + key + ' ml overflows.'
+        : 'The jug holds ' + C + ' ml, so ' + C + ' - ' + (a + b) + ' = ' + key + ' ml more is needed.');
+    const q = finishNum(stem, '', key, cands, 'ml', explain);
+    q.authored = cands;
+    return tag(q, 3);
+  }
+
+  /* M1d. Comparison, then total, answered in compound units (MCQ). */
+  function gCompareTotal(){
+    for (;;) {
+      const [p1] = pick(PEOPLE); let p2 = pick(PEOPLE)[0]; while (p2 === p1) p2 = pick(PEOPLE)[0];
+      const len = Math.random() < 0.4;
+      const [B, S, f] = len ? ['m', 'cm', 100] : ['kg', 'g', 1000];
+      const W = len ? 100 * ri(2, 4) + ri(11, 95) : 10 * ri(105, 195);
+      const d = len ? ri(15, 95) : 10 * ri(15, 95);
+      const up = Math.random() < 0.5;
+      const other = up ? W + d : W - d;
+      const key = W + other;
+      /* slips on both sides of the key, so 'pick the biggest' is not a strategy */
+      const cands = up ? [W + d, 2 * W - d, 2 * W, 2 * W + 2 * d] : [W - d, 2 * W + d, 2 * W, 2 * W - 2 * d];
+      const thing = len ? 'ribbon' : 'parcel';
+      const word = len ? (up ? 'longer' : 'shorter') : (up ? 'heavier' : 'lighter');
+      const stem = p1 + "'s " + thing + (len ? ' is ' : ' weighs ') + fmtC(W, B, S, f) + (len ? ' long. ' : '. ') +
+        p2 + "'s " + thing + ' is ' + d + ' ' + S + ' ' + word + ' than ' + p1 + "'s. " +
+        (len ? 'What is the total length of the two ribbons?' : 'What is the total mass of the two parcels?');
+      const explain = 'Change to ' + S + ': ' + fmtC(W, B, S, f) + ' = ' + W + ' ' + S + '. ' + p2 + "'s " + thing + ' is ' +
+        W + (up ? ' + ' : ' - ') + d + ' = ' + other + ' ' + S + '. Both together: ' + W + ' + ' + other + ' = ' + key + ' ' + S +
+        ' = ' + fmtC(key, B, S, f) + '.';
+      const q = finishCompound(stem, key, cands, B, S, f, explain);
+      if (q) return tag(q, 3);
+    }
+  }
+
+  /* M1e. Working backwards: equal packs plus a leftover; how much at first? (MCQ compound) */
+  function gPackedBack(){
+    for (;;) {
+      const [who, He, he] = pick(PEOPLE);
+      const vol = Math.random() < 0.4;
+      const [B, S, f] = vol ? ['ℓ', 'ml', 1000] : ['kg', 'g', 1000];
+      const n = ri(3, 8);
+      const each = vol ? 10 * ri(15, 30) : 10 * ri(15, 60);
+      const left = vol ? 10 * ri(5, 40) : 10 * ri(5, 60);
+      const key = n * each + left;
+      if (key > (vol ? 2500 : 4500)) continue;
+      const cands = [n * each, n * each - left, n * (each + left), (n - 1) * each + left, (n + 1) * each + left];
+      const stem = vol
+        ? who + ' poured some soya bean milk into ' + n + ' cups. Each cup held ' + each + ' ml, and ' + left +
+          ' ml was left in the jug. How much soya bean milk was there at first?'
+        : who + ' packed some sugar into ' + n + ' bags of ' + each + ' g each. ' + He + ' had ' + left +
+          ' g of sugar left over. How much sugar did ' + he + ' have at first?';
+      const explain = 'Work backwards. The ' + (vol ? 'cups' : 'bags') + ' held ' + n + ' × ' + each + ' = ' + (n * each) + ' ' + S +
+        '. Add what was left: ' + (n * each) + ' + ' + left + ' = ' + key + ' ' + S + ' = ' + fmtC(key, B, S, f) + '.';
+      const q = finishCompound(stem, key, cands, B, S, f, explain);
+      if (q) return tag(q, 3);
+    }
+  }
+
+  /* M2. Gap-counting: posts, trees and flags equally far apart. Gaps = posts - 1. */
+  const LINES = [
+    {thing:'Lamp posts', one:'lamp post', where:'along a road', v:'stand'},
+    {thing:'Trees', one:'tree', where:'along one side of a path', v:'stand'},
+    {thing:'Flag poles', one:'flag pole', where:'along one side of a school field', v:'stand'},
+    {thing:'Lanterns', one:'lantern', where:'along a corridor', v:'hang'}
+  ];
+  /* M2a. One span gives the gap; find another span (MCQ, m). */
+  function gPostSpan(){
+    const L = pick(LINES);
+    const gap = ri(2, 15), i = ri(1, 3), j = i + ri(2, 6), k = ri(1, 3), l = k + ri(4, 12);
+    if (l - k === j - i) return gPostSpan();
+    const span = gap * (j - i), key = gap * (l - k);
+    const cands = [gap * (l - k + 1), gap * (l - k - 1)];
+    if ((span * (l - k + 1)) % (j - i + 1) === 0) cands.push(span * (l - k + 1) / (j - i + 1));
+    cands.push(gap * l, gap * (l - i));   /* posts as gaps; measuring from the first post named */
+    if (new Set(cands.filter(c => c > 0 && c !== key)).size < 3) return gPostSpan();
+    const stem = L.thing + ' ' + L.v + ' equally far apart ' + L.where + '. The ' + ord(i) + ' ' + L.one + ' is ' + span + ' m from the ' +
+      ord(j) + ' ' + L.one + '. How far is the ' + ord(k) + ' ' + L.one + ' from the ' + ord(l) + ' ' + L.one + '?';
+    const explain = 'Count the gaps, not the ' + L.thing.toLowerCase() + '. From the ' + ord(i) + ' to the ' + ord(j) + ' there are ' +
+      j + ' - ' + i + ' = ' + (j - i) + ' gaps, so each gap is ' + span + ' ÷ ' + (j - i) + ' = ' + gap + ' m. From the ' + ord(k) +
+      ' to the ' + ord(l) + ' there are ' + l + ' - ' + k + ' = ' + (l - k) + ' gaps: ' + (l - k) + ' × ' + gap + ' = ' + key + ' m.';
+    const q = finishNum(stem, '', key, cands.filter(c => Number.isInteger(c) && c > 0 && c !== key), 'm', explain);
+    q.authored = cands.filter(c => c !== key);
+    return tag(q, 3);
+  }
+  /* M2b. Both ends: count the things from a length, or the length from a count (typed). */
+  const ROWS = [
+    {noun:'flags', sing:'flag', where:'along a running track', track:'running track', set:'Flags are placed'},
+    {noun:'trees', sing:'tree', where:'along a straight path', track:'path', set:'Trees are planted'},
+    {noun:'cones', sing:'cone', where:'along a straight line on a field', track:'line', set:'Cones are placed'},
+    {noun:'poles', sing:'pole', where:'along a straight fence', track:'fence', set:'Poles are put up'}
+  ];
+  function gEndToEnd(){
+    const R = pick(ROWS);
+    const gap = ri(2, 10), gaps = ri(6, 20), len = gap * gaps, count = gaps + 1;
+    if (Math.random() < 0.6) {
+      const stem = R.set + ' ' + gap + ' m apart ' + R.where + ' that is ' + len + ' m long, with one ' + R.sing +
+        ' at each end. How many ' + R.noun + ' are there?';
+      const explain = 'First find the gaps: ' + len + ' ÷ ' + gap + ' = ' + gaps + ' gaps. With one ' + R.sing + ' at each end there is one more ' +
+        R.sing + ' than gaps: ' + gaps + ' + 1 = ' + count + ' ' + R.noun + '.';
+      return tag(finishTyped(stem, count, explain, R.noun), 2);
+    }
+    const stem = 'There are ' + count + ' ' + R.noun + ' ' + R.where + ', ' + gap + ' m apart, with one ' + R.sing +
+      ' at each end. How long is the ' + R.track + ', in m?';
+    const explain = count + ' ' + R.noun + ' with one at each end make one gap fewer: ' + count + ' - 1 = ' + gaps + ' gaps. ' +
+      gaps + ' × ' + gap + ' = ' + len + ' m.';
+    return tag(finishTyped(stem, len, explain, 'm'), 2);
+  }
+  /* M2c. A span gives the gap, then the whole line from the number of trees (MCQ, m). */
+  function gLineLength(){
+    const L = pick(LINES);
+    const gap = ri(3, 12), j = ri(4, 7), n = ri(j + 4, 18);
+    const span = gap * (j - 1), key = gap * (n - 1);
+    /* both sides of the key: trees as gaps, the first span counted twice; one gap short, only the part after the named tree */
+    const cands = [gap * n, span + gap * (n - 1), gap * (n - 2), gap * (n - j)];
+    if ((span * n) % j === 0) cands.push(span * n / j);
+    const stem = L.thing + ' ' + L.v + ' equally far apart ' + L.where + ', with one at each end. The 1st ' + L.one + ' is ' + span +
+      ' m from the ' + ord(j) + ' ' + L.one + '. There are ' + n + ' ' + L.thing.toLowerCase() + ' altogether. How long is the line of ' +
+      L.thing.toLowerCase() + ', from the first to the last?';
+    const explain = 'From the 1st to the ' + ord(j) + ' there are ' + j + ' - 1 = ' + (j - 1) + ' gaps, so each gap is ' + span + ' ÷ ' +
+      (j - 1) + ' = ' + gap + ' m. ' + n + ' ' + L.thing.toLowerCase() + ' make ' + n + ' - 1 = ' + (n - 1) + ' gaps: ' + (n - 1) +
+      ' × ' + gap + ' = ' + key + ' m.';
+    const q = finishNum(stem, '', key, cands.filter(c => c > 0 && c !== key), 'm', explain);
+    q.authored = cands.filter(c => c !== key);
+    return tag(q, 3);
+  }
+  /* M2d STRETCH. Two spans: the gap from one, the count from the other (typed). */
+  function gTwoSpans(){
+    const R = pick([['posts', 'post', 'along a fence'], ['trees', 'tree', 'along a road'], ['poles', 'pole', 'along a canal']]);
+    const gap = ri(3, 12), j = ri(3, 6), i2 = ri(2, 3), last = ri(i2 + 8, 22);
+    const span1 = gap * (j - 1), span2 = gap * (last - i2);
+    const stem = R[0][0].toUpperCase() + R[0].slice(1) + ' stand equally far apart ' + R[2] + '. The 1st ' + R[1] + ' is ' + span1 +
+      ' m from the ' + ord(j) + ' ' + R[1] + '. The ' + ord(i2) + ' ' + R[1] + ' is ' + span2 + ' m from the last ' + R[1] +
+      '. How many ' + R[0] + ' are there altogether?';
+    const explain = 'From the 1st to the ' + ord(j) + ' there are ' + (j - 1) + ' gaps, so each gap is ' + span1 + ' ÷ ' + (j - 1) + ' = ' +
+      gap + ' m. From the ' + ord(i2) + ' ' + R[1] + ' to the last there are ' + span2 + ' ÷ ' + gap + ' = ' + (last - i2) +
+      ' gaps, so the last ' + R[1] + ' is ' + (last - i2) + ' places after the ' + ord(i2) + ': ' + i2 + ' + ' + (last - i2) + ' = ' +
+      last + ' ' + R[0] + '.';
+    return tag(finishTyped(stem, last, explain, R[0]), 3, true);
+  }
+
   MQI.registerTopic({
     id:'p3measure', level:'P3', strand:'Measurement and Geometry',
     moeSubTopic:"Length, Mass and Volume: measuring length/mass/volume (of liquid) in compound units; converting a measurement in compound units to the smaller unit, and vice versa",
@@ -10028,12 +11204,15 @@ function gAddWords(){
     skills:{
       tosmall:   {label:'Compound to smaller unit', tip:'1 km = 1000 m, 1 m = 100 cm, 1 kg = 1000 g, 1 litre = 1000 ml. Chant the four, they cover everything at P3.'},
       tocompound:{label:'Smaller unit to compound', tip:'Read the number backwards: 3250 g splits into 3 kg and the 250 g left over.'},
-      word:      {label:'Measurement word problems', tip:'Convert to the smaller unit first, then add or subtract. Mixing units is where marks are lost.'}
+      word:      {label:'Measurement word problems', tip:'Convert to the smaller unit first, then add or subtract. Mixing units is where marks are lost.'},
+      multistep: {label:'Multi-step measurement problems', tip:'Change everything to the smaller unit first, then draw a model before you calculate.'},
+      gaps:      {label:'Posts and gaps', tip:'Count the gaps, not the posts: with a post at each end there is always one more post than gaps.'}
     },
     pools:{
       1:[[gToSmallEasy,'tosmall'],[gToCompoundSmall,'tocompound']],
-      2:[[gToCompoundBig,'tocompound'],[gWordLeft,'word']],
-      3:[[gToSmallZero,'tosmall'],[gWordCompare,'word']]
+      2:[[gToCompoundBig,'tocompound'],[gWordLeft,'word'],[gEndToEnd,'gaps'],[gPostSpan,'gaps']],
+      3:[[gToSmallZero,'tosmall'],[gWordCompare,'word'],[gTimesAsMuch,'multistep'],[gUseThenShare,'multistep'],
+         [gPourIn,'multistep'],[gCompareTotal,'multistep'],[gPackedBack,'multistep'],[gLineLength,'gaps'],[gTwoSpans,'gaps']]
     }
   });
 })();
@@ -10133,20 +11312,229 @@ function gAddWords(){
     const g = makeGraph(pick([5, 10]), 5);
     const order = shuffle([0,1,2,3,4]);
     const a = order[0], b = order[1];
-    return fig(finishNum('How many ' + g.thing + ' are shown for ' + g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
+    return std(fig(finishNum('How many ' + g.thing + ' are shown for ' + g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
       '', g.val(a) + g.val(b),
       [g.units[a] + g.units[b], Math.abs(g.val(a) - g.val(b)), g.val(a) + g.val(b) + g.scale, g.val(a)], '',
       g.cats[a] + ' is ' + g.units[a] + ' x ' + g.scale + ' = ' + g.val(a) + ' and ' + g.cats[b] + ' is ' +
-      g.units[b] + ' x ' + g.scale + ' = ' + g.val(b) + '. Altogether ' + (g.val(a) + g.val(b)) + '.'), g.figure);
+      g.units[b] + ' x ' + g.scale + ' = ' + g.val(b) + '. Altogether ' + (g.val(a) + g.val(b)) + '.'), g.figure));
   }
   function gTotalMixed(){
     const g = makeGraph(pick([2, 5, 10]), 5);
     const order = shuffle([0,1,2,3,4]);
     const a = order[0], b = order[1];
-    return fig(finishNum('How many ' + g.thing + ' are shown for ' + g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
+    return std(fig(finishNum('How many ' + g.thing + ' are shown for ' + g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
       '', g.val(a) + g.val(b),
       [g.units[a] + g.units[b], g.val(a) + g.val(b) + g.scale, Math.abs(g.val(a) - g.val(b)), g.val(b)], '',
-      'Each unit stands for ' + g.scale + '. ' + g.val(a) + ' + ' + g.val(b) + ' = ' + (g.val(a) + g.val(b)) + '.'), g.figure);
+      'Each unit stands for ' + g.scale + '. ' + g.val(a) + ' + ' + g.val(b) + ' = ' + (g.val(a) + g.val(b)) + '.'), g.figure));
+  }
+
+  /* ===== B1 HARD LANE (2026-10-07): multi-step bar graph problems ===========
+   * Exam-hard (q.band = 3) shapes from the P3 EOY calibration, card B1:
+   *   value x price, a missing bar given by a stated relation, two-step comparisons.
+   * Every graph is a week of sales, Monday to Friday, with a scale of 2, 5 or 10.
+   * Distractors are named slips: counting bar units instead of values (scale read
+   * as 1), forgetting the price, stopping one step early, adding for "how many more".
+   * The oracle in tools/gen-sanity.mjs re-reads the RENDERED bar labels and recomputes. */
+  const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+  const SALES = [
+    { title:'Cups of sugarcane juice sold at a hawker stall', thing:'cups', one:'cup', full:'cups of sugarcane juice',
+      seller:'the stall', prices:[2, 3] },
+    { title:'Bowls of ice kachang sold at a dessert stall', thing:'bowls', one:'bowl', full:'bowls of ice kachang',
+      seller:'the stall', prices:[3, 4] },
+    { title:'Curry puffs sold at a bakery', thing:'curry puffs', one:'curry puff', full:'curry puffs',
+      seller:'the bakery', prices:[2, 3] },
+    { title:'Kaya toast sets sold at a coffee shop', thing:'sets', one:'set', full:'kaya toast sets',
+      seller:'the coffee shop', prices:[4, 5] },
+    { title:'Packets of chicken rice sold at a hawker stall', thing:'packets', one:'packet', full:'packets of chicken rice',
+      seller:'the stall', prices:[4, 5] },
+    { title:'Storybooks sold at the school bookshop', thing:'storybooks', one:'storybook', full:'storybooks',
+      seller:'the bookshop', prices:[3, 4, 5] }
+  ];
+  const OWNERS = [['Mr Tan','he'],['Mrs Lim','she'],['Madam Rahimah','she'],['Mr Kumar','he'],['Auntie Mei Ling','she']];
+  const std  = q => (q.band = 2, q);
+  const hard = q => (q.band = 3, q);
+  const money = n => '$' + n;
+
+  /* five bar lengths (2..9) in weekday order; day `hide` (or -1) is left OUT of the
+     drawing - cats and units both - and is given in words instead. */
+  function salesGraph(scale, units, hide, set){
+    set = set || pick(SALES);
+    const cats = [], shown = [];
+    for (let i = 0; i < 5; i++) if (i !== hide) { cats.push(DAYS[i]); shown.push(units[i]); }
+    const figure = { type:'bar', title:set.title, cats, units:shown, scale,
+                     maxUnit: Math.max.apply(null, shown), unitLabel:set.thing };
+    return { set, figure, units, scale, val: i => units[i]*scale };
+  }
+  function distinctUnits(n, avoid){
+    const out = [];
+    while (out.length < n){
+      const u = ri(2, 9);
+      if (!out.includes(u) && !(avoid || []).includes(u)) out.push(u);
+    }
+    return out;
+  }
+  /* MC over numbers: the key plus the first three valid AUTHORED distractors, or
+     null so the caller re-rolls. Nothing is ever padded in. */
+  function mcNum(stem, key, dists, fmt, explain){
+    const vals = [key];
+    for (const d of dists){
+      if (d > 0 && Number.isInteger(d) && !vals.includes(d)) vals.push(d);
+      if (vals.length === 4) break;
+    }
+    if (vals.length < 4) return null;
+    const order = shuffle([0,1,2,3]);
+    const q = { q:stem, extra:'', choices:order.map(i => fmt(vals[i])), correct:order.indexOf(0),
+                explain, answerText:fmt(key) };
+    if (fmt === String) q.authored = vals.slice(1);
+    return q;
+  }
+  const retry = build => { for (let t = 0; t < 400; t++){ const q = build(); if (q) return q; } throw new Error('no valid draw'); };
+  const intro = g => 'The bar graph shows the number of ' + g.set.full + ' sold at ' + g.set.seller + ' from Monday to Friday.';
+  const readOut = (g, i) => DAYS[i] + ' is ' + g.units[i] + ' × ' + g.scale + ' = ' + g.val(i);
+
+  /* value x price: "how much more money" or "how much money altogether" */
+  function gSalesMoney(){
+    return retry(() => {
+      const g = salesGraph(pick([2, 5, 10]), distinctUnits(5), -1);
+      const p = pick(g.set.prices), one = g.set.one, th = g.set.thing;
+      let [a, b] = shuffle([0,1,2,3,4]).slice(0, 2);
+      const lead = intro(g) + ' Each ' + one + ' was sold for ' + money(p) + '. ';
+      let q;
+      if (Math.random() < 0.5){
+        if (g.val(a) < g.val(b)) { const t = a; a = b; b = t; }
+        const d = g.val(a) - g.val(b), key = d * p;
+        q = mcNum(lead + 'How much more money did ' + g.set.seller + ' collect on ' + DAYS[a] + ' than on ' + DAYS[b] + '?',
+          key, [(g.units[a] - g.units[b]) * p, d, (g.val(a) + g.val(b)) * p], money,
+          'Step 1: read both bars with the scale. ' + readOut(g, a) + ' ' + th + ' and ' + readOut(g, b) + ' ' + th + '. ' +
+          'Step 2: ' + DAYS[a] + ' sold ' + g.val(a) + ' − ' + g.val(b) + ' = ' + d + ' more ' + th + '. ' +
+          'Step 3: each ' + one + ' is ' + money(p) + ', so the extra money is ' + d + ' × ' + money(p) + ' = ' + money(key) + '. ' +
+          'Counting bar units instead of ' + th + ', or stopping before the price, are the usual slips.');
+      } else {
+        if (a > b) { const t = a; a = b; b = t; }
+        const s = g.val(a) + g.val(b), key = s * p;
+        q = mcNum(lead + 'How much money did ' + g.set.seller + ' collect on ' + DAYS[a] + ' and ' + DAYS[b] + ' altogether?',
+          key, [(g.units[a] + g.units[b]) * p, s, g.val(a) * p + g.val(b)], money,
+          'Step 1: read both bars with the scale. ' + readOut(g, a) + ' ' + th + ' and ' + readOut(g, b) + ' ' + th + '. ' +
+          'Step 2: altogether ' + g.val(a) + ' + ' + g.val(b) + ' = ' + s + ' ' + th + '. ' +
+          'Step 3: each ' + one + ' is ' + money(p) + ', so ' + s + ' × ' + money(p) + ' = ' + money(key) + '. ' +
+          'Multiply the whole total by the price, not just one day.');
+      }
+      return q && hard(fig(q, g.figure));
+    });
+  }
+
+  /* work backwards from money to a bar: "On which day did the stall collect $45?" */
+  function gSalesWhichDay(){
+    return retry(() => {
+      const scale = pick([2, 5, 10]);
+      const set = pick(SALES), p = pick(set.prices), th = set.thing;
+      const ansU = ri(2, 9);
+      const trapP = ansU * p, trapS = ansU * scale;      /* bar lengths a slip lands on */
+      const traps = [];
+      if (trapP <= 9) traps.push(trapP);                 /* reads the $ amount as a number of items */
+      if (trapS <= 9 && trapS !== trapP) traps.push(trapS); /* reads every bar with a scale of 1 */
+      if (!traps.length) return null;
+      const units = new Array(5);
+      const days = shuffle([0,1,2,3,4]);
+      const ad = days[0];
+      units[ad] = ansU;
+      traps.forEach((u, k) => { units[days[1 + k]] = u; });
+      const rest = distinctUnits(4 - traps.length, [ansU].concat(traps));
+      for (let k = 1 + traps.length, r = 0; k < 5; k++, r++) units[days[k]] = rest[r];
+      const g = salesGraph(scale, units, -1, set);
+      const items = ansU * scale, target = items * p;
+      /* options: the key, every trap day, then other days, listed in weekday order */
+      const optDays = days.slice(0, 1 + traps.length);
+      for (const d of shuffle(days.slice(1 + traps.length))) if (optDays.length < 4) optDays.push(d);
+      optDays.sort((x, y) => x - y);
+      const slip = trapP <= 9
+        ? ' The day whose bar shows ' + target + ' ' + th + ' is a trap: the question is about money, not ' + th + '.'
+        : ' Read every bar with the scale, not as a count of units.';
+      const q = { q: intro(g) + ' Each ' + set.one + ' was sold for ' + money(p) + '. On which day did ' + set.seller +
+                  ' collect ' + money(target) + '?',
+        extra:'', choices: optDays.map(d => DAYS[d]), correct: optDays.indexOf(ad), answerText: DAYS[ad],
+        explain: 'Work backwards. Step 1: ' + money(target) + ' ÷ ' + money(p) + ' = ' + items + ', so ' + set.seller + ' sold ' +
+          items + ' ' + th + ' that day. Step 2: each unit stands for ' + scale + ' ' + th + ', so ' + items + ' ÷ ' + scale +
+          ' = ' + ansU + ' units. The bar that is ' + ansU + ' units long is ' + DAYS[ad] + '. Check: ' + ansU + ' × ' + scale +
+          ' = ' + items + ' and ' + items + ' × ' + money(p) + ' = ' + money(target) + '.' + slip };
+      return hard(fig(q, g.figure));
+    });
+  }
+
+  /* a missing bar given by a stated relation */
+  function gMissingBar(){
+    return retry(() => {
+      const scale = pick([2, 5, 10]);
+      const units = distinctUnits(5);
+      const [h, r] = shuffle([0,1,2,3,4]).slice(0, 2);
+      const g = salesGraph(scale, units, h);
+      const th = g.set.thing, vr = g.val(r);
+      const kind = pick(['twice', 'three', 'more', 'fewer']);
+      let k = 0, rel, relText, how;
+      if (kind === 'twice')      { rel = x => 2*x; relText = 'twice as many ' + th + ' as on ' + DAYS[r]; how = '2 × ' + vr; }
+      else if (kind === 'three') { if (vr > 30) return null; rel = x => 3*x; relText = 'three times as many ' + th + ' as on ' + DAYS[r]; how = '3 × ' + vr; }
+      else if (kind === 'more')  { k = pick([4, 6, 8, 12, 15, 20, 25]); rel = x => x + k; relText = k + ' more ' + th + ' than on ' + DAYS[r]; how = vr + ' + ' + k; }
+      else                       { k = pick([3, 4, 6, 8, 12, 15]); if (vr - k < 2) return null; rel = x => x - k; relText = k + ' fewer ' + th + ' than on ' + DAYS[r]; how = vr + ' − ' + k; }
+      const relU = rel(units[r]), hv = rel(vr);
+      const shownIdx = [0,1,2,3,4].filter(i => i !== h);
+      const shownSum = shownIdx.reduce((s, i) => s + g.val(i), 0);
+      const shownU = shownIdx.reduce((s, i) => s + units[i], 0);
+      const lead = 'The bar graph shows the number of ' + g.set.full + ' sold at ' + g.set.seller + ' on four days. The bar for ' +
+        DAYS[h] + ' has been left out. On ' + DAYS[h] + ', ' + g.set.seller + ' sold ' + relText + '. ';
+      const step12 = 'Step 1: read ' + DAYS[r] + ' with the scale: ' + units[r] + ' × ' + scale + ' = ' + vr + '. ' +
+        'Step 2: ' + DAYS[h] + ' is ' + how + ' = ' + hv + ' ' + th + '. ';
+      let q;
+      if (Math.random() < 0.6){
+        const key = shownSum + hv;
+        q = mcNum(lead + 'How many ' + th + ' did ' + g.set.seller + ' sell altogether from Monday to Friday?',
+          key, [shownSum, shownSum + vr, shownU + relU], String,
+          step12 + 'Step 3: the four bars on the graph come to ' + shownIdx.map(i => g.val(i)).join(' + ') + ' = ' + shownSum +
+          '. Step 4: add ' + DAYS[h] + ': ' + shownSum + ' + ' + hv + ' = ' + key + '. ' +
+          'The missing day still counts - it is in the words, not on the graph.');
+      } else {
+        const x = pick(shownIdx.filter(i => i !== r && g.val(i) < hv));
+        if (x === undefined) return null;
+        const key = hv - g.val(x);
+        q = mcNum(lead + 'How many more ' + th + ' did ' + g.set.seller + ' sell on ' + DAYS[h] + ' than on ' + DAYS[x] + '?',
+          key, [vr - g.val(x), hv, hv + g.val(x), relU - units[x]], String,
+          step12 + 'Step 3: ' + readOut(g, x) + '. Step 4: ' + hv + ' − ' + g.val(x) + ' = ' + key + '. ' +
+          'Find the missing bar first, then compare.');
+      }
+      return q && hard(fig(q, g.figure));
+    });
+  }
+
+  /* two-step comparisons: two days against one, or how far short of a target */
+  function gTwoStepCompare(){
+    return retry(() => {
+      const g = salesGraph(pick([2, 5, 10]), distinctUnits(5), -1);
+      const th = g.set.thing, all = [0,1,2,3,4];
+      let q;
+      if (Math.random() < 0.5){
+        const [a0, b0, c] = shuffle(all.slice()).slice(0, 3);
+        const a = Math.min(a0, b0), b = Math.max(a0, b0);
+        const s = g.val(a) + g.val(b), key = s - g.val(c);
+        if (key <= 0) return null;
+        q = mcNum(intro(g) + ' How many more ' + th + ' were sold on ' + DAYS[a] + ' and ' + DAYS[b] + ' together than on ' + DAYS[c] + '?',
+          key, [g.units[a] + g.units[b] - g.units[c], s + g.val(c), s], String,
+          'Step 1: read the three bars with the scale. ' + readOut(g, a) + ', ' + readOut(g, b) + ' and ' + readOut(g, c) + '. ' +
+          'Step 2: ' + DAYS[a] + ' and ' + DAYS[b] + ' together: ' + g.val(a) + ' + ' + g.val(b) + ' = ' + s + '. ' +
+          'Step 3: "how many more" means subtract: ' + s + ' − ' + g.val(c) + ' = ' + key + '.');
+      } else {
+        const sum = all.reduce((t, i) => t + g.val(i), 0);
+        const sumU = g.units.reduce((t, u) => t + u, 0);
+        const T = Math.ceil((sum + 5) / 50) * 50 + pick([0, 50]);
+        const key = T - sum;
+        const [who, pr] = pick(OWNERS);
+        q = mcNum(intro(g) + ' ' + who + ', who runs ' + g.set.seller + ', hoped to sell ' + T + ' ' + th +
+          ' from Monday to Friday. How many more ' + th + ' did ' + pr + ' need to sell to reach that number?',
+          key, [T - sumU, sum, T - (sum - g.val(4))], String,
+          'Step 1: read all five bars with the scale: ' + all.map(i => g.val(i)).join(', ') + '. ' +
+          'Step 2: the total is ' + all.map(i => g.val(i)).join(' + ') + ' = ' + sum + '. ' +
+          'Step 3: ' + T + ' − ' + sum + ' = ' + key + ' more ' + th + '.');
+      }
+      return q && hard(fig(q, g.figure));
+    });
   }
 
   MQI.registerTopic({
@@ -10161,7 +11549,8 @@ function gAddWords(){
     pools:{
       1:[[gReadOne,'read'],[gDiffOne,'compare']],
       2:[[gReadScaled,'scale'],[gDiffScaled,'compare']],
-      3:[[gTotalScaled,'scale'],[gTotalMixed,'compare']]
+      3:[[gTotalScaled,'scale'],[gTotalMixed,'compare'],
+         [gSalesMoney,'scale'],[gSalesWhichDay,'scale'],[gMissingBar,'compare'],[gTwoStepCompare,'compare']]
     }
   });
 })();
@@ -10207,6 +11596,7 @@ function gAddWords(){
     const h12 = h % 12 === 0 ? 12 : h % 12;
     return h12 + '.' + pad2(m) + ' ' + (h < 12 ? 'a.m.' : 'p.m.');
   }
+  const T12 = t12;
   const t24 = t => pad2(Math.floor(t / 60)) + ':' + pad2(t % 60);
   function dur(d) {
     const h = Math.floor(d / 60), m = d % 60;
@@ -10223,7 +11613,8 @@ function gAddWords(){
 
   /* "count on" the way SG pupils draw a timeline: to the next hour, whole hours,
      then the minutes left. Returns one child-readable sentence. */
-  function countOn(s, e) {
+  function countOn(s, e, fmt) {
+    const t12 = fmt || T12;   /* the 24-hour T1 items count on in HH:MM */
     const parts = [], steps = [];
     let cur = s;
     if (cur % 60 && ceilH(cur) <= e) {
@@ -10269,6 +11660,10 @@ function gAddWords(){
     for (let i = 0; i < 500; i++) { const q = f(); if (q) return q; }
     throw new Error('p3time: generator could not draw a valid item');
   }
+  /* difficulty band for the mock (hard lane 2026-10-07): 2 = standard, 3 = exam-hard multi-step;
+     stretch marks a shape beyond the core exam (a slow watch) */
+  const band3 = (q, stretch) => { if (q) { q.band = 3; if (stretch) q.stretch = true; } return q; };
+  const band2 = q => { if (q) q.band = 2; return q; };
   const times = ts => ts.every(okT) ? ts.map(t12) : [];
 
   /* =====================================================================
@@ -10343,7 +11738,7 @@ function gAddWords(){
   /* pool 3, two steps: change both laps to seconds, then add or compare */
   const SPORTS = [['swam', 'lap', 'laps', 'of the pool'], ['ran', 'round', 'rounds', 'of the school field'], ['cycled', 'round', 'rounds', 'of the park']];
   function gTwoLaps() {
-    return redraw(() => {
+    return band2(redraw(() => {
       const who = pick(NAMES), [verb, one, many, where] = pick(SPORTS);
       const a = 60 * ri(1, 2) + ri(5, 55), b = 60 * ri(1, 2) + ri(5, 55);
       if (a === b) return null;
@@ -10359,7 +11754,7 @@ function gAddWords(){
       return typed(who + ' ' + verb + ' 2 ' + many + ' ' + where + '. The first ' + one + ' took ' + ms(a) + ' and the second took ' +
         ms(b) + '. How many seconds faster was the ' + which + ' one?', slow - fast,
         '1 min = 60 s. ' + conv(a) + ' ' + conv(b) + ' Then ' + slow + ' s - ' + fast + ' s = ' + (slow - fast) + ' s.', 's');
-    });
+    }));
   }
 
   /* =====================================================================
@@ -10437,7 +11832,7 @@ function gAddWords(){
   const TASKS = [['her homework', 'Maths', 'English'], ['her chores', 'washing the dishes', 'folding the clothes'],
                  ['his homework', 'Science', 'Chinese'], ['his practice', 'the piano', 'the violin']];
   function gTwoActivities() {
-    return redraw(() => {
+    return band2(redraw(() => {
       const [what, a, b] = pick(TASKS);
       const he = what.startsWith('his');
       const who = he ? pick(['Wei Jie', 'Jun Hao', 'Daryl', 'Farhan']) : pick(['Aisyah', 'Kavitha', 'Siti', 'Priya', 'Xin Yi', 'Charlotte']);
@@ -10449,7 +11844,7 @@ function gAddWords(){
         ' and then ' + y + ' min on ' + b + '. What time did ' + (he ? 'he' : 'she') + ' finish?', t12(e), cands,
         'First add the two parts: ' + x + ' min + ' + y + ' min = ' + dur(x + y) + '. Then count on from ' + t12(s) + ' by ' +
         dur(x + y) + ': the answer is ' + t12(e) + '.');
-    });
+    }));
   }
 
   /* =====================================================================
@@ -10495,7 +11890,7 @@ function gAddWords(){
   /* pool 3, two steps: read two 24-hour times, then find the duration */
   const JOURNEYS = ['A train', 'A coach to Malacca', 'A ferry', 'A plane'];
   function gTrain24() {
-    return redraw(() => {
+    return band2(redraw(() => {
       const s = 60 * ri(6, 12) + m5(5, 55), d = m5(95, 290), e = s + d;
       if (!okT(e) || e > 21 * 60 + 55 || e % 60 === 0 || e < 12 * 60) return null;
       const borrow = (e % 60) < (s % 60);
@@ -10507,12 +11902,12 @@ function gAddWords(){
       const opts = cands.filter(c => c > 0).map(dur);
       return mcStr(pick(JOURNEYS) + ' left at ' + t24(s) + ' and arrived at ' + t24(e) + '. How long was the journey?', dur(d), opts,
         t24(s) + ' is ' + t12(s) + ' and ' + t24(e) + ' is ' + t12(e) + '. ' + countOn(s, e));
-    });
+    }));
   }
 
   /* pool 3, two steps: find the finishing time across noon, then write it in the 24-hour clock */
   function gEnd24() {
-    return redraw(() => {
+    return band2(redraw(() => {
       const s = 60 * ri(9, 11) + m5(5, 55), dh = ri(1, 3), dm = m5(5, 55), d = dh * 60 + dm, e = s + d;
       if (e < 12 * 60 + 5 || e % 60 === 0 || e > 17 * 60 + 55) return null;
       const cands = [e - 720, e - 60, e + 60, floorH(s) + d, ceilH(s) + d].filter(c => okT(c) && c !== e).map(t24);
@@ -10521,6 +11916,179 @@ function gAddWords(){
         t24(e), cands,
         t12(s) + ' + ' + dh + ' h = ' + t12(s + dh * 60) + ', then + ' + dm + ' min = ' + t12(e) + '. In the 24-hour clock, ' + t12(e) +
         ' is ' + t24(e) + '.');
+    }));
+  }
+
+  /* =====================================================================
+     T1 (hard lane 2026-10-07): multi-segment timelines, exam-hard (band 3).
+     Every item strings three or more parts together on one timeline, and at
+     least one step needs an interpretation: a part to leave out, a time to work
+     back from, or a watch that is behind the real time. Distractors are the
+     named slips: no carry past 60 (1 h read as 100 min), a part left out, an
+     hour gained or lost, the a.m./p.m. slip, and the 12-hour hour written into
+     a 24-hour answer (03:10 for 15:10).
+     ===================================================================== */
+  const GIRLS = ['Aisyah', 'Kavitha', 'Siti', 'Priya', 'Xin Yi', 'Mei Ling', 'Charlotte', 'Nurul'];
+  const BOYS = ['Wei Jie', 'Jun Hao', 'Daryl', 'Farhan', 'Ken', 'Arjun'];
+  const anyName = () => pick(GIRLS.concat(BOYS));
+  /* "13:35 + 2 h = 15:35, then 15:35 + 10 min = 15:45" */
+  function stepOn(s, d, fmt) {
+    const h = Math.floor(d / 60), m = d % 60, parts = [];
+    let cur = s;
+    if (h) { parts.push(fmt(cur) + ' + ' + h + ' h = ' + fmt(cur + h * 60)); cur += h * 60; }
+    if (m) { parts.push(fmt(cur) + ' + ' + m + ' min = ' + fmt(cur + m)); }
+    return parts.join(', then ');
+  }
+  function stepBack(e, d, fmt) {
+    const h = Math.floor(d / 60), m = d % 60, parts = [];
+    let cur = e;
+    if (h) { parts.push(fmt(cur) + ' - ' + h + ' h = ' + fmt(cur - h * 60)); cur -= h * 60; }
+    if (m) { parts.push(fmt(cur) + ' - ' + m + ' min = ' + fmt(cur - m)); }
+    return parts.join(', then ');
+  }
+  /* add the parts in minutes: "1 h 5 min = 65 min. 40 min + 65 min + 25 min = 130 min = 2 h 10 min." */
+  function sumParts(ds) {
+    const conv = ds.filter(d => d >= 60).map(d => dur(d) + ' = ' + d + ' min. ').join('');
+    const tot = ds.reduce((a, b) => a + b, 0);
+    return conv + ds.map(d => d + ' min').join(' + ') + ' = ' + tot + ' min' + (tot >= 60 ? ' = ' + dur(tot) : '') + '.';
+  }
+  /* the "1 h = 100 min" slip when adding: the minutes column carries at 100, not 60 */
+  function slip100On(s, tot) {
+    const v = (s % 60) + tot;
+    if (v < 60 || v % 100 >= 60) return null;
+    return floorH(s) + 60 * Math.floor(v / 100) + (v % 100);
+  }
+  /* Pick the three distractors so the key's place in the row (earliest .. latest,
+     shortest .. longest) is spread evenly: misconceptions that all land on one side
+     of the key would let a child answer by picking the latest time. Returns [] when
+     the draw cannot balance, and mcStr then redraws. */
+  function balance(key, below, above, fmt, ok) {
+    const uniq = (xs, side) => [...new Set(xs.filter(x => x !== null && ok(x) && side(x)))];
+    const lo = uniq(below, x => x < key), hi = uniq(above, x => x > key);
+    const feasible = [0, 1, 2, 3].filter(r => lo.length >= r && hi.length >= 3 - r);
+    if (!feasible.length) return [];
+    const r = pick(feasible);
+    return shuffle(lo).slice(0, r).concat(shuffle(hi).slice(0, 3 - r)).map(fmt);
+  }
+  const okClock = x => okT(x) && x >= 60;
+  const okDur = x => x > 0 && x < 12 * 60;
+  const PAPER = t => ' (An exam paper may print ' + t24(t) + ' as ' + t24(t).replace(':', ' ') + ', with a space. It means the same time.)';
+
+  /* T1a: three parts on one afternoon, answer in the 24-hour clock */
+  const JOBS = ['Maths homework', 'piano practice', 'Chinese spelling', 'a jigsaw puzzle', 'tidying the room', 'reading a storybook', 'a Science project'];
+  function gChain24() {
+    return redraw(() => {
+      const who = anyName(), [A, B, C] = shuffle(JOBS).slice(0, 3);
+      const s = 60 * ri(13, 17) + m5(5, 55), a = m5(15, 55), b = ri(0, 1) ? m5(65, 105) : m5(15, 55), c = m5(15, 55);
+      const tot = a + b + c, e = s + tot;
+      if (!okT(e) || e > 21 * 60 + 55 || e % 60 === 0) return null;
+      const cands = balance(e,
+        [e - 720, e - 60, e - a, e - b, e - c, slip100On(s, tot)],   /* 12-h hour kept; no carry; a part left out; carried at 100 */
+        [e + 60, ceilH(s) + tot, e + c, b >= 60 ? e + 40 : null],    /* an hour too many; counted from the next o'clock; a part twice; 1 h 5 min read as 105 min */
+        t24, okClock);
+      return band3(mcStr(who + ' started work at ' + t24(s) + '. ' + who + ' spent ' + dur(a) + ' on ' + A + ', ' + dur(b) + ' on ' + B +
+        ' and then ' + dur(c) + ' on ' + C + '. At what time did ' + who + ' finish? Give the time in the 24-hour clock.', t24(e), cands,
+        'First add the three parts. ' + sumParts([a, b, c]) + ' Then count on from ' + t24(s) + ': ' + stepOn(s, tot, t24) +
+        '. So ' + who + ' finished at ' + t24(e) + '. Afternoon hours stay above 12 in the 24-hour clock.' + PAPER(e)));
+    });
+  }
+
+  /* T1b: wait, then a show, then a bus ride home, all in the 12-hour clock */
+  const OUTINGS = ['the Esplanade', 'the Science Centre', 'the Singapore Zoo', 'Gardens by the Bay', 'the National Museum'];
+  function gTimeline12() {
+    return redraw(() => {
+      const who = anyName(), where = pick(OUTINGS);
+      const s = 60 * ri(10, 16) + m5(5, 55), w = m5(10, 40), show = m5(65, 135), bus = m5(15, 55);
+      const tot = w + show + bus, e = s + tot;
+      if (!okT(e) || e % 60 === 0 || e === 720 || e > 20 * 60 + 55) return null;
+      if (s >= 720 === e >= 720 && ri(0, 1)) return null;          /* half the draws cross 12 noon */
+      const opts = balance(e,
+        [e - 60, e - bus, e - w, slip100On(s, tot), s < 720 && e >= 780 ? e - 720 : null],   /* ...; kept the a.m. */
+        [e + 60, ceilH(s) + tot, e + 40, e < 720 ? e + 720 : null],     /* ...; 1 h 45 min read as 145 min; wrote p.m. */
+        t12, okClock);
+      return band3(mcStr(who + ' arrived at ' + where + ' at ' + t12(s) + '. ' + who + ' waited ' + w + ' min for a show to start, watched the ' +
+        dur(show) + ' show and then took a ' + bus + ' min bus ride home. What time did ' + who + ' get home?', t12(e), opts,
+        'Draw a timeline with three parts: the wait, the show and the bus ride. ' + sumParts([w, show, bus]) + ' Then count on from ' + t12(s) + ': ' +
+        stepOn(s, tot, t12) + '. So ' + who + ' got home at ' + t12(e) + '.'));
+    });
+  }
+
+  /* T1c: opening hours are given, but only the leaving time matters (the opening time is not needed) */
+  const VENUES = [['The library', 'the library'], ['The swimming complex', 'the swimming complex'], ['The Science Centre', 'the Science Centre'],
+                  ['The community club', 'the community club']];
+  function gStayDuration() {
+    return redraw(() => {
+      const who = anyName(), [V, v] = pick(VENUES);
+      const o = 60 * ri(8, 10) + pick([0, 30]), c = 60 * ri(17, 21) + pick([0, 15, 30, 45]);
+      const a = o + m5(40, 240), k = m5(15, 55), l = c - k, d = l - a;
+      if (d < 65 || d > 270 || d % 60 === 0 || l % 60 === 0) return null;
+      const borrow = (l % 60) < (a % 60);
+      if (!borrow && ri(0, 2)) return null;
+      const opts = balance(d,
+        [d - 60, floorH(l) - a, l - ceilH(a)],                      /* lost an hour; dropped the minutes after the last o'clock; began at the next o'clock */
+        [c - a, l - o, d + 60, borrow ? d + 40 : null],             /* stayed till closing; counted from opening; ...; 1 h treated as 100 min */
+        dur, okDur);
+      return band3(mcStr(V + ' is open from ' + t24(o) + ' to ' + t24(c) + '. ' + who + ' arrived at ' + t24(a) + ' and left ' + k +
+        ' min before it closed. How long was ' + who + ' at ' + v + '?', dur(d), opts,
+        'First find when ' + who + ' left: ' + stepBack(c, k, t24) + '. The opening time, ' + t24(o) + ', is not needed. ' +
+        'Then count on from ' + t24(a) + ' to ' + t24(l) + '. ' + countOn(a, l, t24) +
+        (countOn(a, l, t24).indexOf('Altogether') < 0 ? ' So ' + who + ' was there for ' + dur(d) + '.' : '')));
+    });
+  }
+
+  /* T1d: work backwards from a deadline over three parts */
+  function gLatestStart() {
+    return redraw(() => {
+      const who = anyName();
+      const e = 60 * ri(16, 21) + m5(5, 55), a = m5(20, 45), b = m5(15, 55), c = ri(0, 1) ? m5(25, 55) : m5(65, 95);
+      const tot = a + b + c, s = e - tot;
+      if (s < 13 * 60 + 5 || s % 60 === 0 || e > 21 * 60 + 55) return null;
+      const borrow = (e % 60) < tot % 60;
+      const opts = balance(s,
+        [s - 720, s - 60, floorH(e) - tot],                         /* 12-h hour; ...; counted back from the o'clock before */
+        [s + 60, s + c, s + a, e + tot, borrow ? s + 40 : null],    /* ...; taxi left out; gave the time to start packing; counted on; borrowed 100 min */
+        t24, okClock);
+      return band3(mcStr(who + ' has to reach Changi Airport by ' + t24(e) + '. Before leaving home, ' + who + ' will eat dinner for ' + a +
+        ' min and then pack for ' + b + ' min. The taxi ride to the airport takes ' + dur(c) + '. What is the latest time ' + who +
+        ' can start eating dinner? Give the time in the 24-hour clock.', t24(s), opts,
+        'Work backwards from ' + t24(e) + '. The three parts are the dinner, the packing and the taxi ride. ' + sumParts([a, b, c]) +
+        ' Count back from ' + t24(e) + ': ' + stepBack(e, tot, t24) + '. So the latest time to start dinner is ' + t24(s) +
+        '. Check: ' + t24(s) + ' + ' + dur(tot) + ' = ' + t24(e) + '.'));
+    });
+  }
+
+  /* T1e: a timeline with a gap to find, typed in minutes */
+  const STOPS = ['Changi Airport', 'Jurong East', 'Woodlands', 'HarbourFront', 'Pasir Ris', 'Bishan'];
+  function gJourneyMin() {
+    return redraw(() => {
+      const who = anyName(), stop = pick(STOPS);
+      const s = 60 * ri(7, 17) + m5(5, 55), bus = m5(15, 45), wait = m5(5, 20), train = m5(25, 95);
+      const board = s + bus + wait, arr = board + train;
+      if (!okT(arr) || arr > 21 * 60 + 55 || train === 60 || Math.floor(arr / 60) === Math.floor(board / 60)) return null;
+      return band3(typed(who + ' left home at ' + t24(s) + '. The bus ride to the MRT station took ' + bus + ' min. Then ' + who +
+        ' waited ' + wait + ' min for a train. The train reached ' + stop + ' at ' + t24(arr) + '. How many minutes did the train ride take?',
+        train,
+        'Draw a timeline. ' + who + ' got off the bus at ' + t24(s) + ' + ' + bus + ' min = ' + t24(s + bus) + '. The train left at ' +
+        t24(s + bus) + ' + ' + wait + ' min = ' + t24(board) + '. Then count on from ' + t24(board) + ' to ' + t24(arr) + '. ' +
+        countOn(board, arr, t24) + (train > 60 ? ' ' + dur(train) + ' = 60 min + ' + (train - 60) + ' min = ' + train + ' min.' : '') +
+        ' The train ride took ' + train + ' min.', 'min'));
+    });
+  }
+
+  /* T1 stretch: a slow watch */
+  function gSlowWatch() {
+    return redraw(() => {
+      const who = anyName(), k = pick([5, 10, 15]);
+      const w = 60 * ri(13, 19) + m5(5, 55), d = m5(65, 150), r = w + k, e = r + d;
+      if (!okT(e) || e > 21 * 60 + 55 || e % 60 === 0 || r % 60 === 0 && ri(0, 1)) return null;
+      const cands = balance(e,
+        [e - 2 * k, e - k, e - 60, e - 720],                        /* took the slow minutes off; ignored the watch; ...; 12-h hour */
+        [e + 60, e + 40, ceilH(r) + d],                             /* ...; 1 h 25 min read as 125 min; counted from the next o'clock */
+        t24, okClock);
+      return band3(mcStr(who + "'s watch is " + k + ' min slow. When a movie started, the watch showed ' + t24(w) + '. The movie lasted ' +
+        dur(d) + '. What was the real time when the movie ended? Give the time in the 24-hour clock.', t24(e), cands,
+        'A slow watch is behind the real time, so the real time is ' + k + ' min later than the watch shows. When the movie started, the real time was ' +
+        t24(w) + ' + ' + k + ' min = ' + t24(r) + '. Then count on by ' + dur(d) + ': ' + stepOn(r, d, t24) + '. The real time was ' + t24(e) + '.'), true);
     });
   }
 
@@ -10531,12 +12099,14 @@ function gAddWords(){
     skills: {
       units:    { label: 'Seconds, hours and minutes', tip: '1 h = 60 min and 1 min = 60 s, never 100. Ask "is that seconds, minutes or hours?" about everyday jobs.' },
       duration: { label: 'Start, finish and how long', tip: 'Draw a timeline: count on to the next o\'clock first, then whole hours, then the minutes left.' },
-      clock24:  { label: 'The 24-hour clock', tip: 'For p.m. times from 1 p.m. on, add 12 to the hours (3.15 p.m. is 15:15). Always write 2 digits for the hours: 9.05 a.m. is 09:05. Read train and bus timetables together.' }
+      clock24:  { label: 'The 24-hour clock', tip: 'For p.m. times from 1 p.m. on, add 12 to the hours (3.15 p.m. is 15:15). Always write 2 digits for the hours: 9.05 a.m. is 09:05. Read train and bus timetables together. Exam papers often print 24-hour times with a space instead of a colon (14 25 means 14:25). For a journey with several parts, draw a timeline and mark each part on it.' }
     },
     pools: {
       1: [[gUnitJudge, 'units'], [gHMinToMin, 'units'], [gDurationMin, 'duration'], [gTo24, 'clock24']],
       2: [[gMinToHMin, 'units'], [gFinishTime, 'duration'], [gStartTime, 'duration'], [gDurationHMin, 'duration'], [gFrom24, 'clock24']],
-      3: [[gTwoActivities, 'duration'], [gTwoLaps, 'units'], [gTrain24, 'clock24'], [gEnd24, 'clock24']]
+      3: [[gTwoActivities, 'duration'], [gTwoLaps, 'units'], [gTrain24, 'clock24'], [gEnd24, 'clock24'],
+          [gChain24, 'clock24'], [gTimeline12, 'duration'], [gStayDuration, 'clock24'], [gLatestStart, 'clock24'],
+          [gJourneyMin, 'duration'], [gSlowWatch, 'clock24']]
     }
   });
 })();
@@ -10786,6 +12356,194 @@ function gRectiPeri(){
     { type:'lshape', W:W, H:H, a:a, b:b, unit:'cm' });
 }
 
+/* ==== HARD LANE geom (2026-10-07, Math Hardness Calibration cards G1 + G2) ====
+   Real P3 EOY papers ask composite area/perimeter from identical squares or tiles
+   (11 of 16 papers) and wire/combined-shape problems; this file had neither.
+   SCOPE CLAMP (unchanged): nothing below goes from a perimeter or an area back
+   to a side - that is P4 1.1/1.2. Every side a child needs is either printed or
+   comes from SHARING A PRINTED LENGTH equally among identical squares or tiles
+   ("4 squares in a row make 20 cm, so each is 5 cm"), which is P3 division.
+   Every item is tagged q.band (3 = exam-hard multi-step, 2 = standard) for the
+   mock's router. Text only, no new figure type. Each stem is re-derived by a
+   different path in tools/gen-sanity.mjs (geomHardOracle). */
+const band = (q, b) => (q.band = b, q);
+const NAMES = ['Mei Ling','Ravi','Siti','Jun Hao','Aisha','Kumar','Wei Ling','Farid','Priya','Hui Min'];
+
+/* G1a/b. N identical squares in a row (or in 2 rows of n) make a rectangle whose
+   LENGTH is printed. Side = length / n; then area or perimeter of the rectangle. */
+function sqRowDraw(kind){
+  let rows=1,n=4,s=5,X=20,Bd=5,N=4,key=0,d=[],g=0;
+  do {
+    rows = ri(1,2); n = rows===1 ? ri(3,6) : ri(3,5); s = ri(2,9);
+    X = n*s; Bd = rows*s; N = rows*n;
+    if (kind === 'area'){
+      key = N*s*s;
+      d = rows===1 ? [2*(X+Bd), s*s, X*N] : [2*(X+Bd), X*s, s*s];
+    } else {
+      key = 2*(X+Bd);
+      d = [4*N*s, N*s*s, X+Bd];
+    }
+    g++;
+  } while (g<300 && !(paOk(X,Bd) && optsOk(key,d)));
+  return {rows,n,s,X,Bd,N,key,d};
+}
+function sqRowStem(t, ask){
+  const lay = t.rows===1 ? 'are placed side by side in a row to make a rectangle'
+                         : 'are arranged in 2 rows of '+t.n+' to make a rectangle';
+  return t.N+' identical squares '+lay+'. The rectangle is '+t.X+' cm long. What is the <b>'+ask+'</b> of the rectangle?';
+}
+function gSqRowArea(){
+  const t = sqRowDraw('area');
+  return band(mcNum(sqRowStem(t,'area'),'',t.key,t.d,'cm²',
+    'The squares are all the same size, and '+t.n+' of them fit along the '+t.X+' cm length, so each side is '+
+    t.X+' ÷ '+t.n+' = '+t.s+' cm. One square has an area of '+t.s+' × '+t.s+' = '+(t.s*t.s)+' cm², and there are '+
+    t.N+' squares: '+t.N+' × '+(t.s*t.s)+' = '+t.key+' cm². Check: the rectangle is '+t.X+' cm by '+t.Bd+' cm, and '+
+    t.X+' × '+t.Bd+' = '+t.key+' cm².'), 3);
+}
+function gSqRowPeri(){
+  const t = sqRowDraw('peri');
+  return band(mcNum(sqRowStem(t,'perimeter'),'',t.key,t.d,'cm',
+    'Each square side is '+t.X+' ÷ '+t.n+' = '+t.s+' cm, because '+t.n+' equal squares fit along the '+t.X+
+    ' cm length. The rectangle is '+t.X+' cm long and '+(t.rows===1 ? 'one square ('+t.s+' cm)' : 'two squares ('+t.Bd+' cm)')+
+    ' wide. Perimeter = '+t.X+' + '+t.Bd+' + '+t.X+' + '+t.Bd+' = '+t.key+' cm. Do not add up every square\'s perimeter: '+
+    'the sides where two squares touch are inside the rectangle, not around it.'), 3);
+}
+
+/* G1c. K identical rectangular tiles in ONE ROW along the length make an X by Y
+   rectangle. Each tile is X/K long and Y wide. Area of one tile is standard (2
+   steps, band 2); perimeter of one tile needs the "the tile is as wide as the
+   rectangle" reading plus three operations (band 3). */
+function tileDraw(kind){
+  let K=5,w=6,Y=12,X=30,key=0,d=[],g=0;
+  do {
+    K = ri(3,6); w = ri(2,9); Y = ri(3,14); X = K*w;
+    if (kind === 'area'){ key = w*Y; d = [X*Y, 2*(X+Y), 2*(w+Y)]; }
+    else { key = 2*(w+Y); d = [w*Y, 2*(X+Y), w+Y]; }
+    g++;
+  } while (g<300 && !(X>Y && w!==Y && paOk(X,Y) && paOk(w,Y) && optsOk(key,d)));
+  return {K,w,Y,X,key,d,who:pick(NAMES)};
+}
+function tileStem(t, ask){
+  return t.who+' lays '+t.K+' identical rectangular tiles side by side in one row. Together they make a rectangle '+
+    t.X+' cm long and '+t.Y+' cm wide. What is the <b>'+ask+'</b> of one tile?';
+}
+function gTileArea(){
+  const t = tileDraw('area');
+  return band(mcNum(tileStem(t,'area'),'',t.key,t.d,'cm²',
+    'The '+t.K+' tiles share the '+t.X+' cm length equally, so each tile measures '+t.X+' ÷ '+t.K+' = '+t.w+
+    ' cm along the row. Its other side is as wide as the whole row: '+t.Y+' cm. Area of one tile = '+t.w+' × '+t.Y+' = '+t.key+
+    ' cm². (The whole rectangle is '+t.X+' × '+t.Y+' = '+(t.X*t.Y)+' cm², and '+(t.X*t.Y)+' ÷ '+t.K+' = '+t.key+' cm² too.)'), 2);
+}
+function gTilePeri(){
+  const t = tileDraw('peri');
+  return band(mcNum(tileStem(t,'perimeter'),'',t.key,t.d,'cm',
+    'The '+t.K+' tiles share the '+t.X+' cm length equally, so each tile measures '+t.X+' ÷ '+t.K+' = '+t.w+
+    ' cm along the row. Its other side is as wide as the whole row: '+t.Y+' cm. Perimeter of one tile = '+t.w+' + '+t.Y+' + '+
+    t.w+' + '+t.Y+' = '+t.key+' cm. The question asks about ONE tile, not the whole rectangle.'), 3);
+}
+
+/* G1d. Identical squares of a PRINTED side joined into a row, an L, a T or a big
+   square: count the square sides on the outside. The named slip is adding every
+   square's own perimeter (the touching sides counted). */
+const SQ_SHAPES = [
+  { k:'row3', N:3, edges:8,  say:'3 identical squares are joined side by side in a row' },
+  { k:'row4', N:4, edges:10, say:'4 identical squares are joined side by side in a row' },
+  { k:'row5', N:5, edges:12, say:'5 identical squares are joined side by side in a row' },
+  { k:'L3',   N:3, edges:8,  say:'3 identical squares are joined to make an L shape: 2 squares side by side, with the third square on top of the left-hand one' },
+  { k:'L4',   N:4, edges:10, say:'4 identical squares are joined to make an L shape: 3 squares side by side in a row, with the fourth square on top of the left-hand one' },
+  { k:'T4',   N:4, edges:10, say:'4 identical squares are joined to make a T shape: 3 squares side by side in a row, with the fourth square on top of the middle one' },
+  { k:'big4', N:4, edges:8,  say:'4 identical squares are joined in 2 rows of 2 to make a big square' }
+];
+function gSqShapePeri(){
+  let sh=SQ_SHAPES[0],s=5,key=40,d=[],g=0;
+  do {
+    sh = pick(SQ_SHAPES); s = ri(2,12); key = sh.edges*s;
+    d = [4*sh.N*s, sh.N*s*s, (sh.edges-2)*s];
+    g++;
+  } while (g<300 && !(key !== sh.N*s*s && optsOk(key,d)));
+  return band(mcNum(sh.say+'. Each square has sides of '+s+' cm. What is the <b>perimeter</b> of the shape?','',key,d,'cm',
+    'Walk around the outside of the shape and count the square sides you pass: '+sh.edges+' of them. '+
+    'The sides where two squares touch are inside the shape, so they are not part of the perimeter. '+
+    'Perimeter = '+sh.edges+' × '+s+' = '+key+' cm. Adding all '+sh.N+' squares\' perimeters ('+sh.N+' × '+(4*s)+' = '+(4*sh.N*s)+
+    ' cm) counts the inside sides too.'), 3);
+}
+
+/* G1e. Cut a row of identical squares apart: how much more perimeter? Typed. */
+function gCutSquares(){
+  const n = ri(3,6), s = ri(2,9), X = n*s, who = pick(NAMES);
+  const all = 4*n*s, rect = 2*(X+s), key = all-rect;
+  return band(finishTyped('A rectangle is made of '+n+' identical squares in a row. It is '+X+' cm long. '+who+
+    ' cuts it apart into the '+n+' squares. How much <b>greater</b> is the total perimeter of the '+n+
+    ' squares than the perimeter of the rectangle? Give your answer in cm.', key,
+    'Each square side is '+X+' ÷ '+n+' = '+s+' cm. The '+n+' squares together: '+n+' × 4 × '+s+' = '+all+
+    ' cm. The rectangle: '+X+' + '+s+' + '+X+' + '+s+' = '+rect+' cm. Difference: '+all+' − '+rect+' = '+key+
+    ' cm. Shortcut: each of the '+(n-1)+' cuts makes 2 new sides of '+s+' cm, and '+(n-1)+' × 2 × '+s+' = '+key+' cm.',
+    'cm'), 3);
+}
+
+/* G2a. Two wires: a rectangle with PRINTED sides, then a square whose side is
+   tied to the rectangle (half its length, or equal to its breadth). Typed. */
+function gWireTwo(){
+  let L=18,B=7,half=true,g=0;
+  do { half = ri(0,1)===1; L = half ? 2*ri(4,13) : ri(6,20); B = ri(3,L-2); g++; }
+  while (g<300 && !(paOk(L,B) && (half ? L/2 !== B : true)));
+  const sq = half ? L/2 : B, pr = 2*(L+B), ps = 4*sq, key = pr+ps, who = pick(NAMES);
+  const tie = half ? 'half the length of the rectangle' : 'the same as the breadth of the rectangle';
+  return band(finishTyped(who+' bends a piece of wire into a rectangle '+L+' cm long and '+B+' cm wide. '+
+    'A second piece of wire is bent into a square. Each side of the square is '+tie+
+    '. How much wire is used <b>altogether</b>? Give your answer in cm.', key,
+    'Wire for the rectangle = its perimeter: '+L+' + '+B+' + '+L+' + '+B+' = '+pr+' cm. Each side of the square is '+
+    (half ? L+' ÷ 2 = '+sq : sq)+' cm, so its wire is 4 × '+sq+' = '+ps+' cm. Altogether: '+pr+' + '+ps+' = '+key+
+    ' cm. Wire goes around the edge, so it is perimeter, not area.', 'cm'), 3);
+}
+
+/* G2b. Same perimeter, different area (band 2: two products and a difference).
+   B is the squarer one, so B's area is the larger; never a square. */
+function gSamePerimArea(){
+  let a=9,b=4,c=7,d=6,dd=[],g=0;
+  do {
+    const half = ri(8,16);
+    a = ri(Math.ceil(half/2)+2, half-2); b = half-a;
+    c = ri(Math.ceil(half/2), a-1); d = half-c;
+    dd = [c*d, 2*(a+b), a*b];
+    g++;
+  } while (g<300 && !(c>d && a>c && paOk(a,b) && paOk(c,d) && optsOk(c*d-a*b, dd)));
+  const key = c*d-a*b, P = 2*(a+b);
+  return band(mcNum('Rectangle A is '+a+' cm by '+b+' cm. Rectangle B is '+c+' cm by '+d+
+    ' cm. Both rectangles have the same perimeter. How much <b>greater</b> is the area of B than the area of A?','',
+    key, dd, 'cm²',
+    'Same perimeter does not mean same area. Both perimeters are '+P+' cm, but area of A = '+a+' × '+b+' = '+(a*b)+
+    ' cm² and area of B = '+c+' × '+d+' = '+(c*d)+' cm². B is greater by '+(c*d)+' − '+(a*b)+' = '+key+' cm².'), 2);
+}
+
+/* G2c. Two identical rectangles joined along their long (or short) sides make a
+   bigger rectangle: its perimeter, or how much perimeter the join hides. */
+function gJoinRects(){
+  let L=9,B=4,longT=true,diff=false,key=0,dd=[],g=0;
+  do {
+    L = ri(5,15); B = ri(2,L-1); longT = ri(0,1)===1; diff = ri(0,1)===1;
+    const bigL = longT ? L : 2*L, bigB = longT ? 2*B : B, other = longT ? 2*(2*L+B) : 2*(L+2*B);
+    if (!diff){ key = 2*(bigL+bigB); dd = [4*(L+B), other, 2*L*B]; }
+    else { key = longT ? 2*L : 2*B; dd = longT ? [L, 2*B, 2*(L+2*B)] : [B, 2*L, 2*(2*L+B)]; }
+    g++;
+  } while (g<300 && !(paOk(L,B) && L !== 2*B && optsOk(key,dd)));
+  const touch = longT ? 'long' : 'short', who = pick(NAMES);
+  const bigL = longT ? L : 2*L, bigB = longT ? 2*B : B;
+  const dims = longT ? 'the bigger rectangle is '+L+' cm by '+B+' + '+B+' = '+(2*B)+' cm'
+                     : 'the bigger rectangle is '+L+' + '+L+' = '+(2*L)+' cm by '+B+' cm';
+  const stem = who+' has 2 identical rectangular cards. Each card is '+L+' cm long and '+B+' cm wide. '+
+    'They are put together, with a '+touch+' side of one card touching a '+touch+' side of the other, to make a bigger rectangle. ' +
+    (diff ? 'How much <b>shorter</b> is the perimeter of the bigger rectangle than the perimeters of the 2 cards added together?'
+          : 'What is the <b>perimeter</b> of the bigger rectangle?');
+  const P = 2*(bigL+bigB), tot = 4*(L+B), hid = longT ? L : B;
+  const explain = diff
+    ? 'The 2 cards add up to 2 × ('+L+' + '+B+' + '+L+' + '+B+') = '+tot+' cm. When they touch, '+dims+', so its perimeter is 2 × ('+
+      bigL+' + '+bigB+') = '+P+' cm. Shorter by '+tot+' − '+P+' = '+key+' cm: the two touching '+touch+' sides ('+hid+' cm each) are now inside.'
+    : 'When the '+touch+' sides touch, '+dims+'. Perimeter = '+bigL+' + '+bigB+' + '+bigL+' + '+bigB+' = '+P+
+      ' cm. Adding both cards\' perimeters ('+tot+' cm) wrongly counts the two touching sides, which are inside the bigger rectangle.';
+  return band(mcNum(stem,'',key,dd,'cm',explain), 3);
+}
+
   MQI.registerTopic({
     id:'geometry', level:'P3', strand:'Measurement and Geometry',
     moeSubTopic:"Area and Perimeter: concepts of area and perimeter of a plane figure; area of rectangle/square",
@@ -10802,8 +12560,13 @@ function gRectiPeri(){
          [gSquarePA,'peri'] entry already showed an area stem on half its draws;
          without it the split would silently delete area from level 1. */
       1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area']],
-      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri'],[gRectiPeri,'peri']],
-      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area'],[gRectiPeri,'peri']]
+      /* HARD LANE geom 2026-10-07: the two band-2 shapes (tile area, same
+         perimeter / different area) join pool 2; the seven band-3 shapes join pool 3. */
+      2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri'],[gRectiPeri,'peri'],
+         [gTileArea,'area'],[gSamePerimArea,'area']],
+      3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area'],[gRectiPeri,'peri'],
+         [gSqRowArea,'area'],[gSqRowPeri,'peri'],[gTilePeri,'peri'],[gSqShapePeri,'peri'],
+         [gCutSquares,'peri'],[gWireTwo,'peri'],[gJoinRects,'peri']]
     }
   });
 })();
@@ -11417,6 +13180,588 @@ function gRectiPeri(){
       1: [[gCountAngles, 'angle'], [gAnglePick, 'right'], [gClockPick, 'right'], [gLinePick, 'lines']],
       2: [[gLargestAngle, 'angle'], [gCountRight, 'right'], [gClockTime, 'right'], [gSideRelation, 'lines']],
       3: [[gOrderAngles, 'angle'], [gCountKind, 'right'], [gParallelPairs, 'lines'], [gStatementTrue, 'lines']]
+    }
+  });
+})();
+
+
+/* ===== js/topics/p3-word-problems.js ===== */
+"use strict";
+/* Math Quest Island topic: p3word (P3). Self-contained. Typed answers.
+ * Model Method Marina: the Booklet B 4-mark word problems of a Singapore P3
+ * end-of-year paper, solved with the MODEL METHOD (bar models) and the P3
+ * heuristics (guess and check, working backwards).
+ * Authoring rules + registration shape: js/topics/README.md
+ *
+ * SCOPE (MOE 2021 syllabus, updated Oct 2025, P3 pp.35-36). Every item stays inside:
+ *  - whole numbers to 10 000, the four operations, and division by a 1-digit
+ *    number on a dividend of at most 3 digits (no 2-digit divisors: P5);
+ *  - money in whole dollars only (no decimal working: multiplying $1.25 is P4);
+ *  - measurement in compound units l/ml, kg/g, m/cm, every ANSWER in the smaller
+ *    single unit (the grader cannot read "2 kg 350 g");
+ *  - fractions of ONE WHOLE only: adding and subtracting like and related
+ *    fractions within one whole, denominators up to 12. A fraction OF A SET
+ *    ("1/4 of the 48 sweets") is MOE P4 (p4-fractions.js carries it) and is not
+ *    asked here. Typed fraction keys carry q.fracAnswer, so an unreduced "2/8"
+ *    is marked right; no stem says "simplest form".
+ * Every stem is a plain word problem, as on the real paper. The bar model lives in
+ * the explanation, because that is what teaches the method after a miss. It is
+ * text (allowlisted <br>/<b> only - js/topics/README.md "No markup"): one bar per
+ * line, the bar first and the name after, so the bars line up on their left edge.
+ * Oracle: tools/gen-sanity.mjs p3wordOracle re-derives every key from the
+ * rendered stem by brute force (a different path from the unit method used here).
+ */
+(function () {
+  const G = MQI.gen;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, gcd = G.gcd, fr = G.fr,
+        finishTyped = G.finishTyped;
+
+  const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi',
+                 'Farhan','Nurul','Mei Ling','Ahmad','Hui Min','Ravi','Zhi Hao','Aaliyah'];
+  /* things P3 children collect and swap; every count in this file is 2 or more,
+     so the plural is always right */
+  const ITEMS = ['stickers','marbles','beads','stamps','cards','shells','erasers','pencils'];
+
+  const names = n => shuffle(NAMES).slice(0, n);
+  /* a fraction of a whole declares no unit, and the unit gate reads "Hui Min" as the
+     token "min": the fraction stems draw from the names without one */
+  const fnames = n => shuffle(NAMES.filter(x => !/\b(min|m|g|l|h|s)\b/i.test(x))).slice(0, n);
+  const exam = q => (q.exam = 'problem', q);
+  const asMoney = (q, c) => (q.answerText = '$' + c, q);
+  /* one bar of a text bar model: cells left to right, then the name */
+  const U = '[ u ]';
+  const bar = (cells, label) => cells.join('') + ' &nbsp;' + label;
+  const units = n => Array(n).fill(U);
+  const model = (rows, plain) => '<b>Bar model</b>' + (plain ? '' : ' ([ u ] = 1 unit)') + '<br>' + rows.join('<br>') + '<br>';
+  const times = m => (m === 2 ? 'twice' : m + ' times');
+
+  /* ================= POOL 1: two-step standard ================= */
+
+  /* part-whole: whole, two parts taken away, find what is left; or +, then - */
+  const SHOPS = [['A bakery','buns'],['A bookshop','storybooks'],['A fruit stall','oranges'],
+                 ['A cinema','tickets'],['A toy shop','yo-yos'],['A school canteen','curry puffs']];
+  function gPartWhole(){
+    if (Math.random() < 0.5){
+      const s = pick(SHOPS), a = ri(210, 1450), b = ri(180, 1450), left = ri(120, 1800);
+      const T = a + b + left;
+      const it = s[1];
+      return finishTyped(s[0] + ' had ' + T + ' ' + it + '. It sold ' + a + ' ' + it + ' on Saturday and ' + b +
+        ' ' + it + ' on Sunday. How many ' + it + ' were left?', left,
+        model(['[ ' + a + ' ][ ' + b + ' ][ ? ] &nbsp;' + T + ' ' + it + ' at first'], true) +
+        'Sold altogether: ' + a + ' + ' + b + ' = ' + (a + b) + '.<br>Left: ' + T + ' − ' + (a + b) + ' = <b>' + left + '</b>.', it);
+    }
+    const [A, B] = names(2), it = pick(ITEMS);
+    const a = ri(120, 900), b = ri(40, 400), c = ri(30, a + b - 20), now = a + b - c;
+    return finishTyped(A + ' had ' + a + ' ' + it + '. ' + B + ' gave ' + A + ' ' + b + ' more ' + it + '. ' + A +
+      ' then gave away ' + c + ' ' + it + '. How many ' + it + ' does ' + A + ' have now?', now,
+      'After getting more: ' + a + ' + ' + b + ' = ' + (a + b) + '.<br>After giving away: ' + (a + b) + ' − ' + c +
+      ' = <b>' + now + '</b>.', it);
+  }
+
+  /* comparison, more / fewer, find the total */
+  function gMoreAltogether(){
+    const [A, B] = names(2), it = pick(ITEMS);
+    const a = ri(150, 2400), d = ri(25, 600), more = Math.random() < 0.5 || a - d < 100;
+    const b = more ? a + d : a - d, tot = a + b;
+    return finishTyped(A + ' has ' + a + ' ' + it + '. ' + B + ' has ' + d + (more ? ' more ' : ' fewer ') + it +
+      ' than ' + A + '. How many ' + it + ' do they have altogether?', tot,
+      model(more ? ['[ ' + a + ' ] &nbsp;' + A, '[ ' + a + ' ][ ' + d + ' ] &nbsp;' + B]
+                 : ['[ ? ][ ' + d + ' ] &nbsp;' + A + ' = ' + a, '[ ? ] &nbsp;' + B], true) +
+      B + ' has ' + a + (more ? ' + ' : ' − ') + d + ' = ' + b + '.<br>Altogether: ' + a + ' + ' + b + ' = <b>' + tot + '</b>.', it);
+  }
+
+  /* money: several of one item plus one other */
+  const BUYS = [['pen','pens'],['file','files'],['notebook','notebooks'],['ruler','rulers'],
+                ['bottle of water','bottles of water'],['pair of socks','pairs of socks'],['box of crayons','boxes of crayons']];
+  const ONE = ['school bag','water bottle','storybook','lunch box','pencil case','T-shirt'];
+  function gMoneyBuy(){
+    const N = pick(NAMES), it = pick(BUYS), one = pick(ONE);
+    const k = ri(2, 6), p = ri(2, 9), q = ri(6, 45), tot = k * p + q;
+    return asMoney(finishTyped('A ' + it[0] + ' costs $' + p + ' and a ' + one + ' costs $' + q + '. ' + N + ' buys ' + k +
+      ' ' + it[1] + ' and 1 ' + one + '. How much does ' + N + ' pay altogether?', tot,
+      k + ' ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '.<br>Altogether: $' + (k * p) + ' + $' + q +
+      ' = <b>$' + tot + '</b>.', '$'), tot);
+  }
+
+  /* fractions of ONE whole: like and related denominators (P3) */
+  const RELATED = [[2,4],[2,6],[2,8],[2,10],[2,12],[3,6],[3,9],[3,12],[4,8],[4,12],[5,10],[6,12],
+                   [4,4],[5,5],[6,6],[8,8],[9,9],[10,10],[12,12]];
+  const WHOLES = [['a pizza','the pizza'],['a cake','the cake'],['a bar of chocolate','the bar of chocolate'],
+                  ['a watermelon','the watermelon'],['a pie','the pie']];
+  const red = (n, d) => { const g = gcd(n, d) || 1; return [n / g, d / g]; };
+  const withFrac = (q, r) => (q.fracAnswer = [r[0], r[1]], q.answerText = r[0] + '/' + r[1], q);
+  const FR_HINT = ' (Type a fraction such as 2/7.)';
+  /* two fractions a/da and b/db over a related pair, written over the bigger bottom D */
+  function fracPair(maxSum){
+    for (let g = 0; g < 200; g++){
+      const pr = pick(RELATED), D = pr[1], k = pr[1] / pr[0];
+      const a = ri(1, pr[0] - 1 || 1), b = ri(1, D - 1);
+      if (a >= pr[0]) continue;
+      const A = a * k;                       /* a/pr[0] = A/D */
+      if (A + b > maxSum(D)) continue;
+      if (red(a, pr[0])[1] !== pr[0]) continue;   /* print every fraction in lowest terms */
+      if (red(b, D)[1] !== D) continue;
+      const first = Math.random() < 0.5;
+      return first ? { n1: a, d1: pr[0], n2: b, d2: D, N1: A, N2: b, D }
+                   : { n1: b, d1: D, n2: a, d2: pr[0], N1: b, N2: A, D };
+    }
+    return { n1: 1, d1: 4, n2: 3, d2: 8, N1: 2, N2: 3, D: 8 };
+  }
+  const overD = (n, d, N, D) => d === D ? fr(n, d) : fr(n, d) + ' = ' + fr(N, D);
+  function gFracTogether(){
+    const [A, B] = fnames(2), w = pick(WHOLES);
+    const f = fracPair(D => D - 1), S = f.N1 + f.N2, r = red(S, f.D);
+    return exam(withFrac(finishTyped(A + ' ate ' + fr(f.n1, f.d1) + ' of ' + w[0] + '. ' + B + ' ate ' + fr(f.n2, f.d2) +
+      ' of ' + w[1] + '. What fraction of ' + w[1] + ' did they eat altogether?' + FR_HINT, r[0] / r[1],
+      'Make the bottom numbers the same: ' + overD(f.n1, f.d1, f.N1, f.D) + ', ' + overD(f.n2, f.d2, f.N2, f.D) + '.<br>' +
+      'Add the tops: ' + fr(f.N1, f.D) + ' + ' + fr(f.N2, f.D) + ' = ' + fr(S, f.D) +
+      (r[1] !== f.D ? ' = <b>' + fr(r[0], r[1]) + '</b>.' : '. They ate <b>' + fr(r[0], r[1]) + '</b> of it.')), r));
+  }
+
+  /* ================= POOL 2: exam standard ================= */
+
+  /* times as many, total given */
+  function gTimesTotal(){
+    const [A, B] = names(2), it = pick(ITEMS);
+    const m = ri(2, 5), u = ri(Math.ceil(30 / m), Math.floor(999 / (m + 1))), T = (m + 1) * u;
+    const ask = pick(['A','B','diff']);
+    const want = ask === 'A' ? m * u : ask === 'B' ? u : (m - 1) * u;
+    const qs = ask === 'A' ? 'How many ' + it + ' does ' + A + ' have?'
+             : ask === 'B' ? 'How many ' + it + ' does ' + B + ' have?'
+             : 'How many more ' + it + ' does ' + A + ' have than ' + B + '?';
+    const last = ask === 'A' ? A + ' has ' + m + ' units: ' + m + ' × ' + u + ' = <b>' + want + '</b>.'
+               : ask === 'B' ? B + ' has 1 unit = <b>' + want + '</b>.'
+               : A + ' has ' + (m - 1) + ' more units: ' + (m - 1) + ' × ' + u + ' = <b>' + want + '</b>.';
+    return finishTyped(A + ' has ' + times(m) + ' as many ' + it + ' as ' + B + '. They have ' + T + ' ' + it +
+      ' altogether. ' + qs, want,
+      model([bar(units(m), A), bar(units(1), B)]) +
+      (m + 1) + ' units = ' + T + ', so 1 unit = ' + T + ' ÷ ' + (m + 1) + ' = ' + u + '<br>' + last, it);
+  }
+
+  /* more than, total given */
+  function gMoreTotal(){
+    const [A, B] = names(2), it = pick(ITEMS);
+    const b = ri(60, 480), d = ri(15, 400), a = b + d, T = a + b;   /* T - d = 2b <= 960: 3 digits by 1 digit */
+    const askA = Math.random() < 0.5, want = askA ? a : b;
+    return finishTyped(A + ' and ' + B + ' have ' + T + ' ' + it + ' altogether. ' + A + ' has ' + d + ' more ' + it +
+      ' than ' + B + '. How many ' + it + ' does ' + (askA ? A : B) + ' have?', want,
+      model(['[ ? ][ ' + d + ' ] &nbsp;' + A, '[ ? ] &nbsp;' + B], true) +
+      'Take away the extra ' + d + ': ' + T + ' − ' + d + ' = ' + (T - d) + '. That is 2 equal bars.<br>' +
+      'One bar: ' + (T - d) + ' ÷ 2 = ' + b + ', so ' + (askA ? B + ' has ' + b + '.<br>' + A + ' has ' + b + ' + ' + d + ' = <b>' + a + '</b>.'
+                                                         : B + ' has <b>' + b + '</b>.'), it);
+  }
+
+  /* before-after: giving to make equal; equal at first then one gives */
+  function gGiveEqual(){
+    const [A, B] = names(2), it = pick(ITEMS);
+    if (Math.random() < 0.5){
+      const g = ri(8, 240), b = ri(20, 800), a = b + 2 * g;
+      return finishTyped(A + ' had ' + a + ' ' + it + ' and ' + B + ' had ' + b + ' ' + it + '. How many ' + it +
+        ' must ' + A + ' give to ' + B + ' so that they both have the same number of ' + it + '?', g,
+        model(['[ ' + b + ' ][ ' + (a - b) + ' ] &nbsp;' + A, '[ ' + b + ' ] &nbsp;' + B], true) +
+        A + ' has ' + a + ' − ' + b + ' = ' + (a - b) + ' more.<br>Give half of the difference so the bars match: ' +
+        (a - b) + ' ÷ 2 = <b>' + g + '</b>.', it);
+    }
+    const n = ri(40, 900), g = ri(6, Math.min(240, n - 5));
+    return finishTyped(A + ' and ' + B + ' had the same number of ' + it + '. ' + A + ' gave ' + g + ' ' + it + ' to ' + B +
+      '. How many more ' + it + ' does ' + B + ' have than ' + A + ' now?', 2 * g,
+      'Before: the two bars are the same.<br>After: ' + A + ' has ' + g + ' fewer, and ' + B + ' has ' + g + ' more.<br>' +
+      '[ ? ][ ' + g + ' ][ ' + g + ' ] &nbsp;' + B + '<br>[ ? ] &nbsp;' + A + '<br>' +
+      'The gap is ' + g + ' + ' + g + ' = <b>' + (2 * g) + '</b>, not ' + g + '.', it);
+  }
+
+  /* equal grouping with a remainder: how many more to fill the last group */
+  const PACK = [['beads','bags','bag'],['marbles','bags','bag'],['cookies','boxes','box'],['stickers','packets','packet'],['eggs','trays','tray'],['cupcakes','boxes','box']];
+  function gNeedMore(){
+    const N = pick(NAMES), F = pick(NAMES.filter(x => x !== N)), pk = pick(PACK);
+    const g = ri(4, 9), q = ri(8, Math.floor(990 / g) - 1), r = ri(1, g - 2), rest = g * q + r;   /* g - r >= 2: never "1 cookies" */
+    const k = ri(12, 300), n = rest + k;
+    return finishTyped(N + ' had ' + n + ' ' + pk[0] + '. ' + N + ' gave ' + k + ' ' + pk[0] + ' to ' + F + ' and packed the rest into ' +
+      pk[1] + ' of ' + g + '. The last ' + pk[2] + ' was not full. How many more ' + pk[0] + ' does ' + N + ' need to fill the last ' + pk[2] + '?', g - r,
+      'Left to pack: ' + n + ' − ' + k + ' = ' + rest + '.<br>' + rest + ' ÷ ' + g + ' = ' + q + ' remainder ' + r +
+      ': ' + q + ' full ' + pk[1] + ' and ' + r + ' in the last one.<br>To fill it: ' + g + ' − ' + r + ' = <b>' + (g - r) + '</b>.', pk[0]);
+  }
+
+  /* money: change, or how much more is needed */
+  function gMoneyChange(){
+    const N = pick(NAMES), it = pick(BUYS), one = pick(ONE);
+    const k = ri(2, 6), p = ri(2, 9), q = ri(6, 45), cost = k * p + q;
+    if (Math.random() < 0.5){
+      const M2 = cost < 50 && Math.random() < 0.5 ? 50 : (cost < 100 ? 100 : 200);
+      const left = M2 - cost;
+      return asMoney(finishTyped(N + ' had $' + M2 + '. ' + N + ' bought ' + k + ' ' + it[1] + ' at $' + p + ' each and a ' + one +
+        ' for $' + q + '. How much money did ' + N + ' have left?', left,
+        k + ' ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '.<br>Spent: $' + (k * p) + ' + $' + q + ' = $' + cost +
+        '.<br>Left: $' + M2 + ' − $' + cost + ' = <b>$' + left + '</b>.', '$'), left);
+    }
+    const short = ri(3, Math.min(40, cost - 5)), has = cost - short;
+    return asMoney(finishTyped(N + ' wants to buy ' + k + ' ' + it[1] + ' at $' + p + ' each and a ' + one + ' for $' + q + '. ' + N +
+      ' has $' + has + '. How much more money does ' + N + ' need?', short,
+      k + ' ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '.<br>Needed: $' + (k * p) + ' + $' + q + ' = $' + cost +
+      '.<br>Still short: $' + cost + ' − $' + has + ' = <b>$' + short + '</b>.', '$'), short);
+  }
+
+  /* fractions of one whole: what is left, or how much more */
+  function gFracLeft(){
+    const [A, B] = fnames(2), w = pick(WHOLES);
+    if (Math.random() < 0.55){
+      const f = fracPair(D => D - 1), S = f.N1 + f.N2, L = f.D - S, r = red(L, f.D);
+      return exam(withFrac(finishTyped(A + ' ate ' + fr(f.n1, f.d1) + ' of ' + w[0] + '. ' + B + ' ate ' + fr(f.n2, f.d2) +
+        ' of ' + w[1] + '. What fraction of ' + w[1] + ' was left?' + FR_HINT, r[0] / r[1],
+        'Same bottom numbers: ' + overD(f.n1, f.d1, f.N1, f.D) + ', ' + overD(f.n2, f.d2, f.N2, f.D) + '.<br>' +
+        'Eaten: ' + fr(f.N1, f.D) + ' + ' + fr(f.N2, f.D) + ' = ' + fr(S, f.D) + '.<br>' +
+        'The whole is ' + fr(f.D, f.D) + '. Left: ' + fr(f.D, f.D) + ' − ' + fr(S, f.D) + ' = ' + fr(L, f.D) +
+        (r[1] !== f.D ? ' = <b>' + fr(r[0], r[1]) + '</b>.' : '. <b>' + fr(r[0], r[1]) + '</b> was left.')), r));
+    }
+    let f;
+    for (let g = 0; g < 50; g++){ f = fracPair(D => 2 * D); if (f.N1 !== f.N2) break; }
+    if (f.N1 === f.N2) f = { n1: 1, d1: 2, n2: 1, d2: 4, N1: 2, N2: 1, D: 4 };
+    if (f.N1 < f.N2) f = { n1: f.n2, d1: f.d2, n2: f.n1, d2: f.d1, N1: f.N2, N2: f.N1, D: f.D };
+    const Dd = f.N1 - f.N2, r = red(Dd, f.D);
+    return exam(withFrac(finishTyped(A + ' painted ' + fr(f.n1, f.d1) + ' of a wall. ' + B + ' painted ' + fr(f.n2, f.d2) +
+      ' of the same wall. How much more of the wall did ' + A + ' paint than ' + B + '? Give your answer as a fraction of the wall.' + FR_HINT,
+      r[0] / r[1],
+      'Same bottom numbers: ' + overD(f.n1, f.d1, f.N1, f.D) + ', ' + overD(f.n2, f.d2, f.N2, f.D) + '.<br>' +
+      'Take away: ' + fr(f.N1, f.D) + ' − ' + fr(f.N2, f.D) + ' = ' + fr(Dd, f.D) +
+      (r[1] !== f.D ? ' = <b>' + fr(r[0], r[1]) + '</b>.' : '. ' + A + ' painted <b>' + fr(r[0], r[1]) + '</b> more.')), r));
+  }
+
+  /* multi-step measurement: take away equal amounts, answer in the smaller unit */
+  const MEAS = [
+    { big:'ℓ', small:'ml', f:1000, whole:'A jug had', what:'of water', verb:'poured out', piece:'cups of', each:[150,350], left:'How much water was left in the jug?' },
+    { big:'kg', small:'g', f:1000, whole:'A bag had', what:'of flour', verb:'used', piece:'scoops of', each:[120,400], left:'How much flour was left in the bag?' },
+    { big:'m', small:'cm', f:100, whole:'A roll had', what:'of ribbon', verb:'cut off', piece:'pieces of', each:[15,60], left:'How much ribbon was left on the roll?' }
+  ];
+  function gMeasureLeft(){
+    const N = pick(NAMES), M = pick(MEAS);
+    const k = ri(2, 6), e = ri(M.each[0], M.each[1]);
+    const used = k * e, x = ri(Math.ceil((used + M.f / 5) / M.f), M.f === 100 ? 6 : 4);
+    let y = ri(1, M.f - 1); if (M.f === 1000) y = ri(1, 19) * 50 - (Math.random() < 0.5 ? 0 : ri(1, 4) * 5);
+    if (y <= 0) y = 50;
+    const tot = x * M.f + y, left = tot - used;
+    return finishTyped(M.whole + ' ' + x + ' ' + M.big + ' ' + y + ' ' + M.small + ' ' + M.what + '. ' + N + ' ' + M.verb + ' ' + k + ' ' +
+      M.piece + ' ' + e + ' ' + M.small + ' each. ' + M.left + ' Give your answer in ' + M.small + '.', left,
+      x + ' ' + M.big + ' ' + y + ' ' + M.small + ' = ' + (x * M.f) + ' ' + M.small + ' + ' + y + ' ' + M.small + ' = ' + tot + ' ' + M.small + '.<br>' +
+      'Taken: ' + k + ' × ' + e + ' ' + M.small + ' = ' + used + ' ' + M.small + '.<br>Left: ' + tot + ' − ' + used + ' = <b>' + left + ' ' + M.small + '</b>.',
+      M.small);
+  }
+
+  /* ================= POOL 3: the hardest 4-mark shapes ================= */
+
+  /* three people: one is m times, one is d more (or fewer) than the base; total */
+  function gThreeUnits(){
+    const [A, B, C] = names(3), it = pick(ITEMS);
+    const m = ri(2, 3), more = Math.random() < 0.6;
+    let u, d, T;
+    for (let g = 0; g < 100; g++){
+      u = ri(25, Math.floor(980 / (m + 2))); d = ri(10, more ? 300 : u - 8);
+      T = (m + 2) * u + (more ? d : -d);
+      if ((m + 2) * u <= 999 && d < 400) break;
+    }
+    const ask = pick(['A','B','C']);
+    const vA = m * u, vB = u, vC = more ? u + d : u - d;
+    const want = ask === 'A' ? vA : ask === 'B' ? vB : vC, who = ask === 'A' ? A : ask === 'B' ? B : C;
+    const rows = [bar(units(m), A), bar(units(1), B), more ? U + '[ ' + d + ' ] &nbsp;' + C : '[ u, take away ' + d + ' ] &nbsp;' + C];
+    return finishTyped(A + ' has ' + times(m) + ' as many ' + it + ' as ' + B + '. ' + C + ' has ' + d + (more ? ' more ' : ' fewer ') + it +
+      ' than ' + B + '. The three children have ' + T + ' ' + it + ' altogether. How many ' + it + ' does ' + who + ' have?', want,
+      model(rows) +
+      (more ? 'Take away the extra ' + d + ': ' + T + ' − ' + d : 'Put back the missing ' + d + ': ' + T + ' + ' + d) + ' = ' + ((m + 2) * u) + '.<br>' +
+      (m + 2) + ' units = ' + ((m + 2) * u) + ', so 1 unit = ' + ((m + 2) * u) + ' ÷ ' + (m + 2) + ' = ' + u + '<br>' +
+      (ask === 'A' ? A + ': ' + m + ' × ' + u + ' = <b>' + vA + '</b>.'
+       : ask === 'B' ? B + ': 1 unit = <b>' + vB + '</b>.'
+       : C + ': ' + u + (more ? ' + ' : ' − ') + d + ' = <b>' + vC + '</b>.'), it);
+  }
+
+  /* before-after: m times as many, gives some away, then the same */
+  function gGiveToEqual3(){
+    const [A, B] = names(2), it = pick(ITEMS);
+    const m = ri(2, 5);
+    let u; do { u = ri(12, Math.min(Math.floor(2000 / m), Math.floor(999 / (m - 1)))); } while (((m - 1) * u) % 2);
+    const g = (m - 1) * u / 2, a = m * u, end = u + g;
+    const ask = pick(['A','B','end']);
+    const want = ask === 'A' ? a : ask === 'B' ? u : end;
+    const qs = ask === 'A' ? 'How many ' + it + ' did ' + A + ' have at first?'
+             : ask === 'B' ? 'How many ' + it + ' did ' + B + ' have at first?'
+             : 'How many ' + it + ' did each of them have in the end?';
+    return finishTyped(A + ' had ' + times(m) + ' as many ' + it + ' as ' + B + '. After ' + A + ' gave ' + g + ' ' + it + ' to ' + B +
+      ', they had the same number of ' + it + '. ' + qs, want,
+      model(['<b>Before</b>', bar(units(m), A), bar(units(1), B)]) +
+      A + ' has ' + (m - 1) + (m === 2 ? ' unit' : ' units') + ' more than ' + B + '.<br>' +
+      'After the gift they are the same. ' + A + ' lost ' + g + ' and ' + B + ' got ' + g + ', so the gap was ' + g + ' + ' + g + ' = ' + (2 * g) + '.<br>' +
+      (m === 2 ? '1 unit = ' + (2 * g) + '<br>'
+               : (m - 1) + ' units = ' + (2 * g) + ', so 1 unit = ' + (2 * g) + ' ÷ ' + (m - 1) + ' = ' + u + '<br>') +
+      (ask === 'A' ? A + ' at first: ' + m + ' × ' + u + ' = <b>' + a + '</b>.'
+       : ask === 'B' ? B + ' at first: 1 unit = <b>' + u + '</b>.'
+       : 'In the end each has ' + u + ' + ' + g + ' = <b>' + end + '</b>.'), it);
+  }
+
+  /* before-after, same total: after the gift, one has m times as many */
+  function gTotalAfter(){
+    const [A, B] = names(2), it = pick(ITEMS);
+    const m = ri(2, 4);
+    let u, g;
+    for (let t = 0; t < 100; t++){
+      u = ri(20, Math.floor(999 / (m + 1))); g = ri(5, 200);
+      if (m * u - g >= 15) break;
+    }
+    const T = (m + 1) * u, a0 = u + g, b0 = m * u - g;
+    const askA = Math.random() < 0.6, want = askA ? a0 : b0;
+    return finishTyped(A + ' and ' + B + ' had ' + T + ' ' + it + ' altogether. After ' + A + ' gave ' + g + ' ' + it + ' to ' + B + ', ' +
+      B + ' had ' + times(m) + ' as many ' + it + ' as ' + A + '. How many ' + it + ' did ' + (askA ? A : B) + ' have at first?', want,
+      'Giving does not change the total: it is still ' + T + ' after.<br>' +
+      model(['<b>After</b>', bar(units(1), A), bar(units(m), B)]) +
+      (m + 1) + ' units = ' + T + ', so 1 unit = ' + T + ' ÷ ' + (m + 1) + ' = ' + u + '<br>' +
+      (askA ? A + ' had 1 unit after giving ' + g + ', so at first: ' + u + ' + ' + g + ' = <b>' + a0 + '</b>.'
+            : B + ' had ' + m + ' units = ' + (m * u) + ' after getting ' + g + ', so at first: ' + (m * u) + ' − ' + g + ' = <b>' + b0 + '</b>.'), it);
+  }
+
+  /* working backwards */
+  const BAKES = ['cookies','muffins','tarts','buns'];
+  function gBackwards(){
+    if (Math.random() < 0.5){
+      const it = pick(BAKES), k = ri(4, 9), s = ri(2, k - 2), per = ri(6, 40);
+      const left = (k - s) * per, e = ri(3, Math.min(left - 5, 60)), r = left - e;
+      return finishTyped('A baker packed some ' + it + ' equally into ' + k + ' boxes. The baker sold ' + s + ' of the boxes. Then ' + e + ' ' + it +
+        ' from the boxes that were left were eaten. ' + r + ' ' + it + ' remained. How many ' + it + ' did the baker pack at first?', k * per,
+        '<b>Work backwards</b> from the end.<br>Before ' + e + ' were eaten: ' + r + ' + ' + e + ' = ' + left + ' ' + it + '.<br>' +
+        'Those were in ' + k + ' − ' + s + ' = ' + (k - s) + ' boxes, so 1 box: ' + left + ' ÷ ' + (k - s) + ' = ' + per + '.<br>' +
+        'At first: ' + k + ' × ' + per + ' = <b>' + (k * per) + '</b>.', it);
+    }
+    const [A, B] = names(2), it = pick(ITEMS), a = ri(15, 300), k = ri(2, 6), p = ri(5, 30), start = ri(a + 20, 900);
+    const now = start - a + k * p;
+    return finishTyped(A + ' had some ' + it + '. ' + A + ' gave ' + a + ' ' + it + ' to ' + B + '. Then ' + A + ' bought ' + k +
+      ' packets of ' + it + ' with ' + p + ' ' + it + ' in each packet. Now ' + A + ' has ' + now + ' ' + it + '. How many ' + it +
+      ' did ' + A + ' have at first?', start,
+      '<b>Work backwards</b> from the end, undoing each step.<br>Bought: ' + k + ' × ' + p + ' = ' + (k * p) + '. Undo it: ' +
+      now + ' − ' + (k * p) + ' = ' + (now - k * p) + '.<br>Gave ' + a + '. Undo it: ' + (now - k * p) + ' + ' + a +
+      ' = <b>' + start + '</b>.', it);
+  }
+
+  /* guess and check: notes of two values */
+  const NOTES = [[2,5],[2,10],[5,10]];   /* the value gap stays 1-digit: the swap step is a P3 division */
+  function gNotes(){
+    const N = pick(NAMES), dn = pick(NOTES), lo = dn[0], hi = dn[1];
+    const n = ri(8, 24), h = ri(2, n - 2), l = n - h, V = h * hi + l * lo;
+    const askHi = Math.random() < 0.5, want = askHi ? h : l;
+    const g0 = Math.floor(n / 2), v0 = g0 * hi + (n - g0) * lo;
+    return finishTyped(N + ' has ' + n + ' notes. Some are $' + lo + ' notes and the rest are $' + hi + ' notes. They are worth $' + V +
+      ' altogether. How many $' + (askHi ? hi : lo) + ' notes does ' + N + ' have?', want,
+      '<b>Guess and check.</b> Try ' + g0 + ' $' + hi + ' notes and ' + (n - g0) + ' $' + lo + ' notes: ' + g0 + ' × $' + hi + ' + ' +
+      (n - g0) + ' × $' + lo + ' = $' + v0 + (v0 === V ? ', just right.' : v0 > V ? ', too much, so use fewer $' + hi + ' notes.' : ', too little, so use more $' + hi + ' notes.') + '<br>' +
+      'Each $' + lo + ' note changed into a $' + hi + ' note adds $' + (hi - lo) + '.<br>' +
+      (v0 === V ? '' : (v0 > V ? '$' + v0 + ' − $' + V + ' = $' + (v0 - V) + ' too much, so change ' + (v0 - V) + ' ÷ ' + (hi - lo) + ' = ' + Math.abs(h - g0) +
+                                 ' of the $' + hi + ' notes back into $' + lo + ' notes: ' + g0 + ' − ' + Math.abs(h - g0) + ' = ' + h + ' $' + hi + ' notes.<br>'
+                               : '$' + V + ' − $' + v0 + ' = $' + (V - v0) + ' too little, so change ' + (V - v0) + ' ÷ ' + (hi - lo) + ' = ' + Math.abs(h - g0) +
+                                 ' more $' + lo + ' notes into $' + hi + ' notes: ' + g0 + ' + ' + Math.abs(h - g0) + ' = ' + h + ' $' + hi + ' notes.<br>')) +
+      'Check: ' + h + ' × $' + hi + ' + ' + l + ' × $' + lo + ' = $' + (h * hi) + ' + $' + (l * lo) + ' = $' + V + '. ✓<br>' +
+      'So there are <b>' + want + '</b> $' + (askHi ? hi : lo) + ' notes.', 'notes');
+  }
+
+  /* guess and check: wheels / legs */
+  const WHEELS = [['bicycles','tricycles',2,3,'wheels','in a shop'],['motorcycles','cars',2,4,'wheels','in a car park'],
+                  ['stools','chairs',3,4,'legs','in a hall'],['chickens','goats',2,4,'legs','on a farm']];
+  function gWheels(){
+    const W = pick(WHEELS), n = ri(10, 40), b = ri(2, n - 2), a = n - b, w = a * W[2] + b * W[3];
+    const askB = Math.random() < 0.5, want = askB ? b : a, noun = askB ? W[1] : W[0];
+    const allA = n * W[2];
+    return finishTyped('There are ' + n + ' ' + W[0] + ' and ' + W[1] + ' ' + W[5] + '. They have ' + w + ' ' + W[4] +
+      ' altogether. How many ' + noun + ' are there?', want,
+      '<b>Guess and check</b> (start from all ' + W[0] + '): ' + n + ' ' + W[0] + ' have ' + n + ' × ' + W[2] + ' = ' + allA + ' ' + W[4] + '.<br>' +
+      'That is ' + w + ' − ' + allA + ' = ' + (w - allA) + ' ' + W[4] + ' too few. Each ' + W[1].replace(/s$/, '') + ' has ' + (W[3] - W[2]) +
+      ' more, so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = ' + b + ' ' + W[1] + ' and ' + n + ' − ' + b + ' = ' + a + ' ' + W[0] + '.<br>' +
+      'Check: ' + a + ' × ' + W[2] + ' + ' + b + ' × ' + W[3] + ' = ' + w + '. ✓ So the answer is <b>' + want + '</b>.', noun);
+  }
+
+  /* money: spend, then as many as possible with the rest */
+  const MANY = [['packet of stickers','packets of stickers'],['bag of sweets','bags of sweets'],['comic','comics'],
+                ['pencil','pencils'],['keychain','keychains'],['bottle of juice','bottles of juice']];
+  function gMoneyRest(){
+    const N = pick(NAMES), it = pick(BUYS), m2 = pick(MANY);
+    const k = ri(2, 5), p = ri(2, 12), q = ri(3, 9);
+    let M = 0, rest = 0;
+    for (let t = 0; t < 100; t++){
+      M = pick([50, 100, 100, 200]); rest = M - k * p;
+      if (rest >= 4 * q && rest <= 999) break;
+    }
+    if (rest < 4 * q){ M = 200; rest = M - k * p; }
+    const cnt = Math.floor(rest / q), r = rest - cnt * q;
+    const askLeft = r > 0 && Math.random() < 0.3;
+    const unit = askLeft ? '$' : m2[1].split(' ')[0];
+    const tail = askLeft ? 'How much money did ' + N + ' have left after that?' : 'How many ' + m2[1] + ' did ' + N + ' buy?';
+    const q1 = finishTyped(N + ' had $' + M + '. ' + N + ' bought ' + k + ' ' + it[1] + ' at $' + p + ' each. With the rest of the money, ' + N +
+      ' bought as many ' + m2[1] + ' as possible at $' + q + ' each. ' + tail, askLeft ? r : cnt,
+      'Spent first: ' + k + ' × $' + p + ' = $' + (k * p) + '. Rest: $' + M + ' − $' + (k * p) + ' = $' + rest + '.<br>' +
+      '$' + rest + ' ÷ $' + q + ' = ' + cnt + (r ? ' remainder $' + r : '') + '.<br>' +
+      (askLeft ? N + ' buys ' + cnt + ' and has <b>$' + r + '</b> left.'
+               : N + ' buys <b>' + cnt + '</b>' + (r ? ': the $' + r + ' left is not enough for one more.' : '.')), unit);
+    return askLeft ? asMoney(q1, r) : q1;
+  }
+
+  /* ===== W1 (calibration L0): the real-paper catalogue's remaining long-problem shapes ===== */
+
+  /* units model, three-party chain: Q = 1 unit, P = m units, R = k x P (1 + m + mk <= 9) */
+  function gThreeParty(){
+    const [P, Q, R] = names(3), it = pick(ITEMS);
+    const m = 2, k = ri(2, 3), n = 1 + m + m * k;   /* 7 or 9 units: the share stays a 1-digit division */
+    const u = ri(Math.ceil(40 / m), Math.floor(999 / n)), T = n * u;
+    const ask = pick(['P','Q','R','R']);
+    const vals = { P: m * u, Q: u, R: m * k * u }, who = { P, Q, R };
+    return finishTyped(P + ' has ' + times(m) + ' as many ' + it + ' as ' + Q + '. ' + R + ' has ' + times(k) + ' as many ' + it + ' as ' + P +
+      '. The three children have ' + T + ' ' + it + ' altogether. How many ' + it + ' does ' + who[ask] + ' have?', vals[ask],
+      model([bar(units(1), Q), bar(units(m), P), bar(units(m * k), R + ' (' + k + ' × ' + m + ' units)')]) +
+      '1 + ' + m + ' + ' + (m * k) + ' = ' + n + ' units = ' + T + ', so 1 unit = ' + T + ' ÷ ' + n + ' = ' + u + '<br>' +
+      who[ask] + ': ' + (ask === 'Q' ? '1 unit = ' : (ask === 'P' ? m : m * k) + ' × ' + u + ' = ') + '<b>' + vals[ask] + '</b>.', it);
+  }
+
+  /* units model with an extra fixed part */
+  const cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+  const COLOURS = [['blue','green','yellow'],['red','white','black'],['pink','purple','orange']];
+  function gExtraFixed(){
+    const c = shuffle(pick(COLOURS)), it = pick(['beads','marbles','buttons','balloons']);
+    const m = ri(2, 5), u = ri(Math.ceil(30 / m), Math.floor(990 / (m + 1))), y = ri(12, 300), T = (m + 1) * u + y;
+    const askA = Math.random() < 0.6, want = askA ? m * u : u;
+    return finishTyped('There are ' + T + ' ' + it + ' in a box. They are ' + c[0] + ', ' + c[1] + ' or ' + c[2] + '. There are ' + times(m) +
+      ' as many ' + c[0] + ' ' + it + ' as ' + c[1] + ' ' + it + '. ' + y + ' of the ' + it + ' are ' + c[2] + '. How many ' + (askA ? c[0] : c[1]) +
+      ' ' + it + ' are there?', want,
+      model([bar(units(m), c[0]), bar(units(1), c[1]), '[ ' + y + ' ] &nbsp;' + c[2]]) +
+      'Take away the ' + c[2] + ' ' + it + ' first: ' + T + ' − ' + y + ' = ' + (T - y) + '.<br>' + (m + 1) + ' units = ' + (T - y) +
+      ', so 1 unit = ' + (T - y) + ' ÷ ' + (m + 1) + ' = ' + u + '<br>' +
+      (askA ? cap(c[0]) + ' ' + it + ': ' + m + ' × ' + u + ' = <b>' + want + '</b>.' : cap(c[1]) + ' ' + it + ': 1 unit = <b>' + want + '</b>.'), it);
+  }
+
+  /* units model given the DIFFERENCE */
+  function gTimesDiff(){
+    const [A, B] = names(2), it = pick(ITEMS);
+    const m = ri(3, 9), u = ri(Math.ceil(20 / (m - 1)) + 2, Math.floor(999 / (m - 1))), D = (m - 1) * u;
+    const ask = pick(['T','T','A','B']);
+    const want = ask === 'T' ? (m + 1) * u : ask === 'A' ? m * u : u;
+    const qs = ask === 'T' ? 'How many ' + it + ' do they have altogether?' : 'How many ' + it + ' does ' + (ask === 'A' ? A : B) + ' have?';
+    return finishTyped(A + ' has ' + m + ' times as many ' + it + ' as ' + B + '. ' + A + ' has ' + D + ' more ' + it + ' than ' + B + '. ' + qs, want,
+      model([bar(units(m), A), bar(units(1), B)]) +
+      'The difference is ' + m + ' − 1 = ' + (m - 1) + ' units = ' + D + ', so 1 unit = ' + D + ' ÷ ' + (m - 1) + ' = ' + u + '<br>' +
+      (ask === 'T' ? 'Altogether: ' + m + ' + 1 = ' + (m + 1) + ' units = ' + (m + 1) + ' × ' + u + ' = <b>' + want + '</b>.'
+       : ask === 'A' ? A + ': ' + m + ' × ' + u + ' = <b>' + want + '</b>.' : B + ': 1 unit = <b>' + want + '</b>.'), it);
+  }
+
+  /* sum and difference: money pair, or two lengths in m and cm (answer in cm) */
+  const PAIRS2 = [['racket','cap'],['bicycle','helmet'],['school bag','pencil case'],['pair of shoes','pair of socks'],['watch','wallet']];
+  function gSumDiff(){
+    if (Math.random() < 0.5){
+      const pr = pick(PAIRS2), s = ri(8, 300), d = ri(5, 300), b = s + d, S = s + b;
+      const askSmall = Math.random() < 0.6, want = askSmall ? s : b;
+      return asMoney(finishTyped('A ' + pr[0] + ' and a ' + pr[1] + ' cost $' + S + ' altogether. The ' + pr[0] + ' costs $' + d + ' more than the ' + pr[1] +
+        '. How much does the ' + (askSmall ? pr[1] : pr[0]) + ' cost?', want,
+        model(['[ ? ][ $' + d + ' ] &nbsp;' + pr[0], '[ ? ] &nbsp;' + pr[1]], true) +
+        'Take away the extra $' + d + ': $' + S + ' − $' + d + ' = $' + (S - d) + '. That is 2 equal bars.<br>' +
+        'One bar: $' + (S - d) + ' ÷ 2 = $' + s + '.<br>' +
+        (askSmall ? 'The ' + pr[1] + ' costs <b>$' + s + '</b>.' : 'The ' + pr[0] + ' costs $' + s + ' + $' + d + ' = <b>$' + b + '</b>.'), '$'), want);
+    }
+    const what = pick([['ribbons','ribbon'],['ropes','rope'],['pieces of wire','piece of wire']]);
+    let s, d, S; do { s = ri(60, 380); d = ri(20, 300); S = 2 * s + d; } while (S % 100 === 0 || S > 990);
+    const Sm = Math.floor(S / 100), Sc = S % 100, dm = Math.floor(d / 100), dc = d % 100;
+    const len = (mm, cc) => (mm ? mm + ' m' : '') + (mm && cc ? ' ' : '') + (cc ? cc + ' cm' : '');
+    const askShort = Math.random() < 0.6, want = askShort ? s : s + d;
+    return finishTyped('Two ' + what[0] + ' are ' + len(Sm, Sc) + ' long altogether. One ' + what[1] + ' is ' + len(dm, dc) + ' longer than the other. How long is the ' +
+      (askShort ? 'shorter' : 'longer') + ' ' + what[1] + '? Give your answer in cm.', want,
+      'Change to cm: ' + len(Sm, Sc) + ' = ' + S + ' cm' + (dm ? ', ' + len(dm, dc) + ' = ' + d + ' cm' : '') + '.<br>' +
+      model(['[ ? ][ ' + d + ' cm ] &nbsp;longer', '[ ? ] &nbsp;shorter'], true) +
+      'Take away the extra: ' + S + ' − ' + d + ' = ' + (S - d) + ' cm. That is 2 equal bars.<br>One bar: ' + (S - d) + ' ÷ 2 = ' + s + ' cm.<br>' +
+      (askShort ? 'The shorter one is <b>' + s + ' cm</b>.' : 'The longer one is ' + s + ' + ' + d + ' = <b>' + (s + d) + ' cm</b>.'), 'cm');
+  }
+
+  /* guess and check with two prices */
+  const TWO = [['pens','files'],['pencils','erasers'],['comics','storybooks'],['stickers','bookmarks']];
+  function gTwoPrices(){
+    const N = pick(NAMES), t = pick(TWO), lo = ri(2, 6), hi = lo + ri(1, 3);
+    const n = ri(8, 24), h = ri(2, n - 2), l = n - h, V = h * hi + l * lo;
+    const askHi = Math.random() < 0.5, want = askHi ? h : l;
+    const all = n * lo, extra = V - all;
+    return finishTyped(N + ' bought ' + n + ' things. Some were ' + t[0] + ' at $' + lo + ' each and the rest were ' + t[1] + ' at $' + hi +
+      ' each. ' + N + ' paid $' + V + ' altogether. How many ' + (askHi ? t[1] : t[0]) + ' did ' + N + ' buy?', want,
+      '<b>Guess and check</b> (start from all ' + t[0] + '): ' + n + ' × $' + lo + ' = $' + all + '. That is $' + V + ' − $' + all + ' = $' + extra + ' too little.<br>' +
+      'Each ' + t[0].replace(/s$/, '') + ' changed into ' + (/^[aeiou]/.test(t[1]) ? 'an ' : 'a ') + t[1].replace(/s$/, '') + ' adds $' + (hi - lo) + ', so there are ' + extra + ' ÷ ' + (hi - lo) + ' = ' + h + ' ' + t[1] +
+      ' and ' + n + ' − ' + h + ' = ' + l + ' ' + t[0] + '.<br>Check: ' + l + ' × $' + lo + ' + ' + h + ' × $' + hi + ' = $' + V + '. ✓ So the answer is <b>' + want + '</b>.',
+      askHi ? t[1] : t[0]);
+  }
+
+  /* STRETCH: before-after ending in a ratio */
+  function gRatioAfter(){
+    const [A, B] = names(2), it = pick(['stickers','marbles','cards','beads']);
+    const m = ri(2, 3);
+    if (Math.random() < 0.5){
+      /* equal at first; A uses a, B uses b (b < a); now B has m times as many as A */
+      let u, a, b;
+      do { u = ri(15, 300); b = ri(10, 200); a = b + (m - 1) * u; } while (a > 900 || (m - 1) * u > 999);
+      const s = a + u;
+      const askStart = Math.random() < 0.6, want = askStart ? s : u;
+      return finishTyped(A + ' and ' + B + ' had the same number of ' + it + ' at first. ' + A + ' gave away ' + a + ' ' + it + ' and ' + B + ' gave away ' + b + ' ' + it +
+        '. Now ' + B + ' has ' + times(m) + ' as many ' + it + ' as ' + A + '. ' +
+        (askStart ? 'How many ' + it + ' did each of them have at first?' : 'How many ' + it + ' does ' + A + ' have now?'), want,
+        model(['<b>After</b>', bar(units(1), A), bar(units(m), B)]) +
+        'They had the same at first, and ' + A + ' gave away ' + a + ' − ' + b + ' = ' + (a - b) + ' more than ' + B + '.<br>So now ' + B + ' has ' + (a - b) + ' more: ' +
+        (m - 1) + (m === 2 ? ' unit = ' : ' units = ') + (a - b) + (m === 2 ? '' : ', so 1 unit = ' + (a - b) + ' ÷ ' + (m - 1) + ' = ' + u) + '<br>' +
+        (askStart ? 'At first each had ' + u + ' + ' + a + ' = <b>' + s + '</b>.' : A + ' has 1 unit = <b>' + u + '</b>.'), it);
+    }
+    /* A had D more than B; A gave away g (B unchanged); now A has m times as many as B */
+    let u, g, D;
+    do { u = ri(15, 300); g = ri(10, 200); D = (m - 1) * u + g; } while (D > 990);
+    const askB = Math.random() < 0.5, want = askB ? u : u + D;
+    return finishTyped(A + ' had ' + D + ' more ' + it + ' than ' + B + '. Then ' + A + ' gave away ' + g + ' ' + it + '. Now ' + A + ' has ' + times(m) + ' as many ' + it +
+      ' as ' + B + '. How many ' + it + ' did ' + (askB ? B : A) + ' have at first?', want,
+      model(['<b>After</b>', bar(units(m), A), bar(units(1), B)]) +
+      'After giving away ' + g + ', ' + A + ' has ' + D + ' − ' + g + ' = ' + (D - g) + ' more than ' + B + '.<br>' +
+      (m - 1) + (m === 2 ? ' unit = ' : ' units = ') + (D - g) + (m === 2 ? '' : ', so 1 unit = ' + (D - g) + ' ÷ ' + (m - 1) + ' = ' + u) + '<br>' +
+      (askB ? B + ' did not change: <b>' + u + '</b>.' : A + ' at first: ' + u + ' + ' + D + ' = <b>' + (u + D) + '</b>.'), it);
+  }
+
+  /* STRETCH: elimination */
+  const SETS = [['cups','plates','cup','plate'],['pens','notebooks','pen','notebook'],['buns','drinks','bun','drink'],['balls','bats','ball','bat']];
+  function gElimination(){
+    const st = pick(SETS), c = ri(2, 9), p = ri(2, 9), n = ri(2, 4);
+    let p1 = ri(3, 6), p2 = ri(1, p1 - 1);
+    const V1 = n * c + p1 * p, V2 = n * c + p2 * p;
+    const k = ri(2, 5), askP = Math.random() < 0.6, want = askP ? k * p : c;
+    const pl = (x, i) => x === 1 ? st[i + 2] : st[i];
+    return asMoney(finishTyped(n + ' ' + st[0] + ' and ' + p1 + ' ' + pl(p1, 1) + ' cost $' + V1 + '. ' + n + ' ' + st[0] + ' and ' + p2 + ' ' + pl(p2, 1) + ' cost $' + V2 +
+      '. Each ' + st[2] + ' costs the same and each ' + st[3] + ' costs the same. ' +
+      (askP ? 'How much do ' + k + ' ' + st[1] + ' cost?' : 'How much does 1 ' + st[2] + ' cost?'), want,
+      'Both lists have ' + n + ' ' + st[0] + '. The only difference is ' + p1 + ' − ' + p2 + ' = ' + (p1 - p2) + ' ' + pl(p1 - p2, 1) + '.<br>' +
+      (p1 - p2) + ' ' + pl(p1 - p2, 1) + (p1 - p2 === 1 ? ' costs $' : ' cost $') + V1 + ' − $' + V2 + ' = $' + (V1 - V2) + '.<br>' +
+      (p1 - p2 > 1 ? '1 ' + st[3] + ' costs $' + (V1 - V2) + ' ÷ ' + (p1 - p2) + ' = $' + p + '.<br>' : '') +
+      (askP ? k + ' ' + st[1] + ' cost ' + k + ' × $' + p + ' = <b>$' + (k * p) + '</b>.'
+            : p2 + ' ' + pl(p2, 1) + ' cost ' + p2 + ' × $' + p + ' = $' + (p2 * p) + ', so ' + n + ' ' + st[0] + ' cost $' + V2 + ' − $' + (p2 * p) + ' = $' + (n * c) +
+              '.<br>1 ' + st[2] + ': $' + (n * c) + ' ÷ ' + n + ' = <b>$' + c + '</b>.'), '$'), want);
+  }
+  const stretch = f => Object.defineProperty(function(){ const q = f(); q.stretch = true; return q; }, 'name', { value: f.name });
+
+  /* every generator tags its item as a Booklet B problem for the mock paper; the
+     wrapper keeps the generator's own name, which the harness and bundle report */
+  const T = (f, band) => Object.defineProperty(function(){ const q = exam(f()); q.band = band; return q; }, 'name', { value: f.name });
+
+  MQI.registerTopic({
+    id:'p3word', level:'P3', strand:'Number and Algebra',
+    moeSubTopic:"Addition and Subtraction: solving up to 2-step word problems involving addition and subtraction; Multiplication and Division: solving up to 2-step word problems involving the 4 operations (problem-solving heuristics are not enumerated in the 2021 syllabus)",
+    label:'Model Method Marina', short:'Word problems', e:'⛵',
+    skills:{
+      partwhole: {label:'Part-whole models',      tip:'Draw one long bar for the whole and cut it into the parts. The missing part is whole minus the parts you know.'},
+      compare:   {label:'Comparison models',      tip:'"3 times as many" means 3 equal boxes on one bar and 1 box on the other. Count all the boxes, then share the total.'},
+      beforeafter:{label:'Before and after',      tip:'Draw the bars twice, before and after. When one person gives to the other, the total does not change.'},
+      grouping:  {label:'Equal groups and leftovers', tip:'Divide, then ask what the remainder means: a leftover, a box that is not full, or one more box.'},
+      money:     {label:'Money in several steps', tip:'Write one line per step: cost of each kind, then the total, then change or what is left.'},
+      measure:   {label:'Measurement in several steps', tip:'Change everything to the smaller unit first (2 kg 350 g = 2350 g), then add or take away.'},
+      fraction:  {label:'Fractions of one whole', tip:'Make the bottom numbers the same before you add or take away. The whole thing is 1, or 8/8, or 12/12.'},
+      heuristic: {label:'Guess and check, work backwards', tip:'Guess and check: make a guess, test it, adjust. Working backwards: start from the end and undo each step.'}
+    },
+    /* q.band: 3 = exam-hard (needs a model or a heuristic, 3+ operations), 2 = standard.
+       q.stretch: top-school shapes (calibration note: at most one per mock, never Booklet A). */
+    pools:{
+      1:[[T(gPartWhole,2),'partwhole'],[T(gMoreAltogether,2),'compare'],[T(gMoneyBuy,2),'money'],[T(gFracTogether,2),'fraction']],
+      2:[[T(gTimesTotal,3),'compare'],[T(gMoreTotal,3),'compare'],[T(gGiveEqual,3),'beforeafter'],[T(gNeedMore,2),'grouping'],
+         [T(gMoneyChange,2),'money'],[T(gFracLeft,2),'fraction'],[T(gMeasureLeft,2),'measure']],
+      3:[[T(gThreeUnits,3),'compare'],[T(gThreeParty,3),'compare'],[T(gExtraFixed,3),'compare'],[T(gTimesDiff,3),'compare'],
+         [T(gSumDiff,3),'compare'],[T(gGiveToEqual3,3),'beforeafter'],[T(gTotalAfter,3),'beforeafter'],[T(gBackwards,3),'heuristic'],
+         [T(gNotes,3),'heuristic'],[T(gTwoPrices,3),'heuristic'],[T(gWheels,3),'heuristic'],[T(gMoneyRest,3),'money'],
+         [T(stretch(gRatioAfter),3),'beforeafter'],[T(stretch(gElimination),3),'heuristic']]
     }
   });
 })();
@@ -18334,6 +20679,7 @@ const MAP_NODES=[
   {id:'p3time',    e:'⏰', name:'Clocktower Quay',     blurb:'Seconds, start and finish times, how long, and the 24-hour clock (P3)', grades:['P3']},
   {id:'geometry',  e:'🏰', name:'Perimeter Palace',    blurb:'Area & perimeter of squares and rectangles (P3, P4)', grades:['P3','P4']},
   {id:'p3angles',  e:'📐', name:'Right Angle Rock',    blurb:'Angles, right angles, and parallel & perpendicular lines (P3)', grades:['P3']},
+  {id:'p3word',    e:'⛵', name:'Model Method Marina', blurb:'Exam word problems: bar models, before and after, guess and check. TYPE your answer! (P3)', grades:['P3']},
   {id:'heuristics',e:'🧩', name:'Puzzle Caves',        blurb:'Patterns & puzzles. TYPE your answer, no choices!', grades:['P2','P3','P4','P5','P6']},
   /* ---- P4 ---- */
   {id:'p4numbers', e:'🏝️', name:'Ten Thousand Bay',    blurb:'Numbers to 100 000: place value, rounding & patterns (P4)', grades:['P4']},
@@ -18843,4 +21189,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20261007-d65efef */
+/* ENGINE_BUILD_END 20261008-0336964 */

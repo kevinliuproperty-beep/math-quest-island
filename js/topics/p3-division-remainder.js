@@ -16,25 +16,25 @@
     const d = ri(3, 9), q = ri(4, 12), r = ri(1, d - 1), n = d*q + r;
     const who = pick(NAMES), item = pick(SNACKS);
     return finishTyped(who + ' packs ' + n + ' ' + item + ' into ' + d + ' boxes with the same number in each box. How many are left over?',
-      r, n + ' / ' + d + ' = ' + q + ' with ' + r + ' left over, because ' + d + ' x ' + q + ' = ' + (d*q) + ' and ' + n + ' - ' + (d*q) + ' = ' + r + '.');
+      r, n + ' ÷ ' + d + ' = ' + q + ' with ' + r + ' left over, because ' + d + ' × ' + q + ' = ' + (d*q) + ' and ' + n + ' - ' + (d*q) + ' = ' + r + '.');
   }
   function gQuotient(){
     const d = ri(3, 9), q = ri(10, 40), r = ri(1, d - 1), n = d*q + r;
     return finishTyped('How many groups of ' + d + ' can be made from ' + n + '?',
-      q, d + ' x ' + q + ' = ' + (d*q) + ', which is the closest you can get without passing ' + n + '. That makes ' + q + ' groups, with ' + r + ' left over.');
+      q, d + ' × ' + q + ' = ' + (d*q) + ', which is the closest you can get without passing ' + n + '. That makes ' + q + ' groups, with ' + r + ' left over.');
   }
   function gBoxesNeeded(){
     const d = ri(4, 9), q = ri(6, 20), r = ri(1, d - 1), n = d*q + r;
     const who = pick(NAMES), item = pick(SNACKS);
     return finishTyped(who + ' packs ' + n + ' ' + item + ' into boxes of ' + d + '. How many boxes are needed to hold all of them?',
-      q + 1, n + ' / ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + (r === 1 ? ' left over still needs a box,' : ' left over still need a box,') + ' so ' + who + ' needs ' + (q+1) + ' boxes.');
+      q + 1, n + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + (r === 1 ? ' left over still needs a box,' : ' left over still need a box,') + ' so ' + who + ' needs ' + (q+1) + ' boxes.');
   }
 
   function gMulAlgo(){
     const a = ri(12, 99), b = ri(3, 9);
-    return finishTyped(a + ' x ' + b + ' = ?', a*b,
-      'Split ' + a + ' into ' + (Math.floor(a/10)*10) + ' + ' + (a%10) + '. ' + (Math.floor(a/10)*10) + ' x ' + b + ' = ' +
-      (Math.floor(a/10)*10*b) + ' and ' + (a%10) + ' x ' + b + ' = ' + ((a%10)*b) + '. Add them: ' + (a*b) + '.');
+    return finishTyped(a + ' × ' + b + ' = ?', a*b,
+      'Split ' + a + ' into ' + (Math.floor(a/10)*10) + ' + ' + (a%10) + '. ' + (Math.floor(a/10)*10) + ' × ' + b + ' = ' +
+      (Math.floor(a/10)*10*b) + ' and ' + (a%10) + ' × ' + b + ' = ' + ((a%10)*b) + '. Add them: ' + (a*b) + '.');
   }
   /* P3 GAPS LANE 2026-10-06 (MOE P3 3.4, multiplication algorithm up to 3 digits
      by 1 digit). gMulAlgo above stops at 2 digits, so until this lane no bank in
@@ -54,7 +54,7 @@
     const h = Math.floor(a / 100) * 100, t = Math.floor(a / 10) % 10 * 10, o = a % 10;
     const parts = [[h, h * b], [t, t * b], [o, o * b]].filter(p => p[0] > 0);
     return 'Split ' + a + ' into ' + parts.map(p => p[0]).join(' + ') + '. ' +
-      parts.map(p => p[0] + ' x ' + b + ' = ' + p[1]).join(', ') + '. Add them: ' +
+      parts.map(p => p[0] + ' × ' + b + ' = ' + p[1]).join(', ') + '. Add them: ' +
       parts.map(p => p[1]).join(' + ') + ' = ' + (a * b) + '.';
   }
   function draw3(){
@@ -65,7 +65,7 @@
   }
   function gMulAlgo3(){
     const ab = draw3(), a = ab[0], b = ab[1];
-    return finishTyped(a + ' x ' + b + ' = ?', a*b,
+    return finishTyped(a + ' × ' + b + ' = ?', a*b,
       mulSplit(a, b) + ' On paper, start with the ones and carry each ten into the next column.');
   }
   const PACKS = [['packet','stickers'],['box','beads'],['bag','marbles'],['tub','stickers']];
@@ -74,20 +74,20 @@
     const kid = pick(NAMES), pk = pick(PACKS);
     return finishTyped('Each ' + pk[0] + ' has ' + per + ' ' + pk[1] + '. ' + kid + ' buys ' + n + ' ' + pk[0] +
       (pk[0] === 'box' ? 'es' : 's') + '. How many ' + pk[1] + ' are there altogether?', per*n,
-      n + ' groups of ' + per + ' is ' + per + ' x ' + n + '. ' + mulSplit(per, n), pk[1]);
+      n + ' groups of ' + per + ' is ' + per + ' × ' + n + '. ' + mulSplit(per, n), pk[1]);
   }
   function gDivAlgo(){
     /* scope clamp (MOE p.35 item 3.4): up to 3 digits by 1 digit, so d*q <= 999 */
     const d = ri(3, 9), q = ri(20, Math.floor(999/d)), n = d*q;
-    return finishTyped(n + ' / ' + d + ' = ?', q,
-      'Ask: ' + d + ' x what = ' + n + '? ' + d + ' x ' + q + ' = ' + n + ', so the answer is ' + q + '.');
+    return finishTyped(n + ' ÷ ' + d + ' = ?', q,
+      'Ask: ' + d + ' × what = ' + n + '? ' + d + ' × ' + q + ' = ' + n + ', so the answer is ' + q + '.');
   }
   function gTwoStep(){
     const who = pick(NAMES), trays = ri(4, 9), each = pick([10, 12, 15, 30]), drop = ri(3, 20);
     return finishTyped(who + ' buys ' + trays + ' trays of eggs at NTUC. Each tray holds ' + each +
       ' eggs. ' + drop + ' eggs crack on the MRT ride home. How many good eggs are left?',
       trays*each - drop,
-      'First find all the eggs: ' + trays + ' x ' + each + ' = ' + (trays*each) + '. Then take away the cracked ones: ' +
+      'First find all the eggs: ' + trays + ' × ' + each + ' = ' + (trays*each) + '. Then take away the cracked ones: ' +
       (trays*each) + ' - ' + drop + ' = ' + (trays*each - drop) + '.');
   }
 
@@ -123,7 +123,7 @@
       '. The rest are packed into ' + bx[1] + ' of ' + d + '. What is the least number of ' + bx[1] +
       ' needed to pack all the rest?';
     const ex = 'Step 1: find the rest. ' + total + ' - ' + sold + ' = ' + R.n + '. ' +
-      'Step 2: ' + R.n + ' / ' + d + ' = ' + R.q + ' remainder ' + R.r + '. ' +
+      'Step 2: ' + R.n + ' ÷ ' + d + ' = ' + R.q + ' remainder ' + R.r + '. ' +
       'Step 3: ' + R.q + ' ' + bx[1] + ' hold ' + (R.q*d) + ', so ' + sOrP(R.r, item.replace(/s$/, ''), item) +
       ' would still be left out. ' + (R.r === 1 ? 'It needs' : 'They need') + ' one more ' + bx[0] +
       ', so the answer is ' + R.q + ' + 1 = ' + (R.q + 1) + ' ' + bx[1] + '. ' +
@@ -145,9 +145,9 @@
       '. Each ' + rd[0] + ' can carry ' + d + ' people. What is the least number of ' + rd[1] +
       ' needed to carry everyone at the same time?';
     const q = Math.floor(tot / d), r = tot % d;
-    const ex = 'Step 1: pupils. ' + k + ' x ' + n + ' = ' + (k*n) + '. ' +
+    const ex = 'Step 1: pupils. ' + k + ' × ' + n + ' = ' + (k*n) + '. ' +
       'Step 2: add the teachers. ' + (k*n) + ' + ' + t + ' = ' + tot + ' people. ' +
-      'Step 3: ' + tot + ' / ' + d + ' = ' + q + ' remainder ' + r + '. ' +
+      'Step 3: ' + tot + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '. ' +
       q + ' ' + rd[1] + ' carry ' + (q*d) + ' people, and ' + sOrP(r, 'person is', 'people are') + ' still left behind, so one more ' + rd[0] +
       ' is needed: ' + q + ' + 1 = ' + (q + 1) + ' ' + rd[1] + '. Do not forget the teachers - they need seats too.';
     return band(finishTyped(stem, q + 1, ex, rd[1]), 3);
@@ -170,8 +170,8 @@
     const stem = who + ' has ' + k + ' ' + c.packs + ' of ' + c.thing + ' with ' + c.per + ' ' + c.thing + ' in each ' + c.pack +
       '. Each ' + c.make + ' ' + c.need + ' ' + d + ' ' + c.thing + '. ' + who + ' ' + c.verb + ' as many ' + c.makes +
       ' as possible. How many more ' + c.thing + ' are needed to ' + c.verbTo + ' one more ' + c.make + '?';
-    const ex = 'Step 1: ' + k + ' x ' + c.per + ' = ' + tot + ' ' + c.thing + '. ' +
-      'Step 2: ' + tot + ' / ' + d + ' = ' + q + ' remainder ' + r + ', so ' + q + ' ' + c.makes + ' are made and ' +
+    const ex = 'Step 1: ' + k + ' × ' + c.per + ' = ' + tot + ' ' + c.thing + '. ' +
+      'Step 2: ' + tot + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + ', so ' + q + ' ' + c.makes + ' are made and ' +
       sOrP(r, c.one, c.thing) + ' ' + (r === 1 ? 'is' : 'are') + ' left. ' +
       'Step 3: one more ' + c.make + ' needs ' + d + ', and ' + r + ' are already there, so ' + d + ' - ' + r + ' = ' + more +
       ' more ' + c.thing + '. The remainder (' + r + ') is what is LEFT, not what is NEEDED.';
@@ -190,7 +190,7 @@
         ' costs $' + d + '. What is the greatest number of ' + item[1] + ' ' + who + ' can buy?';
       const ex = 'Step 1: money spent. $' + a + ' + $' + b + ' = $' + (a + b) + '. ' +
         'Step 2: money left. $' + T + ' - $' + (a + b) + ' = $' + R.n + '. ' +
-        'Step 3: ' + R.n + ' / ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The $' + R.r + ' left is not enough for another ' +
+        'Step 3: ' + R.n + ' ÷ ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The $' + R.r + ' left is not enough for another ' +
         item[0] + ', so round DOWN: ' + R.q + ' ' + item[1] + '.';
       return band(finishTyped(stem, R.q, ex, item[1]), 3);
     }
@@ -200,7 +200,7 @@
       ' cm long. What is the greatest number of ' + d + ' cm pieces ' + who + ' can cut?';
     const ex = 'Step 1: ' + a + ' + ' + b + ' = ' + (a + b) + ' cm is cut off first. ' +
       'Step 2: ' + T + ' - ' + (a + b) + ' = ' + R.n + ' cm is left. ' +
-      'Step 3: ' + R.n + ' / ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The last ' + R.r + ' cm is too short to make another ' +
+      'Step 3: ' + R.n + ' ÷ ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The last ' + R.r + ' cm is too short to make another ' +
       d + ' cm piece, so round DOWN: ' + R.q + ' pieces.';
     return band(finishTyped(stem, R.q, ex, 'pieces'), 3);
   }
@@ -222,8 +222,8 @@
       const stem = 'There are ' + a + ' ' + c[2] + ' of ' + c[0] + ' with ' + b + ' ' + c[0] + ' in each ' + c[1] +
         '. All the ' + c[0] + ' are put equally ' + c[5] + 'to ' + e + ' ' + c[4] + '. How many more ' + c[0] + ' are there ' + c[5] + ' each ' +
         c[3] + ' than in each ' + c[1] + '?';
-      const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' x ' + b + ' = ' + (a*b) + '. ' +
-        'Step 2: share them ' + c[5] + 'to the ' + c[4] + '. ' + (a*b) + ' / ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '. ' +
+      const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' × ' + b + ' = ' + (a*b) + '. ' +
+        'Step 2: share them ' + c[5] + 'to the ' + c[4] + '. ' + (a*b) + ' ÷ ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '. ' +
         'Step 3: compare. ' + each + ' - ' + b + ' = ' + (each - b) + '. Read the question to the end: it asks how many MORE, not how many ' + c[5] + ' each ' + c[3] + '.';
       return band(finishTyped(stem, each - b, ex, unitOf(c[0])), 3);
     }
@@ -234,9 +234,9 @@
     const stem = 'There are ' + a + ' ' + c[2] + ' of ' + c[0] + ' with ' + b + ' ' + c[0] + ' in each ' + c[1] + '. ' +
       x + ' of the ' + c[0] + ' ' + verb + '. The rest are put equally ' + c[5] + 'to ' + e + ' ' + c[4] +
       '. How many ' + c[0] + ' are there ' + c[5] + ' each ' + c[3] + '?';
-    const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' x ' + b + ' = ' + (a*b) + '. ' +
+    const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' × ' + b + ' = ' + (a*b) + '. ' +
       'Step 2: take away ' + x + '. ' + (a*b) + ' - ' + x + ' = ' + left + '. ' +
-      'Step 3: share equally. ' + left + ' / ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '.';
+      'Step 3: share equally. ' + left + ' ÷ ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '.';
     return band(finishTyped(stem, each, ex, unitOf(c[0])), 3);
   }
 
@@ -256,9 +256,9 @@
       ({read:'read',folded:'fold',made:'make',collected:'collect'})[c[0]] + ' from ' + DAYS[s] + ' to ' + DAYS[t] + '?';
     const ex = 'Step 1: count the days. ' + DAYS[span[0]] + ' to ' + DAYS[span[1]] + ' is ' + days + ' days (' +
       DAYS.slice(span[0], span[1] + 1).join(', ') + '). ' +
-      'Step 2: one day. ' + (per*days) + ' / ' + days + ' = ' + per + ' ' + c[1] + '. ' +
+      'Step 2: one day. ' + (per*days) + ' ÷ ' + days + ' = ' + per + ' ' + c[1] + '. ' +
       'Step 3: ' + DAYS[s] + ' to ' + DAYS[t] + ' is ' + part + ' days (' + DAYS.slice(s, t + 1).join(', ') + '), counting both ends. ' +
-      part + ' x ' + per + ' = ' + (part*per) + ' ' + c[1] + '.';
+      part + ' × ' + per + ' = ' + (part*per) + ' ' + c[1] + '.';
     return band(finishTyped(stem, part*per, ex, unitOf(c[1])), 3);
   }
 
@@ -272,8 +272,8 @@
     const who = pick(NAMES);
     const stem = who + ' puts some ' + c[0] + ' equally into ' + d + ' ' + c[2] + '. There are ' + q + ' ' + c[0] +
       ' in each ' + c[3] + ' and ' + sOrP(r, c[1] + ' is', c[0] + ' are') + ' left over. How many ' + c[0] + ' were there at first?';
-    const ex = 'Put the groups back together, then add the leftover. ' + d + ' x ' + q + ' = ' + (q*d) + ' in the ' + c[2] +
-      '. ' + (q*d) + ' + ' + r + ' = ' + n + '. Check: ' + n + ' / ' + d + ' = ' + q + ' remainder ' + r + '.';
+    const ex = 'Put the groups back together, then add the leftover. ' + d + ' × ' + q + ' = ' + (q*d) + ' in the ' + c[2] +
+      '. ' + (q*d) + ' + ' + r + ' = ' + n + '. Check: ' + n + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '.';
     return band(finishNum(stem, '', n, [q*d, q*d - r, (q + 1)*d], c[0], ex), 2);
   }
 
@@ -283,7 +283,7 @@
     label:'Remainder Reef', short:'Division with remainder', e:'🐚',
     skills:{
       remainder:{label:'Division with remainder', tip:'Ask "how many are left over?" while sharing sweets at home. The leftover is the remainder.'},
-      algo:     {label:'Long multiplication and division', tip:'Split the big number: 34 x 6 is 30 x 6 plus 4 x 6. Same trick works on paper.'},
+      algo:     {label:'Long multiplication and division', tip:'Split the big number: 34 × 6 is 30 × 6 plus 4 × 6. Same trick works on paper.'},
       word:     {label:'Two-step word problems', tip:'Two-step problems need two sentences of working. Ask your child to say step 1 out loud before writing.'}
     },
     pools:{

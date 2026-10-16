@@ -152,7 +152,10 @@ const UNIT_ALIAS = {
   'hour':'h', 'hours':'h', 'hr':'h',
   'second':'s', 'seconds':'s', 'secs':'s', 'sec':'s',
   'page':'pages', 'bun':'buns',
-  'cent':'cents', 'dollar':'dollars', 'cube':'cubes'
+  'cent':'cents', 'dollar':'dollars', 'cube':'cubes',
+  /* Pre-exam Live Check D3 (2026-10-16): the money stems declare '$' and say "in
+     dollars", so "9 dollars" is the same unit as "$9" and must grade the same. */
+  '$':'dollars'
 };
 /* Does `s` end with the unit token `u`, at a boundary a WORD could start on?
  *

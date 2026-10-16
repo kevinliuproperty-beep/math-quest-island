@@ -146,14 +146,16 @@ function gDoubling(){
   return mcNum('You know that '+a+' × '+b+' = '+p+'. Use <b>doubling</b> to work out '+(2*a)+' × '+b+'.','',
     2*p,[p+2, p+a, p+b],'',
     'Doubling one factor doubles the product. '+(2*a)+' is double '+a+', so '+(2*a)+' × '+b+
-    ' = double '+p+' = '+(2*p)+'. Adding 2 to the answer doubles nothing: it is the factor that doubled, not the product by 2 units.');
+    ' = double '+p+' = '+(2*p)+'. Do not just add 2 to '+p+'. When '+a+' doubles to '+(2*a)+', the whole answer doubles.');
 }
 
 /* FORMAT 8 - two-step word problem, division then multiplication (pool 3) */
+/* [who, things, containers, containers, ONE container]. The singular is spelled
+   out, not derived: stripping a final "s" turned "boxes" into "boxe". */
 const SHARE_CTX = [
-  ['Ah Huat packs','curry puffs','boxes','boxes'],
-  ['Mrs Lim packs','stickers','packets','packets'],
-  ['The canteen packs','buns','trays','trays']
+  ['Ah Huat packs','curry puffs','boxes','boxes','box'],
+  ['Mrs Lim packs','stickers','packets','packets','packet'],
+  ['The canteen packs','buns','trays','trays','tray']
 ];
 function gDivShare(){
   const c=pick(SHARE_CTX);
@@ -170,9 +172,9 @@ function gDivShare(){
   return mcNum(c[0]+' '+total+' '+c[1]+' equally into '+g+' '+c[2]+'. <b>How many '+c[1]+' are in '+
     want+' '+c[3]+'?</b>','',
     want*each,[each, total-want, want*g],'',
-    'Step 1: one '+c[2].replace(/s$/,'')+' gets '+total+' ÷ '+g+' = '+each+' '+c[1]+
+    'Step 1: one '+c[4]+' gets '+total+' ÷ '+g+' = '+each+' '+c[1]+
     '. Step 2: '+want+' × '+each+' = '+(want*each)+'. Stopping after the division answers only one '+
-    c[2].replace(/s$/,'')+', which is the usual slip.');
+    c[4]+', which is the usual slip.');
 }
 
 /* FORMAT 9 - error spotting: check a division with multiplication (pool 3) */

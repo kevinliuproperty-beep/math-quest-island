@@ -3205,7 +3205,8 @@ function oracle(q, topic) {
       const e = Math.floor(Number(m[2]) / Number(m[1]));
       return near(e, q.answer) ? null : `groups of: expected ${e}, got ${q.answer}`;
     }
-    if ((m = text.match(/^(\d+) x (\d+) = \?$/))) {
+    /* 2026-10-16 D2: the stems print SG glyphs (× and ÷); the ASCII forms stay matched for any older stem. */
+    if ((m = text.match(/^(\d+) [x×] (\d+) = \?$/))) {
       const e = Number(m[1]) * Number(m[2]);
       /* P3 GAPS LANE 2026-10-06: MOE P3 3.4 caps the algorithm at 3 digits by 1 digit. */
       if (topic === 'p3divide' && (Number(m[1]) > 999 || Number(m[2]) > 9)) return `typed mul: ${m[1]} x ${m[2]} is past 3 digits by 1 digit`;
@@ -3218,7 +3219,7 @@ function oracle(q, topic) {
       if (q.unit !== m[3]) return `mul word: stem counts ${m[3]} but q.unit is ${JSON.stringify(q.unit)}`;
       return near(per * n, q.answer) ? null : `mul word: expected ${per * n}, got ${q.answer}`;
     }
-    if ((m = text.match(/^(\d+) \/ (\d+) = \?$/))) {
+    if ((m = text.match(/^(\d+) [\/÷] (\d+) = \?$/))) {
       const e = Number(m[1]) / Number(m[2]);
       return near(e, q.answer) ? null : `typed div: expected ${e}, got ${q.answer}`;
     }

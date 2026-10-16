@@ -74,7 +74,7 @@
     return fig(finishNum('How many ' + g.thing + ' does the graph show for ' + g.cats[i] + '?', '', g.val(i),
       [g.units[i], g.val(i) + g.scale, g.val((i+1)%4), g.val(i) + 1], '',
       'The ' + g.cats[i] + ' bar is ' + g.units[i] + ' units long and each unit stands for ' + g.scale +
-      ', so ' + g.units[i] + ' x ' + g.scale + ' = ' + g.val(i) + '.'), g.figure);
+      ', so ' + g.units[i] + ' × ' + g.scale + ' = ' + g.val(i) + '.'), g.figure);
   }
   function gDiffScaled(){
     const g = makeGraph(pick([2, 5]), 4);
@@ -94,8 +94,8 @@
     return std(fig(finishNum('How many ' + g.thing + ' are shown for ' + g.cats[a] + ' and ' + g.cats[b] + ' altogether?',
       '', g.val(a) + g.val(b),
       [g.units[a] + g.units[b], Math.abs(g.val(a) - g.val(b)), g.val(a) + g.val(b) + g.scale, g.val(a)], '',
-      g.cats[a] + ' is ' + g.units[a] + ' x ' + g.scale + ' = ' + g.val(a) + ' and ' + g.cats[b] + ' is ' +
-      g.units[b] + ' x ' + g.scale + ' = ' + g.val(b) + '. Altogether ' + (g.val(a) + g.val(b)) + '.'), g.figure));
+      g.cats[a] + ' is ' + g.units[a] + ' × ' + g.scale + ' = ' + g.val(a) + ' and ' + g.cats[b] + ' is ' +
+      g.units[b] + ' × ' + g.scale + ' = ' + g.val(b) + '. Altogether ' + (g.val(a) + g.val(b)) + '.'), g.figure));
   }
   function gTotalMixed(){
     const g = makeGraph(pick([2, 5, 10]), 5);

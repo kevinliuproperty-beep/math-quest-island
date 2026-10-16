@@ -194,6 +194,15 @@ const CASES = [
   ['4.35 cents',{ answer: 4.35, unit: '$' },  false, 'K2: cents on a dollars answer'],
   ['4.35 $',    { answer: 4.35, unit: '$' },  true,  'K2: a trailing $ is the unit, not noise'],
   ['$4.35',     { answer: 4.35, unit: '$' },  true,  'K2: and a leading one still is noise'],
+  /* Pre-exam Live Check D3 (2026-10-16): the money stems say "in dollars", so the
+     word is the declared '$' unit, singular or plural, and still not cents. */
+  ['9 dollars', { answer: 9, unit: '$' },       true,  'D3: the word dollars on a $ answer'],
+  ['12.80 dollars', { answer: 12.8, unit: '$' }, true, 'D3: decimal dollars'],
+  ['1 dollar',  { answer: 1, unit: '$' },       true,  'D3: singular dollar'],
+  ['9 Dollars', { answer: 9, unit: '$' },       true,  'D3: capitalised'],
+  ['10 dollars', { answer: 9, unit: '$' },      false, 'D3: a wrong number in dollars is still wrong'],
+  ['9 dollars', { answer: 9, unit: 'cents' },   false, 'D3: dollars is not cents'],
+  ['9 dollars', { answer: 9, unit: 'kg' },      false, 'D3: nor kg'],
   ['5700 cents',{ answer: 5700, unit: 'cents' }, true,  'K2: cents on a cents answer'],
   ['5700 $',    { answer: 5700, unit: 'cents' }, false, 'K2: $ on a cents answer'],
   ['48 cubes',  { answer: 48, unit: 'cubes' }, true,  'K2: the count noun the grader never stripped'],
@@ -284,7 +293,7 @@ for (const [input, val, unit] of P) {
     ['2025 km',  { answer: 2025, unit: 'm' },  'wrong-unit', 'K2: and out of km'],
     ['2025 mm',  { answer: 2025, unit: 'm' },  'wrong-unit', 'K2: and out of mm'],
     ['4.35 cents', { answer: 4.35, unit: '$' }, 'wrong-unit', 'K2: cents was never strippable'],
-    ['4.35 dollars', { answer: 4.35, unit: '$' }, 'wrong-unit', 'K2: nor was dollars'],
+    ['4.35 dollars', { answer: 4.35, unit: '$' }, null,         'D3 2026-10-16: dollars IS the $ unit, so a right number is correct'],
     ['2025 cubes', { answer: 2025, unit: 'cm' }, 'wrong-unit', 'K2: nor was cubes'],
     ['5700 $',   { answer: 5700, unit: 'cents' }, 'wrong-unit', 'K2: a trailing $ is a unit'],
     ['8.6 cm',   { answer: 8.5, unit: 'm' },   'wrong-value', 'K2: and a wrong number is still a wrong number']

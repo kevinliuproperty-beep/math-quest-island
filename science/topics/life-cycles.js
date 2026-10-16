@@ -70,7 +70,7 @@
 
   const threeAnimals = tbl(
     ['Animal', 'Stages in its life cycle'],
-    [['A', 'egg → nymph → adult'], ['B', 'egg → larva → pupa → adult'], ['C', 'egg → tadpole → froglet → adult']]);
+    [['A', 'egg → nymph → adult'], ['B', 'egg → larva → pupa → adult'], ['C', 'egg → tadpole → adult frog']]); // 3-stage frog per the 2026-10-07 ruling (By-Eye F12)
 
   const compareTable = tbl(
     ['Animal', 'Stages in its life cycle'],
@@ -569,9 +569,9 @@
       { id: 'lc-054', type: 'oeq', level: 3, marks: 2,
         stem: 'The table shows the life cycles of animals A, B and C. Which animal could be a grasshopper? Give a reason.',
         figure: threeAnimals,
-        model: 'A. A grasshopper has a 3-stage life cycle (egg, nymph, adult) with no pupa stage.',
+        model: 'A. A grasshopper has a 3-stage life cycle with a nymph stage (egg, nymph, adult) and no pupa stage.',
         keys: [['A'], ['nymph', 'no pupa', '3 stages', 'three stages']],
-        explain: 'B is a 4-stage insect like a butterfly or beetle; C is a frog.' },
+        explain: 'B is a 4-stage insect like a butterfly or beetle; C is a frog (egg, tadpole, adult frog). Only A has a nymph stage, as a grasshopper does.' },
       { id: 'lc-055', type: 'oeq', level: 2, marks: 2,
         stem: 'Kumar said, "All young animals look like their parents." Using one example, explain why he is wrong.',
         figure: null,

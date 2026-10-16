@@ -29,7 +29,8 @@
     return '<rect x="' + (cx - 58) + '" y="' + (y + 2) + '" width="116" height="96" rx="4" fill="currentColor" fill-opacity="0.22" stroke-dasharray="4 3" stroke-width="1.5"/>';
   }
   function leaf(x, y, dir, filled) {
-    const f = filled ? ' fill="#3a9d4a" fill-opacity="0.55"' : ' stroke-dasharray="3 2"';
+    // not-green leaves are drawn filled yellow (dashed outlines read as missing leaves: F6)
+    const f = filled ? ' fill="#3a9d4a" fill-opacity="0.55"' : ' fill="#e2c84a" fill-opacity="0.7"';
     return '<path d="M' + x + ' ' + y + ' q' + (dir * 18) + ' -2 ' + (dir * 22) + ' -14 q' + (dir * -16) + ' -2 ' + (dir * -22) + ' 14Z"' + f + '/>';
   }
 
@@ -75,9 +76,13 @@
       if (p.sun) s += sun(cx + 44, y + 14);
       if (p.moist) s += '<rect x="' + (cx - 43) + '" y="' + (y + 78) + '" width="86" height="11" ' + WATER + '/>';
       s += '<path d="M' + (cx - 42) + ' ' + (y + 80) + ' q7 -8 14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke-width="1.5"/>';
-      [-22, 0, 22].forEach(dx => {
-        s += '<ellipse cx="' + (cx + dx) + '" cy="' + (y + 72) + '" rx="6" ry="4" fill="#b5651d" fill-opacity="0.5" stroke-width="1.5"/>';
-        if (p.sprout) s += '<path d="M' + (cx + dx) + ' ' + (y + 68) + ' q2 -10 6 -14" stroke="#3a9d4a"/>';
+      // draw the stem's seed count: 5 per dish; 10 is drawn as two staggered rows of 5 (F4)
+      const seeds = p.seeds || 5, row = [-32, -16, 0, 16, 32];
+      const pos = seeds >= 10 ? row.map(dx => [dx - 4, -5]).concat(row.map(dx => [dx + 4, 3])) : row.slice(0, seeds).map(dx => [dx, 0]);
+      pos.forEach(([dx, dy]) => {
+        const sy = y + 72 + dy;
+        s += '<ellipse cx="' + (cx + dx) + '" cy="' + sy + '" rx="5" ry="3.5" fill="#b5651d" fill-opacity="0.5" stroke-width="1.5"/>';
+        if (p.sprout) s += '<path d="M' + (cx + dx) + ' ' + (sy - 4) + ' q2 -10 6 -14" stroke="#3a9d4a"/>';
       });
       s += '<path d="M' + (cx - 46) + ' ' + (y + 62) + ' V' + (y + 90) + ' H' + (cx + 46) + ' V' + (y + 62) + '"/>';
       return s;
@@ -103,16 +108,24 @@
       s += '<rect x="' + (cx - 56) + '" y="' + (y + 40) + '" width="112" height="44" stroke-width="2"/>';
       s += sun(cx + 30, y + 18);
       s += T(cx - 28, y + 34, 'dark', null, 12) + T(cx + 28, y + 100, 'bright', null, 12);
-      [[-4, 56], [4, 64], [0, 72]].forEach(([dx, dy]) => s += '<ellipse cx="' + (cx + dx) + '" cy="' + (y + dy) + '" rx="7" ry="2.5" fill="#b5651d" stroke="none"/>');
+      // the stem's 10 mealworms, placed in the middle of the tray (F5)
+      [-7, 7].forEach(dx => [47, 55, 63, 71, 79].forEach(dy =>
+        s += '<ellipse cx="' + (cx + dx) + '" cy="' + (y + dy) + '" rx="6" ry="2.3" fill="#b5651d" stroke="none"/>'));
       return s;
     }
   };
 
-  function setup(aria, panels) {
+  /* One-panel set-ups (a single tray / strip / stand, 130 units wide) are capped with
+     data-maxw, which the shell's fixFigures honours: stretched to the 640 px card they
+     rendered ~5x, 700-1000 px tall, and pushed the question below the fold at 1440x900
+     (By-Eye F1, 2026-10-16). An unlabelled single panel also drops the empty label band. */
+  function setup(aria, panels, maxw) {
     const W = 130, n = panels.length;
     const nl = Math.max(0, ...panels.map(p => (p.lines || []).length));
     const H = 132 + nl * 17;
-    let s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n * W) + ' ' + H + '" width="100%" style="max-width:' + (n * W + 30) + 'px;display:block;margin:0 auto;" role="img" aria-label="' + aria + '" font-family="system-ui,sans-serif" font-size="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+    const y0 = n === 1 && !panels[0].label ? 18 : 0;
+    const cap = n === 1 ? ' data-maxw="' + (maxw || 220) + '"' : '';
+    let s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ' + y0 + ' ' + (n * W) + ' ' + (H - y0) + '" width="100%" style="max-width:' + (n * W + 30) + 'px;display:block;margin:0 auto;"' + cap + ' role="img" aria-label="' + aria + '" font-family="system-ui,sans-serif" font-size="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
     panels.forEach((p, i) => {
       const cx = i * W + W / 2;
       s += T(cx, 16, p.label, 'bold', 15);
@@ -221,7 +234,7 @@
   const FIG_SITI = setup('Three dishes of 5 green bean seeds: A on dry cotton wool in a dark cupboard, B on moist cotton wool in a dark cupboard, C on moist cotton wool in a fridge', [
     { label: 'A', kind: 'dish', dark: true, lines: ['dry cotton wool', 'dark cupboard'] },
     { label: 'B', kind: 'dish', dark: true, moist: true, sprout: true, lines: ['moist cotton wool', 'dark cupboard'] },
-    { label: 'C', kind: 'dish', moist: true, cold: true, lines: ['moist cotton wool', 'fridge (dark, cold)'] }
+    { label: 'C', kind: 'dish', dark: true, moist: true, cold: true, lines:['moist cotton wool', 'fridge (dark, cold)'] }
   ]) + table(['Dish', 'Number of seeds that germinated after 5 days'], [['A', '0'], ['B', '5'], ['C', '0']], 'Results');
 
   // Hui Min: mealworms, dark and bright
@@ -236,6 +249,11 @@
     { label: 'P', kind: 'pot', sun: true, lines: ['near a window', 'green leaves'] },
     { label: 'Q', kind: 'pot', dark: true, plant: 'pale', lines: ['dark cupboard', 'yellow leaves'] }
   ]);
+  // ps-012 asks for the observation about Q, so its copy must not caption the answer (F2)
+  const FIG_AHMAD_OBS = setup('Plant P near a window and plant Q in a dark cupboard, after 1 week', [
+    { label: 'P', kind: 'pot', sun: true, lines: ['near a window', 'after 1 week'] },
+    { label: 'Q', kind: 'pot', dark: true, plant: 'pale', lines: ['dark cupboard', 'after 1 week'] }
+  ]);
 
   // Ravi: strength of materials
   const FIG_RAVI = setup('A strip of material clamped to a stand with 50 g weights hung below it', [
@@ -247,10 +265,13 @@
     [['Glass', 'bright'], ['Tracing paper', 'dim'], ['Cardboard', 'none'], ['Clear plastic', 'bright']], 'Results');
 
   // Jun Kai: strips in water (absorbency by water rising)
-  const FIG_JUNKAI = setup('Strips of material hanging with their ends in water', [
-    { label: '', kind: 'strip', rise: 0.6, lines: ['strip dipped', 'in water'] }
-  ]) + bars('Bar chart: water rose 8 cm up cotton, 12 cm up paper towel, 0 cm up plastic and 5 cm up wool',
-    'Height water rose up each strip in 5 min', 'Height (cm)', [['cotton', 8], ['paper towel', 12], ['plastic', 0], ['wool', 5]], 14, 2, 'Material of strip');
+  // Picture and chart side by side (wrapping on a phone) so the stem stays above the fold (F1)
+  const FIG_JUNKAI = '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 16px;">' +
+    setup('Strips of material hanging with their ends in water', [
+      { label: '', kind: 'strip', rise: 0.6, lines: ['strip dipped', 'in water'] }
+    ], 150) + bars('Bar chart: water rose 8 cm up cotton, 12 cm up paper towel, 0 cm up plastic and 5 cm up wool',
+    'Height water rose up each strip in 5 min', 'Height (cm)', [['cotton', 8], ['paper towel', 12], ['plastic', 0], ['wool', 5]], 14, 2, 'Material of strip')
+      .replace('<svg ', '<svg data-maxw="420" ') + '</div>';
 
   // Priya plants: choose the two set-ups
   const TAB_SOIL = table(['Set-up', 'Type of soil', 'Amount of water each day', 'Where placed'],
@@ -394,7 +415,7 @@
         explain: 'W, X, Y and Z are different materials, so the changed variable is the type of material. Saying "the material" alone may not get the mark; say "the TYPE of material".' },
       { id: 'ps-012', type: 'oeq', level: 1, marks: 1,
         stem: TXT_AHMAD + ' State one observation about plant Q after one week.',
-        figure: FIG_AHMAD,
+        figure: FIG_AHMAD_OBS,
         model: 'The leaves of plant Q turned yellow.',
         keys: [['yellow', 'pale']],
         explain: 'An observation is what you can see. The leaves of Q turned yellow. Saying WHY (no light) is an inference, not an observation.' },
@@ -687,8 +708,8 @@
       { id: 'ps-059', type: 'mcq', level: 3,
         stem: 'Jun Kai put 10 seeds on moist cotton wool in each of two dishes. Dish D was kept in a dark cupboard and dish E near a window. Both were in the same warm room. After 5 days, all 10 seeds in each dish had germinated. What can he conclude?',
         figure: setup('Dish D in a dark cupboard and dish E near a window, both with moist cotton wool and 10 seeds', [
-          { label: 'D', kind: 'dish', moist: true, dark: true, sprout: true, lines: ['dark cupboard', '10 germinated'] },
-          { label: 'E', kind: 'dish', moist: true, sun: true, sprout: true, lines: ['near window', '10 germinated'] }
+          { label: 'D', kind: 'dish', moist: true, dark: true, sprout: true, seeds: 10, lines: ['dark cupboard', '10 germinated'] },
+          { label: 'E', kind: 'dish', moist: true, sun: true, sprout: true, seeds: 10, lines:['near window', '10 germinated'] }
         ]),
         options: ['Seeds do not need light to germinate', 'Seeds need light to germinate', 'Seeds germinate only in the dark', 'Seeds need darkness to germinate'],
         answer: 0,

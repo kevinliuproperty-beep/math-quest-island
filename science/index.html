@@ -371,6 +371,9 @@ function fixFigures(root) {
     /* figures fill the content width (to 640 px on iPad), whatever cap the file set */
     svg.style.maxWidth = ''; svg.style.width = '';
     svg.removeAttribute('width'); svg.removeAttribute('height');
+    /* ...except an explicit data-maxw cap (one-panel set-ups: By-Eye F1, 2026-10-16) */
+    var mw = parseFloat(svg.getAttribute('data-maxw'));
+    if (mw > 0) svg.style.maxWidth = mw + 'px';
     if (!svg.getAttribute('preserveAspectRatio')) svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   });
 }

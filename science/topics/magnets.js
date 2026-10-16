@@ -115,16 +115,21 @@
     // switch on the left wire
     s += `<rect x="85" y="120" width="20" height="26" fill="#ffffff" stroke="none"/>`;
     s += `<circle cx="95" cy="120" r="3" fill="${INK}"/><circle cx="95" cy="146" r="3" fill="${INK}"/>`;
+    // closed: a lever blade (with a knob) swung onto the top contact, and labelled closed,
+    // so it no longer reads as a plain piece of wire (By-Eye F7)
     s += switchClosed
-      ? `<line x1="95" y1="120" x2="95" y2="146" stroke="${INK}" stroke-width="3"/>`
+      ? `<line x1="89" y1="120" x2="101" y2="120" stroke="${INK}" stroke-width="3"/>` +
+        `<line x1="95" y1="146" x2="99" y2="121" stroke="${INK}" stroke-width="4"/>` +
+        `<circle cx="97.5" cy="131" r="3.5" fill="#ffffff" stroke="${INK}" stroke-width="2"/>`
       : `<line x1="95" y1="146" x2="112" y2="124" stroke="${INK}" stroke-width="3"/>`;
-    s += txt(60, 133, 'switch', { size: 12 });
+    s += switchClosed ? txt(58, 126, 'switch', { size: 12 }) + txt(58, 141, '(closed)', { size: 12 }) : txt(60, 133, 'switch', { size: 12 });
     // labels
     s += txt(175, 40, 'iron nail with wire coiled round it', { size: 13 });
     s += `<line x1="175" y1="50" x2="175" y2="62" stroke="${LINE}"/>`;
     if (clipsShown) {
-      s += clip(282, 92) + clip(292, 112) + clip(282, 132);
-      s += txt(320, 205, 'paper clips', { size: 12 });
+      // the clips hang as a chain from the nail tip, touching it and each other (F7)
+      s += clip(279, 76) + clip(279, 93) + clip(279, 110);
+      s += txt(294, 112, 'paper clips', { size: 12, anchor: 'start' });
     }
     return svg(w, h, 'Electromagnet set-up with iron nail, wire, battery and switch', s);
   };
@@ -170,6 +175,8 @@
     s += txt(57, 59, 'S', { bold: 1, fill: '#fff' }) + txt(57, 97, 'N', { bold: 1, fill: '#fff' });
     s += arrow(90, 300, 100) + txt(195, 86, 'stroke from A to B', { size: 13 });
     s += `<path d="M300 92 Q 190 20 80 34" fill="none" stroke="${LINE}" stroke-dasharray="5 4" stroke-width="2"/>`;
+    // arrowhead on the return arc, so it reads B-back-to-A, not A-to-B (By-Eye F8)
+    s += `<polygon points="78,34.3 89.2,26.8 90.7,38.7" fill="${LINE}"/>`;
     s += txt(195, 15, 'lift the magnet and go back to A', { size: 12 });
     return svg(360, 180, 'Stroking a steel bar from end A to end B with the N pole of a magnet', s);
   })();

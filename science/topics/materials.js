@@ -57,17 +57,19 @@ const MAT_TBL_KEN = `<table><tr><th>Material</th><th>Length of strip (cm)</th><t
 <tr><td>Wood</td><td>20</td><td>6</td></tr><tr><td>Plastic</td><td>30</td><td>3</td></tr><tr><td>Metal</td><td>20</td><td>10</td></tr></table>`;
 
 // Labelled objects (part letters only; the stem says what each part must do).
-const MAT_FIG_TENT = `<svg viewBox="0 0 360 200" width="100%" style="max-width:360px" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="15" fill="none" stroke="currentColor" stroke-width="2">
+// showX=false drops the door-flap label X for items that never mention it (mat-002: By-Eye F11).
+const matTent = (showX) => `<svg viewBox="0 0 360 200" width="100%" style="max-width:360px" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="15" fill="none" stroke="currentColor" stroke-width="2">
   <polygon points="70,160 180,40 290,160"/>
   <polygon points="180,92 214,160 196,160" fill="currentColor" fill-opacity="0.15"/>
   <line x1="180" y1="92" x2="150" y2="160"/>
   <rect x="50" y="160" width="260" height="10" fill="currentColor" fill-opacity="0.3"/>
-  <line x1="205" y1="132" x2="290" y2="104" stroke-width="1.2"/>
+${showX ? `  <line x1="205" y1="132" x2="290" y2="104" stroke-width="1.2"/>
   <text x="296" y="110" fill="currentColor" stroke="none" font-weight="bold">X</text>
-  <line x1="90" y1="170" x2="70" y2="188" stroke-width="1.2"/>
+` : ''}  <line x1="90" y1="170" x2="70" y2="188" stroke-width="1.2"/>
   <text x="50" y="196" fill="currentColor" stroke="none" font-weight="bold">G</text>
   <text x="196" y="196" fill="currentColor" stroke="none">wet grass</text>
 </svg>`;
+const MAT_FIG_TENT = matTent(true);
 
 const MAT_FIG_MOP = `<svg viewBox="0 0 360 200" width="100%" style="max-width:360px" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="15" fill="none" stroke="currentColor" stroke-width="2">
   <line x1="110" y1="16" x2="200" y2="132" stroke-width="7"/>
@@ -184,7 +186,7 @@ SCI.registerTopic({
       explain: "To bend around the pot without breaking, the hose must be flexible. Strength is holding a heavy load without breaking, which is not what the hose needs here." },
     { id: "mat-002", type: "mcq", level: 2,
       stem: "The picture shows a tent. Part G is the groundsheet, which lies on the wet grass. Which property of the groundsheet material keeps the sleeping bags inside the tent dry?",
-      figure: MAT_FIG_TENT,
+      figure: matTent(false),
       options: ["It is waterproof.", "It is flexible.", "It floats on water.", "It is transparent."],
       answer: 0,
       explain: "A waterproof material does not let water pass through and does not absorb it, so the wet grass cannot make the sleeping bags wet. Being flexible lets the groundsheet be folded, but it does not keep things dry." },
@@ -596,7 +598,7 @@ SCI.registerTopic({
       keys: [ ["Material X"], ["Material Z"], ["held the most weights", "9 weights", "most weights"], ["without sinking", "carry heavy loads"] ],
       explain: "A raft must float AND carry a load. X sinks, so it cannot be used. Of the floating blocks, Z carried the most weights (9) before sinking. Claim (Z) + evidence (9 weights, the most) + reason (carries heavy loads without sinking)." },
     { id: "mat-067", type: "oeq", level: 2, marks: 3,
-      stem: "Lina wants to find out which fabric absorbs the most water. She dips a same-sized piece of each of four fabrics into a beaker with 100 ml of water for 1 minute. Then she takes out the fabric and measures the volume of water left in the beaker.\nUse the table to sort the variables.\n(a) Which variable did she change? (1 mark)\n(b) Which variable did she measure? (1 mark)\n(c) Which TWO variables did she keep the same? (1 mark)",
+      stem: "Lina wants to find out which fabric absorbs the most water. She dips a same-sized piece of each of four fabrics into a beaker with 100 ml of water for 1 minute. Then she takes out the fabric and measures the volume of water left in the beaker.\nUse the table to help you. Write your answers below.\n(a) Which variable did she change? (1 mark)\n(b) Which variable did she measure? (1 mark)\n(c) Which TWO variables did she keep the same? (1 mark)",
       figure: `<table><tr><th>Variable</th><th>Changed</th><th>Measured</th><th>Kept the same</th></tr>
 <tr><td>Type of fabric</td><td></td><td></td><td></td></tr><tr><td>Size of each piece</td><td></td><td></td><td></td></tr>
 <tr><td>Volume of water at the start</td><td></td><td></td><td></td></tr><tr><td>Volume of water left after 1 minute</td><td></td><td></td><td></td></tr></table>`,

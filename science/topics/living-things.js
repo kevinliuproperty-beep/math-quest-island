@@ -63,8 +63,11 @@
          '<ellipse cx="108" cy="90" rx="26" ry="16" fill="#8d6e63" stroke="#333" stroke-width="2"/>' +
          '<ellipse cx="185" cy="90" rx="48" ry="20" fill="#a1887f" stroke="#333" stroke-width="2"/>';
     if (labels) {
-      s += '<g fill="#222" font-weight="bold"><text x="60" y="172">A</text><text x="103" y="172">B</text><text x="180" y="172">C</text></g>' +
-           '<g stroke="#555" stroke-width="1"><line x1="66" y1="158" x2="66" y2="104"/><line x1="108" y1="158" x2="108" y2="107"/><line x1="185" y1="158" x2="185" y2="111"/></g>';
+      // B's leader runs between the middle and back legs (x=113), not on top of the middle leg,
+      // and ends in a dot on the thorax (By-Eye F9)
+      s += '<g fill="#222" font-weight="bold"><text x="60" y="172">A</text><text x="108" y="172">B</text><text x="180" y="172">C</text></g>' +
+           '<g stroke="#555" stroke-width="1"><line x1="66" y1="158" x2="66" y2="97"/><line x1="113" y1="158" x2="113" y2="97"/><line x1="185" y1="158" x2="185" y2="101"/></g>' +
+           '<g fill="#222"><circle cx="66" cy="96" r="2.5"/><circle cx="113" cy="96" r="2.5"/><circle cx="185" cy="100" r="2.5"/></g>';
     }
     if (!labels) s += '<text x="308" y="24" text-anchor="end" fill="#222">Animal Z</text>';
     return s + '</svg>';

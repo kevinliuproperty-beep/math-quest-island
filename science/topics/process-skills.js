@@ -316,6 +316,162 @@
   const FIG_BEETLE_GRAPH = lineGraph('Line graph: length of the young beetle. Day 0: 3 mm, Day 5: 8, Day 10: 14, Day 15: 20, Day 20: 24, then 24 mm on Days 25, 30 and 35',
     'Length of the young beetle', 'Days after hatching', 'Length (mm)', [[0, 3], [5, 8], [10, 14], [15, 20], [20, 24], [25, 24], [30, 24], [35, 24]], 35, 5, 30, 5);
 
+  /* ---------- x17 helpers (lane sci-x-process, 2026-10-17): new set-up kinds, panel pairs, multi-line graphs ---------- */
+
+  // Wet towel pegged on a corridor rail; p.big for the big towel, p.sun / p.shade for where it hangs
+  SHAPES.towel = function (cx, y, p) {
+    let s = '';
+    if (p.shade) s += '<rect x="' + (cx - 58) + '" y="' + (y + 2) + '" width="116" height="9" fill="currentColor" fill-opacity="0.5" stroke="none"/>' +
+      '<rect x="' + (cx - 58) + '" y="' + (y + 11) + '" width="116" height="87" fill="currentColor" fill-opacity="0.12" stroke="none"/>';
+    if (p.sun) s += sun(cx + 44, y + 10);
+    const w = p.big ? 70 : 36, h = p.big ? 60 : 38, x0 = cx - w / 2, top = y + 30;
+    s += '<path d="M' + (cx - 50) + ' ' + top + ' H' + (cx + 50) + '" stroke-width="3"/>';
+    s += '<rect x="' + x0 + '" y="' + top + '" width="' + w + '" height="' + h + '" ' + WATER + '/>' +
+      '<rect x="' + x0 + '" y="' + top + '" width="' + w + '" height="' + h + '" stroke-width="1.5"/>';
+    s += '<rect x="' + (x0 + 4) + '" y="' + (top - 5) + '" width="4" height="10" fill="currentColor" stroke="none"/>' +
+      '<rect x="' + (x0 + w - 8) + '" y="' + (top - 5) + '" width="4" height="10" fill="currentColor" stroke="none"/>';
+    return s;
+  };
+  // Ball held at p.h cm above a tile floor (p.mat: a rubber mat on the floor), metre rule on the left
+  SHAPES.drop = function (cx, y, p) {
+    const floor = y + 92, rx = cx - 44, by = floor - p.h * 0.72 - 9, bx = cx + 6;
+    let s = '<rect x="' + (rx - 4) + '" y="' + (floor - 78) + '" width="8" height="78" fill="#f2b705" fill-opacity="0.35" stroke-width="1.5"/>';
+    for (let k = 1; k <= 4; k++) s += '<path d="M' + (rx - 4) + ' ' + (floor - k * 18) + ' h5" stroke-width="1.2"/>';
+    s += '<path d="M' + (rx + 6) + ' ' + by + ' H' + (bx - 12) + '" stroke-dasharray="3 3" stroke-width="1.2"/>';
+    s += '<circle cx="' + bx + '" cy="' + by + '" r="9" fill="#e8590c" fill-opacity="0.75" stroke-width="1.5"/>';
+    const end = floor - (p.mat ? 10 : 4);
+    if (end - (by + 14) > 10) s += '<path d="M' + bx + ' ' + (by + 14) + ' V' + end + '" stroke-dasharray="4 3" stroke-width="1.5"/>' +
+      '<path d="M' + (bx - 5) + ' ' + (end - 6) + ' L' + bx + ' ' + end + ' L' + (bx + 5) + ' ' + (end - 6) + '" stroke-width="1.5"/>';
+    if (p.mat) {
+      s += '<path d="M' + (cx - 58) + ' ' + floor + ' H' + (cx + 58) + '" stroke-width="2"/>';
+      s += '<rect x="' + (cx - 30) + '" y="' + (floor - 8) + '" width="72" height="8" rx="3" fill="currentColor" fill-opacity="0.55" stroke="none"/>';
+    } else {
+      s += '<rect x="' + (cx - 58) + '" y="' + floor + '" width="116" height="7" fill="currentColor" fill-opacity="0.08" stroke-width="1.5"/>';
+      for (let x = cx - 42; x < cx + 58; x += 16) s += '<path d="M' + x + ' ' + floor + ' v7" stroke-width="1"/>';
+    }
+    return s;
+  };
+  // Potted plant with p.g grams of fertiliser pellets mixed into the top of the soil (10 g = 3 pellets drawn)
+  SHAPES.fpot = function (cx, y, p) {
+    let s = SHAPES.pot(cx, y, p);
+    const n = Math.round((p.g || 0) / 10 * 3);
+    for (let k = 0; k < n; k++) s += '<circle cx="' + (cx - 20 + k * 8) + '" cy="' + (y + 70) + '" r="2.8" fill="#ffffff" stroke-width="1.2"/>';
+    return s;
+  };
+  // Paper cup of water with p.holes holes in the bottom, one stream of water from each hole
+  SHAPES.cup = function (cx, y, p) {
+    const t = y + 26, b = y + 76, wl = t + 14, f = (wl - t) / (b - t), hw = 30 - 12 * f;
+    let s = '<path d="M' + (cx - hw) + ' ' + wl + ' L' + (cx - 18) + ' ' + b + ' H' + (cx + 18) + ' L' + (cx + hw) + ' ' + wl + 'Z" ' + WATER + '/>';
+    s += '<path d="M' + (cx - 30) + ' ' + t + ' L' + (cx - 18) + ' ' + b + ' H' + (cx + 18) + ' L' + (cx + 30) + ' ' + t + '"/>';
+    const n = p.holes || 1;
+    for (let k = 0; k < n; k++) {
+      const hx = n === 1 ? cx : cx - 12 + k * 24 / (n - 1);
+      s += '<path d="M' + hx + ' ' + (b + 3) + ' V' + (b + 20) + '" stroke="#2f7fbf" stroke-width="2" stroke-dasharray="4 3"/>';
+    }
+    return s;
+  };
+
+  // Two set-up pictures side by side on a laptop, stacked on a phone (each capped, as FIG_JUNKAI does)
+  function pair(a, b, maxw) {
+    const cap = s => s.replace('<svg ', '<svg data-maxw="' + maxw + '" ');
+    return '<div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:8px 0;">' + cap(a) + cap(b) + '</div>';
+  }
+
+  // Line graph with category x labels and one or two series (two series get a legend and distinct markers)
+  function lineG(o) {
+    const leg = o.series.length > 1, W = 360, L = 52, R = 18, Tp = leg ? 54 : 34, B = 58, ph = 180, H = Tp + ph + B;
+    const n = o.xs.length, pw = W - L - R;
+    const pd = o.pad ? 0.5 : 0, X = i => L + (i + pd) / (n - 1 + 2 * pd) * pw, Y = v => Tp + ph - v / o.ymax * ph;
+    const STY = [{ c: '#2f7fbf', d: '' }, { c: '#c2410c', d: ' stroke-dasharray="7 4"' }];
+    const mark = (k, x, yy) => k === 0 ? '<circle cx="' + x + '" cy="' + yy + '" r="3.8" fill="' + STY[0].c + '" stroke="none"/>'
+      : '<rect x="' + (x - 3.8) + '" y="' + (yy - 3.8) + '" width="7.6" height="7.6" fill="' + STY[1].c + '" stroke="none"/>';
+    let s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="100%" data-maxw="500" style="max-width:380px;display:block;margin:0 auto;" role="img" aria-label="' + o.aria + '" font-family="system-ui,sans-serif" font-size="13" fill="none" stroke="currentColor" stroke-width="1.5">';
+    s += T(W / 2, 18, o.title, 'bold', 14);
+    if (leg) o.series.forEach((se, k) => {
+      const lx = 64 + k * 150;
+      s += '<path d="M' + lx + ' 38 h26" stroke="' + STY[k].c + '" stroke-width="2.5"' + STY[k].d + '/>' + mark(k, lx + 13, 38) +
+        '<text x="' + (lx + 32) + '" y="42" fill="currentColor" stroke="none" font-size="13">' + se.name + '</text>';
+    });
+    for (let v = 0; v <= o.ymax; v += o.ystep) {
+      s += '<path d="M' + L + ' ' + Y(v) + ' H' + (W - R) + '" stroke-opacity="0.25" stroke-width="1"/>';
+      s += '<text x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end" fill="currentColor" stroke="none" font-size="13">' + v + '</text>';
+    }
+    o.xs.forEach((lab, i) => {
+      s += '<path d="M' + X(i) + ' ' + Tp + ' V' + (Tp + ph) + '" stroke-opacity="0.25" stroke-width="1"/>';
+      s += T(X(i), Tp + ph + 18, lab, null, 13);
+    });
+    s += '<path d="M' + L + ' ' + Tp + ' V' + (Tp + ph) + ' H' + (W - R) + '" stroke-width="2"/>';
+    o.series.forEach((se, k) => {
+      s += '<polyline points="' + se.pts.map((v, i) => X(i) + ',' + Y(v)).join(' ') + '" stroke="' + STY[k].c + '" stroke-width="2.5"' + STY[k].d + '/>';
+      se.pts.forEach((v, i) => { s += mark(k, X(i), Y(v)); });
+    });
+    s += '<text transform="translate(14 ' + (Tp + ph / 2) + ') rotate(-90)" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">' + o.yTitle + '</text>';
+    s += T(L + pw / 2, H - 12, o.xTitle, null, 13);
+    return s + '</svg>';
+  }
+
+  /* ---------- x17 set-up texts and figures ---------- */
+
+  const TXT_X_TOWEL = 'Aisyah wanted to find out what affects how fast a wet towel dries. She soaked three cotton towels in the same amount of water and hung them along her HDB corridor, as shown. Towels A and B are small and towel C is big. She recorded the time each towel took to dry.';
+  const FIG_X_TOWEL = setup('Three wet towels on a rail: A is a small towel in the sun, B is a small towel in the shade, C is a big towel in the shade', [
+    { label: 'A', kind: 'towel', sun: true, lines: ['small towel', 'in the sun'] },
+    { label: 'B', kind: 'towel', shade: true, lines: ['small towel', 'in the shade'] },
+    { label: 'C', kind: 'towel', shade: true, big: true, lines: ['big towel', 'in the shade'] }
+  ]);
+
+  const TXT_X_BALL = 'Darren dropped the same rubber ball in three set-ups, A, B and C, as shown. He measured how high the ball bounced back up each time. His results are in the table.';
+  const FIG_X_BALL = setup('Set-up A: ball dropped from 50 cm onto a tile floor. B: dropped from 100 cm onto a tile floor. C: dropped from 100 cm onto a rubber mat', [
+    { label: 'A', kind: 'drop', h: 50, lines: ['dropped 50 cm', 'onto tile floor'] },
+    { label: 'B', kind: 'drop', h: 100, lines: ['dropped 100 cm', 'onto tile floor'] },
+    { label: 'C', kind: 'drop', h: 100, mat: true, lines: ['dropped 100 cm', 'onto rubber mat'] }
+  ]) + table(['Set-up', 'Height the ball bounced back up (cm)'], [['A', '30'], ['B', '60'], ['C', '20']], 'Results');
+
+  const TXT_X_FERT = 'Mr Tan set up four pots, W, X, Y and Z, in the science room. Each pot had the same type of plant of the same height, and each plant was given 50 ml of water every day. He mixed some fertiliser into the soil of each pot, as shown. After 3 weeks he measured how much each plant had grown.';
+  const FIG_X_FERT = pair(
+    setup('Pot W: 0 g of fertiliser, near the window. Pot X: 10 g of fertiliser, near the window', [
+      { label: 'W', kind: 'fpot', g: 0, sun: true, lines: ['0 g fertiliser', 'near window'] },
+      { label: 'X', kind: 'fpot', g: 10, sun: true, lines: ['10 g fertiliser', 'near window'] }]),
+    setup('Pot Y: 20 g of fertiliser, near the window. Pot Z: 20 g of fertiliser, in a dark cupboard', [
+      { label: 'Y', kind: 'fpot', g: 20, sun: true, lines: ['20 g fertiliser', 'near window'] },
+      { label: 'Z', kind: 'fpot', g: 20, dark: true, lines: ['20 g fertiliser', 'dark cupboard'] }]), 320);
+
+  const TXT_X_CUP = 'Zack made holes of the same size in the bottom of four identical paper cups: cup A had 1 hole, B had 2 holes, C had 3 holes and D had 4 holes. He poured 200 ml of water into each cup and timed how long it took to empty. His results are in the table.';
+  // the four cups in ONE short row (80-unit panels), so the stem stays near the top on a phone too
+  const FIG_X_CUP = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 116" width="100%" data-maxw="440" style="max-width:440px;display:block;margin:0 auto 10px;" role="img" aria-label="Cups A, B, C and D with 1, 2, 3 and 4 holes in the bottom, water streaming out of each hole" font-family="system-ui,sans-serif" font-size="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    ['A', 'B', 'C', 'D'].map((lab, i) => { const cx = 40 + i * 80;
+      return T(cx, 16, lab, 'bold', 15) + SHAPES.cup(cx, -4, { holes: i + 1 }) + T(cx, 109, (i + 1) + (i ? ' holes' : ' hole'), null, 14); }).join('') +
+    '</svg>' +
+    table(['Cup', 'Number of holes', 'Time taken for the cup to empty (s)'], [['A', '1', '60'], ['B', '2', '30'], ['C', '3', '20'], ['D', '4', '15']], 'Results');
+
+  const TXT_X_BAND = 'Lin used a rubber band to shoot a paper ball along the floor of the school hall. She pulled the rubber band back by different lengths and measured how far the paper ball travelled each time.';
+  const TAB_X_BAND = table(['Length the rubber band was pulled back (cm)', 'Distance the paper ball travelled (cm)'],
+    [['2', '60'], ['4', '120'], ['6', '?'], ['8', '240']], 'Results');
+
+  const TXT_X_GUPPY = 'Yi Xuan kept some guppies in a fish tank. On the first day of each month she counted the guppies in the tank. The line graph shows her results.';
+  const FIG_X_GUPPY = lineG({ aria: 'Line graph: number of guppies in the tank. January 5, February 5, March 10, April 15, May 25, June 25',
+    title: 'Number of guppies in the tank', xTitle: 'Month', yTitle: 'Number of guppies',
+    xs: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], series: [{ pts: [5, 5, 10, 15, 25, 25] }], ymax: 30, ystep: 5, pad: true });
+
+  const TXT_X_BALSAM = 'Kavya planted a balsam seedling in the school garden. She measured its height on the day she planted it (Week 0) and at the end of every week after that. The line graph shows her results.';
+  const FIG_X_BALSAM = lineG({ aria: 'Line graph: height of the balsam plant. Week 0: 2 cm, Week 1: 4, Week 2: 7, Week 3: 11, Week 4: 14, Week 5: 15, Week 6: 15',
+    title: 'Height of the balsam plant', xTitle: 'Week', yTitle: 'Height (cm)',
+    xs: ['0', '1', '2', '3', '4', '5', '6'], series: [{ pts: [2, 4, 7, 11, 14, 15, 15] }], ymax: 16, ystep: 2 });
+
+  const TXT_X_DRY = 'Aisyah hung two wet towels of the same size and material, soaked in the same amount of water, along her corridor: one in the sun and one in the shade. Every 30 minutes she weighed each towel. A towel becomes lighter as the water in it dries. The line graph shows her results.';
+  const FIG_X_DRY = lineG({ aria: 'Line graph: mass of each towel. In the sun: 300 g at 0 min, 225 at 30, 175 at 60, 150 at 90, 150 at 120. In the shade: 300, 275, 250, 225, 200',
+    title: 'Mass of each towel', xTitle: 'Time (minutes)', yTitle: 'Mass of towel (g)',
+    xs: ['0', '30', '60', '90', '120'], series: [{ name: 'in the sun', pts: [300, 225, 175, 150, 150] }, { name: 'in the shade', pts: [300, 275, 250, 225, 200] }],
+    ymax: 300, ystep: 50 });
+
+  const TXT_X_BOUNCE = 'Darren dropped the same rubber ball onto the same tile floor from different heights. He measured how high the ball bounced back up each time. The line graph shows his results.';
+  const FIG_X_BOUNCE = lineG({ aria: 'Line graph: bounce height. Dropped from 20 cm: 12 cm, 40 cm: 24 cm, 60 cm: 16 cm, 80 cm: 48 cm, 100 cm: 60 cm',
+    title: 'How high the ball bounced', xTitle: 'Height the ball was dropped from (cm)', yTitle: 'Bounce height (cm)',
+    xs: ['20', '40', '60', '80', '100'], series: [{ pts: [12, 24, 16, 48, 60] }], ymax: 70, ystep: 10, pad: true });
+
+  const TXT_X_BFLY = 'Nurul counted the butterflies that visited four flower beds, P, Q, R and S, in the school garden, for 10 minutes at each bed. The bar chart shows her results.';
+  const FIG_X_BFLY = bars('Bar chart: butterflies seen in 10 minutes. P 15, Q 35, R 20, S 5',
+    'Butterflies seen in 10 minutes', 'Number of butterflies', [['P', 15], ['Q', 35], ['R', 20], ['S', 5]], 40, 10, 'Flower bed').replace('<svg ', '<svg data-maxw="500" ');
+
   /* ---------- topic ---------- */
 
   SCI.registerTopic({
@@ -905,7 +1061,213 @@
         figure: table(['Object', 'Material', 'Attracted by the magnet?'], [['nail', 'iron', 'yes'], ['drink can', 'aluminium', 'no'], ['paper clip', 'steel', 'yes'], ['wire', 'copper', 'no']], 'Results'),
         options: ['A and B only', 'A and C only', 'B and C only', 'A, B and C'],
         answer: 3,
-        explain: 'All three are correct. A: the iron nail and steel clip were attracted. B: aluminium and copper are metals, but they were not attracted, so not all metals are magnetic. C: the copper wire was not attracted, so copper is a non-magnetic material.' }
+        explain: 'All three are correct. A: the iron nail and steel clip were attracted. B: aluminium and copper are metals, but they were not attracted, so not all metals are magnetic. C: the copper wire was not attracted, so copper is a non-magnetic material.' },
+
+      /* x17 science expansion — lane sci-x-process */
+      /* hints = [first-miss nudge, second-miss reveal] (conn ruling 2026-10-17); explain stays complete */
+      { id: 'x17-ps-001', type: 'mcq', level: 1,
+        stem: TXT_X_TOWEL + ' Which two towels should she compare to find out if sunlight affects how fast a towel dries?',
+        figure: FIG_X_TOWEL,
+        options: ['A and C', 'B and C', 'A and B', 'A, B and C'],
+        answer: 2,
+        hints: ['Look for two towels of the same size. Is one in the sun and the other in the shade?', 'A and B are both small towels: A is in the sun and B is in the shade. That is the only difference.'],
+        explain: 'A and B are both small towels, so the ONLY difference is that A is in the sun and B is in the shade. A and C differ in TWO things (the size and the place), so you could not tell which one made the difference. B and C are both in the shade, so they cannot tell you about sunlight.' },
+      { id: 'x17-ps-002', type: 'mcq', level: 2,
+        stem: TXT_X_TOWEL + ' Aisyah compared towels B and C. Which variable did she change?',
+        figure: FIG_X_TOWEL,
+        options: ['The place where the towel was hung', 'The size of the towel', 'The time the towel took to dry', 'The amount of water in the towel'],
+        answer: 1,
+        hints: ['B and C are both in the shade. What is different about them in the picture?', 'B is a small towel and C is a big towel, both in the shade. So the size of the towel was changed.'],
+        explain: 'B is small and C is big, and both are in the shade. So the changed variable is the size of the towel. The time taken to dry is what she MEASURED, not what she changed. The amount of water was kept the same.' },
+      { id: 'x17-ps-003', type: 'mcq', level: 2,
+        stem: TXT_X_TOWEL + ' Which is the measured variable in her experiment?',
+        figure: FIG_X_TOWEL,
+        options: ['The time each towel took to dry', 'The size of each towel', 'The amount of water each towel was soaked in', 'The place where each towel was hung'],
+        answer: 0,
+        hints: ['The measured variable is the result she writes down. What did she record for each towel?', 'She wrote down the time each towel took to dry. That is the measured variable.'],
+        explain: 'She recorded the time each towel took to dry, so that is the measured variable. The size of the towel and the place are the variables she changed (one at a time). The amount of water was kept the same.' },
+      { id: 'x17-ps-004', type: 'oeq', level: 3, marks: 2,
+        stem: TXT_X_TOWEL + ' Towel A dried first. Her brother compared towels A and C and said, "This shows that towels dry faster in the sun." Explain why he cannot be sure from these two towels.',
+        figure: FIG_X_TOWEL,
+        model: 'Towels A and C differ in two variables: A is a small towel in the sun, but C is a big towel in the shade. So he cannot tell whether the sunlight or the smaller size of towel A made it dry faster.',
+        keys: [['two variables', 'small towel in the sun', 'big towel in the shade'], ['cannot tell whether', 'not a fair test']],
+        hints: ['Look at the picture. In how many ways are towels A and C different?', 'A is small and in the sun; C is big and in the shade. Two variables changed, so he cannot tell which one made A dry faster.'],
+        explain: 'Evidence (mark 1): say how A and C are different. A is small and in the sun; C is big and in the shade, so TWO variables changed. Reasoning (mark 2): so he cannot tell which one, the sunlight or the size, made A dry faster. To test sunlight he should compare A and B, which are the same size.' },
+      { id: 'x17-ps-005', type: 'mcq', level: 2,
+        stem: TXT_X_BALL + ' Which two set-ups should he compare to find out if the height the ball is dropped from affects how high it bounces?',
+        figure: FIG_X_BALL,
+        options: ['A and C', 'B and C', 'A, B and C', 'A and B'],
+        answer: 3,
+        hints: ['Find two set-ups with the SAME floor but a different drop height.', 'A and B are both on the tile floor; only the drop height (50 cm, 100 cm) is different.'],
+        explain: 'A and B both use the tile floor; the only difference is the drop height (50 cm and 100 cm). A and C differ in the drop height AND the floor. B and C have the same drop height, so they test the floor instead.' },
+      { id: 'x17-ps-006', type: 'mcq', level: 3,
+        stem: TXT_X_BALL + ' Which statements are correct?\nP: Set-ups B and C show whether the type of floor affects how high the ball bounces.\nQ: Set-ups A and C can be used to find out if the type of floor affects how high the ball bounces.\nR: When it was dropped from 100 cm, the ball bounced higher on the tile floor than on the rubber mat.',
+        figure: FIG_X_BALL,
+        options: ['P and Q only', 'P and R only', 'Q and R only', 'P, Q and R'],
+        answer: 1,
+        hints: ['For each pair of set-ups, count how many things are different. A fair pair differs in only ONE thing.', 'B and C differ only in the floor (P correct). A and C differ in floor AND height (Q wrong). 60 cm on tile vs 20 cm on the mat (R correct).'],
+        explain: 'P is correct: B and C are both dropped from 100 cm, and only the floor is different. Q is wrong: A and C differ in the floor AND the drop height, so it is not a fair comparison. R is correct: from 100 cm the ball bounced 60 cm on the tile floor (B) but only 20 cm on the rubber mat (C).' },
+      { id: 'x17-ps-007', type: 'oeq', level: 2, marks: 2,
+        stem: TXT_X_BALL + '\n(a) Which variable did Darren change between set-ups B and C? (1 mark)\n(b) Why did he use the same ball in every set-up? (1 mark)',
+        figure: FIG_X_BALL,
+        model: '(a) The type of floor (tile floor or rubber mat). (b) To make it a fair test, so that only one variable is changed and a different ball cannot cause the difference in how high it bounces.',
+        keys: [['type of floor'], ['fair test', 'only one variable']],
+        hints: ['B and C are both dropped from 100 cm. What is under the ball in each?', '(a) The type of floor. (b) To make it a fair test: only one variable is changed.'],
+        explain: '(a) B and C are both dropped from 100 cm; only the floor is different. (b) A different ball might be bouncier. Keeping the ball the same makes it a fair test, so any difference comes only from the one variable he changed.' },
+      { id: 'x17-ps-008', type: 'mcq', level: 2,
+        stem: TXT_X_FERT + ' He wants to find out if the amount of fertiliser affects how much the plant grows. Which pot should he NOT use?',
+        figure: FIG_X_FERT,
+        options: ['Pot W', 'Pot X', 'Pot Y', 'Pot Z'],
+        answer: 3,
+        hints: ['Check each pot for a second difference. Is one pot kept somewhere different from the others?', 'Pot Z is in a dark cupboard, so it differs in light as well as fertiliser. Do not use Z.'],
+        explain: 'Pot Z is in a dark cupboard, while W, X and Y are near the window. If he used Z, both the fertiliser AND the light would be different. Pot W (0 g) must stay: it is the control, which shows how much the plant grows with no fertiliser.' },
+      { id: 'x17-ps-009', type: 'mcq', level: 2,
+        stem: TXT_X_FERT + ' Which two pots should he compare to find out if the plant needs light to grow well?',
+        figure: FIG_X_FERT,
+        options: ['W and Z', 'X and Z', 'Y and Z', 'W and Y'],
+        answer: 2,
+        hints: ['Pot Z is the only one in the dark. Which pot is the same as Z in every other way?', 'Y and Z both have 20 g of fertiliser; only the light is different (window or dark cupboard).'],
+        explain: 'Y and Z both have 20 g of fertiliser; the only difference is that Y is near the window and Z is in the dark cupboard. W and Z, and X and Z, differ in the fertiliser AND the light. W and Y are both near the window, so they test fertiliser, not light.' },
+      { id: 'x17-ps-010', type: 'mcq', level: 1,
+        stem: TXT_X_FERT + ' When he compares pots W, X and Y, what is the changed variable?',
+        figure: FIG_X_FERT,
+        options: ['The amount of fertiliser', 'The amount of water given', 'How much each plant grew', 'The type of plant'],
+        answer: 0,
+        hints: ['Read the labels under W, X and Y. Which label is different for each pot?', 'W, X and Y get 0 g, 10 g and 20 g: the amount of fertiliser is changed.'],
+        explain: 'W, X and Y get 0 g, 10 g and 20 g of fertiliser, so the changed variable is the amount of fertiliser. How much each plant grew is the MEASURED variable. The amount of water and the type of plant are kept the same.' },
+      { id: 'x17-ps-011', type: 'oeq', level: 2, marks: 2,
+        stem: TXT_X_FERT + ' Write a suitable aim for comparing pots W, X and Y.',
+        figure: FIG_X_FERT,
+        model: 'To find out how the amount of fertiliser given affects how much the plant grows (the increase in height of the plant).',
+        keys: [['amount of fertiliser'], ['how much the plant grows', 'increase in height', 'growth']],
+        hints: ['Use the sentence "To find out how the ... affects the ...". Fill in the changed variable, then the measured variable.', 'To find out how the amount of fertiliser affects how much the plant grows.'],
+        explain: 'An aim names BOTH variables: the changed variable (the amount of fertiliser) and the measured variable (how much the plant grows). "To find out about fertiliser" names only one, so it gets no marks.' },
+      { id: 'x17-ps-012', type: 'mcq', level: 3,
+        stem: TXT_X_FERT + ' To find out if the amount of fertiliser affects how much the plant grows, which of these must he keep the same in pots W, X and Y?\nP: The amount of water given each day\nQ: The amount of fertiliser\nR: The type of plant',
+        figure: FIG_X_FERT,
+        options: ['P and R only', 'P and Q only', 'Q and R only', 'P, Q and R'],
+        answer: 0,
+        hints: ['One of P, Q and R is the variable he is testing. The variable you test must change, so it cannot be kept the same.', 'Fertiliser (Q) is the variable being tested, so it changes. Keep the water (P) and the type of plant (R) the same.'],
+        explain: 'The amount of fertiliser (Q) is the variable he changes, so it must NOT be the same. The amount of water (P) and the type of plant (R) must be kept the same, so that only the fertiliser can cause a difference in growth.' },
+      { id: 'x17-ps-013', type: 'mcq', level: 2,
+        stem: TXT_X_CUP + ' What is the relationship between the number of holes and the time the cup took to empty?',
+        figure: FIG_X_CUP,
+        options: ['As the number of holes increased, the time taken for the cup to empty increased.', 'As the number of holes increased, the time taken for the cup to empty decreased.', 'Cup D, which had 4 holes, took 15 seconds to empty.', 'The more water in the cup, the longer the cup took to empty.'],
+        answer: 1,
+        hints: ['Read the table from top to bottom. As the holes go 1, 2, 3, 4, does the time go up or down?', 'Holes 1, 2, 3, 4 gave times 60, 30, 20, 15 s: as the holes increased, the time decreased.'],
+        explain: 'As the holes go from 1 to 4, the time goes 60, 30, 20, 15 seconds, so it DECREASES. A relationship links both variables, so one result on its own (cup D took 15 seconds) is not a relationship. Every cup had 200 ml of water, so the results cannot tell us anything about the amount of water.' },
+      { id: 'x17-ps-014', type: 'oeq', level: 3, marks: 2,
+        stem: TXT_X_CUP + ' Zack makes cup E with 5 holes of the same size. Predict whether cup E will take more or less than 15 seconds to empty. Explain using the results.',
+        figure: FIG_X_CUP,
+        model: 'Less than 15 seconds. As the number of holes increased from 1 to 4, the time taken for the cup to empty decreased from 60 s to 15 s, so with 5 holes the water will flow out even faster.',
+        keys: [['less than 15'], ['as the number of holes increased', 'time taken for the cup to empty decreased']],
+        hints: ['First find the pattern: more holes, more time or less time? Then carry the pattern on to 5 holes.', 'Less than 15 seconds: more holes always gave less time, so 5 holes will be faster still.'],
+        explain: 'Claim (mark 1): less than 15 seconds. Evidence and reasoning (mark 2): use the pattern in the table. More holes gave less time (60, 30, 20, 15 s), because the water has more ways out. The time drops by less each time, so about 12 s fits, but any time under 15 s follows the pattern.' },
+      { id: 'x17-ps-015', type: 'mcq', level: 2,
+        stem: TXT_X_BAND + ' She forgot to write down one result. What is the most likely distance for 6 cm?',
+        figure: TAB_X_BAND,
+        options: ['180 cm', '150 cm', '200 cm', '240 cm'],
+        answer: 0,
+        hints: ['How much further does the ball go each time she pulls the band back 2 cm more?', 'Each extra 2 cm adds 60 cm: 60, 120, 180, 240. So 6 cm gives 180 cm.'],
+        explain: 'Each extra 2 cm adds 60 cm: 60, 120, then 180, then 240. 150 cm is only halfway between 60 and 240, which ignores the pattern. 240 cm is the result for 8 cm, so the 6 cm result must be less than that.' },
+      { id: 'x17-ps-016', type: 'oeq', level: 2, marks: 2,
+        stem: TXT_X_BAND + '\n(a) State the relationship between the length the rubber band was pulled back and the distance the paper ball travelled. (1 mark)\n(b) Give one variable Lin should keep the same to make it a fair test. (1 mark)',
+        figure: TAB_X_BAND,
+        model: '(a) As the length the rubber band was pulled back increased, the distance the paper ball travelled increased. (b) Use the same rubber band each time (or the same paper ball, or the same floor).',
+        keys: [['as the length the rubber band was pulled back increased', 'the further she pulled', 'the more she pulled'], ['same rubber band', 'same paper ball', 'same floor']],
+        hints: ['For (a), say what happens to the distance as the pull-back length goes up. Name BOTH variables.', '(a) The further she pulled the band back, the further the ball travelled. (b) The same rubber band, paper ball or floor.'],
+        explain: '(a) Link BOTH variables with the trend: the further she pulled the band back (2, 4, 8 cm), the further the ball went (60, 120, 240 cm). "The ball went 240 cm" describes one result, not a relationship. (b) Only the pull-back length should change. The rubber band, the paper ball and the floor must stay the same.' },
+      { id: 'x17-ps-017', type: 'mcq', level: 2,
+        stem: TXT_X_GUPPY + ' Which characteristic of living things does the graph show?',
+        figure: FIG_X_GUPPY,
+        options: ['Living things grow', 'Living things respond to changes', 'Living things reproduce', 'Living things need air'],
+        answer: 2,
+        hints: ['The graph counts the NUMBER of guppies, not how big each one is. What makes the number go up?', 'The NUMBER of guppies rose from 5 to 25 because young were born: living things reproduce.'],
+        explain: 'The number of guppies went up from 5 to 25. New young guppies were born, so the graph shows that living things reproduce. "Grow" is a trap: growing means each guppy gets bigger, but this graph counts the guppies. It does not measure their size.' },
+      { id: 'x17-ps-018', type: 'mcq', level: 1,
+        stem: TXT_X_GUPPY + ' How many guppies were in the tank in April?',
+        figure: FIG_X_GUPPY,
+        options: ['15', '10', '20', '25'],
+        answer: 0,
+        hints: ['Find April on the bottom axis. Go up to the dot, then across to the scale on the side.', 'Up from April to the dot, across to the scale: 15.'],
+        explain: 'Go up from April to the dot, then across: it is on the 15 line. 10 is the number in March and 25 is the number in May.' },
+      { id: 'x17-ps-019', type: 'mcq', level: 3,
+        stem: TXT_X_GUPPY + ' Between which two months did the number of guppies increase the most?',
+        figure: FIG_X_GUPPY,
+        options: ['January and February', 'March and April', 'April and May', 'May and June'],
+        answer: 2,
+        hints: ['Look for the steepest part of the line, not the highest dot.', 'April to May: 15 to 25, a rise of 10, the steepest part of the line.'],
+        explain: 'From April to May the number went from 15 to 25, an increase of 10. That is the steepest part of the line. March to April rose by only 5. January to February and May to June are flat: no change. May and June have the highest dots, but the number did not increase between them.' },
+      { id: 'x17-ps-020', type: 'oeq', level: 1, marks: 1,
+        stem: TXT_X_GUPPY + ' The line is flat from May to June. What does this tell you about the number of guppies?',
+        figure: FIG_X_GUPPY,
+        model: 'The number of guppies stayed the same (25) from May to June.',
+        keys: [['stayed the same', 'did not change', 'no change']],
+        hints: ['A line going up means more. What does a line that goes straight across mean?', 'Flat means no change: 25 guppies in May and 25 in June.'],
+        explain: 'A flat line means no change: there were 25 guppies in May and still 25 in June.' },
+      { id: 'x17-ps-021', type: 'mcq', level: 1,
+        stem: TXT_X_BALSAM + ' Which characteristic of living things does the graph show?',
+        figure: FIG_X_BALSAM,
+        options: ['Living things reproduce', 'Living things need water', 'Living things respond to changes', 'Living things grow'],
+        answer: 3,
+        hints: ['The graph follows ONE plant. What happened to its height?', 'One plant got taller, from 2 cm to 15 cm: living things grow.'],
+        explain: 'The graph shows the height of one plant increasing from 2 cm to 15 cm, so it shows that living things grow. "Reproduce" is a trap: reproducing means making new young, and this graph is about one plant getting taller, not the number of plants.' },
+      { id: 'x17-ps-022', type: 'mcq', level: 2,
+        stem: TXT_X_BALSAM + ' What was the height of the plant at the end of Week 3?',
+        figure: FIG_X_BALSAM,
+        options: ['12 cm', '10 cm', '13 cm', '11 cm'],
+        answer: 3,
+        hints: ['The dot for Week 3 is between two grid lines. Each line on the scale stands for 2 cm.', 'Halfway between the 10 and 12 lines: 11 cm.'],
+        explain: 'The scale goes up in 2s. The Week 3 dot is halfway between the 10 and 12 lines, so the height is 11 cm.' },
+      { id: 'x17-ps-023', type: 'oeq', level: 3, marks: 2,
+        stem: TXT_X_BALSAM + ' Kavya said, "My plant grew the most between Week 2 and Week 3." Do you agree? Explain using the graph.',
+        figure: FIG_X_BALSAM,
+        model: 'Yes, I agree. Between Week 2 and Week 3 the plant grew from 7 cm to 11 cm, which is 4 cm. That is more than in any other week, so that part of the line is the steepest.',
+        keys: [['7 cm to 11 cm', '4 cm'], ['more than in any other week', 'steepest']],
+        hints: ['Work out how much the plant grew in each week. Which week has the biggest increase?', 'Agree: 7 cm to 11 cm is 4 cm, more than in any other week (the steepest part).'],
+        explain: 'Claim: agree. Evidence (mark 1): it grew from 7 cm to 11 cm, a 4 cm increase. Reasoning (mark 2): every other week it grew less (2, 3, 3, 1 and 0 cm), so this is the steepest part of the line. "Yes" on its own gets no marks.' },
+      { id: 'x17-ps-024', type: 'mcq', level: 2,
+        stem: TXT_X_DRY + ' At 60 minutes, how much heavier was the towel in the shade than the towel in the sun?',
+        figure: FIG_X_DRY,
+        options: ['25 g', '50 g', '75 g', '100 g'],
+        answer: 2,
+        hints: ['Read BOTH lines at 60 minutes, then subtract. Each grid line stands for 50 g.', 'Shade 250 g, sun 175 g at 60 minutes: 250 - 175 = 75 g.'],
+        explain: 'At 60 minutes the towel in the shade was 250 g and the towel in the sun was 175 g (halfway between 150 and 200). 250 g - 175 g = 75 g.' },
+      { id: 'x17-ps-025', type: 'mcq', level: 3,
+        stem: TXT_X_DRY + ' By which time was the towel in the sun dry?',
+        figure: FIG_X_DRY,
+        options: ['30 minutes', '60 minutes', '120 minutes', '90 minutes'],
+        answer: 3,
+        hints: ['When there is no more water to dry, the towel stops getting lighter. Where does the sun line go flat?', 'The sun line goes flat at 150 g from 90 minutes: no more water left to dry.'],
+        explain: 'The towel in the sun stopped getting lighter at 90 minutes: it was 150 g at 90 minutes and still 150 g at 120 minutes. No more water was drying from it, so it was dry by 90 minutes. 120 minutes is just the last reading.' },
+      { id: 'x17-ps-026', type: 'oeq', level: 3, marks: 3,
+        stem: TXT_X_DRY + ' Is the sun or the shade the better place to dry towels quickly? Explain using the graph.',
+        figure: FIG_X_DRY,
+        model: 'The sun. The towel in the sun reached 150 g at 90 minutes and then stopped getting lighter, but the towel in the shade was still 200 g at 120 minutes. The towel in the sun lost its water faster, so towels dry faster in the sun.',
+        keys: [['the sun'], ['150 g at 90 minutes', 'still 200 g at 120 minutes'], ['lost its water faster', 'dry faster in the sun']],
+        hints: ['Compare the two lines. Which towel got lighter faster, and what does getting lighter mean?', 'The sun: that towel reached 150 g by 90 minutes while the shade towel was still 200 g at 120 minutes, so it lost its water faster.'],
+        explain: 'Claim (mark 1): the sun. Evidence (mark 2): read both lines, for example the towel in the sun was 150 g by 90 minutes while the towel in the shade was still 200 g at 120 minutes. Reasoning (mark 3): a towel gets lighter as its water dries, so the towel that got lighter faster lost its water faster.' },
+      { id: 'x17-ps-027', type: 'mcq', level: 2,
+        stem: TXT_X_BOUNCE + ' Which result does not fit the pattern?',
+        figure: FIG_X_BOUNCE,
+        options: ['The drop from 40 cm', 'The drop from 60 cm', 'The drop from 80 cm', 'The drop from 100 cm'],
+        answer: 1,
+        hints: ['The line should keep going up as the drop height goes up. Where does it suddenly dip?', 'The 60 cm drop gave 16 cm, lower than the 40 cm drop. It breaks the rising pattern.'],
+        explain: 'The higher the drop, the higher the bounce: 12, 24, then 48 and 60 cm. The drop from 60 cm gave only 16 cm, lower than the drop from 40 cm, so it breaks the pattern. It was probably a mistake in measuring.' },
+      { id: 'x17-ps-028', type: 'oeq', level: 3, marks: 2,
+        stem: TXT_X_BOUNCE + ' One of the results does not fit the pattern.\n(a) Using the pattern, suggest how high the ball should have bounced when it was dropped from 60 cm. (1 mark)\n(b) What should Darren do to check this result? (1 mark)',
+        figure: FIG_X_BOUNCE,
+        model: '(a) About 36 cm. (b) Repeat the drop from 60 cm a few more times and compare the results.',
+        keys: [['36'], ['repeat', 'a few more times']],
+        hints: ['Look at the other four dots. How much higher is the bounce for every 20 cm more drop height?', '(a) About 36 cm (12, 24, 36, 48, 60). (b) Repeat the 60 cm drop a few more times.'],
+        explain: '(a) The bounce goes up by 12 cm for every 20 cm more drop height: 12, 24, 36, 48, 60. (b) Repeating that drop and checking that the results agree shows whether 16 cm was a mistake. Repeating gives more reliable results.' },
+      { id: 'x17-ps-029', type: 'mcq', level: 2,
+        stem: TXT_X_BFLY + ' How many more butterflies were seen at flower bed Q than at flower bed R?',
+        figure: FIG_X_BFLY,
+        options: ['15', '10', '20', '30'],
+        answer: 0,
+        hints: ['The scale goes up in 10s. The top of bar Q is between two lines: what number is halfway?', 'Q is 35 (halfway between 30 and 40) and R is 20: 35 - 20 = 15.'],
+        explain: 'Bar Q ends halfway between 30 and 40, so 35 butterflies were seen at Q. Bar R is on the 20 line. 35 - 20 = 15. Reading Q as 30 gives 10, the scale trap.' }
     ]
   });
 })();

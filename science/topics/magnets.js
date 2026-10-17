@@ -874,7 +874,419 @@
         figure: TBL_JK,
         model: '(a) Bar K. (b) Bar K attracted the pin from a greater distance (5 cm) than bar J (2 cm), so bar K is the stronger magnet. More strokes make a stronger magnet, so bar K was stroked more times.',
         keys: [['bar K'], ['greater distance', 'further', '5 cm'], ['more strokes', 'stronger magnet']],
-        explain: 'Two linked steps: larger distance = stronger magnet [evidence]; more strokes = stronger magnet [reason]. So K had 60 strokes.' }
+        explain: 'Two linked steps: larger distance = stronger magnet [evidence]; more strokes = stronger magnet [reason]. So K had 60 strokes.' },
+
+      /* x17 science expansion — lane sci-x-magnets */
+      ...(function x17() {
+        // Self-contained block: helpers + items, so the merge with other lanes stays append-only.
+        // Extra item fields (ignored by the current shell; see the lane report's Shared requests):
+        //   hints       [nudge, reveal]: rung 1 after the first miss, rung 2 on the second (conn ruling 2026-10-17)
+        //   hintFigure  optional: rung 2 drawn on the figure (the propagation), shown with the reveal
+        //   syl         'P4' for items beyond the P3 outcome (electromagnet strength factors)
+        const PALE = '#e5e7eb', TEAL = '#0f766e', AMBER = '#b45309';
+        const RUNG1 = 'You don\'t need to know which end is N. Pick any end and call it N. What must the end touching it be?';
+        const isPole = (p) => p === 'N' || p === 'S';
+        const sv = (w, h, label, inner, maxw) =>
+          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="100%"${maxw ? ` data-maxw="${maxw}"` : ''} role="img" aria-label="${label}">` +
+          `<rect x="1" y="1" width="${w - 2}" height="${h - 2}" rx="10" fill="#ffffff" stroke="#cbd5e1"/>${inner}</svg>`;
+        const f1 = (n) => Math.round(n * 10) / 10;
+
+        // Bar magnet at centre (mx,my), length L, thickness T, turned deg degrees.
+        // a = the end on the bar's local left (deg 0: left, 90: top, 180: right, 270: bottom), b = the other end.
+        // 'N'/'S' colour that half and write the pole; anything else leaves the half pale (pole unknown).
+        // o.steps = [stepA, stepB] numbered badges; o.names = [nameA, nameB] written OUTSIDE the bar.
+        const rbar = (mx, my, L, T, deg, a, b, o = {}) => {
+          const fill = (p) => (isPole(p) ? poleColour(p) : PALE);
+          let s = `<g transform="translate(${mx} ${my}) rotate(${deg})">` +
+            `<rect x="${-L / 2}" y="${-T / 2}" width="${L / 2}" height="${T}" fill="${fill(a)}" stroke="#111827" stroke-width="1.5"/>` +
+            `<rect x="0" y="${-T / 2}" width="${L / 2}" height="${T}" fill="${fill(b)}" stroke="#111827" stroke-width="1.5"/></g>`;
+          const r = deg * Math.PI / 180, c = Math.cos(r), sn = Math.sin(r);
+          const nx = sn, ny = -c;   // outward normal (the bar's local "up")
+          const at = (d, off = 0) => [f1(mx + d * c + off * nx), f1(my + d * sn + off * ny)];
+          const k = o.steps ? 0.34 : 0.25;
+          [[a, -1], [b, 1]].forEach(([p, sg], i) => {
+            if (p && isPole(p)) { const [x, y] = at(sg * L * k); s += txt(x, y, p, { bold: 1, size: o.size || 16, fill: '#fff' }); }
+            if (o.steps && o.steps[i]) {
+              const [x, y] = at(sg * L * 0.12);
+              s += `<circle cx="${x}" cy="${y}" r="9" fill="#ffffff" stroke="${INK}" stroke-width="1.5"/>` + txt(x, y + 0.5, o.steps[i], { bold: 1, size: 11 });
+            }
+            if (o.names && o.names[i]) { const [x, y] = at(sg * L * 0.3, T / 2 + 14); s += txt(x, y, o.names[i], { bold: 1, size: 15 }); }
+          });
+          return s;
+        };
+
+        // Rounded label for a corner or gap: attract (teal), repel (amber), anything else (ink).
+        const pill = (x, y, word) => {
+          const col = /attract/.test(word) ? TEAL : /repel/.test(word) ? AMBER : INK, w = word.length * 8 + 16;
+          return `<rect x="${x - w / 2}" y="${y - 11}" width="${w}" height="22" rx="11" fill="#ffffff" stroke="${col}" stroke-width="2"/>` +
+            txt(x, y + 1, word, { size: 13, bold: 1, fill: col });
+        };
+        const lead = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${LINE}" stroke-width="1.5"/>`;
+        const lines = (x, y0, dy, arr, size = 12) => arr.map((t, i) => txt(x, y0 + i * dy, t, { size })).join('');
+
+        // Four bar magnets in a square. Ends go clockwise:
+        // [top-left, top-right, right-top, right-bottom, bottom-right, bottom-left, left-bottom, left-top].
+        // corners = [top-right, bottom-right, bottom-left, top-left]. names: 8 end names (or '').
+        const square = (poles, names, corners, o = {}) => {
+          const P = [[180, 54, 0], [296, 170, 90], [180, 286, 180], [64, 170, 270]];
+          let s = '';
+          P.forEach(([x, y, d], i) => {
+            s += rbar(x, y, 192, 28, d, poles[2 * i], poles[2 * i + 1],
+              { names: [names[2 * i], names[2 * i + 1]], steps: o.steps ? [2 * i + 1, 2 * i + 2] : null });
+          });
+          s += pill(318, 26, corners[0]) + lead(306, 38, 282, 68);
+          s += pill(318, 316, corners[1]) + lead(306, 304, 282, 272);
+          s += pill(42, 316, corners[2]) + lead(54, 304, 78, 272);
+          s += pill(42, 26, corners[3]) + lead(54, 38, 78, 68);
+          s += o.inside ? lines(180, 170 - (o.inside.length - 1) * 9, 18, o.inside) : '';
+          return sv(360, 338, o.label || 'Four bar magnets arranged in a square', s, 380);
+        };
+
+        // Kev's sample, square 1: corners TR attract, BR repel, BL repel, TL attract.
+        const SQ1_NAMES = ['A', '', 'B', '', 'C', '', 'D', ''];
+        const SQ1_CORNERS = ['attract', 'repel', 'repel', 'attract'];
+        const FIG_SQ1 = square(['', '', '', '', '', '', '', ''], SQ1_NAMES, SQ1_CORNERS,
+          { inside: ['The poles are', 'not labelled.'], label: 'Four bar magnets in a square with unlabelled poles. Ends A, B, C and D are named. Top-right corner attract, bottom-right repel, bottom-left repel, top-left attract.' });
+        const HINT_SQ1 = square(['N', 'S', 'N', 'S', 'S', 'N', 'N', 'S'], SQ1_NAMES, SQ1_CORNERS,
+          { steps: 1, inside: ['1: call end A "N"', 'Same magnet:', 'other end is opposite', 'attract: opposite pole', 'repel: same pole', '8 attracts 1: it checks ✓'],
+            label: 'The square worked out: calling A N gives B N, C S and D N' });
+
+        // Square 2: corners TR repel, BR attract, BL repel, TL attract (answer is the S-start mirror).
+        const SQ2_CORNERS = ['repel', 'attract', 'repel', 'attract'];
+        const FIG_SQ2 = square(['', '', '', '', '', '', '', ''], SQ1_NAMES, SQ2_CORNERS,
+          { inside: ['The poles are', 'not labelled.'], label: 'Four bar magnets in a square with unlabelled poles. Top-right corner repel, bottom-right attract, bottom-left repel, top-left attract.' });
+        const HINT_SQ2 = square(['N', 'S', 'S', 'N', 'S', 'N', 'N', 'S'], SQ1_NAMES, SQ2_CORNERS,
+          { steps: 1, inside: ['Call A "N":', 'A N, B S, C S, D N.', 'Not an option? Swap', 'every pole:', 'A S, B N, C N, D S.', 'Both are possible.'],
+            label: 'The square worked out from A = N, then every pole swapped' });
+
+        // Four small labelled squares, (1) to (4), for "which arrangement is possible".
+        const miniSq = (ox, oy, poles, label) => {
+          const P = [[85, 38, 0], [137, 90, 90], [85, 142, 180], [33, 90, 270]];
+          let s = `<rect x="${ox}" y="${oy}" width="170" height="160" rx="8" fill="none" stroke="#e2e8f0"/>` + txt(ox + 16, oy + 16, label, { bold: 1, size: 14 });
+          P.forEach(([x, y, d], i) => { s += rbar(ox + x, oy + y, 80, 18, d, poles[2 * i], poles[2 * i + 1], { size: 13 }); });
+          return s;
+        };
+        const FIG_SQ_PANELS = sv(360, 335, 'Four arrangements of four labelled bar magnets in a square',
+          miniSq(5, 5, ['N', 'S', 'S', 'N', 'N', 'S', 'S', 'N'], '(1)') +
+          miniSq(185, 5, ['N', 'S', 'N', 'S', 'N', 'N', 'S', 'S'], '(2)') +
+          miniSq(5, 170, ['N', 'S', 'N', 'S', 'N', 'S', 'N', 'S'], '(3)') +
+          miniSq(185, 170, ['N', 'S', 'N', 'S', 'N', 'S', 'S', 'N'], '(4)'), 400);
+
+        // Three magnets in a row: 1|2 touch (attract), 3|4 touch, gap between 4 and 5 (repel).
+        const row = (poles, o = {}) => {
+          let s = rbar(64, 60, 100, 32, 0, poles[0], poles[1], { names: ['1', '2'], steps: o.steps ? [1, 2] : null }) +
+            rbar(164, 60, 100, 32, 0, poles[2], poles[3], { names: ['3', '4'], steps: o.steps ? [3, 4] : null }) +
+            rbar(296, 60, 100, 32, 0, poles[4], poles[5], { names: ['5', '6'], steps: o.steps ? [5, 6] : null });
+          s += lead(114, 78, 114, 92) + pill(114, 104, 'attract') + lead(230, 78, 230, 92) + pill(230, 104, 'repel');
+          s += txt(64, 132, 'magnet 1', { size: 12 }) + txt(164, 132, 'magnet 2', { size: 12 }) + txt(296, 132, 'magnet 3', { size: 12 });
+          if (o.note) s += lines(180, 158, 17, o.note);
+          return sv(360, o.note ? 150 + o.note.length * 17 : 146, o.label || 'Three bar magnets in a row with unlabelled poles; ends numbered 1 to 6', s, 520);
+        };
+        const FIG_ROW = row(['', '', '', '', '', '']);
+        const HINT_ROW = row(['N', 'S', 'N', 'S', 'S', 'N'], { steps: 1,
+          note: ['Call end 1 "N".', 'Same magnet: the other end is opposite.', 'attract: opposite pole · repel: same pole'],
+          label: 'The row worked out from end 1 = N: 1 N, 2 S, 3 N, 4 S, 5 S, 6 N' });
+
+        // Three magnets in a triangle (a ring of three). Corners X (top), Y (bottom right), Z (bottom left).
+        const tri = (poles, words, o = {}) => {
+          // poles: [left@Z, left@X, right@X, right@Y, base@Y, base@Z]
+          let s = rbar(118, 154, 190, 26, -60.14, poles[0], poles[1], { steps: o.steps ? [6, 1] : null }) +
+            rbar(242, 154, 190, 26, 60.14, poles[2], poles[3], { steps: o.steps ? [2, 3] : null }) +
+            rbar(180, 254, 168, 26, 180, poles[4], poles[5], { steps: o.steps ? [4, 5] : null });
+          s += pill(180, 24, words[0]) + lead(180, 35, 180, 62);
+          s += pill(308, 294, words[1]) + lead(298, 282, 284, 262);
+          s += pill(52, 294, words[2]) + lead(62, 282, 76, 262);
+          if (o.inside) s += lines(180, 186, 17, o.inside);
+          return sv(360, 312, o.label || 'Three bar magnets in a triangle with unlabelled poles. Corner X attract, corner Y repel, corner Z unknown', s, 420);
+        };
+        const FIG_TRI = tri(['', '', '', '', '', ''], ['X: attract', 'Y: repel', 'Z: ?']);
+        const HINT_TRI = tri(['S', 'N', 'S', 'N', 'N', 'S'], ['X: attract', 'Y: repel', 'Z: repel ✓'], { steps: 1,
+          inside: ['Start at 1: call it "N"', 'S meets S at Z,', 'so Z repels'],
+          label: 'The triangle worked out: corner Z has S facing S, so it repels' });
+
+        // A bar magnet hangs from a stand, top end marked N; bar Q is brought up from below.
+        const hang = (bottom, end1, o = {}) => {
+          let s = `<rect x="30" y="300" width="90" height="12" fill="#d6b88a" stroke="#7c5a2c"/>` +
+            `<rect x="56" y="22" width="8" height="280" fill="#94a3b8" stroke="#475569"/>` +
+            `<rect x="56" y="20" width="148" height="8" fill="#94a3b8" stroke="#475569"/>` +
+            `<line x1="190" y1="28" x2="190" y2="56" stroke="${INK}" stroke-width="1.5"/>`;
+          s += `<g transform="rotate(-24 190 28)"><rect x="176" y="56" width="28" height="110" fill="none" stroke="${LINE}" stroke-width="1.5" stroke-dasharray="5 4"/></g>`;
+          s += rbar(190, 111, 110, 28, 90, 'N', bottom);
+          s += txt(170, 84, 'marked N', { size: 12, anchor: 'end' }) + txt(170, 139, bottom ? 'so this end is ' + bottom : 'not marked', { size: 12, anchor: 'end', bold: !!bottom });
+          s += `<path d="M214 168 Q 240 166 252 146" fill="none" stroke="${INK}" stroke-width="2"/><polygon points="255,138 246,148 257,151" fill="${INK}"/>`;
+          s += txt(276, 112, 'swings', { size: 13, anchor: 'start' }) + txt(276, 128, 'away', { size: 13, anchor: 'start' });
+          s += rbar(190, 250, 100, 28, 90, end1, '');
+          s += txt(218, 226, end1 ? 'end 1 = ' + end1 : 'end 1', { size: 13, anchor: 'start', bold: 1 }) + txt(218, 276, 'end 2', { size: 13, anchor: 'start', bold: 1 });
+          s += txt(170, 250, 'bar Q', { size: 13, anchor: 'end' });
+          return sv(360, 320, o.label || 'A bar magnet hangs from a stand with its top end marked N. End 1 of bar Q is brought up under it and the magnet swings away.', s, 420);
+        };
+        const FIG_HANG = hang('', '');
+        const HINT_HANG = hang('S', 'S', { label: 'Worked out: the bottom of the hanging magnet is S, so end 1, which it repels, is S' });
+
+        // A labelled magnet beside bar X (moves towards / away).
+        const beside = (towards) => {
+          let s = rbar(90, 52, 140, 36, 0, 'S', 'N') + rod(206, 34, 120, 36, 'X');
+          if (!towards) s += txt(232, 20, 'end 1', { size: 13, bold: 1 }) + txt(300, 20, 'end 2', { size: 13, bold: 1 });
+          s += towards ? arrow(310, 240, 94) : arrow(240, 310, 94);
+          s += txt(180, 118, towards ? 'X moved towards the magnet' : 'X moved away from the magnet', { size: 13 });
+          return sv(360, 134, towards ? 'The N pole of a magnet near bar X; X moved towards the magnet' : 'The N pole of a magnet near end 1 of bar X; X moved away', s, 480);
+        };
+        const FIG_KATE = beside(true);
+        const FIG_XAWAY = beside(false);
+
+        // Objects P, Q, R hang from strings; the N pole of a magnet is brought near the bottom of each.
+        const FIG_HANG3 = (() => {
+          let s = `<rect x="10" y="14" width="340" height="8" fill="#94a3b8" stroke="#475569"/>`;
+          [['P', -12, 'swung towards'], ['Q', 12, 'swung away'], ['R', 0, 'did not move']].forEach(([n, d, cap], i) => {
+            const x0 = 10 + i * 115, px = x0 + 40;
+            s += `<g transform="rotate(${d} ${px} 22)"><line x1="${px}" y1="22" x2="${px}" y2="50" stroke="${INK}" stroke-width="1.5"/>` +
+              `<rect x="${px - 9}" y="50" width="18" height="70" fill="${PALE}" stroke="#111827" stroke-width="1.5"/></g>`;
+            s += rbar(x0 + 92, 112, 46, 18, 0, 'N', 'S', { size: 12 });
+            s += txt(x0 + 57, 146, n, { bold: 1, size: 16 }) + txt(x0 + 57, 164, cap, { size: 12 });
+          });
+          return sv(360, 178, 'Objects P, Q and R hang from strings. P swung towards the N pole of a magnet, Q swung away, R did not move', s, 480);
+        })();
+
+        // Three magnets hung above dishes of pins. dists in cm, counts of pins attracted.
+        const pinsFig = (dists, counts, label) => {
+          let s = `<rect x="10" y="16" width="340" height="8" fill="#94a3b8" stroke="#475569"/>`;
+          ['J', 'K', 'L'].forEach((n, i) => {
+            const cx = 10 + i * 115 + 46, bot = 240 - dists[i] * 25, top = bot - 70;
+            s += `<line x1="${cx}" y1="24" x2="${cx}" y2="${top}" stroke="${INK}" stroke-width="1.5"/>`;
+            s += rbar(cx, top + 35, 70, 22, 90, 'S', 'N', { size: 13 });
+            s += `<path d="M${cx - 40} 240 L${cx + 40} 240 L${cx + 32} 258 L${cx - 32} 258 Z" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"/>` + txt(cx, 249, 'pins', { size: 11 });
+            const ax = cx + 26;
+            s += `<line x1="${ax}" y1="${bot + 6}" x2="${ax}" y2="234" stroke="${INK}" stroke-width="1.5"/>` +
+              `<polygon points="${ax},${bot} ${ax - 4},${bot + 8} ${ax + 4},${bot + 8}" fill="${INK}"/><polygon points="${ax},240 ${ax - 4},232 ${ax + 4},232" fill="${INK}"/>`;
+            s += txt(ax + 5, (bot + 240) / 2, dists[i] + ' cm', { size: 12, anchor: 'start', bold: 1 });
+            s += txt(cx, 278, 'Magnet ' + n, { size: 13, bold: 1 }) + txt(cx, 295, counts[i] + ' pins attracted', { size: 12 });
+          });
+          return sv(360, 306, label, s, 420);
+        };
+        const FIG_PINS_UNEQUAL = pinsFig([2, 5, 3], [8, 4, 6], 'Magnets J, K and L hung 2 cm, 5 cm and 3 cm above dishes of pins; they attracted 8, 4 and 6 pins');
+        const FIG_PINS_EQUAL = pinsFig([2, 2, 2], [5, 12, 8], 'Magnets J, K and L all hung 2 cm above dishes of pins; they attracted 5, 12 and 8 pins');
+
+        // A bar magnet with three parts marked: A (N end), B (middle), C (S end).
+        const FIG_ABC = (() => {
+          let s = rbar(180, 46, 260, 36, 0, 'N', 'S');
+          [[62, 'A'], [180, 'B'], [298, 'C']].forEach(([x, n]) => {
+            s += `<line x1="${x}" y1="98" x2="${x}" y2="72" stroke="${INK}" stroke-width="2"/><polygon points="${x},66 ${x - 5},76 ${x + 5},76" fill="${INK}"/>` + txt(x, 112, n, { bold: 1, size: 17 });
+          });
+          return sv(360, 128, 'A bar magnet with part A at the N end, part B in the middle and part C at the S end', s);
+        })();
+
+        // Three electromagnet set-ups, one per row: [name, coils, batteries].
+        const FIG_EM3 = (() => {
+          let s = '';
+          [['A', 5, 1], ['B', 10, 1], ['C', 10, 2]].forEach(([n, coils, bats], i) => {
+            const y0 = 8 + i * 92;
+            s += txt(24, y0 + 28, n, { bold: 1, size: 18 });
+            s += `<rect x="48" y="${y0 + 16}" width="8" height="22" fill="#6b7280" stroke="#111827"/><rect x="56" y="${y0 + 22}" width="150" height="10" fill="#9ca3af" stroke="#111827"/>` +
+              `<polygon points="206,${y0 + 22} 220,${y0 + 27} 206,${y0 + 32}" fill="#9ca3af" stroke="#111827"/>`;
+            const x1 = 70, x2 = 190, step = (x2 - x1) / (coils - 1);
+            for (let k = 0; k < coils; k++) s += `<ellipse cx="${f1(x1 + k * step)}" cy="${y0 + 27}" rx="4" ry="11" fill="none" stroke="#b45309" stroke-width="2.5"/>`;
+            const bw = 34, tot = bats * bw + (bats - 1) * 4, bx = 130 - tot / 2;
+            for (let k = 0; k < bats; k++) s += `<rect x="${bx + k * (bw + 4)}" y="${y0 + 56}" width="${bw}" height="18" rx="3" fill="#fef3c7" stroke="#111827"/>`;
+            s += `<polyline points="${x1},${y0 + 38} ${x1},${y0 + 65} ${bx},${y0 + 65}" fill="none" stroke="#b45309" stroke-width="2.5"/>` +
+              `<polyline points="${x2},${y0 + 38} ${x2},${y0 + 65} ${bx + tot},${y0 + 65}" fill="none" stroke="#b45309" stroke-width="2.5"/>`;
+            s += txt(244, y0 + 26, coils + ' coils', { size: 14, anchor: 'start' }) + txt(244, y0 + 48, bats + (bats === 1 ? ' battery' : ' batteries'), { size: 14, anchor: 'start' }) +
+              txt(244, y0 + 70, 'iron nail', { size: 14, anchor: 'start' });
+            if (i < 2) s += `<line x1="12" y1="${y0 + 88}" x2="348" y2="${y0 + 88}" stroke="#e2e8f0"/>`;
+          });
+          return sv(360, 284, 'Three electromagnets: A has 5 coils and 1 battery, B has 10 coils and 1 battery, C has 10 coils and 2 batteries', s, 400);
+        })();
+
+        const TBL_JKL = table(['Object', 'Near the N pole of a magnet', 'Near the S pole of a magnet'],
+          [['J', 'attracted', 'attracted'], ['K', 'did not move', 'did not move'], ['L', 'repelled', 'attracted']], 'Results');
+        const TBL_KL = table(['Ends brought together', 'What happened'],
+          [['End 1 of K and end 1 of L', 'attracted'], ['End 2 of K and end 1 of L', 'attracted']], 'Results');
+        const TBL_SORT = table(['Attracted by a magnet', 'Not attracted by a magnet'],
+          [['iron nail', 'plastic button'], ['steel paper clip', 'rubber band'], ['aluminium can', 'wooden peg'], ['steel pin', 'glass marble']], 'Jun\'s groups');
+        const TBL_SIZE = table(['Magnet', 'Size', 'Number of pins attracted'],
+          [['P', 'big bar, 12 cm long', '6'], ['Q', 'small disc, 2 cm wide', '14'], ['R', 'bar, 6 cm long', '9']], 'Same distance, same kind of pins');
+        const TBL_CORES = table(['Rod', 'Material'], [['W', 'iron nail'], ['X', 'copper rod'], ['Y', 'wooden chopstick'], ['Z', 'steel nail']],
+          'Same coil of wire and same battery each time');
+        const TBL_PQ_EM = table(['Set-up', 'Coils', 'Batteries', 'Clips'],
+          [['P', '10', '1', '4'], ['Q', '20', '2', '11']], 'Paper clips attracted (same kind of iron nail)');
+
+        return [
+          // ----- Kev's sample: unlabelled poles (square, row, ring of three, hanging, unknown bar) -----
+          { id: 'x17-001', type: 'mcq', level: 2,
+            stem: 'Mei Ling put four bar magnets in a square. The poles are not labelled. She tested the two ends that meet at each corner and wrote down whether they attracted or repelled. Which pole labelling of ends A, B, C and D is possible?',
+            figure: FIG_SQ1, hintFigure: HINT_SQ1, hints: [RUNG1, 'Call A N. Top magnet: other end S. Attracts B, so B is N. Its other end S repels C, so C is S. Bottom magnet\'s other end N repels D, so D is N. Left magnet\'s top end S attracts A (N): it checks. A N, B N, C S, D N.'],
+            options: ['A: N, B: S, C: S, D: S', 'A: N, B: N, C: S, D: N', 'A: N, B: N, C: S, D: S', 'A: N, B: S, C: N, D: S'],
+            answer: 1,
+            explain: 'You do not need to know which end is N. Call end A "N" and work round the square. The other end of the top magnet is S. It attracts end B, so B is N (unlike poles attract). The other end of that magnet is S. It repels end C, so C is S (like poles repel). The other end of the bottom magnet is N. It repels end D, so D is N. The other end of the left magnet is S, and it attracts A (N): it checks out. So A: N, B: N, C: S, D: N. Calling A "S" swaps every pole (S, S, N, S), which is also possible but is not an option. Traps: (1) treats attract as "same pole"; (3) breaks at the last corner (D); (4) ignores the repel corners.' },
+          { id: 'x17-002', type: 'mcq', level: 3,
+            stem: 'Look at Mei Ling\'s square of magnets again. The poles are not labelled. Which statement is correct?',
+            figure: FIG_SQ1, hintFigure: HINT_SQ1, hints: [RUNG1, 'Call A N: B comes out N. Call A S: every pole swaps and B comes out S. A can be either pole, but B is always the same pole as A.'],
+            options: ['End A must be an N pole.', 'We cannot tell anything, because none of the poles are labelled.', 'End A could be N or S. Either way, end B is the same pole as end A.', 'End A could be N or S. Either way, end B is the opposite pole to end A.'],
+            answer: 2,
+            explain: 'Call A "N" and work round: B comes out N. Call A "S" instead and every pole swaps: B comes out S. So A could be either pole, but B is always the SAME pole as A. Both labellings are possible, so "A must be N" is wrong, and "we cannot tell anything" is wrong too: you can still tell how the ends are related.' },
+          { id: 'x17-003', type: 'oeq', level: 3, marks: 2,
+            stem: 'In Mei Ling\'s square, the top end of the left magnet attracts end A. End D is the bottom end of the left magnet. Explain how you know that end D is the same pole as end A.',
+            figure: FIG_SQ1, hintFigure: HINT_SQ1, hints: [RUNG1, 'The end that attracts A is the opposite pole to A. D is the other end of that same magnet, so D is opposite to it, which is the same pole as A.'],
+            model: 'The top end of the left magnet attracts end A, so it is the opposite pole to A, because unlike poles attract. End D is the other end of the same magnet, so it is the opposite pole to the top end. That makes end D the same pole as end A.',
+            keys: [['unlike poles attract', 'opposite pole to A', 'attracts end A, so'], ['other end of the same magnet', 'same magnet', 'a magnet has one N and one S']],
+            explain: 'Claim: D is the same pole as A. Evidence: the top end of the left magnet ATTRACTS A. Reasoning: unlike poles attract, so that end is opposite to A; and the two ends of one magnet are always opposite poles, so D is opposite to the top end, which makes it the same as A. This works whichever pole A is.' },
+          { id: 'x17-004', type: 'mcq', level: 2,
+            stem: 'Four bar magnets were put in a square. At every corner, the two ends that meet attract each other. Which arrangement, (1), (2), (3) or (4), is possible?',
+            figure: FIG_SQ_PANELS, hints: ['At every corner the ends attract, so each corner must have one N and one S. Also check: does every magnet have one N end and one S end?', 'In (3) every corner has N meeting S, and every magnet has one N and one S. (1) has like poles at the corners, (2) has a magnet with two N ends, (4) has one magnet turned round.'],
+            options: ['Arrangement (1)', 'Arrangement (2)', 'Arrangement (3)', 'Arrangement (4)'],
+            answer: 2,
+            explain: 'In (3) every corner has N meeting S, so every corner attracts, and every magnet has one N and one S. (1) has like poles at every corner, so those corners would repel (the "like poles attract" trap). (2) has a magnet with two N ends and one with two S ends, but every magnet has one N pole and one S pole. (4) has one magnet turned the wrong way, so two corners have like poles (S and S, N and N).' },
+          { id: 'x17-005', type: 'mcq', level: 2,
+            stem: 'Three bar magnets are in a row. The poles are not labelled, so the ends are numbered 1 to 6. Magnets 1 and 2 attract and stay stuck together. Magnets 2 and 3 repel. Which two ends must be like poles?',
+            figure: FIG_ROW, hintFigure: HINT_ROW, hints: [RUNG1, 'Call end 1 N. Then 2 S, 3 N (attracts 2), 4 S, 5 S (repels 4), 6 N. Ends 1 and 6 are both N: like poles.'],
+            options: ['Ends 2 and 3', 'Ends 1 and 4', 'Ends 1 and 6', 'Ends 3 and 5'],
+            answer: 2,
+            explain: 'Call end 1 "N". Then end 2 is S (same magnet). End 3 attracts end 2, so it is N, and end 4 is S. End 5 repels end 4, so it is also S, and end 6 is N. Ends 1 and 6 are both N: like poles. Calling end 1 "S" swaps everything, and 1 and 6 are still alike. Ends 2 and 3 attract, so they are unlike poles. End 4 is the other end of magnet 2, so it is the opposite of end 3, and therefore of end 1. Ends 3 and 5 are N and S.' },
+          { id: 'x17-006', type: 'oeq', level: 3, marks: 2,
+            stem: 'Look at the three magnets in a row again. Ken says, "No poles are labelled, so we cannot tell anything about them." Explain why ends 3 and 6 must be like poles.',
+            figure: FIG_ROW, hintFigure: HINT_ROW, hints: [RUNG1, 'Call end 3 N. End 4 (same magnet) is S. End 5 repels it, so 5 is S. End 6 is the other end of magnet 3, so it is N, like end 3. Starting with S swaps every pole: still alike.'],
+            model: 'Call end 3 N. End 4 is the other end of the same magnet, so it is S. End 4 repels end 5, and like poles repel, so end 5 is also S. End 6 is the other end of magnet 3, so it is N, the same as end 3. If end 3 is S, every pole swaps and ends 3 and 6 are still alike.',
+            keys: [['other end of the same magnet', 'same magnet', 'opposite pole'], ['like poles repel', 'repels end 5'], ['every pole swaps', 'either way', 'still alike']],
+            explain: 'Claim: 3 and 6 are like poles. Evidence: end 4 REPELS end 5. Reasoning: the two ends of a magnet are opposite poles, and like poles repel. You can start by calling any end N; the answer comes out the same either way, so Ken is wrong.' },
+          { id: 'x17-007', type: 'mcq', level: 2,
+            stem: 'A bar magnet hangs from a stand. Only its top end is marked N. When end 1 of bar Q is brought up under it, the hanging magnet swings away. What is end 1 of bar Q?',
+            figure: FIG_HANG, hintFigure: HINT_HANG, hints: ['Which end of the hanging magnet is nearest to end 1? It is not the marked end. What must that end be, if the top end is N?', 'Top end N, so the bottom end of the hanging magnet is S. End 1 repels it, and like poles repel, so end 1 is S.'],
+            options: ['An N pole', 'An S pole', 'It could be N or S, because the poles of bar Q are not labelled', 'Not a pole, because bar Q is only a magnetic material'],
+            answer: 1,
+            explain: 'The top end is N, so the bottom end of the hanging magnet is S. End 1 is next to the bottom end, and they repel. Like poles repel, so end 1 is S. Here the marked end fixes the answer: it cannot be either pole. "N" is the trap of using the marked end instead of the end that faces bar Q. Repelling also shows that bar Q is a magnet.' },
+          { id: 'x17-008', type: 'mcq', level: 3,
+            stem: 'Three bar magnets are put in a triangle. The poles are not labelled. At corner X the ends attract. At corner Y the ends repel. What happens at corner Z?',
+            figure: FIG_TRI, hintFigure: HINT_TRI, hints: [RUNG1, 'Call the left magnet\'s end at X N. Right magnet: S at X, N at Y. Y repels, so the bottom magnet is N at Y and S at Z. The left magnet is S at Z. S meets S: repel.'],
+            options: ['The ends repel.', 'The ends attract.', 'We cannot tell, because none of the poles are labelled.', 'It depends on which end you call N.'],
+            answer: 0,
+            explain: 'Call the end of the left magnet at X "N". The right magnet\'s end at X attracts it, so it is S, and its end at Y is N. Corner Y repels, so the bottom magnet\'s end at Y is N and its end at Z is S. The left magnet\'s end at Z is S (the other end of N). S meets S at Z, so the ends repel. Calling the first end S swaps every pole, and Z still repels: the answer does NOT depend on which end you call N.' },
+          { id: 'x17-009', type: 'oeq', level: 3, marks: 2,
+            stem: 'Look at the triangle of magnets. Explain how you know that the ends at corner Z repel.',
+            figure: FIG_TRI, hintFigure: HINT_TRI, hints: [RUNG1, 'Follow round: the two ends of one magnet are opposite; attract means opposite; repel means the same. At Z, S faces S, and like poles repel.'],
+            model: 'Call the left magnet\'s end at X N. The end that attracts it is S, so the other end of that magnet, at Y, is N. Y repels, so the bottom magnet\'s end at Y is N and its end at Z is S. The left magnet\'s end at Z is the opposite of N, which is S. S and S are like poles, and like poles repel.',
+            keys: [['opposite', 'other end of'], ['like poles repel', 'S and S']],
+            explain: 'Work round the triangle one end at a time: the two ends of one magnet are opposite poles; attract means opposite poles; repel means the same pole. Corner Z ends up with S facing S, and like poles repel. Starting with S instead gives N facing N at Z: still repel.' },
+          { id: 'x17-010', type: 'mcq', level: 2,
+            stem: 'Bala brought the N pole of a magnet near end 1 of bar X. Bar X moved away. Which statement is correct?',
+            figure: FIG_XAWAY, hints: ['Moving away means the magnet pushed bar X. What kind of object can be pushed away by a magnet?', 'Only a magnet can be pushed away by a magnet, so X is a magnet. Like poles repel, so end 1 is the same as N: end 1 is N.'],
+            options: ['Bar X is a magnet, and end 1 is an N pole.', 'Bar X is a magnet, and end 1 is an S pole.', 'Bar X is only a magnetic material, such as iron.', 'We cannot tell, because the poles of bar X are not labelled.'],
+            answer: 0,
+            explain: 'X was repelled, and only a magnet can repel a magnet, so X is a magnet. Like poles repel, so end 1 is the same pole as the magnet\'s N pole: end 1 is N. An iron bar would be attracted, never pushed away. Unlabelled poles do not stop you: the repel result tells you what end 1 is.' },
+          { id: 'x17-011', type: 'mcq', level: 3,
+            stem: 'Two steel bars, K and L, look the same. Ken brought the ends of the bars together, as shown in the table. Which statement is correct?',
+            figure: TBL_KL, hints: ['If K were a magnet, its two ends would be different poles. Would both of them attract end 1 of a magnet? Then try it the other way round.', 'Two non-magnets never attract, so one is a magnet. Both cannot be magnets, or one end of K would repel. Either K or L could be the magnet: we cannot tell which.'],
+            options: ['K is a magnet and L is not.', 'L is a magnet and K is not.', 'Neither bar is a magnet.', 'One bar is a magnet, but we cannot tell which one.'],
+            answer: 3,
+            explain: 'Two bars that are not magnets do not attract each other, so at least one is a magnet. They cannot both be magnets: the two ends of K would then be different poles, and one of them would repel end 1 of L. So exactly one bar is a magnet. If K is the magnet, both of its ends attract the plain steel bar L. If L is the magnet, its end 1 attracts both ends of the plain steel bar K. Both fit the results, so attraction alone cannot tell us which one.' },
+          { id: 'x17-012', type: 'oeq', level: 2, marks: 2,
+            stem: 'Ken still has steel bars K and L, and he knows one of them is a magnet. He has no other magnet. Describe how he can find out which bar is the magnet.',
+            figure: TBL_KL, hints: ['What does a magnet do when it hangs from a string and is free to turn?', 'Hang each bar from a string so it can turn freely. The one that always comes to rest pointing North-South is the magnet.'],
+            model: 'Hang each bar from a string so that it can turn freely. The bar that comes to rest pointing North-South every time is the magnet. The steel bar that is not a magnet does not keep pointing North-South.',
+            keys: [['hang', 'string', 'freely suspended', 'turn freely'], ['North-South', 'points north', 'pointing north']],
+            explain: 'A freely suspended magnet always comes to rest pointing North-South. Testing each bar in turn shows which one is the magnet, without needing a second magnet.' },
+          { id: 'x17-013', type: 'mcq', level: 3,
+            stem: 'Siti made another square of four bar magnets. The poles are not labelled. She tested each corner. Which pole labelling of ends A, B, C and D is possible?',
+            figure: FIG_SQ2, hintFigure: HINT_SQ2, hints: [RUNG1 + ' If your answer is not one of the options, swap every N and S.', 'Call A N: you get A N, B S, C S, D N. That is not an option, so swap every pole: A S, B N, C N, D S. Both are possible.'],
+            options: ['A: N, B: N, C: S, D: S', 'A: N, B: S, C: S, D: S', 'A: S, B: N, C: N, D: S', 'A: N, B: S, C: N, D: S'],
+            answer: 2,
+            explain: 'Call A "N". The other end of the top magnet is S. It repels B, so B is S. The other end of that magnet is N. It attracts C, so C is S. The other end of the bottom magnet is N. It repels D, so D is N. The other end of the left magnet is S, and it attracts A (N): it checks out. That gives A N, B S, C S, D N, which is not an option. Swap every pole: A S, B N, C N, D S. Both labellings are possible. Option (1) treats attract as "same pole", (2) breaks at the last corner, and (4) ignores the repel corners.' },
+
+          // ----- Magnet, magnetic or non-magnetic? Only repulsion proves a magnet -----
+          { id: 'x17-014', type: 'mcq', level: 2,
+            stem: 'Objects J, K and L were each brought near the N pole and then the S pole of a magnet. What could J, K and L be?',
+            figure: TBL_JKL, hints: ['Which result can only happen with a magnet: attracted or repelled?', 'L was repelled, so L is a magnet. J was attracted by both poles, so it is a magnetic material (iron). K did not move, so it is non-magnetic (copper).'],
+            options: ['J: copper bar, K: iron bar, L: magnet', 'J: magnet, K: copper bar, L: iron bar', 'J: iron bar, K: magnet, L: copper bar', 'J: iron bar, K: copper bar, L: magnet'],
+            answer: 3,
+            explain: 'L was repelled by the N pole, and only a magnet can repel a magnet, so L is a magnet. J was attracted by both poles and never repelled, so it is a magnetic material such as iron. K did not move at all, so it is non-magnetic, such as copper. Saying J is a magnet is the "attraction proves a magnet" trap.' },
+          { id: 'x17-015', type: 'mcq', level: 1,
+            stem: 'Kate brought the N pole of a magnet near object X. X moved towards the magnet. Kate says, "X must be a magnet." Is she correct?',
+            figure: FIG_KATE, hints: ['Think of an iron nail. Would it also move towards the magnet?', 'Iron is attracted too, so attraction does not prove a magnet. Only being repelled proves X is a magnet.'],
+            options: ['Yes, because X was attracted by the magnet.', 'No. X could be a magnetic material such as iron; she must test if X is repelled.', 'Yes, because only magnets can move towards a magnet.', 'No, because X moved, so it must be made of copper.'],
+            answer: 1,
+            explain: 'A magnet attracts magnetic materials such as iron and steel too, so being attracted does not prove X is a magnet. Only repulsion proves it. Copper is non-magnetic, so a copper object would not move at all.' },
+          { id: 'x17-016', type: 'oeq', level: 2, marks: 2,
+            stem: 'Kate wants to be sure whether object X is a magnet. She has one bar magnet. Describe what she should do, and the result that would show X is a magnet.',
+            figure: FIG_KATE, hints: ['Being attracted is not enough. What can only happen between two magnets?', 'Bring the N pole near one end of X, then the other end. If one end is repelled, X is a magnet: only a magnet can repel a magnet.'],
+            model: 'She should bring the N pole of the magnet near one end of X and then near the other end of X. If one end of X is repelled (pushed away), X is a magnet, because only a magnet can repel another magnet.',
+            keys: [['other end', 'both ends', 'each end'], ['repelled', 'repel', 'pushed away']],
+            explain: 'Claim: X is a magnet only if it is repelled. Reasoning: a magnet attracts magnetic materials too, so attraction tells us nothing for sure; only a magnet can repel a magnet. Test BOTH ends, because the end she tried first may be the unlike pole, which attracts.' },
+          { id: 'x17-017', type: 'mcq', level: 1,
+            stem: 'Jun tested some objects with a magnet and sorted them into two groups. He put one object in the wrong group. Which one?',
+            figure: TBL_SORT, hints: ['Not all metals are magnetic. Which metal in the table is NOT a magnetic material?', 'Aluminium is a metal but it is non-magnetic. The aluminium can belongs in the not-attracted group.'],
+            options: ['Aluminium can', 'Iron nail', 'Steel pin', 'Glass marble'],
+            answer: 0,
+            explain: 'Aluminium is a metal, but it is non-magnetic, so a magnet does not attract an aluminium can. It belongs in the "not attracted" group. Iron and steel are magnetic materials. Glass is non-magnetic, so the marble is in the right group.' },
+          { id: 'x17-018', type: 'mcq', level: 1,
+            stem: 'Objects P, Q and R hang from strings. The N pole of a magnet was brought near the bottom of each one. Which object is definitely a magnet?',
+            figure: FIG_HANG3, hints: ['Look for the object that was pushed away.', 'Q swung away: it was repelled, so Q is definitely a magnet. P could just be iron. R is non-magnetic.'],
+            options: ['P', 'P and Q', 'Q', 'R'],
+            answer: 2,
+            explain: 'Q swung away: it was repelled, and only a magnet can repel a magnet, so Q is definitely a magnet. P was attracted, so it could be a magnet or just a magnetic material such as iron. R did not move, so it is non-magnetic.' },
+
+          // ----- Magnetic strength: pins attracted -----
+          { id: 'x17-019', type: 'mcq', level: 3,
+            stem: 'Lily hung magnets J, K and L above dishes of pins and counted the pins each one attracted. Lily says J is the strongest magnet. Which statement is correct?',
+            figure: FIG_PINS_UNEQUAL, hints: ['Before comparing the numbers of pins, check: were the magnets all the same distance from the pins?', 'J was 2 cm away, K 5 cm, L 3 cm. Nearer magnets attract more pins, so it is not a fair test: we cannot tell which is strongest.'],
+            options: ['Yes, J is the strongest, because it attracted the most pins.', 'No, K is the strongest, because it was furthest from the pins.', 'We cannot tell, because the magnets were at different distances from the pins.', 'No, all three magnets are equally strong, because they are all bar magnets.'],
+            answer: 2,
+            explain: 'The magnets were 2 cm, 5 cm and 3 cm above the pins. A magnet attracts fewer pins when it is further away, so J may have attracted the most pins only because it was nearest. It is not a fair test, so we cannot tell which magnet is strongest. Being furthest away does not make K strongest either: we just cannot compare.' },
+          { id: 'x17-020', type: 'oeq', level: 2, marks: 2,
+            stem: 'Look at Lily\'s set-up again. Explain why she cannot tell which magnet is the strongest, and suggest one change to make it a fair test.',
+            figure: FIG_PINS_UNEQUAL, hints: ['What else was different about the three magnets, apart from the magnet itself?', 'The distances were different (2, 5, 3 cm), so J may have won only because it was nearest. Hang all three at the same distance.'],
+            model: 'The magnets were at different distances from the pins (J 2 cm, K 5 cm, L 3 cm). A magnet attracts fewer pins when it is further away, so J may have attracted the most only because it was nearest. She should hang all three magnets at the same distance above the pins.',
+            keys: [['different distances', 'not the same distance', 'nearest'], ['same distance', 'same height']],
+            explain: 'Claim: she cannot tell. Evidence: 2 cm, 5 cm and 3 cm. Reasoning: distance also changes the number of pins attracted, so two things changed at once. In a fair test only the magnet changes; the distance must be kept the same.' },
+          { id: 'x17-021', type: 'mcq', level: 1,
+            stem: 'This time Lily hung magnets J, K and L at the same distance above the pins. Which shows the magnets in order from STRONGEST to WEAKEST?',
+            figure: FIG_PINS_EQUAL, hints: ['At the same distance, the more pins a magnet attracts, the stronger it is.', 'Same distance, so compare the pins: K 12, L 8, J 5. Strongest to weakest: K, L, J.'],
+            options: ['J, K, L', 'K, L, J', 'J, L, K', 'K, J, L'],
+            answer: 1,
+            explain: 'All three were 2 cm above the pins, so it is a fair comparison. K attracted the most (12), then L (8), then J (5). Strongest to weakest: K, L, J. "J, L, K" is the trap: that is weakest to strongest. "J, K, L" is just the order they are drawn in.' },
+          { id: 'x17-022', type: 'mcq', level: 2,
+            stem: 'Mei dipped part A, then part B, then part C of the same bar magnet into a box of pins, and counted the pins each time. Which set of results is most likely to be correct?',
+            figure: FIG_ABC, hints: ['Where is the magnetic force of a bar magnet strongest: at the ends or in the middle?', 'Strongest at the poles (A and C), weakest in the middle (B). So many pins at A and C, very few at B.'],
+            options: ['A: 2 pins, B: 14 pins, C: 3 pins', 'A: 12 pins, B: 12 pins, C: 12 pins', 'A: 12 pins, B: 6 pins, C: 0 pins', 'A: 12 pins, B: 1 pin, C: 11 pins'],
+            answer: 3,
+            explain: 'The magnetic force is strongest at the poles (the two ends, A and C) and weakest in the middle (B). So A and C attract many pins and B very few. (1) has the middle strongest. (2) has the force the same everywhere. (3) has the S pole (C) attracting nothing, but both poles attract pins.' },
+          { id: 'x17-023', type: 'oeq', level: 1, marks: 2,
+            stem: 'Mei\'s magnet attracted 12 pins at part A, 1 pin at part B and 11 pins at part C. Explain why part B attracted the fewest pins.',
+            figure: FIG_ABC, hints: ['Where on a bar magnet is B? Where is the magnetic force strongest?', 'B is the middle, where the magnetic force is weakest. The force is strongest at the poles, A and C.'],
+            model: 'Part B is the middle of the magnet, where the magnetic force is weakest. The magnetic force is strongest at the poles, the two ends A and C.',
+            keys: [['middle', 'centre', 'weakest'], ['poles', 'ends', 'strongest at']],
+            explain: 'Claim: B is weakest. Evidence: 1 pin at B, but 12 and 11 at the ends. Reasoning: a magnet\'s force is strongest at its poles and weakest in the middle.' },
+          { id: 'x17-024', type: 'mcq', level: 2,
+            stem: 'Raju tested three magnets of different sizes at the same distance from the same kind of pins. Which conclusion is correct?',
+            figure: TBL_SIZE, hints: ['Find the magnet that attracted the most pins. Is it the biggest one?', 'The small disc Q attracted the most pins (14) and the big bar P the fewest (6). Bigger is not always stronger.'],
+            options: ['A bigger magnet is not always a stronger magnet.', 'The bigger the magnet, the stronger it is.', 'Magnet P is the strongest, because it is the biggest.', 'All three magnets are equally strong.'],
+            answer: 0,
+            explain: 'The small disc Q attracted the most pins (14), and the big bar P attracted the fewest (6). So a bigger magnet is not always stronger: you can only tell a magnet\'s strength by testing it, not by its size.' },
+
+          // ----- Electromagnets (P4 strength factors; Kev 2026-10-17: in scope, tagged) -----
+          { id: 'x17-025', type: 'mcq', level: 1, syl: 'P4',
+            stem: 'Wei Ming made three electromagnets, A, B and C, with the same kind of iron nail. Which one will attract the most paper clips when it is switched on?',
+            figure: FIG_EM3, hints: ['More coils make an electromagnet stronger. So do more batteries. Which set-up has the most of both?', 'C has the most coils (10) and the most batteries (2), so it is the strongest.'],
+            options: ['C', 'A', 'B', 'They will all attract the same number, because the nails are the same'],
+            answer: 0,
+            explain: 'C has the most coils (10) and the most batteries (2), so it is the strongest electromagnet and attracts the most paper clips. B has the same coils as C but only 1 battery. A has the fewest coils (5) and 1 battery, so it is the weakest.' },
+          { id: 'x17-026', type: 'oeq', level: 2, marks: 2, syl: 'P4',
+            stem: 'Wei Ming wants to find out if the number of batteries affects the strength of an electromagnet. Which two set-ups should he compare? Explain your choice.',
+            figure: FIG_EM3, hints: ['Find two set-ups where ONLY the number of batteries is different.', 'B and C: only the number of batteries differs. Both have 10 coils and an iron nail, so it is a fair test.'],
+            model: 'Set-ups B and C. Only the number of batteries is different (1 and 2). The number of coils (10) and the iron nail are kept the same, so it is a fair test.',
+            keys: [['B and C', 'C and B'], ['only the number of batteries', 'same number of coils', 'fair test']],
+            explain: 'Claim: B and C. Evidence: both have 10 coils and an iron nail; only the batteries differ. Reasoning: in a fair test only the variable being tested changes. A and B differ in coils, and A and C differ in both coils and batteries.' },
+          { id: 'x17-027', type: 'mcq', level: 2, syl: 'P4',
+            stem: 'Nadia wound the same coil of wire round four rods, one at a time, and connected the same battery. Which rods became magnets when electricity flowed?',
+            figure: TBL_CORES, hints: ['The electricity flows in the wire each time. Which rods are made of a magnetic material?', 'Only magnetic materials become magnets: iron (W) and steel (Z). Copper and wood do not, even with electricity flowing.'],
+            options: ['W only, because only iron can become a magnet', 'W and Z only', 'W, X, Y and Z, because electricity flowed each time', 'X only, because copper lets electricity flow'],
+            answer: 1,
+            explain: 'Only a magnetic material can become a magnet. Iron (W) and steel (Z) are magnetic, so they became electromagnets. Copper (X) and wood (Y) are non-magnetic, so they did not, even though electricity flowed in the wire. Copper lets electricity flow, but that does not make it magnetic.' },
+          { id: 'x17-028', type: 'mcq', level: 3, syl: 'P4',
+            stem: 'Faizal made electromagnets P and Q. Q attracted more paper clips. Faizal says, "This shows that more coils make an electromagnet stronger." Which statement is correct?',
+            figure: TBL_PQ_EM, hints: ['How many things are different between P and Q?', 'Q has more coils AND more batteries, so either could be the cause. To test coils, keep the batteries the same.'],
+            options: ['He is correct, because Q has more coils and attracted more clips.', 'More batteries made Q weaker, so the coils did all the work.', 'The nails must have been different, so nothing can be concluded.', 'He cannot tell, because he changed both the coils and the batteries.'],
+            answer: 3,
+            explain: 'Q has more coils AND more batteries than P. Either change could have made Q stronger, so Faizal cannot tell whether it was the coils. To test the coils fairly, he must keep the number of batteries the same and change only the number of coils. The table says the nails were the same kind.' }
+        ];
+      })()
     ]
   });
 })();

@@ -252,6 +252,140 @@
     return out + '</svg>';
   })();
 
+  /* ---------- x17 science expansion helpers (lane sci-x-plantcycle) ---------- */
+  // One small stage cycle centred on (cx, cy): boxes round an ellipse, arrows clockwise.
+  function x17CycleAt(labels, cx, cy, rx, ry, bw, bh) {
+    const n = labels.length;
+    const pts = labels.map((_, i) => {
+      const a = -Math.PI / 2 + (2 * Math.PI * i) / n;
+      return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)];
+    });
+    let out = '';
+    for (let i = 0; i < n; i++) {
+      const [px, py] = pts[i], [qx, qy] = pts[(i + 1) % n];
+      const dx = qx - px, dy = qy - py, d = Math.hypot(dx, dy), ux = dx / d, uy = dy / d;
+      const cut = Math.min(Math.abs(ux) > 1e-6 ? bw / 2 / Math.abs(ux) : 1e9, Math.abs(uy) > 1e-6 ? bh / 2 / Math.abs(uy) : 1e9) + 4;
+      const sx = px + ux * cut, sy = py + uy * cut, ex = qx - ux * cut, ey = qy - uy * cut;
+      const hx = ex - ux * 9, hy = ey - uy * 9, nx = -uy * 4.5, ny = ux * 4.5;
+      out += `<line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="currentColor" stroke-width="2"/>`;
+      out += `<polygon points="${ex.toFixed(1)},${ey.toFixed(1)} ${(hx + nx).toFixed(1)},${(hy + ny).toFixed(1)} ${(hx - nx).toFixed(1)},${(hy - ny).toFixed(1)}" fill="currentColor"/>`;
+    }
+    labels.forEach((lab, i) => {
+      const [px, py] = pts[i];
+      out += `<rect x="${(px - bw / 2).toFixed(1)}" y="${(py - bh / 2).toFixed(1)}" width="${bw}" height="${bh}" rx="7" fill="none" stroke="currentColor" stroke-width="1.5"/>`;
+      out += `<text x="${px.toFixed(1)}" y="${(py + 5).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="500" fill="currentColor">${esc(lab)}</text>`;
+    });
+    return out;
+  }
+
+  // Two life cycles side by side: animal A (3 stages) and animal B (4 stages).
+  const x17PairAB = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 214" width="100%" style="max-width:360px" role="img" aria-label="Two life cycle diagrams. Animal A: egg, then young, then adult, then back to egg. Animal B: egg, then larva, then pupa, then adult, then back to egg." ${FONT}>` +
+    `<text x="90" y="18" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">Animal A</text>` +
+    `<text x="270" y="18" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">Animal B</text>` +
+    `<line x1="180" y1="6" x2="180" y2="208" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/>` +
+    x17CycleAt(['Egg', 'Young', 'Adult'], 90, 118, 58, 60, 62, 30) +
+    x17CycleAt(['Egg', 'Larva', 'Pupa', 'Adult'], 270, 118, 52, 62, 64, 30) + '</svg>';
+
+  // Four stages in a row with arrows between; panel k is drawn by draw[k](x0) (84 wide, 142 tall).
+  function x17Strip(letters, draw, aria) {
+    let out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 150" width="100%" style="max-width:400px" role="img" aria-label="${esc(aria)}" ${FONT}>`;
+    [4, 106, 208, 310].forEach((x, k) => {
+      const blank = letters[k].blank;
+      out += `<rect x="${x}" y="4" width="84" height="142" rx="9" fill="none" stroke="currentColor" stroke-width="${blank ? 2.5 : 1.5}"${blank ? ' stroke-dasharray="6 4"' : ''}/>`;
+      out += `<text x="${x + 9}" y="24" font-size="17" font-weight="700" fill="currentColor">${letters[k].L}</text>`;
+      out += blank ? `<text x="${x + 42}" y="96" text-anchor="middle" font-size="44" font-weight="700" fill="currentColor">?</text>` : draw[k](x);
+      if (k < 3) {
+        const ax = x + 87, ay = 75;
+        out += `<line x1="${ax}" y1="${ay}" x2="${ax + 10}" y2="${ay}" stroke="currentColor" stroke-width="2"/><polygon points="${ax + 15},${ay} ${ax + 9},${ay - 4} ${ax + 9},${ay + 4}" fill="currentColor"/>`;
+      }
+    });
+    return out + '</svg>';
+  }
+  const x17Water = (x, top) => `<rect x="${x + 2}" y="${top}" width="80" height="${144 - top}" fill="currentColor" fill-opacity="0.1"/><line x1="${x + 2}" y1="${top}" x2="${x + 82}" y2="${top}" stroke="currentColor" stroke-width="1.5"/>`;
+
+  // Mosquito: W eggs floating on water, X larva hanging from the surface, Y missing, Z adult.
+  const x17Mozzie = x17Strip([{ L: 'W' }, { L: 'X' }, { L: 'Y', blank: true }, { L: 'Z' }], [
+    (x) => x17Water(x, 76) + [0, 1, 2, 3, 4, 5].map((i) => `<ellipse cx="${x + 27 + i * 6}" cy="${72}" rx="2.6" ry="5.5" fill="currentColor"/>`).join(''),
+    (x) => {
+      let s = x17Water(x, 50) + `<line x1="${x + 34}" y1="50" x2="${x + 37}" y2="62" stroke="currentColor" stroke-width="2.5"/>`;
+      for (let i = 0; i < 6; i++) s += `<circle cx="${(x + 39 + i * 1.6).toFixed(1)}" cy="${66 + i * 8}" r="4.2" fill="currentColor" fill-opacity="0.5" stroke="currentColor" stroke-width="1"/>`;
+      return s + `<circle cx="${x + 50}" cy="${119}" r="6" fill="currentColor"/>`;
+    },
+    null,
+    (x) => {
+      const S = 'stroke="currentColor" stroke-width="1.6" fill="none"';
+      let s = `<ellipse cx="${x + 52}" cy="64" rx="16" ry="5" transform="rotate(-25 ${x + 52} 64)" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1.4"/>`;
+      s += `<ellipse cx="${x + 58}" cy="70" rx="15" ry="4.5" transform="rotate(-8 ${x + 58} 70)" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1.4"/>`;
+      s += `<ellipse cx="${x + 38}" cy="80" rx="7" ry="6" fill="currentColor"/>`;
+      s += `<ellipse cx="${x + 58}" cy="86" rx="15" ry="4" transform="rotate(14 ${x + 58} 86)" fill="currentColor" fill-opacity="0.7"/>`;
+      s += `<circle cx="${x + 27}" cy="78" r="4.5" fill="currentColor"/>`;
+      s += `<line x1="${x + 23}" y1="80" x2="${x + 10}" y2="90" stroke="currentColor" stroke-width="1.6"/>`;
+      s += `<path d="M${x + 35},84 L${x + 20},104 L${x + 14},124 M${x + 38},85 L${x + 34},108 L${x + 30},128 M${x + 41},84 L${x + 50},106 L${x + 58},126" ${S}/>`;
+      return s;
+    }], 'Four drawings in a row with arrows: W, tiny eggs floating on water; X, a wriggly young animal hanging from the water surface; Y, an empty box with a question mark; Z, a flying insect with long thin legs and two wings');
+
+  // Tomato plant: E seed, F missing, G adult plant with flowers, H fruit cut open with seeds.
+  const x17Tomato = x17Strip([{ L: 'E' }, { L: 'F', blank: true }, { L: 'G' }, { L: 'H' }], [
+    (x) => `<line x1="${x + 6}" y1="112" x2="${x + 78}" y2="112" stroke="currentColor" stroke-width="2"/><ellipse cx="${x + 42}" cy="100" rx="15" ry="9" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2"/><ellipse cx="${x + 42}" cy="95" rx="4" ry="2" fill="currentColor"/>`,
+    null,
+    (x) => {
+      const c = x + 42, S = 'stroke="currentColor" stroke-width="1.6"';
+      const lf = (lx, ly, dir) => `<ellipse cx="${lx + dir * 11}" cy="${ly}" rx="11" ry="4.5" transform="rotate(${-dir * 25} ${lx} ${ly})" fill="currentColor" fill-opacity="0.3" ${S}/>`;
+      const fl = (fx, fy) => [0, 72, 144, 216, 288].map((a) => `<circle cx="${(fx + 5 * Math.cos(a * Math.PI / 180)).toFixed(1)}" cy="${(fy + 5 * Math.sin(a * Math.PI / 180)).toFixed(1)}" r="3.6" fill="none" ${S}/>`).join('') + `<circle cx="${fx}" cy="${fy}" r="2" fill="currentColor"/>`;
+      let s = `<line x1="${x + 6}" y1="122" x2="${x + 78}" y2="122" stroke="currentColor" stroke-width="2"/>`;
+      s += `<path d="M${c},122 L${c - 2},136 M${c},122 L${c - 10},134 M${c},122 L${c + 9},136" fill="none" stroke="currentColor" stroke-width="1.4"/>`;
+      s += `<line x1="${c}" y1="122" x2="${c}" y2="40" stroke="currentColor" stroke-width="2.5"/>`;
+      s += lf(c, 108, -1) + lf(c, 98, 1) + lf(c, 84, -1) + lf(c, 72, 1);
+      s += `<line x1="${c}" y1="58" x2="${c + 16}" y2="48" ${S}/>`;
+      return s + fl(c, 36) + fl(c + 19, 45);
+    },
+    (x) => {
+      const c = x + 42;
+      // a round fruit cut across: skin, flesh ring, seeds in the middle, leafy cap and stalk on top
+      let s = `<circle cx="${c}" cy="84" r="27" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="2.2"/>`;
+      s += `<circle cx="${c}" cy="84" r="17" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 2"/>`;
+      [0, 60, 120, 180, 240, 300].forEach((a) => { const r = a * Math.PI / 180; s += `<ellipse cx="${(c + 10 * Math.cos(r)).toFixed(1)}" cy="${(84 + 10 * Math.sin(r)).toFixed(1)}" rx="2.2" ry="3.4" transform="rotate(${a + 90} ${(c + 10 * Math.cos(r)).toFixed(1)} ${(84 + 10 * Math.sin(r)).toFixed(1)})" fill="currentColor"/>`; });
+      s += `<path d="M${c - 14},55 Q${c - 6},60 ${c},57 Q${c + 6},60 ${c + 14},55 Q${c + 6},52 ${c},53 Q${c - 6},52 ${c - 14},55 Z" fill="currentColor" fill-opacity="0.5"/>`;
+      s += `<line x1="${c}" y1="54" x2="${c + 2}" y2="42" stroke="currentColor" stroke-width="2.5"/>`;
+      s += `<text x="${c}" y="132" text-anchor="middle" font-size="13" fill="currentColor">cut fruit</text>`;
+      return s;
+    }], 'Four drawings in a row with arrows: E, a seed in the soil; F, an empty box with a question mark; G, a tall plant with many leaves and flowers; H, a round fruit cut in half with seeds inside');
+
+  // Mealworm beetle stages, unnamed and in a mixed-up order: W adult, X larva, Y pupa, Z eggs.
+  const x17Meal = (() => {
+    const S = 'stroke="currentColor" stroke-width="2"';
+    let out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 260" width="100%" data-maxw="560" style="max-width:360px" role="img" aria-label="Four unlabelled drawings: W, a beetle with six legs, feelers and a hard body; X, a long thin worm-like body made of segments, with tiny legs near the head; Y, a pale body with folded legs lying still on its side on the ground; Z, a few tiny oval eggs on the ground" ${FONT}>`;
+    [[4, 4, 'W'], [182, 4, 'X'], [4, 132, 'Y'], [182, 132, 'Z']].forEach(([x, y, L]) => {
+      out += `<rect x="${x}" y="${y}" width="174" height="124" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>`;
+      out += `<text x="${x + 12}" y="${y + 24}" font-size="20" font-weight="700" fill="currentColor">${L}</text>`;
+    });
+    // W: adult beetle (top view)
+    out += `<path d="M77,58 L58,46 M76,74 L54,76 M78,88 L60,104 M105,58 L124,46 M106,74 L128,76 M104,88 L122,104" fill="none" ${S}/>`;
+    out += `<ellipse cx="91" cy="76" rx="16" ry="30" fill="currentColor" fill-opacity="0.55" ${S}/>`;
+    out += `<line x1="91" y1="52" x2="91" y2="105" stroke="#fff" stroke-width="1.5"/>`;
+    out += `<circle cx="91" cy="40" r="8" fill="currentColor"/>`;
+    out += `<path d="M87,34 L78,18 M95,34 L104,18" fill="none" ${S}/>`;
+    // X: larva (mealworm), segmented, tiny legs near the head on the right
+    out += `<line x1="196" y1="96" x2="346" y2="96" stroke="currentColor" stroke-width="2.5"/>`;
+    for (let i = 0; i < 10; i++) out += `<circle cx="${212 + i * 12}" cy="76" r="8" fill="currentColor" fill-opacity="0.28" stroke="currentColor" stroke-width="1.4"/>`;
+    out += `<circle cx="336" cy="75" r="7" fill="currentColor" fill-opacity="0.6" stroke="currentColor" stroke-width="1.4"/>`;
+    [306, 314, 322].forEach((lx) => { out += `<line x1="${lx}" y1="83" x2="${lx + 2}" y2="93" stroke="currentColor" stroke-width="1.6"/>`; });
+    // Y: pupa lying on the ground, curled, with folded leg and wing pads
+    out += `<line x1="18" y1="238" x2="168" y2="238" stroke="currentColor" stroke-width="2.5"/>`;
+    // body lying on its side: tapering, segmented tail end on the left, head end on the right with folded legs and wing pads
+    out += `<path d="M30,214 C34,204 52,198 80,196 C110,194 138,196 146,208 C150,218 140,232 112,234 C84,236 54,232 38,224 C32,221 28,218 30,214 Z" fill="currentColor" fill-opacity="0.15" ${S}/>`;
+    [46, 58, 70, 82].forEach((sx) => { out += `<path d="M${sx},${199 - (sx - 46) / 12} Q${sx + 5},215 ${sx},${231 + (sx - 46) / 12}" fill="none" stroke="currentColor" stroke-width="1.2"/>`; });
+    out += `<path d="M30,214 L20,208 M30,214 L20,220" fill="none" stroke="currentColor" stroke-width="1.4"/>`;
+    out += `<ellipse cx="112" cy="214" rx="17" ry="10" fill="none" stroke="currentColor" stroke-width="1.3"/>`;
+    out += `<path d="M126,222 L120,230 M134,220 L130,230 M140,214 L144,224" fill="none" stroke="currentColor" stroke-width="1.3"/>`;
+    // Z: eggs
+    out += `<line x1="196" y1="222" x2="346" y2="222" stroke="currentColor" stroke-width="2.5"/>`;
+    [[246, 212], [260, 214], [274, 211], [253, 202], [267, 203]].forEach(([ex, ey]) => { out += `<ellipse cx="${ex}" cy="${ey}" rx="6" ry="4" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.5"/>`; });
+    return out + '</svg>';
+  })();
+
+  const x17Days = tbl(['Insect', 'Egg', 'Larva', 'Pupa'], [['Beetle A', '7', '30', '12'], ['Moth B', '5', '21', '18']], 'Number of days each insect spent in each stage');
+
   SCI.registerTopic({
     id: 'life-cycles',
     title: 'Life Cycles',
@@ -699,7 +833,93 @@
         figure: tbl(['Week', 'Length of nymph (mm)'], [['1', '8'], ['2', '8'], ['3', '12'], ['4', '12'], ['5', '17']]),
         options: ['It shed its skin and then grew bigger', 'It became a pupa and then grew bigger', 'It stopped feeding and then grew bigger', 'It grew wings and then grew bigger'],
         answer: 0,
-        explain: 'A nymph\'s outer skin cannot stretch, so it sheds (moults) its old skin to grow bigger. That is why its length goes up in steps. A cockroach has no pupa stage, and it gets wings only when it becomes an adult.' }
+        explain: 'A nymph\'s outer skin cannot stretch, so it sheds (moults) its old skin to grow bigger. That is why its length goes up in steps. A cockroach has no pupa stage, and it gets wings only when it becomes an adult.' },
+
+      /* x17 science expansion — lane sci-x-plantcycle */
+      { id: 'x17-lc-001', type: 'mcq', level: 2,
+        stem: 'The diagrams show the life cycles of two animals, A and B. Which pair of animals could A and B be?',
+        figure: x17PairAB,
+        options: ['A: mosquito, B: grasshopper', 'A: butterfly, B: cockroach', 'A: cockroach, B: mosquito', 'A: chicken, B: grasshopper'],
+        answer: 2,
+        hints: ['Count the stages in each cycle. Which one has a pupa?', 'A has 3 stages (no pupa), like a cockroach or chicken. B has 4 stages with a pupa, like a mosquito or butterfly. Only one option has both right.'],
+        explain: 'A has 3 stages (egg, young, adult) and no pupa: a cockroach fits. B has 4 stages (egg, larva, pupa, adult): a mosquito fits. Option 2 swaps them. A grasshopper has only 3 stages and no pupa, so it cannot be B.' },
+      { id: 'x17-lc-002', type: 'oeq', level: 2, marks: 2,
+        stem: 'Look at the life cycles of animals A and B.\n(a) State one similarity between the two life cycles. (1 mark)\n(b) State one difference between the two life cycles. (1 mark)',
+        figure: x17PairAB,
+        model: '(a) Both life cycles start with an egg (both have an egg stage and an adult stage). (b) Animal B has a pupa stage but animal A does not (A has 3 stages, B has 4 stages).',
+        keys: [['egg', 'adult stage'], ['pupa', '3 stages', '4 stages', 'larva']],
+        hints: ['Look for a stage both cycles have, then a stage only one of them has.', 'Both start with an egg. Only B has a pupa (and a larva). Write each answer as a full sentence naming A and B.'],
+        explain: 'Similarity: name a stage found in BOTH (egg, or adult). Difference: name the stage only one animal has, and say which animal: "B has a pupa stage but A does not." "A has fewer stages" earns the mark only if you give the numbers (3 and 4) or name the missing stage.' },
+      { id: 'x17-lc-003', type: 'mcq', level: 3,
+        stem: 'Look at the life cycles of animals A and B. Which statement is NOT correct?',
+        figure: x17PairAB,
+        options: ['Both A and B start life as an egg.', 'Only animal B has a pupa stage.', 'Animal A has fewer stages than animal B.', 'The larva of B looks like the adult of B.'],
+        answer: 3,
+        hints: ['This asks for the statement that is WRONG. Check each one against the diagrams and what you know about larvae.', 'Statements 1 to 3 can be read straight off the diagrams. In a 4-stage life cycle, the larva does NOT look like the adult (a caterpillar is not like a butterfly).'],
+        explain: 'Both cycles start with an egg, only B has a pupa, and A has 3 stages while B has 4: these are correct. In a 4-stage life cycle the larva (like a caterpillar or a mosquito larva) does not look like the adult, so statement 4 is the one that is NOT correct.' },
+      { id: 'x17-lc-004', type: 'mcq', level: 2,
+        stem: 'The drawings show the life cycle of a mosquito in order, from W to Z. The drawing of stage Y is missing. Which correctly describes stage Y?',
+        figure: x17Mozzie,
+        options: ['It is a nymph, and it flies to find food.', 'It is a pupa, and it lives on land.', 'It is a larva, and it feeds in the water.', 'It is a pupa, and it lives in water but does not feed.'],
+        answer: 3,
+        hints: ['X hangs from the water surface and Z can fly. What stage comes between the larva and the adult?', 'Mosquito: egg (W) → larva (X) → pupa (Y) → adult (Z). The pupa stays in the water, comes up for air, and does not feed.'],
+        explain: 'W is the eggs, X is the larva and Z is the adult, so Y is the pupa. A mosquito pupa lives in water like the larva, but it does not feed. A nymph is the young of a cockroach or grasshopper, and the mosquito larva is already shown as X.' },
+      { id: 'x17-lc-005', type: 'oeq', level: 2, marks: 2,
+        stem: 'Look at the drawings of the mosquito\'s life cycle.\n(a) Name stage Y. (1 mark)\n(b) State one way in which stage Y is different from stage X. (1 mark)',
+        figure: x17Mozzie,
+        model: '(a) Stage Y is the pupa. (b) Stage X (the larva) feeds, but stage Y (the pupa) does not feed.',
+        keys: [['pupa'], ['does not feed', 'not feed', 'does not eat', 'no food']],
+        hints: ['Y comes after the larva and before the adult. Then think: which of the two eats?', 'Y is the pupa. The larva X feeds in the water; the pupa Y does not feed while it changes into the adult.'],
+        explain: 'Name the stage, then compare it with X using the same idea for both: "X feeds but Y does not feed." Both live in water and both come up to the surface for air, so "lives in water" is NOT a difference.' },
+      { id: 'x17-lc-006', type: 'mcq', level: 1,
+        stem: 'The drawings show the life cycle of a tomato plant in order, from E to H. The drawing of stage F is missing. What is stage F?',
+        figure: x17Tomato,
+        options: ['A larva', 'A young plant', 'A fruit', 'A flower'],
+        answer: 1,
+        hints: ['What does a seed grow into before it becomes a big plant with flowers?', 'Seed (E) → young plant (F) → adult plant with flowers (G) → fruit with seeds (H). A larva is an animal stage, not a plant stage.'],
+        explain: 'A seed germinates and grows into a young plant, which grows into an adult plant that bears flowers. The flowers develop into fruits with seeds inside. Plants have no larva stage, and the fruit is already shown as H.' },
+      { id: 'x17-lc-007', type: 'oeq', level: 2, marks: 2,
+        stem: 'Look at the life cycle of the tomato plant. The young plant at stage F can make its own food, but the seed at stage E cannot. Explain why.',
+        figure: x17Tomato,
+        model: 'The young plant at stage F has green leaves, and leaves make food for the plant using light, water and air. The seed at stage E has no leaves, so it cannot make food. It uses the food stored inside it.',
+        keys: [['leaves', 'leaf'], ['make food', 'makes food', 'make its own food']],
+        hints: ['Which part of a plant makes food? Does the seed have it?', 'Stage F has green leaves, and leaves make food. The seed has no leaves, so it lives on the food stored inside it.'],
+        explain: 'Claim: F can make food. Evidence: F has green leaves; the seed has none. Reasoning: leaves make food for the plant using light, water and air.' },
+      { id: 'x17-lc-008', type: 'mcq', level: 3,
+        stem: 'Gopal kept a beetle and a moth from the day their eggs were laid. The table shows how many days each insect spent in each stage. The adults were still alive when he stopped. Based only on the table, which statement is definitely true?',
+        figure: x17Days,
+        options: ['Moth B will live longer than beetle A.', 'Beetle A eats more food than moth B.', 'Beetle A took more days than moth B to become an adult.', 'The adult stage of moth B is shorter than its pupa stage.'],
+        answer: 2,
+        hints: ['The table has no Adult column. Which statement can you check using ONLY the numbers given?', 'Add up the days before each adult came out: A is 7 + 30 + 12 = 49 days, B is 5 + 21 + 18 = 44 days. The table says nothing about how long the adults live or how much they eat.'],
+        explain: 'A became an adult after 7 + 30 + 12 = 49 days and B after 5 + 21 + 18 = 44 days, so statement 3 is true. The table does not show the adult stage, so we cannot tell how long each insect lives (statements 1 and 4). The number of days says nothing about how much food is eaten (statement 2).' },
+      { id: 'x17-lc-009', type: 'oeq', level: 3, marks: 2,
+        stem: 'Look at Gopal\'s table. Wei Ling says, "Moth B spent more days as a pupa than beetle A, so moth B will live longer." Explain why she cannot tell this from the table.',
+        figure: x17Days,
+        model: 'The table does not show the adult stage. It gives only the days spent as an egg, a larva and a pupa, so we cannot tell how long each adult will live, or which insect will live longer.',
+        keys: [['adult'], ['does not show', 'not shown', 'cannot tell', 'not given']],
+        hints: ['How long an insect lives includes its adult stage. Is the adult stage in the table?', 'The table stops at the pupa. The days spent in one stage do not tell you how long the adult will live.'],
+        explain: 'Claim: she cannot tell. Evidence: the table has no Adult column. Reasoning: a longer pupa stage does not mean a longer life; how long the insect lives also depends on its adult stage, which the table does not show.' },
+      { id: 'x17-lc-010', type: 'mcq', level: 3,
+        stem: 'The drawings show the four stages in the life cycle of a mealworm beetle, in a mixed-up order. Stage Y lies still and does not move from place to place.\nA: Y is alive.\nB: Y needs air.\nC: Y feeds on bran.\nD: Y sheds its skin several times to grow bigger.\nWhich statements about stage Y are correct?',
+        figure: x17Meal,
+        options: ['A and B only', 'C and D only', 'A, B and D only', 'B, C and D only'],
+        answer: 0,
+        hints: ['Y is the pupa. A pupa looks lifeless. Is it really dead?', 'The pupa is alive and needs air, like every living thing. It does not feed, and it does not moult to grow bigger: that is what the larva does.'],
+        explain: 'Y is the pupa. It is alive, and like all living things it needs air (A and B are correct). The pupa does not feed (C is wrong). The larva, not the pupa, sheds its skin several times to grow bigger (D is wrong).' },
+      { id: 'x17-lc-011', type: 'mcq', level: 1,
+        stem: 'Look at the drawings of the mealworm beetle. Stage X hatches from stage Z and eats a lot of bran. Which stage sheds its skin (moults) several times as it grows?',
+        figure: x17Meal,
+        options: ['W', 'X', 'Y', 'Z'],
+        answer: 1,
+        hints: ['Which stage is growing bigger and bigger by eating?', 'X is the larva (the mealworm). It eats and grows, and it sheds its skin so it can grow bigger. The pupa (Y) does not moult to grow.'],
+        explain: 'X is the larva. Its skin cannot stretch, so it moults several times as it grows. Z is the eggs, Y is the pupa (it does not feed or grow) and W is the adult beetle, which no longer grows.' },
+      { id: 'x17-lc-012', type: 'oeq', level: 2, marks: 2,
+        stem: 'Look at the drawings of the mealworm beetle. Ben says, "Stage Y does not need air, because it does not move or feed." Do you agree? Explain.',
+        figure: x17Meal,
+        model: 'No, I do not agree. Stage Y is the pupa, and it is alive: inside it, the body is changing into the adult beetle. All living things need air, so stage Y needs air to stay alive.',
+        keys: [['alive', 'living'], ['need air', 'needs air']],
+        hints: ['Is stage Y alive or dead? What do all living things need?', 'Y is the pupa: it is alive and changing into the adult. Every living thing needs air, so Y needs air too.'],
+        explain: 'Claim: disagree. Evidence: Y is the pupa, which is alive and changing into the adult. Reasoning: all living things need air. Not moving and not feeding do not mean it is dead.' }
     ]
   });
 })();

@@ -97,6 +97,89 @@
     ['Time', 'Colour of the petals'],
     [['At the start', 'White'], ['After 1 day', 'Light blue']]);
 
+  /* ---------- x17 science expansion figures (lane sci-x-plantcycle) ---------- */
+  const x17Lbl = (cx, cy, L) => `<circle cx="${cx}" cy="${cy}" r="12" fill="#fff" stroke="#333"/><text x="${cx - 5}" y="${cy + 5}" ${F} font-size="15" font-weight="bold" fill="#222">${L}</text>`;
+  const x17Flower = (x, y, petal) => [0, 72, 144, 216, 288].map((a) => `<circle cx="${(x + 7 * Math.cos(a * Math.PI / 180)).toFixed(1)}" cy="${(y + 7 * Math.sin(a * Math.PI / 180)).toFixed(1)}" r="6" fill="${petal}" stroke="#b08a8a" stroke-width="1"/>`).join('') + `<circle cx="${x}" cy="${y}" r="4" fill="#f6c90e"/>`;
+
+  // Chilli plant, five parts lettered: P fruit, Q stem, R flower, S roots, T leaf.
+  const X17_CHILLI = `<svg viewBox="0 0 300 260" width="100%" data-maxw="480" style="max-width:300px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A chilli plant with five parts labelled P to T: P a chilli, Q the stem, R a flower, S the roots, T a leaf">
+<rect x="0" y="190" width="300" height="70" fill="#ead9b8"/>
+<line x1="0" y1="190" x2="300" y2="190" stroke="#8b6b3e" stroke-width="2"/>
+<text x="8" y="252" ${F} font-size="12" fill="#6b5230">soil</text>
+<path d="M150 190 L150 46" stroke="#3f8f3f" stroke-width="6" fill="none"/>
+<path d="M150 126 L104 98" stroke="#3f8f3f" stroke-width="4" fill="none"/>
+<path d="M150 106 L192 86" stroke="#3f8f3f" stroke-width="4" fill="none"/>
+<ellipse cx="184" cy="122" rx="26" ry="10" fill="#5cb85c" transform="rotate(-20 184 122)"/>
+<ellipse cx="124" cy="164" rx="26" ry="10" fill="#5cb85c" transform="rotate(20 124 164)"/>
+<ellipse cx="210" cy="80" rx="20" ry="8" fill="#5cb85c" transform="rotate(-15 210 80)"/>
+<path d="M112 104 C121 113 121 137 111 154 C104 138 104 117 112 104 Z" fill="#e53935" stroke="#a32020" stroke-width="1.2"/>
+<path d="M127 113 C134 121 134 141 126 152 C120 140 120 124 127 113 Z" fill="#e53935" stroke="#a32020" stroke-width="1.2"/>
+<circle cx="112" cy="104" r="3.5" fill="#3f8f3f"/><circle cx="127" cy="113" r="3.5" fill="#3f8f3f"/>
+${x17Flower(150, 38, '#fff')}${x17Flower(100, 92, '#fff')}
+<g stroke="#8b5a2b" stroke-width="3" fill="none">
+<path d="M150 190 L150 238"/><path d="M150 204 L128 226"/><path d="M150 204 L172 228"/>
+<path d="M150 220 L136 246"/><path d="M150 220 L166 248"/></g>
+<g stroke="#333" stroke-width="1.2">
+<line x1="159" y1="36" x2="260" y2="30"/><line x1="204" y1="114" x2="260" y2="112"/>
+<line x1="153" y1="176" x2="260" y2="174"/><line x1="170" y1="228" x2="260" y2="226"/><line x1="105" y1="128" x2="40" y2="124"/></g>
+${x17Lbl(272, 30, 'R')}${x17Lbl(272, 112, 'T')}${x17Lbl(272, 174, 'Q')}${x17Lbl(272, 226, 'S')}${x17Lbl(28, 124, 'P')}
+</svg>`;
+
+  // Long bean plant winding round a pole in the school garden.
+  const X17_CLIMBER = `<svg viewBox="0 0 260 270" width="100%" data-maxw="420" style="max-width:260px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A long bean plant with a thin stem winding round a wooden pole stuck in the soil">
+<rect x="0" y="222" width="260" height="48" fill="#ead9b8"/>
+<line x1="0" y1="222" x2="260" y2="222" stroke="#8b6b3e" stroke-width="2"/>
+<rect x="124" y="18" width="10" height="236" fill="#a0784a" stroke="#6b4a26"/>
+<path d="M129 222 C150 207 150 192 129 182 C108 172 108 157 129 147 C150 137 150 122 129 112 C108 102 108 87 129 77 C150 67 150 52 129 42" stroke="#3f8f3f" stroke-width="3.5" fill="none"/>
+<ellipse cx="98" cy="164" rx="16" ry="8" fill="#5cb85c" transform="rotate(-15 98 164)"/>
+<ellipse cx="160" cy="129" rx="16" ry="8" fill="#5cb85c" transform="rotate(15 160 129)"/>
+<ellipse cx="98" cy="94" rx="16" ry="8" fill="#5cb85c" transform="rotate(-15 98 94)"/>
+<ellipse cx="160" cy="59" rx="16" ry="8" fill="#5cb85c" transform="rotate(15 160 59)"/>
+<g stroke="#8b5a2b" stroke-width="2.5" fill="none"><path d="M129 222 L118 246"/><path d="M129 222 L142 248"/><path d="M129 226 L128 252"/></g>
+<g stroke="#333" stroke-width="1.2"><line x1="123" y1="130" x2="64" y2="130"/><line x1="147" y1="200" x2="194" y2="204"/></g>
+<g ${F} font-size="14" fill="#222"><text x="22" y="135">pole</text><text x="198" y="209">stem</text><text x="8" y="262" font-size="12" fill="#6b5230">soil</text></g>
+</svg>`;
+
+  // Four identical potted plants in pots, each with a different part removed.
+  const X17_POTS = (() => {
+    const pot = (i) => {
+      const x0 = 6 + i * 88, c = x0 + 40, noRoots = i === 1, noLeaves = i === 2, noFlower = i === 3;
+      let s = `<rect x="${x0}" y="4" width="84" height="212" rx="8" fill="none" stroke="#bbb"/>`;
+      s += `<text x="${x0 + 8}" y="24" ${F} font-size="17" font-weight="bold" fill="#222">${'ABCD'[i]}</text>`;
+      s += `<path d="M${c - 28} 122 L${c + 28} 122 L${c + 21} 172 L${c - 21} 172 Z" fill="#ead9b8" stroke="#8b5a2b" stroke-width="2.5"/>`;
+      s += `<line x1="${c - 27}" y1="128" x2="${c + 27}" y2="128" stroke="#8b6b3e" stroke-width="1.5"/>`;
+      if (!noRoots) s += `<g stroke="#8b5a2b" stroke-width="2" fill="none"><path d="M${c} 128 L${c} 160"/><path d="M${c} 136 L${c - 12} 152"/><path d="M${c} 136 L${c + 12} 154"/><path d="M${c} 146 L${c - 7} 164"/><path d="M${c} 146 L${c + 8} 164"/></g>`;
+      s += `<path d="M${c} ${noRoots ? 133 : 128} L${c} 44" stroke="#3f8f3f" stroke-width="4" fill="none"/>`;
+      if (noRoots) s += `<line x1="${c - 5}" y1="134" x2="${c + 5}" y2="132" stroke="#8b5a2b" stroke-width="2"/>`;
+      if (noLeaves) s += `<g stroke="#3f8f3f" stroke-width="2"><line x1="${c}" y1="100" x2="${c - 6}" y2="96"/><line x1="${c}" y1="86" x2="${c + 6}" y2="82"/><line x1="${c}" y1="70" x2="${c - 6}" y2="66"/></g>`;
+      else s += `<ellipse cx="${c - 14}" cy="98" rx="14" ry="5.5" fill="#5cb85c" transform="rotate(25 ${c - 14} 98)"/><ellipse cx="${c + 14}" cy="84" rx="14" ry="5.5" fill="#5cb85c" transform="rotate(-25 ${c + 14} 84)"/><ellipse cx="${c - 13}" cy="68" rx="13" ry="5" fill="#5cb85c" transform="rotate(25 ${c - 13} 68)"/>`;
+      if (!noFlower) s += [0, 90, 180, 270].map((a) => `<circle cx="${(c + 6 * Math.cos(a * Math.PI / 180)).toFixed(1)}" cy="${(38 + 6 * Math.sin(a * Math.PI / 180)).toFixed(1)}" r="5.5" fill="#f28cb1"/>`).join('') + `<circle cx="${c}" cy="38" r="3.5" fill="#f6c90e"/>`;
+      else s += `<line x1="${c - 5}" y1="45" x2="${c + 5}" y2="43" stroke="#3f8f3f" stroke-width="2"/>`;
+      const cap = [['nothing', 'removed'], ['roots', 'cut off'], ['all leaves', 'removed'], ['flowers', 'removed']][i];
+      s += `<text x="${c}" y="192" text-anchor="middle" ${F} font-size="12" fill="#222">${cap[0]}</text><text x="${c}" y="207" text-anchor="middle" ${F} font-size="12" fill="#222">${cap[1]}</text>`;
+      return s;
+    };
+    return `<svg viewBox="0 0 360 220" width="100%" style="max-width:360px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four identical plants in pots. A: nothing removed. B: roots cut off, stem pushed into the soil. C: all leaves removed. D: flowers removed.">${[0, 1, 2, 3].map(pot).join('')}</svg>`;
+  })();
+
+  // Plant with arrow A going up the stem and arrow B coming down it.
+  const X17_FLOW = `<svg viewBox="0 0 260 250" width="100%" data-maxw="440" style="max-width:280px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A plant with two arrows beside the stem: arrow A points up from the roots to the leaves, arrow B points down from the leaves to the roots">
+<rect x="0" y="190" width="260" height="60" fill="#ead9b8"/>
+<line x1="0" y1="190" x2="260" y2="190" stroke="#8b6b3e" stroke-width="2"/>
+<text x="8" y="242" ${F} font-size="12" fill="#6b5230">soil</text>
+<path d="M130 190 L130 46" stroke="#3f8f3f" stroke-width="6" fill="none"/>
+<ellipse cx="104" cy="82" rx="26" ry="10" fill="#5cb85c" transform="rotate(25 104 82)"/>
+<ellipse cx="156" cy="70" rx="26" ry="10" fill="#5cb85c" transform="rotate(-25 156 70)"/>
+${x17Flower(130, 36, '#f28cb1')}
+<g stroke="#8b5a2b" stroke-width="3" fill="none"><path d="M130 190 L130 236"/><path d="M130 202 L108 224"/><path d="M130 202 L152 226"/><path d="M130 216 L116 244"/><path d="M130 216 L146 246"/></g>
+<line x1="116" y1="226" x2="116" y2="106" stroke="#1e6fc0" stroke-width="3.5"/><polygon points="116,94 109,108 123,108" fill="#1e6fc0"/>
+<line x1="144" y1="90" x2="144" y2="212" stroke="#d9822b" stroke-width="3.5"/><polygon points="144,224 137,210 151,210" fill="#d9822b"/>
+${x17Lbl(92, 150, 'A')}${x17Lbl(168, 150, 'B')}
+</svg>`;
+
+  const X17_MARKET = table(['Food from the market', 'Part of the plant we eat'],
+    [['Kangkong', 'Leaves and stem'], ['Carrot', 'Root'], ['Chilli', 'Fruit'], ['Potato', 'Root']]);
+
   SCI.registerTopic({
     id: 'plant-parts',
     title: 'Plant Parts and Functions', emoji: '🌱',
@@ -137,7 +220,7 @@
         options: ['A', 'B', 'C', 'D'], answer: 1,
         explain: 'B is the flower. A flower develops into a fruit, and the fruit holds the seeds.' },
       { id: 'pp-005', type: 'mcq', level: 2,
-        stem: 'Look at the plant. Part C was cut off and the plant was put back in the pot. What will most likely happen after a few days?',
+        stem: 'Look at the plant. Part C was cut off and the plant was put back in the soil. What will most likely happen after a few days?',
         figure: PLANT,
         options: ['It will grow more leaves.', 'It will grow more flowers.', 'It will stay healthy because the stem can take in water.', 'It will wilt because it cannot take in water.'], answer: 3,
         explain: 'C is the roots. Without roots the plant cannot take in water, so it wilts and will die.' },
@@ -396,7 +479,107 @@
         figure: WATER_EXPT,
         model: 'Pot F got no water, so the roots could not take in water. The plant did not have enough water to stay upright, so it drooped.',
         keys: [['no water', 'not watered', 'without water'], ['could not take in water', 'not enough water', 'cannot take in water']],
-        explain: 'Plants need water to stay upright and healthy.' }
+        explain: 'Plants need water to stay upright and healthy.' },
+
+      /* x17 science expansion — lane sci-x-plantcycle */
+      { id: 'x17-pp-001', type: 'mcq', level: 1,
+        stem: 'The diagram shows a chilli plant in Uncle Tan\'s garden. Which part protects the seeds?',
+        figure: X17_CHILLI,
+        options: ['P', 'Q', 'R', 'T'],
+        answer: 0,
+        hints: ['The seeds are found inside one part of the plant. Which part do we pick and eat?', 'P is the chilli, which is a fruit. The fruit protects the seeds inside it. R is the flower, which only develops into the fruit.'],
+        explain: 'P is the chilli, and a chilli is a fruit. The fruit protects the seeds inside it. R is a flower: it develops into a fruit, but it does not hold the seeds. Q is the stem and T is a leaf.' },
+      { id: 'x17-pp-002', type: 'mcq', level: 2,
+        stem: 'Look at the chilli plant. Which correctly matches the parts to their functions?',
+        figure: X17_CHILLI,
+        options: ['Q makes food; T takes in water.', 'S holds the plant in the soil; T makes food.', 'R protects the seeds; S carries water to the leaves.', 'P develops into a flower; Q holds the plant up.'],
+        answer: 1,
+        hints: ['Name each lettered part first: P, Q, R, S and T. Then check BOTH halves of each option.', 'S is the roots (hold the plant firmly and take in water) and T is a leaf (makes food). Every other option has at least one half wrong.'],
+        explain: 'S is the roots, which hold the plant firmly in the soil, and T is a leaf, which makes food. Option 1 swaps the jobs of the stem and leaf. In option 3, R (flower) does not protect seeds and S (roots) takes in water but the stem carries it up. In option 4, the flower develops into the fruit, not the other way round.' },
+      { id: 'x17-pp-003', type: 'oeq', level: 1, marks: 2,
+        stem: 'Look at the chilli plant. Name part S and state one of its functions.',
+        figure: X17_CHILLI,
+        model: 'Part S is the roots. They hold the plant firmly in the soil / take in water and mineral salts from the soil.',
+        keys: [['root'], ['hold', 'firmly', 'take in water', 'absorb water', 'mineral salts']],
+        hints: ['Part S is under the soil. What is this part called?', 'S is the roots. They hold the plant firmly in the soil and take in water and mineral salts.'],
+        explain: 'One mark for the name (roots), one for a correct function: holding the plant firmly in the soil, or taking in water and mineral salts.' },
+      { id: 'x17-pp-004', type: 'oeq', level: 2, marks: 2,
+        stem: 'Uncle Tan picked off every flower from his chilli plant as soon as it appeared. Will the plant bear any chillies? Explain.',
+        figure: X17_CHILLI,
+        model: 'No. A chilli is a fruit, and fruits develop from flowers. With all the flowers removed, the plant cannot bear any chillies.',
+        keys: [['fruit'], ['from flowers', 'from the flower', 'from a flower', 'develop from']],
+        hints: ['Where does a fruit come from?', 'A chilli is a fruit, and every fruit develops from a flower. No flowers means no chillies.'],
+        explain: 'Claim: no chillies. Evidence: every flower was picked off. Reasoning: a chilli is a fruit, and a fruit develops from a flower.' },
+      { id: 'x17-pp-005', type: 'mcq', level: 2,
+        stem: 'Mei grows a long bean plant in the school garden. It winds round a pole as it grows. Why does the plant need the pole?',
+        figure: X17_CLIMBER,
+        options: ['The pole carries water up to its leaves.', 'Its roots are too weak to take in water.', 'Its stem is too weak to hold it upright.', 'The pole stops its beans from falling off.'],
+        answer: 2,
+        hints: ['Which part of a plant normally holds it upright? Look at how thin it is here.', 'The long bean plant has a weak, thin stem that cannot hold the plant upright, so it climbs the pole for support.'],
+        explain: 'Plants with weak stems, like the long bean, climb on supports. The pole holds the plant up so its leaves can reach the light. The stem, not the pole, carries water, and the roots still take in water.' },
+      { id: 'x17-pp-006', type: 'oeq', level: 3, marks: 2,
+        stem: 'A storm knocked down the pole, and Mei\'s long bean plant lay flat on the ground under other plants. Explain why the plant may now make less food.',
+        figure: X17_CLIMBER,
+        model: 'Its weak stem cannot hold it upright without the pole, so its leaves are shaded by the other plants and get less light. Leaves need light to make food, so the plant makes less food.',
+        keys: [['less light', 'not enough light', 'shaded', 'no light'], ['make food', 'makes food']],
+        hints: ['What do leaves need to make food? Will leaves lying under other plants get much of it?', 'Without the pole the weak stem cannot hold the plant up, so its leaves get less light, and leaves need light to make food.'],
+        explain: 'Evidence: the plant lies flat under other plants. Reasoning: its leaves get less light, and leaves need light to make food. So: less light, less food.' },
+      { id: 'x17-pp-007', type: 'mcq', level: 2,
+        stem: 'Sam set up four identical potted plants, A, B, C and D, in the school garden as shown. In plant B, the roots were cut off and the stem was pushed back into the soil. On the next day a strong wind blew through the garden. Which plant was most likely blown out of its pot?',
+        figure: X17_POTS,
+        options: ['Plant A', 'Plant B', 'Plant C', 'Plant D'],
+        answer: 1,
+        hints: ['Which part holds a plant firmly in the soil?', 'The roots hold the plant firmly in the soil. Plant B has no roots, so nothing holds it in place when the wind blows.'],
+        explain: 'Roots hold the plant firmly in the soil. Plant B has no roots, so the wind can easily blow it out of the soil. Plant C has no leaves, but its roots still hold it in place.' },
+      { id: 'x17-pp-008', type: 'mcq', level: 2,
+        stem: 'Sam watered plants A, B, C and D every day and kept removing any new leaves on C and any new flowers on D. Which plants would most likely have died after three weeks?',
+        figure: X17_POTS,
+        options: ['B only', 'C only', 'B and C only', 'B, C and D only'],
+        answer: 2,
+        hints: ['A plant needs to take in water and to make food. Which plants cannot do one of these?', 'B has no roots, so it cannot take in water. C has no leaves, so it cannot make food. D still has roots and leaves; flowers are for reproducing, not for staying alive.'],
+        explain: 'B cannot take in water without roots, and C cannot make food without leaves, so both die. D still has roots and leaves, so it stays alive: flowers help a plant reproduce, but the plant does not need them to stay alive.' },
+      { id: 'x17-pp-009', type: 'mcq', level: 3,
+        stem: 'Sam wants to show that a plant needs its roots to stay alive. Which two plants should he compare?',
+        figure: X17_POTS,
+        options: ['A and B', 'A and C', 'B and C', 'B and D'],
+        answer: 0,
+        hints: ['In a fair test, the two plants should differ in only ONE thing: the roots.', 'A has nothing removed and B has only its roots removed. Every other pair differs in something other than roots, or in two things.'],
+        explain: 'A and B differ only in the roots, so it is a fair test. A and C differ in leaves, not roots. B and C, and B and D, each differ in two parts, so you could not tell which part made the difference.' },
+      { id: 'x17-pp-010', type: 'oeq', level: 2, marks: 2,
+        stem: 'Look at Sam\'s plants. He kept removing any new leaves on plant C. Explain why plant C died.',
+        figure: X17_POTS,
+        model: 'All the leaves of plant C were removed, so it could not make food. Without food, plant C died.',
+        keys: [['leaves', 'leaf'], ['could not make food', 'cannot make food', 'no food', 'make food']],
+        hints: ['What is the job of the leaves?', 'Leaves make food. Plant C had no leaves, so it could not make food, and it died.'],
+        explain: 'Tie the missing part to its job: plant C had no leaves (evidence), and leaves make food (reasoning), so it had no food and died.' },
+      { id: 'x17-pp-011', type: 'oeq', level: 3, marks: 2,
+        stem: 'Look at Sam\'s plants. Plant D had its flowers removed but it did not die. Explain why.',
+        figure: X17_POTS,
+        model: 'Plant D still had its roots to take in water and its leaves to make food. Flowers help the plant reproduce, so the plant does not need them to stay alive.',
+        keys: [['take in water', 'roots'], ['make food', 'leaves']],
+        hints: ['What does a plant need its roots and leaves for? Did plant D still have them?', 'D still had roots (to take in water) and leaves (to make food). Flowers are for making fruits and seeds, not for staying alive.'],
+        explain: 'One mark for the roots taking in water, one for the leaves making food. Flowers develop into fruits with seeds, which help the plant reproduce; losing them does not stop the plant getting water or food.' },
+      { id: 'x17-pp-012', type: 'mcq', level: 2,
+        stem: 'The arrows A and B show two things moving through the stem of a plant. What do A and B show?',
+        figure: X17_FLOW,
+        options: ['A: water moving up from the roots; B: food moving down from the leaves', 'A: food moving up from the soil; B: water moving down to the roots', 'A: food moving up from the roots; B: water moving down from the leaves', 'A: air moving up from the soil; B: food moving down from the flower'],
+        answer: 0,
+        hints: ['Where does a plant take in water? Where does it make its food?', 'Roots take in water, so water travels UP the stem (A). Leaves make food, so food travels DOWN from the leaves (B). Plants do not get food from the soil.'],
+        explain: 'The roots take in water and the stem carries it up to the leaves (A). The leaves make food and the stem carries it to other parts, including down to the roots (B). Plants make their own food: they do not get it from the soil.' },
+      { id: 'x17-pp-013', type: 'oeq', level: 1, marks: 2,
+        stem: 'Look at arrows A and B.\n(a) Name the part of the plant that A and B travel through. (1 mark)\n(b) Where was the food in arrow B made? (1 mark)',
+        figure: X17_FLOW,
+        model: '(a) The stem. (b) In the leaves.',
+        keys: [['stem'], ['leaves', 'leaf']],
+        hints: ['Which part joins the roots to the leaves? Which part makes food?', '(a) The stem carries water and food. (b) The leaves make the food.'],
+        explain: 'The stem carries water up from the roots and food from the leaves to other parts of the plant. Food is made in the leaves.' },
+      { id: 'x17-pp-014', type: 'mcq', level: 3,
+        stem: 'Hui Min bought some food at the wet market. Her brother wrote down which part of the plant each food is. Which food did he match to the WRONG part?',
+        figure: X17_MARKET,
+        options: ['Kangkong', 'Carrot', 'Chilli', 'Potato'],
+        answer: 3,
+        hints: ['Two of these foods grow under the ground. Are both of them roots?', 'A carrot is a root that stores food, but a potato is a STEM that stores food, even though it grows under the ground.'],
+        explain: 'A potato is a stem that stores food, not a root. A carrot is a root that stores food. A chilli develops from a flower and has seeds, so it is a fruit. We eat the leaves and stems of kangkong.' }
     ]
   });
 })();

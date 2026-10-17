@@ -210,6 +210,31 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
 .empty{color:var(--ink-soft);padding:12px 0}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--ground);padding:12px 22px;border-radius:999px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100vw - 32px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Fun layer (Science Fun Layer Card, 2026-10-17): ported from the maths island - Star Crystals per land,
+   place names on the map, the hero greeting, a short tap-to-skip banner, light confetti, optional sound.
+   Rewards follow learning (finish a round, a comeback after a miss, a battery filling); never speed. */
+.hello{display:flex;align-items:center;gap:10px;margin:0 0 4px;font-weight:700;color:var(--ink)}
+.hello .av{font-size:1.8rem;line-height:1}
+.crystot{display:inline-flex;align-items:center;gap:6px;background:var(--gold-soft);border:2px solid var(--gold);border-radius:999px;padding:2px 12px;font-weight:800;font-size:.9rem;margin:4px 0 10px}
+.tile .place{color:var(--ink);font-weight:800;font-size:.82rem;letter-spacing:.02em;text-transform:none}
+.crys{display:inline-flex;gap:2px;font-size:1rem;line-height:1;letter-spacing:0}
+.crys .no{opacity:.35;filter:grayscale(1)}
+.tile.done{border-color:var(--gold)}
+.howcrys{margin-top:14px;color:var(--ink-soft);font-size:.92rem}
+.howcrys summary{cursor:pointer;font-weight:800;min-height:44px;display:flex;align-items:center;color:var(--ink)}
+.howcrys ul{margin:4px 0 0;padding-left:1.2em}
+.crysbox{border:2px solid var(--gold);background:var(--gold-soft);border-radius:16px;padding:12px 14px;margin-top:16px}
+.crysbox h3{font-size:1.1rem;margin:0 0 4px}
+.crysbox p{margin:4px 0 0}
+.crysbox .crys{font-size:1.4rem;gap:6px;margin:4px 0}
+.fb .won{margin:6px 0 0;font-weight:800}
+.sndbtn{border:2px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px;font-weight:700;font-size:.85rem;color:var(--ink-soft)}
+.sndbtn[aria-pressed="true"]{border-color:var(--teal);color:var(--ink)}
+.cele{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:60;background:var(--paper);color:var(--ink);border:3px solid var(--gold);border-radius:999px;padding:10px 22px;font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-weight:700;font-size:1.1rem;box-shadow:var(--shadow);max-width:calc(100vw - 32px);text-align:center;min-height:44px;animation:celeIn .35s ease-out}
+.cele[hidden]{display:none}
+@keyframes celeIn{0%{transform:translateX(-50%) scale(.6);opacity:0}70%{transform:translateX(-50%) scale(1.05);opacity:1}100%{transform:translateX(-50%) scale(1)}}
+.confetti{position:fixed;top:-24px;font-size:20px;z-index:55;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:480px){
   .stage{padding:18px 14px;border-radius:20px}
@@ -236,11 +261,12 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
       <span class="logo">🔬</span>
       <span><small>Primary 3 Science</small><h1>Science Quest</h1></span>
     </button>
-    <div class="countdown" id="countdown" hidden></div>
+    <div class="row"><button class="sndbtn" id="sndbtn" data-act="sound" aria-pressed="false">🔇 Sound off</button><div class="countdown" id="countdown" hidden></div></div>
   </div>
   <main class="stage" id="view" aria-live="polite"></main>
 </div>
 <div class="toast" id="toast"></div>
+<div class="cele" id="cele" role="status" data-act="celeOff" title="Tap to close" hidden></div>
 
 <script>
 "use strict";
@@ -342,7 +368,9 @@ var view = document.getElementById('view');
 /* ---------- storage (per-viewer, try/catch-wrapped) ---------- */
 /* power (Power-Up, 2026-10-17): { <technique, or 'topic:<id>' for an item without one>: { s: 0-2 clean rights in a row, full, t } }.
    Same key, same v: 1 store; an older save simply gets an empty power map from fresh(). */
-function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full', power: {} }; }
+/* crys (fun layer, 2026-10-17): { <topic id>: { e: t, c: t, p: t } } Star Crystals found, kept once found.
+   sound: off unless she turns it on. */
+function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full', power: {}, crys: {}, sound: false }; }
 function load() {
   try { var s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && s.items) return Object.assign(fresh(), s); } catch (e) {}
   return fresh();
@@ -378,6 +406,104 @@ function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { va
 function pct(x) { return Math.round(x * 100) + '%'; }
 var toastT;
 function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 1800); }
+
+/* ---------- fun layer (Science Fun Layer Card, 2026-10-17) ----------
+   Ported from the maths island so the two feel like one game: the island map's place names,
+   Star Crystals (three per land), the hero she picked on the maths island, a short banner,
+   light confetti and optional sound. Not ported: monster HP, lost lives, timers, streaks,
+   the Hall of Fame. Every crystal is earned by learning, never by speed or by being right first time. */
+var PLACES = { 'living-things': 'Wild Woods', 'materials': 'Material Mines', 'life-cycles': 'Butterfly Bay',
+  'magnets': 'Magnet Mountain', 'plant-parts': 'Leafy Lagoon', 'process-skills': 'Experiment Cove' };
+function place(t) { return PLACES[t.id] || t.title; }
+var CRYS = [
+  { k: 'e', em: '🧭', name: 'Explorer crystal', how: 'finish a practice round here' },
+  { k: 'c', em: '💪', name: 'Comeback crystal', how: 'get one right after a miss (a second try counts)' },
+  { k: 'p', em: '⚡', name: 'Power crystal', how: 'fill a battery in a Power-Up round on a question from here' }
+];
+function crysOf(id) { if (!S.crys || typeof S.crys !== 'object') S.crys = {}; return S.crys[id] || {}; }
+function crysCount(id) { var c = crysOf(id); return CRYS.filter(function (x) { return c[x.k]; }).length; }
+function crysHTML(id) {
+  var c = crysOf(id), n = crysCount(id);
+  return '<span class="crys" role="img" aria-label="' + n + ' of 3 Star Crystals">' +
+    CRYS.map(function (x) { return '<span class="' + (c[x.k] ? '' : 'no') + '">⭐</span>'; }).join('') + '</span>';
+}
+/* a new crystal for a land; false if it was already found, or the land is hidden / not on the map */
+function award(topicId, k) {
+  var t = SCI.byId[topicId];
+  if (!t || t.hidden || shownTopics().indexOf(t) < 0) return null;
+  if (!S.crys || typeof S.crys !== 'object') S.crys = {};
+  var c = S.crys[topicId] || (S.crys[topicId] = {});
+  if (c[k]) return null;
+  c[k] = Date.now();
+  var x = CRYS.filter(function (y) { return y.k === k; })[0];
+  return { t: topicId, k: k, em: x.em, name: x.name, land: place(t), all: crysCount(topicId) === 3 };
+}
+function wonLine(w) { return '⭐ ' + w.name + ' found in ' + w.land + '!' + (w.all ? ' That is all 3 for this land!' : ''); }
+/* the hero she picked on the maths island (same site, same browser). Read only: science never writes it. */
+function hero() {
+  try { var d = JSON.parse(localStorage.getItem('fq1') || 'null'); if (d && typeof d.avatar === 'string' && d.avatar) return { av: d.avatar, name: typeof d.name === 'string' && d.name.trim() ? d.name.trim().slice(0, 14) : '' }; } catch (e) {}
+  return null;
+}
+function reducedMotion() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+var celeT;
+/* a short banner: shows for 2 s, tap to close, never covers the question for long */
+function celebrate(msg, snd, burst) {
+  var el = document.getElementById('cele'); el.textContent = msg; el.hidden = false;
+  clearTimeout(celeT); celeT = setTimeout(function () { el.hidden = true; }, 2000);
+  if (snd) sfx(snd);
+  if (burst && !reducedMotion()) confetti();
+}
+function confetti() {
+  if (document.querySelector('.confetti')) return;   /* one light burst at a time */
+  for (var i = 0; i < 16; i++) {
+    var el = document.createElement('div');
+    el.className = 'confetti'; el.setAttribute('aria-hidden', 'true');
+    el.textContent = ['⭐', '✨', '🎉', '💛'][i % 4];
+    el.style.left = Math.round(Math.random() * 96) + 'vw';
+    el.style.animationDuration = (1.1 + Math.random() * 0.6).toFixed(2) + 's';
+    el.style.animationDelay = (Math.random() * 0.3).toFixed(2) + 's';
+    document.body.appendChild(el);
+    setTimeout(function (n) { return function () { n.remove(); }; }(el), 2200);
+  }
+}
+/* sound: off by default; only happy chimes, never a sound for a miss */
+var AC = null;
+function tone(f, t0, dur, vol) {
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    var o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'triangle'; o.frequency.value = f;
+    g.gain.setValueAtTime(vol || 0.08, AC.currentTime + t0);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + t0 + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(AC.currentTime + t0); o.stop(AC.currentTime + t0 + dur + 0.05);
+  } catch (e) {}
+}
+function sfx(kind) {
+  if (!S.sound) return;
+  if (kind === 'ok') { tone(523, 0, 0.1); tone(784, 0.09, 0.16); }
+  else if (kind === 'crystal') { tone(659, 0, 0.1); tone(880, 0.09, 0.1); tone(1175, 0.18, 0.22); }
+  else if (kind === 'finish') [523, 659, 784, 1047].forEach(function (f, i) { tone(f, i * 0.12, 0.18); });
+}
+function sndBtn() {
+  var b = document.getElementById('sndbtn'); if (!b) return;
+  b.setAttribute('aria-pressed', String(!!S.sound)); b.textContent = S.sound ? '🔊 Sound on' : '🔇 Sound off';
+}
+/* after an answer in practice, Power-Up or "one like it" (never the mock): the comeback and power crystals */
+function funAfter(it, a, score, prevLast, wasFull) {
+  var se = session, won = [];
+  if (score > 0 && (a.miss1 != null || (prevLast != null && prevLast < 1))) won.push(award(it.topic, 'c'));
+  if (se.kind === 'power' && !wasFull && pstate(pkey(it)).full) won.push(award(it.topic, 'p'));   /* a battery filling in a Power-Up round */
+  won = won.filter(Boolean);
+  a.won = won;
+  if (won.length) {
+    se.won = (se.won || []).concat(won);
+    save();
+    celebrate(wonLine(won[won.length - 1]), 'crystal', true);
+  } else if (score >= 1) sfx('ok');
+}
+function wonHTML(a) { return (a.won || []).map(function (w) { return '<p class="won">' + esc(wonLine(w)) + '</p>'; }).join(''); }
+var PRAISE = ['✅ Correct!', '✅ Great thinking!', '✅ Nice one!', '✅ You got it!', '✅ Super!'];
 
 function shownTopics() {
   var real = SCI.topics.filter(function (t) { return t.id.charAt(0) !== '_' && !t.hidden && t.items.length; });
@@ -611,16 +737,24 @@ function countdown() {
 }
 function renderHome() {
   var ts = shownTopics(), rot = powerRotation(), pk = powerKeys().slice(0, 9);
+  var found = 0;
   var tiles = ts.map(function (t) {
-    var s = topicStats(t);
-    return '<button class="tile" data-act="topic" data-id="' + esc(t.id) + '">' +
+    var s = topicStats(t), n = crysCount(t.id); found += n;
+    return '<button class="tile' + (n === 3 ? ' done' : '') + '" data-act="topic" data-id="' + esc(t.id) + '">' +
       '<span class="em">' + esc(t.emoji) + '</span><span class="display">' + esc(t.title) + '</span>' +
+      '<small class="place">🗺️ ' + esc(place(t)) + '</small>' +
       '<small>' + (t.extra ? '<span class="badge">P4 preview</span>' : esc(t.theme || 'Topic')) + '</small>' +
+      crysHTML(t.id) +
       '<span class="pct">' + s.pct + '% mastered</span><span class="bar"><i style="width:' + s.pct + '%"></i></span></button>';
   }).join('');
+  var me = hero();
   paint(
-    '<p class="eyebrow">Revise · practise · ace it</p><h2>Pick a topic</h2>' +
-    (ts.length ? '<div class="grid">' + tiles + '</div>' : '<p class="empty">No topics have loaded yet.</p>') +
+    (me ? '<p class="hello"><span class="av" aria-hidden="true">' + esc(me.av) + '</span><span>Hi' + (me.name ? ', ' + esc(me.name) : '') + '! Welcome to Science Island.</span></p>' : '') +
+    '<p class="eyebrow">Revise · practise · ace it</p><h2>Pick a land to explore</h2>' +
+    (ts.length ? '<p class="crystot">⭐ ' + found + ' of ' + ts.length * 3 + ' Star Crystals found</p><div class="grid">' + tiles + '</div>' +
+      '<details class="howcrys"><summary>⭐ How do I find Star Crystals?</summary><p>Every land hides 3:</p><ul>' +
+      CRYS.map(function (x) { return '<li>' + esc(x.em + ' ' + x.name) + ': ' + esc(x.how) + '.</li>'; }).join('') +
+      '</ul><p>Take your time. Crystals stay found.</p></details>' : '<p class="empty">No topics have loaded yet.</p>') +
     '<div class="big2">' +
       '<button class="tile wide" data-act="exam"><span class="em">📝</span><span><span class="display">Mixed exam practice</span><p>Section A (MCQ) then Section B (open-ended), all P3 topics.</p></span></button>' +
       '<button class="tile wide power" data-act="power"><span class="em">⚡</span><span><span class="display">Power-Up</span><p>' +
@@ -644,8 +778,17 @@ function renderTopic(t) {
     '<div class="big2" style="margin-top:0">' +
       (t.notes.length ? '<button class="tile wide" data-act="learn" data-id="' + esc(t.id) + '"><span class="em">📖</span><span><span class="display">Learn</span><p>' + t.notes.length + ' revision cards</p></span></button>' : '') +
       '<button class="tile wide alt" data-act="practice" data-id="' + esc(t.id) + '"><span class="em">✏️</span><span><span class="display">Practice</span><p>About 10 questions, mixed levels</p></span></button>' +
-    '</div>'
+    '</div>' +
+    (t.hidden ? '' : topicCrys(t))
   );
+}
+
+/* the land's three crystals, found or still to find (a hidden topic never shows them) */
+function topicCrys(t) {
+  var c = crysOf(t.id);
+  return '<div class="crysbox"><h3>⭐ Star Crystals in ' + esc(place(t)) + '</h3><ul class="powers">' +
+    CRYS.map(function (x) { return '<li class="' + (c[x.k] ? 'full' : '') + '">' + esc(x.em + ' ' + x.name) + '<small>' + (c[x.k] ? '⭐ found' : esc(x.how)) + '</small></li>'; }).join('') +
+    '</ul></div>';
 }
 
 /* ---------- learn ---------- */
@@ -926,7 +1069,7 @@ function renderQuiz() {
     if (locked) {
       var second = ladder && a.miss1 != null;
       var zap = power && !second ? '<p class="pzap"><b>⚡ ' + esc(pq(pkey(it))) + (pstate(pkey(it)).full ? ' is fully charged!' : ' is charging up!') + '</b></p>' : '';
-      if (ok) q += '<div class="fb ok" id="fb"><b class="h">' + (second ? '✅ You got it on your second try!' : '✅ Correct!') + '</b>' + zap + (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') + '</div>';
+      if (ok) q += '<div class="fb ok" id="fb"><b class="h">' + esc(a.praise || (second ? '✅ You got it on your second try!' : '✅ Correct!')) + '</b>' + zap + wonHTML(a) + (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') + '</div>';
       else q += coachHTML(it, a, se.i);   /* the final miss: the coaching walk-through */
     }
   } else {
@@ -1046,6 +1189,8 @@ function finishSession() {
     S.exams.unshift({ t: Date.now(), got: Math.round(got * 10) / 10, max: max, by: by, size: S.size });
     S.exams = S.exams.slice(0, 20);
   }
+  /* finishing a practice round in a land is the Explorer crystal (fun layer) */
+  if (se.kind === 'practice' && se.topicId) { var w = award(se.topicId, 'e'); if (w) se.won = (se.won || []).concat([w]); }
   save();
   se.phase = 'report'; renderQuiz();
 }
@@ -1070,9 +1215,11 @@ function renderPowerClose() {
     '<p class="pclose">✨ ' + esc(said) + '</p>' +
     (full.length ? '<p class="well">⚡ ' + esc(andList(full.map(pq))) + (full.length === 1 ? ' is' : ' are') + ' fully charged.</p>' : '') +
     '<div class="section"><h3>My powers</h3>' + powersHTML(keys) + '</div>' +
+    crysBox(se) +
     '<p class="pnext section"><b>➡️ ' + esc(nextLine) + '</b></p>' +
     '<div class="nav"><button class="btn ghost" data-act="home">Home</button><button class="btn" data-act="power">⚡ Another Power-Up</button></div>';
   paint(h);
+  if (!se.cheered) { se.cheered = true; celebrate(full.length ? '🌟 Powered up!' : '🎉 Power-Up finished! Well done.', 'finish', true); }
 }
 function renderReport() {
   if (session.kind === 'power') return renderPowerClose();
@@ -1100,6 +1247,7 @@ function renderReport() {
     se.items.forEach(function (it, k) { if (k < se.nA) { aGot += se.ans[k].score * it.marks; aMax += it.marks; } else { bGot += se.ans[k].score * it.marks; bMax += it.marks; } });
     h += '<p class="lead">Section A: ' + aGot + ' / ' + aMax + ' · Section B: ' + (Math.round(bGot * 10) / 10) + ' / ' + bMax + '</p>';
   }
+  if (se.kind !== 'exam') h += crysBox(se);
   h += '<div class="section"><h3>By topic</h3><table class="tbl"><tr><th>Topic</th><th class="num">Marks</th><th class="num">%</th></tr>' +
     ids.map(function (id) { var t = SCI.byId[id], b = by[id];
       return '<tr><td>' + esc(t ? t.emoji + ' ' + t.title : id) + '</td><td class="num">' + (Math.round(b.got * 10) / 10) + ' / ' + b.max + '</td><td class="num">' + pct(b.max ? b.got / b.max : 0) + '</td></tr>'; }).join('') +
@@ -1117,6 +1265,31 @@ function renderReport() {
   h += '<div class="nav">' + (missed.length ? '<button class="btn" data-act="retryMissed">Try these again</button>' : '<span></span>') +
     '<button class="btn ghost" data-act="home">Home</button></div>';
   paint(h);
+  if (se.kind !== 'exam') finishCheer(se);   /* the mock report stays exactly as it was */
+}
+/* the Star Crystals panel on a practice report and the Power-Up close: what she found, then the next one to find */
+function crysBox(se) {
+  var won = se.won || [], t = se.topicId ? SCI.byId[se.topicId] : null;
+  var land = t && !t.hidden && shownTopics().indexOf(t) >= 0 ? t : null;
+  if (!land && !won.length) return '';
+  var h = '<div class="crysbox section">';
+  if (land) {
+    var c = crysOf(land.id), next = CRYS.filter(function (x) { return !c[x.k]; })[0];
+    h += '<h3>⭐ Star Crystals · ' + esc(land.emoji + ' ' + place(land)) + '</h3>' + crysHTML(land.id);
+    won.forEach(function (w) { h += '<p><b>' + esc(w.em + ' ' + w.name) + '</b> found' + (w.t !== land.id ? ' in ' + esc(w.land) : '') + '!</p>'; });
+    h += next ? '<p>Next crystal to find: ' + esc(next.em + ' ' + next.name) + ': ' + esc(next.how) + '.</p>'
+              : '<p>🏝️ You found all 3 Star Crystals in ' + esc(place(land)) + '!</p>';
+  } else {
+    h += '<h3>⭐ Star Crystals found today</h3>';
+    won.forEach(function (w) { h += '<p><b>' + esc(w.em + ' ' + w.name) + '</b> in ' + esc(w.land) + (w.all ? ': all 3 found there!' : '') + '</p>'; });
+  }
+  return h + '</div>';
+}
+/* once per finished round: a short banner (and confetti unless reduced motion) for finishing */
+function finishCheer(se) {
+  if (se.cheered) return; se.cheered = true;
+  var won = se.won || [];
+  celebrate(won.length ? '🎉 Round finished! ' + won.length + ' new Star Crystal' + (won.length === 1 ? '' : 's') + '!' : '🎉 Round finished! Well done.', 'finish', true);
 }
 
 /* ---------- parent ---------- */
@@ -1166,6 +1339,8 @@ var A = {
   lprev: function () { learn.i--; renderLearn(SCI.byId[learn.id]); },
   practice: function (el) { startPractice(SCI.byId[el.dataset.id]); },
   power: startPower,
+  sound: function () { S.sound = !S.sound; save(); sndBtn(); if (S.sound) sfx('ok'); },
+  celeOff: function () { clearTimeout(celeT); document.getElementById('cele').hidden = true; },
   exam: function () { go('exam'); },
   parent: function () { go('parent'); },
   esize: function (el) { S.size = el.dataset.v; save(); renderExamSetup(); },
@@ -1177,7 +1352,10 @@ var A = {
     if (a.choice != null || k === a.miss1) return;
     se.scrollFb = true;
     if (nudgeText(it) && a.miss1 == null && k !== it.answer) { a.miss1 = k; renderQuiz(); return; }   /* first miss: nudge (hints[0], else steps[0]) + retry */
-    a.choice = k; a.score = k === it.answer ? (a.miss1 != null ? 0.5 : 1) : 0; record(it, a.score, a.miss1 != null); save(); renderQuiz();
+    var prev = S.items[it.id], prevLast = prev ? prev.last : null, wasFull = pstate(pkey(it)).full;
+    a.choice = k; a.score = k === it.answer ? (a.miss1 != null ? 0.5 : 1) : 0; record(it, a.score, a.miss1 != null); save();
+    if (a.score > 0) a.praise = a.miss1 != null ? '✅ You got it on your second try!' : PRAISE[Math.floor(Math.random() * PRAISE.length)];
+    funAfter(it, a, a.score, prevLast, wasFull); renderQuiz();
   },
   reveal: function () { var a = session.ans[session.i]; saveText(); a.shown = true; renderQuiz(); },
   hint: function () { var a = session.ans[session.i]; saveText(); a.hint1 = true; session.scrollFb = true; renderQuiz(); },
@@ -1188,7 +1366,9 @@ var A = {
   },
   saveMark: function () {
     var se = session, it = se.items[se.i], a = se.ans[se.i];
-    a.score = oeqScore(it, a.ticks); record(it, a.score, !!a.hint1); save(); A.next();
+    var prev = S.items[it.id], prevLast = prev ? prev.last : null, wasFull = pstate(pkey(it)).full;
+    a.score = oeqScore(it, a.ticks); record(it, a.score, !!a.hint1); save();
+    funAfter(it, a, a.score, prevLast, wasFull); A.next();
   },
   next: function () {
     saveText();
@@ -1249,7 +1429,7 @@ var A = {
     if (session && session.kind === 'exam') examClear();
     session = null; go(back);
   },
-  reset: function () { if (confirm('Erase all Science Quest progress on this device?')) { S = fresh(); save(); renderParent(); toast('Progress cleared'); } }
+  reset: function () { if (confirm('Erase all Science Quest progress on this device?')) { S = fresh(); save(); sndBtn(); renderParent(); toast('Progress cleared'); } }
 };
 function saveText() { var ta = document.getElementById('oeqText'); if (ta && session) { session.ans[session.i].text = ta.value; examSave(); } }
 document.addEventListener('click', function (e) {
@@ -1261,6 +1441,7 @@ document.addEventListener('change', function (e) { var el = e.target; if (el.dat
 document.addEventListener('input', function (e) { if (e.target.id === 'oeqText') saveText(); });
 window.addEventListener('hashchange', route);
 countdown();
+sndBtn();
 if (examResume()) { if (location.hash !== '#quiz') location.hash = 'quiz'; }
 route();
 })();

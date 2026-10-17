@@ -12,10 +12,13 @@
  * SYLLABUS PLACEMENT (checked 2026-10-17): under the MOE 2023 Primary Science syllabus
  * the P3-P4 "Human System" topic is the digestive system; respiratory and circulatory
  * systems in detail are P5-P6. Older (2014-syllabus) P4 materials still open with an
- * overview of five systems (digestive, respiratory, circulatory, skeletal, muscular),
- * and 8 of 9 school P3 papers from 2022 test them. So digestive items carry the depth;
+ * overview of five systems (digestive, respiratory, circulatory, skeletal, muscular).
+ * So digestive items carry the depth;
  * the other four systems are kept at overview level (main organ, its job, the path of
  * air or blood, systems working together).
+ *
+ * syl: 'P5' marks the P5 stretch items (refuter R-B, 2026-10-17): 016, 018, 019, 024, 025.
+ * The shell shows a "P5 stretch" badge on them.
  */
 (function () {
   const F = 'font-family="sans-serif"';
@@ -115,9 +118,9 @@ ${labels([
 <path d="${heartPath(204, 172, 0.9)}" fill="#d64545" stroke="#8e2424" stroke-width="2"/>
 ${labels([
   { t: 'P', lx: 320, ly: 40, tx: 220, ty: 40 },
-  { t: 'Q', lx: 80, ly: 140, tx: 168, ty: 140 },
+  { t: 'Q', lx: 80, ly: 140, tx: 182, ty: 152 },   // R-B FIX: dot off the arm vessel, onto the lung
   { t: 'R', lx: 320, ly: 196, tx: 214, ty: 190 },
-  { t: 'S', lx: 320, ly: 330, tx: 236, ty: 330 }
+  { t: 'S', lx: 320, ly: 330, tx: 229, ty: 330 }   // R-B FIX: dot onto the leg vessel
 ])}
 </svg>`;
 
@@ -206,8 +209,8 @@ ${labels([
       { title: 'The path of food', body: 'Food travels in this order:\nmouth, gullet, stomach, small intestine, large intestine.\nUndigested food leaves the body through the anus.\nDigestion is breaking down food into simpler substances that the body can take in.' },
       { title: 'What each part does', body: 'Mouth: teeth break food into smaller pieces; saliva (a digestive juice) starts digestion.\nGullet: pushes food down to the stomach. No digestion here.\nStomach: mixes food with digestive juices. Digestion continues.\nSmall intestine: digestion is completed, and digested food is taken into the blood.\nLarge intestine: takes in water from the undigested food. No digestion here.' },
       { title: 'Digestive juices', body: 'Digestive juices are made in only three parts: the mouth, the stomach and the small intestine.\nThe gullet and the large intestine do not make digestive juices.' },
-      { title: 'Breathing: the respiratory system', body: 'Air goes in through the nose, down the windpipe and into the lungs.\nThe body takes in oxygen from the air and gives out carbon dioxide.\nThe air you breathe out has less oxygen and more carbon dioxide than the air you breathe in.' },
-      { title: 'Blood: the circulatory system', body: 'The heart pumps blood through blood vessels to all parts of the body.\nBlood carries digested food and oxygen to every part, and carries carbon dioxide away to the lungs.' },
+      { title: 'Breathing: the respiratory system (P5 stretch)', body: 'Air goes in through the nose, down the windpipe and into the lungs.\nThe body takes in oxygen from the air and gives out carbon dioxide.\nThe air you breathe out has less oxygen and more carbon dioxide than the air you breathe in.' },
+      { title: 'Blood: the circulatory system (P5 stretch)', body: 'The heart pumps blood through blood vessels to all parts of the body.\nBlood carries digested food and oxygen to every part, and carries carbon dioxide away to the lungs.' },
       { title: 'Bones and muscles', body: 'The skeletal system supports the body, gives it shape and protects organs inside.\nThe skull protects the brain. The ribcage protects the heart and lungs.\nMuscles pull on bones to move them. Bones meet at joints, such as the elbow and knee, so the body can bend.' },
       { title: 'Systems work together', body: 'When you run, your muscles and bones move your legs.\nYou breathe faster and your heart beats faster, so your blood carries more oxygen and digested food to your muscles.' }
     ],
@@ -306,7 +309,7 @@ ${labels([
         options: ['W, Z, Y', 'Y, X, W', 'W, X, Y', 'W, X, Z'],
         answer: 2,
         explain: 'Air enters through the nose (W), goes down the windpipe (X) and into the lungs (Y). Z is the heart, which pumps blood, not air. Y, X, W is the path of air when she breathes OUT.' },
-      { id: 'x17-body-016', type: 'mcq', level: 2,
+      { id: 'x17-body-016', type: 'mcq', level: 2, syl: 'P5',
         stem: 'Compared with the air Hui Min breathes in, the air she breathes out has ...',
         figure: null,
         options: ['only carbon dioxide and no oxygen', 'more oxygen and less carbon dioxide', 'the same amounts of oxygen and carbon dioxide', 'less oxygen and more carbon dioxide'],
@@ -318,13 +321,13 @@ ${labels([
         options: ['P', 'Q', 'R', 'S'],
         answer: 2,
         explain: 'R is the heart. It pumps blood through the blood vessels (S) to all parts of the body. Q, the lungs, take in air; they do not pump blood. P is the brain.' },
-      { id: 'x17-body-018', type: 'mcq', level: 2,
+      { id: 'x17-body-018', type: 'mcq', level: 2, syl: 'P5',
         stem: 'What does blood carry to all parts of the body?',
         figure: null,
         options: ['Digested food and oxygen', 'Undigested food and air', 'Water only, from the stomach', 'Carbon dioxide only'],
         answer: 0,
         explain: 'Blood carries digested food (taken in at the small intestine) and oxygen (taken in at the lungs) to every part of the body. Undigested food never gets into the blood: it stays in the gut and leaves through the anus. Blood carries carbon dioxide AWAY to the lungs.' },
-      { id: 'x17-body-019', type: 'oeq', level: 3, marks: 2,
+      { id: 'x17-body-019', type: 'oeq', level: 3, syl: 'P5', marks: 2,
         stem: 'Ryan counted his heartbeats in 1 minute while sitting at rest. Then he skipped rope for 2 minutes on the school field and counted again. Explain why his heart beat faster after skipping.',
         figure: PULSE,
         model: 'His heart beat faster, from 80 to 130 beats in a minute, because his muscles were working harder and needed more oxygen and digested food. His heart pumped blood faster to carry more oxygen and digested food to his muscles.',
@@ -354,13 +357,13 @@ ${labels([
         options: ['P', 'R', 'S', 'Q'],
         answer: 3,
         explain: 'Q is a muscle. Muscles pull on bones to move them. Bones (P and S) cannot move by themselves. The elbow joint (R) is where the bones meet, so the arm can bend there, but the joint does not pull.' },
-      { id: 'x17-body-024', type: 'mcq', level: 3,
+      { id: 'x17-body-024', type: 'mcq', level: 3, syl: 'P5',
         stem: 'During a school race, Daniel breathes faster and his heart beats faster. Which two body systems are working harder to bring more oxygen to his leg muscles?',
         figure: null,
         options: ['Respiratory and circulatory systems', 'Digestive and skeletal systems', 'Skeletal and muscular systems', 'Digestive and circulatory systems'],
         answer: 0,
         explain: 'The respiratory system takes in the oxygen (faster breathing) and the circulatory system carries it in the blood to the muscles (faster heartbeat). The skeletal and muscular systems move his legs, but they do not bring the oxygen. The digestive system deals with food, not oxygen.' },
-      { id: 'x17-body-025', type: 'oeq', level: 3, marks: 2,
+      { id: 'x17-body-025', type: 'oeq', level: 3, syl: 'P5', marks: 2,
         stem: 'Kumar ate nasi lemak for breakfast. Later, his leg muscles used the digested food to help him run. Explain how the digested food got from his digestive system to his leg muscles.',
         figure: null,
         model: 'The food was digested, and the digested food was taken into the blood in the small intestine. The heart pumped the blood through the blood vessels, carrying the digested food to his leg muscles.',

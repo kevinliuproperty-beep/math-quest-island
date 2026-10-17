@@ -4,7 +4,8 @@
            node science/validate.mjs magnets    (only the named topic id(s))
    Loads each topic file with a stub SCI, checks the content contract in
    "P3 Science Brief — 2026-10-06", prints a per-topic summary. Exit 1 on any ERROR.
-   Topic ids starting with "_" are demo files: the size/mix floors are warnings there. */
+   Topic ids starting with "_" are demo files: the size/mix floors are warnings there.
+   Hidden topics (hidden: true, off the child's path) get the same floor-as-warning rule. */
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
@@ -27,13 +28,14 @@ for (const f of pick) {
   const demo = fileId.startsWith('_');
   const errs = [], warns = [];
   const E = m => errs.push(m), W = m => warns.push(m);
-  const floor = demo ? W : E;
+  let floor = demo ? W : E;
   const got = [];
   const ctx = vm.createContext({ SCI: { registerTopic: t => got.push(t) }, console: { log() {}, warn() {}, error() {} } });
   try { vm.runInContext(fs.readFileSync(path.join(DIR, f), 'utf8'), ctx, { filename: f, timeout: 2000 }); }
   catch (e) { E('file does not run: ' + e.message); }
   if (got.length !== 1) E(`expected exactly 1 SCI.registerTopic call, got ${got.length}`);
   const t = got[0] || {};
+  if (t.hidden === true) floor = W;   /* hidden P4 topic: floors are warnings (conn ruling 2026-10-17) */
   const items = Array.isArray(t.items) ? t.items : [];
   if (got.length) {
     if (t.id !== fileId) E(`topic id "${t.id}" does not match file name "${fileId}"`);
@@ -123,7 +125,7 @@ for (const f of pick) {
     }
   }
   totalErr += errs.length;
-  rows.push({ fileId, n, mcq, oeq, lv, fig, notes: Array.isArray(t.notes) ? t.notes.length : 0, errs, warns, demo, extra: t.extra === true });
+  rows.push({ fileId, n, mcq, oeq, lv, fig, notes: Array.isArray(t.notes) ? t.notes.length : 0, errs, warns, demo, extra: t.extra === true, hidden: t.hidden === true });
 }
 
 /* Classic <script> tags share ONE global lexical scope: a top-level const/let/class
@@ -145,7 +147,7 @@ console.log(pad('topic', 16) + pad('items', 7) + pad('mcq/oeq', 9) + pad('L1/L2/
 for (const r of rows) {
   const res = r.errs.length ? `FAIL (${r.errs.length} err, ${r.warns.length} warn)` : r.warns.length ? `ok (${r.warns.length} warn)` : 'ok';
   console.log(pad(r.fileId, 16) + pad(r.n, 7) + pad(`${r.mcq}/${r.oeq}`, 9) + pad(`${r.lv[1]}/${r.lv[2]}/${r.lv[3]}`, 11) +
-    pad(r.n ? Math.round(r.fig / r.n * 100) : 0, 6) + pad(r.notes, 7) + res + (r.demo ? '  [demo]' : '') + (r.extra ? '  [extra]' : ''));
+    pad(r.n ? Math.round(r.fig / r.n * 100) : 0, 6) + pad(r.notes, 7) + res + (r.demo ? '  [demo]' : '') + (r.extra ? '  [extra]' : '') + (r.hidden ? '  [hidden]' : ''));
 }
 for (const r of rows) {
   if (!r.errs.length && !r.warns.length) continue;

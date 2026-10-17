@@ -128,6 +128,17 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .fb.no{border-color:var(--rose);background:var(--rose-soft)}
 .fb b.h{display:block;font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-size:1.15rem;margin-bottom:2px}
 .fb p{margin:4px 0 0;white-space:pre-line}
+.fb.hint{border-color:var(--gold);background:var(--gold-soft)}
+.fb p.reveal{border-left:4px solid var(--gold);padding-left:10px}
+.fb .fig{margin:10px 0 0}
+/* F13: figure beside the question on wide screens (see renderQuiz) */
+@media (min-width:1100px){
+  body.quizfig .wrap{max-width:1180px}
+  .qgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+  .qfig{position:sticky;top:12px}
+  .qfig .fig svg{max-height:calc(100vh - 290px)}
+  .qsolo{max-width:720px;margin:0 auto}   /* same wide stage for every question, so the navigator does not jump */
+}
 textarea{width:100%;min-height:110px;border:2px solid var(--line);border-radius:14px;padding:12px;font:inherit;font-size:1.1rem;background:var(--ground);color:var(--ink);resize:vertical}
 .model{background:var(--teal-soft);border:2px solid var(--teal);border-radius:14px;padding:12px 14px;margin-top:14px}
 .model p{margin:4px 0 0;font-size:1.1rem;white-space:pre-line}
@@ -225,6 +236,10 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
           var o = { id: it.id, topic: t.id, type: it.type, level: level, stem: it.stem,
             figure: typeof it.figure === 'string' && it.figure.trim() ? it.figure : null,
             explain: str(it.explain) ? it.explain : '' };
+          /* x17 (2026-10-17): hint ladder [nudge, reveal] + optional reveal figure; syllabus tag */
+          if (Array.isArray(it.hints)) { var hs = it.hints.filter(str).map(String).slice(0, 2); if (hs.length) o.hints = hs; }
+          if (str(it.hintFigure)) o.hintFigure = it.hintFigure;
+          if (str(it.syl)) o.syl = String(it.syl);
           if (it.type === 'mcq') { o.options = it.options.map(String); o.answer = it.answer; o.marks = 2; }   /* SG EOY Section A: 2 marks per MCQ */
           else {
             o.model = it.model;
@@ -238,7 +253,9 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
           items[o.id] = o; clean.push(o);
         });
         var topic = { id: t.id, title: str(t.title) ? t.title : t.id, emoji: str(t.emoji) ? t.emoji : '🔬',
-          theme: str(t.theme) ? t.theme : '', extra: t.extra === true || t.id === 'plant-parts', moeRef: str(t.moeRef) ? t.moeRef : '',
+          theme: str(t.theme) ? t.theme : '', extra: t.extra === true || t.id === 'plant-parts',
+          hidden: t.hidden === true,   /* off the child's path: no home tile, mock, weak spots; parent page P4 section only */
+          moeRef: str(t.moeRef) ? t.moeRef : '',
           notes: (Array.isArray(t.notes) ? t.notes : []).filter(function (n) { return n && (str(n.title) || str(n.body)); }),
           items: clean };
         byId[t.id] = topic; topics.push(topic);
@@ -254,6 +271,7 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
 <script src="topics/magnets.js"></script>
 <script src="topics/plant-parts.js"></script>
 <script src="topics/process-skills.js"></script>
+<script src="topics/body-systems.js"></script>   <!-- hidden P4 topic: needs topic.hidden support above -->
 <script src="topics/_sample.js"></script>
 
 <script>
@@ -287,7 +305,7 @@ var toastT;
 function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 1800); }
 
 function shownTopics() {
-  var real = SCI.topics.filter(function (t) { return t.id.charAt(0) !== '_' && t.items.length; });
+  var real = SCI.topics.filter(function (t) { return t.id.charAt(0) !== '_' && !t.hidden && t.items.length; });
   real.sort(function (a, b) {
     var ia = ORDER.indexOf(a.id), ib = ORDER.indexOf(b.id);
     return ((a.extra ? 1000 : 0) + (ia < 0 ? 99 : ia)) - ((b.extra ? 1000 : 0) + (ib < 0 ? 99 : ib));
@@ -296,7 +314,10 @@ function shownTopics() {
   if (!real.length || wantSample) real = real.concat(SCI.topics.filter(function (t) { return t.id.charAt(0) === '_' && t.items.length; }));
   return real;
 }
-/* P4-preview topics (extra: true, e.g. plant-parts) stay out of the mock paper and weak spots */
+/* P4-preview topics (extra: true, e.g. plant-parts) stay out of the mock paper and weak spots.
+   Hidden topics (hidden: true, e.g. body-systems) never reach shownTopics(), so they are also off
+   the home grid, the mock, weak spots and anything else built on these two. */
+function hiddenTopics() { return SCI.topics.filter(function (t) { return t.hidden && t.items.length; }); }
 function examTopics() { return shownTopics().filter(function (t) { return !t.extra; }); }
 function topicStats(t) {
   var att = 0, sc = 0, mastered = 0, seen = 0, weak = 0;
@@ -414,7 +435,7 @@ function route() {
   if (p[0] === 'parent') return renderParent();
   renderHome();
 }
-function paint(html) { view.innerHTML = html; fixFigures(view); window.scrollTo(0, 0); }
+function paint(html) { view.innerHTML = html; fixFigures(view); document.body.classList.toggle('quizfig', !!view.querySelector('.qgrid, .qsolo')); window.scrollTo(0, 0); }
 
 /* ---------- home ---------- */
 function countdown() {
@@ -449,7 +470,7 @@ function renderHome() {
 function renderTopic(t) {
   var s = topicStats(t), m = t.items.filter(function (i) { return i.type === 'mcq'; }).length;
   paint(
-    '<button class="link" data-act="home">← All topics</button>' +
+    (t.hidden ? '<button class="link" data-act="parent">← Progress report</button>' : '<button class="link" data-act="home">← All topics</button>') +
     '<p class="eyebrow" style="margin-top:8px">' + esc(t.theme) + '</p>' +
     '<h2>' + esc(t.emoji) + ' ' + esc(t.title) + '</h2>' +
     '<p class="lead">' + t.items.length + ' questions (' + m + ' MCQ, ' + (t.items.length - m) + ' open-ended) · ' +
@@ -490,7 +511,7 @@ function renderLearn(t) {
 function startSession(kind, title, list, extra) {
   if (!list.length) { toast('No questions available yet'); return; }
   session = Object.assign({ kind: kind, title: title, items: list, i: 0,
-    ans: list.map(function () { return { choice: null, text: '', ticks: null, score: null, shown: false }; }),
+    ans: list.map(function () { return { choice: null, text: '', ticks: null, score: null, shown: false, miss1: null, hint1: false }; }),
     phase: 'answer' }, extra || {});
   go('quiz');
 }
@@ -583,25 +604,33 @@ function renderQuiz() {
     (exam && se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '<span class="eyebrow" style="margin:0">' + esc(se.kind === 'practice' ? se.title : (t ? t.emoji + ' ' + t.title : '')) + '</span>') + '</div>';
   if (exam && se.confirm) return renderConfirm();
   if (!exam) h += stepsHTML();
-  h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + '</p>';
-  h += figHTML(it.figure);
-  h += '<p class="stem">' + esc(it.stem) + (it.type === 'oeq' ? '<span class="marks">[' + it.marks + ' mark' + (it.marks === 1 ? '' : 's') + ']</span>' : '') + '</p>';
+  h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + (it.syl === 'P5' ? ' <span class="badge">P5 stretch</span>' : '') + '</p>';
+  /* Hint ladder (x17, 2026-10-17): practice and weak spots only, never the mock. MCQ: the first
+     miss shows hints[0] (the nudge) and allows one retry; the second miss locks it and shows
+     hints[1] (the reveal), the explanation and hintFigure. Right on the retry scores half. */
+  var ladder = !exam && !!(it.hints && it.hints.length);
+  var q = '<p class="stem">' + esc(it.stem) + (it.type === 'oeq' ? '<span class="marks">[' + it.marks + ' mark' + (it.marks === 1 ? '' : 's') + ']</span>' : '') + '</p>';
   if (it.type === 'mcq') {
-    var locked = !exam && a.choice != null;
-    h += '<div class="opts">' + it.options.map(function (o, k) {
-      var cls = 'opt';
-      if (locked) { if (k === it.answer) cls += ' right'; else if (k === a.choice) cls += ' wrong'; }
+    var locked = !exam && a.choice != null, retry = !locked && ladder && a.miss1 != null;
+    q += '<div class="opts">' + it.options.map(function (o, k) {
+      var cls = 'opt', off = locked || (retry && k === a.miss1);
+      if (locked) { if (k === it.answer) cls += ' right'; else if (k === a.choice || k === a.miss1) cls += ' wrong'; }
+      else if (retry && k === a.miss1) cls += ' wrong';
       else if (a.choice === k) cls += ' picked';
-      return '<button class="' + cls + '" data-act="pick" data-k="' + k + '"' + (locked ? ' disabled' : '') + ' aria-pressed="' + (a.choice === k) + '"><span class="n">(' + (k + 1) + ')</span><span>' + esc(o) + '</span></button>';
+      return '<button class="' + cls + '" data-act="pick" data-k="' + k + '"' + (off ? ' disabled' : '') + ' aria-pressed="' + (a.choice === k) + '"><span class="n">(' + (k + 1) + ')</span><span>' + esc(o) + '</span></button>';
     }).join('') + '</div>';
+    if (retry) q += '<div class="fb hint" id="fb"><b class="h">🤔 Not yet. Have another go!</b><p>' + esc(it.hints[0]) + '</p></div>';
     if (locked) {
-      var ok = a.choice === it.answer;
-      h += '<div class="fb ' + (ok ? 'ok' : 'no') + '"><b class="h">' + (ok ? '✅ Correct!' : '❌ Not quite — the answer is (' + (it.answer + 1) + ')') + '</b>' +
-        (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') + '</div>';
+      var ok = a.choice === it.answer, second = ladder && a.miss1 != null;
+      q += '<div class="fb ' + (ok ? 'ok' : 'no') + '" id="fb"><b class="h">' + (ok ? (second ? '✅ Correct on your second try!' : '✅ Correct!') : '❌ Not quite — the answer is (' + (it.answer + 1) + ')') + '</b>' +
+        (!ok && ladder && it.hints[1] ? '<p class="reveal"><b>Work it out:</b> ' + esc(it.hints[1]) + '</p>' : '') +
+        (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') +
+        (!ok && ladder ? figHTML(it.hintFigure) : '') + '</div>';
     }
   } else {
-    h += '<textarea id="oeqText" placeholder="Type your answer here, or write it on paper (optional)"' + (a.shown && !exam ? ' readonly' : '') + '>' + esc(a.text) + '</textarea>';
-    if (!exam && a.shown) h += markingHTML(it, a);
+    q += '<textarea id="oeqText" placeholder="Type your answer here, or write it on paper (optional)"' + (a.shown && !exam ? ' readonly' : '') + '>' + esc(a.text) + '</textarea>';
+    if (ladder && !a.shown && a.hint1) q += '<div class="fb hint" id="fb"><b class="h">💡 Hint</b><p>' + esc(it.hints[0]) + '</p></div>';
+    if (!exam && a.shown) q += markingHTML(it, a) + (ladder && it.hintFigure ? '<p class="eyebrow" style="margin-top:14px">Worked out on the diagram</p>' + figHTML(it.hintFigure) : '');
   }
   var last = se.i === se.items.length - 1;
   var next = '';
@@ -613,11 +642,15 @@ function renderQuiz() {
     next = a.choice != null ? '<button class="btn teal" data-act="next">' + (last ? 'See results →' : 'Next →') + '</button>' : '';
   } else {
     next = a.shown ? '<button class="btn teal" data-act="saveMark">' + (last ? 'Save mark &amp; see results →' : 'Save mark &amp; next →') + '</button>'
-                   : '<button class="btn" data-act="reveal">Show answer</button>';
+                   : (ladder && !a.hint1 ? '<button class="btn ghost small" data-act="hint">💡 Hint</button>' : '') + '<button class="btn" data-act="reveal">Show answer</button>';
   }
-  h += '<div class="nav">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + next + '</div>';
+  q += '<div class="nav">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + (exam ? next : '<span class="row">' + next + '</span>') + '</div>';
+  /* F13 (2026-10-17): on a wide screen a figure sits beside the question, so the options and
+     buttons stay above the fold at 1440x900 and on an iPad in landscape. Narrow screens stack. */
+  h += it.figure ? '<div class="qgrid"><div class="qfig">' + figHTML(it.figure) + '</div><div class="qbody">' + q + '</div></div>' : '<div class="qsolo">' + q + '</div>';
   if (exam) h += qnavHTML() + '<button class="btn handin" data-act="finishExam">✋ Hand in paper</button>';
   paint(h);
+  if (!exam && se.scrollFb) { se.scrollFb = false; var fb = document.getElementById('fb'); if (fb && fb.getBoundingClientRect().bottom > window.innerHeight) fb.scrollIntoView({ block: 'nearest' }); }
   if (exam) examSave();
   clearInterval(timerId); timerId = null;
   if (exam && se.timerEnd) timerId = setInterval(tickTimer, 1000);
@@ -762,6 +795,7 @@ function renderParent() {
     '<p class="eyebrow" style="margin-top:8px">For grown-ups</p><h2>👪 Progress report</h2>' +
     '<p class="lead">Accuracy counts every attempt (open-ended answers by the marks ticked). Mastered = right on the latest try. Stored on this device only.</p>' +
     '<div class="section"><h3>By topic</h3><table class="tbl"><tr><th>Topic</th><th class="num">Tried</th><th class="num">Accuracy</th><th class="num">Mastered</th></tr>' + rows + '</table></div>' +
+    p4Section() +
     '<div class="section"><h3>Most-missed questions</h3>' + (most.length ? '<ul class="rev">' + most.map(function (id) {
       var it = SCI.items[id], r = S.items[id], t = SCI.byId[it.topic];
       return '<li><span class="r">' + (r.last >= 1 ? '✓ now' : '✗') + '</span>' + esc(it.stem) + '<small>' + esc((t ? t.title : '') + ' · missed ' + r.miss + ' of ' + r.a + ' tries · ' + it.id) + '</small></li>';
@@ -769,6 +803,20 @@ function renderParent() {
     '<div class="section"><h3>Mock papers</h3>' + (ex ? '<table class="tbl"><tr><th>Date</th><th class="num">Score</th><th class="num">%</th></tr>' + ex + '</table>' : '<p class="empty">No mock paper done yet.</p>') + '</div>' +
     '<div class="nav"><button class="btn ghost small" data-act="reset">Reset all progress</button></div>'
   );
+}
+
+/* Hidden topics live here only (Kev 2026-10-17: "hide in 4 section"). */
+function p4Section() {
+  var hs = hiddenTopics();
+  if (!hs.length) return '';
+  return '<div class="section" id="p4"><h3>P4 section <small class="badge">hidden from the child\'s home screen</small></h3>' +
+    '<p class="lead" style="margin:0 0 8px">Not in the mock paper or weak spots. Open a topic to practise it together.</p>' +
+    '<table class="tbl"><tr><th>Topic</th><th class="num">Tried</th><th class="num">Accuracy</th><th class="num">Mastered</th></tr>' +
+    hs.map(function (t) { var s = topicStats(t);
+      return '<tr><td>' + esc(t.emoji + ' ' + t.title) + ' <span class="badge">P4</span></td><td class="num">' + s.seen + ' / ' + s.n + '</td><td class="num">' + (s.acc == null ? '—' : pct(s.acc)) + '</td><td class="num">' + s.pct + '%</td></tr>'; }).join('') +
+    '</table><div class="row" style="margin-top:10px">' +
+    hs.map(function (t) { return '<button class="btn small teal" data-act="topic" data-id="' + esc(t.id) + '">' + esc(t.emoji + ' ' + t.title) + ' →</button>'; }).join('') +
+    '</div></div>';
 }
 
 /* ---------- events ---------- */
@@ -788,10 +836,13 @@ var A = {
   pick: function (el) {
     var se = session, it = se.items[se.i], a = se.ans[se.i], k = +el.dataset.k;
     if (se.kind === 'exam') { a.choice = k; renderQuiz(); return; }
-    if (a.choice != null) return;
-    a.choice = k; a.score = k === it.answer ? 1 : 0; record(it, a.score); save(); renderQuiz();
+    if (a.choice != null || k === a.miss1) return;
+    se.scrollFb = true;
+    if (it.hints && it.hints.length && a.miss1 == null && k !== it.answer) { a.miss1 = k; renderQuiz(); return; }   /* first miss: nudge + retry */
+    a.choice = k; a.score = k === it.answer ? (a.miss1 != null ? 0.5 : 1) : 0; record(it, a.score); save(); renderQuiz();
   },
   reveal: function () { var a = session.ans[session.i]; saveText(); a.shown = true; renderQuiz(); },
+  hint: function () { var a = session.ans[session.i]; saveText(); a.hint1 = true; session.scrollFb = true; renderQuiz(); },
   tick: function (el) {
     var se = session, idx = se.phase === 'markB' ? se.markIdx : se.i, it = se.items[idx], a = se.ans[idx];
     a.ticks[+el.dataset.j] = el.checked; el.closest('label').classList.toggle('on', el.checked);

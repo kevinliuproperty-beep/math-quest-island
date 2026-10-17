@@ -413,11 +413,11 @@
     no: { q: 'Does it have feathers?', yes: 'X', no: { q: 'Does it have six legs?', yes: 'Y', no: 'Z' } } }] },
     { label: 'Flowchart: hair or fur? feathers? six legs? ending in boxes W, X, Y and Z' });
   var XF_BAGS_PLAN = xBags([
-    { L: 'A', place: 'cupboard', damp: true, lines: ['damp', 'white bread'] },
-    { L: 'B', place: 'fridge', lines: ['dry', 'white bread'] },
-    { L: 'C', place: 'fridge', damp: true, lines: ['damp', 'white bread'] },
-    { L: 'D', place: 'cupboard', brown: true, lines: ['dry', 'wholemeal'] }],
-    'Four sealed bags of bread: A damp white bread in a cupboard, B dry white bread in a fridge, C damp white bread in a fridge, D dry wholemeal bread in a cupboard');
+    { L: 'A', place: 'fridge', damp: true, lines: ['damp', 'white bread'] },
+    { L: 'B', place: 'cupboard', lines: ['dry', 'white bread'] },
+    { L: 'C', place: 'cupboard', damp: true, lines: ['damp', 'white bread'] },
+    { L: 'D', place: 'fridge', brown: true, lines: ['dry', 'wholemeal'] }],
+    'Four sealed bags of bread: A damp white bread in a fridge, B dry white bread in a cupboard, C damp white bread in a cupboard, D dry wholemeal bread in a fridge');
 
   SCI.registerTopic({
     id: 'living-things',
@@ -1123,7 +1123,7 @@
           [['P', '2', '8', '0', '0'], ['Q', '3', '6', '2', '0'], ['R', '3', '6', '2', '4'], ['S', 'many', 'about 30', '2', '0']]),
         options: ['Q and R', 'R only', 'P and Q', 'Q, R and S'],
         answer: 0,
-        hints: ['Look for 3 body parts AND 6 legs AND 2 feelers. Do not use wings to decide.',
+        hints: ['Check every insect feature for each animal: body parts, legs and feelers.',
                'Q and R both have 3 body parts, 6 legs and 2 feelers. Q has no wings, but it is still an insect.'],
         explain: 'Q and R both have 3 body parts, 6 legs and 1 pair of feelers, so they are insects. "R only" is the wings trap: some insects, like ants, have no wings. P has 8 legs (a spider) and S has many legs (a centipede); having feelers alone does not make S an insect.' },
       { id: 'x17-liv-17', type: 'oeq', level: 3, marks: 2,
@@ -1146,8 +1146,8 @@
       { id: 'x17-liv-19', type: 'oeq', level: 2, marks: 2,
         stem: 'A crocodile and a frog both spend time in water and on land.\n(a) State one way in which they are similar. (1 mark)\n(b) State one way in which they are different. (1 mark)',
         figure: null,
-        model: '(a) Both lay eggs. (Adults of both breathe through lungs.) (b) A crocodile has dry scaly skin, but a frog has moist skin. (A crocodile lays its eggs on land, but a frog lays its eggs in water.)',
-        keys: [['lay eggs', 'lungs'], ['dry scaly skin', 'moist skin', 'eggs on land', 'eggs in water']],
+        model: '(a) Both lay eggs. (Adults of both breathe through lungs. Both have four legs. Both have a backbone.) (b) A crocodile has dry scaly skin, but a frog has moist skin. (A crocodile lays its eggs on land, but a frog lays its eggs in water.)',
+        keys: [['lay eggs', 'lungs', 'four legs', 'backbone'], ['dry scaly skin', 'scales', 'moist skin', 'eggs on land', 'eggs in water']],
         hints: ['A crocodile is a reptile and a frog is an amphibian. Think about how they reproduce and what their skin is like.',
                'Similar: both lay eggs. Different: the crocodile has dry scaly skin, the frog has moist skin.'],
         explain: 'Reptiles and amphibians both lay eggs, and the adults breathe through lungs. They differ in skin (dry scaly vs moist) and in where they lay eggs (on land vs in water). "Both live in water and on land" is in the question, so it earns no mark.' },
@@ -1171,8 +1171,8 @@
         options: ['A and D', 'A and B', 'A and C', 'B and C'],
         answer: 3,
         hints: ['A fair comparison changes ONLY the water. Find two bags that are the same in every other way: same place and same type of bread.',
-               'B and C are both white bread in the fridge. The only difference is that B is dry and C is damp. A and D also differ in the type of bread.'],
-        explain: 'B and C are both white bread kept in the fridge; only the water is different, so it is a fair test. A and D also differ in the type of bread (white vs wholemeal). A and B also differ in the place (cupboard vs fridge). A and C are both damp, so they test temperature, not water.' },
+               'B and C are both white bread in the cupboard. The only difference is that B is dry and C is damp. A and D also differ in the type of bread.'],
+        explain: 'B and C are both white bread kept in the warm cupboard; only the water is different, so it is a fair test. A and D also differ in the type of bread (white vs wholemeal). A and B also differ in the place (fridge vs cupboard). A and C are both damp, so they test temperature, not water.' },
       { id: 'x17-liv-22', type: 'oeq', level: 3, marks: 2,
         stem: 'Kelvin sprinkled the same amount of water on two identical slices of bread and sealed each in a plastic bag. He kept bag P on the kitchen counter and bag Q in the fridge. After 5 days, he counted the mould spots. Explain why bag Q had fewer mould spots than bag P.',
         figure: xBars({ yTitle: 'Number of mould spots', labels: ['P\n(kitchen counter)', 'Q\n(fridge)'], values: [20, 4], max: 20, step: 4, xTitle: 'Bag', label: 'Bar graph: bag P 20 mould spots, bag Q 4 mould spots' }),
@@ -1201,11 +1201,11 @@
         stem: 'Mei found fuzzy green and white patches on a slice of bread that had been left out for a week. Her brother Ravi said, "The patches are bacteria." Do you agree? Explain.',
         figure: xSvg(220, 190, 'A slice of bread with fuzzy green and white patches', 300) + xSlice(110, 90, 2.0, { mould: 6, fuzzy: true }) +
           '<text x="110" y="180" text-anchor="middle" font-size="14">Mei\'s bread after a week</text></svg>',
-        model: 'No, I do not agree. The fuzzy patches are mould, which is a fungus. Bacteria are too tiny to be seen without a microscope, but these mould patches can be seen with our eyes.',
-        keys: [['mould', 'fungus', 'fungi'], ['microscope', 'too tiny', 'too small to see']],
-        hints: ['Could you see bacteria on bread with your eyes alone?',
-               'Bacteria can only be seen with a microscope. Fuzzy patches you can see are mould, a fungus.'],
-        explain: 'Claim: the patches are mould (a fungus), not bacteria. Evidence: Mei could see them with her eyes. Reasoning: bacteria are too tiny to see without a microscope. Mould is a fungus that grows on food and reproduces by spores.' },
+        model: 'No. The fuzzy patches are mould, a fungus. Mould grows as fuzzy, thread-like patches. A single bacterium is too tiny to see without a microscope.',
+        keys: [['mould', 'fungus'], ['fuzzy', 'thread', 'microscope', 'too tiny']],
+        hints: ['Look at what the patches are like. Which living thing grows as fuzzy, thread-like patches on food?',
+               'Fuzzy, thread-like patches are mould, a fungus. A single bacterium is too tiny to see without a microscope.'],
+        explain: 'Claim: the patches are mould (a fungus), not bacteria. Evidence: the patches are fuzzy and thread-like. Reasoning: mould grows as fuzzy, thread-like patches, while a single bacterium is too tiny to see without a microscope. Mould is a fungus that grows on food and reproduces by spores.' },
       { id: 'x17-liv-26', type: 'mcq', level: 3,
         stem: 'Daniel kept a pair of leather shoes in each of two identical cupboards in the same room. A moisture absorber takes in water from the air around it. Which statement best explains his results?',
         figure: table(['Cupboard', 'Moisture absorber inside?', 'Leather shoes after 3 weeks'],
@@ -1218,7 +1218,7 @@
 
       // ---- which characteristic of living things (archetype 14, scenario and graph half) ----
       { id: 'x17-liv-27', type: 'mcq', level: 2,
-        stem: 'Duckweed is a tiny plant that floats on water. Hana counted the duckweed plants in a tank in her school garden once a week. Which characteristic of living things does her graph show?',
+        stem: 'Duckweed is a tiny plant that floats on water. Hana counted the duckweed plants in a tank in her school garden once a week. Each duckweed plant stayed about the same size. Which characteristic of living things does her graph show?',
         figure: xLine({ yTitle: 'Number of duckweed plants', labels: ['0', '1', '2', '3', '4'], values: [10, 20, 40, 60, 80], max: 80, step: 10, xTitle: 'Week', label: 'Line graph: number of duckweed plants 10, 20, 40, 60, 80 in weeks 0 to 4' }),
         options: ['Living things grow.', 'Living things reproduce.', 'Living things respond to changes.', 'Living things need air.'],
         answer: 1,
@@ -1242,7 +1242,7 @@
                'A fire gives out heat and light, spreads in the wind and gets bigger with fuel, but it cannot make young ones of its own kind. Only living things reproduce.'],
         explain: 'Every clue in the question, and three of the options, also fit a fire, which is non-living. Only reproducing (making young ones of its own kind) belongs to living things alone.' },
       { id: 'x17-liv-30', type: 'oeq', level: 3, marks: 2,
-        stem: 'Wei kept a pet hamster and wrote down four observations, shown in the table.\n(a) Which observation shows that the hamster can reproduce? (1 mark)\n(b) Which characteristic of living things does observation 4 show? Explain. (1 mark)',
+        stem: 'Wei kept two pet hamsters and wrote down four observations about the female, shown in the table.\n(a) Which observation shows that the hamster can reproduce? (1 mark)\n(b) Which characteristic of living things does observation 4 show? Explain. (1 mark)',
         figure: table(['Observation', 'What Wei saw'],
           [['1', 'Its mass went from 40&nbsp;g to 90&nbsp;g in two months.'], ['2', 'It drank water from its bottle every day.'], ['3', 'It gave birth to five babies.'], ['4', 'It ran into its tunnel when the dog barked.']]),
         model: '(a) Observation 3: the hamster gave birth to five babies, which are young of its own kind. (b) Living things respond to changes: the hamster ran into its tunnel when it heard the dog bark.',

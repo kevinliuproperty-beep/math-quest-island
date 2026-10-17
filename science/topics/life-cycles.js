@@ -321,8 +321,10 @@
       s += `<circle cx="${x + 27}" cy="78" r="4.5" fill="currentColor"/>`;
       s += `<line x1="${x + 23}" y1="80" x2="${x + 10}" y2="90" stroke="currentColor" stroke-width="1.6"/>`;
       s += `<path d="M${x + 35},84 L${x + 20},104 L${x + 14},124 M${x + 38},85 L${x + 34},108 L${x + 30},128 M${x + 41},84 L${x + 50},106 L${x + 58},126" ${S}/>`;
+      // R-B NIT: the far-side legs, so Z has 6 legs (3 per side) like the insects she is drilled on
+      s += `<path d="M${x + 33},83 L${x + 25},100 L${x + 22},120 M${x + 40},84 L${x + 43},105 L${x + 44},126 M${x + 43},83 L${x + 60},101 L${x + 72},118" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.55" fill="none"/>`;
       return s;
-    }], 'Four drawings in a row with arrows: W, tiny eggs floating on water; X, a wriggly young animal hanging from the water surface; Y, an empty box with a question mark; Z, a flying insect with long thin legs and two wings');
+    }], 'Four drawings in a row with arrows: W, tiny eggs floating on water; X, a wriggly young animal hanging from the water surface; Y, an empty box with a question mark; Z, a flying insect with six long thin legs and two wings');
 
   // Tomato plant: E seed, F missing, G adult plant with flowers, H fruit cut open with seeds.
   const x17Tomato = x17Strip([{ L: 'E' }, { L: 'F', blank: true }, { L: 'G' }, { L: 'H' }], [
@@ -884,7 +886,7 @@
         model: 'The young plant at stage F has green leaves, and leaves make food for the plant using light, water and air. The seed at stage E has no leaves, so it cannot make food. It uses the food stored inside it.',
         keys: [['leaves', 'leaf'], ['make food', 'makes food', 'make its own food']],
         hints: ['Which part of a plant makes food? Does the seed have it?', 'Stage F has green leaves, and leaves make food. The seed has no leaves, so it lives on the food stored inside it.'],
-        explain: 'Claim: F can make food. Evidence: F has green leaves; the seed has none. Reasoning: leaves make food for the plant using light, water and air.' },
+        explain: 'Claim: F can make food. Evidence: a young plant has green leaves; a seed has none. Reasoning: leaves make food for the plant using light, water and air.' },
       { id: 'x17-lc-008', type: 'mcq', level: 3,
         stem: 'Gopal kept a beetle and a moth from the day their eggs were laid. The table shows how many days each insect spent in each stage. The adults were still alive when he stopped. Based only on the table, which statement is definitely true?',
         figure: x17Days,

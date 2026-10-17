@@ -447,7 +447,7 @@
   const TAB_X_BAND = table(['Length the rubber band was pulled back (cm)', 'Distance the paper ball travelled (cm)'],
     [['2', '60'], ['4', '120'], ['6', '?'], ['8', '240']], 'Results');
 
-  const TXT_X_GUPPY = 'Yi Xuan kept some guppies in a fish tank. On the first day of each month she counted the guppies in the tank. The line graph shows her results.';
+  const TXT_X_GUPPY = 'Yi Xuan kept some guppies in a fish tank. She did not put any new guppies into the tank. On the first day of each month she counted the guppies in the tank. The line graph shows her results.';
   const FIG_X_GUPPY = lineG({ aria: 'Line graph: number of guppies in the tank. January 5, February 5, March 10, April 15, May 25, June 25',
     title: 'Number of guppies in the tank', xTitle: 'Month', yTitle: 'Number of guppies',
     xs: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], series: [{ pts: [5, 5, 10, 15, 25, 25] }], ymax: 30, ystep: 5, pad: true });
@@ -1234,12 +1234,12 @@
         hints: ['Read BOTH lines at 60 minutes, then subtract. Each grid line stands for 50 g.', 'Shade 250 g, sun 175 g at 60 minutes: 250 - 175 = 75 g.'],
         explain: 'At 60 minutes the towel in the shade was 250 g and the towel in the sun was 175 g (halfway between 150 and 200). 250 g - 175 g = 75 g.' },
       { id: 'x17-ps-025', type: 'mcq', level: 3,
-        stem: TXT_X_DRY + ' By which time was the towel in the sun dry?',
+        stem: TXT_X_DRY + ' From the graph, what is the EARLIEST time at which the towel in the sun was dry?',   // R-A FIX: 120 min was also dry
         figure: FIG_X_DRY,
         options: ['30 minutes', '60 minutes', '120 minutes', '90 minutes'],
         answer: 3,
         hints: ['When there is no more water to dry, the towel stops getting lighter. Where does the sun line go flat?', 'The sun line goes flat at 150 g from 90 minutes: no more water left to dry.'],
-        explain: 'The towel in the sun stopped getting lighter at 90 minutes: it was 150 g at 90 minutes and still 150 g at 120 minutes. No more water was drying from it, so it was dry by 90 minutes. 120 minutes is just the last reading.' },
+        explain: 'The towel in the sun stopped getting lighter at 90 minutes: it was 150 g at 90 minutes and still 150 g at 120 minutes. No more water was drying from it, so it was dry by 90 minutes. It was still dry at 120 minutes, but 90 minutes is the earliest reading at which it was dry.' },
       { id: 'x17-ps-026', type: 'oeq', level: 3, marks: 3,
         stem: TXT_X_DRY + ' Is the sun or the shade the better place to dry towels quickly? Explain using the graph.',
         figure: FIG_X_DRY,
@@ -1258,9 +1258,9 @@
         stem: TXT_X_BOUNCE + ' One of the results does not fit the pattern.\n(a) Using the pattern, suggest how high the ball should have bounced when it was dropped from 60 cm. (1 mark)\n(b) What should Darren do to check this result? (1 mark)',
         figure: FIG_X_BOUNCE,
         model: '(a) About 36 cm. (b) Repeat the drop from 60 cm a few more times and compare the results.',
-        keys: [['36'], ['repeat', 'a few more times']],
+        keys: [['36', '35', '37', 'about 36'], ['repeat', 'a few more times']],   // R-A FIX: off-gridline read
         hints: ['Look at the other four dots. How much higher is the bounce for every 20 cm more drop height?', '(a) About 36 cm (12, 24, 36, 48, 60). (b) Repeat the 60 cm drop a few more times.'],
-        explain: '(a) The bounce goes up by 12 cm for every 20 cm more drop height: 12, 24, 36, 48, 60. (b) Repeating that drop and checking that the results agree shows whether 16 cm was a mistake. Repeating gives more reliable results.' },
+        explain: '(a) About 36 cm (35 to 37 cm is fine, as the points sit between gridlines). The bounce goes up by 12 cm for every 20 cm more drop height: 12, 24, 36, 48, 60. (b) Repeating that drop and checking that the results agree shows whether 16 cm was a mistake. Repeating gives more reliable results.' },
       { id: 'x17-ps-029', type: 'mcq', level: 2,
         stem: TXT_X_BFLY + ' How many more butterflies were seen at flower bed Q than at flower bed R?',
         figure: FIG_X_BFLY,

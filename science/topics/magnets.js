@@ -955,9 +955,10 @@
         const SQ2_CORNERS = ['repel', 'attract', 'repel', 'attract'];
         const FIG_SQ2 = square(['', '', '', '', '', '', '', ''], SQ1_NAMES, SQ2_CORNERS,
           { inside: ['The poles are', 'not labelled.'], label: 'Four bar magnets in a square with unlabelled poles. Top-right corner repel, bottom-right attract, bottom-left repel, top-left attract.' });
-        const HINT_SQ2 = square(['N', 'S', 'S', 'N', 'S', 'N', 'N', 'S'], SQ1_NAMES, SQ2_CORNERS,
-          { steps: 1, inside: ['Call A "N":', 'A N, B S, C S, D N.', 'Not an option? Swap', 'every pole:', 'A S, B N, C N, D S.', 'Both are possible.'],
-            label: 'The square worked out from A = N, then every pole swapped' });
+        // R-A NIT: colour the keyed (swapped) labelling, so the drawn poles match option (3).
+        const HINT_SQ2 = square(['S', 'N', 'N', 'S', 'N', 'S', 'S', 'N'], SQ1_NAMES, SQ2_CORNERS,
+          { steps: 1, inside: ['Call A "N":', 'B S, C S, D N.', 'Not an option, so', 'swap every pole', '(shown):', 'A S, B N, C N, D S.'],
+            label: 'The square worked out: calling A N gives B S, C S, D N, which is not an option, so every pole is swapped: A S, B N, C N, D S' });
 
         // Four small labelled squares, (1) to (4), for "which arrangement is possible".
         const miniSq = (ox, oy, poles, label) => {
@@ -1179,10 +1180,10 @@
             explain: 'Two bars that are not magnets do not attract each other, so at least one is a magnet. They cannot both be magnets: the two ends of K would then be different poles, and one of them would repel end 1 of L. So exactly one bar is a magnet. If K is the magnet, both of its ends attract the plain steel bar L. If L is the magnet, its end 1 attracts both ends of the plain steel bar K. Both fit the results, so attraction alone cannot tell us which one.' },
           { id: 'x17-012', type: 'oeq', level: 2, marks: 2,
             stem: 'Ken still has steel bars K and L, and he knows one of them is a magnet. He has no other magnet. Describe how he can find out which bar is the magnet.',
-            figure: TBL_KL, hints: ['What does a magnet do when it hangs from a string and is free to turn?', 'Hang each bar from a string so it can turn freely. The one that always comes to rest pointing North-South is the magnet.'],
-            model: 'Hang each bar from a string so that it can turn freely. The bar that comes to rest pointing North-South every time is the magnet. The steel bar that is not a magnet does not keep pointing North-South.',
-            keys: [['hang', 'string', 'freely suspended', 'turn freely'], ['North-South', 'points north', 'pointing north']],
-            explain: 'A freely suspended magnet always comes to rest pointing North-South. Testing each bar in turn shows which one is the magnet, without needing a second magnet.' },
+            figure: TBL_KL, hints: ['What does a magnet do when it hangs from a string and is free to turn? Or: which part of a magnet is weakest?', 'Hang each bar from a string so it can turn freely. The one that always comes to rest pointing North-South is the magnet. Another way: touch the end of K to the middle of L, then swap. The bar whose end attracts the other bar\'s middle is the magnet.'],
+            model: 'Hang each bar from a string so that it can turn freely. The bar that comes to rest pointing North-South every time is the magnet. The steel bar that is not a magnet does not keep pointing North-South.\nAnother way: touch the end of K to the middle of the other bar, L, then swap. Only a magnet\'s end attracts the middle strongly, so the bar whose end attracts the middle of the other bar is the magnet.',
+            keys: [['hang', 'string', 'freely suspended', 'turn freely', 'end to the middle', 'middle of the other bar'], ['North-South', 'points north', 'pointing north', 'is the magnet', 'attracts the middle']],
+            explain: 'A freely suspended magnet always comes to rest pointing North-South. Testing each bar in turn shows which one is the magnet, without needing a second magnet. Another way: touch one end of K to the middle of L, then swap. Only a magnet\'s END attracts the other bar\'s middle strongly, because a magnet is weakest in the middle.' },
           { id: 'x17-013', type: 'mcq', level: 3,
             stem: 'Siti made another square of four bar magnets. The poles are not labelled. She tested each corner. Which pole labelling of ends A, B, C and D is possible?',
             figure: FIG_SQ2, hintFigure: HINT_SQ2, hints: [RUNG1 + ' If your answer is not one of the options, swap every N and S.', 'Call A N: you get A N, B S, C S, D N. That is not an option, so swap every pole: A S, B N, C N, D S. Both are possible.'],

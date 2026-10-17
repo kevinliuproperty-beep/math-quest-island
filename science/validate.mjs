@@ -19,6 +19,12 @@ const pick = only.length ? files.filter(f => only.includes(f.replace(/\.js$/, ''
 if (!pick.length) { console.log('No topic files found' + (only.length ? ' for ' + only.join(', ') : '') + ' in ' + DIR); process.exit(only.length ? 1 : 0); }
 
 const isStr = x => typeof x === 'string' && x.trim().length > 0;
+/* Coaching fields (Science Coaching Card 2026-10-17). The shell (science/index.html, TECH) carries
+   the same names with a child-facing line each: add a new technique in BOTH places. */
+const TECHNIQUES = ['Pick-a-pole', 'Change one thing', 'Start minus left', 'Follow the arrows', 'Can we be sure?',
+  'Read, compare, conclude', 'Claim, evidence, reason', 'Count, then check',
+  'Tick or cross'];   /* 9th technique: statement lists / two-half options (conn ruling 2026-10-17, lane C5) */
+const HARSH = /^\s*(wrong|incorrect|no)\b|\b(wrong answer|you are wrong|careless)\b/i;
 const globalIds = new Map();
 const rows = [];
 let totalErr = 0;
@@ -51,7 +57,8 @@ for (const f of pick) {
   }
 
   const local = new Set();
-  let mcq = 0, oeq = 0, fig = 0, longestTell = 0;
+  let mcq = 0, oeq = 0, fig = 0, longestTell = 0, coached = 0, uncoached = 0, withSteps = 0;
+  const techCount = {};
   const lv = { 1: 0, 2: 0, 3: 0 }, ansDist = [0, 0, 0, 0];
   items.forEach((it, i) => {
     const tag = it && isStr(it.id) ? it.id : `items[${i}]`;
@@ -110,7 +117,45 @@ for (const f of pick) {
         });
       }
     } else E(`${tag}: type must be mcq or oeq`);
+
+    /* coaching: malformed new fields are errors; older items without them are a warning (one line per topic) */
+    if (it.technique != null) {
+      if (!isStr(it.technique)) E(`${tag}: technique must be a non-empty string`);
+      else if (!TECHNIQUES.includes(it.technique)) E(`${tag}: technique "${it.technique}" is not in the vocabulary (${TECHNIQUES.join(' | ')})`);
+      else techCount[it.technique] = (techCount[it.technique] || 0) + 1;
+    }
+    if (it.steps != null) {
+      if (!Array.isArray(it.steps) || it.steps.length < 3 || it.steps.length > 5 || !it.steps.every(isStr)) E(`${tag}: steps must be an array of 3-5 non-empty strings`);
+      else {
+        withSteps++;
+        if (!isStr(it.technique)) W(`${tag}: steps without a technique (no badge, no "Try one like it")`);
+        it.steps.forEach((s, j) => { if (HARSH.test(s)) W(`${tag}: steps[${j}] reads harsh (coaching standard)`); });
+      }
+    } else if (isStr(it.technique)) W(`${tag}: technique without steps`);
+    if (it.optionFeedback != null) {
+      const of = it.optionFeedback;
+      if (it.type !== 'mcq') E(`${tag}: optionFeedback is for MCQ items only`);
+      else if (typeof of !== 'object' || of === null) E(`${tag}: optionFeedback must be { optionIndex: 'text' }`);
+      else {
+        const n = Array.isArray(it.options) ? it.options.length : 0;
+        if (Array.isArray(of) && of.length > n) E(`${tag}: optionFeedback has ${of.length} entries for ${n} options`);
+        Object.keys(of).forEach(key => {
+          const ix = Number(key), v = of[key];
+          if (Array.isArray(of) && v == null) return;   /* array form: holes are fine */
+          if (!Number.isInteger(ix) || ix < 0 || ix >= n) E(`${tag}: optionFeedback key ${key} is not an option index 0-${n - 1}`);
+          else if (!isStr(v)) E(`${tag}: optionFeedback[${key}] must be non-empty text`);
+          else {
+            if (ix === it.answer) W(`${tag}: optionFeedback[${key}] is on the correct option (the shell only shows distractor coaching)`);
+            if (HARSH.test(v)) W(`${tag}: optionFeedback[${key}] reads harsh (coaching standard)`);
+          }
+        });
+      }
+    }
+    if (isStr(it.technique) || Array.isArray(it.steps) || (it.optionFeedback && typeof it.optionFeedback === 'object')) coached++; else uncoached++;
   });
+  if (demo || t.hidden === true) { /* demo and hidden topics: no coaching nag */ }
+  else if (uncoached && coached) W(`${uncoached} of ${items.length} items have no coaching yet (technique/steps/optionFeedback); they get the explain-only review`);
+  else if (uncoached && items.length) W(`no coaching fields yet on any of ${items.length} items (explain-only review)`);
 
   const n = items.length;
   if (n < 40) floor(`only ${n} items (need >= 40)`);
@@ -125,7 +170,7 @@ for (const f of pick) {
     }
   }
   totalErr += errs.length;
-  rows.push({ fileId, n, mcq, oeq, lv, fig, notes: Array.isArray(t.notes) ? t.notes.length : 0, errs, warns, demo, extra: t.extra === true, hidden: t.hidden === true });
+  rows.push({ fileId, n, mcq, oeq, lv, fig, coached, withSteps, techCount, notes: Array.isArray(t.notes) ? t.notes.length : 0, errs, warns, demo, extra: t.extra === true, hidden: t.hidden === true });
 }
 
 /* Classic <script> tags share ONE global lexical scope: a top-level const/let/class
@@ -143,11 +188,11 @@ for (const f of pick) {
 }
 
 const pad = (s, w) => String(s).padEnd(w);
-console.log(pad('topic', 16) + pad('items', 7) + pad('mcq/oeq', 9) + pad('L1/L2/L3', 11) + pad('fig%', 6) + pad('notes', 7) + 'result');
+console.log(pad('topic', 16) + pad('items', 7) + pad('mcq/oeq', 9) + pad('L1/L2/L3', 11) + pad('fig%', 6) + pad('notes', 7) + pad('coach', 7) + pad('steps', 7) + 'result');
 for (const r of rows) {
   const res = r.errs.length ? `FAIL (${r.errs.length} err, ${r.warns.length} warn)` : r.warns.length ? `ok (${r.warns.length} warn)` : 'ok';
   console.log(pad(r.fileId, 16) + pad(r.n, 7) + pad(`${r.mcq}/${r.oeq}`, 9) + pad(`${r.lv[1]}/${r.lv[2]}/${r.lv[3]}`, 11) +
-    pad(r.n ? Math.round(r.fig / r.n * 100) : 0, 6) + pad(r.notes, 7) + res + (r.demo ? '  [demo]' : '') + (r.extra ? '  [extra]' : '') + (r.hidden ? '  [hidden]' : ''));
+    pad(r.n ? Math.round(r.fig / r.n * 100) : 0, 6) + pad(r.notes, 7) + pad(r.coached, 7) + pad(r.withSteps, 7) + res + (r.demo ? '  [demo]' : '') + (r.extra ? '  [extra]' : '') + (r.hidden ? '  [hidden]' : ''));
 }
 for (const r of rows) {
   if (!r.errs.length && !r.warns.length) continue;
@@ -155,5 +200,8 @@ for (const r of rows) {
   r.errs.forEach(m => console.log('  ERROR ' + m));
   r.warns.forEach(m => console.log('  warn  ' + m));
 }
+const techAll = {};
+rows.forEach(r => Object.entries(r.techCount).forEach(([k, v]) => { techAll[k] = (techAll[k] || 0) + v; }));
+if (Object.keys(techAll).length) console.log('\ntechniques: ' + TECHNIQUES.filter(k => techAll[k]).map(k => `${k} ${techAll[k]}`).join(' · '));
 console.log(`\n${rows.length} file(s), ${rows.reduce((a, r) => a + r.n, 0)} items, ${totalErr} error(s)`);
 process.exit(totalErr ? 1 : 0);

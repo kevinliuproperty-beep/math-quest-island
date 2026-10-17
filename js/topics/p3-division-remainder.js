@@ -7,7 +7,7 @@
  */
 (function () {
   const G = MQI.gen;
-  const ri = G.ri, pick = G.pick, finishTyped = G.finishTyped, finishNum = G.finishNum;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishTyped = G.finishTyped, finishNum = G.finishNum;
 
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Nurul'];
   const SNACKS = ['curry puffs','kaya toasts','pineapple tarts','otah sticks','soya bean cartons','ang ku kueh'];
@@ -277,6 +277,42 @@
     return band(finishNum(stem, '', n, [q*d, q*d - r, (q + 1)*d], c[0], ex), 2);
   }
 
+  /* PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 4, MOE P3 MD 3.4 with 3.3):
+     a bare 3-digit by 1-digit division WITH a remainder, the "922 ÷ 7" Booklet B
+     short answer. gDivAlgo serves exact division only and gLeftOver stops near 115.
+     MCQ, options written the way SG worksheets write them ("131 R 5"), and the stem
+     says what R stands for. Each wrong option is a named slip:
+       - the remainder left too big: one group too few, so the remainder is 7 or more
+         (130 R 12) - the arithmetic still checks, which is why it is tempting;
+       - one out in the answer with the remainder kept (132 R 5 or 130 R 5), a slip in
+         the bring-down; when the answer has a 0 in its tens place (208), the classic
+         dropped zero (28 R 3) takes this slot instead;
+       - the remainder counted UP to the next group instead of what is left (131 R 2).
+     The word "quotient" is never printed (09-05 refutation: not P3 vocabulary). */
+  const remOpt = (a, r) => a + ' R ' + r;
+  function gDivRem3(){
+    let d = 7, a = 131, r = 5, n = 922, g = 0, opts = [];
+    do {
+      d = ri(3, 9); a = ri(Math.ceil(100 / d), Math.floor((999 - (d - 1)) / d)); r = ri(1, d - 1); n = d*a + r;
+      const tensZero = a >= 100 && Math.floor(a / 10) % 10 === 0;
+      const slip = tensZero ? remOpt(Math.floor(a / 100) * 10 + a % 10, r) : remOpt(a + (ri(0, 1) ? 1 : -1), r);
+      opts = [remOpt(a - 1, r + d), slip, remOpt(a, d - r)];
+      g++;
+    } while (g < 300 && !(n >= 100 && n <= 999 && a >= 12 && 2*r !== d && new Set(opts.concat([remOpt(a, r)])).size === 4));
+    const key = remOpt(a, r);
+    const all = shuffle([key].concat(opts));
+    const q = {
+      q: 'What is ' + n + ' ÷ ' + d + '? (R stands for remainder.)', extra: '',
+      choices: all, correct: all.indexOf(key), answerText: key,
+      explain: 'Share ' + n + ' into groups of ' + d + '. ' + d + ' × ' + a + ' = ' + (d*a) + ', and ' + n + ' − ' + (d*a) +
+        ' = ' + r + ' is left over. ' + r + ' is smaller than ' + d + ', so no more groups of ' + d + ' fit: ' + n + ' ÷ ' + d +
+        ' = ' + key + '. Check: ' + d + ' × ' + a + ' + ' + r + ' = ' + n + '. A remainder of ' + d +
+        ' or more means one more group still fits.'
+    };
+    q.optionSet = all.slice();
+    return band(q, 2);
+  }
+
   MQI.registerTopic({
     id:'p3divide', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Multiplication and Division: division with remainder; multiplication and division algorithms (up to 3 digits by 1 digit)",
@@ -288,7 +324,9 @@
     },
     pools:{
       1:[[gLeftOver,'remainder'],[gMulAlgo,'algo']],
-      2:[[gQuotient,'remainder'],[gDivAlgo,'algo'],[gMulAlgo3,'algo'],[gInverseDiv,'remainder']],
+      2:[[gQuotient,'remainder'],[gDivAlgo,'algo'],[gMulAlgo3,'algo'],[gInverseDiv,'remainder'],
+         /* PRE-EXAM CONTENT CARD 2026-10-17: bare 3-digit ÷ 1-digit with a remainder */
+         [gDivRem3,'remainder']],
       3:[[gBoxesNeeded,'remainder'],[gTwoStep,'word'],[gMulWord,'word'],
          [gPackRest,'remainder'],[gTripsNeeded,'remainder'],[gOneMore,'remainder'],[gMostAfter,'remainder'],
          [gRepack,'word'],[gDaysPart,'word']]

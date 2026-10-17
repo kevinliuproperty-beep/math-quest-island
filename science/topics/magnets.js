@@ -874,7 +874,33 @@
         figure: TBL_JK,
         model: '(a) Bar K. (b) Bar K attracted the pin from a greater distance (5 cm) than bar J (2 cm), so bar K is the stronger magnet. More strokes make a stronger magnet, so bar K was stroked more times.',
         keys: [['bar K'], ['greater distance', 'further', '5 cm'], ['more strokes', 'stronger magnet']],
-        explain: 'Two linked steps: larger distance = stronger magnet [evidence]; more strokes = stronger magnet [reason]. So K had 60 strokes.' }
+        explain: 'Two linked steps: larger distance = stronger magnet [evidence]; more strokes = stronger magnet [reason]. So K had 60 strokes.' },
+
+      // ---------------- Freely suspended magnets, N-S (pre-exam content card, 2026-10-17) ----------------
+      { id: 'mag-089', type: 'mcq', level: 2,
+        stem: 'A bar magnet with no labels is hung from a string so that it can turn freely. When it stops moving, end X points North. What is end X?',
+        figure: null,
+        options: ['The N pole', 'The S pole', 'It could be either pole', 'It is not a pole'],
+        answer: 0,
+        explain: 'A freely suspended bar magnet comes to rest pointing North-South, and the end that points North is the N pole. That is how the N pole got its name.' },
+      { id: 'mag-090', type: 'mcq', level: 3,
+        stem: 'Mina has a bar magnet with no labels on its two ends, P and Q. She hangs it from a string so that it can turn freely. It stops with end P pointing South. She then brings the N pole of another magnet near end P. What will happen?',
+        figure: null,
+        options: ['End P will be repelled.', 'End P will be attracted.', 'Nothing will happen.', 'End P will turn to point North.'],
+        answer: 1,
+        explain: 'End P pointed South, so it is the S pole. An N pole and an S pole are unlike poles, and unlike poles attract, so end P will be attracted.' },
+      { id: 'mag-091', type: 'oeq', level: 3, marks: 2,
+        stem: 'Jun hung a bar magnet and a steel bar of the same size from two strings, so that both could turn freely. He turned each one to point East-West and let go. He did this five times.\n(a) Which one came to rest pointing North-South every time? (1 mark)\n(b) Explain why the other one did not. (1 mark)',
+        figure: null,
+        model: '(a) The bar magnet. (b) The steel bar is not a magnet. Steel is a magnetic material, but only a magnet has an N pole and an S pole, so only a magnet comes to rest pointing North-South.',
+        keys: [['magnet'], ['not a magnet', 'only a magnet', 'has no poles', 'no poles', 'does not have poles']],
+        explain: 'A freely suspended MAGNET always comes to rest pointing North-South. A steel bar is attracted by a magnet, but it is not a magnet itself, so it stops in any direction.' },
+      { id: 'mag-092', type: 'mcq', level: 2,
+        stem: 'Iron and steel are attracted by a magnet. Which pair of metals below are also attracted by a magnet?',
+        figure: null,
+        options: ['Aluminium and copper', 'Gold and silver', 'Nickel and cobalt', 'Brass and aluminium'],
+        answer: 2,
+        explain: 'Nickel and cobalt are magnetic metals, like iron and steel. Aluminium, copper, gold, silver and brass are metals too, but they are not attracted by a magnet: not all metals are magnetic.' }
     ]
   });
 })();

@@ -706,7 +706,33 @@
         figure: null,
         options: ['A and B only', 'B and D only', 'A, C and D only', 'A, B, C and D'],
         answer: 2,
-        explain: 'A, C and D are correct: ferns and mushrooms both reproduce by spores, have no flowers, and (like all living things) need air and water. B is wrong: the fern makes its own food, but the mushroom is a fungus and cannot.' }
+        explain: 'A, C and D are correct: ferns and mushrooms both reproduce by spores, have no flowers, and (like all living things) need air and water. B is wrong: the fern makes its own food, but the mushroom is a fungus and cannot.' },
+
+      // ---------------- Responding to changes (pre-exam content card, 2026-10-17) ----------------
+      { id: 'liv-079', type: 'mcq', level: 2,
+        stem: 'Which of these shows a living thing responding to a change around it?',
+        figure: null,
+        options: ['A puppy becomes bigger every month.', 'A hen lays three eggs in a week.', 'A snail pulls its body into its shell when touched.', 'A plant needs water to stay alive.'],
+        answer: 2,
+        explain: 'Being touched is a change around the snail, and pulling into its shell is its response. Becoming bigger is growing, laying eggs is reproducing, and needing water is a need for survival.' },
+      { id: 'liv-080', type: 'mcq', level: 2,
+        stem: 'Wei Ling walked out of a dark room into bright sunlight. She blinked, and the black centres of her eyes (her pupils) became smaller. Which characteristic of living things does this show?',
+        figure: null,
+        options: ['Living things respond to changes.', 'Living things grow.', 'Living things need air.', 'Living things reproduce.'],
+        answer: 0,
+        explain: 'The bright light is a change around her. Blinking and her pupils becoming smaller are her body responding to that change.' },
+      { id: 'liv-081', type: 'oeq', level: 3, marks: 2,
+        stem: 'Ravi touched one leaf of a mimosa (touch-me-not) plant. Its leaves folded up. After some time, the leaves opened again.\n(a) What change around the plant did the mimosa respond to? (1 mark)\n(b) Ravi said, "The mimosa is non-living because it cannot move from place to place." Explain why he is wrong. (1 mark)',
+        figure: null,
+        model: '(a) Being touched (the touch on its leaf). (b) Moving from place to place is not a characteristic of all living things. The mimosa is living because it responds to changes, grows and reproduces.',
+        keys: [['touch', 'touched'], ['not a characteristic', 'responds', 'respond', 'grows', 'reproduces', 'plants do not move', 'plants cannot move']],
+        explain: 'The touch is the change; folding its leaves is the response. Plants are living things even though they stay in one place: they respond to changes, grow and reproduce.' },
+      { id: 'liv-082', type: 'mcq', level: 3,
+        stem: 'A potted plant was left on a windowsill for two weeks. Its stem grew and bent towards the window.\nWhich of the following statements are correct?\nA  The plant was responding to light coming from one side.\nB  The plant was growing.\nC  The plant cannot respond to changes because it cannot move from place to place.',
+        figure: null,
+        options: ['A only', 'A and B only', 'B and C only', 'A, B and C'],
+        answer: 1,
+        explain: 'A: light came only from the window, and the stem bent towards it, so the plant responded to a change around it. B: the stem became longer, so the plant was growing. C is wrong: plants stay in one place but still respond to changes, such as light and touch.' }
     ]
   });
 })();

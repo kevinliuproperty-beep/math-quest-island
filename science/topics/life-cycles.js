@@ -540,10 +540,7 @@
         figure: null,
         options: ['Water, light and soil', 'Air, light and soil', 'Water, air and warmth', 'Water, soil and fertiliser'],
         answer: 2,
-        optionFeedback: {
-          0: 'Light and soil are common guesses! But seeds germinate on wet cotton wool in the dark. They need water, air and warmth.',
-          1: 'Light and soil are common guesses! But seeds germinate on wet cotton wool in the dark. They need water, air and warmth.',
-          3: 'Seeds can germinate without soil or fertiliser, on wet cotton wool. They need water, air and warmth.' },
+        optionFeedback: { 0: 'Light and soil are common guesses! But seeds germinate on wet cotton wool in the dark. They need water, air and warmth.', 1: 'Air is right! But light and soil are not needed: seeds germinate on wet cotton wool in the dark. They also need water and warmth.', 3: 'Seeds can germinate without soil or fertiliser, on wet cotton wool. They need water, air and warmth.' },
         explain: 'A seed needs water, air and warmth to germinate. It does not need light or soil — seeds can germinate on wet cotton wool in the dark.' },
       { id: 'lc-012', type: 'mcq', level: 2,
         stem: 'The diagram shows the life cycle of a butterfly. In which stage(s) does the butterfly feed?',
@@ -650,11 +647,7 @@
         options: ['Both have a pupa stage', 'Both lay their eggs in water', 'Both larvae live on land', 'Both have 3 stages'],
         answer: 0,
         technique: 'Count, then check',
-        steps: [
-          'Count the stages in each life cycle.',
-          'Look for the pupa: which animal has it?',
-          'A similarity is something both have. A difference is something only one has.',
-          'Write about BOTH animals: "A has ..., but B ...".'],
+        steps: ['Count the stages in each life cycle.', 'Look for the pupa: which animal has it?', 'A similarity is something both have. A difference is something only one has.', 'Write about BOTH animals. Similarity: "Both A and B have ...". Difference: "A has ..., but B does not."'],
         optionFeedback: {
           1: 'Only the mosquito lays eggs in water. A butterfly lays them on leaves.',
           2: 'A mosquito larva lives in water, so this is not true for both.',
@@ -722,11 +715,7 @@
         options: ['Q → P → S → R', 'Q → S → P → R', 'S → Q → P → R', 'R → Q → S → P'],
         answer: 1,
         technique: 'Count, then check',
-        steps: [
-          'Name each drawing: egg, larva, pupa or adult (or seed, young plant, adult plant).',
-          'Count the stages, and look for a pupa.',
-          'Start at the egg or the seed.',
-          'Put the rest in order, then check each step: does this stage really come out of the one before?'],
+        steps: ['Read each box: seed, seedling, young plant or adult plant.', 'Find the start: the seed.', 'Put the rest in order, from youngest to the adult with flowers and fruits.', 'Check each step: does this stage really grow out of the one before?'],
         optionFeedback: {
           0: 'The seed (Q) is the right start! But a seedling (S) is younger than a young plant (P), so S comes next.',
           2: 'A seedling grows out of a seed, so the seed (Q) must come first.',
@@ -839,7 +828,7 @@
 
       // ---------- OEQ ----------
       { id: 'lc-040', type: 'oeq', level: 1, marks: 2,
-        stem: 'Name the four stages in the life cycle of a butterfly, in the correct order.',
+        stem: 'Starting from the egg, name the four stages in the life cycle of a butterfly, in the correct order.',
         figure: null,
         model: 'Egg → larva (caterpillar) → pupa (chrysalis) → adult butterfly.',
         keys: [['larva', 'caterpillar'], ['pupa', 'chrysalis']],
@@ -892,11 +881,7 @@
         model: '(a) Both start as eggs / both have an egg and an adult stage. (b) The butterfly has a pupa stage but the cockroach does not (the cockroach has 3 stages, the butterfly has 4). (c) The cockroach: its nymph looks like the adult but is smaller and has no wings.',
         keys: [['egg', 'both'], ['pupa', 'number of stages', '3 stages', '4 stages'], ['cockroach']],
         technique: 'Count, then check',
-        steps: [
-          'Count the stages in each life cycle.',
-          'Look for the pupa: which animal has it?',
-          'A similarity is something both have. A difference is something only one has.',
-          'Write about BOTH animals: "A has ..., but B ...".'],
+        steps: ['Count the stages in each life cycle.', 'Look for the pupa: which animal has it?', 'A similarity is something both have. A difference is something only one has.', 'Write about BOTH animals. Similarity: "Both A and B have ...". Difference: "A has ..., but B does not."'],
         explain: 'For a difference, mention both animals: "the butterfly has a pupa stage BUT the cockroach does not". The butterfly\'s young (caterpillar) does not look like the adult.' },
       { id: 'lc-047', type: 'oeq', level: 2, marks: 2,
         stem: 'The pupa of a butterfly does not eat. Explain how it can still stay alive and change into an adult.',
@@ -982,11 +967,7 @@
         model: 'A caterpillar (larva) does not look like the adult butterfly. / A tadpole does not look like the adult frog.',
         keys: [['butterfly', 'caterpillar', 'larva', 'mosquito', 'beetle', 'frog', 'tadpole'], ['does not look like', 'different', 'not like']],
         technique: 'Claim, evidence, reason',
-        steps: [
-          'Claim: decide yes or no, and say it first.',
-          'Recall the science rule that fits, like "a fruit develops from a flower".',
-          'Check the thing in the question against that rule.',
-          'Reason: write "because..." using the rule and the example.'],
+        steps: ['Claim: decide yes or no, and say it first.', 'Recall the science rule that fits this question.', 'Check the thing in the question against that rule.', 'Reason: write "because..." using the rule and the example.'],
         explain: 'Name an animal whose young looks different, and say that it does not look like the adult.' },
       { id: 'lc-056', type: 'oeq', level: 2, marks: 3,
         stem: 'The diagram shows the life cycle of a frog.\n(a) Name stage B. (1 mark)\n(b) Where does a frog lay its eggs? (1 mark)\n(c) State one way in which stage B is different from the adult frog. (1 mark)',
@@ -1194,11 +1175,7 @@
         options: ['A only', 'B only', 'A and B only', 'B and C only'],
         answer: 1,
         technique: 'Tick or cross',
-        steps: [
-          'Read one statement at a time.',
-          'Ask: is it true? Put a tick or a cross beside it.',
-          'Check every statement before you look at the options.',
-          'Pick the option that lists exactly your ticks.'],
+        steps: ['Read one statement at a time.', 'Ask: is it true for BOTH animals? Tick it only if it is true for the grasshopper AND the mosquito.', 'Check every statement before you look at the options.', 'Pick the option that lists exactly your ticks.'],
         optionFeedback: {
           0: 'A is true only for the grasshopper. A mosquito larva does not look like the adult.',
           2: 'B is true for both! But A is true only for the grasshopper: a mosquito larva does not look like the adult.',
@@ -1254,11 +1231,7 @@
         options: ['It shed its skin and then grew bigger', 'It became a pupa and then grew bigger', 'It stopped feeding and then grew bigger', 'It grew wings and then grew bigger'],
         answer: 0,
         technique: 'Read, compare, conclude',
-        steps: [
-          'Read the numbers in order, week by week.',
-          'Compare: where does it stay the same, and where does it jump?',
-          'Conclude: say the pattern in a sentence.',
-          'Ask: what does the animal do at each jump?'],
+        steps: ['Read the numbers in order, week by week.', 'Compare: where does it stay the same, and where does it jump?', 'Ask: what does the animal do at each jump?', 'Conclude: say the pattern in a sentence.'],
         optionFeedback: {
           1: 'A cockroach has no pupa stage. Its nymph grows straight into an adult.',
           2: 'It was fed every day, and a growing nymph keeps feeding.',
@@ -1290,11 +1263,7 @@
         keys: [['egg', 'adult stage'], ['pupa', '3 stages', '4 stages', 'larva']],
         hints: ['Look for a stage both cycles have, then a stage only one of them has.', 'Both start with an egg. Only B has a pupa (and a larva). Write each answer as a full sentence naming A and B.'],
         technique: 'Count, then check',
-        steps: [
-          'Count the stages in each life cycle.',
-          'Look for the pupa: which animal has it?',
-          'A similarity is something both have. A difference is something only one has.',
-          'Write about BOTH animals: "A has ..., but B ...".'],
+        steps: ['Count the stages in each life cycle.', 'Look for the pupa: which animal has it?', 'A similarity is something both have. A difference is something only one has.', 'Write about BOTH animals. Similarity: "Both A and B have ...". Difference: "A has ..., but B does not."'],
         explain: 'Similarity: name a stage found in BOTH (egg, or adult). Difference: name the stage only one animal has, and say which animal: "B has a pupa stage but A does not." "A has fewer stages" earns the mark only if you give the numbers (3 and 4) or name the missing stage.' },
       { id: 'x17-lc-003', type: 'mcq', level: 3,
         stem: 'Look at the life cycles of animals A and B. Which statement is NOT correct?',
@@ -1337,11 +1306,7 @@
         keys: [['pupa'], ['does not feed', 'not feed', 'does not eat', 'no food']],
         hints: ['Y comes after the larva and before the adult. Then think: which of the two eats?', 'Y is the pupa. The larva X feeds in the water; the pupa Y does not feed while it changes into the adult.'],
         technique: 'Count, then check',
-        steps: [
-          'Count the stages in each life cycle.',
-          'Look for the pupa: which animal has it?',
-          'A similarity is something both have. A difference is something only one has.',
-          'Write about BOTH animals: "A has ..., but B ...".'],
+        steps: ['Name each stage from where it sits: egg, larva, pupa, adult.', 'Recall what each stage does: does it feed? Where does it live?', 'Find one thing that is true for one stage but not the other.', 'Write about BOTH stages: "X feeds, but Y does not feed."'],
         explain: 'Name the stage, then compare it with X using the same idea for both: "X feeds but Y does not feed." Both live in water and both come up to the surface for air, so "lives in water" is NOT a difference.' },
       { id: 'x17-lc-006', type: 'mcq', level: 1,
         stem: 'The drawings show the life cycle of a tomato plant in order, from E to H. The drawing of stage F is missing. What is stage F?',
@@ -1432,11 +1397,7 @@
         keys: [['alive', 'living'], ['need air', 'needs air']],
         hints: ['Is stage Y alive or dead? What do all living things need?', 'Y is the pupa: it is alive and changing into the adult. Every living thing needs air, so Y needs air too.'],
         technique: 'Claim, evidence, reason',
-        steps: [
-          'Claim: decide yes or no, and say it first.',
-          'Recall the science rule that fits, like "a fruit develops from a flower".',
-          'Check the thing in the question against that rule.',
-          'Reason: write "because..." using the rule and the example.'],
+        steps: ['Claim: decide yes or no, and say it first.', 'Recall the science rule that fits this question.', 'Check the thing in the question against that rule.', 'Reason: write "because..." using the rule and the example.'],
         explain: 'Claim: disagree. Evidence: Y is the pupa, which is alive and changing into the adult. Reasoning: all living things need air. Not moving and not feeding do not mean it is dead.' }
     ]
   });

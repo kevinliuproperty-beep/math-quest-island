@@ -192,7 +192,7 @@ ${x17Lbl(92, 150, 'A')}${x17Lbl(168, 150, 'B')}
       { title: 'Stem: holds up and carries', body: 'The stem holds the plant upright so the leaves can get light. It carries water and mineral salts from the roots to the leaves, and carries food made in the leaves to other parts of the plant. Trees have hard, woody stems. Plants like balsam have soft (non-woody) stems. Some plants with weak stems climb on supports or creep along the ground.' },
       { title: 'Roots: hold and take in', body: 'Roots hold the plant firmly in the soil. They take in (absorb) water and mineral salts from the soil. Without roots, a plant cannot take in water, so it wilts and dies.' },
       { title: 'Flowers, fruits and seeds', body: 'Flowers help the plant reproduce. A flower develops into a fruit. The fruit protects the seeds inside it, and the seeds can grow into new plants. Anything that develops from a flower and has seeds is a fruit, so a tomato, chilli and cucumber are fruits!' },
-      { title: 'Parts that store food', body: 'Some roots store food, e.g. carrot, radish and sweet potato. Some stems store food, e.g. potato, ginger and sugar cane. Trap: a potato grows underground but it is a STEM, not a root.' },
+      { title: 'Parts that store food', body: 'Some roots store food, e.g. carrot, radish and sweet potato. Some stems store food, e.g. potato, ginger and sugar cane. Easy mix-up: a potato grows underground, but it is a STEM, not a root.' },
       { title: 'Experiments to know', body: 'Celery in red water: the leaves turn red and red dots show in a cut stem, so the stem carries water up. Plant in the dark: leaves turn yellow and the plant becomes weak, so plants need light to make food. Oil on water: the oil layer stops water evaporating, so any water lost was taken in by the plant\'s roots.' },
       { title: 'Fair test', body: 'In a fair test, change only ONE thing (the variable you are testing) and keep everything else the same: same type of plant, same size, same amount of water, same soil. Using more plants, or repeating the experiment, makes the results more reliable.' },
       { title: 'Exam key words', body: 'Write the part AND its job: "the roots take in water", "the stem carries water to the leaves", "the leaves make food", "the fruit protects the seeds". For "what happens if..." questions, say what the plant can no longer do, then the result: "cannot take in water, so it will wilt and die".' }
@@ -338,11 +338,7 @@ ${x17Lbl(92, 150, 'A')}${x17Lbl(168, 150, 'B')}
         figure: null,
         options: ['It will grow faster.', 'It will produce more fruits.', 'It cannot make food, so it will die.', 'It cannot take in water, but it will still be healthy.'], answer: 2,
         technique: 'Claim, evidence, reason',
-        steps: [
-          'Find the part that is missing, and name it.',
-          'Say the job that part does for the plant.',
-          'Ask: what can the plant no longer do without it?',
-          'Say what will happen, joined with "so": no roots, so no water, so it wilts.'],
+        steps: ['Find the part that is missing, and name it.', 'Say the job that part does for the plant.', 'Ask: what can the plant no longer do without it?', 'Say what will happen, joined with "so": no leaves, so no food, so it dies.'],
         optionFeedback: {
           0: 'Leaves make the food the plant needs to grow. Without them it cannot grow faster.',
           1: 'Making fruits needs food, and food is made in the leaves. With no leaves, the plant cannot do this.',
@@ -565,11 +561,7 @@ ${x17Lbl(92, 150, 'A')}${x17Lbl(168, 150, 'B')}
         model: 'The plant cannot take in water without its roots, so it will wilt and die.',
         keys: [['cannot take in water', 'no water', 'unable to take in water', 'cannot absorb water'], ['wilt', 'die', 'droop']],
         technique: 'Claim, evidence, reason',
-        steps: [
-          'Claim: say what will happen to the plant.',
-          'Evidence: name the part that was removed.',
-          'Reason: say that part\'s job, so what the plant can no longer do.',
-          'Join it up with "so": no leaves, so no food, so it dies.'],
+        steps: ['Claim: say what will happen to the plant.', 'Evidence: name the part that was removed.', 'Reason: say that part\'s job, so what the plant can no longer do.', 'Join it up with "so": no roots, so no water, so it wilts and dies.'],
         explain: 'Give the reason (no roots, so no water taken in) and the result (wilt and die).' },
       { id: 'pp-039', type: 'oeq', level: 2, marks: 2,
         stem: 'All the leaves of a plant were cut off. Explain why the plant will die if no new leaves grow.',
@@ -679,11 +671,7 @@ ${x17Lbl(92, 150, 'A')}${x17Lbl(168, 150, 'B')}
         model: 'No. Plants make their own food in their leaves, using light, water and air. Roots take in only water and mineral salts from the soil.',
         keys: [['make their own food', 'leaves make', 'make food'], ['mineral salts', 'light', 'sunlight']],
         technique: 'Claim, evidence, reason',
-        steps: [
-          'Claim: decide yes or no, and say it first.',
-          'Recall the science rule that fits, like "a fruit develops from a flower".',
-          'Check the thing in the question against that rule.',
-          'Reason: write "because..." using the rule and the example.'],
+        steps: ['Claim: decide yes or no, and say it first.', 'Recall the science rule that fits this question.', 'Check the thing in the question against that rule.', 'Reason: write "because..." using the rule and the example.'],
         explain: 'Lots of people think this, so it is a great one to practise. Point 1: plants make their own food (in the leaves). Point 2: the soil gives only water and mineral salts, which are not food; or say the leaves need light to make the food.' },
       { id: 'pp-050', type: 'oeq', level: 3, marks: 2,
         stem: 'A potted plant was drooping. Kumar watered the soil, and a few hours later the plant stood upright again. Explain how the water reached the leaves.',
@@ -800,11 +788,7 @@ ${x17Lbl(92, 150, 'A')}${x17Lbl(168, 150, 'B')}
         answer: 1,
         hints: ['Which part holds a plant firmly in the soil?', 'The roots hold the plant firmly in the soil. Plant B has no roots, so nothing holds it in place when the wind blows.'],
         technique: 'Claim, evidence, reason',
-        steps: [
-          'Find the part that is missing, and name it.',
-          'Say the job that part does for the plant.',
-          'Ask: what can the plant no longer do without it?',
-          'Say what will happen, joined with "so": no roots, so no water, so it wilts.'],
+        steps: ['Find the part that is missing, and name it.', 'Say the jobs that part does. Roots have two: they hold the plant firmly in the soil and take in water.', 'Ask: which of those jobs matters in this story? Look at what happened next.', 'Say what will happen, joined with "so": no roots, so nothing holds it, so the wind blows it out.'],
         optionFeedback: {
           2: 'Plant C has no leaves, but its roots still hold it firmly in the soil.',
           3: 'Plant D lost only its flowers. Its roots still hold it firmly in the soil.' },
@@ -816,11 +800,7 @@ ${x17Lbl(92, 150, 'A')}${x17Lbl(168, 150, 'B')}
         answer: 2,
         hints: ['A plant needs to take in water and to make food. Which plants cannot do one of these?', 'B has no roots, so it cannot take in water. C has no leaves, so it cannot make food. D still has roots and leaves; flowers are for reproducing, not for staying alive.'],
         technique: 'Claim, evidence, reason',
-        steps: [
-          'Find the part that is missing, and name it.',
-          'Say the job that part does for the plant.',
-          'Ask: what can the plant no longer do without it?',
-          'Say what will happen, joined with "so": no roots, so no water, so it wilts.'],
+        steps: ['Find the part that is missing, and name it.', 'Say the job that part does for the plant.', 'Ask: what can the plant no longer do without it?', 'Say what will happen to each plant, joined with "so": no roots, so no water; no leaves, so no food.'],
         optionFeedback: {
           0: 'B will die, well spotted! Now check C too: with no leaves, it cannot make food.',
           1: 'C will die, well spotted! Now check B too: with no roots, it cannot take in water.',

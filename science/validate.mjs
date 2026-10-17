@@ -24,7 +24,8 @@ const isStr = x => typeof x === 'string' && x.trim().length > 0;
 const TECHNIQUES = ['Pick-a-pole', 'Change one thing', 'Start minus left', 'Follow the arrows', 'Can we be sure?',
   'Read, compare, conclude', 'Claim, evidence, reason', 'Count, then check',
   'Tick or cross'];   /* 9th technique: statement lists / two-half options (conn ruling 2026-10-17, lane C5) */
-const HARSH = /^\s*(wrong|incorrect|no)\b|\b(wrong answer|you are wrong|careless)\b/i;
+/* "No," / "No." as a verdict is harsh; "No water was used..." / "No labels?" is description (CI 2026-10-17) */
+const HARSH = /^\s*(wrong|incorrect)\b|^\s*no\s*[,.!:;—-]|\b(wrong answer|you are wrong|careless)\b/i;
 const globalIds = new Map();
 const rows = [];
 let totalErr = 0;

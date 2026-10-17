@@ -159,11 +159,11 @@ ol.csteps li::marker{font-weight:800;color:var(--teal)}
 .cans.bare{background:none;border:0;padding:0}
 .cans details.more{margin-top:6px}
 .cans details.more summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
-.qfig .figlab{margin:4px 0 6px}
-@media (min-width:1100px){
-  .qfig.two{position:static}
-  .qfig.two .fig svg{max-height:calc(50vh - 70px)}
-}
+/* hintFigure lives in the answer reveal, shown last (conn ruling 2026-10-17): the steps run on the plain figure */
+.hfig{margin-top:10px}
+.hfig .figlab{margin:0 0 6px}
+.hfig .fig{margin:0}
+.hfig .fig svg{max-height:min(48vh,420px)}
 ul.rev .tech{font-size:.75rem;padding:0 8px;margin-left:6px;vertical-align:middle}
 ul.rev .row{margin-top:8px}
 .well{font-size:1.1rem;margin:4px 0 6px}
@@ -617,14 +617,15 @@ function startExam() {
 /* ---------- coaching walk-through (C6, 2026-10-17) ----------
    Kev's ruling: wrong answers are a chance to coach the technique, never a red pen. For each
    wrong item: her choice framed kindly, the per-choice coaching line (optionFeedback), the
-   technique badge, the steps one at a time with the figure + hintFigure beside them, and the
-   correct answer last. An item without the new fields gets today's explain review, no empty boxes. */
+   technique badge, the steps one at a time beside the plain figure, and the correct answer last.
+   The hintFigure (it labels the worked answer) appears only inside that answer reveal, at its end
+   (conn ruling 2026-10-17, after x17-001's hint figure gave the poles away before the reveal). An item without the new fields gets today's explain review, no empty boxes. */
 var TECH = {
   'Pick-a-pole': 'Unlabelled magnets: call any end N, then follow it round.',
   'Change one thing': 'Fair test: find the set-ups that differ in only ONE way.',
   'Start minus left': 'Water or mass taken in or used up: what you started with, minus what is left.',
   'Follow the arrows': 'Flowcharts and keys: one question at a time, go Yes or No.',
-  'Can we be sure?': '"Cannot tell" traps: is anything else different?',
+  'Can we be sure?': '"Cannot tell" questions: is anything else different?',
   'Read, compare, conclude': 'Tables and graphs: read the values, compare them, then say the pattern with "as ... increases, ...".',
   'Claim, evidence, reason': 'Open-ended answers: say the answer, point to the picture or table, then say WHY using the story.',
   'Count, then check': 'Life-cycle stages and animal parts: count them, then check each one.',
@@ -691,20 +692,26 @@ function coachHTML(it, a, k, opt) {
       if (it.hints && it.hints[1]) ans += '<p class="reveal"><b>Work it out:</b> ' + esc(it.hints[1]) + '</p>';
     } else ans += '<div class="model"><b>Model answer</b><p>' + highlight(it.model, it.noKeys ? [] : it.keys) + '</p></div>';
     /* with steps + a worked line already on screen, the long explanation folds away */
-    if (it.explain) ans += it.steps && it.type === 'mcq' && it.hints && it.hints[1]
+    var folded = !!(it.steps && it.type === 'mcq' && it.hints && it.hints[1]);
+    if (it.explain) ans += folded
       ? '<details class="more"><summary>More about it</summary><p>' + esc(it.explain) + '</p></details>' : '<p>' + esc(it.explain) + '</p>';
+    ans += hintFigHTML(it);   /* shown last in the reveal: it labels the worked answer */
   }
-  if (it.technique) ans += '<p class="close">Next time, try ' + esc(it.technique) + ' first.</p>';
+  /* the forward step, once: skip the shell's own line when the explain on screen already ends with
+     a "Next time, ..." sentence (R-D, conn ruling 2026-10-17). OEQ practice shows the explain in "Why". */
+  var explainSays = /Next time,/i.test(it.explain || '') && (opt.noAnswer || !folded);
+  if (it.technique && !explainSays) ans += '<p class="close">Next time, try ' + esc(it.technique) + ' first.</p>';
   ans += likeBtn(it);
   if (ans) h += '<div class="cans' + (opt.noAnswer ? ' bare' : '') + '" data-ans' + (open ? '' : ' hidden') + '>' + ans + '</div>';
   return h + '</div>';
 }
-/* figure + hintFigure side by side with the walk-through (F13 grid at >= 1100 px) */
-function sideFigs(it, withHint) {
-  var hf = withHint && it.hintFigure ? it.hintFigure : null;
-  if (!it.figure && !hf) return '';
-  return '<div class="qfig' + (it.figure && hf ? ' two' : '') + '">' + figHTML(it.figure) +
-    (hf ? '<p class="eyebrow figlab">Worked out on the diagram</p>' + figHTML(hf) : '') + '</div>';
+/* the plain figure beside the question and the walk-through (F13 grid at >= 1100 px) */
+function sideFigs(it) {
+  return it.figure ? '<div class="qfig">' + figHTML(it.figure) + '</div>' : '';
+}
+/* the hintFigure, only ever inside an answer reveal */
+function hintFigHTML(it) {
+  return it.hintFigure ? '<div class="hfig"><p class="eyebrow figlab">Worked out on the diagram</p>' + figHTML(it.hintFigure) + '</div>' : '';
 }
 function layout(side, body) {
   return side ? '<div class="qgrid">' + side + '<div class="qbody">' + body + '</div></div>' : '<div class="qsolo">' + body + '</div>';
@@ -732,7 +739,7 @@ function renderReview() {
   var nextK = list[pos + 1];
   q += '<div class="nav">' + (pos > 0 ? '<button class="btn ghost small" data-act="revGo" data-k="' + list[pos - 1] + '">← Back</button>' : '<span></span>') +
     (nextK != null ? '<button class="btn teal" data-act="revGo" data-k="' + nextK + '">Next one →</button>' : '<button class="btn teal" data-act="toReport">Back to my report →</button>') + '</div>';
-  paint(h + layout(sideFigs(it, true), q));
+  paint(h + layout(sideFigs(it), q));
 }
 
 /* ---------- quiz ---------- */
@@ -797,7 +804,7 @@ function renderQuiz() {
   } else {
     q += '<textarea id="oeqText" placeholder="Type your answer here, or write it on paper (optional)"' + (a.shown && !exam ? ' readonly' : '') + '>' + esc(a.text) + '</textarea>';
     if (ladder && !a.shown && a.hint1) q += '<div class="fb hint" id="fb"><b class="h">💡 Hint</b><p>' + esc(nudgeText(it)) + '</p></div>';
-    if (!exam && a.shown) q += markingHTML(it, a) + (it.steps || it.technique ? coachHTML(it, a, se.i, { noChoice: true, noAnswer: true }) : '');
+    if (!exam && a.shown) q += markingHTML(it, a) + hintFigHTML(it) + (it.steps || it.technique ? coachHTML(it, a, se.i, { noChoice: true, noAnswer: true }) : '');
   }
   var last = se.i === se.items.length - 1;
   var next = '';
@@ -814,8 +821,7 @@ function renderQuiz() {
   q += '<div class="nav">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + (exam ? next : '<span class="row">' + next + '</span>') + '</div>';
   /* F13 (2026-10-17): on a wide screen a figure sits beside the question, so the options and
      buttons stay above the fold at 1440x900 and on an iPad in landscape. Narrow screens stack. */
-  var coaching = !exam && (it.type === 'mcq' ? locked && !ok : a.shown);   /* hintFigure joins the figure beside the walk-through */
-  h += layout(sideFigs(it, coaching), q);
+  h += layout(sideFigs(it), q);   /* the hintFigure is never beside the question: it sits in the answer reveal */
   if (exam) h += qnavHTML() + '<button class="btn handin" data-act="finishExam">✋ Hand in paper</button>';
   paint(h);
   if (!exam && se.scrollFb) { se.scrollFb = false; var fb = document.getElementById('fb'); if (fb && fb.getBoundingClientRect().bottom > window.innerHeight) fb.scrollIntoView({ block: 'nearest' }); }
@@ -948,7 +954,8 @@ function renderReport() {
     h += '<div class="section"><div class="spread"><h3>🔍 Let\'s look again together</h3><button class="btn small teal" data-act="revGo" data-k="' + missed[0] + '">Start the walk-through →</button></div>' +
       '<p class="lead" style="margin:4px 0 10px">These are the ones to learn from. Each one comes with a walk-through.</p><ul class="rev">' + missed.map(function (k) {
       var it = se.items[k], a = se.ans[k];
-      var mine = it.type === 'mcq' ? (a.choice != null ? 'You chose (' + (a.choice + 1) + ')' : 'Left blank') : (Math.round((a.score || 0) * it.marks * 10) / 10) + ' of ' + it.marks + ' marks';
+      var gotK = Math.round((a.score || 0) * it.marks * 10) / 10;
+      var mine = it.type === 'mcq' ? (a.choice != null ? 'You chose (' + (a.choice + 1) + ')' : 'Left blank') : gotK > 0 ? gotK + ' of ' + it.marks + ' marks' : 'Let\'s build this one';
       return '<li><span class="r">' + (a.score > 0 ? '½' : '🔍') + '</span>' + esc(it.stem) + (it.technique ? '<span class="tech">🧭 ' + esc(it.technique) + '</span>' : '') +
         '<small>' + esc(mine) + '</small><div class="row"><button class="btn ghost small" data-act="revGo" data-k="' + k + '">Walk me through it →</button></div></li>';
     }).join('') + '</ul></div>';

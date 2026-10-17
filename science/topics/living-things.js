@@ -160,6 +160,265 @@
      ['B', 'yes (damp)', 'room temperature (warm)', 'a lot'],
      ['C', 'yes (damp)', 'in the fridge (cold)', 'very little']]);
 
+  /* ---------- x17 figure helpers (lane sci-x-living, 2026-10-17) ----------
+     Every x17 figure is an SVG 360 units wide with labels of 13 units or more, so text
+     stays at about 12 px or more on a 390 px phone. xFlow draws a classification
+     flowchart with real connector lines, arrowheads and Yes/No tags on the branches
+     (By-Eye F30: the older chart() has floating labels and no lines). */
+  var XK = '#2B2540';
+  function xr(v) { return Math.round(v * 10) / 10; }
+  function xe(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function xWrap(s, n) {
+    var out = [];
+    String(s).split('\n').forEach(function (p) {
+      var line = '';
+      p.split(' ').forEach(function (w) {
+        if (!line) line = w;
+        else if ((line + ' ' + w).length <= n) line += ' ' + w;
+        else { out.push(line); line = w; }
+      });
+      out.push(line);
+    });
+    return out;
+  }
+  function xSvg(w, h, label, maxw) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '"' + (maxw ? ' data-maxw="' + maxw + '"' : '') +
+      ' role="img" aria-label="' + xe(label) + '" font-family="sans-serif" font-size="14" fill="' + XK + '">' +
+      '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="8" fill="#fff"/>';
+  }
+
+  /* xFlow(root, opt). Node shapes:
+       { q: 'Question?', yes: node, no: node, blank: true? }   a yes/no question (Yes always on the left)
+       { box: 'Title', kids: [node, ...] }                     a plain heading box (no Yes/No tags)
+       'A'  or  { t: 'Group K', items: ['cat', 'dog'] }         an end box
+     Columns are shared out by the number of end boxes under each node. */
+  function xFlow(root, opt) {
+    opt = opt || {};
+    var W = 360, LH = 17, GAP = 46, TOP = 8, CHB = 7.8, CHN = 7.2, all = [], rowH = [];
+    function kidsOf(n) { return (n && typeof n === 'object') ? (n.q != null ? [n.yes, n.no] : (n.kids || [])) : []; }
+    function count(n) { var k = kidsOf(n); return k.length ? k.reduce(function (a, c) { return a + count(c); }, 0) : 1; }
+    function lay(n, x0, x1, d) {
+      if (typeof n === 'string') n = { t: n };
+      var k = kidsOf(n), span = x1 - x0;
+      var o = { d: d, cx: (x0 + x1) / 2, kids: [], q: n.q != null, leaf: !k.length, blank: !!n.blank };
+      var maxW = Math.min(span - 8, k.length ? (opt.qMax || 236) : (opt.leafMax || 160));
+      if (o.leaf && n.t && n.t.length <= 2 && !n.items) { o.lines = [{ s: n.t, b: 1, big: 1 }]; o.w = Math.min(maxW, 46); o.h = 36; }
+      else {
+        var head = n.q != null ? n.q : (n.box != null ? n.box : n.t), lines = [], longest = 0;
+        if (head) xWrap(head, Math.floor((maxW - 14) / CHB)).forEach(function (s) { lines.push({ s: s, b: 1 }); });
+        (n.items || []).forEach(function (it) { xWrap(it, Math.floor((maxW - 14) / CHN)).forEach(function (s) { lines.push({ s: s, b: 0 }); }); });
+        lines.forEach(function (l) { longest = Math.max(longest, l.s.length * (l.b ? CHB : CHN)); });
+        o.lines = lines; o.w = Math.max(o.blank ? 64 : 56, Math.min(maxW, longest + 18)); o.h = lines.length * LH + 11;
+      }
+      rowH[d] = Math.max(rowH[d] || 0, o.h);
+      all.push(o);
+      var x = x0, tot = count(n);
+      k.forEach(function (c) { var w = span * count(c) / tot; o.kids.push(lay(c, x, x + w, d + 1)); x += w; });
+      return o;
+    }
+    lay(root, 0, W, 0);
+    var ys = [TOP], d;
+    for (d = 1; d < rowH.length; d++) ys[d] = ys[d - 1] + rowH[d - 1] + GAP;
+    var H = ys[rowH.length - 1] + rowH[rowH.length - 1] + TOP;
+    var wires = '', tags = '', boxes = '';
+    all.forEach(function (o) {
+      var y = ys[o.d];
+      if (o.kids.length) {
+        var m = y + o.h + 13, yk = ys[o.d + 1];   /* the bar sits just under this box, not under the row's tallest box */
+        var xs = o.kids.map(function (c) { return c.cx; }).concat([o.cx]);
+        wires += '<path d="M' + xr(o.cx) + ' ' + xr(y + o.h) + 'V' + xr(m) +
+          (o.kids.length > 1 ? 'M' + xr(Math.min.apply(null, xs)) + ' ' + xr(m) + 'H' + xr(Math.max.apply(null, xs)) : '') + '"/>';
+        o.kids.forEach(function (c, i) {
+          wires += '<path d="M' + xr(c.cx) + ' ' + xr(m) + 'V' + xr(yk - 7) + '"/>';
+          tags += '<polygon points="' + xr(c.cx - 5) + ',' + xr(yk - 8) + ' ' + xr(c.cx + 5) + ',' + xr(yk - 8) + ' ' + xr(c.cx) + ',' + xr(yk - 1) + '" fill="#555"/>';
+          if (o.q) {
+            var ty = m + 15;
+            tags += '<rect x="' + xr(c.cx - 17) + '" y="' + xr(ty - 9) + '" width="34" height="18" rx="4" fill="#fff" stroke="#555" stroke-width="1"/>' +
+              '<text x="' + xr(c.cx) + '" y="' + xr(ty + 5) + '" text-anchor="middle" font-size="13" font-weight="700">' + (i === 0 ? 'Yes' : 'No') + '</text>';
+          }
+        });
+      }
+      var fill = o.blank ? '#FFF8E1' : o.q ? '#F3EEFF' : o.leaf ? '#FFFFFF' : '#E8F5E9';
+      var stroke = o.blank ? '#C99A00' : o.q ? '#6B5FA5' : '#7A7590';
+      boxes += '<rect x="' + xr(o.cx - o.w / 2) + '" y="' + xr(y) + '" width="' + xr(o.w) + '" height="' + o.h + '" rx="7" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2"' + (o.blank ? ' stroke-dasharray="6 4"' : '') + '/>';
+      o.lines.forEach(function (l, i) {
+        if (l.big) boxes += '<text x="' + xr(o.cx) + '" y="' + xr(y + 25) + '" text-anchor="middle" font-size="20" font-weight="700">' + xe(l.s) + '</text>';
+        else boxes += '<text x="' + xr(o.cx) + '" y="' + xr(y + 18 + i * LH) + '" text-anchor="middle" font-size="13.5"' + (l.b ? ' font-weight="700"' : '') + '>' + xe(l.s) + '</text>';
+      });
+    });
+    return xSvg(W, H, opt.label || 'Classification flowchart', opt.maxw || 470) +
+      '<g fill="none" stroke="#555" stroke-width="2">' + wires + '</g>' + tags + boxes + '</svg>';
+  }
+
+  /* xBug(cx, cy, sp): top view of a small animal, head on the left.
+     sp = { segs: [[rx, ry], ...] head first, legs: { segIndex: pairs }, legLen, feelers, wings: 0|2|4, wingSeg, fill } */
+  function xBug(cx, cy, sp) {
+    var segs = sp.segs, L = 0, pos = [], x, legs = '', wings = '', body = '', feel = '';
+    segs.forEach(function (g) { L += 2 * g[0]; });
+    x = cx - L / 2;
+    segs.forEach(function (g) { pos.push(x + g[0]); x += 2 * g[0]; });
+    Object.keys(sp.legs || {}).forEach(function (k) {
+      var i = +k, p = sp.legs[k], g = segs[i], c = pos[i], len = sp.legLen || 26;
+      for (var j = 0; j < p; j++) {
+        var f = p === 1 ? 0 : (j / (p - 1)) * 2 - 1;            /* -1 = front leg, +1 = back leg */
+        var ax = c + f * g[0] * 0.6, dx = f * (sp.fan || 14);
+        [-1, 1].forEach(function (sg) {
+          legs += '<polyline points="' + xr(ax) + ',' + xr(cy + sg * (g[1] - 2)) + ' ' + xr(ax + dx * 0.6) + ',' + xr(cy + sg * (g[1] + len * 0.6)) + ' ' +
+            xr(ax + dx * 1.4) + ',' + xr(cy + sg * (g[1] + len)) + '"/>';
+        });
+      }
+    });
+    if (sp.wings) {
+      var ws = sp.wingSeg == null ? 1 : sp.wingSeg, wg = segs[ws], wx = pos[ws];
+      [-1, 1].forEach(function (sg) {
+        function wing(dx, dy, rx, ry, rot) {
+          var ex = xr(wx + dx), ey = xr(cy + sg * dy);
+          return '<ellipse cx="' + ex + '" cy="' + ey + '" rx="' + rx + '" ry="' + ry + '" transform="rotate(' + (sg * rot) + ' ' + ex + ' ' + ey + ')"/>';
+        }
+        /* 4 wings: the front pair angles well out to the side and the back pair lies along the body,
+           so all four outlines and tips can be counted */
+        wings += sp.wings === 4 ? wing(18, wg[1] + 18, 30, 8, 45) + wing(34, wg[1] + 4, 30, 7, 8)
+                                : wing(28, wg[1] + 11, 31, 10, 16);
+      });
+    }
+    segs.forEach(function (g, i) { body += '<ellipse cx="' + xr(pos[i]) + '" cy="' + cy + '" rx="' + g[0] + '" ry="' + g[1] + '"/>'; });
+    if (sp.feelers) {
+      var hx = pos[0] - segs[0][0] + 2;
+      feel = '<path d="M' + xr(hx) + ' ' + (cy - 3) + ' Q' + xr(hx - 14) + ' ' + (cy - 8) + ' ' + xr(hx - 22) + ' ' + (cy - 26) + '"/>' +
+             '<path d="M' + xr(hx) + ' ' + (cy + 3) + ' Q' + xr(hx - 14) + ' ' + (cy + 8) + ' ' + xr(hx - 22) + ' ' + (cy + 26) + '"/>';
+    }
+    return '<g fill="none" stroke="#333" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' + legs + '</g>' +
+      (wings ? '<g fill="#bbdefb" fill-opacity="0.75" stroke="#3f51b5" stroke-width="1.5">' + wings + '</g>' : '') +
+      '<g fill="' + (sp.fill || '#8d6e63') + '" stroke="#333" stroke-width="2">' + body + '</g>' +
+      (feel ? '<g fill="none" stroke="#333" stroke-width="1.6" stroke-linecap="round">' + feel + '</g>' : '');
+  }
+  function xWorm(cx, cy) {
+    var d = 'M' + (cx - 62) + ' ' + cy + ' C' + (cx - 40) + ' ' + (cy - 22) + ' ' + (cx - 14) + ' ' + (cy + 22) + ' ' + (cx + 8) + ' ' + cy +
+      ' S' + (cx + 44) + ' ' + (cy - 18) + ' ' + (cx + 62) + ' ' + (cy - 2);
+    return '<path d="' + d + '" fill="none" stroke="#b5655f" stroke-width="13" stroke-linecap="round"/>' +
+      '<path d="' + d + '" fill="none" stroke="#e3a29b" stroke-width="13" stroke-linecap="round" stroke-dasharray="2 7"/>';
+  }
+  var XB_INSECT = function (wings) { return { segs: [[8, 7], [12, 9], [24, 11]], legs: { 1: 3 }, feelers: true, wings: wings }; };
+  var XB_ANT = { segs: [[8, 7], [9, 6], [17, 11]], legs: { 1: 3 }, feelers: true, fill: '#5d4037' };
+  var XB_SPIDER = { segs: [[14, 12], [21, 16]], legs: { 0: 4 }, legLen: 32, fan: 18 };
+  var XB_CENTI = (function () {
+    var s = [[6, 5]], l = {};
+    for (var i = 1; i <= 9; i++) { s.push([5.5, 5]); l[i] = 1; }
+    return { segs: s, legs: l, legLen: 15, feelers: true, fill: '#a1662f' };
+  })();
+  /* panels: [{ L: 'P', sp: spec } or { L: 'R', worm: true }]; 4 panels = 2 x 2 grid, else one row */
+  function xBugs(panels, label, maxw) {
+    var n = panels.length, grid = n === 4, W = n === 1 ? 200 : 360, pw = grid ? 180 : W / n, ph = 140, H = grid ? 2 * ph : ph;
+    var s = xSvg(W, H, label, maxw || (n === 1 ? 300 : 470));
+    panels.forEach(function (p, i) {
+      var x0 = grid ? (i % 2) * pw : i * pw, y0 = grid ? Math.floor(i / 2) * ph : 0, cx = x0 + pw / 2, cy = y0 + 78;
+      s += '<rect x="' + (x0 + 4) + '" y="' + (y0 + 4) + '" width="' + (pw - 8) + '" height="' + (ph - 8) + '" rx="8" fill="#fbfaf7" stroke="#cfc9dc" stroke-width="1.5"/>' +
+        '<text x="' + (x0 + 14) + '" y="' + (y0 + 26) + '" font-size="17" font-weight="700">' + p.L + '</text>' +
+        (p.worm ? xWorm(cx + 6, cy) : xBug(cx + 8, cy, p.sp));
+    });
+    return s + '</svg>';
+  }
+
+  /* Bread slice centred on (cx, cy); k = scale; o = { brown, drops, mould: number of patches, fuzzy } */
+  function xSlice(cx, cy, k, o) {
+    o = o || {};
+    function p(dx, dy) { return xr(cx + dx * k) + ' ' + xr(cy + dy * k); }
+    var s = '<path d="M' + p(-22, 28) + ' L' + p(-22, -8) + ' C' + p(-31, -28) + ' ' + p(-7, -35) + ' ' + p(0, -26) +
+      ' C' + p(7, -35) + ' ' + p(31, -28) + ' ' + p(22, -8) + ' L' + p(22, 28) + ' Z" fill="' + (o.brown ? '#c58f57' : '#f6dca8') + '" stroke="#a86a2c" stroke-width="2.5"/>';
+    var spots = [[-11, -14], [9, -17], [-3, 2], [12, 8], [-13, 16], [4, 19], [14, -4], [-8, -24]];
+    for (var i = 0; i < (o.mould || 0) && i < spots.length; i++) {
+      var sx = spots[i][0], sy = spots[i][1];
+      s += o.fuzzy
+        ? '<g stroke="#5b7a4a" stroke-width="1"><circle cx="' + p(sx, sy).split(' ')[0] + '" cy="' + p(sx, sy).split(' ')[1] + '" r="' + xr(5.5 * k) + '" fill="#8fae6b"/>' +
+          '<circle cx="' + p(sx + 4, sy - 3).split(' ')[0] + '" cy="' + p(sx + 4, sy - 3).split(' ')[1] + '" r="' + xr(3.8 * k) + '" fill="#e8eee0"/>' +
+          '<circle cx="' + p(sx - 4, sy + 3).split(' ')[0] + '" cy="' + p(sx - 4, sy + 3).split(' ')[1] + '" r="' + xr(3.4 * k) + '" fill="#6f8f55"/></g>'
+        : '<circle cx="' + p(sx, sy).split(' ')[0] + '" cy="' + p(sx, sy).split(' ')[1] + '" r="' + xr(3.6 * k) + '" fill="#5f7f45" stroke="#3e5a2c"/>';
+    }
+    if (o.drops) [[-12, -4], [6, -10], [-2, 12], [13, 16]].forEach(function (d) {
+      var X = cx + d[0] * k, Y = cy + d[1] * k;
+      s += '<path d="M' + xr(X) + ' ' + xr(Y - 6) + ' Q' + xr(X + 4.5) + ' ' + xr(Y) + ' ' + xr(X) + ' ' + xr(Y + 2.5) + ' Q' + xr(X - 4.5) + ' ' + xr(Y) + ' ' + xr(X) + ' ' + xr(Y - 6) + 'Z" fill="#42a5f5" stroke="#1565c0" stroke-width="0.8"/>';
+    });
+    return s;
+  }
+  /* Sealed bags of bread in a row. panels: [{ L, place: 'cupboard'|'fridge'|'counter', damp, brown, lines: [...] }] */
+  function xBags(panels, label) {
+    var n = panels.length, pw = 360 / n, nl = 0;
+    panels.forEach(function (p) { nl = Math.max(nl, (p.lines || []).length); });
+    var H = 186 + nl * 17 + 6;
+    var s = xSvg(360, H, label, n <= 2 ? 360 : 470);
+    var PL = { cupboard: ['#efe3c8', '#8d6e63', 'cupboard'], fridge: ['#dcecfb', '#42a5f5', 'fridge'], counter: ['#fafafa', '#bdbdbd', 'counter'] };
+    panels.forEach(function (p, i) {
+      var cx = pw * (i + 0.5), pl = PL[p.place] || PL.counter;
+      s += '<rect x="' + xr(cx - pw / 2 + 5) + '" y="8" width="' + xr(pw - 10) + '" height="152" rx="6" fill="' + pl[0] + '" stroke="' + pl[1] + '" stroke-width="2"/>' +
+        '<text x="' + xr(cx) + '" y="27" text-anchor="middle" font-size="13.5">' + pl[2] + '</text>' +
+        '<rect x="' + xr(cx - 29) + '" y="38" width="58" height="112" rx="7" fill="#ffffff" fill-opacity="0.55" stroke="#78909c" stroke-width="2"/>' +
+        '<line x1="' + xr(cx - 29) + '" y1="49" x2="' + xr(cx + 29) + '" y2="49" stroke="#607d8b" stroke-width="2.5"/>' +
+        xSlice(cx, 103, 0.95, { brown: p.brown, drops: p.damp, mould: p.mould || 0 }) +
+        '<text x="' + xr(cx) + '" y="182" text-anchor="middle" font-size="17" font-weight="700">' + p.L + '</text>';
+      (p.lines || []).forEach(function (t, j) {
+        s += '<text x="' + xr(cx) + '" y="' + (199 + j * 17) + '" text-anchor="middle" font-size="13.5">' + xe(t) + '</text>';
+      });
+    });
+    return s + '</svg>';
+  }
+
+  /* Bar chart and line graph. o = { yTitle, labels: ['a', 'b\nc'], values, max, step, xTitle } */
+  function xAxes(o, n) {
+    var X0 = 54, X1 = 346, Y0 = 196, Y1 = 46, s = '';
+    for (var v = 0; v <= o.max; v += o.step) {
+      var y = Y0 - v / o.max * (Y0 - Y1);
+      s += '<line x1="' + X0 + '" y1="' + xr(y) + '" x2="' + X1 + '" y2="' + xr(y) + '" stroke="#e0dde8"/>' +
+        '<text x="' + (X0 - 7) + '" y="' + xr(y + 5) + '" text-anchor="end" font-size="13">' + v + '</text>';
+    }
+    s += '<text x="10" y="24" font-size="14" font-weight="700">' + xe(o.yTitle) + '</text>';
+    var slot = (X1 - X0) / n, nl = 1;
+    o.labels.forEach(function (lb, i) {
+      var parts = String(lb).split('\n'); nl = Math.max(nl, parts.length);
+      parts.forEach(function (t, j) { s += '<text x="' + xr(X0 + slot * (i + 0.5)) + '" y="' + (215 + j * 16) + '" text-anchor="middle" font-size="13">' + xe(t) + '</text>'; });
+    });
+    var H = 215 + (nl - 1) * 16 + (o.xTitle ? 26 : 10);
+    if (o.xTitle) s += '<text x="' + ((X0 + X1) / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="14" font-weight="700">' + xe(o.xTitle) + '</text>';
+    s += '<line x1="' + X0 + '" y1="' + Y0 + '" x2="' + X1 + '" y2="' + Y0 + '" stroke="#333" stroke-width="2"/>' +
+      '<line x1="' + X0 + '" y1="' + (Y1 - 8) + '" x2="' + X0 + '" y2="' + Y0 + '" stroke="#333" stroke-width="2"/>';
+    return { s: s, H: H, X0: X0, Y0: Y0, Y1: Y1, slot: slot };
+  }
+  function xBars(o) {
+    var n = o.values.length, a = xAxes(o, n), bars = '';
+    o.values.forEach(function (v, i) {
+      var h = v / o.max * (a.Y0 - a.Y1), bw = Math.min(54, a.slot * 0.5), x = a.X0 + a.slot * (i + 0.5);
+      bars += '<rect x="' + xr(x - bw / 2) + '" y="' + xr(a.Y0 - h) + '" width="' + xr(bw) + '" height="' + xr(h) + '" fill="#7986cb" stroke="#3949ab" stroke-width="1.5"/>';
+    });
+    return xSvg(360, a.H, o.label || 'Bar graph', o.maxw || 470) + a.s + bars + '</svg>';
+  }
+  function xLine(o) {
+    var n = o.values.length, a = xAxes(o, n), pts = [], dots = '';
+    o.values.forEach(function (v, i) {
+      var x = a.X0 + a.slot * (i + 0.5), y = a.Y0 - v / o.max * (a.Y0 - a.Y1);
+      pts.push(xr(x) + ',' + xr(y));
+      dots += '<circle cx="' + xr(x) + '" cy="' + xr(y) + '" r="4.5" fill="#3949ab"/>';
+    });
+    return xSvg(360, a.H, o.label || 'Line graph', o.maxw || 470) + a.s +
+      '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#3949ab" stroke-width="2.5"/>' + dots + '</svg>';
+  }
+
+  // ---------- x17 shared figures ----------
+  var XF_ZOO = xFlow({ box: 'Animals', kids: [{ q: 'Does it have feathers?', yes: 'A',
+    no: { q: 'Does it have six legs?', yes: 'B', no: { q: 'Does it feed its young on milk?', yes: 'C', no: 'D' } } }] },
+    { label: 'Flowchart: feathers? six legs? feeds young on milk? ending in boxes A to D' });
+  var XF_LIFE = xFlow({ box: 'Living things', kids: [{ q: 'Can it make its own food?',
+    yes: { q: 'Does it have flowers?', yes: 'P', no: 'Q' },
+    no: { q: 'Does it reproduce by spores?', yes: 'R', no: 'S' } }] },
+    { label: 'Flowchart: makes own food? flowers? spores? ending in boxes P, Q, R and S' });
+  var XF_GARDEN = xFlow({ box: 'Animals', kids: [{ q: 'Does it have hair or fur?', yes: 'W',
+    no: { q: 'Does it have feathers?', yes: 'X', no: { q: 'Does it have six legs?', yes: 'Y', no: 'Z' } } }] },
+    { label: 'Flowchart: hair or fur? feathers? six legs? ending in boxes W, X, Y and Z' });
+  var XF_BAGS_PLAN = xBags([
+    { L: 'A', place: 'cupboard', damp: true, lines: ['damp', 'white bread'] },
+    { L: 'B', place: 'fridge', lines: ['dry', 'white bread'] },
+    { L: 'C', place: 'fridge', damp: true, lines: ['damp', 'white bread'] },
+    { L: 'D', place: 'cupboard', brown: true, lines: ['dry', 'wholemeal'] }],
+    'Four sealed bags of bread: A damp white bread in a cupboard, B dry white bread in a fridge, C damp white bread in a fridge, D dry wholemeal bread in a cupboard');
+
   SCI.registerTopic({
     id: 'living-things',
     title: 'Living Things',
@@ -706,7 +965,291 @@
         figure: null,
         options: ['A and B only', 'B and D only', 'A, C and D only', 'A, B, C and D'],
         answer: 2,
-        explain: 'A, C and D are correct: ferns and mushrooms both reproduce by spores, have no flowers, and (like all living things) need air and water. B is wrong: the fern makes its own food, but the mushroom is a fungus and cannot.' }
+        explain: 'A, C and D are correct: ferns and mushrooms both reproduce by spores, have no flowers, and (like all living things) need air and water. B is wrong: the fern makes its own food, but the mushroom is a fungus and cannot.' },
+
+      /* x17 science expansion — lane sci-x-living */
+      /* hints: [first-miss nudge, second-miss reveal]. The shell does not show it yet (see the lane report, Shared requests). */
+      // ---- classification flowcharts (archetype 8) ----
+      { id: 'x17-liv-01', type: 'mcq', level: 1,
+        stem: 'Nadia used this flowchart to sort the animals she saw at the zoo. Into which box, A, B, C or D, should she put a fruit bat?',
+        figure: XF_ZOO,
+        options: ['A', 'B', 'C', 'D'],
+        answer: 2,
+        hints: ['Start at the top and answer each question about the bat, one at a time. Does a bat have feathers?',
+               'A bat has fur, not feathers: No. It has 2 legs, not 6: No. It feeds its young on milk: Yes. So the bat goes in box C.'],
+        explain: 'Follow the arrows. A fruit bat has no feathers (No), it does not have six legs (No), and it feeds its young on milk (Yes), so it ends in box C, with the mammals. Box A is the trap: a bat flies, but only birds have feathers. Box B is for animals with six legs, such as insects.' },
+      { id: 'x17-liv-02', type: 'mcq', level: 2,
+        stem: 'Look at the same flowchart. Which animal could be in box D?',
+        figure: XF_ZOO,
+        options: ['Sparrow', 'Cat', 'Grasshopper', 'Crocodile'],
+        answer: 3,
+        hints: ['Box D is reached by answering No three times. Which animal has no feathers, does not have six legs and does not feed its young on milk?',
+               'Sparrow: feathers, so A. Grasshopper: six legs, so B. Cat: feeds its young on milk, so C. The crocodile answers No to all three, so it is in D.'],
+        explain: 'To reach D, the answer to every question must be No. A crocodile has no feathers, has four legs and does not feed its young on milk, so it goes in D. The sparrow has feathers (A), the grasshopper has six legs (B) and the cat feeds its young on milk (C).' },
+      { id: 'x17-liv-03', type: 'mcq', level: 2,
+        stem: 'Study the flowchart. Which living thing belongs in box Q?',
+        figure: XF_LIFE,
+        options: ['Mushroom', 'Fern', 'Hibiscus', 'Bread mould'],
+        answer: 1,
+        hints: ['To reach Q, the living thing must make its own food (Yes) but have no flowers (No).',
+               'A fern is a plant, so it makes its own food, and it has no flowers. A mushroom and bread mould cannot make their own food, so they go down the No side to R.'],
+        explain: 'Box Q is for living things that make their own food but have no flowers: non-flowering plants such as the fern. The mushroom and bread mould also have no flowers, but they cannot make their own food, so they are fungi and end in R. The hibiscus has flowers, so it is in P.' },
+      { id: 'x17-liv-04', type: 'mcq', level: 3,
+        stem: 'Look at the same flowchart. Ali put a mushroom in box Q because it has no flowers. Which statement explains his mistake?',
+        figure: XF_LIFE,
+        options: ['A mushroom has flowers, so it belongs in box P.', 'A mushroom does not reproduce by spores, so it belongs in box S.', 'A mushroom cannot make its own food, so it goes down the No side of the first question.', 'A mushroom is an animal, so it belongs in box S.'],
+        answer: 2,
+        hints: ['Ali skipped a question. Which question comes FIRST in the flowchart, and what is the answer for a mushroom?',
+               'The first question is "Can it make its own food?" A mushroom cannot, so it goes down the No side. Then it reproduces by spores (Yes), so it belongs in R, not Q.'],
+        explain: 'You must answer the questions in order, starting at the top. A mushroom cannot make its own food, so it goes down the No side and can never reach Q or P. It reproduces by spores, so it ends in R. A mushroom has no flowers, does reproduce by spores, and is a fungus, not an animal.' },
+      { id: 'x17-liv-05', type: 'mcq', level: 3,
+        stem: 'The question in the dashed box of this flowchart is missing. Which question could it be?',
+        figure: xFlow({ box: 'Living things', kids: [{ q: '?', blank: true,
+          yes: { q: 'Does it have flowers?', yes: { t: 'G', items: ['sunflower', 'rambutan tree'] }, no: { t: 'H', items: ['fern', 'moss'] } },
+          no: { t: 'J', items: ['mushroom', 'bread mould'] } }] },
+          { label: 'Flowchart with a missing first question. Yes side: sunflower, rambutan tree, fern, moss. No side: mushroom, bread mould' }),
+        options: ['Can it make its own food?', 'Does it reproduce by spores?', 'Does it grow in damp places?', 'Does it need water to survive?'],
+        answer: 0,
+        hints: ['The missing question must be YES for everything in G and H, and NO for both things in J. Test each option on the fern and the mushroom.',
+               'The sunflower, rambutan tree, fern and moss are plants: they make their own food. The mushroom and bread mould are fungi: they cannot. So the question is "Can it make its own food?"'],
+        explain: 'Everything on the Yes side (sunflower, rambutan tree, fern, moss) is a plant and makes its own food, and both things on the No side are fungi, which cannot. "Spores" fails: the fern and moss use spores too. "Damp places" fails: ferns, moss and mushrooms all grow in damp places. "Needs water" fails: every living thing needs water.' },
+      { id: 'x17-liv-06', type: 'mcq', level: 3,
+        stem: 'Hui Min sorted some adult animals using this flowchart. She placed ONE animal in the wrong group. Which animal is it?',
+        figure: xFlow({ box: 'Adult animals', kids: [{ q: 'Does it have feathers?',
+          yes: { t: 'Group K', items: ['penguin', 'ostrich', 'bat'] },
+          no: { q: 'Does it breathe through gills?', yes: { t: 'Group L', items: ['shark', 'guppy'] }, no: { t: 'Group M', items: ['dolphin', 'frog', 'lizard'] } } }] },
+          { label: 'Flowchart: feathers? then gills? Group K penguin, ostrich, bat. Group L shark, guppy. Group M dolphin, frog, lizard' }),
+        options: ['Penguin', 'Bat', 'Dolphin', 'Frog'],
+        answer: 1,
+        hints: ['Check each animal in Group K against its question: does it really have feathers?',
+               'A bat has fur, not feathers. It is a mammal that breathes through lungs, so it should go No, then No again, into Group M.'],
+        explain: 'A bat can fly, but it has fur, not feathers, so it belongs in Group M. The penguin and ostrich cannot fly but have feathers, so Group K is right for them. The dolphin lives in water but breathes through lungs, and an adult frog breathes through lungs and moist skin, so both are correct in Group M.' },
+      { id: 'x17-liv-07', type: 'oeq', level: 2, marks: 2,
+        stem: 'Daniel used this flowchart to sort animals in his school garden. Into which box, W, X, Y or Z, should he put:\n(a) a cockroach? (1 mark)\n(b) a frog? (1 mark)',
+        figure: XF_GARDEN,
+        model: '(a) Box Y: a cockroach has no hair or fur and no feathers, but it has six legs. (b) Box Z: a frog has no hair or fur, no feathers and only four legs.',
+        keys: [['Box Y'], ['Box Z']],
+        hints: ['Answer the questions in order for each animal. How many legs does a cockroach have? How many does a frog have?',
+               'Cockroach: No, No, Yes (six legs), so box Y. Frog: No, No, No (four legs), so box Z.'],
+        explain: 'Give the box and the path that leads to it. A cockroach is an insect with six legs (Y). A frog is an amphibian with moist skin and four legs (Z).' },
+      { id: 'x17-liv-08', type: 'oeq', level: 3, marks: 2,
+        stem: 'Look at the same flowchart. Lina said, "A mynah and a penguin will end up in different boxes, because only the mynah can fly." Do you agree? Explain using the flowchart.',
+        figure: XF_GARDEN,
+        model: 'No, I do not agree. Both the mynah and the penguin have no hair or fur, and both have feathers, so both end up in box X. The flowchart asks about feathers, not about flying.',
+        keys: [['do not agree', 'disagree', 'both end up in box X', 'box X'], ['both have feathers', 'feathers']],
+        hints: ['Find the question in the flowchart that sorts birds. Is it about flying?',
+               'The question is "Does it have feathers?" Both the mynah and the penguin have feathers, so both go to box X.'],
+        explain: 'Claim: they are in the same box (X). Evidence: both have feathers and no hair or fur. Reasoning: the flowchart sorts by feathers, and flying is not one of its questions. A penguin cannot fly, but it is still a bird.' },
+      { id: 'x17-liv-09', type: 'oeq', level: 3, marks: 3,
+        stem: 'Study the flowchart.\n(a) Suggest a suitable question for box (a). (1 mark)\n(b) Siti said, "The mushroom should be in box Q with the fern, because both reproduce by spores." Explain why the flowchart puts them in different boxes. (2 marks)',
+        figure: xFlow({ box: 'Living things', kids: [{ q: 'Can it make its own food?',
+          yes: { q: '(a) ?', blank: true, yes: { t: 'P', items: ['hibiscus', 'durian tree'] }, no: { t: 'Q', items: ['fern', 'moss'] } },
+          no: { q: 'Does it reproduce by spores?', yes: { t: 'R', items: ['mushroom', 'bread mould'] }, no: { t: 'S', items: ['cat', 'earthworm'] } } }] },
+          { label: 'Flowchart with box (a) missing. P hibiscus, durian tree. Q fern, moss. R mushroom, bread mould. S cat, earthworm' }),
+        model: '(a) Does it have flowers? (b) The first question asks if it can make its own food. The fern is a plant and makes its own food, so it goes down the Yes side, but the mushroom cannot make its own food, so it goes down the No side. They split before the question about spores is asked.',
+        keys: [['have flowers', 'flowers', 'reproduce by seeds', 'seeds'], ['makes its own food', 'fern is a plant'], ['cannot make its own food', 'mushroom cannot', 'No side']],
+        hints: ['(a) What do the hibiscus and durian tree have that the fern and moss do not? (b) Look at the very first question.',
+               '(a) Flowers. (b) The first question is "Can it make its own food?" The fern can (Yes); the mushroom cannot (No). So they are split before spores are asked about.'],
+        explain: '(a) The hibiscus and durian tree have flowers; the fern and moss do not. "Does it reproduce by seeds?" also works. (b) Both use spores, but the chart splits them at the first question: the fern, a plant, makes its own food; the mushroom, a fungus, cannot.' },
+
+      // ---- living vs non-living charts (archetype 9) ----
+      { id: 'x17-liv-10', type: 'mcq', level: 1,
+        stem: 'Ravi sorted some things he saw in the school garden. Which one has he put in the wrong group?',
+        figure: xFlow({ box: 'Things Ravi saw in the school garden', kids: [
+          { t: 'Living things', items: ['ant', 'fern', 'mushroom', 'kite'] },
+          { t: 'Non-living things', items: ['stone', 'watering can', 'flower pot'] }] },
+          { label: 'Chart: living things ant, fern, mushroom, kite. Non-living things stone, watering can, flower pot' }),
+        options: ['Ant', 'Mushroom', 'Kite', 'Fern'],
+        answer: 2,
+        hints: ['A kite can move in the wind. Is moving enough to make something living?',
+               'A kite cannot grow, reproduce or take in food. It moves only because the wind pushes it, so it is non-living.'],
+        explain: 'The kite is non-living: it cannot grow or reproduce, and it only moves when the wind pushes it. The ant, fern and mushroom all grow and reproduce. The mushroom is a fungus, and it is still a living thing.' },
+      { id: 'x17-liv-11', type: 'mcq', level: 2,
+        stem: 'Aunty Lin sorted some things in her kitchen into two groups. Which one is in the wrong group?',
+        figure: xFlow({ box: "Things in Aunty Lin's kitchen", kids: [
+          { t: 'Living things', items: ['cockroach', 'potted chilli plant', 'yeast'] },
+          { t: 'Non-living things', items: ['plastic flower', 'bread mould', 'spoon', 'stove'] }] },
+          { label: 'Chart: living things cockroach, potted chilli plant, yeast. Non-living things plastic flower, bread mould, spoon, stove' }),
+        options: ['Bread mould', 'Plastic flower', 'Yeast', 'Cockroach'],
+        answer: 0,
+        hints: ['One of the non-living things can grow and reproduce. Think about what happens to old bread.',
+               'Bread mould grows bigger on the bread and reproduces by spores. It is a fungus, so it is a living thing.'],
+        explain: 'Bread mould is a fungus: it grows on the bread, takes in food from it and reproduces by spores, so it is living. Yeast is also a living fungus and is correctly placed. The plastic flower looks like a plant, but it cannot grow or reproduce, so it is correctly non-living.' },
+      { id: 'x17-liv-12', type: 'mcq', level: 2,
+        stem: 'Wen Hui sorted six things into Group K and Group L. Which headings best fill K and L?',
+        figure: xFlow({ box: 'Six things', kids: [
+          { t: 'K', items: ['fire', 'cloud', 'toy robot'] },
+          { t: 'L', items: ['moss', 'yeast', 'ant'] }] },
+          { label: 'Chart: Group K fire, cloud, toy robot. Group L moss, yeast, ant' }),
+        options: ['K: does not need air; L: needs air', 'K: cannot reproduce; L: can reproduce', 'K: cannot move; L: can move', 'K: can reproduce; L: cannot reproduce'],
+        answer: 1,
+        hints: ['A heading must be true for EVERY thing in its group. Test each option on the fire and on the moss.',
+               'Fire needs air to burn, so "does not need air" fails. The toy robot moves and moss does not, so "can move" fails. Moss, yeast and ants reproduce; fire, clouds and robots cannot.'],
+        explain: 'Group L (moss, yeast, ant) are living things, and all of them can reproduce; nothing in Group K can. Fire needs air to keep burning, so the air headings fail. The toy robot and clouds move but moss does not, so the moving headings fail. The last option swaps the two groups.' },
+      { id: 'x17-liv-13', type: 'oeq', level: 2, marks: 2,
+        stem: 'Mei sorted some things she saw at East Coast Park into two groups.\n(a) Give a suitable heading for Group M. (1 mark)\n(b) Her brother said, "The kite should be in Group M, because it moves in the wind." Explain why he is wrong. (1 mark)',
+        figure: xFlow({ box: 'Things Mei saw at the park', kids: [
+          { t: 'Group M', items: ['crab', 'coconut tree', 'mushroom'] },
+          { t: 'Group N', items: ['sand', 'kite', 'plastic bottle'] }] },
+          { label: 'Chart: Group M crab, coconut tree, mushroom. Group N sand, kite, plastic bottle' }),
+        model: '(a) Living things. (b) The kite moves only because the wind pushes it. It cannot grow and cannot reproduce, so it is a non-living thing.',
+        keys: [['living things', 'can reproduce', 'can grow'], ['cannot grow', 'cannot reproduce']],
+        hints: ['(a) What do a crab, a coconut tree and a mushroom all do that sand cannot? (b) Moving is not on the list of characteristics of living things.',
+               '(a) They grow and reproduce: they are living things. (b) The kite cannot grow or reproduce, so it stays in the non-living group.'],
+        explain: 'All of Group M grow and reproduce, so "living things" (or "things that can reproduce") fits. Moving is not a characteristic of living things: plants are living but stay in one place, and a kite moves only when the wind pushes it.' },
+
+      // ---- animal groups from pictures and tables (archetype 11) ----
+      { id: 'x17-liv-14', type: 'mcq', level: 1,
+        stem: 'Kai drew four small animals he found in an HDB garden. Which animal is an insect?',
+        figure: xBugs([{ L: 'P', sp: XB_SPIDER }, { L: 'Q', sp: XB_CENTI }, { L: 'R', worm: true }, { L: 'S', sp: XB_ANT }],
+          'P: 2 body parts, 8 legs, no feelers. Q: many body parts, many legs, feelers. R: no legs. S: 3 body parts, 6 legs, 2 feelers, no wings'),
+        options: ['P', 'Q', 'R', 'S'],
+        answer: 3,
+        hints: ['An insect has 3 body parts, 6 legs and 1 pair of feelers. Count the legs on each animal.',
+               'P has 8 legs (a spider). Q has many legs (a centipede). R has no legs (an earthworm). S has 3 body parts, 6 legs and 2 feelers: S is the insect, even with no wings.'],
+        explain: 'S has 3 body parts, 6 legs and 1 pair of feelers, so it is an insect (an ant). It has no wings, but not all insects have wings. P has 8 legs and 2 body parts (a spider), Q has too many legs (a centipede) and R has no legs at all (an earthworm).' },
+      { id: 'x17-liv-15', type: 'mcq', level: 2,
+        stem: 'Riddle: "I have 3 body parts and 6 legs. I have 1 pair of feelers and 2 pairs of wings." Which animal in the drawing am I?',
+        figure: xBugs([{ L: 'P', sp: XB_INSECT(2) }, { L: 'Q', sp: XB_SPIDER }, { L: 'R', sp: XB_INSECT(4) }, { L: 'S', sp: XB_ANT }],
+          'P: insect with 2 wings. Q: 8 legs, no feelers. R: insect with 4 wings. S: insect with no wings'),
+        options: ['P', 'Q', 'R', 'S'],
+        answer: 2,
+        hints: ['2 pairs of wings means 4 wings. Count the wings on each animal.',
+               'P has 2 wings, R has 4 wings and S has none. Q has 8 legs and no feelers. Only R matches every clue.'],
+        explain: 'R has 3 body parts, 6 legs, 2 feelers and 4 wings (2 pairs). P is also an insect, but it has only 2 wings (1 pair). S has no wings. Q has 8 legs and no feelers, so it is not an insect at all.' },
+      { id: 'x17-liv-16', type: 'mcq', level: 2,
+        stem: 'The table shows some information about animals P, Q, R and S. Which of them are insects?',
+        figure: table(['Animal', 'Body parts', 'Legs', 'Feelers', 'Wings'],
+          [['P', '2', '8', '0', '0'], ['Q', '3', '6', '2', '0'], ['R', '3', '6', '2', '4'], ['S', 'many', 'about 30', '2', '0']]),
+        options: ['Q and R', 'R only', 'P and Q', 'Q, R and S'],
+        answer: 0,
+        hints: ['Look for 3 body parts AND 6 legs AND 2 feelers. Do not use wings to decide.',
+               'Q and R both have 3 body parts, 6 legs and 2 feelers. Q has no wings, but it is still an insect.'],
+        explain: 'Q and R both have 3 body parts, 6 legs and 1 pair of feelers, so they are insects. "R only" is the wings trap: some insects, like ants, have no wings. P has 8 legs (a spider) and S has many legs (a centipede); having feelers alone does not make S an insect.' },
+      { id: 'x17-liv-17', type: 'oeq', level: 3, marks: 2,
+        stem: 'Jun found animal X under a flower pot and drew it. He said, "X is not an insect, because it has no wings." Do you agree? Explain using the drawing.',
+        figure: xBugs([{ L: 'X', sp: XB_ANT }], 'Animal X: 3 body parts, 6 legs, 2 feelers, no wings'),
+        model: 'No, I do not agree. X has 3 body parts, 6 legs and 1 pair of feelers, so it is an insect. Not all insects have wings; for example, a worker ant has no wings.',
+        keys: [['do not agree', 'disagree', 'is an insect'], ['6 legs', 'six legs', '3 body parts', 'three body parts', 'feelers'], ['not all insects have wings', 'some insects have no wings', 'ant has no wings']],
+        hints: ['Count X\'s body parts, legs and feelers. Do all insects have wings?',
+               'X has 3 body parts, 6 legs and 2 feelers, which are what make an insect. Wings do not decide it: worker ants have no wings.'],
+        explain: 'Claim: X is an insect. Evidence from the drawing: 3 body parts, 6 legs, 1 pair of feelers. Reasoning: those are the characteristics of insects, and wings are not, because some insects have none. Markers want the counts taken from X, not a general list.' },
+      { id: 'x17-liv-18', type: 'mcq', level: 2,
+        stem: 'Faizal filled in this table about four animals. Which row has a mistake?',
+        figure: table(['Row', 'Animal', 'Body covering', 'Group'],
+          [['1', 'sparrow', 'feathers', 'bird'], ['2', 'toad', 'moist skin', 'amphibian'], ['3', 'house gecko', 'dry scaly skin', 'amphibian'], ['4', 'goldfish', 'scales', 'fish']]),
+        options: ['Row 1', 'Row 2', 'Row 3', 'Row 4'],
+        answer: 2,
+        hints: ['Match each body covering to its group. Which group has dry scaly skin?',
+               'Dry scaly skin belongs to reptiles. A house gecko (cicak) is a reptile, not an amphibian, so Row 3 is wrong.'],
+        explain: 'A house gecko has dry scaly skin and lays its eggs on land, so it is a reptile, like a lizard. Amphibians, such as the toad in Row 2, have moist skin. The sparrow (feathers, bird) and goldfish (scales, fish) are correct.' },
+      { id: 'x17-liv-19', type: 'oeq', level: 2, marks: 2,
+        stem: 'A crocodile and a frog both spend time in water and on land.\n(a) State one way in which they are similar. (1 mark)\n(b) State one way in which they are different. (1 mark)',
+        figure: null,
+        model: '(a) Both lay eggs. (Adults of both breathe through lungs.) (b) A crocodile has dry scaly skin, but a frog has moist skin. (A crocodile lays its eggs on land, but a frog lays its eggs in water.)',
+        keys: [['lay eggs', 'lungs'], ['dry scaly skin', 'moist skin', 'eggs on land', 'eggs in water']],
+        hints: ['A crocodile is a reptile and a frog is an amphibian. Think about how they reproduce and what their skin is like.',
+               'Similar: both lay eggs. Different: the crocodile has dry scaly skin, the frog has moist skin.'],
+        explain: 'Reptiles and amphibians both lay eggs, and the adults breathe through lungs. They differ in skin (dry scaly vs moist) and in where they lay eggs (on land vs in water). "Both live in water and on land" is in the question, so it earns no mark.' },
+
+      // ---- mould and bacteria set-ups (archetype 12) ----
+      { id: 'x17-liv-20', type: 'mcq', level: 1,
+        stem: 'Shanti sealed three slices of the same bread in plastic bags, P, Q and R, as shown. She sprinkled water on Q and R only. Which slice is most likely to have the most mould after 5 days?',
+        figure: xBags([
+          { L: 'P', place: 'cupboard', lines: ['dry'] },
+          { L: 'Q', place: 'cupboard', damp: true, lines: ['damp'] },
+          { L: 'R', place: 'fridge', damp: true, lines: ['damp'] }],
+          'Three sealed bags of bread: P dry in a cupboard, Q damp in a cupboard, R damp in a fridge'),
+        options: ['P', 'Q', 'R', 'All three will have the same amount.'],
+        answer: 1,
+        hints: ['Mould grows best where it is warm AND damp. Which bag has both?',
+               'P is warm but dry. R is damp but cold (fridge). Q is damp and warm (cupboard), so it will grow the most mould.'],
+        explain: 'Mould needs water and warmth to grow well. Q is damp and in a warm cupboard. P is warm but dry, so little mould grows. R is damp but in the cold fridge, where mould grows slowly.' },
+      { id: 'x17-liv-21', type: 'mcq', level: 3,
+        stem: 'Mrs Goh wants to find out if mould needs water to grow. She set up four sealed bags of bread, as shown. Which two set-ups should she compare?',
+        figure: XF_BAGS_PLAN,
+        options: ['A and D', 'A and B', 'A and C', 'B and C'],
+        answer: 3,
+        hints: ['A fair comparison changes ONLY the water. Find two bags that are the same in every other way: same place and same type of bread.',
+               'B and C are both white bread in the fridge. The only difference is that B is dry and C is damp. A and D also differ in the type of bread.'],
+        explain: 'B and C are both white bread kept in the fridge; only the water is different, so it is a fair test. A and D also differ in the type of bread (white vs wholemeal). A and B also differ in the place (cupboard vs fridge). A and C are both damp, so they test temperature, not water.' },
+      { id: 'x17-liv-22', type: 'oeq', level: 3, marks: 2,
+        stem: 'Kelvin sprinkled the same amount of water on two identical slices of bread and sealed each in a plastic bag. He kept bag P on the kitchen counter and bag Q in the fridge. After 5 days, he counted the mould spots. Explain why bag Q had fewer mould spots than bag P.',
+        figure: xBars({ yTitle: 'Number of mould spots', labels: ['P\n(kitchen counter)', 'Q\n(fridge)'], values: [20, 4], max: 20, step: 4, xTitle: 'Bag', label: 'Bar graph: bag P 20 mould spots, bag Q 4 mould spots' }),
+        model: 'Bag Q had only 4 mould spots, while bag P had 20. The fridge is cold, and mould grows more slowly in cold places than in warm places, so fewer mould spots grew on the bread in bag Q.',
+        keys: [['cold', 'fridge is cold'], ['grows more slowly', 'slowly', 'slower']],
+        hints: ['Both slices were damp. What was different about the place where bag Q was kept?',
+               'The fridge is cold. Mould grows more slowly in the cold, so Q had 4 spots and P had 20.'],
+        explain: 'Claim: the cold slowed the mould down. Evidence: 4 spots in the fridge against 20 on the counter. Reasoning: mould grows more slowly in cold places. Note that the fridge did not stop the mould: Q still grew 4 spots.' },
+      { id: 'x17-liv-23', type: 'mcq', level: 2,
+        stem: 'Priya kept two damp slices of the same bread in sealed bags on the same shelf. Bag J was in the open, in a room where the lights were on all day. Bag K was inside a black box next to it. The graph shows her results after 5 days. What can she conclude?',
+        figure: xBars({ yTitle: 'Number of mould spots', labels: ['J\n(in the light)', 'K\n(in the dark)'], values: [12, 14], max: 16, step: 2, xTitle: 'Bag', label: 'Bar graph: bag J in the light 12 mould spots, bag K in the dark 14 mould spots' }),
+        options: ['Mould needs light to grow.', 'Mould grows only in the dark.', 'Mould makes its own food using light.', 'Mould does not need light to grow.'],
+        answer: 3,
+        hints: ['Bag K got no light at all. Did mould still grow on it?',
+               'K, in the dark, grew 14 spots, about the same as J in the light (12). So mould does not need light.'],
+        explain: 'Bag K was in the dark and still grew 14 mould spots, about the same as bag J in the light, so light is not needed. "Only in the dark" is wrong because J grew mould in the light. Mould is a fungus: it cannot make its own food and takes in food from the bread.' },
+      { id: 'x17-liv-24', type: 'mcq', level: 2,
+        stem: 'Amir poured the same amount of fresh milk into three identical covered cups. At the start, the milk in each cup had 1 unit of bacteria. He kept the cups in three different places for one day. The kitchen was the warmest place and the fridge was the coldest. Which statement is correct?',
+        figure: xBars({ yTitle: 'Amount of bacteria (units)', labels: ['fridge', 'air-con\nroom', 'kitchen'], values: [4, 8, 20], max: 20, step: 4, xTitle: 'Where the cup was kept', label: 'Bar graph: fridge 4 units, air-con room 8 units, kitchen 20 units of bacteria' }),
+        options: ['Bacteria increase faster in warmer places.', 'Bacteria do not increase in the fridge.', 'Bacteria need light to increase.', 'The milk in the kitchen had no bacteria at the start.'],
+        answer: 0,
+        hints: ['All three cups started with 1 unit. Which cup had the most after a day, and how warm was its place?',
+               'The warmer the place, the more bacteria: fridge 4, air-con room 8, kitchen 20. Even the fridge cup went from 1 to 4.'],
+        explain: 'The warmer the place, the more the bacteria increased (4, then 8, then 20 units). The fridge cup still went from 1 to 4 units, so bacteria do increase in the cold, only more slowly. Light was not tested (the cups were covered), and every cup started with 1 unit.' },
+      { id: 'x17-liv-25', type: 'oeq', level: 2, marks: 2,
+        stem: 'Mei found fuzzy green and white patches on a slice of bread that had been left out for a week. Her brother Ravi said, "The patches are bacteria." Do you agree? Explain.',
+        figure: xSvg(220, 190, 'A slice of bread with fuzzy green and white patches', 300) + xSlice(110, 90, 2.0, { mould: 6, fuzzy: true }) +
+          '<text x="110" y="180" text-anchor="middle" font-size="14">Mei\'s bread after a week</text></svg>',
+        model: 'No, I do not agree. The fuzzy patches are mould, which is a fungus. Bacteria are too tiny to be seen without a microscope, but these mould patches can be seen with our eyes.',
+        keys: [['mould', 'fungus', 'fungi'], ['microscope', 'too tiny', 'too small to see']],
+        hints: ['Could you see bacteria on bread with your eyes alone?',
+               'Bacteria can only be seen with a microscope. Fuzzy patches you can see are mould, a fungus.'],
+        explain: 'Claim: the patches are mould (a fungus), not bacteria. Evidence: Mei could see them with her eyes. Reasoning: bacteria are too tiny to see without a microscope. Mould is a fungus that grows on food and reproduces by spores.' },
+      { id: 'x17-liv-26', type: 'mcq', level: 3,
+        stem: 'Daniel kept a pair of leather shoes in each of two identical cupboards in the same room. A moisture absorber takes in water from the air around it. Which statement best explains his results?',
+        figure: table(['Cupboard', 'Moisture absorber inside?', 'Leather shoes after 3 weeks'],
+          [['A', 'no', 'white fuzzy patches'], ['B', 'yes', 'no change']]),
+        options: ['The absorber made cupboard B colder, so no mould grew.', 'The absorber kept the air in B dry, and mould needs moisture to grow.', 'Cupboard A was darker, and mould needs darkness to grow.', 'The shoes in A made their own food, so mould grew on them.'],
+        answer: 1,
+        hints: ['The only difference between the cupboards is the absorber. What does an absorber take away?',
+               'The absorber takes water from the air, so cupboard B stayed dry. Mould needs moisture, so none grew on the shoes in B.'],
+        explain: 'Only the absorber was different. It took in water from the air, so cupboard B stayed dry, and mould needs moisture to grow. Both cupboards were in the same room, so the temperature and light were the same. Shoes cannot make food; the mould took in food from the leather.' },
+
+      // ---- which characteristic of living things (archetype 14, scenario and graph half) ----
+      { id: 'x17-liv-27', type: 'mcq', level: 2,
+        stem: 'Duckweed is a tiny plant that floats on water. Hana counted the duckweed plants in a tank in her school garden once a week. Which characteristic of living things does her graph show?',
+        figure: xLine({ yTitle: 'Number of duckweed plants', labels: ['0', '1', '2', '3', '4'], values: [10, 20, 40, 60, 80], max: 80, step: 10, xTitle: 'Week', label: 'Line graph: number of duckweed plants 10, 20, 40, 60, 80 in weeks 0 to 4' }),
+        options: ['Living things grow.', 'Living things reproduce.', 'Living things respond to changes.', 'Living things need air.'],
+        answer: 1,
+        hints: ['Read the label on the side of the graph. Is it the SIZE of a plant, or the NUMBER of plants?',
+               'The number of plants went up from 10 to 80. New duckweed plants were made, so the graph shows reproduction.'],
+        explain: 'The graph shows the NUMBER of duckweed plants rising from 10 to 80, so new plants of the same kind were being made: the duckweed reproduces. A graph of the size or height of one plant would show growth. Nothing in the graph shows a response or a need for air.' },
+      { id: 'x17-liv-28', type: 'mcq', level: 1,
+        stem: 'Wei weighed his kitten, Mochi, once a month. Which characteristic of living things does his graph show?',
+        figure: xLine({ yTitle: "Mochi's mass (g)", labels: ['0', '1', '2', '3', '4'], values: [500, 1000, 1500, 2000, 2500], max: 2500, step: 500, xTitle: 'Month', label: 'Line graph: kitten mass 500 g, 1000 g, 1500 g, 2000 g, 2500 g in months 0 to 4' }),
+        options: ['Living things reproduce.', 'Living things need water.', 'Living things grow.', 'Living things respond to changes.'],
+        answer: 2,
+        hints: ['The graph shows ONE kitten getting heavier. What is that called?',
+               'Mochi\'s mass went from 500 g to 2500 g. Getting bigger and heavier is growing.'],
+        explain: 'One kitten became heavier every month (500 g to 2500 g), so the graph shows that living things grow. Reproduction would be more kittens being born. The graph says nothing about water or changes around Mochi.' },
+      { id: 'x17-liv-29', type: 'mcq', level: 3,
+        stem: 'Thing T can move, needs air and gets bigger over time. Which ONE more observation would show that T is a living thing?',
+        figure: null,
+        options: ['T gives out heat and light.', 'T moves faster when the wind blows.', 'T gets bigger when more fuel is added.', 'T makes young ones of its own kind.'],
+        answer: 3,
+        hints: ['A fire can move, needs air and gets bigger. Which option could NOT be true of a fire?',
+               'A fire gives out heat and light, spreads in the wind and gets bigger with fuel, but it cannot make young ones of its own kind. Only living things reproduce.'],
+        explain: 'Every clue in the question, and three of the options, also fit a fire, which is non-living. Only reproducing (making young ones of its own kind) belongs to living things alone.' },
+      { id: 'x17-liv-30', type: 'oeq', level: 3, marks: 2,
+        stem: 'Wei kept a pet hamster and wrote down four observations, shown in the table.\n(a) Which observation shows that the hamster can reproduce? (1 mark)\n(b) Which characteristic of living things does observation 4 show? Explain. (1 mark)',
+        figure: table(['Observation', 'What Wei saw'],
+          [['1', 'Its mass went from 40&nbsp;g to 90&nbsp;g in two months.'], ['2', 'It drank water from its bottle every day.'], ['3', 'It gave birth to five babies.'], ['4', 'It ran into its tunnel when the dog barked.']]),
+        model: '(a) Observation 3: the hamster gave birth to five babies, which are young of its own kind. (b) Living things respond to changes: the hamster ran into its tunnel when it heard the dog bark.',
+        keys: [['observation 3'], ['respond']],
+        hints: ['(a) Reproduce means making young ones. (b) What changed around the hamster just before it ran?',
+               '(a) Observation 3 (five babies). (b) The dog barked (a change around it), and the hamster ran away: it responds to changes.'],
+        explain: 'Observation 1 shows growth, 2 shows a need for water, 3 shows reproduction and 4 shows a response to a change (the bark). In (b), name the characteristic and tie it to the bark: a bare "responds" earns less than "it ran into its tunnel when the dog barked".' }
     ]
   });
 })();

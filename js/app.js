@@ -25,9 +25,9 @@ let FEED=null;
 /* A mode may install its own question feed (Patchwerk draws across every unlocked
    topic for the chosen class level). Null = the normal single-topic quiz set. */
 let MODE_FEED=null;
-/* P3 Mock Paper: WEAK = the [{topic, skill}] a "practise my weak spots" run drills;
-   MOCK_MS = a debug-only paper length override; MOCK_BACK = where history returns to. */
-let WEAK=null, MOCK_MS=0, MOCK_BACK=null;
+/* P3 Mock Paper: MOCK_MS = a debug-only paper length override; MOCK_BACK = where
+   history returns to. (The old mock-report drill now lives in Power-Up, below.) */
+let MOCK_MS=0, MOCK_BACK=null;
 /* Every served item carries the topic it was drawn from (P3 Exam Readiness Audit §b):
    skill ids repeat across topics (compare, addsub, pattern, word), so a mixed
    session must record topic+skill, never the bare skill under the last topic drawn. */
@@ -67,6 +67,22 @@ DB.pwFame = Array.isArray(DB.pwFame) ? DB.pwFame : [];
 /* P3 Mock Paper history (js/modes/p3-mock.js): one summary row per finished paper. */
 DB.mockPapers = Array.isArray(DB.mockPapers) ? DB.mockPapers : [];
 if(!GRADES.includes(DB.grade)) DB.grade='P3';
+/* Power-Up meters (2026-10-17, the maths follow-on to science Power-Up). One entry per
+   "<topic>|<skill>" group, the skill being the sub-skill each generator is filed under
+   in its topic's pools: { s: 0-2 rights in a row, full, m: misses, r: rights,
+   lm: the latest answer was a miss, lv: the pool it was missed at, t }.
+   An older save has no map: it is seeded ONCE from the session tallies the parents
+   corner already keeps, so the misses she has already made put their groups in rotation. */
+if(!DB.power || typeof DB.power!=='object' || Array.isArray(DB.power)){
+  DB.power={};
+  DB.sessions.forEach(s=>{
+    for(const tp in (s.tally||{})) for(const sk in s.tally[tp]){
+      const c=s.tally[tp][sk]||{}, k=tp+'|'+sk;
+      const p=DB.power[k]||(DB.power[k]={ s:0, full:false, m:0, r:0, lm:false, lv:2, t:0 });
+      p.m+=c.w||0; p.r+=c.r||0; p.t=Math.max(p.t, s.t||0);
+    }
+  });
+}
 
 /* ---------------- Sound ---------------- */
 let AC=null, muted=!!DB.muted;
@@ -160,7 +176,6 @@ $('modePatch').addEventListener('click',()=>{ DB.gameMode='patchwerk'; DB.timed=
 function renderMap(){
   const mp=$('mapPath'); mp.innerHTML='';
   $('mapSub').textContent='Quests for '+DB.grade+'. Where will you adventure today?';
-  WEAK=null;
   /* P3 exam rehearsal sits at the top of the P3 map, above the islands. */
   if(DB.grade==='P3' && MQI.modes['p3-mock']){
     const c=document.createElement('div');
@@ -174,6 +189,17 @@ function renderMap(){
       '<a class="mkHist" id="mkSciLink" href="/science">🔬 Science Quest</a>';
     c.querySelectorAll('.mkGo').forEach(b=>b.addEventListener('click',()=>newMockGame(b.dataset.v)));
     c.querySelector('.mkHist').addEventListener('click',()=>renderMockHistory('mapScreen'));
+    mp.appendChild(c);
+  }
+  /* Power-Up sits under the mock: the P3 exam pool, so it shows on the P3 map only */
+  if(DB.grade==='P3' && powerGroups().length){
+    const rot=powerRotation(), pk=powerKeys().slice(0,9);
+    const c=document.createElement('div');
+    c.className='puCard';
+    c.innerHTML='<button class="puGo" id="puGo"><span class="puEm">⚡</span><span><b>Power-Up</b><small>'+
+      (rot.length ? 'Let\'s power up '+esc(pq(rot[0].k))+'!' : 'Keep your powers charged with a mixed review round.')+'</small></span></button>'+
+      (pk.length ? '<div class="puMine"><h4>⚡ My powers</h4>'+powersHTML(pk)+'</div>' : '');
+    c.querySelector('.puGo').addEventListener('click',startPower);
     mp.appendChild(c);
   }
   MAP_NODES.filter(n=>n.grades.includes(DB.grade)).forEach((n,i)=>{
@@ -190,12 +216,11 @@ function renderMap(){
 
 /* ----- battle ----- */
 function newGame(){
-  if(WEAK){ TOPIC=WEAK[0].topic; }
-  else if(DB.gameMode==='patchwerk'){ newPatchwerkGame(); return; }
+  if(DB.gameMode==='patchwerk'){ newPatchwerkGame(); return; }
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
   MODE_FEED=null;
   QSET=null;
-  FEED=WEAK ? weakFeed(WEAK) : MQI.createFeed(TOPIC);
+  FEED=MQI.createFeed(TOPIC);
   S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
       rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
       wrongs:[], skills:{}, busy:false, t0:Date.now(), timed:DB.timed };
@@ -222,7 +247,7 @@ function newGame(){
      The post-answer banners are deliberately NOT delayed: CRITICAL HIT is a reward
      that should ride over the next question, and now that it has its own band it can
      do that without covering a word of it. */
-  banner(WEAK ? '🎯 Weak spots! ⭐' : TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
+  banner(TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
   setTimeout(nextQuestion,950);
 }
 /* ---------------- Patchwerk (js/modes/patchwerk.js) ---------------- */
@@ -383,7 +408,6 @@ function mockNodes(){
 function newMockGame(variant, resume){
   const mode=MQI.modes['p3-mock'];
   if(!mode) return;
-  WEAK=null;
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
   const fmt=mode.config.FORMATS[resume?resume.paper.variant:variant]||mode.config.FORMATS.quick;
   const feeds={};
@@ -572,12 +596,11 @@ function renderMockReport(rec){
   $('mkSections').innerHTML=rec.sections.map(s=>'<div class="statBox"><div class="v">'+s.got+'/'+s.total+'</div><div class="k">'+s.name+'</div></div>').join('');
   $('mkTopics').innerHTML=rec.byTopic.map(x=>mkBarRow(x.label,(x.total?Math.round(x.got/x.total*100):0)+'%',x.got,x.total)).join('');
   $('mkSkills').innerHTML=rec.bySkill.map(x=>mkBarRow(x.label,x.topicLabel,x.got,x.total)).join('');
-  const wb=$('mkWeakBtn');
-  if(rec.weakSkills.length){
-    wb.style.display='';
-    wb.innerHTML='🎯 Practise my weak spots<small>'+rec.weakSkills.map(s=>esc(s.label)).join(' · ')+'</small>';
-    wb.onclick=()=>{ WEAK=rec.weakSkills.map(s=>({ topic:s.topic, skill:s.skill })); newGame(); };
-  } else wb.style.display='none';
+  /* Power-Up, not a separate drill: the paper's misses were charged into the meters at
+     hand-in (endMock -> recSkill), so the rotation already leads with what this paper showed */
+  const wb=$('mkPowerBtn'), rot=powerRotation();
+  wb.innerHTML='⚡ Power-Up<small>'+(rot.length ? 'Let\'s power up '+esc(pq(rot[0].k))+'!' : 'Keep your powers charged with a mixed review round.')+'</small>';
+  wb.onclick=startPower;
   const miss=rec.review.filter(r=>!r.correct);
   $('mkReview').innerHTML = miss.length ? miss.map(r=>{
     const q=r.q;
@@ -593,39 +616,272 @@ function renderMockHistory(backTo){
   MOCK_BACK=backTo||null;
   const ps=DB.mockPapers.slice().reverse();
   $('mkHistTable').innerHTML = ps.length
-    ? '<tr><th>Date</th><th>Paper</th><th>Score</th><th>Weakest topics</th></tr>'+
+    ? '<tr><th>Date</th><th>Paper</th><th>Score</th><th>Topics to power up</th></tr>'+
       ps.map(p=>'<tr><td>'+fmtDate(p.t)+'</td><td>'+esc(({full:'Full',long:'Long',quick:'Quick'})[p.variant]||'Quick')+'</td><td>'+
         p.marks+'/'+p.total+' <small>('+p.pct+'%)</small></td><td>'+
         (p.weakTopics&&p.weakTopics.length?p.weakTopics.map(esc).join(', '):'none')+'</td></tr>').join('')
     : '<tr><td style="text-align:center;padding:10px">No papers yet. Try a Quick paper from the P3 map.</td></tr>';
   show('mockHistScreen');
 }
-/* the drill behind "Practise my weak spots": the two skills alternate, each drawn
-   only from its own topic's generators for that skill */
-function weakFeed(pairs){
-  const per=pairs.map(p=>{
-    const t=TOPICS[p.topic], pools={};
-    for(const L of [1,2,3]) pools[L]=t ? t.pools[L].filter(pr=>pr[1]===p.skill) : [];
-    return { p, pools };
-  }).filter(e=>e.pools[1].length||e.pools[2].length||e.pools[3].length);
-  let k=0, lastGen=null;
-  const seen=new Set();
-  return { next(level){
-    const e=per[k++ % per.length];
-    let pool=null;
-    for(const L of [level,2,1,3]) if(e.pools[L] && e.pools[L].length){ pool=e.pools[L]; break; }
-    let q=null, g=null;
-    for(let t=0;t<12;t++){
-      const pr=pick(pool);
-      if(pr[0]===lastGen && pool.length>1 && t<6) continue;
-      q=pr[0](); g=pr[0]; q.skill=pr[1];
-      const key=q.q+'|'+(q.extra||'')+'|'+(q.typed?q.answer:(q.choices||[]).slice().sort().join(''));
-      if(seen.has(key) && t<11) continue;
-      seen.add(key); break;
-    }
-    lastGen=g; q.level=level; q.topic=e.p.topic;
-    return q;
-  } };
+/* ---------------- Power-Up (2026-10-17) ----------------
+   The maths twin of science Power-Up, and the rework of the mock report's old two-skill
+   drill (weakFeed), which it replaces. Kev: "something that focuses on the area that they
+   are not strong at to reinforce", without demoralising.
+   - A GROUP is one sub-skill of one P3 exam topic ("<topic>|<skill>", the skill each
+     generator is filed under in its topic's pools). The pool is the mock paper's: every
+     live P3 node (mockNodes), so P4+ islands never appear.
+   - The ROTATION is every group she has missed whose meter is not full, most-missed first.
+   - A ROUND is 5-8 items: 1-2 warm-ups from groups she has got right before, then FRESH
+     draws from the lead group's generators (easier first), then 2 from the second group.
+     Generators are cheap, so "fresh first" is a new draw every time; nothing re-serves the
+     exact missed instance.
+   - The METER: two rights in a row fill it. A miss anywhere (quest, Patchwerk, a mock
+     paper at hand-in) empties it and puts the group back in rotation. Charged in
+     recSkill, the one place every answered item already passes through.
+   - The CLOSE says what she powered up and the next step. No score, no % and no count
+     of misses, and nothing is ever red. */
+let PU_GROUPS=null;
+function powerGroups(){
+  if(PU_GROUPS) return PU_GROUPS;
+  const out=[], byLabel={};
+  mockNodes().forEach(n=>{
+    const t=TOPICS[n.id]; if(!t || !t.pools) return;
+    Object.keys(t.skills||{}).forEach(sk=>{
+      const lv=[1,2,3].filter(L=>(t.pools[L]||[]).some(pr=>pr[1]===sk));
+      if(!lv.length) return;
+      const node=MQI.mapNodes.find(m=>m.id===n.id);
+      const g={ k:n.id+'|'+sk, topic:n.id, skill:sk, levels:lv,
+                label:(t.skills[sk]&&t.skills[sk].label)||sk, island:(node&&node.name)||t.short||n.id };
+      (byLabel[g.label]=byLabel[g.label]||[]).push(g); out.push(g);
+    });
+  });
+  /* two islands share a sub-skill name (Number patterns): say which island */
+  for(const l in byLabel) if(byLabel[l].length>1) byLabel[l].forEach(g=>{ g.label=l+' ('+g.island+')'; });
+  PU_GROUPS=out;
+  return out;
+}
+function pgroup(k){ return powerGroups().find(g=>g.k===k)||null; }
+function pname(k){ const g=pgroup(k); return g ? g.label : k; }
+/* the name inside a sentence: quote names that carry a comma, a "?" or their own "and"
+   (science refuter R1-R3, R5): Next time: “Guess and check, work backwards”. */
+function pq(k){ const n=pname(k); return /[,?]| and /.test(n) ? '“'+n+'”' : n; }
+function pstate(k){ const p=DB.power[k]; return p ? { s:p.s||0, full:!!p.full } : { s:0, full:false }; }
+function charge(topic, skill, right, level){
+  if(!topic || !skill) return;
+  if(!DB.power || typeof DB.power!=='object') DB.power={};
+  const k=topic+'|'+skill;
+  const p=DB.power[k]||(DB.power[k]={ s:0, full:false, m:0, r:0, lm:false, lv:2, t:0 });
+  if(right){ p.r=(p.r||0)+1; p.s=Math.min(2,(p.s||0)+1); if(p.s>=2) p.full=true; p.lm=false; }
+  else { p.m=(p.m||0)+1; p.s=0; p.full=false; p.lm=true; p.lv=Math.min(3,Math.max(1,level||2)); }
+  p.t=Date.now();
+}
+/* the groups in rotation, most-missed first: missed at some point, and not fully charged */
+function powerRotation(){
+  const out=[];
+  powerGroups().forEach(g=>{
+    const p=DB.power[g.k]; if(!p || !(p.m>0) || p.full) return;
+    out.push({ k:g.k, g, need:p.m+(p.lm?2:0), lm:!!p.lm, t:p.t||0 });
+  });
+  out.sort((a,b)=>(b.need-a.need)||((b.lm?1:0)-(a.lm?1:0))||(b.t-a.t)||(a.k<b.k?-1:1));
+  return out;
+}
+function puShuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+/* one fresh draw from a group's own generators, at the pool asked for (else the nearest
+   one that has the skill). ctx.seen keeps a round free of repeats; ctx.gens prefers a
+   generator the round has not used yet, so five draws are five different shapes. */
+function powerDraw(g, level, ctx){
+  const t=TOPICS[g.topic]; if(!t) return null;
+  let pool=null, at=level;
+  for(const L of [level,2,1,3]){ const pl=(t.pools[L]||[]).filter(pr=>pr[1]===g.skill); if(pl.length){ pool=pl; at=L; break; } }
+  if(!pool) return null;
+  let q=null, fn=null;
+  for(let n=0;n<12;n++){
+    const pr=pick(pool);
+    if(ctx.gens.has(pr[0]) && pool.some(x=>!ctx.gens.has(x[0])) && n<6) continue;
+    q=pr[0](); fn=pr[0]; q.skill=pr[1];
+    const key=q.q+'|'+(q.extra||'')+'|'+(q.typed?q.answer:(q.choices||[]).slice().sort().join(''));
+    if(ctx.seen.has(key) && n<11) continue;
+    ctx.seen.add(key); break;
+  }
+  if(!q) return null;
+  ctx.gens.add(fn);
+  q.level=at; q.topic=g.topic;
+  return { q, k:g.k };
+}
+/* warm-ups: fresh easy draws from groups she has got right before (her lead island
+   first), else easy groups she has not tried yet */
+function powerWarmups(lead, n, inRot, ctx){
+  const near=g=>g.topic===lead.g.topic?0:1;
+  const free=powerGroups().filter(g=>!inRot[g.k]);
+  const known=puShuffle(free.filter(g=>DB.power[g.k] && DB.power[g.k].r>0)).sort((a,b)=>(near(a)-near(b))||(a.levels[0]-b.levels[0]));
+  const easy=puShuffle(free.filter(g=>!DB.power[g.k] && g.levels[0]===1)).sort((a,b)=>near(a)-near(b));
+  const out=[];
+  for(const g of known.concat(easy)){ if(out.length>=n) break; const it=powerDraw(g,1,ctx); if(it) out.push(it); }
+  return out;
+}
+/* "Keep your powers charged": a mixed review, one draw per group, oldest-practised first,
+   a new island each time until every island has had a turn */
+function powerReview(n, ctx, skip){
+  const gs=puShuffle(powerGroups().filter(g=>!(skip&&skip[g.k])))
+    .sort((a,b)=>((DB.power[a.k]||{}).t||0)-((DB.power[b.k]||{}).t||0));
+  const pickd=[], isl={};
+  for(const pass of [0,1]) for(const g of gs){
+    if(pickd.length>=n) break;
+    if(pickd.indexOf(g)!==-1 || (pass===0 && isl[g.topic])) continue;
+    isl[g.topic]=1; pickd.push(g);
+  }
+  return pickd.map(g=>powerDraw(g, (DB.power[g.k]&&DB.power[g.k].r>0)?2:1, ctx)).filter(Boolean)
+    .sort((a,b)=>a.q.level-b.q.level);
+}
+/* one round of 5-8: warm-ups, then the lead group, then a second group if there is one */
+function powerRound(){
+  const rot=powerRotation(), ctx={ seen:new Set(), gens:new Set() };
+  if(!rot.length) return { items:powerReview(6,ctx), warm:0, keys:[], review:true };
+  const lead=rot[0], second=rot[1]||null, inRot={};
+  rot.forEach(r=>{ inRot[r.k]=1; });
+  const targets=(r,n)=>{ const lv=(DB.power[r.k]&&DB.power[r.k].lv)||2, out=[];
+    ctx.gens=new Set();
+    for(let i=0;i<n;i++){ const it=powerDraw(r.g, i===0&&lv>1?lv-1:lv, ctx); if(it) out.push(it); }
+    return out; };
+  const t1=targets(lead, second?4:5), t2=second?targets(second,2):[];
+  ctx.gens=new Set();
+  const warm=powerWarmups(lead, t1.length+t2.length>=4?2:1, inRot, ctx);
+  let items=warm.concat(t1,t2);
+  if(items.length<5){ const have={}; items.forEach(it=>{ have[it.k]=1; }); items=items.concat(powerReview(5-items.length,ctx,have)); }
+  return { items:items.slice(0,8), warm:warm.length, keys:[lead.k].concat(second?[second.k]:[]), review:false };
+}
+function battHTML(k){
+  const p=pstate(k);
+  return '<span class="batt'+(p.full?' full':'')+'" role="img" aria-label="'+(p.full?'fully charged':p.s?'charging':'ready to charge')+'">'+
+    '<i class="'+(p.full||p.s>=1?'on':'')+'"></i><i class="'+(p.full||p.s>=2?'on':'')+'"></i></span>';
+}
+function powersHTML(keys){
+  return '<ul class="powers">'+keys.map(k=>{ const p=pstate(k);
+    return '<li class="'+(p.full?'full':'')+'">'+battHTML(k)+esc(pname(k))+(p.full?'<small>⚡ fully charged</small>':'')+'</li>'; }).join('')+'</ul>';
+}
+/* every group in rotation or charging or charged, for the map's "My powers" row */
+function powerKeys(){
+  const seen={}, out=[];
+  powerRotation().forEach(r=>{ seen[r.k]=1; out.push(r.k); });
+  powerGroups().forEach(g=>{ const p=DB.power[g.k]; if(!seen[g.k] && p && (p.s>0 || p.full)){ seen[g.k]=1; out.push(g.k); } });
+  return out;
+}
+function andList(a){
+  if(a.length>3) return a.slice(0,2).join(', ')+' and '+(a.length-2)+' more';
+  return a.length<2 ? a.join('') : a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+}
+function startPower(){
+  const r=powerRound(), p0={};
+  if(!r.items.length) return;
+  powerGroups().forEach(g=>{ if(DB.power[g.k]) p0[g.k]=pstate(g.k); });
+  DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
+  stopQTimer();
+  if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
+  QSET=null; FEED=null;
+  MODE_FEED=function(){
+    const it=S && S.pu && S.pu.items[S.pu.i];
+    if(!it) return Q;
+    TOPIC=it.q.topic; S.level=it.q.level||1;
+    return it.q;
+  };
+  S={ heroHp:HERO_MAX, mi:0, mHp:MONSTERS[0].hp, level:1, streak:0,
+      rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
+      wrongs:[], skills:{}, busy:true, t0:Date.now(), timed:false, power:true,
+      pu:{ items:r.items, i:0, warm:r.warm, keys:r.keys, review:r.review, p0, wait:false } };
+  document.body.setAttribute('data-mode-theme','mode-power');
+  $('timerWrap').classList.remove('on');
+  $('runClock').textContent=''; $('streakBox').textContent='';
+  $('monsterDots').innerHTML=''; $('feedback').innerHTML='';
+  $('qtext').innerHTML=''; $('qextra').innerHTML=''; $('answers').innerHTML='';
+  $('typedWrap').style.display='none';
+  $('puBar').classList.remove('on');
+  $('modeHud').innerHTML='';
+  show('battleScreen');
+  banner(r.review?'⚡ Keep your powers charged! ⭐':'⚡ Power-Up! ⭐',900);
+  setTimeout(nextQuestion,950);
+}
+function powerHud(){
+  const u=S.pu, it=u.items[u.i]; if(!it) return;
+  $('modeHud').innerHTML='<div class="pu-hud"><span class="pu-t">'+(u.review?'⚡ Keep your powers charged':'⚡ Power-Up')+'</span>'+
+    '<span class="pu-q">'+(u.i<u.warm?'Warm-up · ':'')+'Question '+(u.i+1)+' of '+u.items.length+'</span>'+
+    '<span class="pchip">'+battHTML(it.k)+esc(pname(it.k))+'</span></div>';
+}
+/* One answer inside Power-Up. A right one charges and moves on; a miss keeps the
+   quest's own feedback (the unit card, the worked explain) with credit first and the
+   answer last, in a warm colour, and waits for her to tap Next. */
+function powerAnswer(right, btn){
+  const u=S.pu, it=u.items[u.i];
+  if(!it) return;
+  S.total++;
+  if(right){ S.correct++; S.streak++; S.best=Math.max(S.best,S.streak); } else S.streak=0;
+  S.maxLevel=Math.max(S.maxLevel, Q.level||1);
+  recSkill(Q.skill,right);            /* charges the meter too */
+  saveData();
+  lockButtons();
+  if(!right && btn){ btn.classList.remove('dim'); btn.classList.add('pick'); }
+  powerHud();
+  u.wait=true;
+  if(right){
+    sfx.correct();
+    $('feedback').innerHTML='<span class="ok">⚡ '+esc(pq(it.k))+(pstate(it.k).full?' is fully charged!':' is charging up!')+'</span>';
+    setTimeout(powerNext,1500);
+  } else {
+    const lead=Q.typed ? unitLead($('typedInput').value.trim(), Q) : '';
+    S.wrongs.push({q:Q.q+figHtml(Q), a:Q.answerText, ex:Q.explain, skill:Q.skill});
+    $('feedback').innerHTML='<span class="no coach">'+(lead||'🌱 Good try! ')+(Q.explain||'')+
+      (Q.typed?' The answer is <b>'+Q.answerText+'</b>.':'')+'</span>';
+    $('puNext').textContent = u.i>=u.items.length-1 ? 'Finish my Power-Up ▶' : 'Next ▶';
+    $('puBar').classList.add('on');
+    setTimeout(()=>{ try{ $('puNext').focus(); }catch(e){} },60);
+  }
+}
+function powerNext(){
+  if(!S || !S.power || !S.pu.wait) return;
+  S.pu.wait=false;
+  $('puBar').classList.remove('on');
+  S.pu.i++;
+  if(S.pu.i>=S.pu.items.length){ endPower(); return; }
+  nextQuestion();
+}
+function endPower(){
+  MODE_FEED=null;
+  document.body.removeAttribute('data-mode-theme');
+  $('modeHud').innerHTML='';
+  /* the parents corner reads this row through the same topic-true tally as a quest */
+  DB.sessions.push({ t:Date.now(), topic:null, won:true, correct:S.correct, total:S.total, best:S.best,
+    crystals:0, maxLevel:S.maxLevel, skills:S.skills, tally:S.tally||{}, ms:Date.now()-S.t0,
+    timed:false, mode:'power', wrongs:S.wrongs.slice(0,10) });
+  if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
+  saveData();
+  sfx.win();
+  renderPowerClose();
+}
+/* Power-Up close: what she powered up, and the next step. No score, no count of misses. */
+function renderPowerClose(){
+  const u=S.pu, keys=[], seen={}, up=[], full=[];
+  /* a targeted round talks about its targets (the warm-ups were there for confidence); a review talks about all of it */
+  u.items.forEach((it,j)=>{ if(!seen[it.k] && (u.review || j>=u.warm)){ seen[it.k]=1; keys.push(it.k); } });
+  keys.forEach(k=>{
+    const b=u.p0[k]||{ s:0, full:false }, a=pstate(k);
+    if(a.full && !b.full) full.push(k);
+    if((a.full && !b.full) || a.s>b.s || (u.review && a.full)) up.push(k);
+  });
+  const lead=u.keys.length ? u.keys : keys.slice(0,2);
+  const nextRot=powerRotation(), nk=nextRot.length ? nextRot[0].k : null;
+  const firstEver=u.review && !Object.keys(u.p0).length;
+  const said = up.length ? (u.review && !firstEver ? 'You kept '+andList(up.map(pq))+' charged today.' : 'You powered up '+andList(up.map(pq))+' today.')
+                         : 'You worked on '+andList(lead.map(pq))+' today. Every go builds your power.';
+  const nextLine = nk ? 'Next time: '+pq(nk)+'.' : 'Next time: a mixed round to keep your powers charged.';
+  $('puEyebrow').textContent = u.review ? '⚡ Power-Up · Keep your powers charged' : '⚡ Power-Up';
+  $('puTitle').textContent = full.length ? '🌟 Powered up!' : '🌱 Nice work!';
+  $('puSaid').textContent = '✨ '+said;
+  const w=$('puWell');
+  w.textContent = full.length ? '⚡ '+andList(full.map(pq))+(full.length===1?' is':' are')+' fully charged.' : '';
+  w.style.display = full.length ? '' : 'none';
+  $('puPowers').innerHTML = powersHTML(keys);
+  $('puNextLine').textContent = '➡️ '+nextLine;
+  show('powerScreen');
+  $('powerScreen').scrollTop=0;
 }
 
 function renderDots(){
@@ -809,6 +1065,7 @@ function nextQuestion(){
   S.busy=false;
   S.qAt=Date.now();
   if(S.timed) startQTimer();
+  if(S.power){ $('puBar').classList.remove('on'); powerHud(); }
   if(S.mock){
     const a=mockActive(), ans=a && a.mode._answers[a.mode._i];
     if(Q.typed && ans && ans.raw!=null) $('typedInput').value=ans.raw;
@@ -831,6 +1088,9 @@ function recSkill(skill,right){
   if(!S.tally[tp]) S.tally[tp]={};
   if(!S.tally[tp][skill]) S.tally[tp][skill]={r:0,w:0};
   S.tally[tp][skill][right?'r':'w']++;
+  /* the Power-Up meter rides the same choke point: quests, Patchwerk, Power-Up and a
+     mock paper's hand-in all charge (or empty) it here */
+  charge(tp, skill, right, Q && Q.level);
 }
 function monsterCounterattack(){
   $('monsterSprite').classList.add('lungeL');
@@ -946,6 +1206,7 @@ function answer(i,btn){
     return;
   }
   if(S.mock){ mockPick(i); return; }
+  if(S.power){ powerAnswer(right, btn); return; }
   S.total++;
   recSkill(Q.skill,right);
   lockButtons();
@@ -966,6 +1227,7 @@ function answerTyped(){
   const right = MQI.gradeTyped(v, Q);
   $('typedInput').disabled=true;
   if(S.patchwerk){ pwResolve(right); return; }
+  if(S.power){ powerAnswer(right); return; }
   S.total++;
   recSkill(Q.skill,right);
   resolve(right);
@@ -1001,10 +1263,10 @@ function endGame(win){
   if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
   const ms=Date.now()-S.t0;
   DB.sessions.push({
-    t:Date.now(), topic:WEAK?null:TOPIC, won:win, correct:S.correct, total:S.total,
+    t:Date.now(), topic:TOPIC, won:win, correct:S.correct, total:S.total,
     best:S.best, crystals:S.mi, maxLevel:S.maxLevel, skills:S.skills,
     ms, timed:S.timed, wrongs:S.wrongs.slice(0,10), tally:S.tally||{},
-    mode:WEAK?'weakspots':(S.timed?'timed':'relax')
+    mode:S.timed?'timed':'relax'
   });
   if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
 
@@ -1031,7 +1293,7 @@ function endGame(win){
   $('endEmoji').textContent=win?'🏆':'💪';
   $('endTitle').textContent=win?'VICTORY!':'So close, '+esc(DB.name)+'!';
   let msg = win
-    ? esc(DB.name)+' the '+avClass()+' saved all 6 Star Crystals of '+(WEAK?'the weak spots':TOPICS[TOPIC].label)+'!'
+    ? esc(DB.name)+' the '+avClass()+' saved all 6 Star Crystals of '+TOPICS[TOPIC].label+'!'
     : 'You rescued '+S.mi+' crystal'+(S.mi===1?'':'s')+' this time. Every battle makes your magic stronger. Try again!';
   if(win && fameRank===0) msg+=' 🥇 NEW RECORD, fastest run ever!';
   else if(win && fameRank>0) msg+=' You made the Hall of Fame at #'+(fameRank+1)+'!';
@@ -1168,12 +1430,12 @@ function renderParent(){
   const focus=rows.filter(r=>r.n>=4 && r.pct<75).slice(0,3);
   $('focusList').innerHTML = focus.length
     ? focus.map(r=>'<div class="focus"><b>'+r.label+'</b> ('+r.tlabel+'): '+r.pct+'% over '+r.n+' questions.<br>'+r.tip+'</div>').join('')
-    : (rows.length? '<div style="color:#7dffb0;font-size:15px;text-align:center">No weak areas detected right now: accuracy is solid across skills. 🎉</div>'
+    : (rows.length? '<div style="color:#7dffb0;font-size:15px;text-align:center">Nothing needs extra focus right now: accuracy is solid across skills. 🎉</div>'
                    : '<div style="color:#a99fd8;font-size:14px">Play a few sessions first.</div>');
 
   const recent=ss.slice(-10).reverse();
   $('histTable').innerHTML='<tr><th>Date</th><th>Land</th><th>Mode</th><th>Result</th><th>Score</th><th>Acc</th><th>Time</th></tr>'+
-    recent.map(s=>'<tr><td>'+fmtDate(s.t)+'</td><td>'+(TOPICS[s.topic]?TOPICS[s.topic].e:'🗺️')+'</td><td>'+({patchwerk:'💀',mock:'📝',weakspots:'🎯'}[s.mode]||(s.timed?'⏱️':'🌙'))+'</td><td>'+
+    recent.map(s=>'<tr><td>'+fmtDate(s.t)+'</td><td>'+(TOPICS[s.topic]?TOPICS[s.topic].e:'🗺️')+'</td><td>'+({patchwerk:'💀',mock:'📝',power:'⚡',weakspots:'⚡'}[s.mode]||(s.timed?'⏱️':'🌙'))+'</td><td>'+
       (s.won?'🏆':'💪')+'</td><td>'+s.correct+'/'+s.total+'</td><td>'+
       (s.total?Math.round(s.correct/s.total*100):0)+'%</td><td>'+(s.ms?fmtMs(s.ms):'-')+'</td></tr>').join('');
 
@@ -1317,6 +1579,10 @@ MQI.boot = function () {
   $('mkMapBtn').addEventListener('click',()=>{ DB.grade='P3'; saveData(); renderMap(); });
   $('mkHomeBtn').addEventListener('click',()=>{ renderStart(); show('startScreen'); });
   $('parentMockBtn').addEventListener('click',()=>renderMockHistory('parentScreen'));
+  $('puNext').addEventListener('click',powerNext);
+  $('puAgainBtn').addEventListener('click',startPower);
+  $('puMapBtn').addEventListener('click',()=>{ DB.grade='P3'; saveData(); renderMap(); });
+  $('puHomeBtn').addEventListener('click',()=>{ renderStart(); show('startScreen'); });
   $('mkHistBackBtn').addEventListener('click',()=>{
     if(MOCK_BACK==='parentScreen') renderParent();
     else if(MOCK_BACK==='mapScreen') renderMap();

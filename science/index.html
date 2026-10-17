@@ -73,7 +73,23 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .big2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px}
 .tile.wide{flex-direction:row;align-items:center;gap:14px;background:var(--gold-soft);border-color:var(--gold)}
 .badge{display:inline-block;background:var(--plum-soft);color:var(--ink);border-radius:99px;padding:1px 8px}
-.tile.wide.weak{background:var(--rose-soft);border-color:var(--rose)}
+.tile.wide.alt{background:var(--rose-soft);border-color:var(--rose)}
+/* Power-Up (2026-10-17): charge, not failure. Batteries fill teal and glow gold when full; never red, never a % */
+.tile.wide.power{background:var(--teal-soft);border-color:var(--teal)}
+.batt{display:inline-flex;align-items:center;gap:3px;padding:3px 5px 3px 4px;border:2px solid var(--ink-soft);border-radius:7px;position:relative;margin-right:6px;vertical-align:middle;flex:none}
+.batt::after{content:"";position:absolute;right:-6px;top:50%;width:4px;height:9px;transform:translateY(-50%);background:var(--ink-soft);border-radius:0 3px 3px 0}
+.batt i{display:block;width:13px;height:14px;border-radius:3px;background:var(--line)}
+.batt i.on{background:var(--teal)}
+.batt.full{border-color:var(--gold)}
+.batt.full::after{background:var(--gold)}
+.batt.full i{background:var(--gold)}
+.powers{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0;padding:0;list-style:none}
+.powers li{display:inline-flex;align-items:center;gap:4px;border:2px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px 4px 8px;font-weight:700;font-size:.9rem}
+.powers li.full{border-color:var(--gold);background:var(--gold-soft)}
+.powers li small{color:var(--ink-soft);font-weight:700;margin-left:4px}
+.pchip{display:inline-flex;align-items:center;gap:2px;text-transform:none;letter-spacing:.02em}
+.pclose{font-size:1.15rem;margin:6px 0 4px}
+.pnext{font-size:1.1rem;margin:4px 0 14px;color:var(--ink)}
 .tile.wide .em{font-size:2.4rem}
 .tile.wide p{margin:2px 0 0;color:var(--ink-soft);font-size:.92rem}
 .section{margin-top:20px}
@@ -294,7 +310,7 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
         });
         var topic = { id: t.id, title: str(t.title) ? t.title : t.id, emoji: str(t.emoji) ? t.emoji : '🔬',
           theme: str(t.theme) ? t.theme : '', extra: t.extra === true || t.id === 'plant-parts',
-          hidden: t.hidden === true,   /* off the child's path: no home tile, mock, weak spots; parent page P4 section only */
+          hidden: t.hidden === true,   /* off the child's path: no home tile, mock, Power-Up; parent page P4 section only */
           moeRef: str(t.moeRef) ? t.moeRef : '',
           notes: (Array.isArray(t.notes) ? t.notes : []).filter(function (n) { return n && (str(n.title) || str(n.body)); }),
           items: clean };
@@ -324,18 +340,36 @@ var EXAM_DATE = new Date(2026, 9, 27);
 var view = document.getElementById('view');
 
 /* ---------- storage (per-viewer, try/catch-wrapped) ---------- */
-function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full' }; }
+/* power (Power-Up, 2026-10-17): { <technique, or 'topic:<id>' for an item without one>: { s: 0-2 clean rights in a row, full, t } }.
+   Same key, same v: 1 store; an older save simply gets an empty power map from fresh(). */
+function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full', power: {} }; }
 function load() {
   try { var s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && s.items) return Object.assign(fresh(), s); } catch (e) {}
   return fresh();
 }
 var S = load();
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
-function record(it, score) {
+/* hinted: she used the nudge (an MCQ first miss, or the OEQ hint button). r.h counts those, r.lh is the latest try. */
+function record(it, score, hinted) {
   var r = S.items[it.id] || (S.items[it.id] = { a: 0, c: 0, miss: 0, last: 0, t: 0 });
   r.a += 1; r.c = Math.round((r.c + score) * 1000) / 1000; r.last = score; r.t = Date.now();
   if (score < 1) r.miss += 1;
+  if (hinted) r.h = (r.h || 0) + 1;
+  r.lh = !!hinted;
+  charge(it, hinted ? Math.min(score, 0.5) : score);
 }
+/* Power meter: two clean rights in a row on a technique fill its bar. A full miss empties it and puts it
+   back in rotation. A half (right on the second try, or with the hint) adds no charge; on a full bar it
+   leaves one cell, so one more clean right refills it. */
+function charge(it, score) {
+  if (!S.power || typeof S.power !== 'object') S.power = {};
+  var k = pkey(it), p = S.power[k] || (S.power[k] = { s: 0, full: false, t: 0 });
+  if (score >= 1) { p.s = Math.min(2, p.s + 1); if (p.s >= 2) p.full = true; }
+  else if (score <= 0) { p.s = 0; p.full = false; }
+  else if (p.full) { p.full = false; p.s = 1; }
+  p.t = Date.now();
+}
+function pkey(it) { return it.technique || 'topic:' + it.topic; }
 
 /* ---------- helpers ---------- */
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -354,25 +388,112 @@ function shownTopics() {
   if (!real.length || wantSample) real = real.concat(SCI.topics.filter(function (t) { return t.id.charAt(0) === '_' && t.items.length; }));
   return real;
 }
-/* P4-preview topics (extra: true, e.g. plant-parts) stay out of the mock paper and weak spots.
+/* P4-preview topics (extra: true, e.g. plant-parts) stay out of the mock paper and Power-Up.
    Hidden topics (hidden: true, e.g. body-systems) never reach shownTopics(), so they are also off
-   the home grid, the mock, weak spots and anything else built on these two. */
+   the home grid, the mock, Power-Up and anything else built on these two. */
 function hiddenTopics() { return SCI.topics.filter(function (t) { return t.hidden && t.items.length; }); }
 function examTopics() { return shownTopics().filter(function (t) { return !t.extra; }); }
 function topicStats(t) {
-  var att = 0, sc = 0, mastered = 0, seen = 0, weak = 0;
+  var att = 0, sc = 0, mastered = 0, seen = 0, notYet = 0;
   t.items.forEach(function (it) {
     var r = S.items[it.id]; if (!r) return;
-    seen++; att += r.a; sc += r.c; if (r.last >= 1) mastered++; else weak++;
+    seen++; att += r.a; sc += r.c; if (r.last >= 1) mastered++; else notYet++;
   });
-  return { n: t.items.length, seen: seen, att: att, acc: att ? sc / att : null, mastered: mastered, weak: weak,
+  return { n: t.items.length, seen: seen, att: att, acc: att ? sc / att : null, mastered: mastered, notYet: notYet,
     pct: t.items.length ? Math.round(mastered / t.items.length * 100) : 0 };
 }
-function weakItems() {
-  var out = [];
-  examTopics().forEach(function (t) { t.items.forEach(function (it) { var r = S.items[it.id]; if (r && r.last < 1) out.push(it); }); });
-  out.sort(function (a, b) { var ra = S.items[a.id], rb = S.items[b.id]; return (rb.miss - ra.miss) || (ra.c / ra.a - rb.c / rb.a); });
+/* ---------- Power-Up (2026-10-17, replaces the old practise-again drill) ----------
+   Kev: "something that focuses on the area that they are not strong at to reinforce", without
+   demoralising. Groups her missed and hinted items by technique (an item without one groups by its
+   topic), leads with the group she misses most, serves FRESH items of it first and re-serves missed
+   ones only after that, opens with 1-2 warm-ups she is likely to get right, and charges a meter per
+   technique. A full meter drops out of rotation until she misses it again. Never a count of misses. */
+function pname(k) { if (k.indexOf('topic:') !== 0) return k; var t = SCI.byId[k.slice(6)]; return t ? t.title : k.slice(6); }
+function pstate(k) { var p = S.power && S.power[k]; return p ? { s: p.s || 0, full: !!p.full } : { s: 0, full: false }; }
+function needsPower(r) { return !!r && (r.last < 1 || !!r.lh); }
+function powerPool() { var out = []; examTopics().forEach(function (t) { t.items.forEach(function (it) { out.push(it); }); }); return out; }
+/* the groups in rotation, most-missed first: any group she has missed or needed a hint on, unless its bar is full */
+function powerRotation() {
+  var g = {}, out = [];
+  powerPool().forEach(function (it) {
+    var r = S.items[it.id]; if (!r || !((r.miss || 0) + (r.h || 0) > 0 || needsPower(r))) return;
+    var k = pkey(it); if (pstate(k).full) return;
+    var x = g[k] || (g[k] = { k: k, need: 0, now: 0, topics: {} });
+    x.need += (r.miss || 0) + (r.h || 0) + (needsPower(r) ? 2 : 0);
+    if (needsPower(r)) x.now++;
+    x.topics[it.topic] = (x.topics[it.topic] || 0) + 1;
+  });
+  Object.keys(g).forEach(function (k) { out.push(g[k]); });
+  out.sort(function (a, b) { return (b.need - a.need) || (b.now - a.now) || (a.k < b.k ? -1 : 1); });
   return out;
+}
+/* target items for one group: fresh ones first (her topics first, easier first), then the ones to re-serve */
+function powerTargets(grp, n, used) {
+  var all = powerPool().filter(function (it) { return pkey(it) === grp.k && !used[it.id]; });
+  var tw = function (it) { return -(grp.topics[it.topic] || 0); };
+  var fresh = shuffle(all.filter(function (it) { return !S.items[it.id]; }))
+    .sort(function (a, b) { return (tw(a) - tw(b)) || (a.level - b.level); });
+  var again = all.filter(function (it) { return needsPower(S.items[it.id]); })
+    .sort(function (a, b) { return (S.items[b.id].miss - S.items[a.id].miss) || (a.level - b.level); });
+  var rest = all.filter(function (it) { var r = S.items[it.id]; return r && !needsPower(r); })
+    .sort(function (a, b) { return S.items[a.id].t - S.items[b.id].t; });
+  return fresh.concat(again, rest).slice(0, n).sort(function (a, b) { return a.level - b.level; });
+}
+/* warm-ups: ones she got right cleanly before (easiest first), else easy unseen MCQs, from her lead topics */
+function powerWarmups(lead, n, used) {
+  var pool = powerPool().filter(function (it) { return !used[it.id] && !(lead && pkey(it) === lead.k); });
+  var near = function (it) { return lead && lead.topics[it.topic] ? 0 : 1; };
+  var known = shuffle(pool.filter(function (it) { var r = S.items[it.id]; return r && r.last >= 1 && !r.lh; }))
+    .sort(function (a, b) { return (a.level - b.level) || ((a.type === 'mcq' ? 0 : 1) - (b.type === 'mcq' ? 0 : 1)) || (near(a) - near(b)); });
+  var easy = shuffle(pool.filter(function (it) { return !S.items[it.id] && it.level === 1 && it.type === 'mcq'; }))
+    .sort(function (a, b) { return near(a) - near(b); });
+  return known.concat(easy).slice(0, n);
+}
+/* "Keep your powers charged": a mixed review, one item per group in turn, oldest-practised first */
+function powerReview(n, used) {
+  var g = {};
+  shuffle(powerPool()).forEach(function (it) { if (!used[it.id]) (g[pkey(it)] = g[pkey(it)] || []).push(it); });
+  var lists = shuffle(Object.keys(g)).map(function (k) {
+    return g[k].sort(function (a, b) { var ra = S.items[a.id], rb = S.items[b.id]; return (ra ? ra.t : 0) - (rb ? rb.t : 0) || a.level - b.level; });
+  });
+  var out = [];
+  for (var round = 0; out.length < n && round < 20; round++) lists.forEach(function (l) { if (out.length < n && l[round]) out.push(l[round]); });
+  return out.sort(function (a, b) { return a.level - b.level; });
+}
+/* one round of 5-8: warm-ups, then the lead group, then a second group if there is one */
+function powerRound() {
+  var rot = powerRotation(), used = {}, mark = function (l) { l.forEach(function (it) { used[it.id] = 1; }); return l; };
+  if (!rot.length) {
+    var rv = mark(powerReview(6, used));
+    return { items: rv, warm: 0, keys: [], review: true };
+  }
+  var lead = rot[0], second = rot[1] || null;
+  var t1 = mark(powerTargets(lead, second ? 4 : 5, used));
+  var t2 = second ? mark(powerTargets(second, 2, used)) : [];
+  var warm = mark(powerWarmups(lead, t1.length + t2.length >= 4 ? 2 : 1, used));
+  var list = warm.concat(t1, t2);
+  if (list.length < 5) list = list.concat(mark(powerReview(5 - list.length, used)));
+  return { items: list.slice(0, 8), warm: warm.length, keys: [lead.k].concat(second ? [second.k] : []), review: false };
+}
+function battHTML(k) {
+  var p = pstate(k);
+  return '<span class="batt' + (p.full ? ' full' : '') + '" role="img" aria-label="' + esc(pname(k)) + (p.full ? ': fully charged' : ': charging') + '">' +
+    '<i class="' + (p.full || p.s >= 1 ? 'on' : '') + '"></i><i class="' + (p.full || p.s >= 2 ? 'on' : '') + '"></i></span>';
+}
+function powersHTML(keys) {
+  return '<ul class="powers">' + keys.map(function (k) { var p = pstate(k);
+    return '<li class="' + (p.full ? 'full' : '') + '">' + battHTML(k) + esc(pname(k)) + (p.full ? '<small>⚡ fully charged</small>' : '') + '</li>'; }).join('') + '</ul>';
+}
+/* every group she has started charging or has in rotation, for the home screen */
+function powerKeys() {
+  var seen = {}, out = [];
+  powerRotation().forEach(function (g) { seen[g.k] = 1; out.push(g.k); });
+  Object.keys(S.power || {}).forEach(function (k) { var p = S.power[k]; if (!seen[k] && p && (p.s > 0 || p.full)) { seen[k] = 1; out.push(k); } });
+  return out;
+}
+function andList(a) {
+  if (a.length > 3) return a.slice(0, 2).join(', ') + ' and ' + (a.length - 2) + ' more';
+  return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
 }
 /* weighting: missed items come back first, unseen next, mastered rarely */
 function weight(it) { var r = S.items[it.id]; if (!r) return 3; if (r.last < 1) return 6 + Math.min(r.miss, 4); return 1; }
@@ -486,7 +607,7 @@ function countdown() {
   el.hidden = false; el.textContent = d === 0 ? '📝 Exam day — you can do it!' : '📝 ' + d + (d === 1 ? ' day' : ' days') + ' to the exam';
 }
 function renderHome() {
-  var ts = shownTopics(), weak = weakItems();
+  var ts = shownTopics(), rot = powerRotation(), pk = powerKeys().slice(0, 9);
   var tiles = ts.map(function (t) {
     var s = topicStats(t);
     return '<button class="tile" data-act="topic" data-id="' + esc(t.id) + '">' +
@@ -499,9 +620,10 @@ function renderHome() {
     (ts.length ? '<div class="grid">' + tiles + '</div>' : '<p class="empty">No topics have loaded yet.</p>') +
     '<div class="big2">' +
       '<button class="tile wide" data-act="exam"><span class="em">📝</span><span><span class="display">Mixed exam practice</span><p>Section A (MCQ) then Section B (open-ended), all P3 topics.</p></span></button>' +
-      '<button class="tile wide weak" data-act="weak"><span class="em">🎯</span><span><span class="display">Weak spots</span><p>' +
-        (weak.length ? weak.length + ' question' + (weak.length === 1 ? '' : 's') + ' to practise again' : 'Nothing here yet. Practise a topic first!') + '</p></span></button>' +
+      '<button class="tile wide power" data-act="power"><span class="em">⚡</span><span><span class="display">Power-Up</span><p>' +
+        (rot.length ? 'Let\'s power up ' + esc(pname(rot[0].k)) + '!' : 'Keep your powers charged with a mixed review round.') + '</p></span></button>' +
     '</div>' +
+    (pk.length ? '<div class="section" id="mypowers"><h3>⚡ My powers</h3>' + powersHTML(pk) + '</div>' : '') +
     '<div class="spread section"><button class="link" data-act="parent">👪 Grown-ups: progress report</button></div>'
   );
 }
@@ -518,7 +640,7 @@ function renderTopic(t) {
     '<div class="bar" style="margin-bottom:18px"><i style="width:' + s.pct + '%"></i></div>' +
     '<div class="big2" style="margin-top:0">' +
       (t.notes.length ? '<button class="tile wide" data-act="learn" data-id="' + esc(t.id) + '"><span class="em">📖</span><span><span class="display">Learn</span><p>' + t.notes.length + ' revision cards</p></span></button>' : '') +
-      '<button class="tile wide weak" data-act="practice" data-id="' + esc(t.id) + '"><span class="em">✏️</span><span><span class="display">Practice</span><p>About 10 questions, mixed levels</p></span></button>' +
+      '<button class="tile wide alt" data-act="practice" data-id="' + esc(t.id) + '"><span class="em">✏️</span><span><span class="display">Practice</span><p>About 10 questions, mixed levels</p></span></button>' +
     '</div>'
   );
 }
@@ -556,11 +678,10 @@ function startSession(kind, title, list, extra) {
   go('quiz');
 }
 function startPractice(t) { startSession('practice', t.title, practiceSet(t), { topicId: t.id }); }
-function startWeak() {
-  var w = weakItems().slice(0, 10);
-  if (!w.length) { toast('No weak spots yet — practise a topic first'); return; }
-  var m = w.filter(function (i) { return i.type === 'mcq'; }), o = w.filter(function (i) { return i.type === 'oeq'; });
-  startSession('weak', 'Weak spots', m.concat(o));
+function startPower() {
+  var r = powerRound(), p0 = {};
+  Object.keys(S.power || {}).forEach(function (k) { p0[k] = pstate(k); });
+  startSession('power', 'Power-Up', r.items, { warm: r.warm, keys: r.keys, review: r.review, p0: p0 });
 }
 
 function renderExamSetup() {
@@ -768,13 +889,16 @@ function renderQuiz() {
   if (se.phase === 'markB') return renderMarking();
   if (se.phase === 'review') return renderReview();
   var it = se.items[se.i], a = se.ans[se.i], exam = se.kind === 'exam', t = SCI.byId[it.topic];
-  var label = exam ? (se.i < se.nA ? 'Section A · Q' + (se.i + 1) : 'Section B · Q' + (se.i + 1)) : se.kind === 'like' ? 'One like it' : 'Question ' + (se.i + 1) + ' of ' + se.items.length;
+  var power = se.kind === 'power';
+  var label = exam ? (se.i < se.nA ? 'Section A · Q' + (se.i + 1) : 'Section B · Q' + (se.i + 1)) : se.kind === 'like' ? 'One like it' :
+    (power && se.i < se.warm ? 'Warm-up · ' : '') + 'Question ' + (se.i + 1) + ' of ' + se.items.length;
   var h = '<div class="spread">' + (se.kind === 'like' ? '<button class="link" data-act="quit">← Back to where I was</button>' : '<button class="link" data-act="quit">✕ Stop</button>') +
-    (exam && se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '<span class="eyebrow" style="margin:0">' + esc(se.kind === 'practice' ? se.title : (t ? t.emoji + ' ' + t.title : '')) + '</span>') + '</div>';
+    (exam && se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '<span class="eyebrow" style="margin:0">' + esc(se.kind === 'practice' ? se.title : power ? (se.review ? '⚡ Keep your powers charged' : '⚡ Power-Up') + (t ? ' · ' + t.emoji + ' ' + t.title : '') : (t ? t.emoji + ' ' + t.title : '')) + '</span>') + '</div>';
   if (exam && se.confirm) return renderConfirm();
   if (!exam) h += stepsHTML();
-  h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + (it.syl === 'P5' ? ' <span class="badge">P5 stretch</span>' : '') + '</p>';
-  /* Hint ladder (x17, 2026-10-17): practice and weak spots only, never the mock. MCQ: the first
+  h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + (it.syl === 'P5' ? ' <span class="badge">P5 stretch</span>' : '') +
+    (power ? ' · <span class="pchip" id="pchip">' + battHTML(pkey(it)) + esc(pname(pkey(it))) + '</span>' : '') + '</p>';
+  /* Hint ladder (x17, 2026-10-17): practice and Power-Up only, never the mock. MCQ: the first
      miss shows hints[0] (the nudge) and allows one retry; the second miss locks it and shows
      hints[1] (the reveal), the explanation and hintFigure. Right on the retry scores half.
      C6: an item with steps but no hints nudges with steps[0]; the second miss runs the step walk-through. */
@@ -798,7 +922,8 @@ function renderQuiz() {
     if (retry) q += '<div class="fb hint" id="fb"><b class="h">🤔 Not yet. Have another go!</b><p>' + esc(nudgeText(it)) + '</p></div>';
     if (locked) {
       var second = ladder && a.miss1 != null;
-      if (ok) q += '<div class="fb ok" id="fb"><b class="h">' + (second ? '✅ You got it on your second try!' : '✅ Correct!') + '</b>' + (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') + '</div>';
+      var zap = power && !second ? '<p class="pzap"><b>⚡ ' + esc(pname(pkey(it))) + (pstate(pkey(it)).full ? ' is fully charged!' : ' is charging up!') + '</b></p>' : '';
+      if (ok) q += '<div class="fb ok" id="fb"><b class="h">' + (second ? '✅ You got it on your second try!' : '✅ Correct!') + '</b>' + zap + (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') + '</div>';
       else q += coachHTML(it, a, se.i);   /* the final miss: the coaching walk-through */
     }
   } else {
@@ -813,9 +938,9 @@ function renderQuiz() {
       (last ? '<button class="btn teal" data-act="finishExam">Hand in →</button>'
             : '<button class="btn teal" data-act="next">' + (se.i === se.nA - 1 && se.nA < se.items.length ? 'On to Section B →' : 'Next →') + '</button>');
   } else if (it.type === 'mcq') {
-    next = a.choice != null ? '<button class="btn teal" data-act="next">' + (last ? (se.kind === 'like' ? 'Back to where I was →' : 'See results →') : 'Next →') + '</button>' : '';
+    next = a.choice != null ? '<button class="btn teal" data-act="next">' + (last ? (se.kind === 'like' ? 'Back to where I was →' : power ? 'Finish my Power-Up →' : 'See results →') : 'Next →') + '</button>' : '';
   } else {
-    next = a.shown ? '<button class="btn teal" data-act="saveMark">' + (last ? (se.kind === 'like' ? 'Save mark &amp; go back →' : 'Save mark &amp; see results →') : 'Save mark &amp; next →') + '</button>'
+    next = a.shown ? '<button class="btn teal" data-act="saveMark">' + (last ? (se.kind === 'like' ? 'Save mark &amp; go back →' : power ? 'Save mark &amp; finish →' : 'Save mark &amp; see results →') : 'Save mark &amp; next →') + '</button>'
                    : (ladder && !a.hint1 ? '<button class="btn ghost small" data-act="hint">💡 Hint</button>' : '') + '<button class="btn" data-act="reveal">Show answer</button>';
   }
   q += '<div class="nav">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + (exam ? next : '<span class="row">' + next + '</span>') + '</div>';
@@ -921,7 +1046,32 @@ function finishSession() {
   save();
   se.phase = 'report'; renderQuiz();
 }
+/* Power-Up close: what she powered up, and the next step. No score, no count of misses. */
+function renderPowerClose() {
+  var se = session, keys = [], seen = {}, up = [], full = [];
+  /* a targeted round talks about its targets (the warm-ups were there for confidence); a review talks about all of it */
+  se.items.forEach(function (it, j) { var k = pkey(it); if (!seen[k] && (se.review || j >= se.warm)) { seen[k] = 1; keys.push(k); } });
+  keys.forEach(function (k) {
+    var b = se.p0[k] || { s: 0, full: false }, a = pstate(k);
+    if (a.full && !b.full) full.push(k);
+    if ((a.full && !b.full) || a.s > b.s) up.push(k);
+  });
+  var lead = se.keys.length ? se.keys : keys.slice(0, 2);
+  var nextRot = powerRotation(), nk = nextRot.length ? nextRot[0].k : null;
+  var said = up.length ? (se.review ? 'You kept ' + andList(up.map(pname)) + ' charged today.' : 'You powered up ' + andList(up.map(pname)) + ' today.')
+                       : 'You worked on ' + andList(lead.map(pname)) + ' today. Every go builds your power.';
+  var nextLine = nk ? 'Next time: ' + pname(nk) + '.' : 'Next time: a mixed round to keep your powers charged.';
+  var h = '<p class="eyebrow">' + (se.review ? '⚡ Power-Up · Keep your powers charged' : '⚡ Power-Up') + '</p>' +
+    '<h2>' + (full.length ? '🌟 Powered up!' : '🌱 Nice work!') + '</h2>' +
+    '<p class="pclose">✨ ' + esc(said) + '</p>' +
+    (full.length ? '<p class="well">⚡ ' + esc(andList(full.map(pname))) + (full.length === 1 ? ' is' : ' are') + ' fully charged.</p>' : '') +
+    '<div class="section"><h3>My powers</h3>' + powersHTML(keys) + '</div>' +
+    '<p class="pnext section"><b>➡️ ' + esc(nextLine) + '</b></p>' +
+    '<div class="nav"><button class="btn ghost" data-act="home">Home</button><button class="btn" data-act="power">⚡ Another Power-Up</button></div>';
+  paint(h);
+}
 function renderReport() {
+  if (session.kind === 'power') return renderPowerClose();
   var se = session, got = 0, max = 0, by = {}, missed = missedList(se), right = 0, part = 0;
   se.items.forEach(function (it, k) {
     var a = se.ans[k], sc = a.score || 0, g = sc * it.marks;
@@ -939,7 +1089,7 @@ function renderReport() {
   var ids = Object.keys(by), best = null;
   ids.forEach(function (id) { var b = by[id]; if (b.max && b.got > 0 && (!best || b.got / b.max > by[best].got / by[best].max)) best = id; });
   if (ids.length > 1 && best && by[best].got / by[best].max >= 0.5) { var bt = SCI.byId[best]; well += ' Your strongest topic was <b>' + esc(bt ? bt.title : best) + '</b> (' + pct(by[best].got / by[best].max) + ').'; }
-  var h = '<p class="eyebrow">' + esc(se.kind === 'exam' ? 'Mock paper report' : se.kind === 'weak' ? 'Weak spots' : 'Practice · ' + se.title) + '</p>' +
+  var h = '<p class="eyebrow">' + esc(se.kind === 'exam' ? 'Mock paper report' : 'Practice · ' + se.title) + '</p>' +
     '<h2>' + cheer + '</h2><p class="well">✨ ' + well + '</p><div class="score">' + got + ' / ' + max + '</div>';
   if (se.kind === 'exam') {
     var aGot = 0, aMax = 0, bGot = 0, bMax = 0;
@@ -994,7 +1144,7 @@ function p4Section() {
   var hs = hiddenTopics();
   if (!hs.length) return '';
   return '<div class="section" id="p4"><h3>P4 section <small class="badge">hidden from the child\'s home screen</small></h3>' +
-    '<p class="lead" style="margin:0 0 8px">Not in the mock paper or weak spots. Open a topic to practise it together.</p>' +
+    '<p class="lead" style="margin:0 0 8px">Not in the mock paper or Power-Up. Open a topic to practise it together.</p>' +
     '<table class="tbl"><tr><th>Topic</th><th class="num">Tried</th><th class="num">Accuracy</th><th class="num">Mastered</th></tr>' +
     hs.map(function (t) { var s = topicStats(t);
       return '<tr><td>' + esc(t.emoji + ' ' + t.title) + ' <span class="badge">P4</span></td><td class="num">' + s.seen + ' / ' + s.n + '</td><td class="num">' + (s.acc == null ? '—' : pct(s.acc)) + '</td><td class="num">' + s.pct + '%</td></tr>'; }).join('') +
@@ -1011,7 +1161,7 @@ var A = {
   lnext: function () { learn.i++; renderLearn(SCI.byId[learn.id]); },
   lprev: function () { learn.i--; renderLearn(SCI.byId[learn.id]); },
   practice: function (el) { startPractice(SCI.byId[el.dataset.id]); },
-  weak: startWeak,
+  power: startPower,
   exam: function () { go('exam'); },
   parent: function () { go('parent'); },
   esize: function (el) { S.size = el.dataset.v; save(); renderExamSetup(); },
@@ -1023,7 +1173,7 @@ var A = {
     if (a.choice != null || k === a.miss1) return;
     se.scrollFb = true;
     if (nudgeText(it) && a.miss1 == null && k !== it.answer) { a.miss1 = k; renderQuiz(); return; }   /* first miss: nudge (hints[0], else steps[0]) + retry */
-    a.choice = k; a.score = k === it.answer ? (a.miss1 != null ? 0.5 : 1) : 0; record(it, a.score); save(); renderQuiz();
+    a.choice = k; a.score = k === it.answer ? (a.miss1 != null ? 0.5 : 1) : 0; record(it, a.score, a.miss1 != null); save(); renderQuiz();
   },
   reveal: function () { var a = session.ans[session.i]; saveText(); a.shown = true; renderQuiz(); },
   hint: function () { var a = session.ans[session.i]; saveText(); a.hint1 = true; session.scrollFb = true; renderQuiz(); },
@@ -1034,7 +1184,7 @@ var A = {
   },
   saveMark: function () {
     var se = session, it = se.items[se.i], a = se.ans[se.i];
-    a.score = oeqScore(it, a.ticks); record(it, a.score); save(); A.next();
+    a.score = oeqScore(it, a.ticks); record(it, a.score, !!a.hint1); save(); A.next();
   },
   next: function () {
     saveText();
@@ -1086,7 +1236,7 @@ var A = {
   markNext: function () { var se = session; if (se.markIdx < se.items.length - 1) { se.markIdx++; renderQuiz(); } else finishSession(); },
   retryMissed: function () {
     var se = session, list = se.items.filter(function (it, k) { return (se.ans[k].score || 0) < 1; });
-    startSession(se.kind === 'exam' ? 'weak' : se.kind, se.kind === 'exam' ? 'Missed from mock paper' : se.title, list, { topicId: se.topicId });
+    startSession(se.kind === 'exam' ? 'practice' : se.kind, se.kind === 'exam' ? 'Another go at the mock' : se.title, list, { topicId: se.topicId });
   },
   quit: function () {
     if (session && session.kind === 'like') { session = session.back; renderQuiz(); return; }

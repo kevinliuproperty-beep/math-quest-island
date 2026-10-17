@@ -188,6 +188,19 @@ for (const f of pick) {
   }
 }
 
+/* Power-Up (2026-10-17): the drill on misses is "Power-Up", never "weak spots", "mistakes" or "fix".
+   A cheap guard on the shell so the old name cannot creep back into a child-facing string. */
+let shellNote = '';
+{
+  const shell = path.join(path.dirname(fileURLToPath(import.meta.url)), 'index.html');
+  if (!only.length && fs.existsSync(shell)) {
+    const src = fs.readFileSync(shell, 'utf8');
+    const hits = src.split('\n').map((l, i) => [i + 1, l]).filter(([, l]) => /weak spots?|\bmistakes?\b|\bfix it\b|fix-it/i.test(l));
+    if (hits.length) { totalErr += hits.length; shellNote = hits.map(([n, l]) => `  ERROR science/index.html:${n}: Power-Up naming (no "weak spots" / "mistakes" / "fix it"): ${l.trim().slice(0, 90)}`).join('\n'); }
+    else shellNote = 'shell: Power-Up naming ok (no "weak spots" / "mistakes" / "fix it")';
+  }
+}
+
 const pad = (s, w) => String(s).padEnd(w);
 console.log(pad('topic', 16) + pad('items', 7) + pad('mcq/oeq', 9) + pad('L1/L2/L3', 11) + pad('fig%', 6) + pad('notes', 7) + pad('coach', 7) + pad('steps', 7) + 'result');
 for (const r of rows) {
@@ -204,5 +217,6 @@ for (const r of rows) {
 const techAll = {};
 rows.forEach(r => Object.entries(r.techCount).forEach(([k, v]) => { techAll[k] = (techAll[k] || 0) + v; }));
 if (Object.keys(techAll).length) console.log('\ntechniques: ' + TECHNIQUES.filter(k => techAll[k]).map(k => `${k} ${techAll[k]}`).join(' · '));
+if (shellNote) console.log('\n' + shellNote);
 console.log(`\n${rows.length} file(s), ${rows.reduce((a, r) => a + r.n, 0)} items, ${totalErr} error(s)`);
 process.exit(totalErr ? 1 : 0);

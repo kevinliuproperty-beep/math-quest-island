@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20261017-13bc004 */
-/* ENGINE_BUILD_META {"stamp":"20261017-13bc004","date":"2026-10-17","sha":"13bc004","dirty":false,"payloadHash":"d1ba730189a109ce","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20261017-13bc004","date":"2026-10-17","sha":"13bc004","dirty":false,"payloadHash":"d1ba730189a109ce","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20261017-a2214a5 */
+/* ENGINE_BUILD_META {"stamp":"20261017-a2214a5","date":"2026-10-17","sha":"a2214a5","dirty":false,"payloadHash":"d51e741751dc3005","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20261017-a2214a5","date":"2026-10-17","sha":"a2214a5","dirty":false,"payloadHash":"d51e741751dc3005","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -6453,7 +6453,7 @@ function gDivError(){
       (pk[0] === 'box' ? 'es' : 's') + '. How many ' + pk[1] + ' are there altogether?', per*n,
       n + ' groups of ' + per + ' is ' + per + ' × ' + n + '. ' + mulSplit(per, n), pk[1]),
       'Draw a model', [
-        'Draw ' + n + ' equal boxes, one for each of the ' + packs + ', with ' + per + ' in each. ' + n + ' groups of ' + per + ' is ' + per + ' × ' + n + '.',
+        'Draw ' + n + ' equal parts, one for each ' + pk[0] + ', with ' + per + ' in each. ' + n + ' groups of ' + per + ' is ' + per + ' × ' + n + '.',
         'Split ' + per + ' into easy parts: ' + parts.join(' + ') + ' = ' + per + '.',
         'Multiply each part by ' + n + ': ' + parts.map(p => p + ' × ' + n + ' = ' + (p * n)).join(', ') + '.',
         'Add them: ' + parts.map(p => p * n).join(' + ') + ' = <b>' + (per * n) + '</b> ' + pk[1] + '.']);
@@ -6691,9 +6691,9 @@ function gDivError(){
       'Work backwards: put the ' + c[2] + ' back together first, then add what was left over.',
       'In the ' + c[2] + ': ' + d + ' × ' + q + ' = ' + (q * d) + '.',
       'Add the leftover: ' + (q * d) + ' + ' + r + ' = <b>' + n + '</b> ' + c[0] + '.']);
-    const of = {}, slip = [[q*d, 'Good, that is what is in the ' + c[2] + '! Add back the ' + r + ' left over too.'],
+    const of = {}, slip = [[q*d, 'Good, that is what is in the ' + c[2] + '! Now add the ' + r + ' left over too.'],
       [q*d - r, 'Lots of children pick this, because they take the leftover away. Working backwards, we put it back: add it.'],
-      [(q + 1)*d, 'Lots of children pick this, because they count the leftover as one more full ' + c[3] + '. Only ' + r + ' were left over.']];
+      [(q + 1)*d, 'Lots of children pick this, because they count the leftover as one more full ' + c[3] + '. Only ' + sOrP(r, c[1] + ' was', c[0] + ' were') + ' left over.']];
     for (const [v, say] of slip) { const i = qq.choices.indexOf(v + ' ' + c[0]); if (i >= 0 && i !== qq.correct) of[i] = say; }
     if (Object.keys(of).length) qq.optionFeedback = of;
     return band(qq, 2);
@@ -11062,7 +11062,7 @@ function gTypedLeft(){
       'Now both amounts are in ' + S + ': ' + total + ' ' + S + ' at first, and ' + used + ' ' + S + ' used.',
       '"How much is left" means take away: ' + total + ' − ' + used + ' = <b>' + ans + ' ' + S + '</b>.']);
     return ofb(q, [
-      [total + used, 'Lots of children pick this, because the numbers are easy to add. But the ' + used + ' ' + S + ' was used up, so we take it away.'],
+      [total + used, 'Lots of children pick this, because they add the two amounts. But the ' + used + ' ' + S + ' was used up, so we take it away.'],
       [big*f - used, 'Good start changing ' + B + ' to ' + S + '! The extra ' + small + ' ' + S + ' got left behind, though: ' + big + ' ' + B + ' ' + small + ' ' + S + ' is ' + total + ' ' + S + '.'],
       [big*(f/10) + small - used, 'Lots of children pick this, because they change 1 ' + B + ' into ' + (f/10) + ' ' + S + '. 1 ' + B + ' is ' + f + ' ' + S + '.']
     ], v => v + ' ' + S);
@@ -11220,8 +11220,8 @@ function gTypedLeft(){
            : 'The jug holds ' + C + ' ml, so the gap still to fill is ' + C + ' − ' + (a + b) + ' = <b>' + key + ' ml</b>.']);
     ofb(q, [
       [a + b, 'Good, that is all the water poured in! The question asks how much ' + (over ? 'overflows' : 'more is needed') + ', so compare it with the ' + C + ' ml jug.'],
-      [C - a, 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.'],
-      [C - b, 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.'],
+      [C - a, (over ? 'Lots of children pick this, because they take one pour from the jug. Add both pours first: ' + a + ' ml + ' + b + ' ml.' : 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.')],
+      [C - b, (over ? 'Lots of children pick this, because they take one pour from the jug. Add both pours first: ' + a + ' ml + ' + b + ' ml.' : 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.')],
       [Math.abs(a - b), 'Lots of children pick this, because they compare the two pours. Both go into the jug, so add them first.']
     ], v => v + ' ml');
     return tag(q, 3);
@@ -11333,7 +11333,7 @@ function gTypedLeft(){
     ofb(q, [
       [gap * (l - k + 1), 'Lots of children pick this, because they count the ' + things + '. Between the ' + ord(k) + ' and the ' + ord(l) + ' there is one gap fewer than ' + things + ': ' + (l - k) + ' gaps.'],
       [gap * (l - k - 1), 'So close! Count the gaps again on a drawing: from the ' + ord(k) + ' to the ' + ord(l) + ' there are ' + (l - k) + ' gaps.'],
-      [gap * l, 'Lots of children pick this, because they measure from the very start of the row. The question starts at the ' + ord(k) + ' ' + L.one + '.'],
+      [gap * l, 'Lots of children pick this, because they count ' + l + ' gaps up to the ' + ord(l) + ' ' + L.one + '. This part starts at the ' + ord(k) + ', so there are ' + l + ' − ' + k + ' = ' + (l - k) + ' gaps.'],
       [gap * (l - i), 'Lots of children pick this, because they start counting from the ' + ord(i) + ' ' + L.one + ', the one in the first sentence. This part starts at the ' + ord(k) + '.']
     ], v => v + ' m');
     return tag(q, 3);
@@ -12360,6 +12360,7 @@ function gTypedLeft(){
           [e < 720 ? t12(e + 720) : '', 'The hours and minutes are right. It is still before 12 noon, so the time is a.m.'],
           [t12(e - 60), 'Close: one hour went missing. Count on again along the timeline.'],
           [t12(e + 60), 'Close: one hour too many. Count on again along the timeline.'],
+          [t12(e + 40), 'Lots of children pick this, because ' + dur(show) + ' was read as ' + (Math.floor(show / 60) * 100 + show % 60) + ' min. Change it with 1 h = 60 min.'],
           [t12(ceilH(s) + tot), 'Lots of children pick this, because they start counting at the next o\'clock, ' + t12(ceilH(s)) + '. Start from ' + t12(s) + ' itself.']]);
     });
   }
@@ -12778,7 +12779,7 @@ function gRectiPeri(){
     'Read every side off the figure. There are six: '+(W-a)+', '+b+', '+a+', '+(H-b)+', '+W+' and '+H+' cm.',
     'Start at one corner and walk all the way around, ticking each side as you add it, so none is missed or counted twice.',
     'Add all six: '+(W-a)+' + '+b+' + '+a+' + '+(H-b)+' + '+W+' + '+H+' = <b>'+per+' cm</b>.']), [
-    [(per-a-b)+' cm', 'Lots of children pick this, because the two short sides at the cut-out corner are easy to miss. Walk right into the corner and count them both.'],
+    [(per-a-b)+' cm', 'Lots of children pick this, because the two sides at the cut-out corner are easy to miss. Walk right into the corner and count them both.'],
     [(per-a)+' cm', 'Close: one side of '+a+' cm was left out. Tick each side as you add it.'],
     [(per-b)+' cm', 'Close: one side of '+b+' cm was left out. Tick each side as you add it.'],
     [(per+a)+' cm', 'Close: a side of '+a+' cm was counted twice. Tick each side as you add it.'],
@@ -14002,7 +14003,7 @@ function gGridPeri(){
         (a - b) + ' ÷ 2 = <b>' + g + '</b>.', it),
         'Before and after', [
           'Before: ' + A + ' has ' + a + ' − ' + b + ' = ' + (a - b) + ' more ' + it + ' than ' + B + '.',
-          'After the gift the two bars must match. Whatever ' + A + ' gives, ' + A + ' loses it AND ' + B + ' gains it, so the gap closes twice as fast.',
+          'After the gift the two bars must match. Whatever ' + A + ' gives, ' + A + ' loses it AND ' + B + ' gains it, so the gap gets 2 smaller for each one given.',
           'So ' + A + ' gives half of the gap: ' + (a - b) + ' ÷ 2 = <b>' + g + '</b> ' + it + '. Then both have ' + (a - g) + '.']);
     }
     const n = ri(40, 900), g = ri(6, Math.min(240, n - 5));
@@ -14119,7 +14120,7 @@ function gGridPeri(){
       'Units check', [
         'Say the unit first: the answer is in ' + M.small + ', so change ' + x + ' ' + M.big + ' ' + y + ' ' + M.small + ' into ' + M.small + ' before anything else.',
         '1 ' + M.big + ' = ' + M.f + ' ' + M.small + ', so ' + x + ' × ' + M.f + ' = ' + (x * M.f) + ' ' + M.small + ', and ' + (x * M.f) + ' + ' + y + ' = ' + tot + ' ' + M.small + '.',
-        'Taken out: ' + k + ' × ' + e + ' = ' + used + ' ' + M.small + '.',
+        cap(M.verb) + ': ' + k + ' × ' + e + ' = ' + used + ' ' + M.small + '.',
         'Left: ' + tot + ' − ' + used + ' = <b>' + left + ' ' + M.small + '</b>.']);
   }
 
@@ -14266,6 +14267,7 @@ function gGridPeri(){
         ', so swap ' + gap + ' ÷ ' + dv + ' = ' + sw + (sw === 1 ? ' note' : ' notes') + (v0 > V ? ' back to $' + lo + '.' : ' up to $' + hi + '.'));
     }
     st.push(askHi ? 'The $' + hi + ' notes: ' + (v0 === V ? n + ' − ' + l : g0 + (v0 > V ? ' − ' : ' + ') + sw) + ' = <b>' + h + '</b>.'
+                  : v0 === V ? 'The $' + hi + ' notes stay ' + h + ', so the $' + lo + ' notes: ' + n + ' − ' + h + ' = <b>' + l + '</b>.'
                   : 'The $' + hi + ' notes: ' + g0 + (h >= g0 ? ' + ' : ' − ') + sw + ' = ' + h + ', so the $' + lo + ' notes: ' + n + ' − ' + h + ' = <b>' + l + '</b>.');
     return coach(finishTyped(N + ' has ' + n + ' notes. Some are $' + lo + ' notes and the rest are $' + hi + ' notes. They are worth $' + V +
       ' altogether. How many $' + (askHi ? hi : lo) + ' notes does ' + N + ' have?', want,
@@ -14289,8 +14291,8 @@ function gGridPeri(){
     const allA = n * W[2], one1 = W[1].replace(/s$/, '');
     const st = ['Guess that all ' + n + ' are ' + W[0] + ': ' + n + ' × ' + W[2] + ' = ' + allA + ' ' + W[4] + '.',
       'Check against ' + w + ': that is ' + w + ' − ' + allA + ' = ' + (w - allA) + ' ' + W[4] + ' too few.',
-      askB ? 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more, so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = <b>' + b + '</b> ' + W[1] + '.'
-           : 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more, so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = ' + b + ' ' + W[1] + '.'];
+      askB ? 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more ' + (W[3] - W[2] === 1 ? W[4].replace(/s$/, '') : W[4]) + ', so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = <b>' + b + '</b> ' + W[1] + '.'
+           : 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more ' + (W[3] - W[2] === 1 ? W[4].replace(/s$/, '') : W[4]) + ', so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = ' + b + ' ' + W[1] + '.'];
     if (!askB) st.push('The rest are ' + W[0] + ': ' + n + ' − ' + b + ' = <b>' + a + '</b> ' + W[0] + '.');
     return coach(finishTyped('There are ' + n + ' ' + W[0] + ' and ' + W[1] + ' ' + W[5] + '. They have ' + w + ' ' + W[4] +
       ' altogether. How many ' + noun + ' are there?', want,
@@ -14462,7 +14464,8 @@ function gGridPeri(){
       const askStart = Math.random() < 0.6, want = askStart ? s : u;
       const st = ['Before: ' + A + ' and ' + B + ' had the same number.',
         A + ' gave away ' + a + ' − ' + b + ' = ' + (a - b) + ' more than ' + B + ', so now ' + B + ' has ' + (a - b) + ' more than ' + A + '.',
-        'After: ' + A + ' is 1 unit and ' + B + ' is ' + m + ' units. The gap is ' + m + ' − 1 = ' + uw(m - 1) + ', and that is ' + (a - b) + '.'];
+        m === 2 ? 'After: ' + A + ' is 1 unit and ' + B + ' is 2 units, so ' + A + ' is the same as the gap.'
+                : 'After: ' + A + ' is 1 unit and ' + B + ' is ' + m + ' units. The gap is ' + m + ' − 1 = ' + uw(m - 1) + ', and that is ' + (a - b) + '.'];
       const oneU = m === 2 ? 'The gap is 1 unit, so ' + A + ' now has ' + a + ' − ' + b + ' = '
                            : '1 unit = ' + (a - b) + ' ÷ ' + (m - 1) + ' = ';
       if (!askStart) st.push(oneU + '<b>' + u + '</b>.');
@@ -14486,7 +14489,7 @@ function gGridPeri(){
     const oneU = m === 2 ? 'The gap is 1 unit, so ' + B + ' has ' + D + ' − ' + g + ' = '
                          : '1 unit = ' + (D - g) + ' ÷ ' + (m - 1) + ' = ';
     if (askB) st.push(oneU + '<b>' + u + '</b>. ' + B + ' had that at first too.');
-    else st.push(oneU + u + ', so that is ' + B + '.', A + ' at first had ' + D + ' more than ' + B + ': ' + u + ' + ' + D + ' = <b>' + (u + D) + '</b> ' + it + '.');
+    else st.push(oneU + u + (m === 2 ? '.' : ', so that is ' + B + '.'), A + ' at first had ' + D + ' more than ' + B + ': ' + u + ' + ' + D + ' = <b>' + (u + D) + '</b> ' + it + '.');
     return coach(finishTyped(A + ' had ' + D + ' more ' + it + ' than ' + B + '. Then ' + A + ' gave away ' + g + ' ' + it + '. Now ' + A + ' has ' + times(m) + ' as many ' + it +
       ' as ' + B + '. How many ' + it + ' did ' + (askB ? B : A) + ' have at first?', want,
       model(['<b>After</b>', bar(units(m), A), bar(units(1), B)]) +
@@ -21986,4 +21989,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20261017-13bc004 */
+/* ENGINE_BUILD_END 20261017-a2214a5 */

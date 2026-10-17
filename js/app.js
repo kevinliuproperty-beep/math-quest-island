@@ -82,6 +82,10 @@ if(!DB.power || typeof DB.power!=='object' || Array.isArray(DB.power)){
       p.m+=c.w||0; p.r+=c.r||0; p.t=Math.max(p.t, s.t||0);
     }
   });
+  /* refuter R2: a lifetime tally is not "not strong". A group she mostly gets right
+     (under 1 miss in 4, at least 4 rights) keeps its rights for warm-ups but stays out
+     of rotation until she misses it again. */
+  for(const k in DB.power){ const p=DB.power[k]; if(p.r>=4 && p.m/(p.m+p.r)<0.25) p.m=0; }
 }
 
 /* ---------------- Sound ---------------- */
@@ -664,7 +668,7 @@ function pgroup(k){ return powerGroups().find(g=>g.k===k)||null; }
 function pname(k){ const g=pgroup(k); return g ? g.label : k; }
 /* the name inside a sentence: quote names that carry a comma, a "?" or their own "and"
    (science refuter R1-R3, R5): Next time: “Guess and check, work backwards”. */
-function pq(k){ const n=pname(k); return /[,?]| and /.test(n) ? '“'+n+'”' : n; }
+function pq(k){ const n=pname(k); return /[,?&]| and |^What /.test(n) ? '“'+n+'”' : n; }   /* refuter R1, R5: "&" and "What ..." too */
 function pstate(k){ const p=DB.power[k]; return p ? { s:p.s||0, full:!!p.full } : { s:0, full:false }; }
 function charge(topic, skill, right, level){
   if(!topic || !skill) return;
@@ -828,8 +832,9 @@ function powerAnswer(right, btn){
   } else {
     const lead=Q.typed ? unitLead($('typedInput').value.trim(), Q) : '';
     S.wrongs.push({q:Q.q+figHtml(Q), a:Q.answerText, ex:Q.explain, skill:Q.skill});
-    $('feedback').innerHTML='<span class="no coach">'+(lead||'🌱 Good try! ')+(Q.explain||'')+
-      (Q.typed?' The answer is <b>'+Q.answerText+'</b>.':'')+'</span>';
+    /* refuter R3 (science's words) and R4 (the answer last, for a multiple choice too) */
+    $('feedback').innerHTML='<span class="no coach">'+(lead||'🌱 Good try. Let\'s look at it together. ')+(Q.explain||'')+
+      ' The answer is <b>'+Q.answerText+'</b>.</span>';
     $('puNext').textContent = u.i>=u.items.length-1 ? 'Finish my Power-Up ▶' : 'Next ▶';
     $('puBar').classList.add('on');
     setTimeout(()=>{ try{ $('puNext').focus(); }catch(e){} },60);

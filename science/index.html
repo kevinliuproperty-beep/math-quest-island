@@ -46,7 +46,6 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .brand .logo{font-size:2rem;line-height:1}
 .brand h1{font-size:1.5rem}
 .brand small{display:block;font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
-.countdown{display:flex;align-items:center;gap:8px;background:var(--gold-soft);border:2px solid var(--gold);border-radius:999px;padding:6px 14px;font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-weight:600;font-size:1rem;font-variant-numeric:tabular-nums}
 .stage{background:var(--paper);border:2px solid var(--line);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
 .eyebrow{font-weight:800;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px}
 .stage h2{font-size:1.6rem;margin-bottom:6px}
@@ -261,7 +260,7 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
       <span class="logo">🔬</span>
       <span><small>Primary 3 Science</small><h1>Science Quest</h1></span>
     </button>
-    <div class="row"><button class="sndbtn" id="sndbtn" data-act="sound" aria-pressed="false">🔇 Sound off</button><div class="countdown" id="countdown" hidden></div></div>
+    <button class="sndbtn" id="sndbtn" data-act="sound" aria-pressed="false">🔇 Sound off</button>
   </div>
   <main class="stage" id="view" aria-live="polite"></main>
 </div>
@@ -362,7 +361,6 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
 var SCI = window.SCI;
 var KEY = 'sq1';
 var ORDER = ['living-things', 'materials', 'life-cycles', 'magnets', 'plant-parts', 'process-skills'];
-var EXAM_DATE = new Date(2026, 9, 27);
 var view = document.getElementById('view');
 
 /* ---------- storage (per-viewer, try/catch-wrapped) ---------- */
@@ -730,13 +728,6 @@ function route() {
 function paint(html) { view.innerHTML = html; fixFigures(view); document.body.classList.toggle('quizfig', !!view.querySelector('.qgrid, .qsolo')); window.scrollTo(0, 0); }
 
 /* ---------- home ---------- */
-function countdown() {
-  var el = document.getElementById('countdown');
-  var now = new Date(); now.setHours(0, 0, 0, 0);
-  var d = Math.round((EXAM_DATE - now) / 86400000);
-  if (d < 0) { el.hidden = true; return; }
-  el.hidden = false; el.textContent = d === 0 ? '📝 Exam day — you can do it!' : '📝 ' + d + (d === 1 ? ' day' : ' days') + ' to the exam';
-}
 function renderHome() {
   var ts = shownTopics(), rot = powerRotation(), pk = powerKeys().slice(0, 9);
   var found = 0;
@@ -825,7 +816,10 @@ function startSession(kind, title, list, extra) {
     phase: 'answer' }, extra || {});
   go('quiz');
 }
-function startPractice(t) { startSession('practice', t.title, practiceSet(t), { topicId: t.id }); }
+function startPractice(t) {
+  var p0 = {}; Object.keys(S.power || {}).forEach(function (k) { p0[k] = pstate(k); });   /* to say what she powered up */
+  startSession('practice', t.title, practiceSet(t), { topicId: t.id, p0: p0 });
+}
 function startPower() {
   var r = powerRound(), p0 = {};
   Object.keys(S.power || {}).forEach(function (k) { p0[k] = pstate(k); });
@@ -1243,13 +1237,21 @@ function renderReport() {
   ids.forEach(function (id) { var b = by[id]; if (b.max && b.got > 0 && (!best || b.got / b.max > by[best].got / by[best].max)) best = id; });
   if (ids.length > 1 && best && by[best].got / by[best].max >= 0.5) { var bt = SCI.byId[best]; well += ' Your strongest topic was <b>' + esc(bt ? bt.title : best) + '</b> (' + pct(by[best].got / by[best].max) + ').'; }
   var h = '<p class="eyebrow">' + esc(se.kind === 'exam' ? 'Mock paper report' : 'Practice · ' + se.title) + '</p>' +
-    '<h2>' + cheer + '</h2><p class="well">✨ ' + well + '</p><div class="score">' + got + ' / ' + max + '</div>';
+    '<h2>' + cheer + '</h2><p class="well">✨ ' + well + '</p>' + (se.kind === 'exam' ? '<div class="score">' + got + ' / ' + max + '</div>' : '');
   if (se.kind === 'exam') {
     var aGot = 0, aMax = 0, bGot = 0, bMax = 0;
     se.items.forEach(function (it, k) { if (k < se.nA) { aGot += se.ans[k].score * it.marks; aMax += it.marks; } else { bGot += se.ans[k].score * it.marks; bMax += it.marks; } });
     h += '<p class="lead">Section A: ' + aGot + ' / ' + aMax + ' · Section B: ' + (Math.round(bGot * 10) / 10) + ' / ' + bMax + '</p>';
   }
-  if (se.kind !== 'exam') h += crysBox(se);
+  if (se.kind !== 'exam') {
+    /* practice: wins first (what she powered up, crystals), then the marks, lower and quieter */
+    var pu = [], ps = {};
+    if (se.p0) se.items.forEach(function (it) { var k = pkey(it), b = se.p0[k] || { s: 0, full: false };
+      if (!ps[k] && pstate(k).full && !b.full) { ps[k] = 1; pu.push(k); } });
+    if (pu.length) h += '<p class="well">⚡ You powered up ' + esc(andList(pu.map(pq))) + ' today!</p>';
+    h += crysBox(se);
+    h += '<p class="lead section">This round: ' + got + ' of ' + max + ' marks. Every question you look at again makes you stronger.</p>';
+  }
   h += '<div class="section"><h3>By topic</h3><table class="tbl"><tr><th>Topic</th><th class="num">Marks</th><th class="num">%</th></tr>' +
     ids.map(function (id) { var t = SCI.byId[id], b = by[id];
       return '<tr><td>' + esc(t ? t.emoji + ' ' + t.title : id) + '</td><td class="num">' + (Math.round(b.got * 10) / 10) + ' / ' + b.max + '</td><td class="num">' + pct(b.max ? b.got / b.max : 0) + '</td></tr>'; }).join('') +
@@ -1442,7 +1444,6 @@ document.addEventListener('click', function (e) {
 document.addEventListener('change', function (e) { var el = e.target; if (el.dataset && el.dataset.act === 'tick') A.tick(el); });
 document.addEventListener('input', function (e) { if (e.target.id === 'oeqText') saveText(); });
 window.addEventListener('hashchange', route);
-countdown();
 sndBtn();
 if (examResume()) { if (location.hash !== '#quiz') location.hash = 'quiz'; }
 route();

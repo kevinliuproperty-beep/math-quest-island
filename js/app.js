@@ -613,7 +613,7 @@ function renderMockReport(rec){
        technique; the steps one at a time; the answer last). Marks and order are unchanged. */
     if(q.steps){
       const given=r.attempted ? r.given : null, ci=(!q.typed && given!=null) ? q.choices.indexOf(given) : -1;
-      return revItemHTML(wrongRec(q, given, ci>=0 ? ci : null, q.typed && given!=null ? unitLead(String(given), q) : ''), head);
+      return revItemHTML(wrongRec(q, given, ci>=0 ? ci : null, q.typed && given!=null ? unitLead(String(given), q) : '', !!(rec.timedOut && !r.attempted)), head);
     }
     const yours = r.attempted ? (q.typed ? esc(String(r.given||'')) : (r.given||'')) : '<i>not answered</i>';
     return '<div class="revItem"><b>Q'+r.n+'</b> <small class="mkTag">'+r.section+' · '+(r.marks===1?'1 mark':r.marks+' marks')+'</small><br>'+
@@ -1221,7 +1221,7 @@ function coachHTML(w){
     '<button type="button" class="mc-next" data-mq="step">'+(w.st.length>1?NEXT_STEP:SHOW_ANS)+'</button>'+
     '<div class="mc-ans" hidden><span class="mc-is">✅ The answer is <b>'+w.a+'</b>.</span>'+
       (w.ex?'<details class="mc-more"><summary>See the whole working</summary><div class="how">'+w.ex+'</div></details>':'')+
-      '<p class="mc-close">Next time, try '+esc(w.t)+' first.</p></div>'+
+      '<p class="mc-close">Next time, try this first: <b>'+esc(w.t)+'</b>.</p></div>'+
   '</div>';
 }
 /* one review row: the walk-through for a coached miss, today's card otherwise */
@@ -1259,7 +1259,7 @@ function markWrong(feedbackHtml, rec){
    the end-of-quest review), but the card leads with credit and the technique, and the
    answer comes last. */
 function questCoachCard(lead){
-  return '<span class="no">'+(lead||'🌱 Good try. ')+'<span class="mc-chip">🧭 '+esc(Q.technique)+'</span> '+(Q.explain||'')+
+  return '<span class="no coach">'+(lead||'🌱 Good try. ')+'<span class="mc-chip">🧭 '+esc(Q.technique)+'</span> '+(Q.explain||'')+
     ' The answer is <b>'+Q.answerText+'</b>.</span>';
 }
 function timeUp(){

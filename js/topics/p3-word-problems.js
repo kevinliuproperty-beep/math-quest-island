@@ -216,7 +216,7 @@
         (a - b) + ' ÷ 2 = <b>' + g + '</b>.', it),
         'Before and after', [
           'Before: ' + A + ' has ' + a + ' − ' + b + ' = ' + (a - b) + ' more ' + it + ' than ' + B + '.',
-          'After the gift the two bars must match. Whatever ' + A + ' gives, ' + A + ' loses it AND ' + B + ' gains it, so the gap closes twice as fast.',
+          'After the gift the two bars must match. Whatever ' + A + ' gives, ' + A + ' loses it AND ' + B + ' gains it, so the gap gets 2 smaller for each one given.',
           'So ' + A + ' gives half of the gap: ' + (a - b) + ' ÷ 2 = <b>' + g + '</b> ' + it + '. Then both have ' + (a - g) + '.']);
     }
     const n = ri(40, 900), g = ri(6, Math.min(240, n - 5));
@@ -333,7 +333,7 @@
       'Units check', [
         'Say the unit first: the answer is in ' + M.small + ', so change ' + x + ' ' + M.big + ' ' + y + ' ' + M.small + ' into ' + M.small + ' before anything else.',
         '1 ' + M.big + ' = ' + M.f + ' ' + M.small + ', so ' + x + ' × ' + M.f + ' = ' + (x * M.f) + ' ' + M.small + ', and ' + (x * M.f) + ' + ' + y + ' = ' + tot + ' ' + M.small + '.',
-        'Taken out: ' + k + ' × ' + e + ' = ' + used + ' ' + M.small + '.',
+        cap(M.verb) + ': ' + k + ' × ' + e + ' = ' + used + ' ' + M.small + '.',
         'Left: ' + tot + ' − ' + used + ' = <b>' + left + ' ' + M.small + '</b>.']);
   }
 
@@ -480,6 +480,7 @@
         ', so swap ' + gap + ' ÷ ' + dv + ' = ' + sw + (sw === 1 ? ' note' : ' notes') + (v0 > V ? ' back to $' + lo + '.' : ' up to $' + hi + '.'));
     }
     st.push(askHi ? 'The $' + hi + ' notes: ' + (v0 === V ? n + ' − ' + l : g0 + (v0 > V ? ' − ' : ' + ') + sw) + ' = <b>' + h + '</b>.'
+                  : v0 === V ? 'The $' + hi + ' notes stay ' + h + ', so the $' + lo + ' notes: ' + n + ' − ' + h + ' = <b>' + l + '</b>.'
                   : 'The $' + hi + ' notes: ' + g0 + (h >= g0 ? ' + ' : ' − ') + sw + ' = ' + h + ', so the $' + lo + ' notes: ' + n + ' − ' + h + ' = <b>' + l + '</b>.');
     return coach(finishTyped(N + ' has ' + n + ' notes. Some are $' + lo + ' notes and the rest are $' + hi + ' notes. They are worth $' + V +
       ' altogether. How many $' + (askHi ? hi : lo) + ' notes does ' + N + ' have?', want,
@@ -503,8 +504,8 @@
     const allA = n * W[2], one1 = W[1].replace(/s$/, '');
     const st = ['Guess that all ' + n + ' are ' + W[0] + ': ' + n + ' × ' + W[2] + ' = ' + allA + ' ' + W[4] + '.',
       'Check against ' + w + ': that is ' + w + ' − ' + allA + ' = ' + (w - allA) + ' ' + W[4] + ' too few.',
-      askB ? 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more, so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = <b>' + b + '</b> ' + W[1] + '.'
-           : 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more, so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = ' + b + ' ' + W[1] + '.'];
+      askB ? 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more ' + (W[3] - W[2] === 1 ? W[4].replace(/s$/, '') : W[4]) + ', so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = <b>' + b + '</b> ' + W[1] + '.'
+           : 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more ' + (W[3] - W[2] === 1 ? W[4].replace(/s$/, '') : W[4]) + ', so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = ' + b + ' ' + W[1] + '.'];
     if (!askB) st.push('The rest are ' + W[0] + ': ' + n + ' − ' + b + ' = <b>' + a + '</b> ' + W[0] + '.');
     return coach(finishTyped('There are ' + n + ' ' + W[0] + ' and ' + W[1] + ' ' + W[5] + '. They have ' + w + ' ' + W[4] +
       ' altogether. How many ' + noun + ' are there?', want,
@@ -676,7 +677,8 @@
       const askStart = Math.random() < 0.6, want = askStart ? s : u;
       const st = ['Before: ' + A + ' and ' + B + ' had the same number.',
         A + ' gave away ' + a + ' − ' + b + ' = ' + (a - b) + ' more than ' + B + ', so now ' + B + ' has ' + (a - b) + ' more than ' + A + '.',
-        'After: ' + A + ' is 1 unit and ' + B + ' is ' + m + ' units. The gap is ' + m + ' − 1 = ' + uw(m - 1) + ', and that is ' + (a - b) + '.'];
+        m === 2 ? 'After: ' + A + ' is 1 unit and ' + B + ' is 2 units, so ' + A + ' is the same as the gap.'
+                : 'After: ' + A + ' is 1 unit and ' + B + ' is ' + m + ' units. The gap is ' + m + ' − 1 = ' + uw(m - 1) + ', and that is ' + (a - b) + '.'];
       const oneU = m === 2 ? 'The gap is 1 unit, so ' + A + ' now has ' + a + ' − ' + b + ' = '
                            : '1 unit = ' + (a - b) + ' ÷ ' + (m - 1) + ' = ';
       if (!askStart) st.push(oneU + '<b>' + u + '</b>.');
@@ -700,7 +702,7 @@
     const oneU = m === 2 ? 'The gap is 1 unit, so ' + B + ' has ' + D + ' − ' + g + ' = '
                          : '1 unit = ' + (D - g) + ' ÷ ' + (m - 1) + ' = ';
     if (askB) st.push(oneU + '<b>' + u + '</b>. ' + B + ' had that at first too.');
-    else st.push(oneU + u + ', so that is ' + B + '.', A + ' at first had ' + D + ' more than ' + B + ': ' + u + ' + ' + D + ' = <b>' + (u + D) + '</b> ' + it + '.');
+    else st.push(oneU + u + (m === 2 ? '.' : ', so that is ' + B + '.'), A + ' at first had ' + D + ' more than ' + B + ': ' + u + ' + ' + D + ' = <b>' + (u + D) + '</b> ' + it + '.');
     return coach(finishTyped(A + ' had ' + D + ' more ' + it + ' than ' + B + '. Then ' + A + ' gave away ' + g + ' ' + it + '. Now ' + A + ' has ' + times(m) + ' as many ' + it +
       ' as ' + B + '. How many ' + it + ' did ' + (askB ? B : A) + ' have at first?', want,
       model(['<b>After</b>', bar(units(m), A), bar(units(1), B)]) +

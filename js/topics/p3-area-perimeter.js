@@ -283,7 +283,7 @@ function gRectiPeri(){
     'Read every side off the figure. There are six: '+(W-a)+', '+b+', '+a+', '+(H-b)+', '+W+' and '+H+' cm.',
     'Start at one corner and walk all the way around, ticking each side as you add it, so none is missed or counted twice.',
     'Add all six: '+(W-a)+' + '+b+' + '+a+' + '+(H-b)+' + '+W+' + '+H+' = <b>'+per+' cm</b>.']), [
-    [(per-a-b)+' cm', 'Lots of children pick this, because the two short sides at the cut-out corner are easy to miss. Walk right into the corner and count them both.'],
+    [(per-a-b)+' cm', 'Lots of children pick this, because the two sides at the cut-out corner are easy to miss. Walk right into the corner and count them both.'],
     [(per-a)+' cm', 'Close: one side of '+a+' cm was left out. Tick each side as you add it.'],
     [(per-b)+' cm', 'Close: one side of '+b+' cm was left out. Tick each side as you add it.'],
     [(per+a)+' cm', 'Close: a side of '+a+' cm was counted twice. Tick each side as you add it.'],

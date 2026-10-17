@@ -88,7 +88,7 @@
       (pk[0] === 'box' ? 'es' : 's') + '. How many ' + pk[1] + ' are there altogether?', per*n,
       n + ' groups of ' + per + ' is ' + per + ' × ' + n + '. ' + mulSplit(per, n), pk[1]),
       'Draw a model', [
-        'Draw ' + n + ' equal boxes, one for each of the ' + packs + ', with ' + per + ' in each. ' + n + ' groups of ' + per + ' is ' + per + ' × ' + n + '.',
+        'Draw ' + n + ' equal parts, one for each ' + pk[0] + ', with ' + per + ' in each. ' + n + ' groups of ' + per + ' is ' + per + ' × ' + n + '.',
         'Split ' + per + ' into easy parts: ' + parts.join(' + ') + ' = ' + per + '.',
         'Multiply each part by ' + n + ': ' + parts.map(p => p + ' × ' + n + ' = ' + (p * n)).join(', ') + '.',
         'Add them: ' + parts.map(p => p * n).join(' + ') + ' = <b>' + (per * n) + '</b> ' + pk[1] + '.']);
@@ -326,9 +326,9 @@
       'Work backwards: put the ' + c[2] + ' back together first, then add what was left over.',
       'In the ' + c[2] + ': ' + d + ' × ' + q + ' = ' + (q * d) + '.',
       'Add the leftover: ' + (q * d) + ' + ' + r + ' = <b>' + n + '</b> ' + c[0] + '.']);
-    const of = {}, slip = [[q*d, 'Good, that is what is in the ' + c[2] + '! Add back the ' + r + ' left over too.'],
+    const of = {}, slip = [[q*d, 'Good, that is what is in the ' + c[2] + '! Now add the ' + r + ' left over too.'],
       [q*d - r, 'Lots of children pick this, because they take the leftover away. Working backwards, we put it back: add it.'],
-      [(q + 1)*d, 'Lots of children pick this, because they count the leftover as one more full ' + c[3] + '. Only ' + r + ' were left over.']];
+      [(q + 1)*d, 'Lots of children pick this, because they count the leftover as one more full ' + c[3] + '. Only ' + sOrP(r, c[1] + ' was', c[0] + ' were') + ' left over.']];
     for (const [v, say] of slip) { const i = qq.choices.indexOf(v + ' ' + c[0]); if (i >= 0 && i !== qq.correct) of[i] = say; }
     if (Object.keys(of).length) qq.optionFeedback = of;
     return band(qq, 2);

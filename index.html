@@ -515,6 +515,8 @@
   .mcoach .mc-ans[hidden] { display:none; }
   .mcoach .mc-is { display:block; font-size:17px; font-weight:800; color:#7dffb0; }
   .mcoach .mc-more summary { cursor:pointer; font-weight:800; color:#cfc7f5; min-height:44px; display:flex; align-items:center; }
+  .mcoach .mc-more summary::before { content:"▸"; margin-right:8px; }
+  .mcoach .mc-more[open] summary::before { content:"▾"; }
   .mcoach .mc-more .how { color:#cfc7f5; font-size:15px; }
   .mcoach .mc-close { margin:6px 0 0; font-weight:800; color:#7ff3ea; }
   #feedback .mcoach { margin:4px auto 2px; max-width:760px; }

@@ -93,7 +93,7 @@
       'Now both amounts are in ' + S + ': ' + total + ' ' + S + ' at first, and ' + used + ' ' + S + ' used.',
       '"How much is left" means take away: ' + total + ' − ' + used + ' = <b>' + ans + ' ' + S + '</b>.']);
     return ofb(q, [
-      [total + used, 'Lots of children pick this, because the numbers are easy to add. But the ' + used + ' ' + S + ' was used up, so we take it away.'],
+      [total + used, 'Lots of children pick this, because they add the two amounts. But the ' + used + ' ' + S + ' was used up, so we take it away.'],
       [big*f - used, 'Good start changing ' + B + ' to ' + S + '! The extra ' + small + ' ' + S + ' got left behind, though: ' + big + ' ' + B + ' ' + small + ' ' + S + ' is ' + total + ' ' + S + '.'],
       [big*(f/10) + small - used, 'Lots of children pick this, because they change 1 ' + B + ' into ' + (f/10) + ' ' + S + '. 1 ' + B + ' is ' + f + ' ' + S + '.']
     ], v => v + ' ' + S);
@@ -251,8 +251,8 @@
            : 'The jug holds ' + C + ' ml, so the gap still to fill is ' + C + ' − ' + (a + b) + ' = <b>' + key + ' ml</b>.']);
     ofb(q, [
       [a + b, 'Good, that is all the water poured in! The question asks how much ' + (over ? 'overflows' : 'more is needed') + ', so compare it with the ' + C + ' ml jug.'],
-      [C - a, 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.'],
-      [C - b, 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.'],
+      [C - a, (over ? 'Lots of children pick this, because they take one pour from the jug. Add both pours first: ' + a + ' ml + ' + b + ' ml.' : 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.')],
+      [C - b, (over ? 'Lots of children pick this, because they take one pour from the jug. Add both pours first: ' + a + ' ml + ' + b + ' ml.' : 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.')],
       [Math.abs(a - b), 'Lots of children pick this, because they compare the two pours. Both go into the jug, so add them first.']
     ], v => v + ' ml');
     return tag(q, 3);
@@ -364,7 +364,7 @@
     ofb(q, [
       [gap * (l - k + 1), 'Lots of children pick this, because they count the ' + things + '. Between the ' + ord(k) + ' and the ' + ord(l) + ' there is one gap fewer than ' + things + ': ' + (l - k) + ' gaps.'],
       [gap * (l - k - 1), 'So close! Count the gaps again on a drawing: from the ' + ord(k) + ' to the ' + ord(l) + ' there are ' + (l - k) + ' gaps.'],
-      [gap * l, 'Lots of children pick this, because they measure from the very start of the row. The question starts at the ' + ord(k) + ' ' + L.one + '.'],
+      [gap * l, 'Lots of children pick this, because they count ' + l + ' gaps up to the ' + ord(l) + ' ' + L.one + '. This part starts at the ' + ord(k) + ', so there are ' + l + ' − ' + k + ' = ' + (l - k) + ' gaps.'],
       [gap * (l - i), 'Lots of children pick this, because they start counting from the ' + ord(i) + ' ' + L.one + ', the one in the first sentence. This part starts at the ' + ord(k) + '.']
     ], v => v + ' m');
     return tag(q, 3);

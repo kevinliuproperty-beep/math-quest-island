@@ -579,6 +579,7 @@
           [e < 720 ? t12(e + 720) : '', 'The hours and minutes are right. It is still before 12 noon, so the time is a.m.'],
           [t12(e - 60), 'Close: one hour went missing. Count on again along the timeline.'],
           [t12(e + 60), 'Close: one hour too many. Count on again along the timeline.'],
+          [t12(e + 40), 'Lots of children pick this, because ' + dur(show) + ' was read as ' + (Math.floor(show / 60) * 100 + show % 60) + ' min. Change it with 1 h = 60 min.'],
           [t12(ceilH(s) + tot), 'Lots of children pick this, because they start counting at the next o\'clock, ' + t12(ceilH(s)) + '. Start from ' + t12(s) + ' itself.']]);
     });
   }

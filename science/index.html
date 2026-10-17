@@ -90,7 +90,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .steps i{flex:1;height:8px;border-radius:99px;background:var(--line)}
 .steps i.on{background:var(--gold)}
 .steps i.ok{background:var(--teal)}
-.steps i.bad{background:var(--rose)}
+.steps i.bad{background:var(--ink-soft);opacity:.55}   /* a miss is a pip to learn from, not a red mark */
 .steps i.part{background:var(--gold)}
 /* exam navigator (Exam Navigator lane, 2026-10-07): WineQuiz's numbered grid -
    current (ringed), answered (filled), not answered (outline), flagged (corner) */
@@ -121,11 +121,9 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .opt .n{font-weight:800;color:var(--ink-soft);flex:none;min-width:2em}
 .opt.picked{border-color:var(--gold);background:var(--gold-soft)}
 .opt.right{border-color:var(--teal);background:var(--teal-soft)}
-.opt.wrong{border-color:var(--rose);background:var(--rose-soft)}
 .opt[disabled]{cursor:default}
 .fb{margin-top:14px;border-radius:14px;padding:12px 14px;border:2px solid var(--line);background:var(--ground)}
 .fb.ok{border-color:var(--teal);background:var(--teal-soft)}
-.fb.no{border-color:var(--rose);background:var(--rose-soft)}
 .fb b.h{display:block;font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-size:1.15rem;margin-bottom:2px}
 .fb p{margin:4px 0 0;white-space:pre-line}
 .fb.hint{border-color:var(--gold);background:var(--gold-soft)}
@@ -139,6 +137,36 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
   .qfig .fig svg{max-height:calc(100vh - 290px)}
   .qsolo{max-width:720px;margin:0 auto}   /* same wide stage for every question, so the navigator does not jump */
 }
+/* Coaching walk-through (C6, 2026-10-17): kind framing, technique badge, steps one at a time, answer last */
+.opt.mine{border-color:var(--gold);background:var(--gold-soft)}
+.opt.tried{border-style:dashed;border-color:var(--ink-soft);opacity:.75}
+.opt .tag{margin-left:auto;flex:none;font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding-left:8px;align-self:center}
+.fb.coach{border-color:var(--line);background:var(--plum-soft)}
+.fb.coach .cyou{margin:6px 0 0}
+.fb.coach .cline{margin:6px 0 0}
+.techrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:12px 0 4px}
+.tech{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--teal);background:var(--teal-soft);color:var(--ink);border-radius:999px;padding:2px 12px;font-weight:800;font-size:.85rem;letter-spacing:.04em}
+.techrow small{color:var(--ink-soft);font-size:.9rem}
+ol.csteps{margin:8px 0 4px;padding-left:1.6em;display:flex;flex-direction:column;gap:6px}
+ol.csteps li{background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:8px 12px;line-height:1.45}
+ol.csteps li::marker{font-weight:800;color:var(--teal)}
+.fb.coach .btn{margin-top:8px}
+.cans{margin-top:12px;border:2px solid var(--teal);background:var(--teal-soft);border-radius:12px;padding:10px 12px}
+.cans .h{display:block;font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-size:1.1rem;font-weight:600;margin:0}
+.cans .model{margin-top:0}
+.cans p.close{font-weight:700;margin-top:8px}
+.cans .row{margin-top:10px}
+.cans.bare{background:none;border:0;padding:0}
+.cans details.more{margin-top:6px}
+.cans details.more summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+.qfig .figlab{margin:4px 0 6px}
+@media (min-width:1100px){
+  .qfig.two{position:static}
+  .qfig.two .fig svg{max-height:calc(50vh - 70px)}
+}
+ul.rev .tech{font-size:.75rem;padding:0 8px;margin-left:6px;vertical-align:middle}
+ul.rev .row{margin-top:8px}
+.well{font-size:1.1rem;margin:4px 0 6px}
 textarea{width:100%;min-height:110px;border:2px solid var(--line);border-radius:14px;padding:12px;font:inherit;font-size:1.1rem;background:var(--ground);color:var(--ink);resize:vertical}
 .model{background:var(--teal-soft);border:2px solid var(--teal);border-radius:14px;padding:12px 14px;margin-top:14px}
 .model p{margin:4px 0 0;font-size:1.1rem;white-space:pre-line}
@@ -240,6 +268,18 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
           if (Array.isArray(it.hints)) { var hs = it.hints.filter(str).map(String).slice(0, 2); if (hs.length) o.hints = hs; }
           if (str(it.hintFigure)) o.hintFigure = it.hintFigure;
           if (str(it.syl)) o.syl = String(it.syl);
+          /* Coaching (C6, 2026-10-17): technique name, 3-5 think-aloud steps, per-choice coaching.
+             Anything malformed is simply left off, so the item falls back to the explain review. */
+          if (str(it.technique)) o.technique = String(it.technique).trim();
+          if (Array.isArray(it.steps)) { var st = it.steps.filter(str).map(String).slice(0, 5); if (st.length) o.steps = st; }
+          if (it.type === 'mcq' && it.optionFeedback && typeof it.optionFeedback === 'object') {
+            var of = {}, nof = 0;
+            Object.keys(it.optionFeedback).forEach(function (key) {
+              var ix = +key;
+              if (Number.isInteger(ix) && ix >= 0 && ix < it.options.length && ix !== it.answer && str(it.optionFeedback[key])) { of[ix] = String(it.optionFeedback[key]); nof++; }
+            });
+            if (nof) o.optionFeedback = of;
+          }
           if (it.type === 'mcq') { o.options = it.options.map(String); o.answer = it.answer; o.marks = 2; }   /* SG EOY Section A: 2 marks per MCQ */
           else {
             o.model = it.model;
@@ -460,7 +500,7 @@ function renderHome() {
     '<div class="big2">' +
       '<button class="tile wide" data-act="exam"><span class="em">📝</span><span><span class="display">Mixed exam practice</span><p>Section A (MCQ) then Section B (open-ended), all P3 topics.</p></span></button>' +
       '<button class="tile wide weak" data-act="weak"><span class="em">🎯</span><span><span class="display">Weak spots</span><p>' +
-        (weak.length ? weak.length + ' question' + (weak.length === 1 ? '' : 's') + ' to fix' : 'Nothing to fix yet. Practise first!') + '</p></span></button>' +
+        (weak.length ? weak.length + ' question' + (weak.length === 1 ? '' : 's') + ' to practise again' : 'Nothing here yet. Practise a topic first!') + '</p></span></button>' +
     '</div>' +
     '<div class="spread section"><button class="link" data-act="parent">👪 Grown-ups: progress report</button></div>'
   );
@@ -574,6 +614,127 @@ function startExam() {
   startSession('exam', 'Mock paper', a.concat(b), { nA: a.length, timerEnd: S.timer ? Date.now() + mins * 60000 : null, mins: mins, flags: [] });
 }
 
+/* ---------- coaching walk-through (C6, 2026-10-17) ----------
+   Kev's ruling: wrong answers are a chance to coach the technique, never a red pen. For each
+   wrong item: her choice framed kindly, the per-choice coaching line (optionFeedback), the
+   technique badge, the steps one at a time with the figure + hintFigure beside them, and the
+   correct answer last. An item without the new fields gets today's explain review, no empty boxes. */
+var TECH = {
+  'Pick-a-pole': 'Unlabelled magnets: call any end N, then follow it round.',
+  'Change one thing': 'Fair test: find the set-ups that differ in only ONE way.',
+  'Start minus left': 'Water or mass taken in or used up: what you started with, minus what is left.',
+  'Follow the arrows': 'Flowcharts and keys: one question at a time, go Yes or No.',
+  'Can we be sure?': '"Cannot tell" traps: is anything else different?',
+  'Read, compare, conclude': 'Tables and graphs: read the values, compare them, then say the pattern with "as ... increases, ...".',
+  'Claim, evidence, reason': 'Open-ended answers: say the answer, point to the picture or table, then say WHY using the story.',
+  'Count, then check': 'Life-cycle stages and animal parts: count them, then check each one.',
+  'Tick or cross': 'Statement lists: judge each statement true or false on its own, then choose.'   /* conn ruling 2026-10-17 (lane C5) */
+};
+/* the first-miss nudge: hints[0], or steps[0] for a coached item without hints (conn ruling 2026-10-17) */
+function nudgeText(it) { return it.hints && it.hints.length ? it.hints[0] : it.steps ? it.steps[0] : ''; }
+var NEXT_STEP = 'Show me the next step →', SHOW_ANS = 'Show me the answer →';
+function techHTML(it) {
+  if (!it.technique) return '';
+  var d = TECH[it.technique];
+  return '<p class="techrow"><span class="tech">🧭 ' + esc(it.technique) + '</span>' + (d ? '<small>' + esc(d) + '</small>' : '') + '</p>';
+}
+/* another item that uses the same technique, for "Try one like it" */
+function likePool(it) {
+  if (!it.technique) return [];
+  var ts = shownTopics(), mine = SCI.byId[it.topic];
+  if (mine && ts.indexOf(mine) < 0) ts = ts.concat([mine]);   /* a hidden topic's own items still count */
+  var out = [];
+  ts.forEach(function (t) { t.items.forEach(function (x) { if (x.id !== it.id && x.technique === it.technique) out.push(x); }); });
+  return out;
+}
+function likeBtn(it) {
+  return likePool(it).length ? '<div class="row"><button class="btn ghost small" data-act="tryLike" data-id="' + esc(it.id) + '">🔁 Try one like it</button></div>' : '';
+}
+function choiceLine(it, a) {
+  if (it.type === 'mcq') {
+    var picks = [];
+    if (a.miss1 != null && a.miss1 !== a.choice) picks.push(a.miss1);
+    if (a.choice != null) picks.push(a.choice);
+    if (!picks.length) return '<p class="cyou">You left this one blank. That is fine: let\'s work it out together.</p>';
+    var h = '<p class="cyou">' + (picks.length > 1 ? 'You tried ' : 'You chose ') + picks.map(function (k) { return '<b>(' + (k + 1) + ') ' + esc(it.options[k]) + '</b>'; }).join(', then ') + '.</p>', any = false;
+    picks.forEach(function (k) {
+      var f = it.optionFeedback && it.optionFeedback[k];
+      if (f) { any = true; h += '<p class="cline">' + (picks.length > 1 ? '<b>(' + (k + 1) + ')</b> ' : '') + esc(f) + '</p>'; }
+    });
+    if (!any) h += '<p class="cline">Good try. Let\'s look at it together.</p>';
+    return h;
+  }
+  var got = Math.round((a.score || 0) * it.marks * 10) / 10;
+  return (a.text && a.text.trim() ? '<div class="yours"><b>Your answer:</b> ' + esc(a.text) + '</div>' : '') +
+    '<p class="cline">' + (got > 0 ? 'You got ' + got + ' of ' + it.marks + ' mark' + (it.marks === 1 ? '' : 's') + '. Well done for those. Let\'s find the missing point.'
+                                    : 'Let\'s build this answer together, one step at a time.') + '</p>';
+}
+/* k = index into session.ans (step progress lives there, so a re-render keeps it).
+   opt.noAnswer: the answer is already on screen (OEQ practice marking), so the walk-through
+   ends with the gentle close only. */
+function coachHTML(it, a, k, opt) {
+  opt = opt || {};
+  var steps = it.steps || null, n = steps ? Math.max(1, Math.min(a.stepN || 1, steps.length)) : 0;
+  var open = !steps || !!a.ansShown;
+  var h = '<div class="fb coach" id="fb" data-coach="' + k + '"' + (opt.noAnswer ? ' data-noans' : '') + '>';
+  if (!opt.noChoice) h += '<b class="h">🌱 Let\'s work this one out together</b>' + choiceLine(it, a);
+  else h += '<b class="h">🧭 How to tackle one like this</b>';
+  h += techHTML(it);
+  if (steps) {
+    h += '<ol class="csteps">' + steps.map(function (s, j) { return '<li' + (j >= n ? ' hidden' : '') + '>' + esc(s) + '</li>'; }).join('') + '</ol>';
+    if (!open) h += '<button class="btn small teal" data-act="nextStep" data-k="' + k + '">' + (n < steps.length ? NEXT_STEP : (opt.noAnswer ? 'Got it →' : SHOW_ANS)) + '</button>';
+  }
+  var ans = '';
+  if (!opt.noAnswer) {
+    if (it.type === 'mcq') {
+      ans += '<span class="h">✅ The answer is (' + (it.answer + 1) + ') ' + esc(it.options[it.answer]) + '</span>';
+      if (it.hints && it.hints[1]) ans += '<p class="reveal"><b>Work it out:</b> ' + esc(it.hints[1]) + '</p>';
+    } else ans += '<div class="model"><b>Model answer</b><p>' + highlight(it.model, it.noKeys ? [] : it.keys) + '</p></div>';
+    /* with steps + a worked line already on screen, the long explanation folds away */
+    if (it.explain) ans += it.steps && it.type === 'mcq' && it.hints && it.hints[1]
+      ? '<details class="more"><summary>More about it</summary><p>' + esc(it.explain) + '</p></details>' : '<p>' + esc(it.explain) + '</p>';
+  }
+  if (it.technique) ans += '<p class="close">Next time, try ' + esc(it.technique) + ' first.</p>';
+  ans += likeBtn(it);
+  if (ans) h += '<div class="cans' + (opt.noAnswer ? ' bare' : '') + '" data-ans' + (open ? '' : ' hidden') + '>' + ans + '</div>';
+  return h + '</div>';
+}
+/* figure + hintFigure side by side with the walk-through (F13 grid at >= 1100 px) */
+function sideFigs(it, withHint) {
+  var hf = withHint && it.hintFigure ? it.hintFigure : null;
+  if (!it.figure && !hf) return '';
+  return '<div class="qfig' + (it.figure && hf ? ' two' : '') + '">' + figHTML(it.figure) +
+    (hf ? '<p class="eyebrow figlab">Worked out on the diagram</p>' + figHTML(hf) : '') + '</div>';
+}
+function layout(side, body) {
+  return side ? '<div class="qgrid">' + side + '<div class="qbody">' + body + '</div></div>' : '<div class="qsolo">' + body + '</div>';
+}
+/* read-only options for the walk-through: her pick(s) in gold, the answer only once shown */
+function reviewOpts(it, a, showRight) {
+  return '<div class="opts">' + it.options.map(function (o, k) {
+    var mine = k === a.choice, tried = k === a.miss1 && k !== a.choice, right = showRight && k === it.answer;
+    var cls = 'opt' + (right ? ' right' : mine ? ' mine' : tried ? ' tried' : '');
+    return '<div class="' + cls + '" data-k="' + k + '"><span class="n">(' + (k + 1) + ')</span><span>' + esc(o) + '</span>' +
+      (mine || tried ? '<span class="tag">' + (mine ? 'your choice' : 'first try') + '</span>' : '') + '</div>';
+  }).join('') + '</div>';
+}
+function missedList(se) { var out = []; se.items.forEach(function (it, k) { if ((se.ans[k].score || 0) < 1) out.push(k); }); return out; }
+function renderReview() {
+  var se = session, list = missedList(se), pos = list.indexOf(se.revK);
+  if (pos < 0) { se.phase = 'report'; return renderReport(); }
+  var k = se.revK, it = se.items[k], a = se.ans[k], t = SCI.byId[it.topic];
+  var h = '<div class="spread"><button class="link" data-act="toReport">← My report</button>' +
+    '<span class="eyebrow" style="margin:0">Let\'s look again · ' + (pos + 1) + ' of ' + list.length + '</span></div>';
+  var q = '<p class="eyebrow" style="margin-top:8px">' + (t ? esc(t.emoji + ' ' + t.title) : '') + (se.kind === 'exam' ? ' · ' + (k < se.nA ? 'Section A' : 'Section B') + ' Q' + (k + 1) : '') + '</p>' +
+    '<p class="stem">' + esc(it.stem) + (it.type === 'oeq' ? '<span class="marks">[' + it.marks + ' mark' + (it.marks === 1 ? '' : 's') + ']</span>' : '') + '</p>';
+  if (it.type === 'mcq') q += reviewOpts(it, a, !it.steps || !!a.ansShown);
+  q += coachHTML(it, a, k);
+  var nextK = list[pos + 1];
+  q += '<div class="nav">' + (pos > 0 ? '<button class="btn ghost small" data-act="revGo" data-k="' + list[pos - 1] + '">← Back</button>' : '<span></span>') +
+    (nextK != null ? '<button class="btn teal" data-act="revGo" data-k="' + nextK + '">Next one →</button>' : '<button class="btn teal" data-act="toReport">Back to my report →</button>') + '</div>';
+  paint(h + layout(sideFigs(it, true), q));
+}
+
 /* ---------- quiz ---------- */
 function stepsHTML() {
   var s = '';
@@ -598,39 +759,45 @@ function renderQuiz() {
   var se = session;
   if (se.phase === 'report') return renderReport();
   if (se.phase === 'markB') return renderMarking();
+  if (se.phase === 'review') return renderReview();
   var it = se.items[se.i], a = se.ans[se.i], exam = se.kind === 'exam', t = SCI.byId[it.topic];
-  var label = exam ? (se.i < se.nA ? 'Section A · Q' + (se.i + 1) : 'Section B · Q' + (se.i + 1)) : 'Question ' + (se.i + 1) + ' of ' + se.items.length;
-  var h = '<div class="spread"><button class="link" data-act="quit">✕ Stop</button>' +
+  var label = exam ? (se.i < se.nA ? 'Section A · Q' + (se.i + 1) : 'Section B · Q' + (se.i + 1)) : se.kind === 'like' ? 'One like it' : 'Question ' + (se.i + 1) + ' of ' + se.items.length;
+  var h = '<div class="spread">' + (se.kind === 'like' ? '<button class="link" data-act="quit">← Back to where I was</button>' : '<button class="link" data-act="quit">✕ Stop</button>') +
     (exam && se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '<span class="eyebrow" style="margin:0">' + esc(se.kind === 'practice' ? se.title : (t ? t.emoji + ' ' + t.title : '')) + '</span>') + '</div>';
   if (exam && se.confirm) return renderConfirm();
   if (!exam) h += stepsHTML();
   h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + (it.syl === 'P5' ? ' <span class="badge">P5 stretch</span>' : '') + '</p>';
   /* Hint ladder (x17, 2026-10-17): practice and weak spots only, never the mock. MCQ: the first
      miss shows hints[0] (the nudge) and allows one retry; the second miss locks it and shows
-     hints[1] (the reveal), the explanation and hintFigure. Right on the retry scores half. */
-  var ladder = !exam && !!(it.hints && it.hints.length);
+     hints[1] (the reveal), the explanation and hintFigure. Right on the retry scores half.
+     C6: an item with steps but no hints nudges with steps[0]; the second miss runs the step walk-through. */
+  var ladder = !exam && !!nudgeText(it);
   var q = '<p class="stem">' + esc(it.stem) + (it.type === 'oeq' ? '<span class="marks">[' + it.marks + ' mark' + (it.marks === 1 ? '' : 's') + ']</span>' : '') + '</p>';
   if (it.type === 'mcq') {
     var locked = !exam && a.choice != null, retry = !locked && ladder && a.miss1 != null;
+    var ok = locked && a.choice === it.answer, showRight = ok || !it.steps || !!a.ansShown;
     q += '<div class="opts">' + it.options.map(function (o, k) {
-      var cls = 'opt', off = locked || (retry && k === a.miss1);
-      if (locked) { if (k === it.answer) cls += ' right'; else if (k === a.choice || k === a.miss1) cls += ' wrong'; }
-      else if (retry && k === a.miss1) cls += ' wrong';
+      var cls = 'opt', off = locked || (retry && k === a.miss1), tag = '';
+      if (locked) {
+        if (k === it.answer && showRight) cls += ' right';
+        else if (k === a.choice && !ok) { cls += ' mine'; tag = 'your choice'; }
+        else if (k === a.miss1) { cls += ' tried'; tag = 'first try'; }
+      }
+      else if (retry && k === a.miss1) { cls += ' tried'; tag = 'first try'; }
       else if (a.choice === k) cls += ' picked';
-      return '<button class="' + cls + '" data-act="pick" data-k="' + k + '"' + (off ? ' disabled' : '') + ' aria-pressed="' + (a.choice === k) + '"><span class="n">(' + (k + 1) + ')</span><span>' + esc(o) + '</span></button>';
+      return '<button class="' + cls + '" data-act="pick" data-k="' + k + '"' + (off ? ' disabled' : '') + ' aria-pressed="' + (a.choice === k) + '"><span class="n">(' + (k + 1) + ')</span><span>' + esc(o) + '</span>' +
+        (tag ? '<span class="tag">' + tag + '</span>' : '') + '</button>';
     }).join('') + '</div>';
-    if (retry) q += '<div class="fb hint" id="fb"><b class="h">🤔 Not yet. Have another go!</b><p>' + esc(it.hints[0]) + '</p></div>';
+    if (retry) q += '<div class="fb hint" id="fb"><b class="h">🤔 Not yet. Have another go!</b><p>' + esc(nudgeText(it)) + '</p></div>';
     if (locked) {
-      var ok = a.choice === it.answer, second = ladder && a.miss1 != null;
-      q += '<div class="fb ' + (ok ? 'ok' : 'no') + '" id="fb"><b class="h">' + (ok ? (second ? '✅ Correct on your second try!' : '✅ Correct!') : '❌ Not quite — the answer is (' + (it.answer + 1) + ')') + '</b>' +
-        (!ok && ladder && it.hints[1] ? '<p class="reveal"><b>Work it out:</b> ' + esc(it.hints[1]) + '</p>' : '') +
-        (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') +
-        (!ok && ladder ? figHTML(it.hintFigure) : '') + '</div>';
+      var second = ladder && a.miss1 != null;
+      if (ok) q += '<div class="fb ok" id="fb"><b class="h">' + (second ? '✅ You got it on your second try!' : '✅ Correct!') + '</b>' + (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') + '</div>';
+      else q += coachHTML(it, a, se.i);   /* the final miss: the coaching walk-through */
     }
   } else {
     q += '<textarea id="oeqText" placeholder="Type your answer here, or write it on paper (optional)"' + (a.shown && !exam ? ' readonly' : '') + '>' + esc(a.text) + '</textarea>';
-    if (ladder && !a.shown && a.hint1) q += '<div class="fb hint" id="fb"><b class="h">💡 Hint</b><p>' + esc(it.hints[0]) + '</p></div>';
-    if (!exam && a.shown) q += markingHTML(it, a) + (ladder && it.hintFigure ? '<p class="eyebrow" style="margin-top:14px">Worked out on the diagram</p>' + figHTML(it.hintFigure) : '');
+    if (ladder && !a.shown && a.hint1) q += '<div class="fb hint" id="fb"><b class="h">💡 Hint</b><p>' + esc(nudgeText(it)) + '</p></div>';
+    if (!exam && a.shown) q += markingHTML(it, a) + (it.steps || it.technique ? coachHTML(it, a, se.i, { noChoice: true, noAnswer: true }) : '');
   }
   var last = se.i === se.items.length - 1;
   var next = '';
@@ -639,15 +806,16 @@ function renderQuiz() {
       (last ? '<button class="btn teal" data-act="finishExam">Hand in →</button>'
             : '<button class="btn teal" data-act="next">' + (se.i === se.nA - 1 && se.nA < se.items.length ? 'On to Section B →' : 'Next →') + '</button>');
   } else if (it.type === 'mcq') {
-    next = a.choice != null ? '<button class="btn teal" data-act="next">' + (last ? 'See results →' : 'Next →') + '</button>' : '';
+    next = a.choice != null ? '<button class="btn teal" data-act="next">' + (last ? (se.kind === 'like' ? 'Back to where I was →' : 'See results →') : 'Next →') + '</button>' : '';
   } else {
-    next = a.shown ? '<button class="btn teal" data-act="saveMark">' + (last ? 'Save mark &amp; see results →' : 'Save mark &amp; next →') + '</button>'
+    next = a.shown ? '<button class="btn teal" data-act="saveMark">' + (last ? (se.kind === 'like' ? 'Save mark &amp; go back →' : 'Save mark &amp; see results →') : 'Save mark &amp; next →') + '</button>'
                    : (ladder && !a.hint1 ? '<button class="btn ghost small" data-act="hint">💡 Hint</button>' : '') + '<button class="btn" data-act="reveal">Show answer</button>';
   }
   q += '<div class="nav">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + (exam ? next : '<span class="row">' + next + '</span>') + '</div>';
   /* F13 (2026-10-17): on a wide screen a figure sits beside the question, so the options and
      buttons stay above the fold at 1440x900 and on an iPad in landscape. Narrow screens stack. */
-  h += it.figure ? '<div class="qgrid"><div class="qfig">' + figHTML(it.figure) + '</div><div class="qbody">' + q + '</div></div>' : '<div class="qsolo">' + q + '</div>';
+  var coaching = !exam && (it.type === 'mcq' ? locked && !ok : a.shown);   /* hintFigure joins the figure beside the walk-through */
+  h += layout(sideFigs(it, coaching), q);
   if (exam) h += qnavHTML() + '<button class="btn handin" data-act="finishExam">✋ Hand in paper</button>';
   paint(h);
   if (!exam && se.scrollFb) { se.scrollFb = false; var fb = document.getElementById('fb'); if (fb && fb.getBoundingClientRect().bottom > window.innerHeight) fb.scrollIntoView({ block: 'nearest' }); }
@@ -748,35 +916,44 @@ function finishSession() {
   se.phase = 'report'; renderQuiz();
 }
 function renderReport() {
-  var se = session, got = 0, max = 0, by = {}, missed = [];
+  var se = session, got = 0, max = 0, by = {}, missed = missedList(se), right = 0, part = 0;
   se.items.forEach(function (it, k) {
     var a = se.ans[k], sc = a.score || 0, g = sc * it.marks;
     got += g; max += it.marks;
     var b = by[it.topic] || (by[it.topic] = { got: 0, max: 0 }); b.got += g; b.max += it.marks;
-    if (sc < 1) missed.push(k);
+    if (sc >= 1) right++; else if (sc > 0) part++;
   });
   got = Math.round(got * 10) / 10;
   var ratio = max ? got / max : 0;
-  var cheer = ratio >= 0.85 ? '🌟 Superb!' : ratio >= 0.6 ? '👍 Good work!' : '💪 Keep going — every miss is a lesson.';
+  var cheer = ratio >= 0.85 ? '🌟 Superb work!' : ratio >= 0.6 ? '👍 Good work!' : '🌱 Good effort! Let\'s grow from here.';
+  /* lead with what went well (coaching standard), then the score */
+  var well = right ? 'You got <b>' + right + '</b> of ' + se.items.length + ' question' + (se.items.length === 1 ? '' : 's') + ' fully right' + (part ? ', and picked up marks on ' + part + ' more' : '') + '.'
+           : part ? 'You picked up marks on <b>' + part + '</b> question' + (part === 1 ? '' : 's') + '. That is a start to build on.'
+           : 'You finished the whole set. That takes grit, and now we know what to practise.';
+  var ids = Object.keys(by), best = null;
+  ids.forEach(function (id) { var b = by[id]; if (b.max && b.got > 0 && (!best || b.got / b.max > by[best].got / by[best].max)) best = id; });
+  if (ids.length > 1 && best && by[best].got / by[best].max >= 0.5) { var bt = SCI.byId[best]; well += ' Your strongest topic was <b>' + esc(bt ? bt.title : best) + '</b> (' + pct(by[best].got / by[best].max) + ').'; }
   var h = '<p class="eyebrow">' + esc(se.kind === 'exam' ? 'Mock paper report' : se.kind === 'weak' ? 'Weak spots' : 'Practice · ' + se.title) + '</p>' +
-    '<h2>' + cheer + '</h2><div class="score">' + got + ' / ' + max + '</div>';
+    '<h2>' + cheer + '</h2><p class="well">✨ ' + well + '</p><div class="score">' + got + ' / ' + max + '</div>';
   if (se.kind === 'exam') {
     var aGot = 0, aMax = 0, bGot = 0, bMax = 0;
     se.items.forEach(function (it, k) { if (k < se.nA) { aGot += se.ans[k].score * it.marks; aMax += it.marks; } else { bGot += se.ans[k].score * it.marks; bMax += it.marks; } });
     h += '<p class="lead">Section A: ' + aGot + ' / ' + aMax + ' · Section B: ' + (Math.round(bGot * 10) / 10) + ' / ' + bMax + '</p>';
   }
   h += '<div class="section"><h3>By topic</h3><table class="tbl"><tr><th>Topic</th><th class="num">Marks</th><th class="num">%</th></tr>' +
-    Object.keys(by).map(function (id) { var t = SCI.byId[id], b = by[id];
+    ids.map(function (id) { var t = SCI.byId[id], b = by[id];
       return '<tr><td>' + esc(t ? t.emoji + ' ' + t.title : id) + '</td><td class="num">' + (Math.round(b.got * 10) / 10) + ' / ' + b.max + '</td><td class="num">' + pct(b.max ? b.got / b.max : 0) + '</td></tr>'; }).join('') +
     '</table></div>';
   if (missed.length) {
-    h += '<div class="section"><h3>Look again</h3><ul class="rev">' + missed.map(function (k) {
+    h += '<div class="section"><div class="spread"><h3>🔍 Let\'s look again together</h3><button class="btn small teal" data-act="revGo" data-k="' + missed[0] + '">Start the walk-through →</button></div>' +
+      '<p class="lead" style="margin:4px 0 10px">These are the ones to learn from. Each one comes with a walk-through.</p><ul class="rev">' + missed.map(function (k) {
       var it = se.items[k], a = se.ans[k];
-      var ansTxt = it.type === 'mcq' ? 'Answer: (' + (it.answer + 1) + ') ' + it.options[it.answer] + (a.choice != null ? ' · you chose (' + (a.choice + 1) + ')' : ' · not answered') : 'Model: ' + it.model;
-      return '<li><span class="r">' + (a.score > 0 ? '½' : '✗') + '</span>' + esc(it.stem) + '<small>' + esc(ansTxt) + (it.explain ? '\n' + esc(it.explain) : '') + '</small></li>';
+      var mine = it.type === 'mcq' ? (a.choice != null ? 'You chose (' + (a.choice + 1) + ')' : 'Left blank') : (Math.round((a.score || 0) * it.marks * 10) / 10) + ' of ' + it.marks + ' marks';
+      return '<li><span class="r">' + (a.score > 0 ? '½' : '🔍') + '</span>' + esc(it.stem) + (it.technique ? '<span class="tech">🧭 ' + esc(it.technique) + '</span>' : '') +
+        '<small>' + esc(mine) + '</small><div class="row"><button class="btn ghost small" data-act="revGo" data-k="' + k + '">Walk me through it →</button></div></li>';
     }).join('') + '</ul></div>';
   }
-  h += '<div class="nav">' + (missed.length ? '<button class="btn" data-act="retryMissed">Try the missed ones again</button>' : '<span></span>') +
+  h += '<div class="nav">' + (missed.length ? '<button class="btn" data-act="retryMissed">Try these again</button>' : '<span></span>') +
     '<button class="btn ghost" data-act="home">Home</button></div>';
   paint(h);
 }
@@ -798,7 +975,7 @@ function renderParent() {
     p4Section() +
     '<div class="section"><h3>Most-missed questions</h3>' + (most.length ? '<ul class="rev">' + most.map(function (id) {
       var it = SCI.items[id], r = S.items[id], t = SCI.byId[it.topic];
-      return '<li><span class="r">' + (r.last >= 1 ? '✓ now' : '✗') + '</span>' + esc(it.stem) + '<small>' + esc((t ? t.title : '') + ' · missed ' + r.miss + ' of ' + r.a + ' tries · ' + it.id) + '</small></li>';
+      return '<li><span class="r">' + (r.last >= 1 ? '✓ now' : '↺') + '</span>' + esc(it.stem) + '<small>' + esc((t ? t.title : '') + ' · missed ' + r.miss + ' of ' + r.a + ' tries · ' + it.id) + '</small></li>';
     }).join('') + '</ul>' : '<p class="empty">Nothing missed yet.</p>') + '</div>' +
     '<div class="section"><h3>Mock papers</h3>' + (ex ? '<table class="tbl"><tr><th>Date</th><th class="num">Score</th><th class="num">%</th></tr>' + ex + '</table>' : '<p class="empty">No mock paper done yet.</p>') + '</div>' +
     '<div class="nav"><button class="btn ghost small" data-act="reset">Reset all progress</button></div>'
@@ -838,7 +1015,7 @@ var A = {
     if (se.kind === 'exam') { a.choice = k; renderQuiz(); return; }
     if (a.choice != null || k === a.miss1) return;
     se.scrollFb = true;
-    if (it.hints && it.hints.length && a.miss1 == null && k !== it.answer) { a.miss1 = k; renderQuiz(); return; }   /* first miss: nudge + retry */
+    if (nudgeText(it) && a.miss1 == null && k !== it.answer) { a.miss1 = k; renderQuiz(); return; }   /* first miss: nudge (hints[0], else steps[0]) + retry */
     a.choice = k; a.score = k === it.answer ? (a.miss1 != null ? 0.5 : 1) : 0; record(it, a.score); save(); renderQuiz();
   },
   reveal: function () { var a = session.ans[session.i]; saveText(); a.shown = true; renderQuiz(); },
@@ -855,8 +1032,38 @@ var A = {
   next: function () {
     saveText();
     if (session.i < session.items.length - 1) { session.i++; renderQuiz(); }
+    else if (session.kind === 'like') { session = session.back; renderQuiz(); }   /* back to the walk-through she came from */
     else finishSession();
   },
+  /* coaching walk-through: steps one at a time in place (no re-render, so the page keeps its scroll) */
+  nextStep: function (el) {
+    var se = session, k = +el.dataset.k, it = se.items[k], a = se.ans[k], box = el.closest('[data-coach]');
+    if (!it || !it.steps || !box) return;
+    var n = Math.max(1, Math.min(a.stepN || 1, it.steps.length)), show;
+    if (n < it.steps.length) {
+      a.stepN = n + 1; show = box.querySelectorAll('ol.csteps li')[n]; if (show) show.hidden = false;
+      if (a.stepN >= it.steps.length) el.textContent = box.hasAttribute('data-noans') ? 'Got it →' : SHOW_ANS;
+    } else {
+      a.ansShown = true;
+      box.querySelectorAll('[data-ans]').forEach(function (x) { x.hidden = false; show = show || x; });
+      if (!box.hasAttribute('data-noans')) {
+        view.querySelectorAll('.opt[data-k="' + it.answer + '"]').forEach(function (o) { o.classList.remove('mine', 'tried'); o.classList.add('right'); });
+      }
+      el.remove();
+    }
+    if (show && show.getBoundingClientRect().bottom > window.innerHeight) show.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  },
+  tryLike: function (el) {
+    var it = SCI.items[el.dataset.id]; if (!it || !session) return;
+    var back = session.kind === 'like' ? session.back : session;
+    var seen = {}; back.items.forEach(function (x) { seen[x.id] = 1; }); seen[it.id] = 1;
+    var pool = likePool(it), fresh = pool.filter(function (x) { return !seen[x.id]; });
+    var pick = pickWeighted(fresh.length ? fresh : pool, 1)[0];
+    if (!pick) { toast('No more like this one yet'); return; }
+    startSession('like', 'One like it', [pick], { back: back, topicId: back.topicId });
+  },
+  revGo: function (el) { var se = session; se.revK = +el.dataset.k; se.phase = 'review'; renderQuiz(); },
+  toReport: function () { session.phase = 'report'; renderQuiz(); },
   prev: function () { saveText(); if (session.i > 0) { session.i--; renderQuiz(); } },
   /* Hand in: an in-app check first (never window.confirm), then marking as before */
   finishExam: function () { saveText(); examSave(); session.confirm = true; renderQuiz(); },
@@ -875,7 +1082,8 @@ var A = {
     startSession(se.kind === 'exam' ? 'weak' : se.kind, se.kind === 'exam' ? 'Missed from mock paper' : se.title, list, { topicId: se.topicId });
   },
   quit: function () {
-    if (session && session.phase !== 'report' && !confirm('Stop this set? Answers already marked are kept.')) return;
+    if (session && session.kind === 'like') { session = session.back; renderQuiz(); return; }
+    if (session && session.phase !== 'report' && session.phase !== 'review' && !confirm('Stop this set? Answers already marked are kept.')) return;
     var back = session && session.topicId ? 'topic/' + session.topicId : '';
     if (session && session.kind === 'exam') examClear();
     session = null; go(back);

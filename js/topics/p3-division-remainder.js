@@ -11,6 +11,13 @@
 
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Nurul'];
   const SNACKS = ['curry puffs','kaya toasts','pineapple tarts','otah sticks','soya bean cartons','ang ku kueh'];
+  /* MATHS COACHING CARD 2026-10-17: named technique + 3-5 think-aloud steps from the
+     draw's own numbers (tools/coach-steps.mjs re-computes every equation and checks the
+     last step reaches the key). A remainder is never written "a ÷ b = q remainder r":
+     the steps say "q × b = x, and a − x = r left over", which is true as written. */
+  const coach = (q, technique, steps) => (q.technique = technique, q.steps = steps, q);
+  /* "300 + 40 + 7 = 347" and "300 × 6 = 1800, 40 × 6 = 240, 7 × 6 = 42" */
+  const splitParts = a => [Math.floor(a / 100) * 100, Math.floor(a / 10) % 10 * 10, a % 10].filter(p => p > 0);
 
   function gLeftOver(){
     const d = ri(3, 9), q = ri(4, 12), r = ri(1, d - 1), n = d*q + r;
@@ -26,8 +33,12 @@
   function gBoxesNeeded(){
     const d = ri(4, 9), q = ri(6, 20), r = ri(1, d - 1), n = d*q + r;
     const who = pick(NAMES), item = pick(SNACKS);
-    return finishTyped(who + ' packs ' + n + ' ' + item + ' into boxes of ' + d + '. How many boxes are needed to hold all of them?',
-      q + 1, n + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + (r === 1 ? ' left over still needs a box,' : ' left over still need a box,') + ' so ' + who + ' needs ' + (q+1) + ' boxes.');
+    return coach(finishTyped(who + ' packs ' + n + ' ' + item + ' into boxes of ' + d + '. How many boxes are needed to hold all of them?',
+      q + 1, n + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + (r === 1 ? ' left over still needs a box,' : ' left over still need a box,') + ' so ' + who + ' needs ' + (q+1) + ' boxes.'),
+      'Draw a model', [
+        'Draw boxes of ' + d + '. ' + q + ' full boxes hold ' + q + ' × ' + d + ' = ' + (q * d) + '.',
+        'That leaves ' + n + ' − ' + (q * d) + ' = ' + r + ' with no box yet.',
+        'Every one must go in a box, so they need one more box: ' + q + ' + 1 = <b>' + (q + 1) + '</b> boxes.']);
   }
 
   function gMulAlgo(){
@@ -72,9 +83,15 @@
   function gMulWord(){
     const ab = draw3(), per = ab[0], n = ab[1];
     const kid = pick(NAMES), pk = pick(PACKS);
-    return finishTyped('Each ' + pk[0] + ' has ' + per + ' ' + pk[1] + '. ' + kid + ' buys ' + n + ' ' + pk[0] +
+    const parts = splitParts(per), packs = pk[0] + (pk[0] === 'box' ? 'es' : 's');
+    return coach(finishTyped('Each ' + pk[0] + ' has ' + per + ' ' + pk[1] + '. ' + kid + ' buys ' + n + ' ' + pk[0] +
       (pk[0] === 'box' ? 'es' : 's') + '. How many ' + pk[1] + ' are there altogether?', per*n,
-      n + ' groups of ' + per + ' is ' + per + ' × ' + n + '. ' + mulSplit(per, n), pk[1]);
+      n + ' groups of ' + per + ' is ' + per + ' × ' + n + '. ' + mulSplit(per, n), pk[1]),
+      'Draw a model', [
+        'Draw ' + n + ' equal boxes, one for each of the ' + packs + ', with ' + per + ' in each. ' + n + ' groups of ' + per + ' is ' + per + ' × ' + n + '.',
+        'Split ' + per + ' into easy parts: ' + parts.join(' + ') + ' = ' + per + '.',
+        'Multiply each part by ' + n + ': ' + parts.map(p => p + ' × ' + n + ' = ' + (p * n)).join(', ') + '.',
+        'Add them: ' + parts.map(p => p * n).join(' + ') + ' = <b>' + (per * n) + '</b> ' + pk[1] + '.']);
   }
   function gDivAlgo(){
     /* scope clamp (MOE p.35 item 3.4): up to 3 digits by 1 digit, so d*q <= 999 */
@@ -84,11 +101,15 @@
   }
   function gTwoStep(){
     const who = pick(NAMES), trays = ri(4, 9), each = pick([10, 12, 15, 30]), drop = ri(3, 20);
-    return finishTyped(who + ' buys ' + trays + ' trays of eggs at NTUC. Each tray holds ' + each +
+    return coach(finishTyped(who + ' buys ' + trays + ' trays of eggs at NTUC. Each tray holds ' + each +
       ' eggs. ' + drop + ' eggs crack on the MRT ride home. How many good eggs are left?',
       trays*each - drop,
       'First find all the eggs: ' + trays + ' × ' + each + ' = ' + (trays*each) + '. Then take away the cracked ones: ' +
-      (trays*each) + ' - ' + drop + ' = ' + (trays*each - drop) + '.');
+      (trays*each) + ' - ' + drop + ' = ' + (trays*each - drop) + '.'),
+      'Draw a model', [
+        'Draw ' + trays + ' equal boxes for the trays, with ' + each + ' eggs in each.',
+        'All the eggs: ' + trays + ' × ' + each + ' = ' + (trays * each) + '.',
+        'Take away the cracked ones: ' + (trays * each) + ' − ' + drop + ' = <b>' + (trays * each - drop) + '</b> good eggs.']);
   }
 
   /* ===== HARD LANE "divide" 2026-10-07 (calibration cards D1, D2, D3) ==========
@@ -128,7 +149,10 @@
       ' would still be left out. ' + (R.r === 1 ? 'It needs' : 'They need') + ' one more ' + bx[0] +
       ', so the answer is ' + R.q + ' + 1 = ' + (R.q + 1) + ' ' + bx[1] + '. ' +
       '"Least number needed" means round UP: every one must be packed.';
-    return band(finishTyped(stem, R.q + 1, ex, bx[1]), 3);
+    return band(coach(finishTyped(stem, R.q + 1, ex, bx[1]), 'Draw a model', [
+      'First find the rest: ' + total + ' − ' + sold + ' = ' + R.n + ' ' + item + '.',
+      'Draw ' + bx[1] + ' of ' + d + '. ' + R.q + ' full ' + bx[1] + ' hold ' + R.q + ' × ' + d + ' = ' + (R.q * d) + ', and ' + R.n + ' − ' + (R.q * d) + ' = ' + R.r + (R.r === 1 ? ' is' : ' are') + ' still left out.',
+      '"Least number needed" means every one must be packed, so add one more ' + bx[0] + ': ' + R.q + ' + 1 = <b>' + (R.q + 1) + '</b> ' + bx[1] + '.']), 3);
   }
 
   /* D1b: multiply, add, divide, ROUND UP (everyone must get a seat). */
@@ -150,7 +174,10 @@
       'Step 3: ' + tot + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '. ' +
       q + ' ' + rd[1] + ' carry ' + (q*d) + ' people, and ' + sOrP(r, 'person is', 'people are') + ' still left behind, so one more ' + rd[0] +
       ' is needed: ' + q + ' + 1 = ' + (q + 1) + ' ' + rd[1] + '. Do not forget the teachers - they need seats too.';
-    return band(finishTyped(stem, q + 1, ex, rd[1]), 3);
+    return band(coach(finishTyped(stem, q + 1, ex, rd[1]), 'Draw a model', [
+      'Count everyone first. Pupils: ' + k + ' × ' + n + ' = ' + (k * n) + '. Add the teachers: ' + (k * n) + ' + ' + t + ' = ' + tot + ' people.',
+      'Draw ' + rd[1] + ' of ' + d + '. ' + q + ' ' + rd[1] + ' carry ' + q + ' × ' + d + ' = ' + (q * d) + ', and ' + tot + ' − ' + (q * d) + ' = ' + r + (r === 1 ? ' is' : ' are') + ' still waiting.',
+      'Everyone needs a seat, so one more ' + rd[0] + ': ' + q + ' + 1 = <b>' + (q + 1) + '</b> ' + rd[1] + '.']), 3);
   }
 
   /* D1c: multiply, divide, then "how many MORE for one more" = group size - remainder.
@@ -175,7 +202,10 @@
       sOrP(r, c.one, c.thing) + ' ' + (r === 1 ? 'is' : 'are') + ' left. ' +
       'Step 3: one more ' + c.make + ' needs ' + d + ', and ' + r + ' are already there, so ' + d + ' - ' + r + ' = ' + more +
       ' more ' + c.thing + '. The remainder (' + r + ') is what is LEFT, not what is NEEDED.';
-    return band(finishTyped(stem, more, ex, c.thing), 3);
+    return band(coach(finishTyped(stem, more, ex, c.thing), 'Draw a model', [
+      'All the ' + c.thing + ': ' + k + ' × ' + c.per + ' = ' + tot + '.',
+      'Draw groups of ' + d + ', one for each ' + c.make + '. ' + q + ' ' + c.makes + ' use ' + q + ' × ' + d + ' = ' + (q * d) + ', and ' + tot + ' − ' + (q * d) + ' = ' + r + (r === 1 ? ' is' : ' are') + ' left.',
+      'One more ' + c.make + ' needs ' + d + ', and ' + r + (r === 1 ? ' is' : ' are') + ' already there: ' + d + ' − ' + r + ' = <b>' + more + '</b> more ' + c.thing + '.']), 3);
   }
 
   /* D1d: subtract twice, divide, ROUND DOWN (a leftover too small for one more).
@@ -192,7 +222,11 @@
         'Step 2: money left. $' + T + ' - $' + (a + b) + ' = $' + R.n + '. ' +
         'Step 3: ' + R.n + ' ÷ ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The $' + R.r + ' left is not enough for another ' +
         item[0] + ', so round DOWN: ' + R.q + ' ' + item[1] + '.';
-      return band(finishTyped(stem, R.q, ex, item[1]), 3);
+      return band(coach(finishTyped(stem, R.q, ex, item[1]), 'Draw a model', [
+        'Draw one bar for the $' + T + '. Money spent first: $' + a + ' + $' + b + ' = $' + (a + b) + '.',
+        'Money left: $' + T + ' − $' + (a + b) + ' = $' + R.n + '.',
+        'Fit as many $' + d + ' ' + item[1] + ' as you can: ' + R.q + ' × $' + d + ' = $' + (R.q * d) + ', and $' + R.n + ' − $' + (R.q * d) + ' = $' + R.r + ' is not enough for one more.',
+        '"Greatest number" means round down: $' + (R.q * d) + ' ÷ $' + d + ' = <b>' + R.q + '</b> ' + item[1] + '.']), 3);
     }
     const d = ri(4, 9), R = drawRem(d, 120, 900), a = ri(3, 18) * 5, b = ri(4, 16) * 5, T = R.n + a + b;
     const stem = 'A roll of ribbon is ' + T + ' cm long. ' + who + ' cuts off ' + a + ' cm for a bow and ' + b +
@@ -202,7 +236,11 @@
       'Step 2: ' + T + ' - ' + (a + b) + ' = ' + R.n + ' cm is left. ' +
       'Step 3: ' + R.n + ' ÷ ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The last ' + R.r + ' cm is too short to make another ' +
       d + ' cm piece, so round DOWN: ' + R.q + ' pieces.';
-    return band(finishTyped(stem, R.q, ex, 'pieces'), 3);
+    return band(coach(finishTyped(stem, R.q, ex, 'pieces'), 'Draw a model', [
+      'Draw one bar for the ' + T + ' cm roll. Cut off first: ' + a + ' + ' + b + ' = ' + (a + b) + ' cm.',
+      'Left: ' + T + ' − ' + (a + b) + ' = ' + R.n + ' cm.',
+      'Fit as many ' + d + ' cm pieces as you can: ' + R.q + ' × ' + d + ' = ' + (R.q * d) + ' cm, and ' + R.n + ' − ' + (R.q * d) + ' = ' + R.r + ' cm is too short for one more.',
+      '"Greatest number" means round down: ' + (R.q * d) + ' ÷ ' + d + ' = <b>' + R.q + '</b> pieces.']), 3);
   }
 
   /* D2a: pack, then repack. a x b, then take some away OR compare, then share equally.
@@ -225,7 +263,10 @@
       const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' × ' + b + ' = ' + (a*b) + '. ' +
         'Step 2: share them ' + c[5] + 'to the ' + c[4] + '. ' + (a*b) + ' ÷ ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '. ' +
         'Step 3: compare. ' + each + ' - ' + b + ' = ' + (each - b) + '. Read the question to the end: it asks how many MORE, not how many ' + c[5] + ' each ' + c[3] + '.';
-      return band(finishTyped(stem, each - b, ex, unitOf(c[0])), 3);
+      return band(coach(finishTyped(stem, each - b, ex, unitOf(c[0])), 'Draw a model', [
+        'All the ' + c[0] + ': ' + a + ' × ' + b + ' = ' + (a * b) + '.',
+        'Share them equally ' + c[5] + 'to ' + e + ' ' + c[4] + ': ' + (a * b) + ' ÷ ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '.',
+        'Compare one ' + c[3] + ' with one ' + c[1] + ': ' + each + ' − ' + b + ' = <b>' + (each - b) + '</b> more.']), 3);
     }
     do { a = ri(3, 9); b = ri(12, 60); x = ri(2, 30); e = ri(3, 9); g++; }
     while (g < 300 && (e === a || (a*b - x) % e !== 0 || a*b > 999 || (a*b - x) / e < 2));
@@ -237,7 +278,10 @@
     const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' × ' + b + ' = ' + (a*b) + '. ' +
       'Step 2: take away ' + x + '. ' + (a*b) + ' - ' + x + ' = ' + left + '. ' +
       'Step 3: share equally. ' + left + ' ÷ ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '.';
-    return band(finishTyped(stem, each, ex, unitOf(c[0])), 3);
+    return band(coach(finishTyped(stem, each, ex, unitOf(c[0])), 'Draw a model', [
+      'All the ' + c[0] + ': ' + a + ' × ' + b + ' = ' + (a * b) + '.',
+      'Take away the ' + x + ': ' + (a * b) + ' − ' + x + ' = ' + left + '.',
+      'Share the rest equally ' + c[5] + 'to ' + e + ' ' + c[4] + ': ' + left + ' ÷ ' + e + ' = <b>' + each + '</b> ' + c[5] + ' each ' + c[3] + '.']), 3);
   }
 
   /* D2b: total over a run of days -> one day -> a part of the run. The interpretation
@@ -259,7 +303,11 @@
       'Step 2: one day. ' + (per*days) + ' ÷ ' + days + ' = ' + per + ' ' + c[1] + '. ' +
       'Step 3: ' + DAYS[s] + ' to ' + DAYS[t] + ' is ' + part + ' days (' + DAYS.slice(s, t + 1).join(', ') + '), counting both ends. ' +
       part + ' × ' + per + ' = ' + (part*per) + ' ' + c[1] + '.';
-    return band(finishTyped(stem, part*per, ex, unitOf(c[1])), 3);
+    return band(coach(finishTyped(stem, part*per, ex, unitOf(c[1])), 'Make a list', [
+      'Make a list of the days: ' + DAYS.slice(span[0], span[1] + 1).join(', ') + '. That is ' + days + ' days.',
+      'One day: ' + (per * days) + ' ÷ ' + days + ' = ' + per + ' ' + c[1] + '.',
+      'List the days asked for: ' + DAYS.slice(s, t + 1).join(', ') + '. Count both ends: ' + part + ' days.',
+      part + ' days: ' + part + ' × ' + per + ' = <b>' + (part * per) + '</b> ' + c[1] + '.']), 3);
   }
 
   /* D3: inverse division, MCQ. dividend = quotient x divisor + remainder.
@@ -274,7 +322,16 @@
       ' in each ' + c[3] + ' and ' + sOrP(r, c[1] + ' is', c[0] + ' are') + ' left over. How many ' + c[0] + ' were there at first?';
     const ex = 'Put the groups back together, then add the leftover. ' + d + ' × ' + q + ' = ' + (q*d) + ' in the ' + c[2] +
       '. ' + (q*d) + ' + ' + r + ' = ' + n + '. Check: ' + n + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '.';
-    return band(finishNum(stem, '', n, [q*d, q*d - r, (q + 1)*d], c[0], ex), 2);
+    const qq = coach(finishNum(stem, '', n, [q*d, q*d - r, (q + 1)*d], c[0], ex), 'Work backwards', [
+      'Work backwards: put the ' + c[2] + ' back together first, then add what was left over.',
+      'In the ' + c[2] + ': ' + d + ' × ' + q + ' = ' + (q * d) + '.',
+      'Add the leftover: ' + (q * d) + ' + ' + r + ' = <b>' + n + '</b> ' + c[0] + '.']);
+    const of = {}, slip = [[q*d, 'Good, that is what is in the ' + c[2] + '! Add back the ' + r + ' left over too.'],
+      [q*d - r, 'Lots of children pick this, because they take the leftover away. Working backwards, we put it back: add it.'],
+      [(q + 1)*d, 'Lots of children pick this, because they count the leftover as one more full ' + c[3] + '. Only ' + r + ' were left over.']];
+    for (const [v, say] of slip) { const i = qq.choices.indexOf(v + ' ' + c[0]); if (i >= 0 && i !== qq.correct) of[i] = say; }
+    if (Object.keys(of).length) qq.optionFeedback = of;
+    return band(qq, 2);
   }
 
   /* PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 4, MOE P3 MD 3.4 with 3.3):

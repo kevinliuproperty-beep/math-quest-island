@@ -46,6 +46,14 @@
   const units = n => Array(n).fill(U);
   const model = (rows, plain) => '<b>Bar model</b>' + (plain ? '' : ' ([ u ] = 1 unit)') + '<br>' + rows.join('<br>') + '<br>';
   const times = m => (m === 2 ? 'twice' : m + ' times');
+  /* MATHS COACHING CARD 2026-10-17: every generator here emits a named technique and
+     3-5 think-aloud steps built from its own drawn numbers, which the review and the
+     Power-Up feedback reveal one at a time. Rules (tools/coach-steps.mjs checks them
+     on 2,000+ draws): every "a op b = c" written in a step is true, so a remainder is
+     never written as "a ÷ b = q remainder r"; the LAST step bolds the key and its last
+     working reaches it. The explanation is unchanged and stays as the full worked answer. */
+  const coach = (q, technique, steps) => (q.technique = technique, q.steps = steps, q);
+  const uw = n => n + (n === 1 ? ' unit' : ' units');
 
   /* ================= POOL 1: two-step standard ================= */
 
@@ -57,17 +65,25 @@
       const s = pick(SHOPS), a = ri(210, 1450), b = ri(180, 1450), left = ri(120, 1800);
       const T = a + b + left;
       const it = s[1];
-      return finishTyped(s[0] + ' had ' + T + ' ' + it + '. It sold ' + a + ' ' + it + ' on Saturday and ' + b +
+      return coach(finishTyped(s[0] + ' had ' + T + ' ' + it + '. It sold ' + a + ' ' + it + ' on Saturday and ' + b +
         ' ' + it + ' on Sunday. How many ' + it + ' were left?', left,
         model(['[ ' + a + ' ][ ' + b + ' ][ ? ] &nbsp;' + T + ' ' + it + ' at first'], true) +
-        'Sold altogether: ' + a + ' + ' + b + ' = ' + (a + b) + '.<br>Left: ' + T + ' − ' + (a + b) + ' = <b>' + left + '</b>.', it);
+        'Sold altogether: ' + a + ' + ' + b + ' = ' + (a + b) + '.<br>Left: ' + T + ' − ' + (a + b) + ' = <b>' + left + '</b>.', it),
+        'Draw a model', [
+          'Draw one long bar for the ' + T + ' ' + it + ' at first. Cut it into three parts: Saturday, Sunday, and the part that is left.',
+          'Put the two parts you know together: ' + a + ' + ' + b + ' = ' + (a + b) + ' ' + it + ' were sold.',
+          'The part left is the whole bar take away the parts sold: ' + T + ' − ' + (a + b) + ' = <b>' + left + '</b> ' + it + '.']);
     }
     const [A, B] = names(2), it = pick(ITEMS);
     const a = ri(120, 900), b = ri(40, 400), c = ri(30, a + b - 20), now = a + b - c;
-    return finishTyped(A + ' had ' + a + ' ' + it + '. ' + B + ' gave ' + A + ' ' + b + ' more ' + it + '. ' + A +
+    return coach(finishTyped(A + ' had ' + a + ' ' + it + '. ' + B + ' gave ' + A + ' ' + b + ' more ' + it + '. ' + A +
       ' then gave away ' + c + ' ' + it + '. How many ' + it + ' does ' + A + ' have now?', now,
       'After getting more: ' + a + ' + ' + b + ' = ' + (a + b) + '.<br>After giving away: ' + (a + b) + ' − ' + c +
-      ' = <b>' + now + '</b>.', it);
+      ' = <b>' + now + '</b>.', it),
+      'Before and after', [
+        'Follow the story one change at a time. Before anything happens, ' + A + ' has ' + a + ' ' + it + '.',
+        'After getting ' + b + ' more, ' + A + ' has ' + a + ' + ' + b + ' = ' + (a + b) + '.',
+        'After giving away ' + c + ', ' + A + ' has ' + (a + b) + ' − ' + c + ' = <b>' + now + '</b> ' + it + '.']);
   }
 
   /* comparison, more / fewer, find the total */
@@ -75,11 +91,15 @@
     const [A, B] = names(2), it = pick(ITEMS);
     const a = ri(150, 2400), d = ri(25, 600), more = Math.random() < 0.5 || a - d < 100;
     const b = more ? a + d : a - d, tot = a + b;
-    return finishTyped(A + ' has ' + a + ' ' + it + '. ' + B + ' has ' + d + (more ? ' more ' : ' fewer ') + it +
+    return coach(finishTyped(A + ' has ' + a + ' ' + it + '. ' + B + ' has ' + d + (more ? ' more ' : ' fewer ') + it +
       ' than ' + A + '. How many ' + it + ' do they have altogether?', tot,
       model(more ? ['[ ' + a + ' ] &nbsp;' + A, '[ ' + a + ' ][ ' + d + ' ] &nbsp;' + B]
                  : ['[ ? ][ ' + d + ' ] &nbsp;' + A + ' = ' + a, '[ ? ] &nbsp;' + B], true) +
-      B + ' has ' + a + (more ? ' + ' : ' − ') + d + ' = ' + b + '.<br>Altogether: ' + a + ' + ' + b + ' = <b>' + tot + '</b>.', it);
+      B + ' has ' + a + (more ? ' + ' : ' − ') + d + ' = ' + b + '.<br>Altogether: ' + a + ' + ' + b + ' = <b>' + tot + '</b>.', it),
+      'Draw a model', [
+        'Draw a bar for ' + A + ': ' + a + '. ' + B + '\'s bar is ' + (more ? 'the same length with an extra ' + d + ' on the end.' : d + ' shorter.'),
+        'Work out ' + B + '\'s bar first: ' + a + (more ? ' + ' : ' − ') + d + ' = ' + b + '.',
+        '"Altogether" means both bars together: ' + a + ' + ' + b + ' = <b>' + tot + '</b> ' + it + '.']);
   }
 
   /* money: several of one item plus one other */
@@ -89,10 +109,14 @@
   function gMoneyBuy(){
     const N = pick(NAMES), it = pick(BUYS), one = pick(ONE);
     const k = ri(2, 6), p = ri(2, 9), q = ri(6, 45), tot = k * p + q;
-    return asMoney(finishTyped('A ' + it[0] + ' costs $' + p + ' and a ' + one + ' costs $' + q + '. ' + N + ' buys ' + k +
+    return coach(asMoney(finishTyped('A ' + it[0] + ' costs $' + p + ' and a ' + one + ' costs $' + q + '. ' + N + ' buys ' + k +
       ' ' + it[1] + ' and 1 ' + one + '. How much does ' + N + ' pay altogether?', tot,
       k + ' ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '.<br>Altogether: $' + (k * p) + ' + $' + q +
-      ' = <b>$' + tot + '</b>.', '$'), tot);
+      ' = <b>$' + tot + '</b>.', '$'), tot),
+      'Draw a model', [
+        'Draw ' + k + ' equal boxes of $' + p + ' for the ' + it[1] + ', and one more box of $' + q + ' for the ' + one + '.',
+        'The ' + k + ' equal boxes: ' + k + ' × $' + p + ' = $' + (k * p) + '.',
+        'Add the ' + one + ' to get the whole bar: $' + (k * p) + ' + $' + q + ' = <b>$' + tot + '</b>.']);
   }
 
   /* fractions of ONE whole: like and related denominators (P3) */
@@ -123,11 +147,16 @@
   function gFracTogether(){
     const [A, B] = fnames(2), w = pick(WHOLES);
     const f = fracPair(D => D - 1), S = f.N1 + f.N2, r = red(S, f.D);
-    return exam(withFrac(finishTyped(A + ' ate ' + fr(f.n1, f.d1) + ' of ' + w[0] + '. ' + B + ' ate ' + fr(f.n2, f.d2) +
+    return coach(exam(withFrac(finishTyped(A + ' ate ' + fr(f.n1, f.d1) + ' of ' + w[0] + '. ' + B + ' ate ' + fr(f.n2, f.d2) +
       ' of ' + w[1] + '. What fraction of ' + w[1] + ' did they eat altogether?' + FR_HINT, r[0] / r[1],
       'Make the bottom numbers the same: ' + overD(f.n1, f.d1, f.N1, f.D) + ', ' + overD(f.n2, f.d2, f.N2, f.D) + '.<br>' +
       'Add the tops: ' + fr(f.N1, f.D) + ' + ' + fr(f.N2, f.D) + ' = ' + fr(S, f.D) +
-      (r[1] !== f.D ? ' = <b>' + fr(r[0], r[1]) + '</b>.' : '. They ate <b>' + fr(r[0], r[1]) + '</b> of it.')), r));
+      (r[1] !== f.D ? ' = <b>' + fr(r[0], r[1]) + '</b>.' : '. They ate <b>' + fr(r[0], r[1]) + '</b> of it.')), r)),
+      'Draw a model', [
+        'Draw one bar for ' + w[1] + ' and cut it into ' + f.D + ' equal parts. The whole bar is ' + fr(f.D, f.D) + '.',
+        'Write both with ' + f.D + ' as the bottom number: ' + overD(f.n1, f.d1, f.N1, f.D) + ' and ' + overD(f.n2, f.d2, f.N2, f.D) + '.',
+        'Shade both on the bar and count the parts: ' + fr(f.N1, f.D) + ' + ' + fr(f.N2, f.D) + ' = ' + fr(S, f.D) +
+          (r[1] !== f.D ? ', which is <b>' + fr(r[0], r[1]) + '</b>.' : '. They ate <b>' + fr(r[0], r[1]) + '</b>.')]);
   }
 
   /* ================= POOL 2: exam standard ================= */
@@ -144,10 +173,18 @@
     const last = ask === 'A' ? A + ' has ' + m + ' units: ' + m + ' × ' + u + ' = <b>' + want + '</b>.'
                : ask === 'B' ? B + ' has 1 unit = <b>' + want + '</b>.'
                : A + ' has ' + (m - 1) + ' more units: ' + (m - 1) + ' × ' + u + ' = <b>' + want + '</b>.';
-    return finishTyped(A + ' has ' + times(m) + ' as many ' + it + ' as ' + B + '. They have ' + T + ' ' + it +
+    const st = ['Draw ' + A + '\'s bar as ' + m + ' equal units and ' + B + '\'s bar as 1 unit.',
+      'Count all the units: ' + m + ' + 1 = ' + (m + 1) + ' units, and together they make ' + T + '.'];
+    if (ask === 'B') st.push(B + ' is 1 unit: ' + T + ' ÷ ' + (m + 1) + ' = <b>' + u + '</b> ' + it + '.');
+    else {
+      st.push('Share the total: 1 unit = ' + T + ' ÷ ' + (m + 1) + ' = ' + u + '.');
+      st.push(ask === 'A' ? A + ' is ' + m + ' units: ' + m + ' × ' + u + ' = <b>' + want + '</b> ' + it + '.'
+                          : A + ' has ' + m + ' − 1 = ' + uw(m - 1) + ' more than ' + B + ': ' + (m - 1) + ' × ' + u + ' = <b>' + want + '</b> ' + it + '.');
+    }
+    return coach(finishTyped(A + ' has ' + times(m) + ' as many ' + it + ' as ' + B + '. They have ' + T + ' ' + it +
       ' altogether. ' + qs, want,
       model([bar(units(m), A), bar(units(1), B)]) +
-      (m + 1) + ' units = ' + T + ', so 1 unit = ' + T + ' ÷ ' + (m + 1) + ' = ' + u + '<br>' + last, it);
+      (m + 1) + ' units = ' + T + ', so 1 unit = ' + T + ' ÷ ' + (m + 1) + ' = ' + u + '<br>' + last, it), 'Draw a model', st);
   }
 
   /* more than, total given */
@@ -155,12 +192,16 @@
     const [A, B] = names(2), it = pick(ITEMS);
     const b = ri(60, 480), d = ri(15, 400), a = b + d, T = a + b;   /* T - d = 2b <= 960: 3 digits by 1 digit */
     const askA = Math.random() < 0.5, want = askA ? a : b;
-    return finishTyped(A + ' and ' + B + ' have ' + T + ' ' + it + ' altogether. ' + A + ' has ' + d + ' more ' + it +
+    const st = ['Draw two bars. ' + A + '\'s bar is as long as ' + B + '\'s, with an extra ' + d + ' on the end.',
+      'Take away the extra ' + d + ': ' + T + ' − ' + d + ' = ' + (T - d) + '. Now the two bars are the same length.'];
+    if (askA) st.push('One bar is ' + B + ': ' + (T - d) + ' ÷ 2 = ' + b + '.', A + ' has the extra too: ' + b + ' + ' + d + ' = <b>' + a + '</b> ' + it + '.');
+    else st.push('One bar is ' + B + ': ' + (T - d) + ' ÷ 2 = <b>' + b + '</b> ' + it + '.');
+    return coach(finishTyped(A + ' and ' + B + ' have ' + T + ' ' + it + ' altogether. ' + A + ' has ' + d + ' more ' + it +
       ' than ' + B + '. How many ' + it + ' does ' + (askA ? A : B) + ' have?', want,
       model(['[ ? ][ ' + d + ' ] &nbsp;' + A, '[ ? ] &nbsp;' + B], true) +
       'Take away the extra ' + d + ': ' + T + ' − ' + d + ' = ' + (T - d) + '. That is 2 equal bars.<br>' +
       'One bar: ' + (T - d) + ' ÷ 2 = ' + b + ', so ' + (askA ? B + ' has ' + b + '.<br>' + A + ' has ' + b + ' + ' + d + ' = <b>' + a + '</b>.'
-                                                         : B + ' has <b>' + b + '</b>.'), it);
+                                                         : B + ' has <b>' + b + '</b>.'), it), 'Draw a model', st);
   }
 
   /* before-after: giving to make equal; equal at first then one gives */
@@ -168,18 +209,26 @@
     const [A, B] = names(2), it = pick(ITEMS);
     if (Math.random() < 0.5){
       const g = ri(8, 240), b = ri(20, 800), a = b + 2 * g;
-      return finishTyped(A + ' had ' + a + ' ' + it + ' and ' + B + ' had ' + b + ' ' + it + '. How many ' + it +
+      return coach(finishTyped(A + ' had ' + a + ' ' + it + ' and ' + B + ' had ' + b + ' ' + it + '. How many ' + it +
         ' must ' + A + ' give to ' + B + ' so that they both have the same number of ' + it + '?', g,
         model(['[ ' + b + ' ][ ' + (a - b) + ' ] &nbsp;' + A, '[ ' + b + ' ] &nbsp;' + B], true) +
         A + ' has ' + a + ' − ' + b + ' = ' + (a - b) + ' more.<br>Give half of the difference so the bars match: ' +
-        (a - b) + ' ÷ 2 = <b>' + g + '</b>.', it);
+        (a - b) + ' ÷ 2 = <b>' + g + '</b>.', it),
+        'Before and after', [
+          'Before: ' + A + ' has ' + a + ' − ' + b + ' = ' + (a - b) + ' more ' + it + ' than ' + B + '.',
+          'After the gift the two bars must match. Whatever ' + A + ' gives, ' + A + ' loses it AND ' + B + ' gains it, so the gap closes twice as fast.',
+          'So ' + A + ' gives half of the gap: ' + (a - b) + ' ÷ 2 = <b>' + g + '</b> ' + it + '. Then both have ' + (a - g) + '.']);
     }
     const n = ri(40, 900), g = ri(6, Math.min(240, n - 5));
-    return finishTyped(A + ' and ' + B + ' had the same number of ' + it + '. ' + A + ' gave ' + g + ' ' + it + ' to ' + B +
+    return coach(finishTyped(A + ' and ' + B + ' had the same number of ' + it + '. ' + A + ' gave ' + g + ' ' + it + ' to ' + B +
       '. How many more ' + it + ' does ' + B + ' have than ' + A + ' now?', 2 * g,
       'Before: the two bars are the same.<br>After: ' + A + ' has ' + g + ' fewer, and ' + B + ' has ' + g + ' more.<br>' +
       '[ ? ][ ' + g + ' ][ ' + g + ' ] &nbsp;' + B + '<br>[ ? ] &nbsp;' + A + '<br>' +
-      'The gap is ' + g + ' + ' + g + ' = <b>' + (2 * g) + '</b>, not ' + g + '.', it);
+      'The gap is ' + g + ' + ' + g + ' = <b>' + (2 * g) + '</b>, not ' + g + '.', it),
+      'Before and after', [
+        'Before: draw two bars the same length, one for ' + A + ' and one for ' + B + '.',
+        'After: ' + A + '\'s bar is ' + g + ' shorter, and ' + B + '\'s bar is ' + g + ' longer.',
+        'The gap between them is what ' + A + ' lost plus what ' + B + ' got: ' + g + ' + ' + g + ' = <b>' + (2 * g) + '</b> ' + it + '.']);
   }
 
   /* equal grouping with a remainder: how many more to fill the last group */
@@ -188,10 +237,14 @@
     const N = pick(NAMES), F = pick(NAMES.filter(x => x !== N)), pk = pick(PACK);
     const g = ri(4, 9), q = ri(8, Math.floor(990 / g) - 1), r = ri(1, g - 2), rest = g * q + r;   /* g - r >= 2: never "1 cookies" */
     const k = ri(12, 300), n = rest + k;
-    return finishTyped(N + ' had ' + n + ' ' + pk[0] + '. ' + N + ' gave ' + k + ' ' + pk[0] + ' to ' + F + ' and packed the rest into ' +
+    return coach(finishTyped(N + ' had ' + n + ' ' + pk[0] + '. ' + N + ' gave ' + k + ' ' + pk[0] + ' to ' + F + ' and packed the rest into ' +
       pk[1] + ' of ' + g + '. The last ' + pk[2] + ' was not full. How many more ' + pk[0] + ' does ' + N + ' need to fill the last ' + pk[2] + '?', g - r,
       'Left to pack: ' + n + ' − ' + k + ' = ' + rest + '.<br>' + rest + ' ÷ ' + g + ' = ' + q + ' remainder ' + r +
-      ': ' + q + ' full ' + pk[1] + ' and ' + r + ' in the last one.<br>To fill it: ' + g + ' − ' + r + ' = <b>' + (g - r) + '</b>.', pk[0]);
+      ': ' + q + ' full ' + pk[1] + ' and ' + r + ' in the last one.<br>To fill it: ' + g + ' − ' + r + ' = <b>' + (g - r) + '</b>.', pk[0]),
+      'Draw a model', [
+        'First find what is left to pack: ' + n + ' − ' + k + ' = ' + rest + ' ' + pk[0] + '.',
+        'Draw ' + pk[1] + ' of ' + g + '. ' + q + ' full ' + pk[1] + ' hold ' + q + ' × ' + g + ' = ' + (q * g) + ', and ' + rest + ' − ' + (q * g) + ' = ' + r + ' is what goes in the last ' + pk[2] + '.',
+        'The last ' + pk[2] + ' needs ' + g + ' and already has ' + r + ': ' + g + ' − ' + r + ' = <b>' + (g - r) + '</b> more ' + pk[0] + '.']);
   }
 
   /* money: change, or how much more is needed */
@@ -201,16 +254,26 @@
     if (Math.random() < 0.5){
       const M2 = cost < 50 && Math.random() < 0.5 ? 50 : (cost < 100 ? 100 : 200);
       const left = M2 - cost;
-      return asMoney(finishTyped(N + ' had $' + M2 + '. ' + N + ' bought ' + k + ' ' + it[1] + ' at $' + p + ' each and a ' + one +
+      return coach(asMoney(finishTyped(N + ' had $' + M2 + '. ' + N + ' bought ' + k + ' ' + it[1] + ' at $' + p + ' each and a ' + one +
         ' for $' + q + '. How much money did ' + N + ' have left?', left,
         k + ' ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '.<br>Spent: $' + (k * p) + ' + $' + q + ' = $' + cost +
-        '.<br>Left: $' + M2 + ' − $' + cost + ' = <b>$' + left + '</b>.', '$'), left);
+        '.<br>Left: $' + M2 + ' − $' + cost + ' = <b>$' + left + '</b>.', '$'), left),
+        'Draw a model', [
+          'Draw one bar for the $' + M2 + '. One part is what ' + N + ' spent; the other part is what is left.',
+          'The ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '.',
+          'Add the ' + one + ' to find the spent part: $' + (k * p) + ' + $' + q + ' = $' + cost + '.',
+          'The part left: $' + M2 + ' − $' + cost + ' = <b>$' + left + '</b>.']);
     }
     const short = ri(3, Math.min(40, cost - 5)), has = cost - short;
-    return asMoney(finishTyped(N + ' wants to buy ' + k + ' ' + it[1] + ' at $' + p + ' each and a ' + one + ' for $' + q + '. ' + N +
+    return coach(asMoney(finishTyped(N + ' wants to buy ' + k + ' ' + it[1] + ' at $' + p + ' each and a ' + one + ' for $' + q + '. ' + N +
       ' has $' + has + '. How much more money does ' + N + ' need?', short,
       k + ' ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '.<br>Needed: $' + (k * p) + ' + $' + q + ' = $' + cost +
-      '.<br>Still short: $' + cost + ' − $' + has + ' = <b>$' + short + '</b>.', '$'), short);
+      '.<br>Still short: $' + cost + ' − $' + has + ' = <b>$' + short + '</b>.', '$'), short),
+      'Draw a model', [
+        'Draw one bar for everything ' + N + ' wants. The $' + has + ' ' + N + ' has covers part of it; the gap is what is still needed.',
+        'The ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '.',
+        'The whole bar: $' + (k * p) + ' + $' + q + ' = $' + cost + '.',
+        'The gap: $' + cost + ' − $' + has + ' = <b>$' + short + '</b>.']);
   }
 
   /* fractions of one whole: what is left, or how much more */
@@ -218,24 +281,35 @@
     const [A, B] = fnames(2), w = pick(WHOLES);
     if (Math.random() < 0.55){
       const f = fracPair(D => D - 1), S = f.N1 + f.N2, L = f.D - S, r = red(L, f.D);
-      return exam(withFrac(finishTyped(A + ' ate ' + fr(f.n1, f.d1) + ' of ' + w[0] + '. ' + B + ' ate ' + fr(f.n2, f.d2) +
+      return coach(exam(withFrac(finishTyped(A + ' ate ' + fr(f.n1, f.d1) + ' of ' + w[0] + '. ' + B + ' ate ' + fr(f.n2, f.d2) +
         ' of ' + w[1] + '. What fraction of ' + w[1] + ' was left?' + FR_HINT, r[0] / r[1],
         'Same bottom numbers: ' + overD(f.n1, f.d1, f.N1, f.D) + ', ' + overD(f.n2, f.d2, f.N2, f.D) + '.<br>' +
         'Eaten: ' + fr(f.N1, f.D) + ' + ' + fr(f.N2, f.D) + ' = ' + fr(S, f.D) + '.<br>' +
         'The whole is ' + fr(f.D, f.D) + '. Left: ' + fr(f.D, f.D) + ' − ' + fr(S, f.D) + ' = ' + fr(L, f.D) +
-        (r[1] !== f.D ? ' = <b>' + fr(r[0], r[1]) + '</b>.' : '. <b>' + fr(r[0], r[1]) + '</b> was left.')), r));
+        (r[1] !== f.D ? ' = <b>' + fr(r[0], r[1]) + '</b>.' : '. <b>' + fr(r[0], r[1]) + '</b> was left.')), r)),
+        'Draw a model', [
+          'Draw one bar for ' + w[1] + ' and cut it into ' + f.D + ' equal parts. The whole bar is ' + fr(f.D, f.D) + '.',
+          'Write both with ' + f.D + ' as the bottom number: ' + overD(f.n1, f.d1, f.N1, f.D) + ' and ' + overD(f.n2, f.d2, f.N2, f.D) +
+            '. Eaten: ' + fr(f.N1, f.D) + ' + ' + fr(f.N2, f.D) + ' = ' + fr(S, f.D) + '.',
+          'The part not shaded is left: ' + fr(f.D, f.D) + ' − ' + fr(S, f.D) + ' = ' + fr(L, f.D) +
+            (r[1] !== f.D ? ', which is <b>' + fr(r[0], r[1]) + '</b>.' : '. <b>' + fr(r[0], r[1]) + '</b> was left.')]);
     }
     let f;
     for (let g = 0; g < 50; g++){ f = fracPair(D => 2 * D); if (f.N1 !== f.N2) break; }
     if (f.N1 === f.N2) f = { n1: 1, d1: 2, n2: 1, d2: 4, N1: 2, N2: 1, D: 4 };
     if (f.N1 < f.N2) f = { n1: f.n2, d1: f.d2, n2: f.n1, d2: f.d1, N1: f.N2, N2: f.N1, D: f.D };
     const Dd = f.N1 - f.N2, r = red(Dd, f.D);
-    return exam(withFrac(finishTyped(A + ' painted ' + fr(f.n1, f.d1) + ' of a wall. ' + B + ' painted ' + fr(f.n2, f.d2) +
+    return coach(exam(withFrac(finishTyped(A + ' painted ' + fr(f.n1, f.d1) + ' of a wall. ' + B + ' painted ' + fr(f.n2, f.d2) +
       ' of the same wall. How much more of the wall did ' + A + ' paint than ' + B + '? Give your answer as a fraction of the wall.' + FR_HINT,
       r[0] / r[1],
       'Same bottom numbers: ' + overD(f.n1, f.d1, f.N1, f.D) + ', ' + overD(f.n2, f.d2, f.N2, f.D) + '.<br>' +
       'Take away: ' + fr(f.N1, f.D) + ' − ' + fr(f.N2, f.D) + ' = ' + fr(Dd, f.D) +
-      (r[1] !== f.D ? ' = <b>' + fr(r[0], r[1]) + '</b>.' : '. ' + A + ' painted <b>' + fr(r[0], r[1]) + '</b> more.')), r));
+      (r[1] !== f.D ? ' = <b>' + fr(r[0], r[1]) + '</b>.' : '. ' + A + ' painted <b>' + fr(r[0], r[1]) + '</b> more.')), r)),
+      'Draw a model', [
+        'Draw one bar for the wall and cut it into ' + f.D + ' equal parts.',
+        'Write both with ' + f.D + ' as the bottom number: ' + A + ' ' + overD(f.n1, f.d1, f.N1, f.D) + ', ' + B + ' ' + overD(f.n2, f.d2, f.N2, f.D) + '.',
+        '"How much more" is the difference between the two shaded parts: ' + fr(f.N1, f.D) + ' − ' + fr(f.N2, f.D) + ' = ' + fr(Dd, f.D) +
+          (r[1] !== f.D ? ', which is <b>' + fr(r[0], r[1]) + '</b>.' : '. ' + A + ' painted <b>' + fr(r[0], r[1]) + '</b> more.')]);
   }
 
   /* multi-step measurement: take away equal amounts, answer in the smaller unit */
@@ -251,11 +325,16 @@
     let y = ri(1, M.f - 1); if (M.f === 1000) y = ri(1, 19) * 50 - (Math.random() < 0.5 ? 0 : ri(1, 4) * 5);
     if (y <= 0) y = 50;
     const tot = x * M.f + y, left = tot - used;
-    return finishTyped(M.whole + ' ' + x + ' ' + M.big + ' ' + y + ' ' + M.small + ' ' + M.what + '. ' + N + ' ' + M.verb + ' ' + k + ' ' +
+    return coach(finishTyped(M.whole + ' ' + x + ' ' + M.big + ' ' + y + ' ' + M.small + ' ' + M.what + '. ' + N + ' ' + M.verb + ' ' + k + ' ' +
       M.piece + ' ' + e + ' ' + M.small + ' each. ' + M.left + ' Give your answer in ' + M.small + '.', left,
       x + ' ' + M.big + ' ' + y + ' ' + M.small + ' = ' + (x * M.f) + ' ' + M.small + ' + ' + y + ' ' + M.small + ' = ' + tot + ' ' + M.small + '.<br>' +
       'Taken: ' + k + ' × ' + e + ' ' + M.small + ' = ' + used + ' ' + M.small + '.<br>Left: ' + tot + ' − ' + used + ' = <b>' + left + ' ' + M.small + '</b>.',
-      M.small);
+      M.small),
+      'Units check', [
+        'Say the unit first: the answer is in ' + M.small + ', so change ' + x + ' ' + M.big + ' ' + y + ' ' + M.small + ' into ' + M.small + ' before anything else.',
+        '1 ' + M.big + ' = ' + M.f + ' ' + M.small + ', so ' + x + ' × ' + M.f + ' = ' + (x * M.f) + ' ' + M.small + ', and ' + (x * M.f) + ' + ' + y + ' = ' + tot + ' ' + M.small + '.',
+        'Taken out: ' + k + ' × ' + e + ' = ' + used + ' ' + M.small + '.',
+        'Left: ' + tot + ' − ' + used + ' = <b>' + left + ' ' + M.small + '</b>.']);
   }
 
   /* ================= POOL 3: the hardest 4-mark shapes ================= */
@@ -274,14 +353,24 @@
     const vA = m * u, vB = u, vC = more ? u + d : u - d;
     const want = ask === 'A' ? vA : ask === 'B' ? vB : vC, who = ask === 'A' ? A : ask === 'B' ? B : C;
     const rows = [bar(units(m), A), bar(units(1), B), more ? U + '[ ' + d + ' ] &nbsp;' + C : '[ u, take away ' + d + ' ] &nbsp;' + C];
-    return finishTyped(A + ' has ' + times(m) + ' as many ' + it + ' as ' + B + '. ' + C + ' has ' + d + (more ? ' more ' : ' fewer ') + it +
+    const X = (m + 2) * u;
+    const st = ['Draw ' + B + ' as 1 unit, ' + A + ' as ' + m + ' units, and ' + C + ' as 1 unit ' + (more ? 'with an extra ' + d + '.' : 'with ' + d + ' cut off.'),
+      (more ? 'Take away the extra ' + d + ': ' + T + ' − ' + d : 'Put back the missing ' + d + ': ' + T + ' + ' + d) + ' = ' + X +
+        '. Now it is ' + m + ' + 1 + 1 = ' + (m + 2) + ' equal units.'];
+    if (ask === 'B') st.push(B + ' is 1 unit: ' + X + ' ÷ ' + (m + 2) + ' = <b>' + u + '</b> ' + it + '.');
+    else {
+      st.push('1 unit = ' + X + ' ÷ ' + (m + 2) + ' = ' + u + '.');
+      st.push(ask === 'A' ? A + ' is ' + m + ' units: ' + m + ' × ' + u + ' = <b>' + vA + '</b> ' + it + '.'
+                          : C + ' is 1 unit ' + (more ? 'and ' : 'take away ') + d + ': ' + u + (more ? ' + ' : ' − ') + d + ' = <b>' + vC + '</b> ' + it + '.');
+    }
+    return coach(finishTyped(A + ' has ' + times(m) + ' as many ' + it + ' as ' + B + '. ' + C + ' has ' + d + (more ? ' more ' : ' fewer ') + it +
       ' than ' + B + '. The three children have ' + T + ' ' + it + ' altogether. How many ' + it + ' does ' + who + ' have?', want,
       model(rows) +
       (more ? 'Take away the extra ' + d + ': ' + T + ' − ' + d : 'Put back the missing ' + d + ': ' + T + ' + ' + d) + ' = ' + ((m + 2) * u) + '.<br>' +
       (m + 2) + ' units = ' + ((m + 2) * u) + ', so 1 unit = ' + ((m + 2) * u) + ' ÷ ' + (m + 2) + ' = ' + u + '<br>' +
       (ask === 'A' ? A + ': ' + m + ' × ' + u + ' = <b>' + vA + '</b>.'
        : ask === 'B' ? B + ': 1 unit = <b>' + vB + '</b>.'
-       : C + ': ' + u + (more ? ' + ' : ' − ') + d + ' = <b>' + vC + '</b>.'), it);
+       : C + ': ' + u + (more ? ' + ' : ' − ') + d + ' = <b>' + vC + '</b>.'), it), 'Draw a model', st);
   }
 
   /* before-after: m times as many, gives some away, then the same */
@@ -295,7 +384,18 @@
     const qs = ask === 'A' ? 'How many ' + it + ' did ' + A + ' have at first?'
              : ask === 'B' ? 'How many ' + it + ' did ' + B + ' have at first?'
              : 'How many ' + it + ' did each of them have in the end?';
-    return finishTyped(A + ' had ' + times(m) + ' as many ' + it + ' as ' + B + '. After ' + A + ' gave ' + g + ' ' + it + ' to ' + B +
+    const G2 = 2 * g;
+    const st = ['Before: ' + A + ' is ' + m + ' units and ' + B + ' is 1 unit, so ' + A + ' has ' + m + ' − 1 = ' + uw(m - 1) + ' more.',
+      'After the gift they are the same. ' + A + ' lost ' + g + ' and ' + B + ' got ' + g + ', so the gap before was ' + g + ' + ' + g + ' = ' + G2 + '.'];
+    const oneU = m === 2 ? 'The gap is 1 unit, so 1 unit = ' + g + ' + ' + g + ' = '
+                         : 'The gap is ' + (m - 1) + ' units, so 1 unit = ' + G2 + ' ÷ ' + (m - 1) + ' = ';
+    if (ask === 'B') st.push(oneU + '<b>' + u + '</b>. That is what ' + B + ' had at first.');
+    else {
+      st.push(oneU + u + '.');
+      st.push(ask === 'A' ? A + ' at first: ' + m + ' × ' + u + ' = <b>' + a + '</b> ' + it + '.'
+                          : 'In the end ' + B + ' has 1 unit and the gift: ' + u + ' + ' + g + ' = <b>' + end + '</b> ' + it + ', and so does ' + A + '.');
+    }
+    return coach(finishTyped(A + ' had ' + times(m) + ' as many ' + it + ' as ' + B + '. After ' + A + ' gave ' + g + ' ' + it + ' to ' + B +
       ', they had the same number of ' + it + '. ' + qs, want,
       model(['<b>Before</b>', bar(units(m), A), bar(units(1), B)]) +
       A + ' has ' + (m - 1) + (m === 2 ? ' unit' : ' units') + ' more than ' + B + '.<br>' +
@@ -304,7 +404,7 @@
                : (m - 1) + ' units = ' + (2 * g) + ', so 1 unit = ' + (2 * g) + ' ÷ ' + (m - 1) + ' = ' + u + '<br>') +
       (ask === 'A' ? A + ' at first: ' + m + ' × ' + u + ' = <b>' + a + '</b>.'
        : ask === 'B' ? B + ' at first: 1 unit = <b>' + u + '</b>.'
-       : 'In the end each has ' + u + ' + ' + g + ' = <b>' + end + '</b>.'), it);
+       : 'In the end each has ' + u + ' + ' + g + ' = <b>' + end + '</b>.'), it), 'Before and after', st);
   }
 
   /* before-after, same total: after the gift, one has m times as many */
@@ -318,13 +418,19 @@
     }
     const T = (m + 1) * u, a0 = u + g, b0 = m * u - g;
     const askA = Math.random() < 0.6, want = askA ? a0 : b0;
-    return finishTyped(A + ' and ' + B + ' had ' + T + ' ' + it + ' altogether. After ' + A + ' gave ' + g + ' ' + it + ' to ' + B + ', ' +
+    const st = ['Giving does not change the total: after the gift there are still ' + T + ' ' + it + '.',
+      'After: ' + A + ' is 1 unit and ' + B + ' is ' + m + ' units, so ' + m + ' + 1 = ' + (m + 1) + ' units make ' + T + '.',
+      '1 unit = ' + T + ' ÷ ' + (m + 1) + ' = ' + u + '.',
+      askA ? 'Go back to before: ' + A + ' had the ' + g + ' that were given away too: ' + u + ' + ' + g + ' = <b>' + a0 + '</b> ' + it + '.'
+           : 'After, ' + B + ' has ' + m + ' × ' + u + ' = ' + (m * u) + '. Go back to before the ' + g + ' came: ' + (m * u) + ' − ' + g + ' = <b>' + b0 + '</b> ' + it + '.'];
+    return coach(finishTyped(A + ' and ' + B + ' had ' + T + ' ' + it + ' altogether. After ' + A + ' gave ' + g + ' ' + it + ' to ' + B + ', ' +
       B + ' had ' + times(m) + ' as many ' + it + ' as ' + A + '. How many ' + it + ' did ' + (askA ? A : B) + ' have at first?', want,
       'Giving does not change the total: it is still ' + T + ' after.<br>' +
       model(['<b>After</b>', bar(units(1), A), bar(units(m), B)]) +
       (m + 1) + ' units = ' + T + ', so 1 unit = ' + T + ' ÷ ' + (m + 1) + ' = ' + u + '<br>' +
       (askA ? A + ' had 1 unit after giving ' + g + ', so at first: ' + u + ' + ' + g + ' = <b>' + a0 + '</b>.'
-            : B + ' had ' + m + ' units = ' + (m * u) + ' after getting ' + g + ', so at first: ' + (m * u) + ' − ' + g + ' = <b>' + b0 + '</b>.'), it);
+            : B + ' had ' + m + ' units = ' + (m * u) + ' after getting ' + g + ', so at first: ' + (m * u) + ' − ' + g + ' = <b>' + b0 + '</b>.'), it),
+      'Before and after', st);
   }
 
   /* working backwards */
@@ -333,20 +439,29 @@
     if (Math.random() < 0.5){
       const it = pick(BAKES), k = ri(4, 9), s = ri(2, k - 2), per = ri(6, 40);
       const left = (k - s) * per, e = ri(3, Math.min(left - 5, 60)), r = left - e;
-      return finishTyped('A baker packed some ' + it + ' equally into ' + k + ' boxes. The baker sold ' + s + ' of the boxes. Then ' + e + ' ' + it +
+      return coach(finishTyped('A baker packed some ' + it + ' equally into ' + k + ' boxes. The baker sold ' + s + ' of the boxes. Then ' + e + ' ' + it +
         ' from the boxes that were left were eaten. ' + r + ' ' + it + ' remained. How many ' + it + ' did the baker pack at first?', k * per,
         '<b>Work backwards</b> from the end.<br>Before ' + e + ' were eaten: ' + r + ' + ' + e + ' = ' + left + ' ' + it + '.<br>' +
         'Those were in ' + k + ' − ' + s + ' = ' + (k - s) + ' boxes, so 1 box: ' + left + ' ÷ ' + (k - s) + ' = ' + per + '.<br>' +
-        'At first: ' + k + ' × ' + per + ' = <b>' + (k * per) + '</b>.', it);
+        'At first: ' + k + ' × ' + per + ' = <b>' + (k * per) + '</b>.', it),
+        'Work backwards', [
+          'Start from the end: ' + r + ' ' + it + ' remained. Undo each step, last step first.',
+          'Undo the eating: put the ' + e + ' back. ' + r + ' + ' + e + ' = ' + left + ' ' + it + '.',
+          'Those were in the boxes not sold: ' + k + ' − ' + s + ' = ' + (k - s) + ' boxes. One box: ' + left + ' ÷ ' + (k - s) + ' = ' + per + '.',
+          'At first there were ' + k + ' boxes: ' + k + ' × ' + per + ' = <b>' + (k * per) + '</b> ' + it + '.']);
     }
     const [A, B] = names(2), it = pick(ITEMS), a = ri(15, 300), k = ri(2, 6), p = ri(5, 30), start = ri(a + 20, 900);
     const now = start - a + k * p;
-    return finishTyped(A + ' had some ' + it + '. ' + A + ' gave ' + a + ' ' + it + ' to ' + B + '. Then ' + A + ' bought ' + k +
+    return coach(finishTyped(A + ' had some ' + it + '. ' + A + ' gave ' + a + ' ' + it + ' to ' + B + '. Then ' + A + ' bought ' + k +
       ' packets of ' + it + ' with ' + p + ' ' + it + ' in each packet. Now ' + A + ' has ' + now + ' ' + it + '. How many ' + it +
       ' did ' + A + ' have at first?', start,
       '<b>Work backwards</b> from the end, undoing each step.<br>Bought: ' + k + ' × ' + p + ' = ' + (k * p) + '. Undo it: ' +
       now + ' − ' + (k * p) + ' = ' + (now - k * p) + '.<br>Gave ' + a + '. Undo it: ' + (now - k * p) + ' + ' + a +
-      ' = <b>' + start + '</b>.', it);
+      ' = <b>' + start + '</b>.', it),
+      'Work backwards', [
+        'Start from the end: ' + A + ' has ' + now + ' now. Undo each step, last step first.',
+        'The last step was buying ' + k + ' × ' + p + ' = ' + (k * p) + '. Undo it: ' + now + ' − ' + (k * p) + ' = ' + (now - k * p) + '.',
+        'Before that ' + A + ' gave away ' + a + '. Undo it: ' + (now - k * p) + ' + ' + a + ' = <b>' + start + '</b> ' + it + '.']);
   }
 
   /* guess and check: notes of two values */
@@ -356,7 +471,17 @@
     const n = ri(8, 24), h = ri(2, n - 2), l = n - h, V = h * hi + l * lo;
     const askHi = Math.random() < 0.5, want = askHi ? h : l;
     const g0 = Math.floor(n / 2), v0 = g0 * hi + (n - g0) * lo;
-    return finishTyped(N + ' has ' + n + ' notes. Some are $' + lo + ' notes and the rest are $' + hi + ' notes. They are worth $' + V +
+    const sw = Math.abs(h - g0), gap = Math.abs(V - v0), dv = hi - lo;
+    const st = ['Guess: ' + g0 + ' $' + hi + ' notes and ' + (n - g0) + ' $' + lo + ' notes. Check: ' + g0 + ' × $' + hi + ' + ' + (n - g0) + ' × $' + lo + ' = $' + v0 + '.'];
+    if (v0 === V) st.push('That is exactly $' + V + ', so the guess is right.');
+    else {
+      st.push('That is ' + (v0 > V ? 'too much' : 'too little') + ' by ' + (v0 > V ? '$' + v0 + ' − $' + V : '$' + V + ' − $' + v0) + ' = $' + gap + '.');
+      st.push('Swapping one $' + lo + ' note for a $' + hi + ' note changes the total by $' + hi + ' − $' + lo + ' = $' + dv +
+        ', so swap ' + gap + ' ÷ ' + dv + ' = ' + sw + (sw === 1 ? ' note' : ' notes') + (v0 > V ? ' back to $' + lo + '.' : ' up to $' + hi + '.'));
+    }
+    st.push(askHi ? 'The $' + hi + ' notes: ' + (v0 === V ? n + ' − ' + l : g0 + (v0 > V ? ' − ' : ' + ') + sw) + ' = <b>' + h + '</b>.'
+                  : 'The $' + hi + ' notes: ' + g0 + (h >= g0 ? ' + ' : ' − ') + sw + ' = ' + h + ', so the $' + lo + ' notes: ' + n + ' − ' + h + ' = <b>' + l + '</b>.');
+    return coach(finishTyped(N + ' has ' + n + ' notes. Some are $' + lo + ' notes and the rest are $' + hi + ' notes. They are worth $' + V +
       ' altogether. How many $' + (askHi ? hi : lo) + ' notes does ' + N + ' have?', want,
       '<b>Guess and check.</b> Try ' + g0 + ' $' + hi + ' notes and ' + (n - g0) + ' $' + lo + ' notes: ' + g0 + ' × $' + hi + ' + ' +
       (n - g0) + ' × $' + lo + ' = $' + v0 + (v0 === V ? ', just right.' : v0 > V ? ', too much, so use fewer $' + hi + ' notes.' : ', too little, so use more $' + hi + ' notes.') + '<br>' +
@@ -366,7 +491,7 @@
                                : '$' + V + ' − $' + v0 + ' = $' + (V - v0) + ' too little, so change ' + (V - v0) + ' ÷ ' + (hi - lo) + ' = ' + Math.abs(h - g0) +
                                  ' more $' + lo + ' notes into $' + hi + ' notes: ' + g0 + ' + ' + Math.abs(h - g0) + ' = ' + h + ' $' + hi + ' notes.<br>')) +
       'Check: ' + h + ' × $' + hi + ' + ' + l + ' × $' + lo + ' = $' + (h * hi) + ' + $' + (l * lo) + ' = $' + V + '. ✓<br>' +
-      'So there are <b>' + want + '</b> $' + (askHi ? hi : lo) + ' notes.', 'notes');
+      'So there are <b>' + want + '</b> $' + (askHi ? hi : lo) + ' notes.', 'notes'), 'Guess and check', st);
   }
 
   /* guess and check: wheels / legs */
@@ -375,13 +500,18 @@
   function gWheels(){
     const W = pick(WHEELS), n = ri(10, 40), b = ri(2, n - 2), a = n - b, w = a * W[2] + b * W[3];
     const askB = Math.random() < 0.5, want = askB ? b : a, noun = askB ? W[1] : W[0];
-    const allA = n * W[2];
-    return finishTyped('There are ' + n + ' ' + W[0] + ' and ' + W[1] + ' ' + W[5] + '. They have ' + w + ' ' + W[4] +
+    const allA = n * W[2], one1 = W[1].replace(/s$/, '');
+    const st = ['Guess that all ' + n + ' are ' + W[0] + ': ' + n + ' × ' + W[2] + ' = ' + allA + ' ' + W[4] + '.',
+      'Check against ' + w + ': that is ' + w + ' − ' + allA + ' = ' + (w - allA) + ' ' + W[4] + ' too few.',
+      askB ? 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more, so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = <b>' + b + '</b> ' + W[1] + '.'
+           : 'Each ' + one1 + ' has ' + W[3] + ' − ' + W[2] + ' = ' + (W[3] - W[2]) + ' more, so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = ' + b + ' ' + W[1] + '.'];
+    if (!askB) st.push('The rest are ' + W[0] + ': ' + n + ' − ' + b + ' = <b>' + a + '</b> ' + W[0] + '.');
+    return coach(finishTyped('There are ' + n + ' ' + W[0] + ' and ' + W[1] + ' ' + W[5] + '. They have ' + w + ' ' + W[4] +
       ' altogether. How many ' + noun + ' are there?', want,
       '<b>Guess and check</b> (start from all ' + W[0] + '): ' + n + ' ' + W[0] + ' have ' + n + ' × ' + W[2] + ' = ' + allA + ' ' + W[4] + '.<br>' +
       'That is ' + w + ' − ' + allA + ' = ' + (w - allA) + ' ' + W[4] + ' too few. Each ' + W[1].replace(/s$/, '') + ' has ' + (W[3] - W[2]) +
       ' more, so there are ' + (w - allA) + ' ÷ ' + (W[3] - W[2]) + ' = ' + b + ' ' + W[1] + ' and ' + n + ' − ' + b + ' = ' + a + ' ' + W[0] + '.<br>' +
-      'Check: ' + a + ' × ' + W[2] + ' + ' + b + ' × ' + W[3] + ' = ' + w + '. ✓ So the answer is <b>' + want + '</b>.', noun);
+      'Check: ' + a + ' × ' + W[2] + ' + ' + b + ' × ' + W[3] + ' = ' + w + '. ✓ So the answer is <b>' + want + '</b>.', noun), 'Guess and check', st);
   }
 
   /* money: spend, then as many as possible with the rest */
@@ -398,6 +528,12 @@
     if (rest < 4 * q){ M = 200; rest = M - k * p; }
     const cnt = Math.floor(rest / q), r = rest - cnt * q;
     const askLeft = r > 0 && Math.random() < 0.3;
+    const st = ['Draw one bar for the $' + M + '. The first part is the ' + it[1] + '; the rest buys the ' + m2[1] + '.',
+      'The ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '. The rest: $' + M + ' − $' + (k * p) + ' = $' + rest + '.',
+      'Fit as many $' + q + ' ' + m2[1] + ' as you can into $' + rest + ': ' + cnt + ' × $' + q + ' = $' + (cnt * q) +
+        (r ? ', and $' + rest + ' − $' + (cnt * q) + ' = $' + r + ' is too little for one more.' : ', with nothing left over.')];
+    st.push(askLeft ? 'Money left after that: $' + rest + ' − $' + (cnt * q) + ' = <b>$' + r + '</b>.'
+                    : 'So ' + N + ' buys $' + (cnt * q) + ' ÷ $' + q + ' = <b>' + cnt + '</b> ' + m2[1] + '.');
     const unit = askLeft ? '$' : m2[1].split(' ')[0];
     const tail = askLeft ? 'How much money did ' + N + ' have left after that?' : 'How many ' + m2[1] + ' did ' + N + ' buy?';
     const q1 = finishTyped(N + ' had $' + M + '. ' + N + ' bought ' + k + ' ' + it[1] + ' at $' + p + ' each. With the rest of the money, ' + N +
@@ -406,7 +542,7 @@
       '$' + rest + ' ÷ $' + q + ' = ' + cnt + (r ? ' remainder $' + r : '') + '.<br>' +
       (askLeft ? N + ' buys ' + cnt + ' and has <b>$' + r + '</b> left.'
                : N + ' buys <b>' + cnt + '</b>' + (r ? ': the $' + r + ' left is not enough for one more.' : '.')), unit);
-    return askLeft ? asMoney(q1, r) : q1;
+    return coach(askLeft ? asMoney(q1, r) : q1, 'Draw a model', st);
   }
 
   /* ===== W1 (calibration L0): the real-paper catalogue's remaining long-problem shapes ===== */
@@ -418,11 +554,16 @@
     const u = ri(Math.ceil(40 / m), Math.floor(999 / n)), T = n * u;
     const ask = pick(['P','Q','R','R']);
     const vals = { P: m * u, Q: u, R: m * k * u }, who = { P, Q, R };
-    return finishTyped(P + ' has ' + times(m) + ' as many ' + it + ' as ' + Q + '. ' + R + ' has ' + times(k) + ' as many ' + it + ' as ' + P +
+    const st = ['Draw ' + Q + ' as 1 unit and ' + P + ' as ' + m + ' units. ' + R + ' is ' + k + ' times ' + P + ': ' + k + ' × ' + m + ' = ' + (m * k) + ' units.',
+      'Count all the units: 1 + ' + m + ' + ' + (m * k) + ' = ' + n + ' units, and they make ' + T + '.'];
+    if (ask === 'Q') st.push(Q + ' is 1 unit: ' + T + ' ÷ ' + n + ' = <b>' + u + '</b> ' + it + '.');
+    else st.push('1 unit = ' + T + ' ÷ ' + n + ' = ' + u + '.',
+      who[ask] + ' is ' + (ask === 'P' ? m : m * k) + ' units: ' + (ask === 'P' ? m : m * k) + ' × ' + u + ' = <b>' + vals[ask] + '</b> ' + it + '.');
+    return coach(finishTyped(P + ' has ' + times(m) + ' as many ' + it + ' as ' + Q + '. ' + R + ' has ' + times(k) + ' as many ' + it + ' as ' + P +
       '. The three children have ' + T + ' ' + it + ' altogether. How many ' + it + ' does ' + who[ask] + ' have?', vals[ask],
       model([bar(units(1), Q), bar(units(m), P), bar(units(m * k), R + ' (' + k + ' × ' + m + ' units)')]) +
       '1 + ' + m + ' + ' + (m * k) + ' = ' + n + ' units = ' + T + ', so 1 unit = ' + T + ' ÷ ' + n + ' = ' + u + '<br>' +
-      who[ask] + ': ' + (ask === 'Q' ? '1 unit = ' : (ask === 'P' ? m : m * k) + ' × ' + u + ' = ') + '<b>' + vals[ask] + '</b>.', it);
+      who[ask] + ': ' + (ask === 'Q' ? '1 unit = ' : (ask === 'P' ? m : m * k) + ' × ' + u + ' = ') + '<b>' + vals[ask] + '</b>.', it), 'Draw a model', st);
   }
 
   /* units model with an extra fixed part */
@@ -432,13 +573,18 @@
     const c = shuffle(pick(COLOURS)), it = pick(['beads','marbles','buttons','balloons']);
     const m = ri(2, 5), u = ri(Math.ceil(30 / m), Math.floor(990 / (m + 1))), y = ri(12, 300), T = (m + 1) * u + y;
     const askA = Math.random() < 0.6, want = askA ? m * u : u;
-    return finishTyped('There are ' + T + ' ' + it + ' in a box. They are ' + c[0] + ', ' + c[1] + ' or ' + c[2] + '. There are ' + times(m) +
+    const st = ['Draw the ' + c[0] + ' ' + it + ' as ' + m + ' units, the ' + c[1] + ' as 1 unit, and the ' + c[2] + ' as a separate box of ' + y + '.',
+      'Take away the ' + c[2] + ' first, because they are not units: ' + T + ' − ' + y + ' = ' + (T - y) + '.'];
+    if (!askA) st.push('That is ' + m + ' + 1 = ' + (m + 1) + ' units. The ' + c[1] + ' ' + it + ' are 1 unit: ' + (T - y) + ' ÷ ' + (m + 1) + ' = <b>' + u + '</b>.');
+    else st.push('That is ' + m + ' + 1 = ' + (m + 1) + ' units, so 1 unit = ' + (T - y) + ' ÷ ' + (m + 1) + ' = ' + u + '.',
+      'The ' + c[0] + ' ' + it + ' are ' + m + ' units: ' + m + ' × ' + u + ' = <b>' + want + '</b>.');
+    return coach(finishTyped('There are ' + T + ' ' + it + ' in a box. They are ' + c[0] + ', ' + c[1] + ' or ' + c[2] + '. There are ' + times(m) +
       ' as many ' + c[0] + ' ' + it + ' as ' + c[1] + ' ' + it + '. ' + y + ' of the ' + it + ' are ' + c[2] + '. How many ' + (askA ? c[0] : c[1]) +
       ' ' + it + ' are there?', want,
       model([bar(units(m), c[0]), bar(units(1), c[1]), '[ ' + y + ' ] &nbsp;' + c[2]]) +
       'Take away the ' + c[2] + ' ' + it + ' first: ' + T + ' − ' + y + ' = ' + (T - y) + '.<br>' + (m + 1) + ' units = ' + (T - y) +
       ', so 1 unit = ' + (T - y) + ' ÷ ' + (m + 1) + ' = ' + u + '<br>' +
-      (askA ? cap(c[0]) + ' ' + it + ': ' + m + ' × ' + u + ' = <b>' + want + '</b>.' : cap(c[1]) + ' ' + it + ': 1 unit = <b>' + want + '</b>.'), it);
+      (askA ? cap(c[0]) + ' ' + it + ': ' + m + ' × ' + u + ' = <b>' + want + '</b>.' : cap(c[1]) + ' ' + it + ': 1 unit = <b>' + want + '</b>.'), it), 'Draw a model', st);
   }
 
   /* units model given the DIFFERENCE */
@@ -448,11 +594,17 @@
     const ask = pick(['T','T','A','B']);
     const want = ask === 'T' ? (m + 1) * u : ask === 'A' ? m * u : u;
     const qs = ask === 'T' ? 'How many ' + it + ' do they have altogether?' : 'How many ' + it + ' does ' + (ask === 'A' ? A : B) + ' have?';
-    return finishTyped(A + ' has ' + m + ' times as many ' + it + ' as ' + B + '. ' + A + ' has ' + D + ' more ' + it + ' than ' + B + '. ' + qs, want,
+    const st = ['Draw ' + A + '\'s bar as ' + m + ' units and ' + B + '\'s bar as 1 unit.',
+      'The difference is the part of ' + A + '\'s bar that sticks out: ' + m + ' − 1 = ' + (m - 1) + ' units, and that is ' + D + '.'];
+    if (ask === 'B') st.push(B + ' is 1 unit: ' + D + ' ÷ ' + (m - 1) + ' = <b>' + u + '</b> ' + it + '.');
+    else st.push('1 unit = ' + D + ' ÷ ' + (m - 1) + ' = ' + u + '.',
+      ask === 'A' ? A + ' is ' + m + ' units: ' + m + ' × ' + u + ' = <b>' + want + '</b> ' + it + '.'
+                  : 'Altogether is ' + m + ' + 1 = ' + (m + 1) + ' units: ' + (m + 1) + ' × ' + u + ' = <b>' + want + '</b> ' + it + '.');
+    return coach(finishTyped(A + ' has ' + m + ' times as many ' + it + ' as ' + B + '. ' + A + ' has ' + D + ' more ' + it + ' than ' + B + '. ' + qs, want,
       model([bar(units(m), A), bar(units(1), B)]) +
       'The difference is ' + m + ' − 1 = ' + (m - 1) + ' units = ' + D + ', so 1 unit = ' + D + ' ÷ ' + (m - 1) + ' = ' + u + '<br>' +
       (ask === 'T' ? 'Altogether: ' + m + ' + 1 = ' + (m + 1) + ' units = ' + (m + 1) + ' × ' + u + ' = <b>' + want + '</b>.'
-       : ask === 'A' ? A + ': ' + m + ' × ' + u + ' = <b>' + want + '</b>.' : B + ': 1 unit = <b>' + want + '</b>.'), it);
+       : ask === 'A' ? A + ': ' + m + ' × ' + u + ' = <b>' + want + '</b>.' : B + ': 1 unit = <b>' + want + '</b>.'), it), 'Draw a model', st);
   }
 
   /* sum and difference: money pair, or two lengths in m and cm (answer in cm) */
@@ -461,24 +613,35 @@
     if (Math.random() < 0.5){
       const pr = pick(PAIRS2), s = ri(8, 300), d = ri(5, 300), b = s + d, S = s + b;
       const askSmall = Math.random() < 0.6, want = askSmall ? s : b;
-      return asMoney(finishTyped('A ' + pr[0] + ' and a ' + pr[1] + ' cost $' + S + ' altogether. The ' + pr[0] + ' costs $' + d + ' more than the ' + pr[1] +
+      const st = ['Draw two bars. The ' + pr[0] + '\'s bar is as long as the ' + pr[1] + '\'s, with an extra $' + d + ' on the end.',
+        'Take away the extra: $' + S + ' − $' + d + ' = $' + (S - d) + '. Now the two bars are the same length.'];
+      if (askSmall) st.push('One bar is the ' + pr[1] + ': $' + (S - d) + ' ÷ 2 = <b>$' + s + '</b>.');
+      else st.push('One bar is the ' + pr[1] + ': $' + (S - d) + ' ÷ 2 = $' + s + '.', 'The ' + pr[0] + ' has the extra too: $' + s + ' + $' + d + ' = <b>$' + b + '</b>.');
+      return coach(asMoney(finishTyped('A ' + pr[0] + ' and a ' + pr[1] + ' cost $' + S + ' altogether. The ' + pr[0] + ' costs $' + d + ' more than the ' + pr[1] +
         '. How much does the ' + (askSmall ? pr[1] : pr[0]) + ' cost?', want,
         model(['[ ? ][ $' + d + ' ] &nbsp;' + pr[0], '[ ? ] &nbsp;' + pr[1]], true) +
         'Take away the extra $' + d + ': $' + S + ' − $' + d + ' = $' + (S - d) + '. That is 2 equal bars.<br>' +
         'One bar: $' + (S - d) + ' ÷ 2 = $' + s + '.<br>' +
-        (askSmall ? 'The ' + pr[1] + ' costs <b>$' + s + '</b>.' : 'The ' + pr[0] + ' costs $' + s + ' + $' + d + ' = <b>$' + b + '</b>.'), '$'), want);
+        (askSmall ? 'The ' + pr[1] + ' costs <b>$' + s + '</b>.' : 'The ' + pr[0] + ' costs $' + s + ' + $' + d + ' = <b>$' + b + '</b>.'), '$'), want),
+        'Draw a model', st);
     }
     const what = pick([['ribbons','ribbon'],['ropes','rope'],['pieces of wire','piece of wire']]);
     let s, d, S; do { s = ri(60, 380); d = ri(20, 300); S = 2 * s + d; } while (S % 100 === 0 || S > 990);
     const Sm = Math.floor(S / 100), Sc = S % 100, dm = Math.floor(d / 100), dc = d % 100;
     const len = (mm, cc) => (mm ? mm + ' m' : '') + (mm && cc ? ' ' : '') + (cc ? cc + ' cm' : '');
     const askShort = Math.random() < 0.6, want = askShort ? s : s + d;
-    return finishTyped('Two ' + what[0] + ' are ' + len(Sm, Sc) + ' long altogether. One ' + what[1] + ' is ' + len(dm, dc) + ' longer than the other. How long is the ' +
+    const st = ['Change to cm first: ' + Sm + ' × 100 + ' + Sc + ' = ' + S + ' cm' + (dm ? (dc ? ', and ' + dm + ' × 100 + ' + dc + ' = ' + d + ' cm' : ', and ' + dm + ' × 100 = ' + d + ' cm') : '') + '.',
+      'Draw two bars: the longer ' + what[1] + ' is the shorter one with an extra ' + d + ' cm.'];
+    if (askShort) st.push('Take away the extra: ' + S + ' − ' + d + ' = ' + (S - d) + ' cm, which is 2 equal bars. One bar: ' + (S - d) + ' ÷ 2 = <b>' + s + ' cm</b>.');
+    else st.push('Take away the extra: ' + S + ' − ' + d + ' = ' + (S - d) + ' cm, which is 2 equal bars. One bar: ' + (S - d) + ' ÷ 2 = ' + s + ' cm.',
+      'The longer one has the extra too: ' + s + ' + ' + d + ' = <b>' + (s + d) + ' cm</b>.');
+    return coach(finishTyped('Two ' + what[0] + ' are ' + len(Sm, Sc) + ' long altogether. One ' + what[1] + ' is ' + len(dm, dc) + ' longer than the other. How long is the ' +
       (askShort ? 'shorter' : 'longer') + ' ' + what[1] + '? Give your answer in cm.', want,
       'Change to cm: ' + len(Sm, Sc) + ' = ' + S + ' cm' + (dm ? ', ' + len(dm, dc) + ' = ' + d + ' cm' : '') + '.<br>' +
       model(['[ ? ][ ' + d + ' cm ] &nbsp;longer', '[ ? ] &nbsp;shorter'], true) +
       'Take away the extra: ' + S + ' − ' + d + ' = ' + (S - d) + ' cm. That is 2 equal bars.<br>One bar: ' + (S - d) + ' ÷ 2 = ' + s + ' cm.<br>' +
-      (askShort ? 'The shorter one is <b>' + s + ' cm</b>.' : 'The longer one is ' + s + ' + ' + d + ' = <b>' + (s + d) + ' cm</b>.'), 'cm');
+      (askShort ? 'The shorter one is <b>' + s + ' cm</b>.' : 'The longer one is ' + s + ' + ' + d + ' = <b>' + (s + d) + ' cm</b>.'), 'cm'),
+      'Draw a model', st);
   }
 
   /* guess and check with two prices */
@@ -487,13 +650,18 @@
     const N = pick(NAMES), t = pick(TWO), lo = ri(2, 6), hi = lo + ri(1, 3);
     const n = ri(8, 24), h = ri(2, n - 2), l = n - h, V = h * hi + l * lo;
     const askHi = Math.random() < 0.5, want = askHi ? h : l;
-    const all = n * lo, extra = V - all;
-    return finishTyped(N + ' bought ' + n + ' things. Some were ' + t[0] + ' at $' + lo + ' each and the rest were ' + t[1] + ' at $' + hi +
+    const all = n * lo, extra = V - all, o0 = t[0].replace(/s$/, ''), o1 = t[1].replace(/s$/, '');
+    const st = ['Guess that all ' + n + ' things are ' + t[0] + ' at $' + lo + ': ' + n + ' × $' + lo + ' = $' + all + '.',
+      'Check against $' + V + ': that is $' + V + ' − $' + all + ' = $' + extra + ' too little.',
+      'Each ' + o0 + ' swapped for ' + (/^[aeiou]/.test(o1) ? 'an ' : 'a ') + o1 + ' adds $' + hi + ' − $' + lo + ' = $' + (hi - lo) +
+        ', so there are ' + extra + ' ÷ ' + (hi - lo) + ' = ' + (askHi ? '<b>' + h + '</b>' : h) + ' ' + t[1] + '.'];
+    if (!askHi) st.push('The rest are ' + t[0] + ': ' + n + ' − ' + h + ' = <b>' + l + '</b> ' + t[0] + '.');
+    return coach(finishTyped(N + ' bought ' + n + ' things. Some were ' + t[0] + ' at $' + lo + ' each and the rest were ' + t[1] + ' at $' + hi +
       ' each. ' + N + ' paid $' + V + ' altogether. How many ' + (askHi ? t[1] : t[0]) + ' did ' + N + ' buy?', want,
       '<b>Guess and check</b> (start from all ' + t[0] + '): ' + n + ' × $' + lo + ' = $' + all + '. That is $' + V + ' − $' + all + ' = $' + extra + ' too little.<br>' +
       'Each ' + t[0].replace(/s$/, '') + ' changed into ' + (/^[aeiou]/.test(t[1]) ? 'an ' : 'a ') + t[1].replace(/s$/, '') + ' adds $' + (hi - lo) + ', so there are ' + extra + ' ÷ ' + (hi - lo) + ' = ' + h + ' ' + t[1] +
       ' and ' + n + ' − ' + h + ' = ' + l + ' ' + t[0] + '.<br>Check: ' + l + ' × $' + lo + ' + ' + h + ' × $' + hi + ' = $' + V + '. ✓ So the answer is <b>' + want + '</b>.',
-      askHi ? t[1] : t[0]);
+      askHi ? t[1] : t[0]), 'Guess and check', st);
   }
 
   /* STRETCH: before-after ending in a ratio */
@@ -506,24 +674,40 @@
       do { u = ri(15, 300); b = ri(10, 200); a = b + (m - 1) * u; } while (a > 900 || (m - 1) * u > 999);
       const s = a + u;
       const askStart = Math.random() < 0.6, want = askStart ? s : u;
-      return finishTyped(A + ' and ' + B + ' had the same number of ' + it + ' at first. ' + A + ' gave away ' + a + ' ' + it + ' and ' + B + ' gave away ' + b + ' ' + it +
+      const st = ['Before: ' + A + ' and ' + B + ' had the same number.',
+        A + ' gave away ' + a + ' − ' + b + ' = ' + (a - b) + ' more than ' + B + ', so now ' + B + ' has ' + (a - b) + ' more than ' + A + '.',
+        'After: ' + A + ' is 1 unit and ' + B + ' is ' + m + ' units. The gap is ' + m + ' − 1 = ' + uw(m - 1) + ', and that is ' + (a - b) + '.'];
+      const oneU = m === 2 ? 'The gap is 1 unit, so ' + A + ' now has ' + a + ' − ' + b + ' = '
+                           : '1 unit = ' + (a - b) + ' ÷ ' + (m - 1) + ' = ';
+      if (!askStart) st.push(oneU + '<b>' + u + '</b>.');
+      else st.push(oneU + u + '.', 'Go back to before: add back what ' + A + ' gave away. ' + u + ' + ' + a + ' = <b>' + s + '</b> ' + it + ' each.');
+      return coach(finishTyped(A + ' and ' + B + ' had the same number of ' + it + ' at first. ' + A + ' gave away ' + a + ' ' + it + ' and ' + B + ' gave away ' + b + ' ' + it +
         '. Now ' + B + ' has ' + times(m) + ' as many ' + it + ' as ' + A + '. ' +
         (askStart ? 'How many ' + it + ' did each of them have at first?' : 'How many ' + it + ' does ' + A + ' have now?'), want,
         model(['<b>After</b>', bar(units(1), A), bar(units(m), B)]) +
         'They had the same at first, and ' + A + ' gave away ' + a + ' − ' + b + ' = ' + (a - b) + ' more than ' + B + '.<br>So now ' + B + ' has ' + (a - b) + ' more: ' +
         (m - 1) + (m === 2 ? ' unit = ' : ' units = ') + (a - b) + (m === 2 ? '' : ', so 1 unit = ' + (a - b) + ' ÷ ' + (m - 1) + ' = ' + u) + '<br>' +
-        (askStart ? 'At first each had ' + u + ' + ' + a + ' = <b>' + s + '</b>.' : A + ' has 1 unit = <b>' + u + '</b>.'), it);
+        (askStart ? 'At first each had ' + u + ' + ' + a + ' = <b>' + s + '</b>.' : A + ' has 1 unit = <b>' + u + '</b>.'), it),
+        'Before and after', st);
     }
     /* A had D more than B; A gave away g (B unchanged); now A has m times as many as B */
     let u, g, D;
     do { u = ri(15, 300); g = ri(10, 200); D = (m - 1) * u + g; } while (D > 990);
     const askB = Math.random() < 0.5, want = askB ? u : u + D;
-    return finishTyped(A + ' had ' + D + ' more ' + it + ' than ' + B + '. Then ' + A + ' gave away ' + g + ' ' + it + '. Now ' + A + ' has ' + times(m) + ' as many ' + it +
+    const st = ['Before: ' + A + ' had ' + D + ' more than ' + B + '.',
+      'After ' + A + ' gives away ' + g + ': ' + D + ' − ' + g + ' = ' + (D - g) + ' more than ' + B + '. ' + B + ' did not change.',
+      'After: ' + A + ' is ' + m + ' units and ' + B + ' is 1 unit. The gap is ' + m + ' − 1 = ' + uw(m - 1) + ', and that is ' + (D - g) + '.'];
+    const oneU = m === 2 ? 'The gap is 1 unit, so ' + B + ' has ' + D + ' − ' + g + ' = '
+                         : '1 unit = ' + (D - g) + ' ÷ ' + (m - 1) + ' = ';
+    if (askB) st.push(oneU + '<b>' + u + '</b>. ' + B + ' had that at first too.');
+    else st.push(oneU + u + ', so that is ' + B + '.', A + ' at first had ' + D + ' more than ' + B + ': ' + u + ' + ' + D + ' = <b>' + (u + D) + '</b> ' + it + '.');
+    return coach(finishTyped(A + ' had ' + D + ' more ' + it + ' than ' + B + '. Then ' + A + ' gave away ' + g + ' ' + it + '. Now ' + A + ' has ' + times(m) + ' as many ' + it +
       ' as ' + B + '. How many ' + it + ' did ' + (askB ? B : A) + ' have at first?', want,
       model(['<b>After</b>', bar(units(m), A), bar(units(1), B)]) +
       'After giving away ' + g + ', ' + A + ' has ' + D + ' − ' + g + ' = ' + (D - g) + ' more than ' + B + '.<br>' +
       (m - 1) + (m === 2 ? ' unit = ' : ' units = ') + (D - g) + (m === 2 ? '' : ', so 1 unit = ' + (D - g) + ' ÷ ' + (m - 1) + ' = ' + u) + '<br>' +
-      (askB ? B + ' did not change: <b>' + u + '</b>.' : A + ' at first: ' + u + ' + ' + D + ' = <b>' + (u + D) + '</b>.'), it);
+      (askB ? B + ' did not change: <b>' + u + '</b>.' : A + ' at first: ' + u + ' + ' + D + ' = <b>' + (u + D) + '</b>.'), it),
+      'Before and after', st);
   }
 
   /* STRETCH: elimination */
@@ -534,7 +718,16 @@
     const V1 = n * c + p1 * p, V2 = n * c + p2 * p;
     const k = ri(2, 5), askP = Math.random() < 0.6, want = askP ? k * p : c;
     const pl = (x, i) => x === 1 ? st[i + 2] : st[i];
-    return asMoney(finishTyped(n + ' ' + st[0] + ' and ' + p1 + ' ' + pl(p1, 1) + ' cost $' + V1 + '. ' + n + ' ' + st[0] + ' and ' + p2 + ' ' + pl(p2, 1) + ' cost $' + V2 +
+    const dd = p1 - p2, cs = [
+      'Make a list: write the two shopping lists one under the other. List 1: ' + n + ' ' + st[0] + ' and ' + p1 + ' ' + pl(p1, 1) + ', $' + V1 +
+        '. List 2: ' + n + ' ' + st[0] + ' and ' + p2 + ' ' + pl(p2, 1) + ', $' + V2 + '.',
+      'Both lists have ' + n + ' ' + st[0] + ', so the only difference is ' + p1 + ' − ' + p2 + ' = ' + dd + ' ' + pl(dd, 1) + '. ' +
+        (dd === 1 ? 'It costs' : 'They cost') + ' $' + V1 + ' − $' + V2 + ' = $' + (V1 - V2) + '.'];
+    if (dd > 1) cs.push('1 ' + st[3] + ': $' + (V1 - V2) + ' ÷ ' + dd + ' = $' + p + '.');
+    cs.push(askP ? k + ' ' + st[1] + ': ' + k + ' × $' + p + ' = <b>$' + (k * p) + '</b>.'
+                 : 'In List 2 the ' + pl(p2, 1) + ' cost ' + p2 + ' × $' + p + ' = $' + (p2 * p) + ', so ' + n + ' ' + st[0] + ' cost $' + V2 + ' − $' + (p2 * p) +
+                   ' = $' + (n * c) + '. 1 ' + st[2] + ': $' + (n * c) + ' ÷ ' + n + ' = <b>$' + c + '</b>.');
+    return coach(asMoney(finishTyped(n + ' ' + st[0] + ' and ' + p1 + ' ' + pl(p1, 1) + ' cost $' + V1 + '. ' + n + ' ' + st[0] + ' and ' + p2 + ' ' + pl(p2, 1) + ' cost $' + V2 +
       '. Each ' + st[2] + ' costs the same and each ' + st[3] + ' costs the same. ' +
       (askP ? 'How much do ' + k + ' ' + st[1] + ' cost?' : 'How much does 1 ' + st[2] + ' cost?'), want,
       'Both lists have ' + n + ' ' + st[0] + '. The only difference is ' + p1 + ' − ' + p2 + ' = ' + (p1 - p2) + ' ' + pl(p1 - p2, 1) + '.<br>' +
@@ -542,7 +735,8 @@
       (p1 - p2 > 1 ? '1 ' + st[3] + ' costs $' + (V1 - V2) + ' ÷ ' + (p1 - p2) + ' = $' + p + '.<br>' : '') +
       (askP ? k + ' ' + st[1] + ' cost ' + k + ' × $' + p + ' = <b>$' + (k * p) + '</b>.'
             : p2 + ' ' + pl(p2, 1) + ' cost ' + p2 + ' × $' + p + ' = $' + (p2 * p) + ', so ' + n + ' ' + st[0] + ' cost $' + V2 + ' − $' + (p2 * p) + ' = $' + (n * c) +
-              '.<br>1 ' + st[2] + ': $' + (n * c) + ' ÷ ' + n + ' = <b>$' + c + '</b>.'), '$'), want);
+              '.<br>1 ' + st[2] + ': $' + (n * c) + ' ÷ ' + n + ' = <b>$' + c + '</b>.'), '$'), want),
+      'Make a list', cs);
   }
   const stretch = f => Object.defineProperty(function(){ const q = f(); q.stretch = true; return q; }, 'name', { value: f.name });
 

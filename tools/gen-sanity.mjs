@@ -35,6 +35,8 @@ import { fileURLToPath } from 'node:url';
    cannot drift away from the generator it names. See W4 at the stem ruler. */
 import { gPatternConceptV10, gAddConceptV10, gCompareErrorV10, gStandsErrorV11, gAddConceptV11 }
   from './fixtures/p3numbers-v10.mjs';
+/* Maths Coaching Card 2026-10-17: the walk-through steps check (it runs LAST, below). */
+import { checkCoaching, printCoaching, COACH_DRAWS_MIN } from './coach-steps.mjs';
 
 const N = Number(process.env.SAMPLES) || 200;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -14500,6 +14502,16 @@ for (const r of negRows) console.log(`${r.ok ? 'ok  ' : 'FAIL'} neg-control  ${r
 
 const uncovered = rows.filter(r => r.cov === 0).map(r => r.topic + '.' + r.name);
 if (uncovered.length) console.log(`\nWARN no independent oracle matched (shape + integrity only): ${uncovered.join(', ')}`);
+
+/* ---------- COACHING STEPS (Maths Coaching Card 2026-10-17) ----------
+   Every coached generator (q.technique + q.steps) on at least 2,000 draws: each written
+   equation re-computed, the final step's working reaching the key. Last in the file, so
+   the draws it takes never shift the seeded stream any ruler above reads. */
+{
+  const coach = checkCoaching(GENS, Number(process.env.COACH_DRAWS) || COACH_DRAWS_MIN);
+  printCoaching(coach);
+  failures += coach.failures;
+}
 
 if (failures) { console.error(`\n${failures} failure(s).`); process.exit(1); }
 console.log(`\nAll ${GENS.length} generators passed (${N} samples each).`);

@@ -14,6 +14,24 @@
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Nurul'];
   /* [big unit, small unit, factor] - the four pairs the syllabus names */
   const PAIRS = [['km','m',1000], ['m','cm',100], ['kg','g',1000], ['ℓ','ml',1000]];
+  /* MATHS COACHING CARD 2026-10-17: named technique + 3-5 think-aloud steps from the
+     draw's own numbers (tools/coach-steps.mjs re-computes every equation and checks the
+     last step reaches the key). optionFeedback names the slip behind a distractor, only
+     where exactly one named slip gives that option's value. */
+  const coach = (q, technique, steps) => (q.technique = technique, q.steps = steps, q);
+  const ofb = (q, slips, fmt) => {
+    const cnt = {};
+    for (const [v] of slips) { const t = fmt(v); cnt[t] = (cnt[t] || 0) + 1; }
+    const of = {};
+    for (const [v, say] of slips) {
+      const t = fmt(v), i = q.choices.indexOf(t);
+      if (cnt[t] === 1 && i >= 0 && i !== q.correct) of[i] = say;
+    }
+    if (Object.keys(of).length) q.optionFeedback = of;
+    return q;
+  };
+  /* "2 × 1000 + 350 = 2350": the conversion to the smaller unit as working */
+  const toSmall = (v, f) => Math.floor(v / f) + ' × ' + f + (v % f ? ' + ' + (v % f) : '') + ' = ' + v;
 
   function gToSmallEasy(){
     const [B, S, f] = pick(PAIRS);
@@ -70,7 +88,15 @@
       cands, S,
       big + ' ' + B + ' ' + small + ' ' + S + ' = ' + total + ' ' + S + '. Then ' + total + ' - ' + used + ' = ' + ans + ' ' + S + '.');
     q.authored = cands;   /* harness contract: no authored distractor equals the answer */
-    return q;
+    coach(q, 'Units check', [
+      'Say the unit first: the answer is in ' + S + '. Change ' + big + ' ' + B + ' ' + small + ' ' + S + ' into ' + S + ': ' + toSmall(total, f) + ' ' + S + '.',
+      'Now both amounts are in ' + S + ': ' + total + ' ' + S + ' at first, and ' + used + ' ' + S + ' used.',
+      '"How much is left" means take away: ' + total + ' − ' + used + ' = <b>' + ans + ' ' + S + '</b>.']);
+    return ofb(q, [
+      [total + used, 'Lots of children pick this, because the numbers are easy to add. But the ' + used + ' ' + S + ' was used up, so we take it away.'],
+      [big*f - used, 'Good start changing ' + B + ' to ' + S + '! The extra ' + small + ' ' + S + ' got left behind, though: ' + big + ' ' + B + ' ' + small + ' ' + S + ' is ' + total + ' ' + S + '.'],
+      [big*(f/10) + small - used, 'Lots of children pick this, because they change 1 ' + B + ' into ' + (f/10) + ' ' + S + '. 1 ' + B + ' is ' + f + ' ' + S + '.']
+    ], v => v + ' ' + S);
   }
   function gWordCompare(){
     const [B, S, f] = pick([PAIRS[2], PAIRS[0], PAIRS[1]]);
@@ -83,10 +109,19 @@
     const noun = S === 'g' ? 'durian' : (S === 'm' ? 'walk to the MRT station' : 'ribbon');
     const verb = S === 'g' ? 'weighs' : 'measures';
     const adj  = S === 'g' ? 'heavier' : 'longer';
-    return finishNum(who + "'s " + noun + ' ' + verb + ' ' + bigA + ' ' + B + ' ' + smallA + ' ' + S + ' and ' + other + "'s " + verb + ' ' +
+    const q = finishNum(who + "'s " + noun + ' ' + verb + ' ' + bigA + ' ' + B + ' ' + smallA + ' ' + S + ' and ' + other + "'s " + verb + ' ' +
       bigB + ' ' + B + ' ' + smallB + ' ' + S + '. How much ' + adj + ' is ' + who + "'s?", '', a - b,
       [a + b, (bigA - bigB)*f, Math.abs(smallA - smallB), a - b + f], S,
       'Change both to ' + S + ' first: ' + a + ' ' + S + ' and ' + b + ' ' + S + '. Then ' + a + ' - ' + b + ' = ' + (a - b) + ' ' + S + '.');
+    coach(q, 'Units check', [
+      'Say the unit first: the answer is in ' + S + ', so change both amounts into ' + S + '.',
+      who + "'s: " + toSmall(a, f) + ' ' + S + '. ' + other + "'s: " + toSmall(b, f) + ' ' + S + '.',
+      '"How much ' + adj + '" means the difference: ' + a + ' − ' + b + ' = <b>' + (a - b) + ' ' + S + '</b>.']);
+    return ofb(q, [
+      [a + b, 'Lots of children pick this, because they add the two amounts. "How much ' + adj + '" asks for the difference, so we take away.'],
+      [(bigA - bigB)*f, 'Good, you compared the ' + B + '! The ' + S + ' parts count too, so change both whole amounts to ' + S + ' first.'],
+      [Math.abs(smallA - smallB), 'Lots of children pick this, because they compare only the ' + S + ' parts. The ' + B + ' count too, so change both to ' + S + ' first.']
+    ], v => v + ' ' + S);
   }
 
   /* ===== lane/hard-measure 2026-10-07: exam-hard items (calibration cards M1, M2) =====
@@ -143,6 +178,19 @@
         : 'The ' + ctx.a + ' is ' + N + ' units: ' + N + ' × ' + u + ' = ' + key + ' ' + S + '.');
     const q = finishNum(stem, '', key, cands, S, explain);
     q.authored = cands;
+    coach(q, 'Draw a model', [
+      'Units check first: the answer is in ' + S + '. ' + fmtC(T, B, S, f) + ' is ' + toSmall(T, f) + ' ' + S + '.',
+      'Draw the ' + ctx.b + ' as 1 unit and the ' + ctx.a + ' as ' + N + ' units. Together: ' + N + ' + 1 = ' + (N + 1) + ' units.',
+      '1 unit = ' + T + ' ÷ ' + (N + 1) + ' = ' + u + ' ' + S + '.',
+      askMore ? 'The ' + ctx.a + ' has ' + N + ' − 1 = ' + (N - 1) + ' more units: ' + (N - 1) + ' × ' + u + ' = <b>' + key + ' ' + S + '</b>.'
+              : 'The ' + ctx.a + ' is ' + N + ' units: ' + N + ' × ' + u + ' = <b>' + key + ' ' + S + '</b>.']);
+    ofb(q, [
+      [u, 'Good, that is 1 unit! It is the ' + ctx.b + ', though. Read the question again to see which part it asks for.'],
+      [T, 'Lots of children pick this, because it is the total in the question. The total is all ' + (N + 1) + ' units together; the question asks for part of it.'],
+      [askMore ? N * u : (N - 1) * u, askMore ? 'Good, that is the whole ' + ctx.a + '! The question asks how much MORE, so take away the 1 unit of the ' + ctx.b + '.'
+                                              : 'Lots of children pick this, because it is how much more. The question asks for the whole ' + ctx.a + ': all ' + N + ' units.'],
+      [T % N === 0 ? T / N : -1, 'Lots of children pick this, because they share the total into ' + N + ' parts. Count the ' + ctx.b + ' too: there are ' + (N + 1) + ' units.']
+    ], v => v + ' ' + S);
     return tag(q, 3);
   }
 
@@ -169,7 +217,10 @@
     const explain = 'Change to ' + ctx.S + ' first: ' + fmtC(total, ctx.B, ctx.S, ctx.f) + ' = ' + total + ' ' + ctx.S +
       '. Take away what was ' + ctx.used + ': ' + total + ' - ' + used + ' = ' + rest + ' ' + ctx.S +
       '. Share it equally: ' + rest + ' ÷ ' + n + ' = ' + each + ' ' + ctx.S + '.';
-    return tag(finishTyped(stem, each, explain, ctx.S), 3);
+    return tag(coach(finishTyped(stem, each, explain, ctx.S), 'Units check', [
+      'Say the unit first: the answer is in ' + ctx.S + '. Change ' + fmtC(total, ctx.B, ctx.S, ctx.f) + ' into ' + ctx.S + ': ' + toSmall(total, ctx.f) + ' ' + ctx.S + '.',
+      'Take away the ' + used + ' ' + ctx.S + ' first: ' + total + ' − ' + used + ' = ' + rest + ' ' + ctx.S + ' is left to share.',
+      'Share the rest equally into ' + n + ': ' + rest + ' ÷ ' + n + ' = <b>' + each + ' ' + ctx.S + '</b>.']), 3);
   }
 
   /* M1c. Pour two amounts into a container: overflow, or how much more to fill it. */
@@ -193,6 +244,17 @@
         : 'The jug holds ' + C + ' ml, so ' + C + ' - ' + (a + b) + ' = ' + key + ' ml more is needed.');
     const q = finishNum(stem, '', key, cands, 'ml', explain);
     q.authored = cands;
+    coach(q, 'Units check', [
+      'Say the unit first: the answer is in ml. The jug holds ' + fmtC(C, 'ℓ', 'ml', 1000) + ', which is ' + toSmall(C, 1000) + ' ml.',
+      'Water poured in: ' + a + ' + ' + b + ' = ' + (a + b) + ' ml.',
+      over ? 'The jug holds only ' + C + ' ml, so the extra spills over: ' + (a + b) + ' − ' + C + ' = <b>' + key + ' ml</b>.'
+           : 'The jug holds ' + C + ' ml, so the gap still to fill is ' + C + ' − ' + (a + b) + ' = <b>' + key + ' ml</b>.']);
+    ofb(q, [
+      [a + b, 'Good, that is all the water poured in! The question asks how much ' + (over ? 'overflows' : 'more is needed') + ', so compare it with the ' + C + ' ml jug.'],
+      [C - a, 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.'],
+      [C - b, 'Lots of children pick this, because they use only one of the two pours. Add both: ' + a + ' ml and ' + b + ' ml.'],
+      [Math.abs(a - b), 'Lots of children pick this, because they compare the two pours. Both go into the jug, so add them first.']
+    ], v => v + ' ml');
     return tag(q, 3);
   }
 
@@ -218,7 +280,18 @@
         W + (up ? ' + ' : ' - ') + d + ' = ' + other + ' ' + S + '. Both together: ' + W + ' + ' + other + ' = ' + key + ' ' + S +
         ' = ' + fmtC(key, B, S, f) + '.';
       const q = finishCompound(stem, key, cands, B, S, f, explain);
-      if (q) return tag(q, 3);
+      if (q) {
+        coach(q, 'Units check', [
+          'Units check first: change to ' + S + ' so every number is in the same unit. ' + fmtC(W, B, S, f) + ' is ' + toSmall(W, f) + ' ' + S + '.',
+          p2 + "'s " + thing + ' is ' + d + ' ' + S + ' ' + word + ': ' + W + (up ? ' + ' : ' − ') + d + ' = ' + other + ' ' + S + '.',
+          'The total is both together: ' + W + ' + ' + other + ' = ' + key + ' ' + S + ', which is <b>' + fmtC(key, B, S, f) + '</b>.']);
+        ofb(q, [
+          [other, 'Good, that is ' + p2 + "'s " + thing + '! The question asks for the total, so add ' + p1 + "'s too."],
+          [up ? 2 * W - d : 2 * W + d, 'Lots of children pick this, because they ' + (up ? 'take the ' + d + ' ' + S + ' away' : 'add the ' + d + ' ' + S) + '. ' + p2 + "'s is " + word + ', so ' + (up ? 'add it.' : 'take it away.')],
+          [2 * W, 'Lots of children pick this, because they double ' + p1 + "'s. " + p2 + "'s is " + d + ' ' + S + ' ' + word + ', so it is not the same.']
+        ], v => fmtC(v, B, S, f));
+        return tag(q, 3);
+      }
     }
   }
 
@@ -242,7 +315,19 @@
       const explain = 'Work backwards. The ' + (vol ? 'cups' : 'bags') + ' held ' + n + ' × ' + each + ' = ' + (n * each) + ' ' + S +
         '. Add what was left: ' + (n * each) + ' + ' + left + ' = ' + key + ' ' + S + ' = ' + fmtC(key, B, S, f) + '.';
       const q = finishCompound(stem, key, cands, B, S, f, explain);
-      if (q) return tag(q, 3);
+      if (q) {
+        const box = vol ? 'cups' : 'bags';
+        coach(q, 'Work backwards', [
+          'Work backwards from the end: ' + left + ' ' + S + ' was left over after filling the ' + box + '.',
+          'The ' + box + ' held ' + n + ' × ' + each + ' = ' + (n * each) + ' ' + S + '.',
+          'Put back what was left: ' + (n * each) + ' + ' + left + ' = ' + key + ' ' + S + ', which is <b>' + fmtC(key, B, S, f) + '</b>.']);
+        ofb(q, [
+          [n * each, 'Good, that is what the ' + box + ' held! Add back the ' + left + ' ' + S + ' that was left over too.'],
+          [n * each - left, 'Lots of children pick this, because they take the leftover away. Working backwards, we put it back: add it.'],
+          [n * (each + left), 'Lots of children pick this, because they add the leftover to every one of the ' + box + '. It was left over only once.']
+        ], v => fmtC(v, B, S, f));
+        return tag(q, 3);
+      }
     }
   }
 
@@ -270,6 +355,18 @@
       ' to the ' + ord(l) + ' there are ' + l + ' - ' + k + ' = ' + (l - k) + ' gaps: ' + (l - k) + ' × ' + gap + ' = ' + key + ' m.';
     const q = finishNum(stem, '', key, cands.filter(c => Number.isInteger(c) && c > 0 && c !== key), 'm', explain);
     q.authored = cands.filter(c => c !== key);
+    const things = L.thing.toLowerCase();
+    coach(q, 'Draw a model', [
+      'Draw the ' + things + ' as dots in a row with gaps between them. Count the gaps, not the ' + things + '.',
+      'From the ' + ord(i) + ' to the ' + ord(j) + ' ' + L.one + ': ' + j + ' − ' + i + ' = ' + (j - i) + ' gaps. One gap: ' + span + ' ÷ ' + (j - i) + ' = ' + gap + ' m.',
+      'From the ' + ord(k) + ' to the ' + ord(l) + ': ' + l + ' − ' + k + ' = ' + (l - k) + ' gaps.',
+      (l - k) + ' gaps of ' + gap + ' m: ' + (l - k) + ' × ' + gap + ' = <b>' + key + ' m</b>.']);
+    ofb(q, [
+      [gap * (l - k + 1), 'Lots of children pick this, because they count the ' + things + '. Between the ' + ord(k) + ' and the ' + ord(l) + ' there is one gap fewer than ' + things + ': ' + (l - k) + ' gaps.'],
+      [gap * (l - k - 1), 'So close! Count the gaps again on a drawing: from the ' + ord(k) + ' to the ' + ord(l) + ' there are ' + (l - k) + ' gaps.'],
+      [gap * l, 'Lots of children pick this, because they measure from the very start of the row. The question starts at the ' + ord(k) + ' ' + L.one + '.'],
+      [gap * (l - i), 'Lots of children pick this, because they start counting from the ' + ord(i) + ' ' + L.one + ', the one in the first sentence. This part starts at the ' + ord(k) + '.']
+    ], v => v + ' m');
     return tag(q, 3);
   }
   /* M2b. Both ends: count the things from a length, or the length from a count (typed). */
@@ -287,13 +384,19 @@
         ' at each end. How many ' + R.noun + ' are there?';
       const explain = 'First find the gaps: ' + len + ' ÷ ' + gap + ' = ' + gaps + ' gaps. With one ' + R.sing + ' at each end there is one more ' +
         R.sing + ' than gaps: ' + gaps + ' + 1 = ' + count + ' ' + R.noun + '.';
-      return tag(finishTyped(stem, count, explain, R.noun), 2);
+      return tag(coach(finishTyped(stem, count, explain, R.noun), 'Draw a model', [
+        'Draw the ' + R.track + ' with a ' + R.sing + ' at each end and gaps of ' + gap + ' m between them.',
+        'Find the gaps first: ' + len + ' ÷ ' + gap + ' = ' + gaps + ' gaps.',
+        'With one at each end there is one more ' + R.sing + ' than gaps: ' + gaps + ' + 1 = <b>' + count + '</b> ' + R.noun + '.']), 2);
     }
     const stem = 'There are ' + count + ' ' + R.noun + ' ' + R.where + ', ' + gap + ' m apart, with one ' + R.sing +
       ' at each end. How long is the ' + R.track + ', in m?';
     const explain = count + ' ' + R.noun + ' with one at each end make one gap fewer: ' + count + ' - 1 = ' + gaps + ' gaps. ' +
       gaps + ' × ' + gap + ' = ' + len + ' m.';
-    return tag(finishTyped(stem, len, explain, 'm'), 2);
+    return tag(coach(finishTyped(stem, len, explain, 'm'), 'Draw a model', [
+      'Draw the ' + count + ' ' + R.noun + ' in a row, one at each end. Count the gaps, not the ' + R.noun + '.',
+      'There is always one gap fewer than ' + R.noun + ': ' + count + ' − 1 = ' + gaps + ' gaps.',
+      'Each gap is ' + gap + ' m: ' + gaps + ' × ' + gap + ' = <b>' + len + ' m</b>.']), 2);
   }
   /* M2c. A span gives the gap, then the whole line from the number of trees (MCQ, m). */
   function gLineLength(){
@@ -311,6 +414,18 @@
       ' × ' + gap + ' = ' + key + ' m.';
     const q = finishNum(stem, '', key, cands.filter(c => c > 0 && c !== key), 'm', explain);
     q.authored = cands.filter(c => c !== key);
+    const things = L.thing.toLowerCase();
+    coach(q, 'Draw a model', [
+      'Draw the ' + things + ' as dots in a row with gaps between them. Count the gaps, not the ' + things + '.',
+      'From the 1st to the ' + ord(j) + ': ' + j + ' − 1 = ' + (j - 1) + ' gaps. One gap: ' + span + ' ÷ ' + (j - 1) + ' = ' + gap + ' m.',
+      n + ' ' + things + ' with one at each end make ' + n + ' − 1 = ' + (n - 1) + ' gaps.',
+      'The whole line: ' + (n - 1) + ' × ' + gap + ' = <b>' + key + ' m</b>.']);
+    ofb(q, [
+      [gap * n, 'Lots of children pick this, because they count the ' + things + '. ' + n + ' ' + things + ' make one gap fewer: ' + (n - 1) + ' gaps.'],
+      [gap * (n - 2), 'So close! Count the gaps again on a drawing: ' + n + ' ' + things + ' make ' + (n - 1) + ' gaps.'],
+      [gap * (n - j), 'Good, that is the part after the ' + ord(j) + ' ' + L.one + '! The question asks for the whole line, from the first to the last.'],
+      [span + gap * (n - 1), 'Lots of children pick this, because they add the first ' + span + ' m on again. It is already part of the whole line.']
+    ], v => v + ' m');
     return tag(q, 3);
   }
   /* M2d STRETCH. Two spans: the gap from one, the count from the other (typed). */
@@ -325,7 +440,11 @@
       gap + ' m. From the ' + ord(i2) + ' ' + R[1] + ' to the last there are ' + span2 + ' ÷ ' + gap + ' = ' + (last - i2) +
       ' gaps, so the last ' + R[1] + ' is ' + (last - i2) + ' places after the ' + ord(i2) + ': ' + i2 + ' + ' + (last - i2) + ' = ' +
       last + ' ' + R[0] + '.';
-    return tag(finishTyped(stem, last, explain, R[0]), 3, true);
+    return tag(coach(finishTyped(stem, last, explain, R[0]), 'Draw a model', [
+      'Draw the ' + R[0] + ' as dots in a row with equal gaps. Count the gaps, not the ' + R[0] + '.',
+      'From the 1st to the ' + ord(j) + ': ' + j + ' − 1 = ' + (j - 1) + ' gaps. One gap: ' + span1 + ' ÷ ' + (j - 1) + ' = ' + gap + ' m.',
+      'From the ' + ord(i2) + ' to the last: ' + span2 + ' ÷ ' + gap + ' = ' + (last - i2) + ' gaps, so the last ' + R[1] + ' is ' + (last - i2) + ' places after the ' + ord(i2) + '.',
+      'The last ' + R[1] + ' is number ' + i2 + ' + ' + (last - i2) + ' = <b>' + last + '</b>, so there are ' + last + ' ' + R[0] + '.']), 3, true);
   }
 
   MQI.registerTopic({

@@ -352,7 +352,7 @@ function pwResolve(right){
     floatDmg('-'+(ev.damage||0), ev.enraged?'#ffe66d':'#ff8f8f','right');
   } else {
     S.streak=0;
-    S.wrongs.push({q:q.q+figHtml(q), a:q.answerText, ex:q.explain, skill:q.skill});
+    S.wrongs.push(wrongRec(q, q.typed ? typedRaw : (q.choices||[])[S.lastPick], q.typed ? null : S.lastPick, unitLead(typedRaw,q)));
     $('feedback').innerHTML=(ev.froze?'<span class="ok">🧊 Freeze! Your stacks are safe. </span>':'')+
       '<span class="no">'+unitLead(typedRaw,q)+(q.typed?('The answer is <b>'+q.answerText+'</b>. '):'')+(q.explain||'')+'</span>';
     S.stunUntil=Date.now()+mode.config.STUN_MS;   /* the mode's input lock, honoured */
@@ -371,7 +371,7 @@ function endPatchwerk(record){
   DB.sessions.push({ t:Date.now(), topic:null, won:true, correct:S.correct, total:S.total,
                      best:S.best, crystals:0, maxLevel:S.maxLevel, skills:S.skills,
                      ms:record.durationMs, timed:false, mode:'patchwerk', tally:S.tally||{},
-                     wrongs:S.wrongs.slice(0,10) });
+                     wrongs:S.wrongs.slice(0,10).map(slimWrong) });
   if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
   saveData();
   sfx.win();
@@ -393,7 +393,7 @@ function endPatchwerk(record){
   if(S.wrongs.length){
     const seen=new Set();
     $('reviewList').innerHTML=S.wrongs.filter(w=>{ if(seen.has(w.q))return false; seen.add(w.q); return true; })
-      .slice(0,8).map(w=>'<div class="revItem">'+w.q+'<br><span class="ansIs">Answer: '+w.a+'</span><br><span class="how">'+(w.ex||'')+'</span></div>').join('');
+      .slice(0,8).map(w=>revItemHTML(w)).join('');
   }
   show('endScreen');
 }
@@ -608,6 +608,13 @@ function renderMockReport(rec){
   const miss=rec.review.filter(r=>!r.correct);
   $('mkReview').innerHTML = miss.length ? miss.map(r=>{
     const q=r.q;
+    const head='<b>Q'+r.n+'</b> <small class="mkTag">'+r.section+' · '+(r.marks===1?'1 mark':r.marks+' marks')+'</small><br>';
+    /* Maths Coaching Card: a coached miss gets the walk-through (her answer, kindly; the
+       technique; the steps one at a time; the answer last). Marks and order are unchanged. */
+    if(q.steps){
+      const given=r.attempted ? r.given : null, ci=(!q.typed && given!=null) ? q.choices.indexOf(given) : -1;
+      return revItemHTML(wrongRec(q, given, ci>=0 ? ci : null, q.typed && given!=null ? unitLead(String(given), q) : ''), head);
+    }
     const yours = r.attempted ? (q.typed ? esc(String(r.given||'')) : (r.given||'')) : '<i>not answered</i>';
     return '<div class="revItem"><b>Q'+r.n+'</b> <small class="mkTag">'+r.section+' · '+(r.marks===1?'1 mark':r.marks+' marks')+'</small><br>'+
       q.q+figHtml(q)+'<br><span class="mkYours">Your answer: '+yours+'</span><br>'+
@@ -830,8 +837,16 @@ function powerAnswer(right, btn){
     $('feedback').innerHTML='<span class="ok">⚡ '+esc(pq(it.k))+(pstate(it.k).full?' is fully charged!':' is charging up!')+'</span>';
     setTimeout(powerNext,1500);
   } else {
-    const lead=Q.typed ? unitLead($('typedInput').value.trim(), Q) : '';
-    S.wrongs.push({q:Q.q+figHtml(Q), a:Q.answerText, ex:Q.explain, skill:Q.skill});
+    const raw=Q.typed ? $('typedInput').value.trim() : '';
+    const lead=Q.typed ? unitLead(raw, Q) : '';
+    const w=wrongRec(Q, Q.typed ? raw : Q.choices[S.lastPick], Q.typed ? null : S.lastPick, lead);
+    S.wrongs.push(w);
+    if(w.st){
+      /* Maths Coaching Card: the walk-through, steps one at a time, the answer last. On a
+         multiple choice the right button stays unmarked until "Show me the answer". */
+      $('feedback').innerHTML=coachHTML(w);
+      if(!Q.typed) document.querySelectorAll('.ansBtn.good').forEach(x=>{ x.classList.remove('good'); x.classList.add('dim','mc-hold'); });
+    } else
     /* refuter R3 (science's words) and R4 (the answer last, for a multiple choice too) */
     $('feedback').innerHTML='<span class="no coach">'+(lead||'🌱 Good try. Let\'s look at it together. ')+(Q.explain||'')+
       ' The answer is <b>'+Q.answerText+'</b>.</span>';
@@ -855,7 +870,7 @@ function endPower(){
   /* the parents corner reads this row through the same topic-true tally as a quest */
   DB.sessions.push({ t:Date.now(), topic:null, won:true, correct:S.correct, total:S.total, best:S.best,
     crystals:0, maxLevel:S.maxLevel, skills:S.skills, tally:S.tally||{}, ms:Date.now()-S.t0,
-    timed:false, mode:'power', wrongs:S.wrongs.slice(0,10) });
+    timed:false, mode:'power', wrongs:S.wrongs.slice(0,10).map(slimWrong) });
   if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
   saveData();
   sfx.win();
@@ -1152,20 +1167,108 @@ function unitLead(raw, q){
   if(!want) return '';
   return 'Your number was right. The unit should be <b>'+want+'</b>, because '+unitWhy(want)+'. ';
 }
-function markWrong(feedbackHtml){
+/* ===== THE COACHING WALK-THROUGH (Maths Coaching Card 2026-10-17) ====
+ * The science shell's pattern (science/index.html, lane C6), on the maths shell. A
+ * coached generator emits q.technique + q.steps (+ an optional q.optionFeedback);
+ * wherever a coached miss is gone over - the Power-Up feedback, the end-of-quest and
+ * Patchwerk reviews, the mock report - she reads, in order:
+ *   1. a kind line about HER answer (the unit card or the slip's own coaching first);
+ *   2. the technique badge;
+ *   3. the steps, one at a time ("Show me the next step");
+ *   4. the answer last, with the full worked explanation folded under it.
+ * An item without steps keeps today's card. The mock-taking flow is untouched: all of
+ * this paints only after an answer has been marked. tools/coach-steps.mjs proves every
+ * step true for its own drawn numbers. */
+const TECH = {
+  'Draw a model': 'Draw bars for the parts and the whole, or to compare, then label what you know.',
+  'Before and after': 'Change problems: draw the bars before the change, then after it.',
+  'Work backwards': 'Start from the end amount and undo each step, last step first.',
+  'Make a list': 'Write the cases in order, so nothing is missed or counted twice.',
+  'Guess and check': 'Make a sensible guess, check it, then adjust the guess.',
+  'Units check': 'Say the unit, and change everything to the same unit first.',
+  'Read, compare, conclude': 'Read the values, compare them, then answer.',
+  'Sketch and label': 'Draw the shape and write every length on it before you work.',
+  'Draw a timeline': 'Mark the times on a line and count on: hours first, then minutes.'
+};
+const NEXT_STEP='Show me the next step →', SHOW_ANS='Show me the answer →';
+/* The review record every mode keeps for a miss. The coaching fields ride in the
+   session only; slimWrong drops them before a save, so the stored history is unchanged. */
+function wrongRec(q, given, choice, lead, timedOut){
+  const w={q:q.q+figHtml(q), a:q.answerText, ex:q.explain, skill:q.skill};
+  if(q.steps && q.steps.length){
+    w.t=q.technique; w.st=q.steps; w.gv=(given==null?null:String(given)); w.ci=(choice==null?null:choice);
+    w.ul=lead||''; w.to=!!timedOut;
+    if(q.optionFeedback && choice!=null && q.optionFeedback[choice]) w.fb=q.optionFeedback[choice];
+  }
+  return w;
+}
+function slimWrong(w){ return {q:w.q, a:w.a, ex:w.ex, skill:w.skill}; }
+function coachYou(w){
+  let h;
+  if(w.to) h='<p class="mc-you">The clock ran out on this one. That is fine: let\'s work it out together.</p>';
+  else if(w.gv==null || w.gv==='') h='<p class="mc-you">You left this one blank. That is fine: let\'s work it out together.</p>';
+  else h='<p class="mc-you">You '+(w.ci!=null?'chose':'wrote')+' <b>'+(w.ci!=null?w.gv:esc(w.gv))+'</b>.</p>';
+  /* the line that speaks to her answer: the unit card, then the slip's own coaching */
+  h+='<p class="mc-line">'+(w.ul || w.fb || 'Good try. Let\'s look at it together.')+'</p>';
+  return h;
+}
+function coachHTML(w){
+  const d=TECH[w.t]||'';
+  return '<div class="mcoach" data-mcoach>'+
+    '<b class="mc-h">🌱 Let\'s work this one out together</b>'+coachYou(w)+
+    '<p class="mc-tech"><span class="mc-badge">🧭 '+esc(w.t)+'</span>'+(d?'<small>'+esc(d)+'</small>':'')+'</p>'+
+    '<ol class="mc-steps">'+w.st.map((s,j)=>'<li'+(j?' hidden':'')+'>'+s+'</li>').join('')+'</ol>'+
+    '<button type="button" class="mc-next" data-mq="step">'+(w.st.length>1?NEXT_STEP:SHOW_ANS)+'</button>'+
+    '<div class="mc-ans" hidden><span class="mc-is">✅ The answer is <b>'+w.a+'</b>.</span>'+
+      (w.ex?'<details class="mc-more"><summary>See the whole working</summary><div class="how">'+w.ex+'</div></details>':'')+
+      '<p class="mc-close">Next time, try '+esc(w.t)+' first.</p></div>'+
+  '</div>';
+}
+/* one review row: the walk-through for a coached miss, today's card otherwise */
+function revItemHTML(w, head){
+  return '<div class="revItem">'+(head||'')+w.q+(w.st ? coachHTML(w)
+    : '<br><span class="ansIs">Answer: '+w.a+'</span><br><span class="how">'+(w.ex||'')+'</span>')+'</div>';
+}
+/* "Show me the next step": reveal in place, so a long review list keeps its scroll.
+   The last tap shows the answer, and in Power-Up turns the right button green only then. */
+document.addEventListener('click', e=>{
+  const b=e.target && e.target.closest ? e.target.closest('[data-mq="step"]') : null;
+  if(!b) return;
+  const box=b.closest('[data-mcoach]'); if(!box) return;
+  const next=box.querySelector('ol.mc-steps li[hidden]');
+  let show=null;
+  if(next){
+    next.hidden=false; show=next;
+    if(!box.querySelector('ol.mc-steps li[hidden]')) b.textContent=SHOW_ANS;
+  } else {
+    show=box.querySelector('.mc-ans'); if(show) show.hidden=false;
+    document.querySelectorAll('.ansBtn.mc-hold').forEach(x=>{ x.classList.remove('mc-hold','dim'); x.classList.add('good'); });
+    b.remove();
+  }
+  if(show && show.scrollIntoView) try{ show.scrollIntoView({block:'nearest', behavior:'smooth'}); }catch(err){}
+});
+function markWrong(feedbackHtml, rec){
   S.streak=0; S.wrongRow++; S.rightRow=0;
   if(S.wrongRow>=2 && S.level>1){ S.level--; S.wrongRow=0; }
   sfx.wrong();
-  S.wrongs.push({q:Q.q+figHtml(Q), a:Q.answerText, ex:Q.explain, skill:Q.skill});
+  S.wrongs.push(rec || wrongRec(Q));
   $('feedback').innerHTML=feedbackHtml;
   updateStreak();
+}
+/* A quest miss on a coached item: the battle keeps its pace (the walk-through waits in
+   the end-of-quest review), but the card leads with credit and the technique, and the
+   answer comes last. */
+function questCoachCard(lead){
+  return '<span class="no">'+(lead||'🌱 Good try. ')+'<span class="mc-chip">🧭 '+esc(Q.technique)+'</span> '+(Q.explain||'')+
+    ' The answer is <b>'+Q.answerText+'</b>.</span>';
 }
 function timeUp(){
   if(!S || S.busy) return; S.busy=true;
   S.total++;
   recSkill(Q.skill,false);
   lockButtons();
-  markWrong('<span class="no">⏰ Time\'s up! '+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
+  if(Q.steps) markWrong(questCoachCard('⏰ Time\'s up. That is fine. '), wrongRec(Q, null, null, '', true));
+  else markWrong('<span class="no">⏰ Time\'s up! '+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
   setTimeout(monsterCounterattack,1000);
 }
 function resolve(right){
@@ -1193,8 +1296,11 @@ function resolve(right){
   } else {
     /* The child's own text is still in the (now disabled) field - answerTyped
        leaves it there - so the card can name the unit they actually typed. */
-    const lead = Q.typed ? unitLead($('typedInput').value.trim(), Q) : '';
-    markWrong('<span class="no">'+lead+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
+    const raw = Q.typed ? $('typedInput').value.trim() : '';
+    const lead = Q.typed ? unitLead(raw, Q) : '';
+    if(Q.steps) markWrong(questCoachCard(lead),
+      wrongRec(Q, Q.typed ? raw : Q.choices[S.lastPick], Q.typed ? null : S.lastPick, lead));
+    else markWrong('<span class="no">'+lead+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
     setTimeout(monsterCounterattack,1000);
   }
 }
@@ -1205,6 +1311,7 @@ function answer(i,btn){
   stopQTimer();
   const c=ac(); if(c&&c.resume) c.resume();
   const right = i===Q.correct;
+  S.lastPick=i;   /* the coaching card names her choice */
   if(S.patchwerk){
     if(!right && btn){ btn.classList.remove('dim'); btn.classList.add('bad'); }
     pwResolve(right);
@@ -1270,7 +1377,7 @@ function endGame(win){
   DB.sessions.push({
     t:Date.now(), topic:TOPIC, won:win, correct:S.correct, total:S.total,
     best:S.best, crystals:S.mi, maxLevel:S.maxLevel, skills:S.skills,
-    ms, timed:S.timed, wrongs:S.wrongs.slice(0,10), tally:S.tally||{},
+    ms, timed:S.timed, wrongs:S.wrongs.slice(0,10).map(slimWrong), tally:S.tally||{},
     mode:S.timed?'timed':'relax'
   });
   if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
@@ -1313,7 +1420,7 @@ function endGame(win){
     const seen=new Set();
     rl.innerHTML=S.wrongs.filter(w=>{ if(seen.has(w.q))return false; seen.add(w.q); return true; })
       .slice(0,8)
-      .map(w=>'<div class="revItem">'+w.q+'<br><span class="ansIs">Answer: '+w.a+'</span><br><span class="how">'+w.ex+'</span></div>').join('');
+      .map(w=>revItemHTML(w)).join('');
   } else rb.style.display='none';
   show('endScreen');
 }

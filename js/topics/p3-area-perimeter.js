@@ -95,6 +95,26 @@ function rectFig(L,B,u){ return { type:'rect', length:L, breadth:B, unit:u||'cm'
    rectangle), the answer and every option in m². */
 const areaUnit = () => ri(0,2) === 0 ? 'm' : 'cm';
 const fig = (q, figure) => (q.figure = figure, q);
+/* MATHS COACHING CARD 2026-10-17: the multi-step items emit a named technique and 3-5
+   think-aloud steps built from their own drawn numbers (tools/coach-steps.mjs checks
+   every written equation and that the last step reaches the key on 2,000+ draws).
+   optionFeedback speaks to a named slip; a value two slips share is left uncoached. */
+const coach = (q, technique, steps) => (q.technique = technique, q.steps = steps, q);
+function slips(q, pairs){
+  const n = {}; pairs.forEach(p => { n[p[0]] = (n[p[0]] || 0) + 1; });
+  const of = {};
+  for (const [txt, say] of pairs){
+    if (n[txt] > 1) continue;
+    const i = q.choices.indexOf(txt);
+    if (i >= 0 && i !== q.correct) of[i] = say;
+  }
+  if (Object.keys(of).length) q.optionFeedback = of;
+  return q;
+}
+const AREA_SLIP = 'Lots of children pick this, because multiplying the sides feels natural. That gives the area, the space inside; perimeter is the walk around the edge.';
+const PERI_SLIP = 'Lots of children pick this, because it is the distance around the edge. Area asks for the space inside instead.';
+const HALF_SLIP = 'Close: that is one length and one breadth, only half way around. Add the other two sides too.';
+const TOUCH_SLIP = 'Lots of children pick this, because they add up every piece\'s own perimeter. The sides that touch are inside the shape now, so they are not part of the walk around.';
 
 /* FORMAT 1 - direct compute, on a labelled figure (pool 1) */
 function gPeri(){
@@ -168,11 +188,19 @@ function gPeriCompare(){
   while (guard<200 && !(pa>pb && paOk(a,b) && paOk(c,d) &&
          optsOk(pa-pb,[(a+b)-(c+d), pa, a*b-c*d])));
   if (pa<=pb){ a=10; b=8; c=5; d=4; pa=36; pb=18; }
-  return mcNum('Rectangle A is '+a+' cm by '+b+' cm. Rectangle B is '+c+' cm by '+d+
+  const q = mcNum('Rectangle A is '+a+' cm by '+b+' cm. Rectangle B is '+c+' cm by '+d+
     ' cm. How much <b>longer</b> is the perimeter of A than the perimeter of B?','',
     pa-pb,[(a+b)-(c+d), pa, a*b-c*d],'cm',
     'Perimeter of A = 2 × ('+a+' + '+b+') = '+pa+' cm. Perimeter of B = 2 × ('+c+' + '+d+') = '+pb+
     ' cm. A is longer by '+pa+' − '+pb+' = '+(pa-pb)+' cm. Comparing only one length and one breadth halves the difference.');
+  return slips(coach(q, 'Sketch and label', [
+    'Sketch both rectangles and write all four sides on each. Perimeter means all four sides.',
+    'Walk around A: '+a+' + '+b+' + '+a+' + '+b+' = '+pa+' cm.',
+    'Walk around B: '+c+' + '+d+' + '+c+' + '+d+' = '+pb+' cm.',
+    'Compare the two walks: '+pa+' − '+pb+' = <b>'+(pa-pb)+' cm</b>.']), [
+    [((a+b)-(c+d))+' cm', 'Lots of children pick this, because they compare one length and one breadth of each. That is only half of each perimeter, so the difference comes out half as big.'],
+    [pa+' cm', 'Good start: that is the perimeter of A. The question asks how much longer it is than B, so take away B\'s perimeter too.'],
+    [(a*b-c*d)+' cm', 'Lots of children pick this, because multiplying feels natural for rectangles. That compares the areas; perimeter is the walk around the edge.']]);
 }
 
 /* FORMAT 5 - error spotting, the mistake named as a misconception (pool 3) */
@@ -209,11 +237,18 @@ function gPeriFence(){
          optsOk(2*(L+B)*rate,[L*B*rate,(L+B)*rate,2*(L+B)])));
   if (L<B){ L=12; B=7; rate=5; }
   const p=2*(L+B), cost=p*rate;
-  return mcNum(c[0]+' puts '+c[2]+' right around '+c[1]+' that is '+L+' m long and '+B+
+  const q = mcNum(c[0]+' puts '+c[2]+' right around '+c[1]+' that is '+L+' m long and '+B+
     ' m wide. The '+c[2]+' costs $'+rate+' per metre. <b>How much does it cost altogether, in dollars?</b>','',
     cost,[L*B*rate, (L+B)*rate, p],'',
     'Step 1: the distance around is 2 × ('+L+' + '+B+') = '+p+' m. Step 2: '+p+' × $'+rate+' = $'+cost+
     '. Multiplying the area by the rate answers a different question: fencing goes around the edge, not over the ground.');
+  return slips(coach(q, 'Sketch and label', [
+    'Sketch it and write every side on it: '+L+' m, '+B+' m, '+L+' m and '+B+' m. The '+c[2]+' goes right around the edge.',
+    'Walk around the edge: '+L+' + '+B+' + '+L+' + '+B+' = '+p+' m.',
+    'Every metre costs $'+rate+': '+p+' × $'+rate+' = <b>$'+cost+'</b>.']), [
+    [String(L*B*rate), 'Lots of children pick this, because '+L+' × '+B+' comes to mind first. That covers the ground inside (the area); the '+c[2]+' only goes around the edge.'],
+    [String((L+B)*rate), 'Close: one length and one breadth is only half way around. Add the other two sides too.'],
+    [String(p), 'Good start: '+p+' m is the distance around. One more step: each metre costs $'+rate+'.']]);
 }
 
 /* FORMAT 7 - perimeter of a RECTILINEAR figure (P3 GAPS LANE 2026-10-06, MOE P3
@@ -240,10 +275,20 @@ function gRectiPeri(){
     g++;
   } while (g<400 && !(per !== W*H-a*b && a !== b && optsOk(per, fam)));
   if (!(per !== W*H-a*b && a !== b && optsOk(per, fam))){ W=13; H=11; a=4; b=3; per=48; fam=[41,44,52]; }
-  return fig(mcNum('What is the <b>perimeter</b> of this figure?','',per,fam,'cm',
+  const q = fig(mcNum('What is the <b>perimeter</b> of this figure?','',per,fam,'cm',
     'Perimeter is the walk all the way around, so add all six sides: '+(W-a)+' + '+b+' + '+a+' + '+
     (H-b)+' + '+W+' + '+H+' = '+per+' cm. The two sides at the cut-out corner are the ones most often left out.'),
     { type:'lshape', W:W, H:H, a:a, b:b, unit:'cm' });
+  return slips(coach(q, 'Sketch and label', [
+    'Read every side off the figure. There are six: '+(W-a)+', '+b+', '+a+', '+(H-b)+', '+W+' and '+H+' cm.',
+    'Start at one corner and walk all the way around, ticking each side as you add it, so none is missed or counted twice.',
+    'Add all six: '+(W-a)+' + '+b+' + '+a+' + '+(H-b)+' + '+W+' + '+H+' = <b>'+per+' cm</b>.']), [
+    [(per-a-b)+' cm', 'Lots of children pick this, because the two short sides at the cut-out corner are easy to miss. Walk right into the corner and count them both.'],
+    [(per-a)+' cm', 'Close: one side of '+a+' cm was left out. Tick each side as you add it.'],
+    [(per-b)+' cm', 'Close: one side of '+b+' cm was left out. Tick each side as you add it.'],
+    [(per+a)+' cm', 'Close: a side of '+a+' cm was counted twice. Tick each side as you add it.'],
+    [(per+b)+' cm', 'Close: a side of '+b+' cm was counted twice. Tick each side as you add it.'],
+    [(per+a+b)+' cm', 'Close: both sides at the cut-out corner were counted twice. Tick each side as you add it.']]);
 }
 
 /* ==== HARD LANE geom (2026-10-07, Math Hardness Calibration cards G1 + G2) ====
@@ -282,21 +327,37 @@ function sqRowStem(t, ask){
                          : 'are arranged in 2 rows of '+t.n+' to make a rectangle';
   return t.N+' identical squares '+lay+'. The rectangle is '+t.X+' cm long. What is the <b>'+ask+'</b> of the rectangle?';
 }
+function sqRowSketch(t){
+  return 'Sketch the '+t.N+' squares '+(t.rows===1 ? 'in a row' : 'in 2 rows of '+t.n)+' and label the length: '+t.X+' cm.';
+}
 function gSqRowArea(){
   const t = sqRowDraw('area');
-  return band(mcNum(sqRowStem(t,'area'),'',t.key,t.d,'cm²',
+  return slips(coach(band(mcNum(sqRowStem(t,'area'),'',t.key,t.d,'cm²',
     'The squares are all the same size, and '+t.n+' of them fit along the '+t.X+' cm length, so each side is '+
     t.X+' ÷ '+t.n+' = '+t.s+' cm. One square has an area of '+t.s+' × '+t.s+' = '+(t.s*t.s)+' cm², and there are '+
     t.N+' squares: '+t.N+' × '+(t.s*t.s)+' = '+t.key+' cm². Check: the rectangle is '+t.X+' cm by '+t.Bd+' cm, and '+
-    t.X+' × '+t.Bd+' = '+t.key+' cm².'), 3);
+    t.X+' × '+t.Bd+' = '+t.key+' cm².'), 3), 'Sketch and label', [
+    sqRowSketch(t),
+    t.n+' equal squares fit along the length, so each side is '+t.X+' ÷ '+t.n+' = '+t.s+' cm.',
+    'One square: '+t.s+' × '+t.s+' = '+(t.s*t.s)+' cm².',
+    'All '+t.N+' squares: '+t.N+' × '+(t.s*t.s)+' = <b>'+t.key+' cm²</b>.']),
+    [[(2*(t.X+t.Bd))+' cm²', PERI_SLIP],
+     [(t.s*t.s)+' cm²', 'Good start: that is the area of ONE square. There are '+t.N+' of them.']]
+      .concat(t.rows===1 ? [[(t.X*t.N)+' cm²', 'Lots of children pick this, because they multiply the length by the number of squares. Find one square\'s side first: '+t.X+' ÷ '+t.n+'.']]
+                         : [[(t.X*t.s)+' cm²', 'Close: that is one row of squares. There are 2 rows.']]));
 }
 function gSqRowPeri(){
   const t = sqRowDraw('peri');
-  return band(mcNum(sqRowStem(t,'perimeter'),'',t.key,t.d,'cm',
+  return slips(coach(band(mcNum(sqRowStem(t,'perimeter'),'',t.key,t.d,'cm',
     'Each square side is '+t.X+' ÷ '+t.n+' = '+t.s+' cm, because '+t.n+' equal squares fit along the '+t.X+
     ' cm length. The rectangle is '+t.X+' cm long and '+(t.rows===1 ? 'one square ('+t.s+' cm)' : 'two squares ('+t.Bd+' cm)')+
     ' wide. Perimeter = '+t.X+' + '+t.Bd+' + '+t.X+' + '+t.Bd+' = '+t.key+' cm. Do not add up every square\'s perimeter: '+
-    'the sides where two squares touch are inside the rectangle, not around it.'), 3);
+    'the sides where two squares touch are inside the rectangle, not around it.'), 3), 'Sketch and label', [
+    sqRowSketch(t),
+    t.n+' equal squares fit along the length, so each side is '+t.X+' ÷ '+t.n+' = '+t.s+' cm. '+
+      (t.rows===1 ? 'The rectangle is one square wide: '+t.s+' cm.' : 'The rectangle is two squares wide: '+t.s+' + '+t.s+' = '+t.Bd+' cm.'),
+    'Walk around the outside only: '+t.X+' + '+t.Bd+' + '+t.X+' + '+t.Bd+' = <b>'+t.key+' cm</b>.']),
+    [[(4*t.N*t.s)+' cm', TOUCH_SLIP], [(t.N*t.s*t.s)+' cm', AREA_SLIP], [(t.X+t.Bd)+' cm', HALF_SLIP]]);
 }
 
 /* G1c. K identical rectangular tiles in ONE ROW along the length make an X by Y
@@ -317,19 +378,31 @@ function tileStem(t, ask){
   return t.who+' lays '+t.K+' identical rectangular tiles side by side in one row. Together they make a rectangle '+
     t.X+' cm long and '+t.Y+' cm wide. What is the <b>'+ask+'</b> of one tile?';
 }
+function tileSteps(t){
+  return ['Sketch the row of '+t.K+' tiles and label the big rectangle: '+t.X+' cm long and '+t.Y+' cm wide.',
+    'The '+t.K+' tiles share the length equally: '+t.X+' ÷ '+t.K+' = '+t.w+' cm. Each tile is as wide as the whole row: '+t.Y+' cm.'];
+}
 function gTileArea(){
   const t = tileDraw('area');
-  return band(mcNum(tileStem(t,'area'),'',t.key,t.d,'cm²',
+  return slips(coach(band(mcNum(tileStem(t,'area'),'',t.key,t.d,'cm²',
     'The '+t.K+' tiles share the '+t.X+' cm length equally, so each tile measures '+t.X+' ÷ '+t.K+' = '+t.w+
     ' cm along the row. Its other side is as wide as the whole row: '+t.Y+' cm. Area of one tile = '+t.w+' × '+t.Y+' = '+t.key+
-    ' cm². (The whole rectangle is '+t.X+' × '+t.Y+' = '+(t.X*t.Y)+' cm², and '+(t.X*t.Y)+' ÷ '+t.K+' = '+t.key+' cm² too.)'), 2);
+    ' cm². (The whole rectangle is '+t.X+' × '+t.Y+' = '+(t.X*t.Y)+' cm², and '+(t.X*t.Y)+' ÷ '+t.K+' = '+t.key+' cm² too.)'), 2),
+    'Sketch and label', tileSteps(t).concat(['One tile: '+t.w+' × '+t.Y+' = <b>'+t.key+' cm²</b>.'])), [
+    [(t.X*t.Y)+' cm²', 'Good start: that is the whole rectangle. The question asks about ONE tile, so share it among the '+t.K+' tiles.'],
+    [(2*(t.X+t.Y))+' cm²', PERI_SLIP],
+    [(2*(t.w+t.Y))+' cm²', 'Lots of children pick this, because it is the walk around one tile. Area is the space inside: length × breadth.']]);
 }
 function gTilePeri(){
   const t = tileDraw('peri');
-  return band(mcNum(tileStem(t,'perimeter'),'',t.key,t.d,'cm',
+  return slips(coach(band(mcNum(tileStem(t,'perimeter'),'',t.key,t.d,'cm',
     'The '+t.K+' tiles share the '+t.X+' cm length equally, so each tile measures '+t.X+' ÷ '+t.K+' = '+t.w+
     ' cm along the row. Its other side is as wide as the whole row: '+t.Y+' cm. Perimeter of one tile = '+t.w+' + '+t.Y+' + '+
-    t.w+' + '+t.Y+' = '+t.key+' cm. The question asks about ONE tile, not the whole rectangle.'), 3);
+    t.w+' + '+t.Y+' = '+t.key+' cm. The question asks about ONE tile, not the whole rectangle.'), 3),
+    'Sketch and label', tileSteps(t).concat(['Walk around one tile: '+t.w+' + '+t.Y+' + '+t.w+' + '+t.Y+' = <b>'+t.key+' cm</b>.'])), [
+    [(t.w*t.Y)+' cm', AREA_SLIP],
+    [(2*(t.X+t.Y))+' cm', 'Good start: that is the walk around the whole rectangle. The question asks about ONE tile.'],
+    [(t.w+t.Y)+' cm', HALF_SLIP]]);
 }
 
 /* G1d. Identical squares of a PRINTED side joined into a row, an L, a T or a big
@@ -351,24 +424,33 @@ function gSqShapePeri(){
     d = [4*sh.N*s, sh.N*s*s, (sh.edges-2)*s];
     g++;
   } while (g<300 && !(key !== sh.N*s*s && optsOk(key,d)));
-  return band(mcNum(sh.say+'. Each square has sides of '+s+' cm. What is the <b>perimeter</b> of the shape?','',key,d,'cm',
+  return slips(coach(band(mcNum(sh.say+'. Each square has sides of '+s+' cm. What is the <b>perimeter</b> of the shape?','',key,d,'cm',
     'Walk around the outside of the shape and count the square sides you pass: '+sh.edges+' of them. '+
     'The sides where two squares touch are inside the shape, so they are not part of the perimeter. '+
     'Perimeter = '+sh.edges+' × '+s+' = '+key+' cm. Adding all '+sh.N+' squares\' perimeters ('+sh.N+' × '+(4*s)+' = '+(4*sh.N*s)+
-    ' cm) counts the inside sides too.'), 3);
+    ' cm) counts the inside sides too.'), 3), 'Sketch and label', [
+    'Sketch the shape and label every square side '+s+' cm.',
+    'Walk around the outside and count the square sides you pass: '+sh.edges+' of them. Sides where two squares touch are inside, so skip them.',
+    'Perimeter: '+sh.edges+' × '+s+' = <b>'+key+' cm</b>.']),
+    [[(4*sh.N*s)+' cm', TOUCH_SLIP], [(sh.N*s*s)+' cm', AREA_SLIP],
+     [((sh.edges-2)*s)+' cm', 'Close: two outside sides were missed. Tick each side as you walk around.']]);
 }
 
 /* G1e. Cut a row of identical squares apart: how much more perimeter? Typed. */
 function gCutSquares(){
   const n = ri(3,6), s = ri(2,9), X = n*s, who = pick(NAMES);
   const all = 4*n*s, rect = 2*(X+s), key = all-rect;
-  return band(finishTyped('A rectangle is made of '+n+' identical squares in a row. It is '+X+' cm long. '+who+
+  return coach(band(finishTyped('A rectangle is made of '+n+' identical squares in a row. It is '+X+' cm long. '+who+
     ' cuts it apart into the '+n+' squares. How much <b>greater</b> is the total perimeter of the '+n+
     ' squares than the perimeter of the rectangle? Give your answer in cm.', key,
     'Each square side is '+X+' ÷ '+n+' = '+s+' cm. The '+n+' squares together: '+n+' × 4 × '+s+' = '+all+
     ' cm. The rectangle: '+X+' + '+s+' + '+X+' + '+s+' = '+rect+' cm. Difference: '+all+' − '+rect+' = '+key+
     ' cm. Shortcut: each of the '+(n-1)+' cuts makes 2 new sides of '+s+' cm, and '+(n-1)+' × 2 × '+s+' = '+key+' cm.',
-    'cm'), 3);
+    'cm'), 3), 'Sketch and label', [
+    'Sketch the row of '+n+' squares and label it '+X+' cm long. Each square side is '+X+' ÷ '+n+' = '+s+' cm.',
+    'Cut apart, each square has 4 sides of '+s+' cm: '+n+' × 4 × '+s+' = '+all+' cm altogether.',
+    'Joined up, the rectangle is '+X+' + '+s+' + '+X+' + '+s+' = '+rect+' cm.',
+    'How much greater: '+all+' − '+rect+' = <b>'+key+' cm</b>.']);
 }
 
 /* G2a. Two wires: a rectangle with PRINTED sides, then a square whose side is
@@ -379,12 +461,16 @@ function gWireTwo(){
   while (g<300 && !(paOk(L,B) && (half ? L/2 !== B : true)));
   const sq = half ? L/2 : B, pr = 2*(L+B), ps = 4*sq, key = pr+ps, who = pick(NAMES);
   const tie = half ? 'half the length of the rectangle' : 'the same as the breadth of the rectangle';
-  return band(finishTyped(who+' bends a piece of wire into a rectangle '+L+' cm long and '+B+' cm wide. '+
+  return coach(band(finishTyped(who+' bends a piece of wire into a rectangle '+L+' cm long and '+B+' cm wide. '+
     'A second piece of wire is bent into a square. Each side of the square is '+tie+
     '. How much wire is used <b>altogether</b>? Give your answer in cm.', key,
     'Wire for the rectangle = its perimeter: '+L+' + '+B+' + '+L+' + '+B+' = '+pr+' cm. Each side of the square is '+
     (half ? L+' ÷ 2 = '+sq : sq)+' cm, so its wire is 4 × '+sq+' = '+ps+' cm. Altogether: '+pr+' + '+ps+' = '+key+
-    ' cm. Wire goes around the edge, so it is perimeter, not area.', 'cm'), 3);
+    ' cm. Wire goes around the edge, so it is perimeter, not area.', 'cm'), 3), 'Sketch and label', [
+    'Sketch both shapes and label their sides. Wire goes around the edge, so each piece of wire is a perimeter.',
+    'Rectangle: '+L+' + '+B+' + '+L+' + '+B+' = '+pr+' cm.',
+    'Square: each side is '+(half ? L+' ÷ 2 = '+sq : 'the breadth, '+sq)+' cm, so its wire is 4 × '+sq+' = '+ps+' cm.',
+    'Altogether: '+pr+' + '+ps+' = <b>'+key+' cm</b>.']);
 }
 
 /* G2b. Same perimeter, different area (band 2: two products and a difference).
@@ -399,11 +485,19 @@ function gSamePerimArea(){
     g++;
   } while (g<300 && !(c>d && a>c && paOk(a,b) && paOk(c,d) && optsOk(c*d-a*b, dd)));
   const key = c*d-a*b, P = 2*(a+b);
-  return band(mcNum('Rectangle A is '+a+' cm by '+b+' cm. Rectangle B is '+c+' cm by '+d+
+  return slips(coach(band(mcNum('Rectangle A is '+a+' cm by '+b+' cm. Rectangle B is '+c+' cm by '+d+
     ' cm. Both rectangles have the same perimeter. How much <b>greater</b> is the area of B than the area of A?','',
     key, dd, 'cm²',
     'Same perimeter does not mean same area. Both perimeters are '+P+' cm, but area of A = '+a+' × '+b+' = '+(a*b)+
-    ' cm² and area of B = '+c+' × '+d+' = '+(c*d)+' cm². B is greater by '+(c*d)+' − '+(a*b)+' = '+key+' cm².'), 2);
+    ' cm² and area of B = '+c+' × '+d+' = '+(c*d)+' cm². B is greater by '+(c*d)+' − '+(a*b)+' = '+key+' cm².'), 2),
+    'Sketch and label', [
+    'Sketch both rectangles and label them. Both walks around are '+P+' cm, but area is the space inside, so work each one out.',
+    'Area of A: '+a+' × '+b+' = '+(a*b)+' cm².',
+    'Area of B: '+c+' × '+d+' = '+(c*d)+' cm².',
+    'How much greater: '+(c*d)+' − '+(a*b)+' = <b>'+key+' cm²</b>.']), [
+    [(c*d)+' cm²', 'Good start: that is the area of B. Take away the area of A to see how much greater it is.'],
+    [P+' cm²', 'Lots of children pick this, because the two perimeters match. The same perimeter does not mean the same area: work out each area.'],
+    [(a*b)+' cm²', 'Good start: that is the area of A. The question asks how much greater B is.']]);
 }
 
 /* G2c. Two identical rectangles joined along their long (or short) sides make a
@@ -431,7 +525,19 @@ function gJoinRects(){
       bigL+' + '+bigB+') = '+P+' cm. Shorter by '+tot+' − '+P+' = '+key+' cm: the two touching '+touch+' sides ('+hid+' cm each) are now inside.'
     : 'When the '+touch+' sides touch, '+dims+'. Perimeter = '+bigL+' + '+bigB+' + '+bigL+' + '+bigB+' = '+P+
       ' cm. Adding both cards\' perimeters ('+tot+' cm) wrongly counts the two touching sides, which are inside the bigger rectangle.';
-  return band(mcNum(stem,'',key,dd,'cm',explain), 3);
+  const one = 2*(L+B), walk = 'Walk around the bigger rectangle: '+bigL+' + '+bigB+' + '+bigL+' + '+bigB+' = ';
+  const sketch = 'Sketch the two cards with a '+touch+' side touching. The bigger rectangle is '+
+    (longT ? L+' cm long and '+B+' + '+B+' = '+(2*B)+' cm wide.' : L+' + '+L+' = '+(2*L)+' cm long and '+B+' cm wide.');
+  const q = coach(band(mcNum(stem,'',key,dd,'cm',explain), 3), 'Sketch and label', diff
+    ? ['One card: '+L+' + '+B+' + '+L+' + '+B+' = '+one+' cm. Two cards: 2 × '+one+' = '+tot+' cm.',
+       sketch, walk+P+' cm.',
+       'Shorter by: '+tot+' − '+P+' = <b>'+key+' cm</b>. The two touching sides are inside now.']
+    : [sketch, 'The touching sides are inside the bigger rectangle, so they are not part of the walk around.', walk+'<b>'+P+' cm</b>.']);
+  return slips(q, diff
+    ? [[hid+' cm', 'Close: '+hid+' cm is one of the touching sides. Each card loses that side, so two sides disappear from the walk.']]
+    : [[(4*(L+B))+' cm', TOUCH_SLIP],
+       [(longT ? 2*(2*L+B) : 2*(L+2*B))+' cm', 'Close: that is what you get when the other sides touch. Check which sides are joined.'],
+       [(2*L*B)+' cm', AREA_SLIP]]);
 }
 
 /* ==== PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 1, MOE P3 AP 1.2) ====

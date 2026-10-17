@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20261016-1957cf1 */
-/* ENGINE_BUILD_META {"stamp":"20261016-1957cf1","date":"2026-10-16","sha":"1957cf1","dirty":false,"payloadHash":"c8035dc28d7be858","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20261016-1957cf1","date":"2026-10-16","sha":"1957cf1","dirty":false,"payloadHash":"c8035dc28d7be858","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20261017-4a2a8de */
+/* ENGINE_BUILD_META {"stamp":"20261017-4a2a8de","date":"2026-10-17","sha":"4a2a8de","dirty":false,"payloadHash":"fb5acda784fe42a7","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20261017-4a2a8de","date":"2026-10-17","sha":"4a2a8de","dirty":false,"payloadHash":"fb5acda784fe42a7","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -6372,7 +6372,7 @@ function gDivError(){
  */
 (function () {
   const G = MQI.gen;
-  const ri = G.ri, pick = G.pick, finishTyped = G.finishTyped, finishNum = G.finishNum;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishTyped = G.finishTyped, finishNum = G.finishNum;
 
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Nurul'];
   const SNACKS = ['curry puffs','kaya toasts','pineapple tarts','otah sticks','soya bean cartons','ang ku kueh'];
@@ -6642,6 +6642,42 @@ function gDivError(){
     return band(finishNum(stem, '', n, [q*d, q*d - r, (q + 1)*d], c[0], ex), 2);
   }
 
+  /* PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 4, MOE P3 MD 3.4 with 3.3):
+     a bare 3-digit by 1-digit division WITH a remainder, the "922 ÷ 7" Booklet B
+     short answer. gDivAlgo serves exact division only and gLeftOver stops near 115.
+     MCQ, options written the way SG worksheets write them ("131 R 5"), and the stem
+     says what R stands for. Each wrong option is a named slip:
+       - the remainder left too big: one group too few, so the remainder is 7 or more
+         (130 R 12) - the arithmetic still checks, which is why it is tempting;
+       - one out in the answer with the remainder kept (132 R 5 or 130 R 5), a slip in
+         the bring-down; when the answer has a 0 in its tens place (208), the classic
+         dropped zero (28 R 3) takes this slot instead;
+       - the remainder counted UP to the next group instead of what is left (131 R 2).
+     The word "quotient" is never printed (09-05 refutation: not P3 vocabulary). */
+  const remOpt = (a, r) => a + ' R ' + r;
+  function gDivRem3(){
+    let d = 7, a = 131, r = 5, n = 922, g = 0, opts = [];
+    do {
+      d = ri(3, 9); a = ri(Math.ceil(100 / d), Math.floor((999 - (d - 1)) / d)); r = ri(1, d - 1); n = d*a + r;
+      const tensZero = a >= 100 && Math.floor(a / 10) % 10 === 0;
+      const slip = tensZero ? remOpt(Math.floor(a / 100) * 10 + a % 10, r) : remOpt(a + (ri(0, 1) ? 1 : -1), r);
+      opts = [remOpt(a - 1, r + d), slip, remOpt(a, d - r)];
+      g++;
+    } while (g < 300 && !(n >= 100 && n <= 999 && a >= 12 && 2*r !== d && new Set(opts.concat([remOpt(a, r)])).size === 4));
+    const key = remOpt(a, r);
+    const all = shuffle([key].concat(opts));
+    const q = {
+      q: 'What is ' + n + ' ÷ ' + d + '? (R stands for remainder.)', extra: '',
+      choices: all, correct: all.indexOf(key), answerText: key,
+      explain: 'Share ' + n + ' into groups of ' + d + '. ' + d + ' × ' + a + ' = ' + (d*a) + ', and ' + n + ' − ' + (d*a) +
+        ' = ' + r + ' is left over. ' + r + ' is smaller than ' + d + ', so no more groups of ' + d + ' fit: ' + n + ' ÷ ' + d +
+        ' = ' + key + '. Check: ' + d + ' × ' + a + ' + ' + r + ' = ' + n + '. A remainder of ' + d +
+        ' or more means one more group still fits.'
+    };
+    q.optionSet = all.slice();
+    return band(q, 2);
+  }
+
   MQI.registerTopic({
     id:'p3divide', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Multiplication and Division: division with remainder; multiplication and division algorithms (up to 3 digits by 1 digit)",
@@ -6653,7 +6689,9 @@ function gDivError(){
     },
     pools:{
       1:[[gLeftOver,'remainder'],[gMulAlgo,'algo']],
-      2:[[gQuotient,'remainder'],[gDivAlgo,'algo'],[gMulAlgo3,'algo'],[gInverseDiv,'remainder']],
+      2:[[gQuotient,'remainder'],[gDivAlgo,'algo'],[gMulAlgo3,'algo'],[gInverseDiv,'remainder'],
+         /* PRE-EXAM CONTENT CARD 2026-10-17: bare 3-digit ÷ 1-digit with a remainder */
+         [gDivRem3,'remainder']],
       3:[[gBoxesNeeded,'remainder'],[gTwoStep,'word'],[gMulWord,'word'],
          [gPackRest,'remainder'],[gTripsNeeded,'remainder'],[gOneMore,'remainder'],[gMostAfter,'remainder'],
          [gRepack,'word'],[gDaysPart,'word']]
@@ -11217,7 +11255,10 @@ function gTypedLeft(){
       1:[[gToSmallEasy,'tosmall'],[gToCompoundSmall,'tocompound']],
       2:[[gToCompoundBig,'tocompound'],[gWordLeft,'word'],[gEndToEnd,'gaps'],[gPostSpan,'gaps']],
       3:[[gToSmallZero,'tosmall'],[gWordCompare,'word'],[gTimesAsMuch,'multistep'],[gUseThenShare,'multistep'],
-         [gPourIn,'multistep'],[gCompareTotal,'multistep'],[gPackedBack,'multistep'],[gLineLength,'gaps'],[gTwoSpans,'gaps']]
+         [gPourIn,'multistep'],[gCompareTotal,'multistep'],[gPackedBack,'multistep'],[gLineLength,'gaps'],[gTwoSpans,'gaps'],
+         /* PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 3): band 3 but pool 2
+            only, so the mock's long slots never drew it. Kept in pool 2 as well. */
+         [gPostSpan,'gaps']]
     }
   });
 })();
@@ -12208,7 +12249,12 @@ function mcText(stem, extra, correctText, wrongs, explain){
    picture built as markup in q.extra. Spec: { type:'rect', length, breadth, unit }
    - see js/topics/README.md. The pilot's redraw constraints are unchanged; only
    where the picture comes from has moved. */
-function rectFig(L,B){ return { type:'rect', length:L, breadth:B, unit:'cm' }; }
+function rectFig(L,B,u){ return { type:'rect', length:L, breadth:B, unit:u||'cm' }; }
+/* PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 1, MOE P3 AP 1.2 "square
+   units, cm² and m²"): until this card no item asked an area in m². One draw in
+   three of gAreaRect and gSquareArea is now in metres (a floor-sized 6 m by 4 m
+   rectangle), the answer and every option in m². */
+const areaUnit = () => ri(0,2) === 0 ? 'm' : 'cm';
 const fig = (q, figure) => (q.figure = figure, q);
 
 /* FORMAT 1 - direct compute, on a labelled figure (pool 1) */
@@ -12224,9 +12270,9 @@ function gAreaRect(){
   let L=6,B=4,g=0;
   do { L=ri(3,12); B=ri(2,Math.min(L,9)); g++; }
   while (g<200 && !(paOk(L,B) && optsOk(L*B,[2*(L+B),L+B,L*B+L,L*B-B])));
-  const a=L*B;
-  return fig(finishNum('What is the <b>area</b> of this rectangle?','',a,[2*(L+B),L+B,a+L,a-B],'cm²',
-    'Area = length × breadth = '+L+' × '+B+' = '+a+' cm².'), rectFig(L,B));
+  const a=L*B, u=areaUnit();
+  return fig(finishNum('What is the <b>area</b> of this rectangle?','',a,[2*(L+B),L+B,a+L,a-B],u+'²',
+    'Area = length × breadth = '+L+' × '+B+' = '+a+' '+u+'².'), rectFig(L,B,u));
 }
 /* Wave-3 blocker fix (main): gSquarePA rendered BOTH an area face and a perimeter
  * face from one generator, so a pool entry tagged 'peri' could still show an area
@@ -12247,9 +12293,9 @@ function gSquareArea(){
   let s=5,g=0;
   do { s=ri(2,12); g++; }
   while (g<200 && !(4*s !== s*s && optsOk(s*s,[4*s,2*s,s*s+s,s*s-s])));
-  const a=s*s;
-  return finishNum('A square has sides of '+s+' cm. What is its <b>area</b>?','',a,[4*s,2*s,a+s,a-s],'cm²',
-    'Area of a square = side × side = '+s+' × '+s+' = '+a+' cm².');
+  const a=s*s, u=areaUnit();
+  return finishNum('A square has sides of '+s+' '+u+'. What is its <b>area</b>?','',a,[4*s,2*s,a+s,a-s],u+'²',
+    'Area of a square = side × side = '+s+' × '+s+' = '+a+' '+u+'².');
 }
 /* gMissSide DELETED (v3, second-refutation wound 1). "Area and one dimension in,
    the other dimension out" is MOE P4 1.1 word for word, and p4area ALREADY carries
@@ -12549,6 +12595,111 @@ function gJoinRects(){
   return band(mcNum(stem,'',key,dd,'cm',explain), 3);
 }
 
+/* ==== PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 1, MOE P3 AP 1.2) ====
+   "This figure is made up of 1-cm squares: find its area / perimeter" is a routine
+   Booklet A/B item, and every composite-square item above is text only. The figure
+   is drawn with the EXISTING `geom` renderer (grid: 1, segs), so there is no new
+   figure type and no js/figures.js edit: every unit square of the figure is outlined
+   (the outside AND the lines between squares, as the papers draw it), on squared-dot
+   paper with one empty unit all round.
+   SHAPE. Column by column: each column of the figure is one unbroken run of squares,
+   and each run shares at least one row with its neighbour, so the figure is in one
+   piece and has no hole. Three draws in four stand on a common base (a skyline: L,
+   steps, T upside down, U); the rest float (plus, Z, S). Never a plain rectangle,
+   5 to 18 squares, and never the same number for perimeter and area.
+   NAMED SLIPS. Area: counting the dots (the corners of the squares) instead of the
+   squares, giving the perimeter, and the area of the rectangle drawn around the
+   figure. Perimeter: giving the area, counting the squares along the edge instead
+   of their sides, and the perimeter of the rectangle around the figure (a real slip
+   only when the figure has a dent; otherwise the walk was lost by 2 either way).
+   The oracle in tools/gen-sanity.mjs reads the drawn lines back off the SVG, finds
+   the closed unit squares and counts them; it never sees this function's numbers. */
+function gridDraw(){
+  for (let g = 0; g < 600; g++){
+    const w = ri(3,6), h = ri(2,4), sky = ri(0,3) < 3, runs = [];
+    let ok = true;
+    for (let c = 0; c < w; c++){
+      let a, b;
+      if (sky){ b = h; a = ri(0, h-1); }
+      else { a = ri(0, h-1); b = ri(a+1, h); }
+      if (c > 0 && Math.min(b, runs[c-1][1]) - Math.max(a, runs[c-1][0]) < 1){ ok = false; break; }
+      runs.push([a, b]);
+    }
+    if (!ok) continue;
+    if (Math.min(...runs.map(r => r[0])) !== 0 || Math.max(...runs.map(r => r[1])) !== h) continue;
+    const cells = new Set();
+    runs.forEach((r, c) => { for (let y = r[0]; y < r[1]; y++) cells.add(c + ',' + y); });
+    if (cells.size === w*h || cells.size < 5 || cells.size > 18) continue;
+    const t = gridMeasure(cells, w, h);
+    if (t.P === t.A) continue;
+    return t;
+  }
+  /* fallback: a skyline of 4 columns, heights 3, 1, 2, 1 */
+  return gridMeasure(new Set(['0,0','0,1','0,2','1,2','2,1','2,2','3,2']), 4, 3);
+}
+function gridMeasure(cells, w, h){
+  const has = (x, y) => cells.has(x + ',' + y);
+  const dots = new Set();
+  let P = 0, nB = 0;
+  for (const k of cells){
+    const x = +k.split(',')[0], y = +k.split(',')[1];
+    const open = [[1,0],[-1,0],[0,1],[0,-1]].filter(d => !has(x+d[0], y+d[1])).length;
+    P += open; if (open) nB++;
+    for (const d of [[0,0],[1,0],[0,1],[1,1]]) dots.add((x+d[0]) + ',' + (y+d[1]));
+  }
+  return { w, h, cells, has, A: cells.size, P, nB, V: dots.size, box: 2*(w+h) };
+}
+function gridFig(t){
+  const cols = t.w + 2, rows = t.h + 2, px = [], py = [], at = new Map(), segs = [];
+  const pt = (x, y) => {
+    const k = x + ',' + y;
+    if (!at.has(k)){ at.set(k, px.length); px.push(x + 1); py.push(y + 1); }
+    return at.get(k);
+  };
+  /* every unit edge that borders a square of the figure, merged into straight runs */
+  for (let y = 0; y <= t.h; y++){
+    let s = null;
+    for (let x = 0; x <= t.w; x++){
+      const on = x < t.w && (t.has(x, y) || t.has(x, y-1));
+      if (on && s === null) s = x;
+      if (!on && s !== null){ segs.push([pt(s, y), pt(x, y)]); s = null; }
+    }
+  }
+  for (let x = 0; x <= t.w; x++){
+    let s = null;
+    for (let y = 0; y <= t.h; y++){
+      const on = y < t.h && (t.has(x, y) || t.has(x-1, y));
+      if (on && s === null) s = y;
+      if (!on && s !== null){ segs.push([pt(x, s), pt(x, y)]); s = null; }
+    }
+  }
+  return { type:'geom', cols, rows, grid:1, px, py, names: px.map(() => ''), segs };
+}
+const GRID_STEM = 'The figure is made up of 1-cm squares. ';
+function gGridArea(){
+  let t = gridDraw(), g = 0;
+  while (g < 200 && !optsOk(t.A, [t.V, t.P, t.w*t.h])){ t = gridDraw(); g++; }
+  return band(fig(mcNum(GRID_STEM + 'What is the <b>area</b> of the figure?','',t.A,[t.V, t.P, t.w*t.h],'cm²',
+    'Count the squares inside the figure: there are '+t.A+' of them. Each square is 1 cm², so the area is '+t.A+
+    ' cm². Count the squares, not the dots at their corners, and do not count the empty spaces in the rectangle around the figure.'),
+    gridFig(t)), 2);
+}
+function gGridPeri(){
+  let t = gridDraw(), d = [], g = 0;
+  for (;;){
+    const lost = shuffle([t.P + 2, t.P - 2]);
+    d = [t.A, t.nB].concat(t.box !== t.P ? [t.box] : []).concat(lost)
+      .filter((c, i, a) => c > 0 && c !== t.P && a.indexOf(c) === i).slice(0, 3);
+    if (d.length === 3 || g++ > 200) break;
+    t = gridDraw();
+  }
+  return band(fig(mcNum(GRID_STEM + 'What is the <b>perimeter</b> of the figure?','',t.P,d,'cm',
+    'Walk all the way around the outside of the figure and count the sides of the squares you pass: there are '+t.P+
+    ' of them, and each is 1 cm long, so the perimeter is '+t.P+' cm. The lines between two squares are inside the figure, '+
+    'so they are not part of the perimeter. Count the sides, not the squares.'),
+    gridFig(t)), 2);
+}
+
   MQI.registerTopic({
     id:'geometry', level:'P3', strand:'Measurement and Geometry',
     moeSubTopic:"Area and Perimeter: concepts of area and perimeter of a plane figure; area of rectangle/square",
@@ -12564,11 +12715,13 @@ function gJoinRects(){
          meets. gSquareArea joins pool 1 (as on main) because pool 1's old
          [gSquarePA,'peri'] entry already showed an area stem on half its draws;
          without it the split would silently delete area from level 1. */
-      1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area']],
+      1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area'],
+         /* PRE-EXAM CONTENT CARD 2026-10-17: counting 1-cm squares on a grid (AP 1.2) */
+         [gGridArea,'area'],[gGridPeri,'peri']],
       /* HARD LANE geom 2026-10-07: the two band-2 shapes (tile area, same
          perimeter / different area) join pool 2; the seven band-3 shapes join pool 3. */
       2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri'],[gRectiPeri,'peri'],
-         [gTileArea,'area'],[gSamePerimArea,'area']],
+         [gTileArea,'area'],[gSamePerimArea,'area'],[gGridArea,'area'],[gGridPeri,'peri']],
       3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area'],[gRectiPeri,'peri'],
          [gSqRowArea,'area'],[gSqRowPeri,'peri'],[gTilePeri,'peri'],[gSqShapePeri,'peri'],
          [gCutSquares,'peri'],[gWireTwo,'peri'],[gJoinRects,'peri']]
@@ -13766,7 +13919,12 @@ function gJoinRects(){
       3:[[T(gThreeUnits,3),'compare'],[T(gThreeParty,3),'compare'],[T(gExtraFixed,3),'compare'],[T(gTimesDiff,3),'compare'],
          [T(gSumDiff,3),'compare'],[T(gGiveToEqual3,3),'beforeafter'],[T(gTotalAfter,3),'beforeafter'],[T(gBackwards,3),'heuristic'],
          [T(gNotes,3),'heuristic'],[T(gTwoPrices,3),'heuristic'],[T(gWheels,3),'heuristic'],[T(gMoneyRest,3),'money'],
-         [T(stretch(gRatioAfter),3),'beforeafter'],[T(stretch(gElimination),3),'heuristic']]
+         [T(stretch(gRatioAfter),3),'beforeafter'],[T(stretch(gElimination),3),'heuristic'],
+         /* PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 3, mock routing hole):
+            the plain two-party shapes are band 3 but lived only in pool 2, and the
+            mock's long slots draw pool 3 only, so they earned 0 mock marks. They stay
+            in pool 2 for practice and are appended here so the mock rehearses them. */
+         [T(gTimesTotal,3),'compare'],[T(gMoreTotal,3),'compare'],[T(gGiveEqual,3),'beforeafter']]
     }
   });
 })();
@@ -21194,4 +21352,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20261016-1957cf1 */
+/* ENGINE_BUILD_END 20261017-4a2a8de */

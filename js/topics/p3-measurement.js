@@ -343,7 +343,10 @@
       1:[[gToSmallEasy,'tosmall'],[gToCompoundSmall,'tocompound']],
       2:[[gToCompoundBig,'tocompound'],[gWordLeft,'word'],[gEndToEnd,'gaps'],[gPostSpan,'gaps']],
       3:[[gToSmallZero,'tosmall'],[gWordCompare,'word'],[gTimesAsMuch,'multistep'],[gUseThenShare,'multistep'],
-         [gPourIn,'multistep'],[gCompareTotal,'multistep'],[gPackedBack,'multistep'],[gLineLength,'gaps'],[gTwoSpans,'gaps']]
+         [gPourIn,'multistep'],[gCompareTotal,'multistep'],[gPackedBack,'multistep'],[gLineLength,'gaps'],[gTwoSpans,'gaps'],
+         /* PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 3): band 3 but pool 2
+            only, so the mock's long slots never drew it. Kept in pool 2 as well. */
+         [gPostSpan,'gaps']]
     }
   });
 })();

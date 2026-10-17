@@ -573,7 +573,12 @@
       3:[[T(gThreeUnits,3),'compare'],[T(gThreeParty,3),'compare'],[T(gExtraFixed,3),'compare'],[T(gTimesDiff,3),'compare'],
          [T(gSumDiff,3),'compare'],[T(gGiveToEqual3,3),'beforeafter'],[T(gTotalAfter,3),'beforeafter'],[T(gBackwards,3),'heuristic'],
          [T(gNotes,3),'heuristic'],[T(gTwoPrices,3),'heuristic'],[T(gWheels,3),'heuristic'],[T(gMoneyRest,3),'money'],
-         [T(stretch(gRatioAfter),3),'beforeafter'],[T(stretch(gElimination),3),'heuristic']]
+         [T(stretch(gRatioAfter),3),'beforeafter'],[T(stretch(gElimination),3),'heuristic'],
+         /* PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 3, mock routing hole):
+            the plain two-party shapes are band 3 but lived only in pool 2, and the
+            mock's long slots draw pool 3 only, so they earned 0 mock marks. They stay
+            in pool 2 for practice and are appended here so the mock rehearses them. */
+         [T(gTimesTotal,3),'compare'],[T(gMoreTotal,3),'compare'],[T(gGiveEqual,3),'beforeafter']]
     }
   });
 })();

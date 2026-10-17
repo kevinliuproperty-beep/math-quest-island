@@ -2396,6 +2396,33 @@ function p3divideHardOracle(q) {
   const first = (...xs) => xs.find(x => x) || null;
   let m;
 
+  /* PRE-EXAM CONTENT CARD 2026-10-17 (card 4): gDivRem3, bare 3-digit by 1-digit with a
+     remainder, MCQ "a R r". Re-derived by COUNTING groups (divCountDown), then every
+     option is read back: exactly one says a R r with r smaller than the divisor and
+     d x a + r = n; the "remainder too big" slip must still check arithmetically (that
+     is its point) but break r < d. The word "quotient" may not be printed anywhere
+     (09-05 refutation) and the division sign must be the SG ÷. */
+  if ((m = text.match(/^What is (\d+) (\S) (\d+)\? \(R stands for remainder\.\)$/))) {
+    const n = Number(m[1]), d = Number(m[3]);
+    if (m[2] !== '÷') return `divide rem3: the stem prints "${m[2]}", not ÷`;
+    if (n < 100 || n > 999) return `divide rem3: ${n} is not a 3-digit number`;
+    if (q.typed) return 'divide rem3: expected an MCQ';
+    const all = [q.q, q.explain, q.answerText].concat(q.choices || []).map(strip).join(' ');
+    if (/quotient/i.test(all)) return 'divide rem3: prints the word "quotient"';
+    if (/[\/]| x /.test(strip(q.explain))) return 'divide rem3: the explanation prints an ASCII operator';
+    const a = divCountDown(n, d), r = n - divRepeatAdd(d, a);
+    if (r === 0) return 'divide rem3: no remainder';
+    const read = (q.choices || []).map(c => strip(c).match(/^(\d+) R (\d+)$/));
+    if (read.some(x => !x)) return 'divide rem3: an option is not written "a R r"';
+    const ok = read.map(x => divRepeatAdd(d, +x[1]) + +x[2] === n && +x[2] < d);
+    if (ok.filter(Boolean).length !== 1) return `divide rem3: ${ok.filter(Boolean).length} options are a true division`;
+    if (!read.some(x => divRepeatAdd(d, +x[1]) + +x[2] === n && +x[2] >= d)) return 'divide rem3: the remainder-too-big slip is missing';
+    const want = a + ' R ' + r;
+    return first(scope(n, d, 'divide rem3'), bandIs(2, 'divide rem3'),
+      strip(q.answerText) === want ? null : `divide rem3: expected ${want}, got ${strip(q.answerText)}`,
+      ok[q.correct] ? null : 'divide rem3: choices[correct] is not the key');
+  }
+
   /* D1a: subtract, divide, round up */
   if ((m = text.match(/^A bakery makes (\d+) ([a-z ]+)\. (\d+) of them [a-z ]+\. The rest are packed into ([a-z]+) of (\d+)\. What is the least number of \4 needed to pack all the rest\?$/))) {
     const rest = Number(m[1]) - Number(m[3]), d = Number(m[5]);
@@ -2488,6 +2515,80 @@ const ansNumOf = q => parseFloat(strip(q.answerText));
    the band tag, exactly one option worth the key, the declared typed unit, and
    the P3 scope clamp (every shared length divides exactly). Returns false when
    no G1/G2 stem matched, so the older geometry branches still run. */
+/* PRE-EXAM CONTENT CARD 2026-10-17 (card 1): read a "made up of 1-cm squares" figure
+   back off the RENDERED geom SVG. The grid pitch and origin come from the dot paper
+   (the r="1.4" circles); every drawn .gm-seg is split into unit edges; a unit square
+   of the figure is a grid square whose four sides are all drawn. Area = the count of
+   those squares. Perimeter = the unit edges that border exactly one of them. Then a
+   second, independent path: the perimeter edges must form ONE closed loop (no pinch,
+   no second piece), and a grid square's centre must lie inside that loop (ray cast)
+   exactly when it is a square of the figure - so the figure has no hole, no stray
+   line, and the count is the count of the cells inside the rendered polygon. Never
+   a plain rectangle (the item is about counting, not length x breadth). */
+function gridFigureRead(raw) {
+  if (!/class="gmfig"/.test(raw) || /gm-panel/.test(raw)) return 'no single geom drawing';
+  const dots = [...raw.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="1\.4"/g)].map(d => [+d[1], +d[2]]);
+  if (dots.length < 4) return 'no dot paper drawn';
+  const xs = [...new Set(dots.map(d => d[0]))].sort((a, b) => a - b), ys = [...new Set(dots.map(d => d[1]))].sort((a, b) => a - b);
+  const s = xs[1] - xs[0];
+  if (!(s > 0) || Math.abs((ys[1] - ys[0]) - s) > 0.15) return 'the dot paper is not square';
+  const gu = (v, o) => { const k = (v - o) / s; return Math.abs(k - Math.round(k)) < 0.02 ? Math.round(k) : NaN; };
+  const cols = xs.length - 1, rows = ys.length - 1;
+  const H = new Set(), V = new Set();
+  for (const l of raw.matchAll(/<line class="gm-seg" x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)"/g)) {
+    let x1 = gu(+l[1], xs[0]), y1 = gu(+l[2], ys[0]), x2 = gu(+l[3], xs[0]), y2 = gu(+l[4], ys[0]);
+    if ([x1, y1, x2, y2].some(Number.isNaN)) return 'a drawn line does not end on a grid dot';
+    if (y1 === y2 && x1 !== x2) { if (x1 > x2) [x1, x2] = [x2, x1]; for (let x = x1; x < x2; x++) H.add(x + ',' + y1); }
+    else if (x1 === x2 && y1 !== y2) { if (y1 > y2) [y1, y2] = [y2, y1]; for (let y = y1; y < y2; y++) V.add(x1 + ',' + y); }
+    else return 'a drawn line is not along the grid';
+  }
+  const cell = new Set();
+  for (let x = 0; x < cols; x++) for (let y = 0; y < rows; y++)
+    if (H.has(x + ',' + y) && H.has(x + ',' + (y + 1)) && V.has(x + ',' + y) && V.has((x + 1) + ',' + y)) cell.add(x + ',' + y);
+  const isC = (x, y) => cell.has(x + ',' + y);
+  if (!cell.size) return 'no closed unit square in the drawing';
+  /* no stray line: every drawn unit edge borders a square of the figure */
+  for (const e of H) { const [x, y] = e.split(',').map(Number); if (!isC(x, y) && !isC(x, y - 1)) return `stray line at (${x},${y})`; }
+  for (const e of V) { const [x, y] = e.split(',').map(Number); if (!isC(x, y) && !isC(x - 1, y)) return `stray line at (${x},${y})`; }
+  /* perimeter edges: border exactly one square */
+  const edges = [];
+  for (const e of H) { const [x, y] = e.split(',').map(Number); if (isC(x, y) !== isC(x, y - 1)) edges.push([[x, y], [x + 1, y]]); }
+  for (const e of V) { const [x, y] = e.split(',').map(Number); if (isC(x, y) !== isC(x - 1, y)) edges.push([[x, y], [x, y + 1]]); }
+  /* one closed loop through vertices of degree exactly 2 */
+  const adj = new Map(), k = p => p[0] + ',' + p[1];
+  for (const [a, b] of edges) {
+    if (!adj.has(k(a))) adj.set(k(a), []); if (!adj.has(k(b))) adj.set(k(b), []);
+    adj.get(k(a)).push(k(b)); adj.get(k(b)).push(k(a));
+  }
+  for (const [v, n] of adj) if (n.length !== 2) return `the outline is pinched at (${v})`;
+  const start = adj.keys().next().value, loop = [start];
+  let prev = null, cur = start;
+  for (;;) {
+    const nx = adj.get(cur).find(v => v !== prev);
+    if (nx === start || nx === undefined) break;
+    prev = cur; cur = nx; loop.push(cur);
+    if (loop.length > edges.length) return 'the outline does not close';
+  }
+  if (loop.length !== edges.length) return `the outline is ${edges.length} edges but one loop walks ${loop.length} - more than one piece or a hole`;
+  const poly = loop.map(v => v.split(',').map(Number));
+  const inside = (px, py) => {
+    let c = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [xi, yi] = poly[i], [xj, yj] = poly[j];
+      if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) c = !c;
+    }
+    return c;
+  };
+  let A = 0;
+  for (let x = 0; x < cols; x++) for (let y = 0; y < rows; y++) {
+    const inn = inside(x + 0.5, y + 0.5);
+    if (inn !== isC(x, y)) return `square (${x},${y}) is ${inn ? 'inside the outline but not drawn' : 'drawn but outside the outline'}`;
+    if (inn) A++;
+  }
+  const bx = poly.map(p => p[0]), by = poly.map(p => p[1]);
+  if (A === (Math.max(...bx) - Math.min(...bx)) * (Math.max(...by) - Math.min(...by))) return 'the figure is a plain rectangle';
+  return { A, P: edges.length };
+}
 function geomHardOracle(q) {
   const text = strip(q.q);
   let m;
@@ -2501,6 +2602,15 @@ function geomHardOracle(q) {
     if (vals.filter(v => near(v, e)).length !== 1) return `geom ${what}: ${vals.filter(v => near(v, e)).length} options worth ${e} (${vals.join(', ')})`;
     return near(e, parseFloat(strip(q.answerText))) ? null : `geom ${what}: expected ${e}, got ${strip(q.answerText)}`;
   };
+  /* PRE-EXAM CONTENT CARD 2026-10-17 (card 1, AP 1.2): gGridArea / gGridPeri. */
+  if ((m = text.match(/^The figure is made up of 1-cm squares\. What is the (area|perimeter) of the figure\?$/))) {
+    const g = gridFigureRead(String(q.extra || ''));
+    if (typeof g === 'string') return 'geom grid: ' + g;
+    if (g.P === g.A) return `geom grid: perimeter and area are both ${g.A}`;
+    const u = m[1] === 'area' ? 'cm²' : 'cm';
+    if ((q.choices || []).some(c => !strip(c).endsWith(' ' + u))) return `geom grid: an option does not carry the unit ${u}`;
+    return want(m[1] === 'area' ? g.A : g.P, 2, 'grid ' + m[1]);
+  }
   if ((m = text.match(/^(\d+) identical squares (?:are placed side by side in a row|are arranged in (\d+) rows of (\d+)) to make a rectangle\. The rectangle is (\d+) cm long\. What is the (area|perimeter) of the rectangle\?$/))) {
     const N = +m[1], rows = m[2] ? +m[2] : 1, n = m[3] ? +m[3] : N, X = +m[4];
     if (rows * n !== N) return `geom squares-row: ${rows} rows of ${n} is not ${N} squares`;
@@ -6250,17 +6360,24 @@ function oracle(q, topic) {
       return near(e, ansNum) ? null : `rect perimeter: expected ${e} from ${nums.join('x')}, got ${ansNum}`;
     }
   }
+  /* PRE-EXAM CONTENT CARD 2026-10-17 (card 1): the area items also come in metres
+     (AP 1.2, m²). Both sides must print the same unit, and every option must carry
+     that unit squared - "24 cm²" on a 6 m by 4 m floor is a wrong key. */
   if (/area of this rectangle/i.test(text)) {
-    const nums = (extra.match(/(\d+) cm/g) || []).map(s => parseInt(s, 10));
-    if (nums.length >= 2) {
-      const e = nums[0] * nums[1];
-      return near(e, ansNum) ? null : `rect area: expected ${e} from ${nums.join('x')}, got ${ansNum}`;
+    const lab = [...extra.matchAll(/(\d+) (cm|m)(?![a-zA-Z²])/g)];
+    if (lab.length >= 2) {
+      if (lab[0][2] !== lab[1][2]) return `rect area: the sides print ${lab[0][2]} and ${lab[1][2]}`;
+      if ((q.choices || []).some(c => !strip(c).endsWith(' ' + lab[0][2] + '²'))) return `rect area: an option is not in ${lab[0][2]}²`;
+      const e = Number(lab[0][1]) * Number(lab[1][1]);
+      return near(e, ansNum) ? null : `rect area: expected ${e} from ${lab[0][1]}x${lab[1][1]}, got ${ansNum}`;
     }
   }
-  if ((m = text.match(/A square has sides of (\d+) cm\. What is its (perimeter|area)/))) {
+  if ((m = text.match(/A square has sides of (\d+) (cm|m)\. What is its (perimeter|area)/))) {
     const s = Number(m[1]);
-    const e = m[2] === 'perimeter' ? 4 * s : s * s;
-    return near(e, ansNum) ? null : `square ${m[2]}(${s}): expected ${e}, got ${ansNum}`;
+    const e = m[3] === 'perimeter' ? 4 * s : s * s;
+    const u = m[3] === 'perimeter' ? m[2] : m[2] + '²';
+    if ((q.choices || []).some(c => !strip(c).endsWith(' ' + u))) return `square ${m[3]}: an option is not in ${u}`;
+    return near(e, ansNum) ? null : `square ${m[3]}(${s}): expected ${e}, got ${ansNum}`;
   }
   if ((m = text.match(/area of (\d+) cm.*breadth is (\d+) cm.*length/i))) {
     const e = Number(m[1]) / Number(m[2]);
@@ -6650,10 +6767,10 @@ function coincidence(q) {
   const sq = s => { L = s; B = s; };
 
   if (/class="rectBox"/.test(String(q.extra))) {
-    const nums = (extra.match(/(\d+) cm/g) || []).map(s => parseInt(s, 10));
+    const nums = (extra.match(/(\d+) c?m(?![a-zA-Z²])/g) || []).map(s => parseInt(s, 10));
     if (nums.length >= 2) { L = nums[0]; B = nums[1]; where = 'rendered rectangle'; }
   }
-  if (L === null && (m = text.match(/A square has sides of (\d+) cm/))) { sq(Number(m[1])); where = 'square'; }
+  if (L === null && (m = text.match(/A square has sides of (\d+) c?m(?![a-zA-Z²])/))) { sq(Number(m[1])); where = 'square'; }
   if (L === null && (m = text.match(/perimeter of the [a-z]+ is (\d+) cm\. What is the length of one side/))) { sq(Number(m[1]) / 4); where = 'square from perimeter'; }
   if (L === null && (m = text.match(/has an area of (\d+) cm.\. What is the length of one side/))) { sq(Math.sqrt(Number(m[1]))); where = 'square from area'; }
   if (L === null && (m = text.match(/A rectangle is (\d+) cm long and (\d+) cm wide/))) { L = Number(m[1]); B = Number(m[2]); where = 'rectangle in words'; }
@@ -6792,7 +6909,7 @@ const PILOT_TOPICS = new Set(['geometry', 'tables', 'p4area', 'p2', 'p3numbers',
 const PILOT_MCNUM = new Set([
   'geometry.gPeriCompare', 'geometry.gPeriFence', 'geometry.gRectiPeri',
   'geometry.gSqRowArea', 'geometry.gSqRowPeri', 'geometry.gTileArea', 'geometry.gTilePeri',
-  'geometry.gSqShapePeri', 'geometry.gSamePerimArea', 'geometry.gJoinRects',
+  'geometry.gSqShapePeri', 'geometry.gSamePerimArea', 'geometry.gJoinRects', 'geometry.gGridArea', 'geometry.gGridPeri',
   'tables.gGroups', 'tables.gDoubling', 'tables.gDivShare', 'tables.gDivError',
   'p4area.gLError', 'p4area.gLCompare', 'p4area.gLWords', 'p4area.gLCornerInverse',
   'p4area.gLSkirting', 'p4area.gPeriFromArea', 'p4area.gNotchPerimeter'
@@ -12280,6 +12397,14 @@ for (const tid of Object.keys(TOPICS)) {
    is not a cheap strategy there, it is the question. Everything else is gated. --- */
 const RANK_LABELS = ['largest', '2nd largest', '3rd largest', 'smallest'];
 const DEC_RANK_DRAWS = Number(process.env.RANK_SAMPLES || 2000);
+/* PRECISION FIX (2026-10-17, conn ruling on the pre-exam content card). The rank
+   check alone draws 20,000 per generator, not 2,000. At 2,000 draws a rank share's
+   standard error is ~0.76 points, so a bank whose true share sits ~1 point above the
+   12% floor (gDecRound: 13.3% over 400,000 draws) went red on 11.8% the moment new
+   generators elsewhere moved the seeded stream. At 20,000 the SE is ~0.24 points.
+   The floor and the ceiling are unchanged; the prose and coupling scans keep
+   DEC_RANK_DRAWS. RANK_SAMPLES still overrides both. */
+const MAG_RANK_DRAWS = Number(process.env.RANK_SAMPLES || 20000);
 const RANK_CEILING = 0.45;
 /* THE KILL (refutation v8 @ f0cbe38, W4). A ceiling with no FLOOR only measures
    half the axis. A rank the key occupies on 0.00% of draws is a free one-of-four
@@ -12341,7 +12466,7 @@ const decRankRows = [];
 let rankReport = null;
 {
   const decGens = GENS.filter(g => g.topic === 'decimals').map(g => ({ name: g.name, fn: g.fn }));
-  rankReport = decRankScan(decGens, DEC_RANK_DRAWS);
+  rankReport = decRankScan(decGens, MAG_RANK_DRAWS);
   for (const r of rankReport.rows) {
     if (r.exempt || r.n < DEC_RANK_FLOOR) { decRankRows.push({ ...r, ok: true }); continue; }
     const ok = r.worst <= RANK_CEILING && r.thinnest >= RANK_MIN_SHARE;
@@ -14250,7 +14375,7 @@ else console.log(`ok   index.html manifest: all ${manifestRows.length} topic fil
 /* ---------- decimals: magnitude rank, contract coverage, negative controls ---------- */
 if (rankReport) {
   console.log('');
-  console.log(`MAGNITUDE-RANK  (${DEC_RANK_DRAWS} draws x ${rankReport.rows.length} decimals generators, ` +
+  console.log(`MAGNITUDE-RANK  (${MAG_RANK_DRAWS} draws x ${rankReport.rows.length} decimals generators, ` +
     `ceiling ${(RANK_CEILING * 100).toFixed(0)}% and FLOOR ${(RANK_MIN_SHARE * 100).toFixed(0)}% per rank)`);
   console.log(`  bank-wide best rank strategy : "always pick the ${RANK_LABELS[rankReport.bank.rank]}" wins ` +
     `${(rankReport.bank.share * 100).toFixed(1)}%  (${rankReport.bank.n} numeric-option draws, floor 25.0%)`);

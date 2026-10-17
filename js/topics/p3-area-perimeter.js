@@ -88,7 +88,12 @@ function mcText(stem, extra, correctText, wrongs, explain){
    picture built as markup in q.extra. Spec: { type:'rect', length, breadth, unit }
    - see js/topics/README.md. The pilot's redraw constraints are unchanged; only
    where the picture comes from has moved. */
-function rectFig(L,B){ return { type:'rect', length:L, breadth:B, unit:'cm' }; }
+function rectFig(L,B,u){ return { type:'rect', length:L, breadth:B, unit:u||'cm' }; }
+/* PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 1, MOE P3 AP 1.2 "square
+   units, cm² and m²"): until this card no item asked an area in m². One draw in
+   three of gAreaRect and gSquareArea is now in metres (a floor-sized 6 m by 4 m
+   rectangle), the answer and every option in m². */
+const areaUnit = () => ri(0,2) === 0 ? 'm' : 'cm';
 const fig = (q, figure) => (q.figure = figure, q);
 
 /* FORMAT 1 - direct compute, on a labelled figure (pool 1) */
@@ -104,9 +109,9 @@ function gAreaRect(){
   let L=6,B=4,g=0;
   do { L=ri(3,12); B=ri(2,Math.min(L,9)); g++; }
   while (g<200 && !(paOk(L,B) && optsOk(L*B,[2*(L+B),L+B,L*B+L,L*B-B])));
-  const a=L*B;
-  return fig(finishNum('What is the <b>area</b> of this rectangle?','',a,[2*(L+B),L+B,a+L,a-B],'cm²',
-    'Area = length × breadth = '+L+' × '+B+' = '+a+' cm².'), rectFig(L,B));
+  const a=L*B, u=areaUnit();
+  return fig(finishNum('What is the <b>area</b> of this rectangle?','',a,[2*(L+B),L+B,a+L,a-B],u+'²',
+    'Area = length × breadth = '+L+' × '+B+' = '+a+' '+u+'².'), rectFig(L,B,u));
 }
 /* Wave-3 blocker fix (main): gSquarePA rendered BOTH an area face and a perimeter
  * face from one generator, so a pool entry tagged 'peri' could still show an area
@@ -127,9 +132,9 @@ function gSquareArea(){
   let s=5,g=0;
   do { s=ri(2,12); g++; }
   while (g<200 && !(4*s !== s*s && optsOk(s*s,[4*s,2*s,s*s+s,s*s-s])));
-  const a=s*s;
-  return finishNum('A square has sides of '+s+' cm. What is its <b>area</b>?','',a,[4*s,2*s,a+s,a-s],'cm²',
-    'Area of a square = side × side = '+s+' × '+s+' = '+a+' cm².');
+  const a=s*s, u=areaUnit();
+  return finishNum('A square has sides of '+s+' '+u+'. What is its <b>area</b>?','',a,[4*s,2*s,a+s,a-s],u+'²',
+    'Area of a square = side × side = '+s+' × '+s+' = '+a+' '+u+'².');
 }
 /* gMissSide DELETED (v3, second-refutation wound 1). "Area and one dimension in,
    the other dimension out" is MOE P4 1.1 word for word, and p4area ALREADY carries
@@ -429,6 +434,111 @@ function gJoinRects(){
   return band(mcNum(stem,'',key,dd,'cm',explain), 3);
 }
 
+/* ==== PRE-EXAM CONTENT CARD 2026-10-17 (coverage scan card 1, MOE P3 AP 1.2) ====
+   "This figure is made up of 1-cm squares: find its area / perimeter" is a routine
+   Booklet A/B item, and every composite-square item above is text only. The figure
+   is drawn with the EXISTING `geom` renderer (grid: 1, segs), so there is no new
+   figure type and no js/figures.js edit: every unit square of the figure is outlined
+   (the outside AND the lines between squares, as the papers draw it), on squared-dot
+   paper with one empty unit all round.
+   SHAPE. Column by column: each column of the figure is one unbroken run of squares,
+   and each run shares at least one row with its neighbour, so the figure is in one
+   piece and has no hole. Three draws in four stand on a common base (a skyline: L,
+   steps, T upside down, U); the rest float (plus, Z, S). Never a plain rectangle,
+   5 to 18 squares, and never the same number for perimeter and area.
+   NAMED SLIPS. Area: counting the dots (the corners of the squares) instead of the
+   squares, giving the perimeter, and the area of the rectangle drawn around the
+   figure. Perimeter: giving the area, counting the squares along the edge instead
+   of their sides, and the perimeter of the rectangle around the figure (a real slip
+   only when the figure has a dent; otherwise the walk was lost by 2 either way).
+   The oracle in tools/gen-sanity.mjs reads the drawn lines back off the SVG, finds
+   the closed unit squares and counts them; it never sees this function's numbers. */
+function gridDraw(){
+  for (let g = 0; g < 600; g++){
+    const w = ri(3,6), h = ri(2,4), sky = ri(0,3) < 3, runs = [];
+    let ok = true;
+    for (let c = 0; c < w; c++){
+      let a, b;
+      if (sky){ b = h; a = ri(0, h-1); }
+      else { a = ri(0, h-1); b = ri(a+1, h); }
+      if (c > 0 && Math.min(b, runs[c-1][1]) - Math.max(a, runs[c-1][0]) < 1){ ok = false; break; }
+      runs.push([a, b]);
+    }
+    if (!ok) continue;
+    if (Math.min(...runs.map(r => r[0])) !== 0 || Math.max(...runs.map(r => r[1])) !== h) continue;
+    const cells = new Set();
+    runs.forEach((r, c) => { for (let y = r[0]; y < r[1]; y++) cells.add(c + ',' + y); });
+    if (cells.size === w*h || cells.size < 5 || cells.size > 18) continue;
+    const t = gridMeasure(cells, w, h);
+    if (t.P === t.A) continue;
+    return t;
+  }
+  /* fallback: a skyline of 4 columns, heights 3, 1, 2, 1 */
+  return gridMeasure(new Set(['0,0','0,1','0,2','1,2','2,1','2,2','3,2']), 4, 3);
+}
+function gridMeasure(cells, w, h){
+  const has = (x, y) => cells.has(x + ',' + y);
+  const dots = new Set();
+  let P = 0, nB = 0;
+  for (const k of cells){
+    const x = +k.split(',')[0], y = +k.split(',')[1];
+    const open = [[1,0],[-1,0],[0,1],[0,-1]].filter(d => !has(x+d[0], y+d[1])).length;
+    P += open; if (open) nB++;
+    for (const d of [[0,0],[1,0],[0,1],[1,1]]) dots.add((x+d[0]) + ',' + (y+d[1]));
+  }
+  return { w, h, cells, has, A: cells.size, P, nB, V: dots.size, box: 2*(w+h) };
+}
+function gridFig(t){
+  const cols = t.w + 2, rows = t.h + 2, px = [], py = [], at = new Map(), segs = [];
+  const pt = (x, y) => {
+    const k = x + ',' + y;
+    if (!at.has(k)){ at.set(k, px.length); px.push(x + 1); py.push(y + 1); }
+    return at.get(k);
+  };
+  /* every unit edge that borders a square of the figure, merged into straight runs */
+  for (let y = 0; y <= t.h; y++){
+    let s = null;
+    for (let x = 0; x <= t.w; x++){
+      const on = x < t.w && (t.has(x, y) || t.has(x, y-1));
+      if (on && s === null) s = x;
+      if (!on && s !== null){ segs.push([pt(s, y), pt(x, y)]); s = null; }
+    }
+  }
+  for (let x = 0; x <= t.w; x++){
+    let s = null;
+    for (let y = 0; y <= t.h; y++){
+      const on = y < t.h && (t.has(x, y) || t.has(x-1, y));
+      if (on && s === null) s = y;
+      if (!on && s !== null){ segs.push([pt(x, s), pt(x, y)]); s = null; }
+    }
+  }
+  return { type:'geom', cols, rows, grid:1, px, py, names: px.map(() => ''), segs };
+}
+const GRID_STEM = 'The figure is made up of 1-cm squares. ';
+function gGridArea(){
+  let t = gridDraw(), g = 0;
+  while (g < 200 && !optsOk(t.A, [t.V, t.P, t.w*t.h])){ t = gridDraw(); g++; }
+  return band(fig(mcNum(GRID_STEM + 'What is the <b>area</b> of the figure?','',t.A,[t.V, t.P, t.w*t.h],'cm²',
+    'Count the squares inside the figure: there are '+t.A+' of them. Each square is 1 cm², so the area is '+t.A+
+    ' cm². Count the squares, not the dots at their corners, and do not count the empty spaces in the rectangle around the figure.'),
+    gridFig(t)), 2);
+}
+function gGridPeri(){
+  let t = gridDraw(), d = [], g = 0;
+  for (;;){
+    const lost = shuffle([t.P + 2, t.P - 2]);
+    d = [t.A, t.nB].concat(t.box !== t.P ? [t.box] : []).concat(lost)
+      .filter((c, i, a) => c > 0 && c !== t.P && a.indexOf(c) === i).slice(0, 3);
+    if (d.length === 3 || g++ > 200) break;
+    t = gridDraw();
+  }
+  return band(fig(mcNum(GRID_STEM + 'What is the <b>perimeter</b> of the figure?','',t.P,d,'cm',
+    'Walk all the way around the outside of the figure and count the sides of the squares you pass: there are '+t.P+
+    ' of them, and each is 1 cm long, so the perimeter is '+t.P+' cm. The lines between two squares are inside the figure, '+
+    'so they are not part of the perimeter. Count the sides, not the squares.'),
+    gridFig(t)), 2);
+}
+
   MQI.registerTopic({
     id:'geometry', level:'P3', strand:'Measurement and Geometry',
     moeSubTopic:"Area and Perimeter: concepts of area and perimeter of a plane figure; area of rectangle/square",
@@ -444,11 +554,13 @@ function gJoinRects(){
          meets. gSquareArea joins pool 1 (as on main) because pool 1's old
          [gSquarePA,'peri'] entry already showed an area stem on half its draws;
          without it the split would silently delete area from level 1. */
-      1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area']],
+      1:[[gSquarePeri,'peri'],[gPeri,'peri'],[gPeriConcept,'peri'],[gSquareArea,'area'],
+         /* PRE-EXAM CONTENT CARD 2026-10-17: counting 1-cm squares on a grid (AP 1.2) */
+         [gGridArea,'area'],[gGridPeri,'peri']],
       /* HARD LANE geom 2026-10-07: the two band-2 shapes (tile area, same
          perimeter / different area) join pool 2; the seven band-3 shapes join pool 3. */
       2:[[gPeriCompare,'peri'],[gAreaRect,'area'],[gSquareArea,'area'],[gPeri,'peri'],[gRectiPeri,'peri'],
-         [gTileArea,'area'],[gSamePerimArea,'area']],
+         [gTileArea,'area'],[gSamePerimArea,'area'],[gGridArea,'area'],[gGridPeri,'peri']],
       3:[[gPeriError,'peri'],[gPeriFence,'peri'],[gPeriCompare,'peri'],[gAreaRect,'area'],[gRectiPeri,'peri'],
          [gSqRowArea,'area'],[gSqRowPeri,'peri'],[gTilePeri,'peri'],[gSqShapePeri,'peri'],
          [gCutSquares,'peri'],[gWireTwo,'peri'],[gJoinRects,'peri']]

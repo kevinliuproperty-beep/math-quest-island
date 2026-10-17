@@ -1907,7 +1907,40 @@
         keys: [['observation 3'], ['respond']],
         hints: ['(a) Reproduce means making young ones. (b) What changed around the hamster just before it ran?',
                '(a) Observation 3 (five babies). (b) The dog barked (a change around it), and the hamster ran away: it responds to changes.'],
-        explain: 'Observation 1 shows growth, 2 shows a need for water, 3 shows reproduction and 4 shows a response to a change (the bark). In (b), name the characteristic and tie it to the bark: a bare "responds" earns less than "it ran into its tunnel when the dog barked". Next time, try Claim, evidence, reason: say it, point to it, then say why.' }
+        explain: 'Observation 1 shows growth, 2 shows a need for water, 3 shows reproduction and 4 shows a response to a change (the bark). In (b), name the characteristic and tie it to the bark: a bare "responds" earns less than "it ran into its tunnel when the dog barked". Next time, try Claim, evidence, reason: say it, point to it, then say why.' },
+
+      // ---------------- Responding to changes (pre-exam content card, 2026-10-17) ----------------
+      { id: 'liv-079', type: 'mcq', level: 2,
+        stem: 'Which of these shows a living thing responding to a change around it?',
+        figure: null,
+        options: ['A puppy becomes bigger every month.', 'A hen lays three eggs in a week.', 'A snail pulls its body into its shell when touched.', 'A plant needs water to stay alive.'],
+        answer: 2,
+        optionFeedback: { 0: 'A puppy getting bigger is a real sign of life! But that is growing, not responding to a change.', 1: 'Laying eggs is a sign of life too, but that is reproducing.', 3: 'Every living thing needs water, but that is a need, not a response to a change.' },
+        explain: 'Being touched is a change around the snail, and pulling into its shell is its response. Becoming bigger is growing, laying eggs is reproducing, and needing water is a need for survival.' },
+      { id: 'liv-080', type: 'mcq', level: 2,
+        stem: 'Wei Ling walked out of a dark room into bright sunlight. She blinked, and the black centres of her eyes (her pupils) became smaller. Which characteristic of living things does this show?',
+        figure: null,
+        options: ['Living things respond to changes.', 'Living things grow.', 'Living things need air.', 'Living things reproduce.'],
+        answer: 0,
+        optionFeedback: { 1: 'Growing is a sign of life, but here her eyes changed because the light changed: that is a response.', 2: 'She does need air, but this story is about bright light and her eyes reacting to it.', 3: 'Reproducing means making young ones. Here her eyes reacted to the bright light.' },
+        explain: 'The bright light is a change around her. Blinking and her pupils becoming smaller are her body responding to that change.' },
+      { id: 'liv-081', type: 'oeq', level: 3, marks: 2,
+        stem: 'Ravi touched one leaf of a mimosa (touch-me-not) plant. Its leaves folded up. After some time, the leaves opened again.\n(a) What change around the plant did the mimosa respond to? (1 mark)\n(b) Ravi said, "The mimosa is non-living because it cannot move from place to place." Explain why he is wrong. (1 mark)',
+        figure: null,
+        model: '(a) Being touched (the touch on its leaf). (b) Moving from place to place is not a characteristic of all living things. The mimosa is living because it responds to changes, grows and reproduces.',
+        keys: [['touch', 'touched'], ['not a characteristic', 'responds', 'respond', 'grows', 'reproduces', 'plants do not move', 'plants cannot move']],
+        technique: 'Claim, evidence, reason',
+        steps: ['(a) Find the change: what happened to the plant just before its leaves folded?', '(b) Claim: say that Ravi is not correct.', 'Evidence: the mimosa folded its leaves when it was touched, so it responds to changes.', 'Reason: moving from place to place is not on the list. Living things respond to changes, grow and reproduce.'],
+        explain: 'The touch is the change; folding its leaves is the response. Plants are living things even though they stay in one place: they respond to changes, grow and reproduce.' },
+      { id: 'liv-082', type: 'mcq', level: 3,
+        stem: 'A potted plant was left on a windowsill for two weeks. Its stem grew and bent towards the window.\nWhich of the following statements are correct?\nA  The plant was responding to light coming from one side.\nB  The plant was growing.\nC  The plant cannot respond to changes because it cannot move from place to place.',
+        figure: null,
+        options: ['A only', 'A and B only', 'B and C only', 'A, B and C'],
+        answer: 1,
+        technique: 'Tick or cross',
+        steps: ['Take one statement at a time.', 'Ask: is it true for this plant? Tick it or cross it.', 'Watch for words like "cannot": plants stay in one place but still respond.', 'Choose the option with exactly your ticks.'],
+        optionFeedback: { 0: 'A is right, well spotted! Check B too: the stem grew longer, so the plant was growing.', 2: 'B is right! C does not fit: plants stay in one place, yet they still respond, like bending towards light.', 3: 'A and B are right! C does not fit: plants still respond to changes, such as light and touch.' },
+        explain: 'A: light came only from the window, and the stem bent towards it, so the plant responded to a change around it. B: the stem became longer, so the plant was growing. C does not fit: plants stay in one place but still respond to changes, such as light and touch.' }
     ]
   });
 })();

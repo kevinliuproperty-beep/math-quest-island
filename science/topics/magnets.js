@@ -1909,7 +1909,40 @@
               2: 'The table says the nails were the same kind. The problem is that coils AND batteries both changed.' },
             explain: 'Q has more coils AND more batteries than P. Either change could have made Q stronger, so Faizal cannot tell whether it was the coils. To test the coils fairly, he must keep the number of batteries the same and change only the number of coils. The table says the nails were the same kind.' }
         ];
-      })()
+      })(),
+
+      // ---------------- Freely suspended magnets, N-S (pre-exam content card, 2026-10-17) ----------------
+      { id: 'mag-089', type: 'mcq', level: 2,
+        stem: 'A bar magnet with no labels is hung from a string so that it can turn freely. When it stops moving, end X points North. What is end X?',
+        figure: null,
+        options: ['The N pole', 'The S pole', 'It could be either pole', 'It is not a pole'],
+        answer: 0,
+        optionFeedback: { 1: 'With no labels, S can feel just as likely. But a freely hanging magnet always settles North-South, and the end that points North is called the N pole.', 2: 'No labels, so it is fair to wonder. Hanging it freely settles it: the end that points North is always the N pole.', 3: 'Both ends of a magnet are poles. The end that points North is the N pole.' },
+        explain: 'A freely suspended bar magnet comes to rest pointing North-South, and the end that points North is the N pole. That is how the N pole got its name.' },
+      { id: 'mag-090', type: 'mcq', level: 3,
+        stem: 'Mina has a bar magnet with no labels on its two ends, P and Q. She hangs it from a string so that it can turn freely. It stops with end P pointing South. She then brings the N pole of another magnet near end P. What will happen?',
+        figure: null,
+        options: ['End P will be repelled.', 'End P will be attracted.', 'Nothing will happen.', 'End P will turn to point North.'],
+        answer: 1,
+        technique: 'Pick-a-pole',
+        steps: ['Is there a clue to the poles? A freely hanging magnet points North-South: the North end is N, the South end is S.', 'So end P, which points South, is the S pole.', 'Now compare it with the pole coming near: is it the same pole or the opposite pole?', 'Like poles repel; unlike poles attract.'],
+        optionFeedback: { 0: 'Repelling is what like poles do. End P points South, so it is S, and the pole coming near is N: unlike poles attract.', 2: 'End P is a pole of a magnet, so it will feel a pull or a push from the N pole near it.', 3: 'End P points South when it hangs on its own. Here another magnet\'s N pole comes near, and N and S attract.' },
+        explain: 'End P pointed South, so it is the S pole. An N pole and an S pole are unlike poles, and unlike poles attract, so end P will be attracted.' },
+      { id: 'mag-091', type: 'oeq', level: 3, marks: 2,
+        stem: 'Jun hung a bar magnet and a steel bar of the same size from two strings, so that both could turn freely. He turned each one to point East-West and let go. He did this five times.\n(a) Which one came to rest pointing North-South every time? (1 mark)\n(b) Explain why the other one did not. (1 mark)',
+        figure: null,
+        model: '(a) The bar magnet. (b) The steel bar is not a magnet. Steel is a magnetic material, but only a magnet has an N pole and an S pole, so only a magnet comes to rest pointing North-South.',
+        keys: [['magnet'], ['not a magnet', 'only a magnet', 'has no poles', 'no poles', 'does not have poles']],
+        technique: 'Claim, evidence, reason',
+        steps: ['Claim: name the one that came to rest North-South.', 'Evidence: it pointed North-South all five times.', 'Reason: only a magnet has an N pole and an S pole, so only a magnet settles North-South.', 'For the other one, say what it is: magnetic, but not a magnet.'],
+        explain: 'A freely suspended MAGNET always comes to rest pointing North-South. A steel bar is attracted by a magnet, but it is not a magnet itself, so it stops in any direction.' },
+      { id: 'mag-092', type: 'mcq', level: 2,
+        stem: 'Iron and steel are attracted by a magnet. Which pair of metals below are also attracted by a magnet?',
+        figure: null,
+        options: ['Aluminium and copper', 'Gold and silver', 'Nickel and cobalt', 'Brass and aluminium'],
+        answer: 2,
+        optionFeedback: { 0: 'Aluminium and copper are shiny metals, so it is easy to think a magnet pulls them. But they are not magnetic.', 1: 'Gold and silver are metals too, but a magnet does not attract them.', 3: 'Brass and aluminium are metals, but not magnetic ones. Not all metals are magnetic.' },
+        explain: 'Nickel and cobalt are magnetic metals, like iron and steel. Aluminium, copper, gold, silver and brass are metals too, but they are not attracted by a magnet: not all metals are magnetic.' }
     ]
   });
 })();

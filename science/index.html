@@ -368,7 +368,7 @@ var view = document.getElementById('view');
 /* ---------- storage (per-viewer, try/catch-wrapped) ---------- */
 /* power (Power-Up, 2026-10-17): { <technique, or 'topic:<id>' for an item without one>: { s: 0-2 clean rights in a row, full, t } }.
    Same key, same v: 1 store; an older save simply gets an empty power map from fresh(). */
-/* crys (fun layer, 2026-10-17): { <topic id>: { e: t, c: t, p: t } } Star Crystals found, kept once found.
+/* crys (fun layer, 2026-10-17): { <topic id>: { e: t, c: t, p: t } } Star Crystals rescued, kept once rescued.
    sound: off unless she turns it on. */
 function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full', power: {}, crys: {}, sound: false }; }
 function load() {
@@ -408,26 +408,26 @@ var toastT;
 function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 1800); }
 
 /* ---------- fun layer (Science Fun Layer Card, 2026-10-17) ----------
-   Ported from the maths island so the two feel like one game: the island map's place names,
-   Star Crystals (three per land), the hero she picked on the maths island, a short banner,
+   Ported from the maths island so the two feel like one game: an island map with named lands (the
+   science place names are new), Star Crystals to rescue (three per land), the hero she picked on the maths island, a short banner,
    light confetti and optional sound. Not ported: monster HP, lost lives, timers, streaks,
    the Hall of Fame. Every crystal is earned by learning, never by speed or by being right first time. */
 var PLACES = { 'living-things': 'Wild Woods', 'materials': 'Material Mines', 'life-cycles': 'Butterfly Bay',
   'magnets': 'Magnet Mountain', 'plant-parts': 'Leafy Lagoon', 'process-skills': 'Experiment Cove' };
 function place(t) { return PLACES[t.id] || t.title; }
 var CRYS = [
-  { k: 'e', em: '🧭', name: 'Explorer crystal', how: 'finish a practice round here' },
-  { k: 'c', em: '💪', name: 'Comeback crystal', how: 'get one right after a miss (a second try counts)' },
-  { k: 'p', em: '⚡', name: 'Power crystal', how: 'fill a battery in a Power-Up round on a question from here' }
+  { k: 'e', em: '🧭', name: 'Explorer crystal', how: 'Finish a practice round in this land.' },
+  { k: 'c', em: '💪', name: 'Comeback crystal', how: 'Have another go after a miss, and get it right.' },
+  { k: 'p', em: '⚡', name: 'Power crystal', how: 'Fill up a power battery with a question from this land.' }
 ];
 function crysOf(id) { if (!S.crys || typeof S.crys !== 'object') S.crys = {}; return S.crys[id] || {}; }
 function crysCount(id) { var c = crysOf(id); return CRYS.filter(function (x) { return c[x.k]; }).length; }
 function crysHTML(id) {
   var c = crysOf(id), n = crysCount(id);
   return '<span class="crys" role="img" aria-label="' + n + ' of 3 Star Crystals">' +
-    CRYS.map(function (x) { return '<span class="' + (c[x.k] ? '' : 'no') + '">⭐</span>'; }).join('') + '</span>';
+    CRYS.map(function (x) { return (c[x.k] ? '<span>⭐</span>' : '<span class="no">❔</span>'); }).join('') + '</span>';
 }
-/* a new crystal for a land; false if it was already found, or the land is hidden / not on the map */
+/* a new crystal for a land; null if it was already rescued, or the land is hidden / not on the map */
 function award(topicId, k) {
   var t = SCI.byId[topicId];
   if (!t || t.hidden || shownTopics().indexOf(t) < 0) return null;
@@ -438,7 +438,7 @@ function award(topicId, k) {
   var x = CRYS.filter(function (y) { return y.k === k; })[0];
   return { t: topicId, k: k, em: x.em, name: x.name, land: place(t), all: crysCount(topicId) === 3 };
 }
-function wonLine(w) { return '⭐ ' + w.name + ' found in ' + w.land + '!' + (w.all ? ' That is all 3 for this land!' : ''); }
+function wonLine(w) { return '⭐ ' + w.name + ' rescued in ' + w.land + '!' + (w.all ? " That's all 3 in this land! 🏝️" : ''); }
 /* the hero she picked on the maths island (same site, same browser). Read only: science never writes it. */
 function hero() {
   try { var d = JSON.parse(localStorage.getItem('fq1') || 'null'); if (d && typeof d.avatar === 'string' && d.avatar) return { av: d.avatar, name: typeof d.name === 'string' && d.name.trim() ? d.name.trim().slice(0, 14) : '' }; } catch (e) {}
@@ -493,7 +493,7 @@ function sndBtn() {
 function funAfter(it, a, score, prevLast, wasFull) {
   var se = session, won = [];
   if (score > 0 && (a.miss1 != null || (prevLast != null && prevLast < 1))) won.push(award(it.topic, 'c'));
-  if (se.kind === 'power' && !wasFull && pstate(pkey(it)).full) won.push(award(it.topic, 'p'));   /* a battery filling in a Power-Up round */
+  if (!wasFull && pstate(pkey(it)).full) won.push(award(it.topic, 'p'));   /* a battery filling (practice or Power-Up; refuter R1) */
   won = won.filter(Boolean);
   a.won = won;
   if (won.length) {
@@ -502,6 +502,8 @@ function funAfter(it, a, score, prevLast, wasFull) {
     celebrate(wonLine(won[won.length - 1]), 'crystal', true);
   } else if (score >= 1) sfx('ok');
 }
+/* crystals rescued in a "one like it" detour count for the round she came from (refuter R4) */
+function carryWon() { if (session && session.back && session.won && session.won.length) session.back.won = (session.back.won || []).concat(session.won); }
 function wonHTML(a) { return (a.won || []).map(function (w) { return '<p class="won">' + esc(wonLine(w)) + '</p>'; }).join(''); }
 var PRAISE = ['✅ Correct!', '✅ Great thinking!', '✅ Nice one!', '✅ You got it!', '✅ Super!'];
 
@@ -751,10 +753,10 @@ function renderHome() {
   paint(
     (me ? '<p class="hello"><span class="av" aria-hidden="true">' + esc(me.av) + '</span><span>Hi' + (me.name ? ', ' + esc(me.name) : '') + '! Welcome to Science Island.</span></p>' : '') +
     '<p class="eyebrow">Revise · practise · ace it</p><h2>Pick a land to explore</h2>' +
-    (ts.length ? '<p class="crystot">⭐ ' + found + ' of ' + ts.length * 3 + ' Star Crystals found</p><div class="grid">' + tiles + '</div>' +
-      '<details class="howcrys"><summary>⭐ How do I find Star Crystals?</summary><p>Every land hides 3:</p><ul>' +
-      CRYS.map(function (x) { return '<li>' + esc(x.em + ' ' + x.name) + ': ' + esc(x.how) + '.</li>'; }).join('') +
-      '</ul><p>Take your time. Crystals stay found.</p></details>' : '<p class="empty">No topics have loaded yet.</p>') +
+    (ts.length ? '<p class="crystot">⭐ ' + (found ? found + ' of ' + ts.length * 3 + ' Star Crystals rescued so far!' : ts.length * 3 + ' Star Crystals are hiding on Science Island. Can you rescue them?') + '</p><div class="grid">' + tiles + '</div>' +
+      '<details class="howcrys"><summary>⭐ How do I rescue Star Crystals?</summary><p>Every land hides 3:</p><ul>' +
+      CRYS.map(function (x) { return '<li>' + esc(x.em) + ' <b>' + esc(x.name) + '</b>. ' + esc(x.how) + '</li>'; }).join('') +
+      '</ul><p>Take your time. A rescued crystal stays yours.</p></details>' : '<p class="empty">No topics have loaded yet.</p>') +
     '<div class="big2">' +
       '<button class="tile wide" data-act="exam"><span class="em">📝</span><span><span class="display">Mixed exam practice</span><p>Section A (MCQ) then Section B (open-ended), all P3 topics.</p></span></button>' +
       '<button class="tile wide power" data-act="power"><span class="em">⚡</span><span><span class="display">Power-Up</span><p>' +
@@ -787,7 +789,7 @@ function renderTopic(t) {
 function topicCrys(t) {
   var c = crysOf(t.id);
   return '<div class="crysbox"><h3>⭐ Star Crystals in ' + esc(place(t)) + '</h3><ul class="powers">' +
-    CRYS.map(function (x) { return '<li class="' + (c[x.k] ? 'full' : '') + '">' + esc(x.em + ' ' + x.name) + '<small>' + (c[x.k] ? '⭐ found' : esc(x.how)) + '</small></li>'; }).join('') +
+    CRYS.map(function (x) { return '<li class="' + (c[x.k] ? 'full' : '') + '">' + esc(x.em + ' ' + x.name) + '<small>' + (c[x.k] ? '⭐ rescued' : esc(x.how)) + '</small></li>'; }).join('') +
     '</ul></div>';
 }
 
@@ -1276,12 +1278,12 @@ function crysBox(se) {
   if (land) {
     var c = crysOf(land.id), next = CRYS.filter(function (x) { return !c[x.k]; })[0];
     h += '<h3>⭐ Star Crystals · ' + esc(land.emoji + ' ' + place(land)) + '</h3>' + crysHTML(land.id);
-    won.forEach(function (w) { h += '<p><b>' + esc(w.em + ' ' + w.name) + '</b> found' + (w.t !== land.id ? ' in ' + esc(w.land) : '') + '!</p>'; });
-    h += next ? '<p>Next crystal to find: ' + esc(next.em + ' ' + next.name) + ': ' + esc(next.how) + '.</p>'
-              : '<p>🏝️ You found all 3 Star Crystals in ' + esc(place(land)) + '!</p>';
+    won.forEach(function (w) { h += '<p><b>' + esc(w.em + ' ' + w.name) + '</b> rescued' + (w.t !== land.id ? ' in ' + esc(w.land) : '') + '!</p>'; });
+    h += next ? '<p>Next, look for the ' + esc(next.em + ' ' + next.name) + '. ' + esc(next.how) + '</p>'
+              : '<p>🏝️ You rescued all 3 Star Crystals in ' + esc(place(land)) + '!</p>';
   } else {
-    h += '<h3>⭐ Star Crystals found today</h3>';
-    won.forEach(function (w) { h += '<p><b>' + esc(w.em + ' ' + w.name) + '</b> in ' + esc(w.land) + (w.all ? ': all 3 found there!' : '') + '</p>'; });
+    h += '<h3>⭐ Star Crystals rescued today</h3>';
+    won.forEach(function (w) { h += '<p><b>' + esc(w.em + ' ' + w.name) + '</b> in ' + esc(w.land) + (w.all ? ". That's all 3 there! 🏝️" : '') + '</p>'; });
   }
   return h + '</div>';
 }
@@ -1289,7 +1291,7 @@ function crysBox(se) {
 function finishCheer(se) {
   if (se.cheered) return; se.cheered = true;
   var won = se.won || [];
-  celebrate(won.length ? '🎉 Round finished! ' + won.length + ' new Star Crystal' + (won.length === 1 ? '' : 's') + '!' : '🎉 Round finished! Well done.', 'finish', true);
+  celebrate(won.length ? '🎉 Round finished! ' + won.length + ' Star Crystal' + (won.length === 1 ? '' : 's') + ' rescued!' : '🎉 Round finished! Well done.', 'finish', true);
 }
 
 /* ---------- parent ---------- */
@@ -1373,7 +1375,7 @@ var A = {
   next: function () {
     saveText();
     if (session.i < session.items.length - 1) { session.i++; renderQuiz(); }
-    else if (session.kind === 'like') { session = session.back; renderQuiz(); }   /* back to the walk-through she came from */
+    else if (session.kind === 'like') { carryWon(); session = session.back; renderQuiz(); }   /* back to the walk-through she came from */
     else finishSession();
   },
   /* coaching walk-through: steps one at a time in place (no re-render, so the page keeps its scroll) */
@@ -1423,7 +1425,7 @@ var A = {
     startSession(se.kind === 'exam' ? 'practice' : se.kind, se.kind === 'exam' ? 'Another go at the mock' : se.title, list, { topicId: se.topicId });
   },
   quit: function () {
-    if (session && session.kind === 'like') { session = session.back; renderQuiz(); return; }
+    if (session && session.kind === 'like') { carryWon(); session = session.back; renderQuiz(); return; }
     if (session && session.phase !== 'report' && session.phase !== 'review' && !confirm('Stop this set? Answers already marked are kept.')) return;
     var back = session && session.topicId ? 'topic/' + session.topicId : '';
     if (session && session.kind === 'exam') examClear();

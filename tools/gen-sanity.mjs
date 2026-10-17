@@ -12397,6 +12397,14 @@ for (const tid of Object.keys(TOPICS)) {
    is not a cheap strategy there, it is the question. Everything else is gated. --- */
 const RANK_LABELS = ['largest', '2nd largest', '3rd largest', 'smallest'];
 const DEC_RANK_DRAWS = Number(process.env.RANK_SAMPLES || 2000);
+/* PRECISION FIX (2026-10-17, conn ruling on the pre-exam content card). The rank
+   check alone draws 20,000 per generator, not 2,000. At 2,000 draws a rank share's
+   standard error is ~0.76 points, so a bank whose true share sits ~1 point above the
+   12% floor (gDecRound: 13.3% over 400,000 draws) went red on 11.8% the moment new
+   generators elsewhere moved the seeded stream. At 20,000 the SE is ~0.24 points.
+   The floor and the ceiling are unchanged; the prose and coupling scans keep
+   DEC_RANK_DRAWS. RANK_SAMPLES still overrides both. */
+const MAG_RANK_DRAWS = Number(process.env.RANK_SAMPLES || 20000);
 const RANK_CEILING = 0.45;
 /* THE KILL (refutation v8 @ f0cbe38, W4). A ceiling with no FLOOR only measures
    half the axis. A rank the key occupies on 0.00% of draws is a free one-of-four
@@ -12458,7 +12466,7 @@ const decRankRows = [];
 let rankReport = null;
 {
   const decGens = GENS.filter(g => g.topic === 'decimals').map(g => ({ name: g.name, fn: g.fn }));
-  rankReport = decRankScan(decGens, DEC_RANK_DRAWS);
+  rankReport = decRankScan(decGens, MAG_RANK_DRAWS);
   for (const r of rankReport.rows) {
     if (r.exempt || r.n < DEC_RANK_FLOOR) { decRankRows.push({ ...r, ok: true }); continue; }
     const ok = r.worst <= RANK_CEILING && r.thinnest >= RANK_MIN_SHARE;
@@ -14367,7 +14375,7 @@ else console.log(`ok   index.html manifest: all ${manifestRows.length} topic fil
 /* ---------- decimals: magnitude rank, contract coverage, negative controls ---------- */
 if (rankReport) {
   console.log('');
-  console.log(`MAGNITUDE-RANK  (${DEC_RANK_DRAWS} draws x ${rankReport.rows.length} decimals generators, ` +
+  console.log(`MAGNITUDE-RANK  (${MAG_RANK_DRAWS} draws x ${rankReport.rows.length} decimals generators, ` +
     `ceiling ${(RANK_CEILING * 100).toFixed(0)}% and FLOOR ${(RANK_MIN_SHARE * 100).toFixed(0)}% per rank)`);
   console.log(`  bank-wide best rank strategy : "always pick the ${RANK_LABELS[rankReport.bank.rank]}" wins ` +
     `${(rankReport.bank.share * 100).toFixed(1)}%  (${rankReport.bank.n} numeric-option draws, floor 25.0%)`);

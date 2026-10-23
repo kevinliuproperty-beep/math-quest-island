@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Results</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --card: #ffffff; --ink: #1d1d1f; --mute: #6b6b70; --line: #e3e1da;
+    --good: #1f8a4c; --mid: #b7791f; --weak: #c0392b; --accent: #2d5be3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #141416; --card: #1e1e22; --ink: #ececf0; --mute: #9a9aa3; --line: #2e2e34;
+      --good: #4cc27f; --mid: #e0a84a; --weak: #ef6b5d; --accent: #7c9cff; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow-x: hidden; }
+  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; margin: 4px 0 2px; }
+  h2 { font-size: 17px; margin: 0 0 10px; }
+  .sub { color: var(--mute); font-size: 14px; margin: 0 0 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 0 0 14px; }
+  .big { font-size: 20px; font-weight: 600; }
+  .mute { color: var(--mute); }
+  .small { font-size: 13px; }
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -14px; padding: 0 14px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px 7px 0; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: top; }
+  td.wrap { white-space: normal; min-width: 120px; }
+  th { color: var(--mute); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  .num { text-align: right; padding-right: 0; padding-left: 8px; }
+  .good { color: var(--good); } .mid { color: var(--mid); } .weak { color: var(--weak); }
+  .bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .bar > div { height: 100%; }
+  .topic { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .topic:last-child { border-bottom: 0; }
+  .row { display: flex; justify-content: space-between; gap: 10px; }
+  .row > :first-child { min-width: 0; overflow-wrap: anywhere; }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--line); color: var(--mute); }
+  input[type=password], input[type=text] { width: 100%; font: inherit; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  button { font: inherit; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  button.ghost { background: transparent; color: var(--accent); }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .msg { padding: 12px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Quest results</h1>
+  <p class="sub" id="sub">Maths and science, from every device she uses.</p>
+  <div id="out"><p class="mute">Loading…</p></div>
+</main>
+<script>
+(function () {
+  var LS = 'mqi-parent-key';
+  var out = document.getElementById('out');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function getKey() { try { return localStorage.getItem(LS) || ''; } catch (e) { return ''; } }
+  function setKey(k) { try { if (k) localStorage.setItem(LS, k); else localStorage.removeItem(LS); } catch (e) {} }
+
+  /* #k=KEY in the link: keep it on this device and take it out of the address bar */
+  (function () {
+    var m = /(?:^#|&)k=([0-9a-fA-F]{16,128})/.exec(location.hash || '');
+    if (m) {
+      setKey(m[1]);
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
+    }
+  })();
+
+  function keyForm(note) {
+    out.innerHTML = '<div class="card"><h2>Parent key</h2>' + (note ? '<p class="weak">' + esc(note) + '</p>' : '') +
+      '<p class="small mute">Paste the key once. It is kept on this device only.</p>' +
+      '<input type="password" id="k" autocomplete="off" spellcheck="false" placeholder="Parent key">' +
+      '<div class="btns"><button id="save">Show results</button></div></div>';
+    document.getElementById('save').onclick = function () {
+      var v = (document.getElementById('k').value || '').trim();
+      if (!v) return; setKey(v); load();
+    };
+  }
+  function pctCls(p) { return p >= 80 ? 'good' : p >= 60 ? 'mid' : 'weak'; }
+  function pct(c, n) { return n ? Math.round(c / n * 100) : 0; }
+  function fmtNum(x) { return (Math.round(x * 10) / 10).toString(); }
+  function fmtDur(s) { if (s == null) return '–'; s = Math.round(s); if (s < 60) return s + 's'; var m = Math.round(s / 60); return m < 60 ? m + ' min' : Math.floor(m / 60) + 'h ' + (m % 60) + 'm'; }
+  function dayKey(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function fmtDay(d) { return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }); }
+  function fmtTime(d) { return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); }
+  function ago(d) {
+    var m = Math.round((Date.now() - d.getTime()) / 60000);
+    if (m < 1) return 'just now'; if (m < 60) return m + ' min ago';
+    var h = Math.round(m / 60); if (h < 36) return h + ' h ago';
+    return Math.round(h / 24) + ' days ago';
+  }
+  function appName(r) { return r.app === 'science' ? 'Science' : 'Maths'; }
+  function kindName(r) {
+    if (r.kind === 'paper') return 'Mock paper';
+    var m = { relax: 'Quest', timed: 'Timed quest', patchwerk: 'Patchwerk', power: 'Power-Up', practice: 'Practice' }[r.mode];
+    return m || 'Quest';
+  }
+
+  var SHOW = 60;
+  function render(rows) {
+    rows = rows.filter(function (r) { return r && r.endedAt; }).map(function (r) { r.d = new Date(r.endedAt); return r; })
+      .sort(function (a, b) { return b.d - a.d; });
+    if (!rows.length) {
+      out.innerHTML = '<div class="msg">No results yet. They appear here a few seconds after Charlotte finishes a quest or a paper (online).</div>' + footer();
+      wireFooter(); return;
+    }
+    var h = '';
+    /* last activity */
+    var last = rows[0];
+    h += '<div class="card"><div class="mute small">Last activity</div><div class="big">' + esc(ago(last.d)) + '</div>' +
+      '<div class="small mute">' + esc(fmtDay(last.d) + ', ' + fmtTime(last.d)) + ' · ' + esc(appName(last)) + ' · ' + esc(last.topic || kindName(last)) +
+      ' · ' + esc(fmtNum(last.correct)) + '/' + esc(fmtNum(last.total)) + ' on ' + esc(last.deviceLabel || 'device') + '</div></div>';
+
+    /* topic roll-up, last 7 days, weakest first */
+    var since = Date.now() - 7 * 86400000, tp = {};
+    rows.forEach(function (r) {
+      if (r.d.getTime() < since) return;
+      (r.topics && r.topics.length ? r.topics : [{ t: r.topic || kindName(r), c: r.correct, n: r.total }]).forEach(function (x) {
+        if (!x || !x.n) return;
+        var k = appName(r) + '|' + x.t, o = tp[k] || (tp[k] = { app: appName(r), t: x.t, c: 0, n: 0, s: 0 });
+        o.c += x.c; o.n += x.n; o.s++;
+      });
+    });
+    var tl = Object.keys(tp).map(function (k) { return tp[k]; }).sort(function (a, b) { return (a.c / a.n) - (b.c / b.n) || b.n - a.n; });
+    h += '<div class="card"><h2>Topics, last 7 days</h2>';
+    if (!tl.length) h += '<p class="mute">Nothing in the last 7 days.</p>';
+    else {
+      h += '<p class="small mute">Weakest first. Questions right out of questions tried (mock papers count marks).</p>';
+      tl.forEach(function (o) {
+        var p = pct(o.c, o.n), cls = pctCls(p);
+        h += '<div class="topic"><div class="row"><div><b>' + esc(o.t) + '</b> <span class="tag">' + esc(o.app) + '</span></div>' +
+          '<div class="' + cls + '"><b>' + p + '%</b></div></div>' +
+          '<div class="bar"><div style="width:' + p + '%;background:var(--' + cls + ')"></div></div>' +
+          '<div class="small mute">' + esc(fmtNum(o.c)) + ' / ' + esc(fmtNum(o.n)) + ' · ' + o.s + ' session' + (o.s === 1 ? '' : 's') + '</div></div>';
+      });
+    }
+    h += '</div>';
+
+    /* per day */
+    var days = {}, order = [];
+    rows.forEach(function (r) {
+      var k = dayKey(r.d), o = days[k];
+      if (!o) { o = days[k] = { d: r.d, n: 0, mc: 0, mt: 0, sc: 0, st: 0, sec: 0 }; order.push(k); }
+      o.n++; o.sec += r.durationSec || 0;
+      if (r.app === 'science') { o.sc += r.correct; o.st += r.total; } else { o.mc += r.correct; o.mt += r.total; }
+    });
+    h += '<div class="card"><h2>By day</h2><div class="scroll"><table><thead><tr><th>Day</th><th class="num">Sessions</th><th class="num">Maths</th><th class="num">Science</th><th class="num">Time</th></tr></thead><tbody>';
+    order.slice(0, 30).forEach(function (k) {
+      var o = days[k];
+      var cell = function (c, t) { if (!t) return '<td class="num mute">–</td>'; var p = pct(c, t); return '<td class="num"><span class="' + pctCls(p) + '">' + p + '%</span> <span class="mute small">' + esc(fmtNum(c)) + '/' + esc(fmtNum(t)) + '</span></td>'; };
+      h += '<tr><td>' + esc(fmtDay(o.d)) + '</td><td class="num">' + o.n + '</td>' + cell(o.mc, o.mt) + cell(o.sc, o.st) + '<td class="num">' + esc(fmtDur(o.sec)) + '</td></tr>';
+    });
+    h += '</tbody></table></div></div>';
+
+    /* sessions */
+    h += '<div class="card"><h2>Sessions</h2><div class="scroll"><table><thead><tr><th>When</th><th>Subject</th><th>Topic</th><th class="num">Score</th><th class="num">Hints</th><th class="num">Time</th><th>Device</th></tr></thead><tbody>';
+    rows.slice(0, SHOW).forEach(function (r) {
+      var p = pct(r.correct, r.total);
+      h += '<tr><td>' + esc(fmtDay(r.d)) + '<br><span class="mute small">' + esc(fmtTime(r.d)) + '</span></td>' +
+        '<td>' + esc(appName(r)) + '<br><span class="mute small">' + esc(kindName(r)) + '</span></td>' +
+        '<td class="wrap">' + esc(r.topic || '–') + '</td>' +
+        '<td class="num">' + esc(fmtNum(r.correct)) + '/' + esc(fmtNum(r.total)) + '<br><span class="' + pctCls(p) + ' small">' + (r.total ? p + '%' : '–') + '</span></td>' +
+        '<td class="num">' + (r.hintsUsed == null ? '<span class="mute">–</span>' : esc(r.hintsUsed)) + '</td>' +
+        '<td class="num">' + esc(fmtDur(r.durationSec)) + '</td>' +
+        '<td>' + esc(r.deviceLabel || '') + '<br><span class="mute small">' + esc(String(r.device || '').slice(0, 4)) + '</span></td></tr>';
+    });
+    h += '</tbody></table></div>';
+    if (rows.length > SHOW) h += '<div class="btns"><button class="ghost" id="more">Show more (' + (rows.length - SHOW) + ' older)</button></div>';
+    h += '<p class="small mute">Science practice scores 1 per question (a half for a second try or with the hint); mock papers are in marks. Hints are tracked in science only.</p></div>';
+    out.innerHTML = h + footer();
+    var more = document.getElementById('more');
+    if (more) more.onclick = function () { SHOW += 200; render(rows); };
+    wireFooter();
+  }
+  function footer() { return '<div class="btns"><button class="ghost" id="reload">Refresh</button><button class="ghost" id="forget">Forget key on this device</button></div>'; }
+  function wireFooter() {
+    var r = document.getElementById('reload'); if (r) r.onclick = load;
+    var f = document.getElementById('forget'); if (f) f.onclick = function () { setKey(''); keyForm(''); };
+  }
+
+  function load() {
+    var k = getKey();
+    if (!k) { keyForm(''); return; }
+    out.innerHTML = '<p class="mute">Loading…</p>';
+    fetch('/api/results', { headers: { 'X-Parent-Key': k }, cache: 'no-store' })
+      .then(function (r) {
+        if (r.status === 503) {
+          out.innerHTML = '<div class="msg">Online storage not connected yet — results are waiting on Charlotte\'s device and will appear once it\'s connected.</div>' + footer();
+          wireFooter(); return null;
+        }
+        if (r.status === 401) { setKey(''); keyForm('That key was not accepted.'); return null; }
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (d) { if (d) render(Array.isArray(d.rows) ? d.rows : []); })
+      .catch(function (e) {
+        out.innerHTML = '<div class="msg">Could not load results (' + esc(e && e.message || 'offline') + '). Try Refresh.</div>' + footer();
+        wireFooter();
+      });
+  }
+  load();
+})();
+</script>
+</body>
+</html>

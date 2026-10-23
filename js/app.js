@@ -49,6 +49,92 @@ function makeQuestionRaw(level){
 function loadData(){ try{ return JSON.parse(localStorage.getItem('fq1'))||{}; }catch(e){ return {}; } }
 function saveData(){ try{ localStorage.setItem('fq1',JSON.stringify(DB)); }catch(e){} }
 let DB=loadData();
+/* ---- results outbox (2026-10-24, same block in science/index.html) ----
+   Each finished quest / paper queues a compact summary in localStorage 'mqi-outbox'
+   and posts it to /api/results for the parent page. Fire-and-forget: never awaited,
+   never touches the screen or the game; on any failure the rows stay queued and are
+   retried on the next page load and the next finish. Skipped off the live host. */
+var mqiOutbox = (function () {
+  var OB = 'mqi-outbox', DEV = 'mqi-device', CAP = 500, BATCH = 50, busy = false;
+  function rid() {
+    try { var a = new Uint8Array(12), s = ''; crypto.getRandomValues(a); for (var i = 0; i < a.length; i++) s += ('0' + a[i].toString(16)).slice(-2); return s; }
+    catch (e) { return (Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)).replace(/[^0-9a-z]/g, '').slice(0, 24); }
+  }
+  function label() {
+    try {
+      var u = navigator.userAgent || '';
+      if (/iPad/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1)) return 'iPad';
+      if (/iPhone/.test(u)) return 'iPhone';
+      if (/Android/.test(u)) return 'Android';
+      if (/CrOS/.test(u)) return 'Chromebook';
+      if (/Macintosh|Mac OS X/.test(u)) return 'Mac';
+      if (/Windows/.test(u)) return 'Windows';
+    } catch (e) {}
+    return 'Other';
+  }
+  function device() {
+    var d = null;
+    try { d = localStorage.getItem(DEV); } catch (e) {}
+    if (!d || !/^[0-9a-z]{8,32}$/.test(d)) { d = rid(); try { localStorage.setItem(DEV, d); } catch (e) {} }
+    return d;
+  }
+  function read() { try { var a = JSON.parse(localStorage.getItem(OB) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function write(a) { try { localStorage.setItem(OB, JSON.stringify(a.slice(-CAP))); } catch (e) {} }
+  function live() {
+    try { return /^https?:$/.test(location.protocol) && !/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname); }
+    catch (e) { return false; }
+  }
+  function flush() {
+    try {
+      if (busy || !live() || typeof fetch !== 'function') return;
+      if (navigator.onLine === false) return;
+      var rows = read().slice(0, BATCH);
+      if (!rows.length) return;
+      busy = true;
+      fetch('/api/results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+        body: JSON.stringify({ results: rows }) })
+        .then(function (r) {
+          busy = false;
+          /* 2xx: stored (or a duplicate). 400/413: this batch can never be stored, drop it
+             rather than retry it forever. Anything else (503, 5xx, 429): keep and retry later. */
+          if (!(r.ok || r.status === 400 || r.status === 413)) return;
+          var sent = {}; rows.forEach(function (x) { if (x && x.id) sent[x.id] = 1; });
+          var rest = read().filter(function (x) { return !(x && sent[x.id]); });
+          write(rest);
+          if (rest.length && r.ok) setTimeout(flush, 500);
+        })
+        .catch(function () { busy = false; });
+    } catch (e) { busy = false; }
+  }
+  function add(rec) {
+    try {
+      rec.id = rid(); rec.device = device(); rec.deviceLabel = label(); rec.endedAt = new Date().toISOString();
+      var a = read(); a.push(rec); write(a);
+    } catch (e) {}
+    try { setTimeout(flush, 1500); } catch (e) {}
+  }
+  try { setTimeout(flush, 4000); } catch (e) {}
+  return { add: add, flush: flush };
+})();
+/* a maths DB.sessions row (quest, Patchwerk, Power-Up, mock) -> one outbox summary */
+function outboxMaths(row, extra){
+  try{
+    const name=tp=>{ try{ const d=TOPICS[tp]; return (d&&(d.short||d.label))||String(tp); }catch(e){ return String(tp); } };
+    const topics=[], tl=(row&&row.tally)||{};
+    Object.keys(tl).slice(0,30).forEach(tp=>{
+      let c=0, n=0; const sk=tl[tp]||{};
+      Object.keys(sk).forEach(k=>{ const v=sk[k]||{}; c+=v.r||0; n+=(v.r||0)+(v.w||0); });
+      if(n) topics.push({ t:name(tp), c, n });
+    });
+    const mode=row.mode||'relax';
+    mqiOutbox.add(Object.assign({
+      app:'maths', kind: mode==='mock'?'paper':'quest', mode,
+      topic: row.topic ? name(row.topic) : ({ patchwerk:'Patchwerk', power:'Power-Up', mock:'Mock paper' }[mode]||'Mixed'),
+      topics, correct: row.correct||0, total: row.total||0, hintsUsed: null,
+      durationSec: Number.isFinite(row.ms) ? Math.min(86400, Math.max(0, Math.round(row.ms/1000))) : null
+    }, extra||{}));
+  }catch(e){}
+}
 const AVATARS=[
   ['🦄','Unicorn'],['🥷','Ninja'],['🦸‍♀️','Super Hero'],['🦸‍♂️','Super Hero'],
   ['🧝‍♀️','Elf Warrior'],['🧝‍♂️','Elf Warrior'],['🧚','Fairy Mage'],['🧜‍♀️','Mermaid'],
@@ -463,6 +549,7 @@ function endPatchwerk(record){
                      ms:record.durationMs, timed:false, mode:'patchwerk', tally:S.tally||{},
                      wrongs:S.wrongs.slice(0,10).map(slimWrong) });
   if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
+  outboxMaths(DB.sessions[DB.sessions.length-1]);   /* results outbox (fire-and-forget) */
   saveData();
   sfx.win();
   const TIERS=MQI.modes.patchwerk.config.TIERS;
@@ -673,6 +760,8 @@ function endMock(rec){
       wrongs:rec.review.filter(r=>r.attempted&&!r.correct).slice(0,10)
         .map(r=>({ q:r.q.q+figHtml(r.q), a:r.q.answerText, ex:r.q.explain, skill:r.q.skill })) });
     if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
+    outboxMaths(DB.sessions[DB.sessions.length-1], { correct:rec.marks, total:rec.total,
+      topics:(rec.byTopic||[]).map(x=>({ t:String(x.label), c:x.got, n:x.total })) });   /* results outbox: the paper in marks */
     saveData();
   }catch(e){}
   renderMockReport(rec);
@@ -964,6 +1053,7 @@ function endPower(){
     crystals:0, maxLevel:S.maxLevel, skills:S.skills, tally:S.tally||{}, ms:Date.now()-S.t0,
     timed:false, mode:'power', wrongs:S.wrongs.slice(0,10).map(slimWrong) });
   if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
+  outboxMaths(DB.sessions[DB.sessions.length-1]);   /* results outbox (fire-and-forget) */
   saveData();
   sfx.win();
   renderPowerClose();
@@ -1498,6 +1588,7 @@ function endGame(win){
     mode:S.timed?'timed':'relax'
   });
   if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
+  outboxMaths(DB.sessions[DB.sessions.length-1]);   /* results outbox (fire-and-forget) */
 
   /* hall of fame: winning runs, ranked by time */
   let fameRank=-1;

@@ -1,0 +1,151 @@
+/* Math Quest Island — results API (Vercel serverless function), 2026-10-24.
+   Each device queues a compact summary of every finished quest / paper (maths and
+   science) and posts it here; the parent page (parent.html) reads them back.
+   Storage: Upstash Redis via REST, same helper and env vars as api/leaderboard.js.
+   Returns 503 until the Redis integration is connected; devices keep their queue.
+
+   POST { results: [ ... ] }  no auth: strict validation + size/batch caps are the defence.
+   GET                        needs the parent key in the X-Parent-Key header.
+   The repo is public, so only the SHA-256 of the parent key lives here. */
+import { createHash, timingSafeEqual } from 'crypto';
+
+const RURL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const RTOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+const PARENT_KEY_SHA256 = '91ecc3f3ac33b606b33ba435e843d5c7ba3880d32bb13867c2845f824ffb24eb';
+const HKEY = 'mqi:res:h';      // hash: id -> record JSON
+const ZKEY = 'mqi:res:z';      // sorted set: id scored by endedAt (ms)
+const KEEP = 5000;             // newest records kept
+const MAX_BATCH = 50;
+const MAX_BODY = 64 * 1024;
+const MIN_T = Date.UTC(2026, 0, 1);
+
+async function redis(cmd){
+  const r = await fetch(RURL, {
+    method:'POST',
+    headers:{ Authorization:'Bearer '+RTOKEN, 'Content-Type':'application/json' },
+    body: JSON.stringify(cmd)
+  });
+  if(!r.ok) throw new Error('redis '+r.status);
+  return r.json();
+}
+
+const ID_RE = /^[0-9a-z]{8,32}$/;
+function clampStr(v, n){
+  if(typeof v !== 'string') return null;
+  const s = v.replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, n);
+  return s;
+}
+function num(v, lo, hi, dp){
+  if(typeof v !== 'number' || !Number.isFinite(v) || v < lo || v > hi) return null;
+  const f = Math.pow(10, dp||0);
+  return Math.round(v * f) / f;
+}
+
+/* one record -> a clean copy, or null when it doesn't fit the shape */
+export function cleanRecord(r, now){
+  if(!r || typeof r !== 'object' || Array.isArray(r)) return null;
+  if(typeof r.id !== 'string' || !ID_RE.test(r.id)) return null;
+  if(typeof r.device !== 'string' || !ID_RE.test(r.device)) return null;
+  if(r.app !== 'maths' && r.app !== 'science') return null;
+  if(r.kind !== 'quest' && r.kind !== 'paper') return null;
+  const total = num(r.total, 0, 1000, 1), correct = num(r.correct, 0, 1000, 1);
+  if(total == null || correct == null || correct > total) return null;
+  if(typeof r.endedAt !== 'string' || r.endedAt.length > 40) return null;
+  const t = Date.parse(r.endedAt);
+  if(!Number.isFinite(t) || t < MIN_T || t > (now || Date.now()) + 86400000) return null;
+  let hintsUsed = null;
+  if(r.hintsUsed != null){ hintsUsed = num(r.hintsUsed, 0, 1000, 0); if(hintsUsed == null) return null; }
+  let durationSec = null;
+  if(r.durationSec != null){ durationSec = num(r.durationSec, 0, 86400, 0); if(durationSec == null) return null; }
+  const topics = [];
+  if(r.topics != null){
+    if(!Array.isArray(r.topics) || r.topics.length > 30) return null;
+    for(const x of r.topics){
+      if(!x || typeof x !== 'object') return null;
+      const tt = clampStr(x.t, 60), n = num(x.n, 0, 1000, 1), c = num(x.c, 0, 1000, 1);
+      if(!tt || n == null || c == null || c > n) return null;
+      topics.push({ t: tt, c, n });
+    }
+  }
+  return {
+    id: r.id, device: r.device,
+    deviceLabel: clampStr(r.deviceLabel, 16) || 'Other',
+    app: r.app, kind: r.kind,
+    mode: (clampStr(r.mode, 16) || '').replace(/[^a-z0-9-]/gi, ''),
+    topic: clampStr(r.topic, 60) || '',
+    topics, correct, total, hintsUsed, durationSec,
+    endedAt: new Date(t).toISOString(),
+    rx: now || Date.now()
+  };
+}
+
+function keyOk(given){
+  if(typeof given !== 'string' || !given || given.length > 256) return false;
+  const a = createHash('sha256').update(given.trim()).digest();
+  const b = Buffer.from(PARENT_KEY_SHA256, 'hex');
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+export default async function handler(req, res){
+  res.setHeader('Cache-Control','no-store');
+  res.setHeader('X-Robots-Tag','noindex');
+  if(!RURL || !RTOKEN) return res.status(503).json({ error:'results storage not configured yet' });
+
+  try{
+    if(req.method==='POST'){
+      const len = parseInt((req.headers && req.headers['content-length']) || '0', 10);
+      if(len > MAX_BODY) return res.status(413).json({ error:'too large' });
+      let b = req.body;
+      if(typeof b==='string'){
+        if(b.length > MAX_BODY) return res.status(413).json({ error:'too large' });
+        try{ b = JSON.parse(b); }catch(e){ return res.status(400).json({ error:'bad json' }); }
+      }
+      if(!b || typeof b!=='object' || !Array.isArray(b.results)) return res.status(400).json({ error:'expected { results: [] }' });
+      if(JSON.stringify(b).length > MAX_BODY) return res.status(413).json({ error:'too large' });
+      if(b.results.length > MAX_BATCH) return res.status(413).json({ error:'batch too long' });
+      const now = Date.now(), seen = {}, ok = [];
+      let rejected = 0;
+      for(const r of b.results){
+        const c = cleanRecord(r, now);
+        if(!c){ rejected++; continue; }
+        if(seen[c.id]) continue;
+        seen[c.id] = 1; ok.push(c);
+      }
+      let stored = 0;
+      for(const c of ok){
+        const out = await redis(['HSETNX', HKEY, c.id, JSON.stringify(c)]);
+        if(out && Number(out.result) === 1){
+          await redis(['ZADD', ZKEY, String(Date.parse(c.endedAt)), c.id]);
+          stored++;
+        }
+      }
+      if(stored){
+        const n = Number((await redis(['ZCARD', ZKEY])).result) || 0;
+        if(n > KEEP){
+          const old = (await redis(['ZRANGE', ZKEY, '0', String(n-KEEP-1)])).result || [];
+          if(old.length){
+            await redis(['ZREMRANGEBYRANK', ZKEY, '0', String(old.length-1)]);
+            await redis(['HDEL', HKEY, ...old]);
+          }
+        }
+      }
+      return res.status(200).json({ ok:true, stored, duplicate: ok.length-stored, rejected });
+    }
+
+    if(req.method==='GET'){
+      const h = req.headers || {};
+      if(!keyOk(h['x-parent-key'])) return res.status(401).json({ error:'parent key required' });
+      const ids = (await redis(['ZREVRANGE', ZKEY, '0', String(KEEP-1)])).result || [];
+      let rows = [];
+      if(ids.length){
+        const vals = (await redis(['HMGET', HKEY, ...ids])).result || [];
+        for(const v of vals){ if(!v) continue; try{ rows.push(JSON.parse(v)); }catch(e){} }
+      }
+      return res.status(200).json({ rows });
+    }
+
+    return res.status(405).json({ error:'method not allowed' });
+  }catch(e){
+    return res.status(500).json({ error:'storage error' });
+  }
+}

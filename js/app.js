@@ -87,6 +87,9 @@ if(!DB.power || typeof DB.power!=='object' || Array.isArray(DB.power)){
      of rotation until she misses it again. */
   for(const k in DB.power){ const p=DB.power[k]; if(p.r>=4 && p.m/(p.m+p.r)<0.25) p.m=0; }
 }
+/* Star Crystals (Build Day 2026-10-23, B2: maths fun-layer parity with science/index.html).
+   { <map node id>: { e: t, c: t, p: t } }, kept once rescued. See "Fun layer" below. */
+if(!DB.crys || typeof DB.crys!=='object' || Array.isArray(DB.crys)) DB.crys={};
 
 /* ---------------- Sound ---------------- */
 let AC=null, muted=!!DB.muted;
@@ -108,8 +111,75 @@ const sfx={
   tick(){ tone(880,0,.05,'square',.06); },
   win(){ [523,659,784,1047,784,1047].forEach((f,i)=>tone(f,i*.15,.2)); },
   lose(){ [400,350,300,250].forEach((f,i)=>tone(f,i*.2,.25,'triangle',.12)); },
-  monsterDown(){ tone(300,0,.1,'triangle'); tone(200,.1,.1,'triangle'); tone(100,.2,.25,'triangle'); }
+  monsterDown(){ tone(300,0,.1,'triangle'); tone(200,.1,.1,'triangle'); tone(100,.2,.25,'triangle'); },
+  /* a Star Crystal: science's happy chime */
+  crystal(){ tone(659,0,.1,'triangle',.1); tone(880,.09,.1,'triangle',.1); tone(1175,.18,.22,'triangle',.1); }
 };
+
+/* ---------------- Fun layer (Build Day 2026-10-23, B2) ----------------
+   Parity with the science fun layer (science/index.html, Science Fun Layer Card
+   2026-10-17), the same system rather than a second one: three Star Crystals per land,
+   kept once rescued, each earned by learning and never by speed or by being right
+   first time:
+     🧭 Explorer  finish a quest in that land (a "So close" quest counts too);
+     💪 Comeback  get a question right in a skill whose last answer was a miss;
+     ⚡ Power     a Power-Up battery fills on a question from that land.
+   Comeback and Power ride recSkill, the one place every answer already passes
+   through, and read the Power-Up meter it charges. Never in the mock paper (its
+   hand-in also passes through recSkill). Patchwerk keeps what it earns but never
+   celebrates mid-race. No new timers: a crystal adds a banner and a chime to an
+   answer, never a delay before the next question. */
+const CRYS=[
+  { k:'e', em:'🧭', name:'Explorer crystal', how:'Finish a quest in this land.' },
+  { k:'c', em:'💪', name:'Comeback crystal', how:'Have another go after a miss, and get it right.' },
+  { k:'p', em:'⚡', name:'Power crystal', how:'Fill up a power battery with a question from this land.' }
+];
+/* a land is a live map node; a locked or unknown one never holds crystals */
+function crysLand(id){ const n=MQI.mapNodes.find(m=>m.id===id); return (n && !n.locked) ? n : null; }
+function crysOf(id){ return (DB.crys && DB.crys[id]) || {}; }
+function crysCount(id){ const c=crysOf(id); return CRYS.filter(x=>c[x.k]).length; }
+function crysHTML(id){
+  const c=crysOf(id), n=crysCount(id);
+  return '<span class="crys" role="img" aria-label="'+n+' of 3 Star Crystals">'+
+    CRYS.map(x=>c[x.k]?'<span>⭐</span>':'<span class="no">❔</span>').join('')+'</span>';
+}
+/* a new crystal; null if it was already rescued or the land is not on the map */
+function award(id, k){
+  const land=crysLand(id); if(!land) return null;
+  if(!DB.crys || typeof DB.crys!=='object') DB.crys={};
+  const c=DB.crys[id]||(DB.crys[id]={});
+  if(c[k]) return null;
+  c[k]=Date.now();
+  const x=CRYS.find(y=>y.k===k);
+  return { t:id, k, em:x.em, name:x.name, land:land.name, all:crysCount(id)===3 };
+}
+function wonLine(w){ return '⭐ '+w.name+' rescued in '+w.land+'!'+(w.all?' That\'s all 3 in this land! 🏝️':''); }
+function reducedMotion(){ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+/* the crystals this answer rescued (recSkill leaves them on S.fresh): a short banner in
+   the battle's own band (one line, so it never wraps or ellipsises), a chime and a light
+   burst. Nothing is added to #feedback, so the answer buttons never move. The full line,
+   with the land's name, is on the end screen. Returns true when it cheered. */
+function crysCheer(){
+  const won=(S && S.fresh) || [];
+  if(!won.length) return false;
+  const w=won[won.length-1];
+  banner(w.all ? '⭐ All 3 crystals in '+esc(w.land)+'! 🏝️' : '⭐ '+w.em+' '+w.name+' rescued!', 1800);
+  sfx.crystal();
+  confetti();
+  return true;
+}
+/* the land's three crystals on an end screen: what she found, then the next one to find */
+function crysPanel(id, today){
+  const land=id ? crysLand(id) : null, won=today||[];
+  let h=won.length ? '<p class="won">'+won.map(w=>esc(wonLine(w))).join('<br>')+'</p>' : '';
+  if(land){
+    const c=crysOf(id), nx=CRYS.find(x=>!c[x.k]);
+    h+='<h3>⭐ Star Crystals in '+esc(land.e+' '+land.name)+'</h3>'+crysHTML(id)+
+      (nx ? '<p>Next to find: '+nx.em+' <b>'+nx.name+'</b>. '+nx.how+'</p>'
+          : '<p>🏝️ You rescued all 3 Star Crystals in '+esc(land.name)+'!</p>');
+  }
+  return h;
+}
 
 /* ---------------- Game ---------------- */
 const MONSTERS=[
@@ -180,6 +250,14 @@ $('modePatch').addEventListener('click',()=>{ DB.gameMode='patchwerk'; DB.timed=
 function renderMap(){
   const mp=$('mapPath'); mp.innerHTML='';
   $('mapSub').textContent='Quests for '+DB.grade+'. Where will you adventure today?';
+  /* fun layer: the hero greeting and the Star Crystal count for this level's lands */
+  const lands=MAP_NODES.filter(n=>n.grades.includes(DB.grade) && !n.locked);
+  const found=lands.reduce((a,n)=>a+crysCount(n.id),0), all=lands.length*3;
+  $('mapHello').innerHTML='<span class="av" aria-hidden="true">'+esc(DB.avatar)+'</span>Hi, '+esc(DB.name||'Hero')+'!';
+  $('mapCrys').textContent = !all ? '' : found>=all ? '⭐ All '+all+' Star Crystals rescued! 🏝️'
+    : found ? '⭐ '+found+' of '+all+' Star Crystals rescued so far!'
+    : '⭐ '+all+' Star Crystals are hiding on these islands. Can you rescue them?';
+  $('mapCrys').style.display = all ? '' : 'none';
   /* P3 exam rehearsal sits at the top of the P3 map, above the islands. */
   if(DB.grade==='P3' && MQI.modes['p3-mock']){
     const c=document.createElement('div');
@@ -209,12 +287,21 @@ function renderMap(){
   MAP_NODES.filter(n=>n.grades.includes(DB.grade)).forEach((n,i)=>{
     if(i>0){ const d=document.createElement('div'); d.className='pathDots'; d.textContent='• • •'; mp.appendChild(d); }
     const b=document.createElement('button');
-    b.className='mapNode '+(i%2?'even':'odd')+(n.locked?' locked':'');
-    b.innerHTML='<span class="ne">'+n.e+'</span><span class="nt"><b>'+n.name+'</b><small>'+n.blurb+'</small></span>'+
+    b.className='mapNode '+(i%2?'even':'odd')+(n.locked?' locked':'')+(!n.locked && crysCount(n.id)===3?' done':'');
+    b.innerHTML='<span class="ne">'+n.e+'</span><span class="nt"><b>'+n.name+'</b><small>'+n.blurb+'</small>'+
+                (n.locked?'':crysHTML(n.id))+'</span>'+
                 '<span class="go">'+(n.locked?'🔒':'▶️')+'</span>';
     if(!n.locked) b.addEventListener('click',()=>{ TOPIC=n.id; newGame(); });
     mp.appendChild(b);
   });
+  if(lands.length){
+    const d=document.createElement('details');
+    d.className='howcrys';
+    d.innerHTML='<summary>⭐ How do I rescue Star Crystals?</summary><p>Every land hides 3:</p><ul>'+
+      CRYS.map(x=>'<li>'+x.em+' <b>'+x.name+'</b>: '+x.how+'</li>').join('')+
+      '</ul><p>Take your time. A rescued crystal stays yours.</p>';
+    mp.appendChild(d);
+  }
   show('mapScreen');
 }
 
@@ -251,7 +338,9 @@ function newGame(){
      The post-answer banners are deliberately NOT delayed: CRITICAL HIT is a reward
      that should ride over the next question, and now that it has its own band it can
      do that without covering a word of it. */
-  banner(TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
+  /* fun layer: the land's place name (Fraction Forest), as on the map tile she just tapped */
+  const land=crysLand(TOPIC);
+  banner(land ? land.e+' '+esc(land.name)+'! ⭐' : TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
   setTimeout(nextQuestion,950);
 }
 /* ---------------- Patchwerk (js/modes/patchwerk.js) ---------------- */
@@ -378,6 +467,7 @@ function endPatchwerk(record){
   const TIERS=MQI.modes.patchwerk.config.TIERS;
   const rank=DB.pwFame.filter(r=>r.tier===record.tier&&r.level===record.level).findIndex(r=>r===record);
   $('pwEnd').style.display='block';
+  $('crysEnd').style.display='none';
   $('normalStats').style.display='none';
   $('reviewBox').style.display=S.wrongs.length?'block':'none';
   $('endEmoji').textContent='💀';
@@ -833,7 +923,7 @@ function powerAnswer(right, btn){
   powerHud();
   u.wait=true;
   if(right){
-    sfx.correct();
+    if(!crysCheer()) sfx.correct();   /* fun layer: a Comeback or Power crystal */
     $('feedback').innerHTML='<span class="ok">⚡ '+esc(pq(it.k))+(pstate(it.k).full?' is fully charged!':' is charging up!')+'</span>';
     setTimeout(powerNext,1500);
   } else {
@@ -900,6 +990,10 @@ function renderPowerClose(){
   w.style.display = full.length ? '' : 'none';
   $('puPowers').innerHTML = powersHTML(keys);
   $('puNextLine').textContent = '➡️ '+nextLine;
+  /* fun layer: any Star Crystals this round rescued */
+  const won=S.won||[];
+  $('puCrys').innerHTML = won.length ? '<h3>⭐ Star Crystals rescued today</h3>'+crysPanel(null, won) : '';
+  $('puCrys').style.display = won.length ? '' : 'none';
   show('powerScreen');
   $('powerScreen').scrollTop=0;
 }
@@ -931,10 +1025,13 @@ function floatDmg(txt,color,side){
   $('arena').appendChild(el);
   setTimeout(()=>el.remove(),1000);
 }
+let bannerT=null;
 function banner(txt,ms){
   $('bannerText').innerHTML=txt;
   $('banner').style.display='flex';
-  setTimeout(()=>{ $('banner').style.display='none'; }, ms||1100);
+  /* fun layer: a newer banner keeps its full time (an older timer used to hide it early) */
+  clearTimeout(bannerT);
+  bannerT=setTimeout(()=>{ $('banner').style.display='none'; }, ms||1100);
 }
 
 function stopQTimer(){ if(qTimer){ clearInterval(qTimer); qTimer=null; } }
@@ -1110,7 +1207,18 @@ function recSkill(skill,right){
   S.tally[tp][skill][right?'r':'w']++;
   /* the Power-Up meter rides the same choke point: quests, Patchwerk, Power-Up and a
      mock paper's hand-in all charge (or empty) it here */
+  const pk=tp+'|'+skill, p0=DB.power && DB.power[pk], was={ lm:!!(p0&&p0.lm), full:!!(p0&&p0.full) };
   charge(tp, skill, right, Q && Q.level);
+  /* fun layer: the Comeback and Power crystals, read off the meter just charged.
+     Never in the mock paper. */
+  if(S) S.fresh=[];
+  if(S && !S.mock && right && skill){
+    const p1=DB.power[pk]||{}, won=[];
+    if(was.lm) won.push(award(tp,'c'));
+    if(!was.full && p1.full) won.push(award(tp,'p'));
+    S.fresh=won.filter(Boolean);
+    if(S.fresh.length){ S.won=(S.won||[]).concat(S.fresh); saveData(); }   /* kept even if she leaves mid-quest */
+  }
 }
 function monsterCounterattack(){
   $('monsterSprite').classList.add('lungeL');
@@ -1279,7 +1387,8 @@ function resolve(right){
     S.maxLevel=Math.max(S.maxLevel,S.level);
     const crit=S.streak>=3;
     const dmg=(18+S.level*6+ri(0,4))*(crit?2:1);
-    if(crit){ sfx.crit(); banner('💥 CRITICAL HIT!'); } else sfx.correct();
+    /* fun layer: a rescued Star Crystal takes the banner band (and the chime) */
+    if(!crysCheer()){ if(crit){ sfx.crit(); banner('💥 CRITICAL HIT!'); } else sfx.correct(); }
     $('feedback').innerHTML='<span class="ok">'+pick(['Great job! ⚔️','Correct! 💪','Awesome! ✨','Nice one! 🌟'])+'</span>';
     updateStreak();
     setTimeout(()=>{
@@ -1358,22 +1467,28 @@ function monsterDown(){
     setTimeout(nextQuestion,350);
   },1000);
 }
+/* fun layer: science's light burst - 16 pieces, about 1.5 s, one burst at a time, and
+   none at all under prefers-reduced-motion (was 40 pieces for up to 5.5 s) */
 function confetti(){
-  for(let i=0;i<40;i++){
+  if(reducedMotion() || document.querySelector('.confetti')) return;
+  for(let i=0;i<16;i++){
     const el=document.createElement('div');
-    el.className='confetti';
-    el.textContent=pick(['🎉','⭐','✨','🎊','💛']);
-    el.style.left=ri(0,100)+'vw';
-    el.style.animationDuration=(ri(20,40)/10)+'s';
-    el.style.animationDelay=(ri(0,15)/10)+'s';
+    el.className='confetti'; el.setAttribute('aria-hidden','true');
+    el.textContent=['⭐','✨','🎉','💛'][i%4];
+    el.style.left=ri(0,96)+'vw';
+    el.style.animationDuration=(1.1+Math.random()*0.6).toFixed(2)+'s';
+    el.style.animationDelay=(Math.random()*0.3).toFixed(2)+'s';
     document.body.appendChild(el);
-    setTimeout(()=>el.remove(),6000);
+    setTimeout(()=>el.remove(),2200);
   }
 }
 function endGame(win){
   stopQTimer();
   if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
   const ms=Date.now()-S.t0;
+  /* fun layer: finishing a quest in a land is its Explorer crystal, win or "so close" */
+  const ex=award(TOPIC,'e');
+  if(ex) S.won=(S.won||[]).concat([ex]);
   DB.sessions.push({
     t:Date.now(), topic:TOPIC, won:win, correct:S.correct, total:S.total,
     best:S.best, crystals:S.mi, maxLevel:S.maxLevel, skills:S.skills,
@@ -1399,14 +1514,20 @@ function endGame(win){
   }
   saveData();
 
-  if(win){ sfx.win(); confetti(); } else sfx.lose();
+  if(win){ sfx.win(); confetti(); }
+  else if(S.won && S.won.length){ sfx.crystal(); confetti(); }   /* a rescued crystal is still a win */
+  else sfx.lose();
+  $('crysEnd').innerHTML=crysPanel(TOPIC, S.won);
+  $('crysEnd').style.display=$('crysEnd').innerHTML ? '' : 'none';
   $('pwEnd').style.display='none';
   $('normalStats').style.display='flex';
   $('endEmoji').textContent=win?'🏆':'💪';
   $('endTitle').textContent=win?'VICTORY!':'So close, '+esc(DB.name)+'!';
   let msg = win
-    ? esc(DB.name)+' the '+avClass()+' saved all 6 Star Crystals of '+TOPICS[TOPIC].label+'!'
-    : 'You rescued '+S.mi+' crystal'+(S.mi===1?'':'s')+' this time. Every battle makes your magic stronger. Try again!';
+    ? esc(DB.name)+' the '+avClass()+' beat all 6 monsters of '+(crysLand(TOPIC)?crysLand(TOPIC).name:TOPICS[TOPIC].label)+'!'
+    /* fun layer: the battle's count is "monsters", so it never reads against the land's
+       Star Crystals panel below ("You rescued 0 crystals" over "Explorer crystal rescued") */
+    : (S.mi ? 'You beat '+S.mi+' monster'+(S.mi===1?'':'s')+' this time. ' : '')+'Every battle makes your magic stronger. Try again!';
   if(win && fameRank===0) msg+=' 🥇 NEW RECORD, fastest run ever!';
   else if(win && fameRank>0) msg+=' You made the Hall of Fame at #'+(fameRank+1)+'!';
   $('endMsg').textContent=msg;

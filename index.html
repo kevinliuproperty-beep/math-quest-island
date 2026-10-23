@@ -308,6 +308,30 @@
   .confetti { position:fixed; top:-20px; font-size:22px; animation:fall linear forwards; z-index:50; pointer-events:none; }
   @keyframes fall { to { transform:translateY(110vh) rotate(720deg); } }
 
+  /* ---------- FUN LAYER (Build Day 2026-10-23, B2: parity with science/index.html) ----------
+     The hero greeting and the Star Crystal count on the map, a crystal row on each land,
+     the land's crystals on the quest end and Power-Up close. Map and end screens only:
+     nothing here touches the battle column, the banner band or the figure budget. */
+  #mapHello { display:flex; align-items:center; justify-content:center; gap:10px; font-size:20px; font-weight:900; color:#ffe66d; margin-top:-4px; }
+  #mapHello .av { font-size:32px; line-height:1; }
+  .crystot { display:inline-block; background:rgba(255,209,102,.14); border:2px solid #ffd166; border-radius:999px;
+             padding:3px 14px; font-weight:800; font-size:15px; color:#ffe9a8; max-width:96%; }
+  .crys { display:inline-flex; gap:3px; font-size:15px; line-height:1; }
+  .crys .no { opacity:.4; filter:grayscale(1); }
+  .mapNode .nt .crys { margin-top:5px; }
+  .mapNode.done { border-color:#ffd166; background:rgba(255,209,102,.12); }
+  .howcrys { width:min(500px,96%); margin:10px auto 0; text-align:left; color:#c9c0f2; font-size:15px; line-height:1.5; }
+  .howcrys summary { cursor:pointer; font-weight:800; color:#ffd166; min-height:44px; display:flex; align-items:center; justify-content:center; }
+  .howcrys ul { margin:4px 0 6px; padding-left:1.3em; } .howcrys p { margin:4px 0; }
+  .crysBox { border:2px solid #ffd166; text-align:center; }
+  .crysBox p { margin:6px 0 0; font-size:16px; color:#e2dcff; line-height:1.5; }
+  .crysBox p.won { color:#ffe9a8; font-weight:800; margin:0 0 6px; }
+  .crysBox .crys { font-size:26px; gap:8px; }
+  @media (prefers-reduced-motion:reduce) {
+    .confetti { display:none; }
+    #banner .inner, .bigEmoji, #heroSprite, #monsterSprite { animation:none; }
+  }
+
   /* ---------- PATCHWERK MODE (js/modes/patchwerk.js) ---------- */
   #pwPanel { display:none; }
   #pwPanel.on { display:block; }
@@ -606,7 +630,9 @@
   <!-- ============ MAP ============ -->
   <div id="mapScreen" class="screen">
     <div class="title" style="font-size:clamp(26px,5.5vw,40px)">🗺️ Quest Island</div>
+    <div id="mapHello"></div>
     <div class="subtitle" id="mapSub">Where will you adventure today?</div>
+    <div class="crystot" id="mapCrys" style="display:none"></div>
     <div id="mapPath"></div>
     <button class="btnGhost" id="mapBackBtn">← Back</button>
   </div>
@@ -669,6 +695,7 @@
     <div id="endEmoji">🏆</div>
     <div id="endTitle">VICTORY!</div>
     <div id="endMsg"></div>
+    <div id="crysEnd" class="listBox crysBox" style="display:none"></div>
     <div id="pwEnd">
       <div id="pwDamage">0</div>
       <div style="font-size:14px;color:#c9c0f2;letter-spacing:2px;margin-bottom:12px">TOTAL DAMAGE</div>
@@ -702,6 +729,7 @@
     <div id="puTitle">🌱 Nice work!</div>
     <div id="puSaid"></div>
     <div id="puWell" style="display:none"></div>
+    <div id="puCrys" class="listBox crysBox" style="display:none"></div>
     <div class="listBox"><h3>⚡ My powers</h3><div id="puPowers"></div></div>
     <div id="puNextLine"></div>
     <button class="btnBig" id="puAgainBtn">⚡ Another Power-Up</button>

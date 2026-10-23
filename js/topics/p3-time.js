@@ -162,6 +162,9 @@
     return st;
   }
   /* the slips a duration answer is usually built from */
+  /* BUILD DAY 2026-10-23 (B1): hours and minutes taken away column by column, the
+     smaller minutes from the bigger (3.40 to 5.20 read as 2 h and 40 − 20 = 20 min) */
+  const SMALL_FROM_BIG = 'Lots of children pick this, because they take the smaller minutes from the bigger ones. Count on along a timeline instead: to the next o\'clock first, then the rest.';
   function durSlips(s, e, borrow, fmt) {
     const d = e - s, t12 = fmt || T12;
     return [[dur(d + 60), 'Close: one hour too many. Count the whole hours on the timeline again.'],
@@ -351,7 +354,10 @@
       return slips(coach(mcStr(what + ' started at ' + t12(s) + ' and ended at ' + t12(e) + '. How long did it take?', dur(d), opts,
         countOn(s, e)), 'Draw a timeline',
         ['Draw a timeline from ' + t12(s) + ' to ' + t12(e) + '. Jump to the next o\'clock first, then whole hours, then the minutes left.']
-          .concat(jumpSteps(s, e, t12))), durSlips(s, e, borrow));
+          .concat(jumpSteps(s, e, t12))), durSlips(s, e, borrow).concat(
+          /* BUILD DAY 2026-10-23 (B1) */
+          [[eh > sh && borrow && !(s < 720 && e >= 720 && (eh - sh) * 60 + (s % 60) - (e % 60) === 720 - d)
+            ? dur((eh - sh) * 60 + (s % 60) - (e % 60)) : '', SMALL_FROM_BIG]]));
     });
   }
 
@@ -438,7 +444,9 @@
       return slips(coach(mcStr(pick(JOURNEYS) + ' left at ' + t24(s) + ' and arrived at ' + t24(e) + '. How long was the journey?', dur(d), opts,
         t24(s) + ' is ' + t12(s) + ' and ' + t24(e) + ' is ' + t12(e) + '. ' + countOn(s, e)), 'Draw a timeline',
         ['Draw a timeline from ' + t24(s) + ' to ' + t24(e) + '. Jump to the next o\'clock first, then whole hours, then the minutes left.']
-          .concat(jumpSteps(s, e, t24))), durSlips(s, e, borrow, t24));
+          .concat(jumpSteps(s, e, t24))), durSlips(s, e, borrow, t24).concat(
+          /* BUILD DAY 2026-10-23 (B1) */
+          [[borrow ? dur((eh - sh) * 60 + (s % 60) - (e % 60)) : '', SMALL_FROM_BIG]]));
     }));
   }
 
@@ -640,7 +648,9 @@
           [t24(floorH(e) - tot), 'Lots of children pick this, because they count back from ' + t24(floorH(e)) + ' and drop the ' + (e % 60) + ' min of the arrival time.'],
           [t24(s + c), 'Close: the ' + dur(c) + ' taxi ride was left out. All three parts go on the timeline.'],
           [t24(s + a), 'Good start: that is the latest time to start packing. Dinner comes before it, so go back ' + a + ' min more.'],
-          [t24(e + tot), 'Lots of children pick this, because they count on. ' + t24(e) + ' is the deadline, so count back from it.']]);
+          [t24(e + tot), 'Lots of children pick this, because they count on. ' + t24(e) + ' is the deadline, so count back from it.'],
+          /* BUILD DAY 2026-10-23 (B1) */
+          [borrow ? t24(s + 40) : '', 'Lots of children pick this, because they take the times away like ordinary numbers. An hour is 60 min, not 100, so count back along a timeline instead.']]);
     });
   }
 
@@ -688,7 +698,9 @@
           [t24(e - 60), 'Close: one hour went missing. Count on again along the timeline.'],
           [t24(e + 60), 'Close: one hour too many. Count on again along the timeline.'],
           [t24(e - 720), 'The hours and minutes on the clock face are right. Afternoon hours stay above 12 in the 24-hour clock.'],
-          [t24(ceilH(r) + d), 'Lots of children pick this, because they start counting at the next o\'clock, ' + t24(ceilH(r)) + '. Start from ' + t24(r) + ' itself.']]);
+          [t24(ceilH(r) + d), 'Lots of children pick this, because they start counting at the next o\'clock, ' + t24(ceilH(r)) + '. Start from ' + t24(r) + ' itself.'],
+          /* BUILD DAY 2026-10-23 (B1): only a 1 h something movie gives exactly +40 */
+          [d < 120 ? t24(e + 40) : '', 'Lots of children pick this, because ' + dur(d) + ' was read as ' + (100 + d % 60) + ' min. Change it with 1 h = 60 min.']]);
     });
   }
 

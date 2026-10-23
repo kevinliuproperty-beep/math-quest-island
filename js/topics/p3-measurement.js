@@ -189,7 +189,9 @@
       [T, 'Lots of children pick this, because it is the total in the question. The total is all ' + (N + 1) + ' units together; the question asks for part of it.'],
       [askMore ? N * u : (N - 1) * u, askMore ? 'Good, that is the whole ' + ctx.a + '! The question asks how much MORE, so take away the 1 unit of the ' + ctx.b + '.'
                                               : 'Lots of children pick this, because it is how much more. The question asks for the whole ' + ctx.a + ': all ' + N + ' units.'],
-      [T % N === 0 ? T / N : -1, 'Lots of children pick this, because they share the total into ' + N + ' parts. Count the ' + ctx.b + ' too: there are ' + (N + 1) + ' units.']
+      [T % N === 0 ? T / N : -1, 'Lots of children pick this, because they share the total into ' + N + ' parts. Count the ' + ctx.b + ' too: there are ' + (N + 1) + ' units.'],
+      /* BUILD DAY 2026-10-23 (B1): the same one-unit slip, then "how much more" done right */
+      [askMore && T % N === 0 ? (N - 1) * (T / N) : -1, 'Good, you took away the ' + ctx.b + "'s unit! First count all the units: " + N + ' + 1 = ' + (N + 1) + ', so share the total into ' + (N + 1) + '.']
     ], v => v + ' ' + S);
     return tag(q, 3);
   }
@@ -288,7 +290,9 @@
         ofb(q, [
           [other, 'Good, that is ' + p2 + "'s " + thing + '! The question asks for the total, so add ' + p1 + "'s too."],
           [up ? 2 * W - d : 2 * W + d, 'Lots of children pick this, because they ' + (up ? 'take the ' + d + ' ' + S + ' away' : 'add the ' + d + ' ' + S) + '. ' + p2 + "'s is " + word + ', so ' + (up ? 'add it.' : 'take it away.')],
-          [2 * W, 'Lots of children pick this, because they double ' + p1 + "'s. " + p2 + "'s is " + d + ' ' + S + ' ' + word + ', so it is not the same.']
+          [2 * W, 'Lots of children pick this, because they double ' + p1 + "'s. " + p2 + "'s is " + d + ' ' + S + ' ' + word + ', so it is not the same.'],
+          /* BUILD DAY 2026-10-23 (B1) */
+          [2 * other, 'Lots of children pick this, because they double ' + p2 + "'s. Only " + p2 + "'s is " + d + ' ' + S + ' ' + word + '; ' + p1 + "'s stays " + fmtC(W, B, S, f) + '.']
         ], v => fmtC(v, B, S, f));
         return tag(q, 3);
       }
@@ -324,7 +328,10 @@
         ofb(q, [
           [n * each, 'Good, that is what the ' + box + ' held! Add back the ' + left + ' ' + S + ' that was left over too.'],
           [n * each - left, 'Lots of children pick this, because they take the leftover away. Working backwards, we put it back: add it.'],
-          [n * (each + left), 'Lots of children pick this, because they add the leftover to every one of the ' + box + '. It was left over only once.']
+          [n * (each + left), 'Lots of children pick this, because they add the leftover to every one of the ' + box + '. It was left over only once.'],
+          /* BUILD DAY 2026-10-23 (B1): off-by-one counts of the boxes */
+          [(n - 1) * each + left, 'So close! That counts ' + (n - 1) + ' ' + box + '. Count them again: there were ' + n + ' ' + box + '.'],
+          [(n + 1) * each + left, 'So close! That counts ' + (n + 1) + ' ' + box + '. Count them again: there were ' + n + ' ' + box + '.']
         ], v => fmtC(v, B, S, f));
         return tag(q, 3);
       }
@@ -365,7 +372,10 @@
       [gap * (l - k + 1), 'Lots of children pick this, because they count the ' + things + '. Between the ' + ord(k) + ' and the ' + ord(l) + ' there is one gap fewer than ' + things + ': ' + (l - k) + ' gaps.'],
       [gap * (l - k - 1), 'So close! Count the gaps again on a drawing: from the ' + ord(k) + ' to the ' + ord(l) + ' there are ' + (l - k) + ' gaps.'],
       [gap * l, 'Lots of children pick this, because they count ' + l + ' gaps up to the ' + ord(l) + ' ' + L.one + '. This part starts at the ' + ord(k) + ', so there are ' + l + ' − ' + k + ' = ' + (l - k) + ' gaps.'],
-      [gap * (l - i), 'Lots of children pick this, because they start counting from the ' + ord(i) + ' ' + L.one + ', the one in the first sentence. This part starts at the ' + ord(k) + '.']
+      [gap * (l - i), 'Lots of children pick this, because they start counting from the ' + ord(i) + ' ' + L.one + ', the one in the first sentence. This part starts at the ' + ord(k) + '.'],
+      /* BUILD DAY 2026-10-23 (B1): the posts counted as gaps in BOTH parts */
+      [(span * (l - k + 1)) % (j - i + 1) === 0 ? span * (l - k + 1) / (j - i + 1) : -1,
+        'Lots of children pick this, because they count the ' + things + ' both times. Count the gaps instead: ' + (j - i) + ' gaps make ' + span + ' m.']
     ], v => v + ' m');
     return tag(q, 3);
   }
@@ -424,7 +434,10 @@
       [gap * n, 'Lots of children pick this, because they count the ' + things + '. ' + n + ' ' + things + ' make one gap fewer: ' + (n - 1) + ' gaps.'],
       [gap * (n - 2), 'So close! Count the gaps again on a drawing: ' + n + ' ' + things + ' make ' + (n - 1) + ' gaps.'],
       [gap * (n - j), 'Good, that is the part after the ' + ord(j) + ' ' + L.one + '! The question asks for the whole line, from the first to the last.'],
-      [span + gap * (n - 1), 'Lots of children pick this, because they add the first ' + span + ' m on again. It is already part of the whole line.']
+      [span + gap * (n - 1), 'Lots of children pick this, because they add the first ' + span + ' m on again. It is already part of the whole line.'],
+      /* BUILD DAY 2026-10-23 (B1): the trees counted as gaps in BOTH parts */
+      [(span * n) % j === 0 ? span * n / j : -1,
+        'Lots of children pick this, because they count the ' + things + ' both times. Count the gaps instead: ' + (j - 1) + ' gaps make ' + span + ' m.']
     ], v => v + ' m');
     return tag(q, 3);
   }

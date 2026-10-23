@@ -264,7 +264,11 @@
           'Add the ' + one + ' to find the spent part: $' + (k * p) + ' + $' + q + ' = $' + cost + '.',
           'The part left: $' + M2 + ' − $' + cost + ' = <b>$' + left + '</b>.']);
     }
-    const short = ri(3, Math.min(40, cost - 5)), has = cost - short;
+    /* BUILD DAY 2026-10-23 (D6): what the child has never equals the single item's price
+       or the multi-buy subtotal ("has $28" next to a "$28" bag reads as a trick) */
+    let short = ri(3, Math.min(40, cost - 5)), g = 0;
+    while (g++ < 50 && (short === k * p || short === q)) short = ri(3, Math.min(40, cost - 5));
+    const has = cost - short;
     return coach(asMoney(finishTyped(N + ' wants to buy ' + k + ' ' + it[1] + ' at $' + p + ' each and a ' + one + ' for $' + q + '. ' + N +
       ' has $' + has + '. How much more money does ' + N + ' need?', short,
       k + ' ' + it[1] + ': ' + k + ' × $' + p + ' = $' + (k * p) + '.<br>Needed: $' + (k * p) + ' + $' + q + ' = $' + cost +

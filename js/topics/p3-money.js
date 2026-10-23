@@ -21,6 +21,7 @@
   const NAMES = ['Wei Jie','Aisyah','Kavitha','Jun Hao','Siti','Priya','Daryl','Xin Yi','Farhan','Mei Ling'];
   const STALLS = ['the hawker centre','the kopitiam','NTUC FairPrice','the wet market','the MRT station kiosk'];
   const CHEAP = ['a kopi-o','a soya bean drink','a curry puff','a packet of kaya toast','a bag of ang ku kueh'];
+  /* BUILD DAY 2026-10-23 (D6): a MEALS price is never under $3.00 (was "chicken rice for $1.35") */
   const MEALS = ['a plate of chicken rice','a bowl of laksa','a plate of char kway teow','a set of nasi lemak','a bowl of fishball noodles'];
   const BIG   = ['a durian','a bag of oranges','a tub of ice cream','a box of pineapple tarts'];
 
@@ -41,7 +42,7 @@
   const asMoney = (q, c) => (q.answerText = money(c), q);
 
   function gAddTwo(){
-    const who = pick(NAMES), a = cents(120, 590);
+    const who = pick(NAMES), a = cents(300, 590);
     const b = cents(80, 450);
     const t = a + b;
     return asMoney(finishTyped(who + ' spends ' + money(a) + ' on ' + pick(MEALS) + ' and ' + money(b) + ' on ' +
@@ -63,7 +64,7 @@
       '$'), t);
   }
   function gAddThree(){
-    const who = pick(NAMES), a = cents(150, 700), b = cents(120, 600);
+    const who = pick(NAMES), a = cents(300, 700), b = cents(120, 600);
     const c = cents(90, 500);
     const t = a + b + c;
     return band(asMoney(finishTyped(who + ' buys ' + pick(MEALS) + ' for ' + money(a) + ', ' + pick(CHEAP) + ' for ' + money(b) +
@@ -94,7 +95,7 @@
   }
   function gChange(){
     const who = pick(NAMES), b = cents(120, 640);
-    const a = cents(180, 780);
+    const a = cents(300, 780);
     const note = pick([1000, 2000, 5000]);
     const given = (a + b) < note ? note : 5000;
     const chg = given - a - b;

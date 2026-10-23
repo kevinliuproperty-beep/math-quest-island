@@ -534,7 +534,10 @@ function gJoinRects(){
        'Shorter by: '+tot+' − '+P+' = <b>'+key+' cm</b>. The two touching sides are inside now.']
     : [sketch, 'The touching sides are inside the bigger rectangle, so they are not part of the walk around.', walk+'<b>'+P+' cm</b>.']);
   return slips(q, diff
-    ? [[hid+' cm', 'Close: '+hid+' cm is one of the touching sides. Each card loses that side, so two sides disappear from the walk.']]
+    ? [[hid+' cm', 'Close: '+hid+' cm is one of the touching sides. Each card loses that side, so two sides disappear from the walk.'],
+       /* BUILD DAY 2026-10-23 (B1): the two other named slips on this branch */
+       [(2*(longT ? B : L))+' cm', 'Close: those are the two '+(longT ? 'short' : 'long')+' sides. The '+touch+' sides are the ones that touch, so those two disappear from the walk.'],
+       [P+' cm', 'Good, that is the perimeter of the bigger rectangle! The question asks how much shorter it is than the 2 cards added together, so compare it with '+tot+' cm.']]
     : [[(4*(L+B))+' cm', TOUCH_SLIP],
        [(longT ? 2*(2*L+B) : 2*(L+2*B))+' cm', 'Close: that is what you get when the other sides touch. Check which sides are joined.'],
        [(2*L*B)+' cm', AREA_SLIP]]);

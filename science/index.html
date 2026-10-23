@@ -1372,7 +1372,11 @@ var A = {
     var se = session, it = se.items[se.i], a = se.ans[se.i];
     var prev = S.items[it.id], prevLast = prev ? prev.last : null, wasFull = pstate(pkey(it)).full;
     a.score = oeqScore(it, a.ticks); record(it, a.score, !!a.hint1); save();
-    funAfter(it, a, a.score, prevLast, wasFull); A.next();
+    funAfter(it, a, a.score, prevLast, wasFull);
+    /* refuter R9 (build day 2026-10-23): saveMark moves straight on, so a clean open-ended answer in
+       Power-Up gets its ⚡ line as a toast, which outlives the re-render (the MCQ shows it in the feedback) */
+    if (se.kind === 'power' && a.score >= 1 && !a.hint1) toast('⚡ ' + pq(pkey(it)) + (pstate(pkey(it)).full ? ' is fully charged!' : ' is charging up!'));
+    A.next();
   },
   next: function () {
     saveText();

@@ -23,7 +23,7 @@
     const d = ri(3, 9), q = ri(4, 12), r = ri(1, d - 1), n = d*q + r;
     const who = pick(NAMES), item = pick(SNACKS);
     return finishTyped(who + ' packs ' + n + ' ' + item + ' into ' + d + ' boxes with the same number in each box. How many are left over?',
-      r, n + ' ÷ ' + d + ' = ' + q + ' with ' + r + ' left over, because ' + d + ' × ' + q + ' = ' + (d*q) + ' and ' + n + ' - ' + (d*q) + ' = ' + r + '.');
+      r, n + ' ÷ ' + d + ' = ' + q + ' with ' + r + ' left over, because ' + d + ' × ' + q + ' = ' + (d*q) + ' and ' + n + ' − ' + (d*q) + ' = ' + r + '.');
   }
   function gQuotient(){
     const d = ri(3, 9), q = ri(10, 40), r = ri(1, d - 1), n = d*q + r;
@@ -42,7 +42,10 @@
   }
 
   function gMulAlgo(){
-    const a = ri(12, 99), b = ri(3, 9);
+    /* BUILD DAY 2026-10-23 (D7): never a multiple of 10, so the split is never "30 + 0" */
+    let a = ri(12, 99);
+    while (a % 10 === 0) a = ri(12, 99);
+    const b = ri(3, 9);
     return finishTyped(a + ' × ' + b + ' = ?', a*b,
       'Split ' + a + ' into ' + (Math.floor(a/10)*10) + ' + ' + (a%10) + '. ' + (Math.floor(a/10)*10) + ' × ' + b + ' = ' +
       (Math.floor(a/10)*10*b) + ' and ' + (a%10) + ' × ' + b + ' = ' + ((a%10)*b) + '. Add them: ' + (a*b) + '.');
@@ -105,7 +108,7 @@
       ' eggs. ' + drop + ' eggs crack on the MRT ride home. How many good eggs are left?',
       trays*each - drop,
       'First find all the eggs: ' + trays + ' × ' + each + ' = ' + (trays*each) + '. Then take away the cracked ones: ' +
-      (trays*each) + ' - ' + drop + ' = ' + (trays*each - drop) + '.'),
+      (trays*each) + ' − ' + drop + ' = ' + (trays*each - drop) + '.'),
       'Draw a model', [
         'Draw ' + trays + ' equal boxes for the trays, with ' + each + ' eggs in each.',
         'All the eggs: ' + trays + ' × ' + each + ' = ' + (trays * each) + '.',
@@ -143,7 +146,7 @@
     const stem = 'A bakery makes ' + total + ' ' + item + '. ' + sold + ' of them ' + pick(PACK_FIRST) +
       '. The rest are packed into ' + bx[1] + ' of ' + d + '. What is the least number of ' + bx[1] +
       ' needed to pack all the rest?';
-    const ex = 'Step 1: find the rest. ' + total + ' - ' + sold + ' = ' + R.n + '. ' +
+    const ex = 'Step 1: find the rest. ' + total + ' − ' + sold + ' = ' + R.n + '. ' +
       'Step 2: ' + R.n + ' ÷ ' + d + ' = ' + R.q + ' remainder ' + R.r + '. ' +
       'Step 3: ' + R.q + ' ' + bx[1] + ' hold ' + (R.q*d) + ', so ' + sOrP(R.r, item.replace(/s$/, ''), item) +
       ' would still be left out. ' + (R.r === 1 ? 'It needs' : 'They need') + ' one more ' + bx[0] +
@@ -200,7 +203,7 @@
     const ex = 'Step 1: ' + k + ' × ' + c.per + ' = ' + tot + ' ' + c.thing + '. ' +
       'Step 2: ' + tot + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + ', so ' + q + ' ' + c.makes + ' are made and ' +
       sOrP(r, c.one, c.thing) + ' ' + (r === 1 ? 'is' : 'are') + ' left. ' +
-      'Step 3: one more ' + c.make + ' needs ' + d + ', and ' + r + ' are already there, so ' + d + ' - ' + r + ' = ' + more +
+      'Step 3: one more ' + c.make + ' needs ' + d + ', and ' + r + ' are already there, so ' + d + ' − ' + r + ' = ' + more +
       ' more ' + c.thing + '. The remainder (' + r + ') is what is LEFT, not what is NEEDED.';
     return band(coach(finishTyped(stem, more, ex, c.thing), 'Draw a model', [
       'All the ' + c.thing + ': ' + k + ' × ' + c.per + ' = ' + tot + '.',
@@ -219,7 +222,7 @@
         ' on a water bottle. With the money left, ' + who + ' buys as many ' + item[1] + ' as possible. Each ' + item[0] +
         ' costs $' + d + '. What is the greatest number of ' + item[1] + ' ' + who + ' can buy?';
       const ex = 'Step 1: money spent. $' + a + ' + $' + b + ' = $' + (a + b) + '. ' +
-        'Step 2: money left. $' + T + ' - $' + (a + b) + ' = $' + R.n + '. ' +
+        'Step 2: money left. $' + T + ' − $' + (a + b) + ' = $' + R.n + '. ' +
         'Step 3: ' + R.n + ' ÷ ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The $' + R.r + ' left is not enough for another ' +
         item[0] + ', so round DOWN: ' + R.q + ' ' + item[1] + '.';
       return band(coach(finishTyped(stem, R.q, ex, item[1]), 'Draw a model', [
@@ -233,7 +236,7 @@
       ' cm to tie a box. ' + who + ' then cuts the rest of the ribbon into pieces that are each ' + d +
       ' cm long. What is the greatest number of ' + d + ' cm pieces ' + who + ' can cut?';
     const ex = 'Step 1: ' + a + ' + ' + b + ' = ' + (a + b) + ' cm is cut off first. ' +
-      'Step 2: ' + T + ' - ' + (a + b) + ' = ' + R.n + ' cm is left. ' +
+      'Step 2: ' + T + ' − ' + (a + b) + ' = ' + R.n + ' cm is left. ' +
       'Step 3: ' + R.n + ' ÷ ' + d + ' = ' + R.q + ' remainder ' + R.r + '. The last ' + R.r + ' cm is too short to make another ' +
       d + ' cm piece, so round DOWN: ' + R.q + ' pieces.';
     return band(coach(finishTyped(stem, R.q, ex, 'pieces'), 'Draw a model', [
@@ -262,7 +265,7 @@
         c[3] + ' than in each ' + c[1] + '?';
       const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' × ' + b + ' = ' + (a*b) + '. ' +
         'Step 2: share them ' + c[5] + 'to the ' + c[4] + '. ' + (a*b) + ' ÷ ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '. ' +
-        'Step 3: compare. ' + each + ' - ' + b + ' = ' + (each - b) + '. Read the question to the end: it asks how many MORE, not how many ' + c[5] + ' each ' + c[3] + '.';
+        'Step 3: compare. ' + each + ' − ' + b + ' = ' + (each - b) + '. Read the question to the end: it asks how many MORE, not how many ' + c[5] + ' each ' + c[3] + '.';
       return band(coach(finishTyped(stem, each - b, ex, unitOf(c[0])), 'Draw a model', [
         'All the ' + c[0] + ': ' + a + ' × ' + b + ' = ' + (a * b) + '.',
         'Share them equally ' + c[5] + 'to ' + e + ' ' + c[4] + ': ' + (a * b) + ' ÷ ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '.',
@@ -276,7 +279,7 @@
       x + ' of the ' + c[0] + ' ' + verb + '. The rest are put equally ' + c[5] + 'to ' + e + ' ' + c[4] +
       '. How many ' + c[0] + ' are there ' + c[5] + ' each ' + c[3] + '?';
     const ex = 'Step 1: all the ' + c[0] + '. ' + a + ' × ' + b + ' = ' + (a*b) + '. ' +
-      'Step 2: take away ' + x + '. ' + (a*b) + ' - ' + x + ' = ' + left + '. ' +
+      'Step 2: take away ' + x + '. ' + (a*b) + ' − ' + x + ' = ' + left + '. ' +
       'Step 3: share equally. ' + left + ' ÷ ' + e + ' = ' + each + ' ' + c[5] + ' each ' + c[3] + '.';
     return band(coach(finishTyped(stem, each, ex, unitOf(c[0])), 'Draw a model', [
       'All the ' + c[0] + ': ' + a + ' × ' + b + ' = ' + (a * b) + '.',

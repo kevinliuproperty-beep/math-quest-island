@@ -106,11 +106,12 @@ function tone(f,t0,dur,type,vol){
 const sfx={
   correct(){ tone(523,0,.12); tone(659,.1,.12); tone(784,.2,.2); },
   crit(){ tone(523,0,.1); tone(659,.08,.1); tone(784,.16,.1); tone(1047,.24,.3,'square',.2); },
-  wrong(){ tone(180,0,.3,'sawtooth',.12); tone(140,.15,.35,'sawtooth',.12); },
+  /* Kev 2026-10-23: no wrong-answer buzz and no lose sound in maths (teach, don't punish) */
+  wrong(){},
   hit(){ tone(120,0,.15,'sawtooth',.18); },
   tick(){ tone(880,0,.05,'square',.06); },
   win(){ [523,659,784,1047,784,1047].forEach((f,i)=>tone(f,i*.15,.2)); },
-  lose(){ [400,350,300,250].forEach((f,i)=>tone(f,i*.2,.25,'triangle',.12)); },
+  lose(){},
   monsterDown(){ tone(300,0,.1,'triangle'); tone(200,.1,.1,'triangle'); tone(100,.2,.25,'triangle'); },
   /* a Star Crystal: science's happy chime */
   crystal(){ tone(659,0,.1,'triangle',.1); tone(880,.09,.1,'triangle',.1); tone(1175,.18,.22,'triangle',.1); }
@@ -469,6 +470,7 @@ function endPatchwerk(record){
   $('pwEnd').style.display='block';
   $('crysEnd').style.display='none';
   $('normalStats').style.display='none';
+  $('endWell').style.display='none'; $('endQuiet').style.display='none';
   $('reviewBox').style.display=S.wrongs.length?'block':'none';
   $('endEmoji').textContent='💀';
   $('endTitle').textContent='ENRAGE!';
@@ -1456,7 +1458,7 @@ function answerTyped(){
 function monsterDown(){
   sfx.monsterDown();
   $('monsterSprite').classList.add('dying');
-  banner('⭐ Crystal rescued! ⭐',1000);
+  banner('💥 Monster beaten! 💥',1000);   /* Kev 2026-10-23: no clash with the land Star Crystals */
   S.heroHp=Math.min(HERO_MAX,S.heroHp+12);
   setTimeout(()=>{
     S.mi++;
@@ -1521,6 +1523,7 @@ function endGame(win){
   $('crysEnd').style.display=$('crysEnd').innerHTML ? '' : 'none';
   $('pwEnd').style.display='none';
   $('normalStats').style.display='flex';
+  $('endQuiet').style.display='';
   $('endEmoji').textContent=win?'🏆':'💪';
   $('endTitle').textContent=win?'VICTORY!':'So close, '+esc(DB.name)+'!';
   let msg = win
@@ -1531,6 +1534,14 @@ function endGame(win){
   if(win && fameRank===0) msg+=' 🥇 NEW RECORD, fastest run ever!';
   else if(win && fameRank>0) msg+=' You made the Hall of Fame at #'+(fameRank+1)+'!';
   $('endMsg').textContent=msg;
+  /* Kev 2026-10-23: lead with wins (what went well, what she powered up); the correct /
+     accuracy count moves lower to a quiet line under the review (mirrors science b595384) */
+  const well=[];
+  if(S.mi) well.push('you beat '+S.mi+' monster'+(S.mi===1?'':'s'));
+  if(S.best>=2) well.push('your best streak was 🔥'+S.best);
+  if(S.maxLevel>1) well.push('you powered up to level '+S.maxLevel);
+  $('endWell').textContent=well.length ? '✨ What went well: '+well.join(', ')+'!' : '';
+  $('endWell').style.display=well.length ? '' : 'none';
   $('stCorrect').textContent=S.correct+' / '+S.total;
   $('stAcc').textContent=(S.total?Math.round(S.correct/S.total*100):0)+'%';
   $('stStreak').textContent='🔥'+S.best;

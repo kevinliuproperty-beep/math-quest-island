@@ -270,6 +270,8 @@
   #endEmoji { font-size:70px; }
   #endTitle { font-size:36px; font-weight:900; color:#ffe66d; }
   #endMsg { font-size:18px; color:#e2dcff; max-width:470px; line-height:1.5; }
+  #endWell { font-size:17px; font-weight:800; color:#7dffb0; max-width:470px; line-height:1.4; }
+  #endQuiet { font-size:13px; color:#c9c0f2; max-width:470px; line-height:1.4; }
   .statRow { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
   .statBox { background:rgba(255,255,255,.09); border-radius:14px; padding:10px 18px; }
   .statBox .v { font-size:24px; font-weight:900; color:#7dffb0; }
@@ -695,6 +697,7 @@
     <div id="endEmoji">🏆</div>
     <div id="endTitle">VICTORY!</div>
     <div id="endMsg"></div>
+    <div id="endWell" style="display:none"></div>
     <div id="crysEnd" class="listBox crysBox" style="display:none"></div>
     <div id="pwEnd">
       <div id="pwDamage">0</div>
@@ -707,8 +710,6 @@
       </div>
     </div>
     <div class="statRow" id="normalStats">
-      <div class="statBox"><div class="v" id="stCorrect">0</div><div class="k">correct</div></div>
-      <div class="statBox"><div class="v" id="stAcc">0%</div><div class="k">accuracy</div></div>
       <div class="statBox"><div class="v" id="stStreak">0</div><div class="k">best streak</div></div>
       <div class="statBox"><div class="v" id="stTime">-</div><div class="k">time</div></div>
     </div>
@@ -716,6 +717,7 @@
       <h3>📖 Let's learn from these!</h3>
       <div id="reviewList"></div>
     </div>
+    <div id="endQuiet">This quest: <span id="stCorrect">0</span> correct (<span id="stAcc">0%</span>). Every question you look at again makes you stronger.</div>
     <button class="btnBig" id="againBtn">PLAY AGAIN 🔁</button>
     <div style="display:flex;gap:10px">
       <button class="btnGhost" id="endMapBtn">🗺️ Island map</button>

@@ -44,6 +44,14 @@
   button { font: inherit; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
   button.ghost { background: transparent; color: var(--accent); }
   .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  details.miss { border-top: 1px solid var(--line); padding: 8px 0 2px; }
+  details.miss > summary { cursor: pointer; color: var(--accent); font-size: 14px; min-height: 32px; padding: 4px 0; }
+  .paper { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .paper:last-child { border-bottom: 0; }
+  .mq { padding: 8px 0; border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; font-size: 14px; }
+  .mq:last-child { border-bottom: 0; }
+  .mq .qt { margin: 2px 0 4px; }
+  .blank { display: inline-block; font-size: 12px; padding: 0 7px; border-radius: 10px; background: var(--line); color: var(--ink); }
   .msg { padding: 12px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
 </style>
 </head>
@@ -155,6 +163,36 @@
       h += '<tr><td>' + esc(fmtDay(o.d)) + '</td><td class="num">' + o.n + '</td>' + cell(o.mc, o.mt) + cell(o.sc, o.st) + '<td class="num">' + esc(fmtDur(o.sec)) + '</td></tr>';
     });
     h += '</tbody></table></div></div>';
+
+    /* mock papers with their misses (newest first), each list collapsed */
+    var papers = rows.filter(function (r) { return r.kind === 'paper'; }).slice(0, 20);
+    if (papers.length) {
+      h += '<div class="card"><h2>Mock papers</h2>';
+      papers.forEach(function (r, i) {
+        var p = pct(r.correct, r.total), rv = Array.isArray(r.review) ? r.review : null;
+        h += '<div class="paper" id="paper-' + i + '"><div class="row"><div><b>' + esc(appName(r)) + '</b> <span class="mute small">' +
+          esc(fmtDay(r.d) + ', ' + fmtTime(r.d)) + '</span></div><div class="' + pctCls(p) + '"><b>' + esc(fmtNum(r.correct)) + '/' + esc(fmtNum(r.total)) +
+          '</b> <span class="small">' + p + '%</span></div></div>';
+        if (!rv) { h += '<div class="small mute">No question detail for this paper (finished before detail was added).</div></div>'; return; }
+        var miss = rv.filter(function (x) { return !x.correct && !x.skipped; }), blank = rv.filter(function (x) { return x.skipped; });
+        if (!miss.length && !blank.length) { h += '<div class="small good">Every question right.</div></div>'; return; }
+        var wrong = miss.filter(function (x) { return x.given; }).length, none = miss.length - wrong, bits = [];
+        if (wrong) bits.push(wrong + ' wrong');
+        if (blank.length) bits.push(blank.length + ' left blank');
+        if (none) bits.push(none + ' not answered');
+        h += '<details class="miss"><summary>' + bits.join(' · ') + ' (of ' + rv.length + ')</summary>';
+        miss.concat(blank).sort(function (a, b) { return a.n - b.n; }).forEach(function (x) {
+          var yours = x.skipped ? '<span class="blank">left blank</span>'
+            : x.given ? esc(x.given) : '<span class="mute">not answered</span>';
+          h += '<div class="mq"><div class="small mute"><b>Q' + esc(x.n) + '</b> · ' + esc(x.topic || '') + '</div>' +
+            '<div class="qt">' + esc(x.q) + '</div>' +
+            '<div class="small">Her answer: ' + yours + '</div>' +
+            (x.answer ? '<div class="small good">Answer: ' + esc(x.answer) + '</div>' : '') + '</div>';
+        });
+        h += '</details></div>';
+      });
+      h += '<p class="small mute">Science open-ended answers count as missed unless they got full marks; one with nothing typed may have been written on paper.</p></div>';
+    }
 
     /* sessions */
     h += '<div class="card"><h2>Sessions</h2><div class="scroll"><table><thead><tr><th>When</th><th>Subject</th><th>Topic</th><th class="num">Score</th><th class="num">Hints</th><th class="num">Time</th><th>Device</th></tr></thead><tbody>';

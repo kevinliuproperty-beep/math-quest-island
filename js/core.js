@@ -250,7 +250,41 @@ function parseTypedAnswer(raw, q){
  * Tolerance: exact-after-rounding when q.dp is declared, else 1e-9 for an
  * integer answer and 0.005 for a decimal/money answer.
  * Unit rule: a MISSING unit is accepted, a MISMATCHED unit is rejected. */
+/* COUNT-WORD QUESTIONS (Kev's ruling 2026-10-24, Maths Keys card 4 Commit C).
+ * A question whose declared units are all COUNT words ('boxes', 'goats', 'chairs')
+ * asks for a number of things, and the word she writes after it is not a unit that
+ * can be wrong in the way "45 cm" on a cm² answer is: "30 pupils", "30 kids" and
+ * "30 children" on "How many children" are all 30 children. So on such a question a
+ * trailing word that is NOT a measurement unit is ignored, and only a MEASUREMENT
+ * unit ("30 kg", "30 min", "30 cm") can make a right value wrong. The value always
+ * decides: "29 kids" stays wrong. */
+const MEASURE_UNITS = ['cm3','cm2','m2','km','cm','mm','ml','kg','m','g','l','%','deg',
+  'min','h','s','dollars','cents',
+  /* spelled-out measures the shared list does not strip, so "30 metres" on a count
+     question is still a wrong unit, not an ignored word */
+  'metre','metres','meter','meters','centimetre','centimetres','centimeter','centimeters',
+  'millimetre','millimetres','kilometre','kilometres','gram','grams','kilogram','kilograms',
+  'kilo','kilos','millilitre','millilitres','liter','liters','sq','square','sec','secs','hrs'];
+function isMeasureUnit(u){ return MEASURE_UNITS.indexOf(normUnit(u)) !== -1; }
+function isCountQuestion(q){
+  const want = unitList(q && (q.unit || q.units));
+  return want.length > 0 && want.every(w => !isMeasureUnit(w));
+}
+/* On a count question, "30 kids" / "30 big boxes." -> "30" when no trailing word is a
+   measurement unit; otherwise (or on any other question) the input unchanged. */
+function countTail(raw, q){
+  if (raw === null || raw === undefined || !isCountQuestion(q)) return raw;
+  const m = String(raw).trim().match(/^(.*?\d)\s*((?:[A-Za-z][A-Za-z'’-]*\s*)+)\.?$/);
+  if (!m) return raw;
+  const words = m[2].trim().split(/\s+/);
+  /* any measurement token, alone or as a pair ("sq cm"), keeps the unit rule */
+  for (let i = 0; i < words.length; i++){
+    if (isMeasureUnit(words[i]) || (i + 1 < words.length && isMeasureUnit(words[i] + ' ' + words[i + 1]))) return raw;
+  }
+  return m[1];
+}
 function gradeTyped(raw, q){
+  raw = countTail(raw, q);
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return false;
   const want = unitList(q && (q.unit || q.units));
@@ -305,6 +339,7 @@ function gradeTyped(raw, q){
  * fraction rules and every tolerance for free, and cannot fall out of step with
  * gradeTyped because it IS gradeTyped. */
 function typedRejectReason(raw, q){
+  raw = countTail(raw, q);
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return String(p.reason || 'unparsed');
   if (gradeTyped(raw, q)) return null;

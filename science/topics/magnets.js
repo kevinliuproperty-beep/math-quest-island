@@ -1937,12 +1937,12 @@
         steps: ['Claim: name the one that came to rest North-South.', 'Evidence: it pointed North-South all five times.', 'Reason: only a magnet has an N pole and an S pole, so only a magnet settles North-South.', 'For the other one, say what it is: magnetic, but not a magnet.'],
         explain: 'A freely suspended MAGNET always comes to rest pointing North-South. A steel bar is attracted by a magnet, but it is not a magnet itself, so it stops in any direction.' },
       { id: 'mag-092', type: 'mcq', level: 2,
-        stem: 'Iron and steel are attracted by a magnet. Which pair of metals below are also attracted by a magnet?',
+        stem: 'Which pair of metals below are NOT attracted by a magnet?',
         figure: null,
-        options: ['Aluminium and copper', 'Gold and silver', 'Nickel and cobalt', 'Brass and aluminium'],
-        answer: 2,
-        optionFeedback: { 0: 'Aluminium and copper are shiny metals, so it is easy to think a magnet pulls them. But they are not magnetic.', 1: 'Gold and silver are metals too, but a magnet does not attract them.', 3: 'Brass and aluminium are metals, but not magnetic ones. Not all metals are magnetic.' },
-        explain: 'Nickel and cobalt are magnetic metals, like iron and steel. Aluminium, copper, gold, silver and brass are metals too, but they are not attracted by a magnet: not all metals are magnetic.' }
+        options: ['Iron and steel', 'Aluminium and copper', 'Iron and aluminium', 'Steel and copper'],
+        answer: 1,
+        optionFeedback: { 0: 'Iron and steel are both magnetic, so a magnet attracts them. Look for a pair where NEITHER metal is attracted.', 2: 'Aluminium is not attracted, well spotted! But iron is magnetic, so a magnet attracts it.', 3: 'Copper is not attracted, well spotted! But steel is magnetic, so a magnet attracts it.' },
+        explain: 'Aluminium and copper are metals, but they are non-magnetic. Iron and steel are magnetic. Not all metals are magnetic.' }
     ]
   });
 })();

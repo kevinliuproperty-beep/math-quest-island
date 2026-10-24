@@ -1398,7 +1398,42 @@
         hints: ['Is stage Y alive or dead? What do all living things need?', 'Y is the pupa: it is alive and changing into the adult. Every living thing needs air, so Y needs air too.'],
         technique: 'Claim, evidence, reason',
         steps: ['Claim: decide yes or no, and say it first.', 'Recall the science rule that fits this question.', 'Check the thing in the question against that rule.', 'Reason: write "because..." using the rule and the example.'],
-        explain: 'Claim: disagree. Evidence: Y is the pupa, which is alive and changing into the adult. Reasoning: all living things need air. Not moving and not feeding do not mean it is dead.' }
+        explain: 'Claim: disagree. Evidence: Y is the pupa, which is alive and changing into the adult. Reasoning: all living things need air. Not moving and not feeding do not mean it is dead.' },
+
+      // ---------- q24 gap fill (lane q24-scigap, 2026-10-24): naming the plant stages, incl. the seedling ----------
+      { id: 'lc-096', type: 'mcq', level: 2,
+        stem: 'The sentences describe the life cycle of a balsam plant, in a mixed-up order.\nP: The adult plant bears flowers.\nQ: The seed germinates and a seedling grows out of it.\nR: The flowers develop into fruits with seeds inside.\nS: The seedling grows into a young plant with more leaves.\nT: The young plant grows into an adult plant.\nStarting from the seed, which is the correct order?',
+        figure: null,
+        options: ['Q → T → S → P → R', 'S → Q → T → P → R', 'Q → S → T → P → R', 'Q → S → T → R → P'],
+        answer: 2,
+        hints: ['Start with the seed (Q). Which is younger: the seedling or the young plant?', 'Q seed and seedling, S young plant, T adult plant, P flowers, R fruits with seeds.'],
+        technique: 'Count, then check',
+        steps: ['Find the start: the seed.', 'Put the plant stages in order: seedling, young plant, adult plant.', 'Then the adult plant: flowers come first, fruits after.', 'Check each step: does this one really grow out of the one before?'],
+        optionFeedback: {
+          0: 'Q is the right start! But the seedling comes before the young plant, so S must come before T.',
+          1: 'A seedling grows out of a seed, so Q (the seed germinating) must come first.',
+          3: 'So close! The plant stages are right, but the flowers come before the fruits: a fruit develops from a flower.' },
+        explain: 'Seed and seedling (Q) → young plant (S) → adult plant (T) → flowers (P) → fruits with seeds (R). The seeds in the fruits can germinate, so the cycle starts again. Remember: a fruit develops from a flower, so P comes before R.' },
+      { id: 'lc-097', type: 'mcq', level: 1,
+        stem: 'Lin put a green bean seed on moist cotton wool. After 4 days the seed coat had split. A root had grown downwards and a short shoot with two small seed leaves had grown upwards. Which stage of the plant\'s life cycle is this?',
+        figure: null,
+        options: ['Seed', 'Seedling', 'Adult plant', 'Fruit'],
+        answer: 1,
+        hints: ['The seed has started to grow: it has a root and a shoot. What do we call a very young plant that has just come out of its seed?', 'A seedling: the very young plant that grows out of the seed after it germinates.'],
+        optionFeedback: {
+          0: 'It started as a seed, you are right! But the seed coat has split and a root and shoot have grown out, so it has germinated and is no longer just a seed.',
+          2: 'An adult plant is fully grown and bears flowers and fruits. This plant has only two small seed leaves, so it is still very young.',
+          3: 'A fruit develops from a flower on an adult plant and holds seeds. This is a very young plant that has just come out of a seed.' },
+        explain: 'When a seed germinates, the seed coat splits, the root grows out first and then the shoot. The very young plant that grows out of the seed is called a seedling. Its seed leaves still hold food stored in the seed.' },
+      { id: 'lc-098', type: 'oeq', level: 2, marks: 2,
+        stem: 'Ravi put some green bean seeds on moist cotton wool in a dark cupboard. After a few days the seeds germinated and grew into seedlings.\n(a) What did Ravi see that told him the seeds had germinated? (1 mark)\n(b) The seeds did not need light to germinate. Explain why the seedlings will need light to keep growing into young plants. (1 mark)',
+        figure: null,
+        model: '(a) The seed coat split and a root grew out of each seed, followed by a shoot. (b) The seedling uses up the food stored in its seed leaves. After that it must make its own food in its green leaves, and it needs light to make food.',
+        keys: [['root grew out', 'seed coat split', 'shoot'], ['make its own food', 'needs light to make food']],
+        hints: ['(a) What is the first part to come out of a seed when it starts to grow? (b) Where does the seedling get its food at first, and what happens when that food runs out?', '(a) A root grew out of the split seed coat. (b) Once the stored food is used up, the seedling must make its own food, and it needs light to do that.'],
+        technique: 'Claim, evidence, reason',
+        steps: ['(a) Picture the seed on the cotton wool: what would you SEE when it starts to grow?', '(a) Name the part that comes out of the seed first.', '(b) Ask: where does the seedling get its food at the start?', '(b) Reason: once that food is used up, what must it do, and what does it need for that?'],
+        explain: '(a) Mark 1: something Ravi could see: the seed coat split and a root (then a shoot) grew out. (b) Mark 2: the reason, not just the word "light". At first the seedling lives on the food stored in its seed leaves. When that food is used up, it must make its own food in its green leaves, and it needs light to do that. "It needs light" alone does not explain why, so add "to make its own food".' }
     ]
   });
 })();

@@ -180,11 +180,13 @@
         if (wrong) bits.push(wrong + ' wrong');
         if (blank.length) bits.push(blank.length + ' left blank');
         if (none) bits.push(none + ' not answered');
-        h += '<details class="miss"><summary>' + bits.join(' · ') + ' (of ' + rv.length + ')</summary>';
+        var hasMarks = rv.some(function (x) { return typeof x.marks === 'number'; });
+        h += '<details class="miss"><summary>' + bits.join(' · ') + ' (of ' + rv.length + (hasMarks ? ' questions · ' + esc(fmtNum(r.total)) + ' marks' : '') + ')</summary>';
         miss.concat(blank).sort(function (a, b) { return a.n - b.n; }).forEach(function (x) {
           var yours = x.skipped ? '<span class="blank">left blank</span>'
             : x.given ? esc(x.given) : '<span class="mute">not answered</span>';
-          h += '<div class="mq"><div class="small mute"><b>Q' + esc(x.n) + '</b> · ' + esc(x.topic || '') + '</div>' +
+          h += '<div class="mq"><div class="small mute"><b>Q' + esc(x.n) + '</b> · ' + esc(x.topic || '') +
+            (typeof x.marks === 'number' ? ' · ' + esc(x.marks) + (x.marks === 1 ? ' mark' : ' marks') : '') + '</div>' +
             '<div class="qt">' + esc(x.q) + '</div>' +
             '<div class="small">Her answer: ' + yours + '</div>' +
             (x.answer ? '<div class="small good">Answer: ' + esc(x.answer) + '</div>' : '') + '</div>';

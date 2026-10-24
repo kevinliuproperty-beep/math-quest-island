@@ -163,8 +163,13 @@ function outboxMockReview(rec){
     const T=mqiOutbox.txt;
     return (rec.review||[]).slice(0,60).map(r=>{
       const q=r.q||{}, g=r.attempted && r.given!=null && r.given!=='' ? T(r.given,60) : null;
-      return { n:r.n, topic:name(r.topic), q:T(q.q,200)||('Question '+r.n), given:g||null,
+      const row={ n:r.n, topic:name(r.topic), q:T(q.q,200)||('Question '+r.n), given:g||null,
         answer:T(q.answerText,80)||null, correct:!!r.correct, skipped:!!r.skipped };
+      if(Number.isInteger(r.marks)) row.marks=r.marks;
+      if(Number.isFinite(r.ms)) row.secs=Math.min(86400, Math.max(0, Math.round(r.ms/1000)));
+      if(Number.isInteger(r.changed)) row.changed=Math.min(99, Math.max(0, r.changed));
+      if(!q.typed && Array.isArray(q.choices)) row.options=q.choices.slice(0,6).map(c=>T(c,40)||'');
+      return row;
     });
   }catch(e){ return undefined; }
 }
@@ -795,6 +800,8 @@ function endMock(rec){
     if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
     outboxMaths(DB.sessions[DB.sessions.length-1], { correct:rec.marks, total:rec.total,
       topics:(rec.byTopic||[]).map(x=>({ t:String(x.label), c:x.got, n:x.total })),
+      timeLimitSec: Number.isFinite(rec.durationMs) ? Math.round(rec.durationMs/1000) : null,
+      ended: rec.timedOut ? 'timeout' : 'submit',
       review:outboxMockReview(rec) });   /* results outbox: the paper in marks, plus every question for the parent page */
     saveData();
   }catch(e){}

@@ -11,6 +11,9 @@
    The field is optional. A malformed entry is dropped on its own (the paper's score row is
    kept); a review that is not an array is dropped; more than MAX_REVIEW entries keep the
    first MAX_REVIEW; a quest's review is ignored (quests stay summary-only).
+   Optional per row: marks (1-10), secs (time on the question), changed (answer changes),
+   options (MCQ option text, 2-6, each <= 40 chars). Optional per paper: timeLimitSec,
+   ended ('submit' | 'timeout'). A bad optional value drops that field only.
    The repo is public, so only the SHA-256 of the parent key lives here. */
 import { createHash, timingSafeEqual } from 'crypto';
 
@@ -59,7 +62,16 @@ function cleanReview(a){
     if(x.given != null){ given = clampText(x.given, 80); if(given == null) continue; }
     let answer = null;
     if(x.answer != null){ answer = clampText(x.answer, 120); if(answer == null) continue; }
-    out.push({ n: x.n, topic, q, given: given || null, answer: answer || null, correct: x.correct, skipped: x.skipped });
+    const row = { n: x.n, topic, q, given: given || null, answer: answer || null, correct: x.correct, skipped: x.skipped };
+    /* optional telemetry (2026-10-24): a bad value drops only that field, never the row */
+    if(Number.isInteger(x.marks) && x.marks >= 1 && x.marks <= 10) row.marks = x.marks;
+    if(Number.isInteger(x.secs) && x.secs >= 0 && x.secs <= 86400) row.secs = x.secs;
+    if(Number.isInteger(x.changed) && x.changed >= 0 && x.changed <= 99) row.changed = x.changed;
+    if(Array.isArray(x.options) && x.options.length >= 2 && x.options.length <= 6){
+      const opts = x.options.map(o => clampText(o, 40));
+      if(opts.every(o => o != null)) row.options = opts;
+    }
+    out.push(row);
   }
   return out.length ? out : null;
 }
@@ -107,6 +119,10 @@ export function cleanRecord(r, now){
     rx: now || Date.now()
   };
   if(review) out.review = review;
+  if(r.kind === 'paper'){
+    if(Number.isInteger(r.timeLimitSec) && r.timeLimitSec > 0 && r.timeLimitSec <= 86400) out.timeLimitSec = r.timeLimitSec;
+    if(r.ended === 'timeout' || r.ended === 'submit') out.ended = r.ended;
+  }
   return out;
 }
 

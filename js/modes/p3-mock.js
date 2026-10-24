@@ -349,6 +349,11 @@
       this._visited = r ? (r.visited || []) : [];
       this._flags = r ? (r.flags || []) : [];
       this._offsetMs = r ? (r.elapsedMs || 0) : 0;   /* the clock kept running while the page was away */
+      /* parent-page telemetry (no UI): time on each question, and how often its answer changed */
+      this._ms = r ? (r.ms || []) : [];
+      this._chg = r ? (r.chg || []) : [];
+      this._lastGiven = r ? (r.lastGiven || []) : [];
+      this._at = null;
       this._submitted = false;
       this._ended = false;
       this._i = -1;
@@ -376,6 +381,7 @@
       var p = this._paper;
       if (!p || this._ended || !p.items.length) return null;
       i = Math.max(0, Math.min(p.items.length - 1, i | 0));
+      this._clockOut(ctx);
       this._i = i;
       this._visited[i] = true;
       var it = p.items[i];
@@ -389,7 +395,19 @@
     /* answer = { correct, given, choice?, raw? } or null to clear it */
     record: function (i, answer) {
       if (!this._paper || this._ended || !this._paper.items[i]) return;
+      if (answer && answer.given != null && answer.given !== "") {
+        var g = String(answer.given);
+        if (this._lastGiven[i] != null && this._lastGiven[i] !== g) this._chg[i] = (this._chg[i] || 0) + 1;
+        this._lastGiven[i] = g;
+      }
       this._answers[i] = answer || undefined;
+    },
+    /* books the time since the current question was opened to it; restarts its clock */
+    _clockOut: function (ctx) {
+      if (!ctx || typeof ctx.elapsedMs !== "number") return;   /* no clock to read: book nothing */
+      var now = this.elapsedMs(ctx);
+      if (this._i >= 0 && this._at != null) this._ms[this._i] = (this._ms[this._i] || 0) + Math.max(0, now - this._at);
+      this._at = now;
     },
     toggleFlag: function (i) {
       if (!this._paper || this._ended || !this._paper.items[i]) return false;
@@ -409,8 +427,9 @@
     /* a JSON-safe copy the shell keeps in localStorage so a reload resumes the paper */
     snapshot: function (ctx) {
       if (!this._paper || this._ended) return null;
+      this._clockOut(ctx);
       return { paper: this._paper, answers: this._answers, visited: this._visited, flags: this._flags,
-               i: this._i, elapsedMs: this.elapsedMs(ctx) };
+               i: this._i, elapsedMs: this.elapsedMs(ctx), ms: this._ms, chg: this._chg, lastGiven: this._lastGiven };
     },
     submit: function () { if (this._paper && !this._ended) this._submitted = true; },
 
@@ -433,6 +452,7 @@
 
     end: function (ctx) {
       if (!this._paper || this._ended) return null;
+      this._clockOut(ctx);
       this._ended = true;
       var p = this._paper;
       /* An item she opened and left blank counts exactly as a Skip used to; one she
@@ -454,7 +474,8 @@
         var a = self._answers[i];
         return { n: it.n, section: it.sectionName, marks: it.marks, topic: it.topic, q: it.q,
                  correct: !!(a && a.correct), given: a ? a.given : null,
-                 attempted: !!(a && !a.skipped), skipped: !!(a && a.skipped) };
+                 attempted: !!(a && !a.skipped), skipped: !!(a && a.skipped),
+                 ms: Math.round(self._ms[i] || 0), changed: self._chg[i] || 0 };
       });
       return sc;
     }
@@ -566,6 +587,15 @@
     ok(rec.review[0].given === "y" && !rec.review[0].correct, "a changed answer is the one marked");
     ok(rec.review[2].skipped && rec.review[4].skipped && !rec.review[1].skipped && !rec.review[1].attempted, "blank-opened = skipped, never-opened = untouched");
     ok(!rec.timedOut && rec.attempted === 1, "handed in, one attempted");
+    ok(rec.review[0].changed === 1 && rec.review[1].changed === 0, "an answer changed once counts 1 (" + rec.review[0].changed + ")");
+    /* time on each question, from the ctx clock across jumps and back */
+    var tm = Object.create(mode), clk = { elapsedMs: 0 };
+    tm.start({ options: { variant: "quick", nodes: nodes, draw: draw, parse: parse, grade: grade, rng: rng } });
+    tm.goto(clk, 0); clk.elapsedMs = 5000; tm.goto(clk, 1); clk.elapsedMs = 12000; tm.goto(clk, 0);
+    clk.elapsedMs = 15000; tm.record(0, { correct: true, given: "4" }); tm.record(0, { correct: true, given: "4" }); tm.submit();
+    var trec = tm.end(clk);
+    ok(trec.review[0].ms === 8000 && trec.review[1].ms === 7000 && trec.review[2].ms === 0, "time per question adds up (" + trec.review[0].ms + ", " + trec.review[1].ms + ")");
+    ok(trec.review[0].changed === 0, "re-recording the same answer is not a change");
     ok(toTyped({ q: "Which is the biggest?", choices: ["1", "2", "3", "4"], correct: 2 }, parse, grade) === null, "a 'which' stem stays MCQ");
     ok(toTyped({ q: "12 + 7 = ?", choices: ["19", "18", "two", "20"], correct: 0 }, parse, grade) === null, "a non-number option keeps it MCQ");
     var c = toTyped({ q: "12 + 7 = ?", choices: ["19", "18", "21", "20"], correct: 0 }, parse, grade);

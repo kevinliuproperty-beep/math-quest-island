@@ -85,6 +85,11 @@
      does not lean on the options can be asked as a typed short answer. Anything
      else stays as it is - a wrong conversion would be a second-correct-reading. */
   var LEANS_ON_OPTIONS = /\b(which|choose|pick|options?|true|false|following|estimate|about|closest|could|might|possible|best|likely|statements?)\b/i;
+  /* MATHS KEYS REFUTATION G3 (2026-10-24): the count word a "How many ___" stem names,
+     so a converted item grades "30 chairs" the way a native one grades "92 boxes". */
+  var COUNT_NOUN = /\bHow many (?:more |fewer )?((?:[a-z]+ ){0,2}?[a-z]+s)(?= (?:are|is|was|were|did|does|do|can|could|will|would|has|have|had|must|should|in|on|at|than|for|to|altogether|there)\b|[?.,])/i;
+  /* count words on the grader's shared list: declared, but never "asked for" as a unit */
+  var COUNT_WORD_UNIT = /^(pages?|buns?|books?|pupils?|marbles?|stickers?|beads?|cubes?)$/i;
   function toTyped(q, parse, grade) {
     if (!q) return null;
     if (q.typed) return q;
@@ -104,8 +109,26 @@
     t.typed = true; t.answer = vals[q.correct]; t.choices = []; t.correct = -1;
     t.unit = unit || undefined; t.converted = true;
     /* The options used to say which unit; typed, "6 m 33 cm - 1 m 49 cm" has a second
-       right reading ("4 m 84 cm") unless the stem names the unit, as a paper would. */
-    if (unit) t.q = q.q + " (Give your answer in " + unit + ".)";
+       right reading ("4 m 84 cm") unless the stem names the unit, as a paper would.
+       MATHS KEYS REFUTATION W1/W2 (2026-10-24): only a MEASURE is asked for, and only
+       when the stem does not already ask "..., in ml?". A count word ("stickers") is
+       already in the stem's "How many stickers", so "(Give your answer in stickers.)"
+       read oddly and is dropped; the unit is still declared for grading. */
+    if (unit && !COUNT_WORD_UNIT.test(unit) &&
+        !new RegExp("\\bin " + unit.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*[?.,]").test(strip(q.q)))
+      t.q = q.q + " (Give your answer in " + unit + ".)";
+    /* G3: plain-number options carry no unit, so "30 chairs" was 'not a number'. Declare
+       the stem's own count word; a two-word one also accepts its last word. */
+    if (!unit) {
+      var cn = strip(q.q).match(COUNT_NOUN);
+      if (cn) { var w = cn[1].toLowerCase(), last = w.split(" ").pop(); t.unit = w === last ? w : [w, last]; }
+    }
+    /* A1: money options ("$4.50") parse with no unit, and the native money stems end
+       "(in dollars, e.g. 4.75)". Say so here too, and declare the dollar. */
+    if (!unit && q.choices.every(function (c) { return /^\s*\$/.test(strip(c)); })) {
+      t.unit = "$";
+      if (!/\bin dollars\b/i.test(strip(q.q))) t.q = q.q + " (in dollars, e.g. 4.75)";
+    }
     if (!t.answerText) t.answerText = strip(q.choices[q.correct]);
     if (!grade(String(t.answer), t)) return null;
     if (!grade(strip(q.choices[q.correct]).replace(/(\d)\s(?=\d{3}\b)/g, "$1"), t)) return null;

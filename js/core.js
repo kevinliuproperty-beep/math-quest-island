@@ -130,10 +130,13 @@ function finishTyped(qHtml, answer, explain, unit){
 const TYPED_UNITS = [
   /* measurement */
   'cm3','cm³','cm2','cm²','m2','m²','km','cm','mm','ml','kg','m','g','l','ℓ','%',
+  /* Maths Keys Refutation G4 (2026-10-24): a Mac keyboard has no ² key, so the area
+     spellings a child CAN type are units too. Each aliases to cm2 / m2 below. */
+  'cm^2','m^2','sq cm','sq m','square cm','square m',
   /* angle */
   'degrees','degree','deg','°',
   /* time */
-  'minutes','minute','mins','min','hours','hour','hr','h','seconds','secs','sec','s',
+  'minutes','minute','mins','min','hours','hour','hr','h','seconds','second','secs','sec','s',
   /* counts the wave-2 rate stems name */
   'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads',
   /* money and the cube count. Quest Refutation K2 (2026-09-07): these are tokens
@@ -142,17 +145,18 @@ const TYPED_UNITS = [
      teaching card fell back to "The answer is 12.5." with nothing said about the
      unit. gen-sanity has scanned stems for them since the unit sweep; the grader
      had not caught up. */
-  '$','cents','cent','dollars','dollar','cubes','cube'
+  '$','cents','cent','¢','dollars','dollar','cubes','cube'
 ].sort((a,b) => b.length - a.length);
 const UNIT_ALIAS = {
   'ℓ':'l', 'litre':'l', 'litres':'l',
   'cm³':'cm3', 'cm²':'cm2', 'm²':'m2',
+  'cm^2':'cm2', 'sq cm':'cm2', 'square cm':'cm2', 'm^2':'m2', 'sq m':'m2', 'square m':'m2',
   '°':'deg', 'degree':'deg', 'degrees':'deg',
   'minute':'min', 'minutes':'min', 'mins':'min',
   'hour':'h', 'hours':'h', 'hr':'h',
   'second':'s', 'seconds':'s', 'secs':'s', 'sec':'s',
   'page':'pages', 'bun':'buns',
-  'cent':'cents', 'dollar':'dollars', 'cube':'cubes',
+  'cent':'cents', '¢':'cents', 'dollar':'dollars', 'cube':'cubes',
   /* Pre-exam Live Check D3 (2026-10-16): the money stems declare '$' and say "in
      dollars", so "9 dollars" is the same unit as "$9" and must grade the same. */
   '$':'dollars'
@@ -246,7 +250,41 @@ function parseTypedAnswer(raw, q){
  * Tolerance: exact-after-rounding when q.dp is declared, else 1e-9 for an
  * integer answer and 0.005 for a decimal/money answer.
  * Unit rule: a MISSING unit is accepted, a MISMATCHED unit is rejected. */
+/* COUNT-WORD QUESTIONS (Kev's ruling 2026-10-24, Maths Keys card 4 Commit C).
+ * A question whose declared units are all COUNT words ('boxes', 'goats', 'chairs')
+ * asks for a number of things, and the word she writes after it is not a unit that
+ * can be wrong in the way "45 cm" on a cm² answer is: "30 pupils", "30 kids" and
+ * "30 children" on "How many children" are all 30 children. So on such a question a
+ * trailing word that is NOT a measurement unit is ignored, and only a MEASUREMENT
+ * unit ("30 kg", "30 min", "30 cm") can make a right value wrong. The value always
+ * decides: "29 kids" stays wrong. */
+const MEASURE_UNITS = ['cm3','cm2','m2','km','cm','mm','ml','kg','m','g','l','%','deg',
+  'min','h','s','dollars','cents',
+  /* spelled-out measures the shared list does not strip, so "30 metres" on a count
+     question is still a wrong unit, not an ignored word */
+  'metre','metres','meter','meters','centimetre','centimetres','centimeter','centimeters',
+  'millimetre','millimetres','kilometre','kilometres','gram','grams','kilogram','kilograms',
+  'kilo','kilos','millilitre','millilitres','liter','liters','sq','square','sec','secs','hrs'];
+function isMeasureUnit(u){ return MEASURE_UNITS.indexOf(normUnit(u)) !== -1; }
+function isCountQuestion(q){
+  const want = unitList(q && (q.unit || q.units));
+  return want.length > 0 && want.every(w => !isMeasureUnit(w));
+}
+/* On a count question, "30 kids" / "30 big boxes." -> "30" when no trailing word is a
+   measurement unit; otherwise (or on any other question) the input unchanged. */
+function countTail(raw, q){
+  if (raw === null || raw === undefined || !isCountQuestion(q)) return raw;
+  const m = String(raw).trim().match(/^(.*?\d)\s*((?:[A-Za-z][A-Za-z'’-]*\s*)+)\.?$/);
+  if (!m) return raw;
+  const words = m[2].trim().split(/\s+/);
+  /* any measurement token, alone or as a pair ("sq cm"), keeps the unit rule */
+  for (let i = 0; i < words.length; i++){
+    if (isMeasureUnit(words[i]) || (i + 1 < words.length && isMeasureUnit(words[i] + ' ' + words[i + 1]))) return raw;
+  }
+  return m[1];
+}
 function gradeTyped(raw, q){
+  raw = countTail(raw, q);
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return false;
   const want = unitList(q && (q.unit || q.units));
@@ -256,6 +294,13 @@ function gradeTyped(raw, q){
     const got = normUnit(p.unit);
     let hit = false;
     for (let i=0;i<want.length;i++) if (normUnit(want[i]) === got){ hit = true; break; }
+    /* Maths Keys Refutation A1 (2026-10-24): on a DOLLAR question, "80 cents" or "80¢"
+       is $0.80 - the same amount in the smaller unit. Compare it as value / 100, so the
+       VALUE still decides: "8 cents" on $0.80 stays wrong. A question that declares
+       cents itself never reaches this branch (the unit already matched). */
+    if (!hit && got === 'cents' && want.some(w => normUnit(w) === 'dollars')){
+      p.value = p.value / 100; p.frac = null; hit = true;
+    }
     if (!hit) return false;
   }
   /* a unit typed on a question that declares none is only accepted off the shared list */
@@ -294,6 +339,7 @@ function gradeTyped(raw, q){
  * fraction rules and every tolerance for free, and cannot fall out of step with
  * gradeTyped because it IS gradeTyped. */
 function typedRejectReason(raw, q){
+  raw = countTail(raw, q);
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return String(p.reason || 'unparsed');
   if (gradeTyped(raw, q)) return null;

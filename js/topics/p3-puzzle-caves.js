@@ -50,7 +50,10 @@ function gHeadsLegs(){
   const g=ri(1,5), c=ri(2,7);
   const heads=g+c, legs=4*g+2*c;
   return finishTyped('A farm has chickens and goats. There are <b>'+heads+' heads</b> and <b>'+legs+' legs</b>. How many <b>goats</b>?',
-    g,'Guess and check: if all '+heads+' were chickens there would be '+(2*heads)+' legs. The extra '+(legs-2*heads)+' legs ÷ 2 = '+g+(g===1?' goat.':' goats.'));
+    g,'Guess and check: if all '+heads+' were chickens there would be '+(2*heads)+' legs. The extra '+(legs-2*heads)+' legs ÷ 2 = '+g+(g===1?' goat.':' goats.'),
+    /* Maths Keys Refutation G2 (2026-10-24): declare the count word so "5 goats" passes;
+       g can be 1, so the singular is declared too. */
+    ['goats','goat']);
 }
 function gMakeHundred(){
   const a=ri(11,89);

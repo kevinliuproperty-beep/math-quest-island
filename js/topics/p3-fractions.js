@@ -3477,7 +3477,7 @@ function gAddError(){
       if (!legalFrac(c)) continue;                                 /* proper, bottom <= 12 */
       if (c[0] * d2 === (a2 + b) * c[1]) continue;                 /* the "wrong" claim is right */
       if (c[0] * d2 === a2 * c[1] || c[0] * d2 === b * c[1]) continue;  /* it IS an addend */
-      if (!cs.every((o, j) => j === ww || o[0] * c[1] !== c[0] * o[1])) continue;  /* one belief only */
+      if (!cs.every((o, j) => j === ww || Math.abs(o[0]) * c[1] !== c[0] * o[1])) continue;  /* one belief only; a child subtracts small from big, so "minus" also reads as b - a (Maths Keys Refutation G1, 2026-10-24) */
       out.push([a2, d2]);
     }
     return out;

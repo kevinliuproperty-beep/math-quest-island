@@ -1942,7 +1942,489 @@
         options: ['Aluminium and copper', 'Gold and silver', 'Nickel and cobalt', 'Brass and aluminium'],
         answer: 2,
         optionFeedback: { 0: 'Aluminium and copper are shiny metals, so it is easy to think a magnet pulls them. But they are not magnetic.', 1: 'Gold and silver are metals too, but a magnet does not attract them.', 3: 'Brass and aluminium are metals, but not magnetic ones. Not all metals are magnetic.' },
-        explain: 'Nickel and cobalt are magnetic metals, like iron and steel. Aluminium, copper, gold, silver and brass are metals too, but they are not attracted by a magnet: not all metals are magnetic.' }
+        explain: 'Nickel and cobalt are magnetic metals, like iron and steel. Aluminium, copper, gold, silver and brass are metals too, but they are not attracted by a magnet: not all metals are magnetic.' },
+
+      /* q24 magnets deepening — Exam Prep Queue card 7 (2026-10-24), lane q24-magnets.
+         Weighted to unlabelled-pole reasoning (Pick-a-pole): longer chains, rings, a toy train,
+         "which is NOT possible", then labelled clues (compass, hanging magnet), making magnets,
+         materials, uses and strength. Self-contained block, append-only, same fields as x17. */
+      ...(function q24() {
+        const PALE = '#e5e7eb', TEAL = '#0f766e', AMBER = '#b45309', RING = '#9ca3af';
+        const isP = (p) => p === 'N' || p === 'S';
+        const box = (w, h, label, inner, maxw) =>
+          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="100%"${maxw ? ` data-maxw="${maxw}"` : ''} role="img" aria-label="${label}">` +
+          `<rect x="1" y="1" width="${w - 2}" height="${h - 2}" rx="10" fill="#ffffff" stroke="#cbd5e1"/>${inner}</svg>`;
+        // Horizontal bar: left end a, right end b. 'N'/'S' colour that half and write the pole; anything else = pale (unknown).
+        const hb = (x, y, w, h, a, b) => {
+          const f = (p) => (isP(p) ? poleColour(p) : PALE), half = w / 2;
+          let s = `<rect x="${x}" y="${y}" width="${half}" height="${h}" fill="${f(a)}" stroke="#111827" stroke-width="1.5"/>` +
+            `<rect x="${x + half}" y="${y}" width="${half}" height="${h}" fill="${f(b)}" stroke="#111827" stroke-width="1.5"/>`;
+          if (isP(a)) s += txt(x + half / 2, y + h / 2, a, { bold: 1, fill: '#fff', size: 16 });
+          if (isP(b)) s += txt(x + half * 1.5, y + h / 2, b, { bold: 1, fill: '#fff', size: 16 });
+          return s;
+        };
+        // Vertical bar: top end a, bottom end b.
+        const vbar = (x, y, w, h, a, b) => {
+          const f = (p) => (isP(p) ? poleColour(p) : PALE), half = h / 2;
+          let s = `<rect x="${x}" y="${y}" width="${w}" height="${half}" fill="${f(a)}" stroke="#111827" stroke-width="1.5"/>` +
+            `<rect x="${x}" y="${y + half}" width="${w}" height="${half}" fill="${f(b)}" stroke="#111827" stroke-width="1.5"/>`;
+          if (isP(a)) s += txt(x + w / 2, y + half / 2, a, { bold: 1, fill: '#fff', size: 15 });
+          if (isP(b)) s += txt(x + w / 2, y + half * 1.5, b, { bold: 1, fill: '#fff', size: 15 });
+          return s;
+        };
+        const pill = (x, y, word) => {
+          const col = /attract/.test(word) ? TEAL : /repel/.test(word) ? AMBER : INK, w = word.length * 8 + 16;
+          return `<rect x="${x - w / 2}" y="${y - 11}" width="${w}" height="22" rx="11" fill="#ffffff" stroke="${col}" stroke-width="2"/>` +
+            txt(x, y + 1, word, { size: 13, bold: 1, fill: col });
+        };
+        const lead = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${LINE}" stroke-width="1.5"/>`;
+        const notes = (y0, arr) => arr.map((t, i) => txt(180, y0 + i * 17, t, { size: 12 })).join('');
+
+        // Four bar magnets in a row, ends 1 to 8. 2|3 touch (attract), gap 4|5 (repel), 6|7 touch (attract).
+        const row4 = (poles, note, label) => {
+          const X = [14, 90, 194, 270], W = 76, Y = 52, H = 28;
+          let s = pill(90, 22, 'attract') + lead(90, 33, 90, Y) + pill(180, 22, 'repel') + lead(180, 33, 180, Y + H / 2) +
+            pill(270, 22, 'attract') + lead(270, 33, 270, Y);
+          X.forEach((x, i) => {
+            s += hb(x, Y, W, H, poles[2 * i], poles[2 * i + 1]) +
+              txt(x + 14, Y + H + 16, String(2 * i + 1), { bold: 1, size: 14 }) + txt(x + W - 14, Y + H + 16, String(2 * i + 2), { bold: 1, size: 14 }) +
+              txt(x + W / 2, Y + H + 36, 'magnet ' + (i + 1), { size: 12 });
+          });
+          s += notes(Y + H + 60, note);
+          return box(360, Y + H + 56 + note.length * 17, label, s, 520);
+        };
+        const ROW4_LBL = 'Four bar magnets in a row, ends numbered 1 to 8. Ends 2 and 3 attract, ends 4 and 5 repel, ends 6 and 7 attract.';
+        const FIG_ROW4 = row4(['', '', '', '', '', '', '', ''], ['The poles are not labelled.'], 'Unlabelled poles. ' + ROW4_LBL);
+        const HINT_ROW4 = row4(['N', 'S', 'N', 'S', 'S', 'N', 'S', 'N'], ['Call end 1 "N" and work along.', 'Ends 1 and 8 both come out N.'],
+          'The row worked out from end 1 = N: 1 N, 2 S, 3 N, 4 S, 5 S, 6 N, 7 S, 8 N');
+        const FIG_ROW4_8S = row4(['', '', '', '', '', '', '', 'S'], ['Only end 8 is labelled: it is S.'], 'Only end 8 is labelled, S. ' + ROW4_LBL);
+        const HINT_ROW4_8S = row4(['S', 'N', 'S', 'N', 'N', 'S', 'N', 'S'], ['Start at end 8 (S) and work back.', 'N poles: ends 2, 4, 5 and 7.'],
+          'The row worked out from end 8 = S: 1 S, 2 N, 3 S, 4 N, 5 N, 6 S, 7 N, 8 S');
+        const FIG_ROW4_1N = row4(['N', '', '', '', '', '', '', ''], ['Only end 1 is labelled: it is N.'], 'Only end 1 is labelled, N. ' + ROW4_LBL);
+        const HINT_ROW4_1N = row4(['N', 'S', 'N', 'S', 'S', 'N', 'S', 'N'], ['Start at end 1 (N) and work along.', 'S poles: ends 2, 4, 5 and 7.'],
+          'The row worked out from end 1 = N: S poles are ends 2, 4, 5 and 7');
+
+        // A labelled magnet, then magnets X (ends 1, 2) and Y (ends 3, 4). S touches 1 (attract); gap 2|3 (repel).
+        const seq3 = (poles, label) => {
+          let s = pill(110, 22, 'attract') + lead(110, 33, 110, 50) + pill(225, 22, 'repel') + lead(225, 33, 225, 64);
+          s += hb(10, 50, 100, 28, 'N', 'S') + hb(110, 50, 100, 28, poles[0], poles[1]) + hb(240, 50, 100, 28, poles[2], poles[3]);
+          s += txt(124, 94, '1', { bold: 1, size: 14 }) + txt(196, 94, '2', { bold: 1, size: 14 }) + txt(254, 94, '3', { bold: 1, size: 14 }) + txt(326, 94, '4', { bold: 1, size: 14 });
+          s += txt(60, 114, 'labelled magnet', { size: 12 }) + txt(160, 114, 'magnet X', { size: 12 }) + txt(290, 114, 'magnet Y', { size: 12 });
+          return box(360, 130, label, s, 520);
+        };
+        const FIG_SEQ3 = seq3(['', '', '', ''], 'A labelled magnet (N, S) with its S pole touching end 1 of magnet X: attract. End 2 of X and end 3 of magnet Y: repel. X and Y are not labelled.');
+        const HINT_SEQ3 = seq3(['N', 'S', 'S', 'N'], 'Worked out: end 1 N, end 2 S, end 3 S, end 4 N');
+
+        // Two magnets with a gap: names [left of A, right of A, left of B, right of B], word in the gap.
+        const pairFig = (names, word, mags, label) => {
+          let s = pill(180, 24, word) + lead(180, 35, 180, 64);
+          s += hb(20, 50, 130, 28, '', '') + hb(210, 50, 130, 28, '', '');
+          [[36, 0], [134, 1], [226, 2], [324, 3]].forEach(([x, i]) => { if (names[i]) s += txt(x, 94, names[i], { bold: 1, size: 15 }); });
+          s += txt(85, 114, mags[0], { size: 12 }) + txt(275, 114, mags[1], { size: 12 });
+          return box(360, 128, label, s, 480);
+        };
+        const FIG_PAIR_REPEL = pairFig(['', 'A', 'B', ''], 'repel', ['one magnet', 'another magnet'], 'Two unlabelled magnets: end A of one repels end B of the other');
+        const FIG_PAIR_PQ = pairFig(['', 'P', 'Q', ''], 'attract', ['one magnet', 'another magnet'], 'Two unlabelled magnets: end P of one attracts end Q of the other');
+        const FIG_PAIR_A1B1 = pairFig(['A2', 'A1', 'B1', 'B2'], 'attract', ['magnet A', 'magnet B'], 'Two unlabelled magnets: end A1 of magnet A attracts end B1 of magnet B');
+        const FIG_PAIR_JK = pairFig(['J2', 'J1', 'K1', 'K2'], 'attract', ['magnet J', 'magnet K'], 'Two unlabelled magnets: end J1 of magnet J attracts end K1 of magnet K');
+
+        // Three disc magnets stuck in a stack. faces: [[top, bottom] for top, middle, bottom disc].
+        const stack3 = (faces, label) => {
+          let s = txt(180, 24, 'top face: N', { size: 13, bold: 1 }) + lead(180, 32, 180, 40);
+          const c = (p) => (isP(p) ? poleColour(p) : RING);
+          faces.forEach((f, i) => {
+            const y = 40 + i * 30;
+            // one outline per disc (the face halves have no stroke, so an unlabelled disc reads as ONE disc)
+            s += `<rect x="110" y="${y}" width="140" height="15" fill="${c(f[0])}"/>` +
+              `<rect x="110" y="${y + 15}" width="140" height="15" fill="${c(f[1])}"/>` +
+              `<rect x="110" y="${y}" width="140" height="30" fill="none" stroke="#111827" stroke-width="2"/>`;
+            if (isP(f[0])) s += txt(180, y + 8, f[0], { bold: 1, fill: '#fff', size: 12 });
+            if (isP(f[1])) s += txt(180, y + 23, f[1], { bold: 1, fill: '#fff', size: 12 });
+            s += txt(262, y + 15, ['top disc', 'middle disc', 'bottom disc'][i], { size: 12, anchor: 'start' });
+          });
+          s += lead(180, 130, 180, 138) + txt(180, 148, isP(faces[2][1]) ? 'bottom face: ' + faces[2][1] : 'bottom face: ?', { size: 13, bold: 1 });
+          return box(360, 164, label, s, 420);
+        };
+        const FIG_STACK = stack3([['N', ''], ['', ''], ['', '']], 'Three disc magnets stuck together in a stack. Only the top face of the top disc is labelled: N. The bottom face of the bottom disc is marked with a question mark.');
+        const HINT_STACK = stack3([['N', 'S'], ['N', 'S'], ['N', 'S']], 'Worked out: every disc is N on top and S underneath, so the bottom face is S');
+
+        // Four ring magnets on a pencil: B floats above A, C is stuck on B, D floats above C.
+        const rings4 = (faces, label) => {
+          const cx = 100, rw = 100, rh = 18, Y = { A: 244, B: 196, C: 178, D: 130 };
+          let s = `<rect x="40" y="262" width="150" height="12" fill="#d6b88a" stroke="#7c5a2c"/>` +
+            `<rect x="${cx - 6}" y="70" width="12" height="192" fill="#fcd34d" stroke="#92400e"/>` +
+            `<polygon points="${cx - 6},70 ${cx + 6},70 ${cx},54" fill="#fde68a" stroke="#92400e"/>` + txt(cx + 14, 60, 'pencil', { anchor: 'start', size: 12 });
+          const c = (p) => (isP(p) ? poleColour(p) : RING);
+          ['A', 'B', 'C', 'D'].forEach((n) => {
+            const y = Y[n], f = faces ? faces[n] : ['', ''];
+            s += `<rect x="${cx - rw / 2}" y="${y}" width="${rw}" height="${rh / 2}" fill="${c(f[0])}"/>` +
+              `<rect x="${cx - rw / 2}" y="${y + rh / 2}" width="${rw}" height="${rh / 2}" fill="${c(f[1])}"/>` +
+              `<rect x="${cx - rw / 2}" y="${y}" width="${rw}" height="${rh}" rx="3" fill="none" stroke="#111827" stroke-width="1.5"/>` +
+              `<rect x="${cx - 7}" y="${y}" width="14" height="${rh}" fill="#fcd34d" stroke="#92400e"/>` +
+              txt(cx - rw / 2 - 16, y + rh / 2, n, { bold: 1, size: 16 });
+            if (faces) s += txt(166, y + rh / 2, `${n}: top ${f[0]}, bottom ${f[1]}`, { size: 12, anchor: 'start', bold: 1 });
+          });
+          if (!faces) {
+            s += txt(166, 100, 'No faces are labelled.', { size: 12, anchor: 'start', bold: 1 }) +
+              txt(166, 163, 'D floats above C', { size: 12, anchor: 'start' }) + txt(166, 187, 'C is stuck on B', { size: 12, anchor: 'start' }) +
+              txt(166, 229, 'B floats above A', { size: 12, anchor: 'start' });
+          } else s += txt(166, 100, 'Top face of A called N', { size: 12, anchor: 'start' });
+          return box(360, 290, label, s, 420);
+        };
+        const FIG_RINGS4 = rings4(null, 'Four ring magnets on a pencil, no faces labelled. Ring B floats above ring A, ring C is stuck on top of ring B, ring D floats above ring C.');
+        const HINT_RINGS4 = rings4({ A: ['N', 'S'], B: ['S', 'N'], C: ['S', 'N'], D: ['N', 'S'] },
+          'Worked out from the top face of A = N: bottom of B N, top of B S, bottom of C N, top of C S, bottom of D S');
+
+        // Toy train: three carriages, front on the left, a bar magnet inside each running front to back.
+        const train = (poles, label) => {
+          let s = '';
+          [10, 126, 242].forEach((x, i) => {
+            s += `<rect x="${x}" y="40" width="100" height="52" rx="6" fill="#fef3c7" stroke="#111827" stroke-width="1.5"/>` +
+              `<circle cx="${x + 24}" cy="100" r="8" fill="#475569"/><circle cx="${x + 76}" cy="100" r="8" fill="#475569"/>` +
+              txt(x + 50, 52, 'carriage ' + (i + 1), { size: 12, bold: 1 }) +
+              hb(x + 8, 62, 84, 22, poles[2 * i], poles[2 * i + 1]) +
+              txt(x + 20, 124, 'front', { size: 12 }) + txt(x + 82, 124, 'back', { size: 12 });
+          });
+          s += pill(118, 20, 'attract') + lead(118, 31, 118, 66) + pill(234, 20, 'attract') + lead(234, 31, 234, 66);
+          return box(360, 138, label, s, 480);
+        };
+        const FIG_TRAIN = train(['', '', '', '', '', ''], 'A toy train of three carriages, front on the left. Each has an unlabelled bar magnet inside, front to back. Back of 1 attracts front of 2; back of 2 attracts front of 3.');
+        const HINT_TRAIN = train(['S', 'N', 'S', 'N', 'S', 'N'], 'Worked out from the back of carriage 1 = N: every carriage is S at the front and N at the back');
+
+        // A compass very close to end X of a bar magnet; the red arrowhead (N) points towards X.
+        const compassFig = (xPole, label) => {
+          const other = xPole === 'S' ? 'N' : xPole === 'N' ? 'S' : '';
+          let s = hb(130, 56, 200, 34, xPole, other);
+          s += txt(146, 106, 'X', { bold: 1, size: 15 }) + txt(314, 106, 'Y', { bold: 1, size: 15 });
+          s += `<circle cx="66" cy="73" r="30" fill="#f8fafc" stroke="#111827" stroke-width="2"/>` +
+            `<polygon points="40,73 66,68 66,78" fill="#9ca3af" stroke="#111827" stroke-width="1"/>` +
+            `<polygon points="94,73 66,67 66,79" fill="${RED}" stroke="#111827" stroke-width="1"/>` +
+            `<circle cx="66" cy="73" r="3" fill="#111827"/>`;
+          s += txt(66, 118, 'compass', { size: 12 }) + txt(66, 134, '(red tip = N)', { size: 12 });
+          s += `<line x1="344" y1="46" x2="344" y2="20" stroke="${INK}" stroke-width="2"/><polygon points="344,12 339,22 349,22" fill="${INK}"/>` +
+            txt(336, 22, 'North', { size: 12, anchor: 'end' });
+          s += txt(230, 120, xPole ? 'X is ' + xPole : 'The magnet is not labelled.', { size: 12, bold: !!xPole });
+          return box(360, 146, label, s, 480);
+        };
+        const FIG_COMPASS = compassFig('', 'A compass very close to end X of an unlabelled bar magnet. The red tip of the needle, its N pole, points towards end X, not North.');
+        const HINT_COMPASS = compassFig('S', 'Worked out: the N tip of the needle is attracted to end X, so X is S');
+
+        // Stroke method: the bottom end of a magnet strokes a steel bar from ends[0] to ends[1].
+        const strokeFig = (ends, mag, bar, label) => {
+          let s = vbar(62, 52, 26, 70, mag[0], mag[1]) + txt(100, 60, isP(mag[1]) ? 'magnet' : 'magnet (no labels)', { size: 12, anchor: 'start' });
+          s += arrow(110, 290, 108) + txt(200, 92, `each stroke: from ${ends[0]} to ${ends[1]}`, { size: 12 });
+          s += hb(50, 128, 260, 26, bar[0], bar[1]) + txt(36, 141, ends[0], { bold: 1, size: 15 }) + txt(324, 141, ends[1], { bold: 1, size: 15 });
+          s += txt(180, 172, 'steel bar', { size: 12 });
+          return box(360, 188, label, s, 480);
+        };
+        const FIG_STROKE_PQ = strokeFig(['P', 'Q'], ['', ''], ['', ''], 'One end of an unlabelled magnet strokes a steel bar from end P to end Q');
+        const HINT_STROKE_PQ = strokeFig(['P', 'Q'], ['N', 'S'], ['S', 'N'], 'Worked out: end Q of the bar is N, so the magnet stroked with its S pole');
+        const FIG_STROKE_AB = strokeFig(['A', 'B'], ['N', 'S'], ['', ''], 'The S pole of a magnet strokes a steel nail from end A to end B');
+        const HINT_STROKE_AB = strokeFig(['A', 'B'], ['N', 'S'], ['S', 'N'], 'Worked out: the strokes finish at end B, so B becomes N and A becomes S');
+
+        const TBL_PQR = table(['Ends brought together', 'What happened'], [['P1 and Q1', 'attracted'], ['Q2 and R1', 'repelled']], 'Results');
+        const TBL_CLIPSIZE = table(['Magnet', 'Size of paper clips', 'Number of clips attracted'], [['P', 'small', '12'], ['Q', 'big', '7']], 'Results');
+
+        const RUNG1 = 'Try Pick-a-pole! It is normal not to know which end is N, and that is fine. Pick any end and call it N. What must the end next to it be?';
+        const PAP = ['No labels? That is normal. I pick any end and call it N.', 'Same magnet: the other end is the opposite pole.',
+          'Attract: the end it meets is opposite. Repel: it is the same.', 'I go one end at a time, writing N or S on each end.',
+          'Not an option? I swap every N and S. The mirror works too.'];
+        const PAP_LABEL = ['Is any end labelled? I start there. (No labels? I pick one and call it N.)', 'Same magnet: the other end is the opposite pole.',
+          'Attract: the facing end is opposite. Repel: it is the same.', 'I follow it, one end at a time, to the end the question asks about.',
+          'I check I used the end that really faces the other magnet.'];
+        const PAP_OEQ = ['No labels? That is fine. I pick one end and call it N.', 'I follow it round: same magnet = opposite, attract = opposite, repel = same.',
+          'I write N or S on the ends the question asks about.', 'Same letter = like poles. Different letters = unlike poles.',
+          'If I call it S instead, every pole swaps, and the answer stays the same.'];
+        const RINGS = ['No labels? That is fine. I call the top face of ring A "N".', 'Floating rings repel, so the faces that meet are the SAME pole.',
+          'Stuck rings attract, so the faces that meet are OPPOSITE poles.', 'One ring: its top face and its bottom face are opposite poles.',
+          'I work up the pencil one face at a time.'];
+        const SURE = ['What did it do: attract, repel, or nothing?', 'Repel: it is definitely a magnet. Only a magnet can repel a magnet.',
+          'Attracted by a magnet: it could be a magnet OR just iron or steel. Can we be sure? Not yet.', 'Nothing: it is non-magnetic, like copper, wood or plastic.'];
+        const FAIR = ['Before I compare the results, I ask: can we be sure?', 'Is anything else different, like the distance or the clips?',
+          'Something else changed too? Then it is not fair, and we cannot tell.', 'To make it fair, I keep that other thing the same.'];
+        const TICK = ['I take one statement at a time.', 'No labels? I call one end N and work out every end first.',
+          'Then I judge each statement: true or not true?', 'I choose the option with only the true statements.'];
+
+        return [
+          // ----- Pick-a-pole basics: what one attract or repel tells us -----
+          { id: 'q24-001', type: 'mcq', level: 1,
+            stem: 'End A of one magnet repels end B of another magnet. Neither magnet has labels. Which statement is correct?',
+            figure: FIG_PAIR_REPEL, hints: ['Repel: does that mean the SAME pole or DIFFERENT poles?', 'Like poles repel, so A and B are the same pole. They are both N or both S: we cannot tell which, but they match.'],
+            options: ['A is N and B is S.', 'A and B are like poles.', 'A and B are unlike poles.', 'A must be an N pole.'],
+            answer: 1,
+            technique: 'Pick-a-pole', steps: PAP,
+            optionFeedback: {
+              0: 'Good try. N and S are unlike poles, and unlike poles attract. These two pushed apart.',
+              2: 'These two words are easy to mix up! Unlike poles attract. Repel means like poles.',
+              3: 'A could be N, well thought! But it could be S too. What we know for sure is that A and B are the same.' },
+            explain: 'Like poles repel, so A and B are the same pole. With no labels we cannot tell whether they are both N or both S, and that is fine: Pick-a-pole lets us call A "N", and then B is N too. Calling A "S" makes B S. Either way, they match.' },
+          { id: 'q24-002', type: 'mcq', level: 1,
+            stem: 'End P of one magnet attracts end Q of another magnet. Neither magnet has labels. Which of these could be true?',
+            figure: FIG_PAIR_PQ, hints: ['Attract: does that mean the SAME pole or DIFFERENT poles?', 'Unlike poles attract, so P and Q are different poles: one N and one S. P N with Q S fits (and so would P S with Q N).'],
+            options: ['P is N and Q is N.', 'P is S and Q is S.', 'P is N and Q is S.', 'P and Q are not poles.'],
+            answer: 2,
+            technique: 'Pick-a-pole', steps: PAP,
+            optionFeedback: {
+              0: 'Good try. N and N are like poles, and like poles repel. These two pulled together.',
+              1: 'Good try. S and S are like poles, and like poles repel. These two pulled together.',
+              3: 'P and Q are the ends of magnets, and the two ends of a magnet are its poles.' },
+            explain: 'Unlike poles attract, so P and Q must be different poles: one N and one S. "P is N and Q is S" fits. "P is S and Q is N" would fit too, but it is not an option. N with N, or S with S, would repel.' },
+          { id: 'q24-003', type: 'oeq', level: 2, marks: 3,
+            stem: 'Magnets A and B have no labels. End A1 of magnet A attracts end B1 of magnet B. Mei says, "End A1 must be the N pole."\n(a) Can Mei be sure? (1 mark)\n(b) Explain your answer. (2 marks)',
+            figure: FIG_PAIR_A1B1, hints: [RUNG1, 'Attract only tells us A1 and B1 are unlike poles. Call A1 N: B1 is S. Call A1 S: B1 is N. Both fit, so A1 could be N or S.'],
+            model: '(a) Mei cannot be sure. (b) Attracting only shows that A1 and B1 are unlike poles. A1 could be N or S: if A1 is N, B1 is S, and if A1 is S, B1 is N.',
+            keys: [['cannot be sure', 'not sure', 'not correct'], ['unlike poles', 'opposite poles', 'different poles'], ['could be N or S', 'either pole', 'could be S']],
+            technique: 'Pick-a-pole', steps: PAP_OEQ,
+            explain: 'Claim: Mei cannot be sure. Evidence: A1 ATTRACTS B1. Reason: unlike poles attract, so A1 and B1 are different poles, but the attraction does not say which is which. Pick-a-pole works both ways round: A1 N with B1 S, or A1 S with B1 N.' },
+          { id: 'q24-004', type: 'mcq', level: 1,
+            stem: 'Three disc magnets are stuck together in a stack. Only the top face of the top disc is labelled: it is N. What is the bottom face of the bottom disc?',
+            figure: FIG_STACK, hintFigure: HINT_STACK, hints: ['Top face N, so the bottom face of the top disc is S. The middle disc is stuck to it: what must its top face be?', 'Each join attracts, so each disc is N on top and S underneath. The bottom face of the bottom disc is S.'],
+            options: ['An N pole', 'It could be either pole', 'It is not a pole, because the discs are stuck together', 'An S pole'],
+            answer: 3,
+            technique: 'Pick-a-pole', steps: PAP_LABEL,
+            optionFeedback: {
+              0: 'N, S, N looks like a pattern, but each disc is N on top and S underneath. Work down one face at a time.',
+              1: 'One face IS labelled, so the answer is fixed. Start from the N on top and work down.',
+              2: 'Stuck discs are still magnets, with two poles each. They are stuck because unlike poles attract.' },
+            explain: 'The top face is N, so the bottom face of the top disc is S (the two faces of one magnet are opposite poles). The middle disc is stuck to it, and unlike poles attract, so its top face is N and its bottom face is S. The same happens again for the bottom disc: N on top, S underneath. So the bottom face of the bottom disc is S.' },
+
+          // ----- Longer chains -----
+          { id: 'q24-005', type: 'mcq', level: 2,
+            stem: 'Four bar magnets are in a row. The poles are not labelled, so the ends are numbered 1 to 8. Ends 2 and 3 attract. Ends 4 and 5 repel. Ends 6 and 7 attract. Which two ends must be like poles?',
+            figure: FIG_ROW4, hintFigure: HINT_ROW4, hints: [RUNG1, 'Call end 1 N. Then 2 S, 3 N (attracts 2), 4 S, 5 S (repels 4), 6 N, 7 S (attracts 6), 8 N. Ends 1 and 8 are both N: like poles.'],
+            options: ['Ends 1 and 4', 'Ends 1 and 8', 'Ends 3 and 5', 'Ends 2 and 6'],
+            answer: 1,
+            technique: 'Pick-a-pole', steps: PAP,
+            optionFeedback: {
+              0: 'Good start calling end 1 N! Then end 2 is S, end 3 is N and end 4 is S. Ends 1 and 4 are unlike poles.',
+              2: 'End 3 is N, well worked. But end 4 is S, and end 5 REPELS it, so end 5 is S too. N and S are unlike.',
+              3: 'Close! End 2 is S. Follow on: 3 N, 4 S, 5 S, 6 N. So ends 2 and 6 are unlike poles.' },
+            explain: 'It is normal not to know which end is N, and that is fine. Use Pick-a-pole: call end 1 "N". End 2 is the other end of magnet 1, so it is S. End 3 attracts end 2, so it is N, and end 4 is S. End 5 repels end 4, so it is S too, and end 6 is N. End 7 attracts end 6, so it is S, and end 8 is N. Ends 1 and 8 are both N: like poles. Calling end 1 "S" swaps every pole, and ends 1 and 8 are still alike.' },
+          { id: 'q24-006', type: 'mcq', level: 3,
+            stem: 'Look at the four magnets in a row again. This time, Ravi finds out that end 8 is an S pole. Which ends are N poles?',
+            figure: FIG_ROW4_8S, hintFigure: HINT_ROW4_8S, hints: ['This time one end IS labelled: end 8 is S. Start there and work back along the row, one end at a time.', 'End 8 S, so 7 N. End 6 attracts 7, so 6 S, and 5 N. End 4 repels 5, so 4 N, and 3 S. End 2 attracts 3, so 2 N, and 1 S. N poles: 2, 4, 5 and 7.'],
+            options: ['Ends 1, 3 and 6', 'Ends 2, 4 and 6', 'Ends 1, 3, 5 and 7', 'Ends 2, 4, 5 and 7'],
+            answer: 3,
+            technique: 'Pick-a-pole', steps: PAP_LABEL,
+            optionFeedback: {
+              0: 'Those are the N poles when end 1 is N, so your working is good! But end 8 is S here, which is the mirror: every pole swaps.',
+              1: 'Ends 2 and 4 are right, well done! But end 6 attracts end 7, which is N, so 6 is S. And end 5 is N.',
+              2: 'Taking turns looks neat, but the poles come from the gaps. Start at end 8 (S) and work back: end 7 is N, but end 1 comes out S.' },
+            explain: 'Start from the label: end 8 is S. End 7 is the other end of magnet 4, so it is N. End 6 attracts end 7, so it is S, and end 5 is N. End 5 repels end 4, so end 4 is N too, and end 3 is S. End 3 attracts end 2, so end 2 is N, and end 1 is S. The N poles are ends 2, 4, 5 and 7. This is the mirror of calling end 1 "N": every pole has swapped.' },
+          { id: 'q24-007', type: 'oeq', level: 3, marks: 3,
+            stem: 'Look at the four magnets in a row. This time only end 1 is labelled: it is an N pole.\n(a) Write down all the ends that are S poles. (1 mark)\n(b) Explain how you know that end 5 is an S pole. (2 marks)',
+            figure: FIG_ROW4_1N, hintFigure: HINT_ROW4_1N, hints: ['Start at end 1 (N). The other end of the same magnet is the opposite pole. Then use attract and repel at each gap.', 'End 1 N, 2 S. End 3 attracts 2, so 3 N, and 4 S. End 5 repels 4, so 5 S, and 6 N. End 7 attracts 6, so 7 S, and 8 N. S poles: 2, 4, 5 and 7.'],
+            model: '(a) Ends 2, 4, 5 and 7. (b) End 2 is the other end of magnet 1, so it is S. End 3 attracts end 2, so it is N (unlike poles attract), and end 4, the other end of magnet 2, is S. End 5 repels end 4. Like poles repel, so end 5 is S too.',
+            keys: [['2, 4, 5 and 7'], ['end 4 is S', 'other end of magnet 2'], ['like poles repel', 'repels end 4']],
+            technique: 'Pick-a-pole',
+            steps: ['One end IS labelled: end 1 is N. I start there.', 'Same magnet: the other end is the opposite pole.', 'Attract: the end it meets is opposite. Repel: it is the same.',
+              'I write N or S on every end, then list the S poles.', 'For "explain", I say each step and the rule I used.'],
+            explain: 'Claim: end 5 is S. Evidence: end 5 REPELS end 4. Reason: end 4 comes out S (end 1 N, end 2 S, end 3 N because it attracts end 2, and end 4 is the other end of magnet 2), and like poles repel, so end 5 matches end 4. Say each link and the rule you used: that is where the marks are.' },
+          { id: 'q24-008', type: 'mcq', level: 2,
+            stem: 'A bar magnet with labelled poles is put next to magnets X and Y. The poles of X and Y are not labelled, so their ends are numbered 1 to 4. The S pole attracts end 1. End 2 repels end 3. What is end 4?',
+            figure: FIG_SEQ3, hintFigure: HINT_SEQ3, hints: ['One magnet IS labelled. Start from its S pole: what must end 1 be, if they attract?', 'S attracts end 1, so end 1 is N, and end 2 is S. End 3 repels end 2, so end 3 is S. End 4 is the other end of Y: N.'],
+            options: ['An S pole', 'It could be N or S, because Y has no labels', 'An N pole', 'We cannot tell, because X is in between'],
+            answer: 2,
+            technique: 'Pick-a-pole', steps: PAP_LABEL,
+            optionFeedback: {
+              0: 'End 3 is S, well worked! But end 4 is the OTHER end of magnet Y, so it is the opposite pole: N.',
+              1: 'With no labels on Y it is fair to wonder. But the labelled magnet fixes the answer: start from its S pole and follow along.',
+              3: 'X in the middle does not stop us. Go one end at a time: 1 N, 2 S, 3 S, 4 N.' },
+            explain: 'Start from the label. The S pole attracts end 1, and unlike poles attract, so end 1 is N. End 2 is the other end of X, so it is S. End 2 repels end 3, and like poles repel, so end 3 is S. End 4 is the other end of Y, so it is N. Because one pole is labelled, the answer is fixed: it is not "N or S".' },
+          { id: 'q24-009', type: 'mcq', level: 3,
+            stem: 'P, Q and R are bar magnets. Their poles are not labelled, so their ends are named P1 and P2, Q1 and Q2, R1 and R2 (P1 and P2 are the two ends of magnet P, and so on). The table shows two results.\nWhich statements are correct?\nA: P1 and R1 are like poles.\nB: P2 and Q1 are unlike poles.\nC: P2 will repel R2.',
+            figure: TBL_PQR, hints: ['Call P1 "N". Work out Q1, Q2 and R1, then P2 and R2. Then check each statement.', 'P1 N, so Q1 S (attract) and Q2 N. R1 repels Q2, so R1 N, and R2 S. P2 is S. A: N and N, true. B: S and S are like, not true. C: S and S repel, true.'],
+            options: ['A only', 'A and B only', 'A and C only', 'A, B and C'],
+            answer: 2,
+            technique: 'Tick or cross', steps: TICK,
+            optionFeedback: {
+              0: 'A is true, well done! Now check C: P2 comes out S and R2 comes out S, so they repel. C is true too.',
+              1: 'A is true! But for B: P2 is S and Q1 is S. Those are like poles, so B is not true.',
+              3: 'A and C are true. But P2 and Q1 both come out S, so they are like poles: B is not true.' },
+            explain: 'Use Pick-a-pole first: call P1 "N". P1 attracts Q1, so Q1 is S, and Q2 is N. Q2 repels R1, so R1 is N, and R2 is S. P2 is the other end of P, so it is S. A: P1 (N) and R1 (N) are like poles: true. B: P2 (S) and Q1 (S) are like poles, not unlike: not true. C: P2 (S) and R2 (S) are like poles, so they repel: true. Calling P1 "S" swaps every pole and gives the same answers.' },
+          { id: 'q24-010', type: 'mcq', level: 3,
+            stem: 'Magnets J and K have no labels. Their ends are named J1, J2, K1 and K2. End J1 attracts end K1. Which other result is NOT possible?',
+            figure: FIG_PAIR_JK, hints: ['Call J1 "N". What are K1, J2 and K2? Then test each result.', 'J1 N, so K1 S. J2 is S and K2 is N. J2 and K2 are S and N, which attract: they cannot repel.'],
+            options: ['J2 repels K2.', 'J2 attracts K2.', 'J1 repels K2.', 'J2 repels K1.'],
+            answer: 0,
+            technique: 'Pick-a-pole', steps: PAP,
+            optionFeedback: {
+              1: 'Good checking. J2 is S and K2 is N, so they DO attract: that one is possible. Look for a result that breaks a rule.',
+              2: 'Good checking. J1 and K2 both come out N, so they repel: that one is possible.',
+              3: 'Good checking. J2 and K1 both come out S, so they repel: that one is possible.' },
+            explain: 'Call J1 "N". J1 attracts K1, so K1 is S. J2 is the other end of J, so it is S. K2 is the other end of K, so it is N. J2 (S) and K2 (N) are unlike poles, so they would attract: "J2 repels K2" is not possible. The other three results all fit. Calling J1 "S" swaps every pole and gives the same answer.' },
+
+          // ----- Rings and a toy train -----
+          { id: 'q24-011', type: 'mcq', level: 2,
+            stem: 'Four ring magnets, A, B, C and D, are put on a pencil. None of their faces are labelled. Ring B floats above ring A. Ring C is stuck to the top of ring B. Ring D floats above ring C. Which statement is correct?',
+            figure: FIG_RINGS4, hintFigure: HINT_RINGS4, hints: ['Call the top face of A "N". B floats, so what must the bottom face of B be? The two faces of one ring are opposite poles.', 'Top of A N. B floats: bottom of B N, top of B S. C is stuck: bottom of C N, top of C S. D floats: bottom of D S. Top of A and bottom of C are both N.'],
+            options: ['The top face of A and the bottom face of C are like poles.', 'The top face of A and the top face of B are like poles.', 'The bottom face of B and the bottom face of D are like poles.', 'The top face of B and the bottom face of C are like poles.'],
+            answer: 0,
+            technique: 'Pick-a-pole', steps: RINGS,
+            optionFeedback: {
+              1: 'Good start: the BOTTOM face of B matches the top of A. But the top face of B is its other face, so it is the opposite pole.',
+              2: 'The bottom face of B is N (if the top of A is N), well done. Follow up to D: the top of C is S, and D floats, so the bottom of D is S. N and S are unlike.',
+              3: 'Ring C is STUCK to ring B, so they attract. Attract means unlike poles, not like poles.' },
+            explain: 'Call the top face of A "N". B floats, so the faces that meet repel: the bottom of B is N, and the top of B is S. C is stuck to B, so they attract: the bottom of C is N, and the top of C is S. D floats above C: the bottom of D is S. The top of A and the bottom of C are both N: like poles. Calling the top of A "S" swaps every face, and they are still alike.' },
+          { id: 'q24-012', type: 'oeq', level: 3, marks: 3,
+            stem: 'Look at the four ring magnets on the pencil again.\n(a) Ring C is stuck to ring B. Are the top face of B and the bottom face of C like poles or unlike poles? (1 mark)\n(b) Explain why the top face of ring A and the bottom face of ring C must be like poles, even though no faces are labelled. (2 marks)',
+            figure: FIG_RINGS4, hintFigure: HINT_RINGS4, hints: ['Stuck means attract, and floating means repel. Each ring has two faces that are opposite poles.', 'B floats: its bottom face matches the top of A. Its top face is the opposite. C sticks to that: opposite again. Opposite of opposite is the same, so the bottom of C matches the top of A.'],
+            model: '(a) Unlike poles, because they attract. (b) Ring B floats above ring A, so they repel. Like poles repel, so the bottom face of B is the same pole as the top face of A. The top face of B is the opposite pole to its bottom face. Ring C is stuck to B, and unlike poles attract, so the bottom face of C is opposite to the top face of B. That makes it the same pole as the bottom face of B, which is the same as the top face of A.',
+            keys: [['unlike poles'], ['floats', 'like poles repel', 'same pole as the top face of A'], ['opposite pole', 'other face of the same ring', 'unlike poles attract']],
+            technique: 'Pick-a-pole', steps: RINGS,
+            explain: 'Two links make the answer. Floating means repel, so the faces that meet are the same pole. Stuck means attract, so the faces that meet are opposite poles. The two faces of one ring are always opposite. Going up from A: same, then opposite (inside ring B), then opposite again (stuck to C). Opposite of opposite is the same pole again. This works whichever pole the top of A is.' },
+          { id: 'q24-013', type: 'mcq', level: 2,
+            stem: 'Each carriage of a toy train has a bar magnet inside, running from its front end to its back end. The poles are not labelled. The back of carriage 1 attracts the front of carriage 2, and the back of carriage 2 attracts the front of carriage 3. Lim turns carriage 2 round and puts it back between carriages 1 and 3. What happens at the two joins?',
+            figure: FIG_TRAIN, hintFigure: HINT_TRAIN, hints: ['Call the back of carriage 1 "N". Work out both ends of carriage 2, then swap them when it is turned round.', 'Back of 1 N, so front of 2 S and back of 2 N, and front of 3 S. Turned round, the N end of 2 faces the N back of 1, and the S end faces the S front of 3. Like poles meet at both joins: both repel.'],
+            options: ['Both joins still attract.', 'Only the join between carriages 1 and 2 repels.', 'Only the join between carriages 2 and 3 repels.', 'Both joins repel.'],
+            answer: 3,
+            technique: 'Pick-a-pole', steps: PAP,
+            optionFeedback: {
+              0: 'Lots of children think turning it round does not matter. But turning carriage 2 swaps which of its ends faces each neighbour.',
+              1: 'Well done for the first join! Now check the second: the S end of carriage 2 now faces the S front of carriage 3. Like poles repel there too.',
+              2: 'Well done for the second join! Now check the first: the N end of carriage 2 now faces the N back of carriage 1. That repels too.' },
+            explain: 'Call the back of carriage 1 "N". It attracts the front of carriage 2, so that end is S, and the back of carriage 2 is N. That attracts the front of carriage 3, so it is S. When carriage 2 is turned round, its N end faces the N back of carriage 1, and its S end faces the S front of carriage 3. Like poles meet at both joins, so both joins repel. Calling the first end "S" swaps every pole and gives the same answer.' },
+          { id: 'q24-014', type: 'mcq', level: 3,
+            stem: 'Look at the toy train again, before Lim turns any carriage round. Which statements are correct?\nA: The front of carriage 1 and the front of carriage 3 are like poles.\nB: The back of carriage 2 would attract the front of carriage 1.\nC: If carriage 3 is turned round, it will still attract carriage 2.',
+            figure: FIG_TRAIN, hintFigure: HINT_TRAIN, hints: ['Call the back of carriage 1 "N" and work out the front and back of every carriage first.', 'Every carriage comes out S at the front and N at the back. A: S and S, true. B: N and S attract, true. C: turned round, carriage 3 shows its N back to the N back of carriage 2, so they repel: not true.'],
+            options: ['A only', 'A and B only', 'B and C only', 'A, B and C'],
+            answer: 1,
+            technique: 'Tick or cross', steps: TICK,
+            optionFeedback: {
+              0: 'A is true, well done! Now B: the back of carriage 2 is N and the front of carriage 1 is S, and those attract. B is true too.',
+              2: 'B is true! But turn carriage 3 round and its N back faces the N back of carriage 2: like poles repel, so C is not true. And A is true.',
+              3: 'A and B are true, well worked. But turning carriage 3 round puts N facing N, so they repel: C is not true.' },
+            explain: 'Use Pick-a-pole first: call the back of carriage 1 "N". Then every carriage is S at the front and N at the back. A: the fronts of carriages 1 and 3 are both S, so they are like poles: true. B: the back of carriage 2 (N) and the front of carriage 1 (S) are unlike, so they would attract: true. C: if carriage 3 is turned round, its N back end faces the N back of carriage 2, and like poles repel: not true.' },
+
+          // ----- One clue is labelled: start there -----
+          { id: 'q24-015', type: 'mcq', level: 2,
+            stem: 'Lina hangs a bar magnet with no labels from a string so that it can turn freely. It comes to rest with end P pointing North. She brings end Q of another unlabelled magnet near end P. End P swings away. What is end Q?',
+            figure: null, hints: ['A freely hanging magnet: the end that points North is which pole?', 'P points North, so P is N. Q pushes P away, and like poles repel, so Q is N too.'],
+            options: ['An S pole', 'It could be either pole, because Q has no label', 'Q is not a pole, because P swung away', 'An N pole'],
+            answer: 3,
+            technique: 'Pick-a-pole', steps: PAP_LABEL,
+            optionFeedback: {
+              0: 'P points North, so P is N, well done! But P swung AWAY, and repel means the same pole: Q is N too.',
+              1: 'Q has no label, but P gives us a clue: it points North, so it is N. Start from there.',
+              2: 'P swinging away is a push. Only a magnet can push a magnet away, so Q is a pole of a magnet.' },
+            explain: 'A freely suspended magnet comes to rest pointing North-South, and the end that points North is the N pole, so P is N. End Q pushed P away. Like poles repel, so Q is also N. Here the North clue fixes the answer, so it is not "either pole".' },
+          { id: 'q24-016', type: 'mcq', level: 2,
+            stem: 'A horseshoe magnet has no labels. Its two ends are P and Q. End P is attracted by the N pole of a bar magnet. What is end Q?',
+            figure: null, hints: ['Start from the labelled N pole. P is attracted to it, so what is P? Then Q is the other end.', 'Unlike poles attract, so P is S. Q is the other end of the same magnet, so Q is N.'],
+            options: ['An N pole', 'An S pole', 'It could be N or S', 'Not a pole: a horseshoe magnet has only one pole'],
+            answer: 0,
+            technique: 'Pick-a-pole', steps: PAP_LABEL,
+            optionFeedback: {
+              1: 'End P is S, well worked! But Q is the OTHER end of the horseshoe, so it is the opposite pole: N.',
+              2: 'The bar magnet\'s N pole is labelled, so the answer is fixed. Start from it: P is attracted, so P is S.',
+              3: 'Every magnet has two poles, whatever its shape. A horseshoe magnet has one at each end of the U.' },
+            explain: 'P is an end of a magnet, and it is attracted by an N pole. Unlike poles attract, so P is S. A horseshoe magnet has two poles, one at each end of the U, so Q, the other end, is N.' },
+          { id: 'q24-017', type: 'mcq', level: 2,
+            stem: 'A compass is placed very close to end X of a bar magnet. The poles of the magnet are not labelled. The red tip of the compass needle is its N pole. The needle points towards end X, as shown. What is end X?',
+            figure: FIG_COMPASS, hintFigure: HINT_COMPASS, hints: ['A compass needle is a small magnet. Its N tip is pulled towards end X. Which pole pulls an N pole?', 'The N pole of the needle is attracted to end X. Unlike poles attract, so end X is S.'],
+            options: ['An S pole', 'An N pole', 'It could be either pole', 'It is not a pole: the needle just points North'],
+            answer: 0,
+            technique: 'Pick-a-pole', steps: PAP_LABEL,
+            optionFeedback: {
+              1: 'The needle points at X, so it is easy to think X matches it. But pointing towards means the N tip is pulled, and unlike poles attract: X is S.',
+              2: 'The magnet has no labels, but the needle does: its red tip is N. Start from there.',
+              3: 'Away from magnets, a compass points North. This close to end X, the magnet pulls much more strongly. Look at the North arrow: the needle is not pointing North.' },
+            explain: 'A compass needle is a small magnet, and its red tip is its N pole. The N tip is pulled towards end X. Unlike poles attract, so end X is an S pole (and end Y is N). The needle is not pointing North here: so close to the magnet, the magnet pulls it much more strongly.' },
+          { id: 'q24-018', type: 'oeq', level: 2, marks: 2,
+            stem: 'Jun has a bar magnet whose ends, P and Q, have no labels. He also has a second magnet with its N pole labelled. Describe how he can find out which end, P or Q, is the N pole.',
+            figure: null, hints: ['Which result tells you for sure that two poles are the SAME?', 'Bring the labelled N pole near end P. If P is pushed away, P is N, because like poles repel. If P is pulled, P is S, so Q is N.'],
+            model: 'Bring the labelled N pole near end P. If end P is repelled (pushed away), P is the N pole, because like poles repel. If end P is attracted, P is the S pole, so Q is the N pole. To be sure, he can check that end Q is then repelled by the N pole.',
+            keys: [['labelled N pole near', 'near end P'], ['repelled', 'pushed away', 'like poles repel']],
+            technique: 'Claim, evidence, reason',
+            steps: ['Claim: say what he should do: bring the labelled N pole near end P.', 'Evidence: say what he watches for: pushed away (repelled) or pulled (attracted).',
+              'Reason: like poles repel, so the end that is pushed away by N is N.', 'I check I used the key words: N pole, repelled, like poles repel.'],
+            explain: 'Use the labelled pole as your starting clue. Like poles repel, so the end that the N pole pushes away must be N. Repelling is the clearest result to look for: if P is pulled instead, test Q, and Q should be pushed away.' },
+
+          // ----- Making magnets -----
+          { id: 'q24-019', type: 'mcq', level: 3,
+            stem: 'Lin used one end of a magnet to stroke a steel bar from end P to end Q, 40 times, as shown. The poles of her magnet are not labelled. Afterwards, end Q of the steel bar repelled the N pole of another magnet. Which pole of her magnet did Lin stroke with?',
+            figure: FIG_STROKE_PQ, hintFigure: HINT_STROKE_PQ, hints: ['Start with what you know for sure: end Q repels an N pole. So what is end Q?', 'End Q repels N, so Q is N. The strokes finish at Q, and the end where the strokes finish becomes the opposite pole to the stroking pole. So Lin stroked with the S pole.'],
+            options: ['The N pole', 'The S pole', 'Either pole: the bar ends up the same', 'We cannot tell, because her magnet has no labels'],
+            answer: 1,
+            technique: 'Pick-a-pole',
+            steps: ['Is any end labelled? The other magnet\'s N pole is. I start there.', 'End Q repels N, and like poles repel, so end Q is N.',
+              'Stroke method: the end where each stroke finishes becomes the OPPOSITE pole to the one used.', 'The strokes finish at Q (N), so Lin stroked with the opposite pole.'],
+            optionFeedback: {
+              0: 'End Q is N, well worked! But the end where the strokes finish becomes the OPPOSITE pole to the one used. So she stroked with S.',
+              2: 'The pole you stroke with decides which end becomes N. Stroking with the other pole would swap the bar\'s poles.',
+              3: 'Her magnet has no labels, but the steel bar gives us a clue: end Q repels N. Start from there.' },
+            explain: 'End Q repelled an N pole. Like poles repel, so end Q is N (and end P is S). In the stroke method, the end where each stroke finishes becomes the opposite pole to the pole you stroke with. The strokes finished at Q, which is N, so Lin stroked with the S pole.' },
+          { id: 'q24-020', type: 'oeq', level: 3, marks: 3,
+            stem: 'Lin stroked a steel nail with the S pole of a magnet, from end A to end B, many times in one direction, as shown. The nail became a magnet.\n(a) Which end of the nail became the N pole? (1 mark)\n(b) Lin has a bar magnet with its N pole labelled. Describe how she can use it to check your answer to (a). (2 marks)',
+            figure: FIG_STROKE_AB, hintFigure: HINT_STROKE_AB, hints: ['Where does each stroke finish? That end becomes the opposite pole to the stroking pole.', '(a) The strokes finish at B, and she stroked with S, so B is N. (b) Bring the labelled N pole near end B: if B is pushed away, B is N, because like poles repel.'],
+            model: '(a) End B. (b) Bring the N pole of the bar magnet near end B. If end B is repelled (pushed away), end B is an N pole, because like poles repel.',
+            keys: [['end B'], ['near end B', 'bring the N pole'], ['repelled', 'pushed away', 'like poles repel']],
+            technique: 'Can we be sure?',
+            steps: ['(a) Stroke method: the end where each stroke finishes becomes the OPPOSITE pole to the one used.', 'The strokes finish at end B, and she used S, so B becomes N.',
+              '(b) To check a pole for sure, I look for a REPEL.', 'N repels N: bring the N pole near end B and watch for a push.'],
+            explain: 'The end where the strokes finish becomes the opposite pole to the stroking pole: stroking with S, finishing at B, makes B an N pole. To check, look for repulsion: only a like pole pushes away, so if the labelled N pole pushes end B away, end B is N. Repelling is the sure test: a pull alone could also happen with plain steel that is not a magnet.' },
+          { id: 'q24-021', type: 'mcq', level: 3,
+            stem: 'Kai made an electromagnet by coiling wire round an iron nail and connecting it to a battery. When the switch was closed, end X of the nail repelled the N pole of a bar magnet. Then Kai opened the switch and brought the N pole near end X again. What happened?',
+            figure: null, hints: ['When the switch is open, is the nail still a magnet? And what is the nail made of?', 'Switch open: the nail is no longer a magnet, so it cannot repel. But iron is a magnetic material, so the N pole attracts end X.'],
+            options: ['The N pole attracted end X.', 'End X was repelled, just like before.', 'Nothing happened, because the nail was no longer a magnet.', 'End X was repelled even more strongly.'],
+            answer: 0,
+            technique: 'Can we be sure?',
+            steps: ['What did it do: attract, repel, or nothing?', 'Repel: it is definitely a magnet. Only a magnet can repel a magnet.',
+              'Switch open: no electricity flows, so the iron nail stops being a magnet.', 'But the nail is still iron, a magnetic material. A magnet attracts iron.'],
+            optionFeedback: {
+              1: 'With the switch closed, X did repel, well read. But opening the switch stops the electricity, so the nail stops being a magnet.',
+              2: 'The nail is no longer a magnet, well remembered! But it is still made of iron, a magnetic material, so the N pole attracts it.',
+              3: 'Opening the switch stops the electricity, so the nail is not a magnet any more. It cannot repel at all.' },
+            explain: 'With the switch closed, the nail was an electromagnet, so end X could repel the N pole. Opening the switch stops the electricity, so the nail stops being a magnet and cannot repel. But the nail is still made of iron, which is a magnetic material, and a magnet attracts iron. So the N pole attracted end X.' },
+
+          // ----- Materials, uses and strength -----
+          { id: 'q24-022', type: 'mcq', level: 1,
+            stem: 'Which pair of objects could REPEL each other?',
+            figure: null, hints: ['Repel means push away. Which objects can push a magnet away?', 'Only a magnet can repel a magnet. Iron and steel are only attracted. Copper is not attracted at all.'],
+            options: ['A magnet and an iron nail', 'A magnet and a steel can', 'A magnet and a copper coin', 'Two magnets'],
+            answer: 3,
+            technique: 'Can we be sure?', steps: SURE,
+            optionFeedback: {
+              0: 'A magnet pulls an iron nail, but never pushes it away. Iron is a magnetic material, not a magnet.',
+              1: 'Steel is magnetic, so the magnet attracts the can. It cannot push it away.',
+              2: 'Copper is non-magnetic, so nothing happens at all: no pull and no push.' },
+            explain: 'Only a magnet can repel a magnet, so two magnets can repel (when like poles face each other). A magnet only attracts magnetic materials such as iron and steel. Copper is non-magnetic, so it is neither attracted nor repelled.' },
+          { id: 'q24-023', type: 'mcq', level: 1,
+            stem: 'A pencil case closes with two magnets: one in the flap and one in the case. Amy took the magnet out of the flap and put it back the other way round. Now the flap pushes away from the case. Why?',
+            figure: null, hints: ['Turning a magnet round swaps which pole faces the other magnet. Push away means like or unlike?', 'Before, unlike poles faced each other and attracted. Turned round, like poles face each other, and like poles repel.'],
+            options: ['The magnet lost its magnetism when it was turned round.', 'Unlike poles now face each other, so they repel.', 'Like poles now face each other, so they repel.', 'The plastic flap now blocks the magnetic force.'],
+            answer: 2,
+            optionFeedback: {
+              0: 'If the magnet had lost its magnetism, it could not push at all. Pushing away shows it is still a magnet.',
+              1: 'You spotted the push! But unlike poles attract. Repel means like poles face each other.',
+              3: 'Plastic is non-magnetic, and a magnet acts through it. The flap is the same plastic as before.' },
+            explain: 'Before, unlike poles faced each other, so the magnets attracted and the flap stayed shut. Turning the flap magnet round puts the other pole in front, so now like poles face each other. Like poles repel, so the flap pushes away.' },
+          { id: 'q24-024', type: 'mcq', level: 2,
+            stem: 'Wen has a bar magnet with no labels. She dips it into a box of paper clips. Both ends pick up about the same number of clips. Which statement is correct?',
+            figure: null, hints: ['Do paper clips stick to the N pole only, or to both poles?', 'Both poles attract paper clips, so clips cannot show which end is N. To find N, hang the magnet so it turns freely, or use a labelled magnet.'],
+            options: ['The end with a few more clips is the N pole.', 'Both ends must be N poles.', 'Clips cannot show which end is N.', 'Clips only stick to the N pole of a magnet.'],
+            answer: 2,
+            technique: 'Can we be sure?',
+            steps: ['What do I want to know? Which end is N.', 'Can clips tell me? Both poles attract clips, so clips stick to N and to S.',
+              'A test that cannot tell the poles apart cannot answer the question.', 'To find N: hang the magnet freely, or test it with a labelled magnet.'],
+            optionFeedback: {
+              0: 'Both poles attract clips just as well. A few more clips at one end does not make it N.',
+              1: 'Every magnet has one N pole and one S pole, so both ends cannot be N.',
+              3: 'Lots of children think this! But both poles attract clips: that is why both ends picked them up.' },
+            explain: 'Both poles of a magnet attract magnetic materials such as steel paper clips, so clips stick to N and to S. Counting clips shows where a magnet is strong (the poles), but not which pole is N. To find N, hang the magnet so it turns freely (the end pointing North is N), or bring a labelled N pole near it and look for repulsion.' },
+          { id: 'q24-025', type: 'mcq', level: 2,
+            stem: 'Rina tested magnets P and Q by counting the paper clips each one attracted. Her results are shown in the table. Rina says, "P is the stronger magnet." Which statement is correct?',
+            figure: TBL_CLIPSIZE, hints: ['Before comparing the numbers, check: did both magnets pick up the same kind of clips?', 'P used small clips and Q used big clips. Two things changed, so it is not a fair test: we cannot tell which magnet is stronger.'],
+            options: ['P is stronger, because it attracted more clips.', 'We cannot tell, because the clips were not the same size.', 'Q is stronger, because its clips were bigger.', 'They are equally strong.'],
+            answer: 1,
+            technique: 'Can we be sure?', steps: FAIR,
+            optionFeedback: {
+              0: 'P did attract more clips, well read! But its clips were smaller and lighter. Can we be sure? Not when the clips are different.',
+              2: 'Bigger clips do not make a magnet stronger. The clips were different, so the test was not fair.',
+              3: 'Different numbers of clips, and different clips too: nothing shows they are equally strong. The test was not fair, so we cannot tell.' },
+            explain: 'P attracted small clips and Q attracted big clips. Small clips are lighter, so P may have picked up more only because its clips were small. Two things changed (the magnet and the clips), so it is not a fair test, and we cannot tell which magnet is stronger. To make it fair, use the same kind and size of paper clips for both magnets.' }
+        ];
+      })()
     ]
   });
 })();

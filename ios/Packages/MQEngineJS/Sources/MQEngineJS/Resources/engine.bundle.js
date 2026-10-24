@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20261023-6dd0d6e */
-/* ENGINE_BUILD_META {"stamp":"20261023-6dd0d6e","date":"2026-10-23","sha":"6dd0d6e","dirty":false,"payloadHash":"31932907083f1d35","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20261023-6dd0d6e","date":"2026-10-23","sha":"6dd0d6e","dirty":false,"payloadHash":"31932907083f1d35","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20261024-539bd38 */
+/* ENGINE_BUILD_META {"stamp":"20261024-539bd38","date":"2026-10-24","sha":"539bd38","dirty":false,"payloadHash":"18705ef9c7b50e30","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20261024-539bd38","date":"2026-10-24","sha":"539bd38","dirty":false,"payloadHash":"18705ef9c7b50e30","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -203,10 +203,13 @@ function finishTyped(qHtml, answer, explain, unit){
 const TYPED_UNITS = [
   /* measurement */
   'cm3','cm³','cm2','cm²','m2','m²','km','cm','mm','ml','kg','m','g','l','ℓ','%',
+  /* Maths Keys Refutation G4 (2026-10-24): a Mac keyboard has no ² key, so the area
+     spellings a child CAN type are units too. Each aliases to cm2 / m2 below. */
+  'cm^2','m^2','sq cm','sq m','square cm','square m',
   /* angle */
   'degrees','degree','deg','°',
   /* time */
-  'minutes','minute','mins','min','hours','hour','hr','h','seconds','secs','sec','s',
+  'minutes','minute','mins','min','hours','hour','hr','h','seconds','second','secs','sec','s',
   /* counts the wave-2 rate stems name */
   'pages','page','buns','bun','litres','litre','books','pupils','marbles','stickers','beads',
   /* money and the cube count. Quest Refutation K2 (2026-09-07): these are tokens
@@ -215,17 +218,18 @@ const TYPED_UNITS = [
      teaching card fell back to "The answer is 12.5." with nothing said about the
      unit. gen-sanity has scanned stems for them since the unit sweep; the grader
      had not caught up. */
-  '$','cents','cent','dollars','dollar','cubes','cube'
+  '$','cents','cent','¢','dollars','dollar','cubes','cube'
 ].sort((a,b) => b.length - a.length);
 const UNIT_ALIAS = {
   'ℓ':'l', 'litre':'l', 'litres':'l',
   'cm³':'cm3', 'cm²':'cm2', 'm²':'m2',
+  'cm^2':'cm2', 'sq cm':'cm2', 'square cm':'cm2', 'm^2':'m2', 'sq m':'m2', 'square m':'m2',
   '°':'deg', 'degree':'deg', 'degrees':'deg',
   'minute':'min', 'minutes':'min', 'mins':'min',
   'hour':'h', 'hours':'h', 'hr':'h',
   'second':'s', 'seconds':'s', 'secs':'s', 'sec':'s',
   'page':'pages', 'bun':'buns',
-  'cent':'cents', 'dollar':'dollars', 'cube':'cubes',
+  'cent':'cents', '¢':'cents', 'dollar':'dollars', 'cube':'cubes',
   /* Pre-exam Live Check D3 (2026-10-16): the money stems declare '$' and say "in
      dollars", so "9 dollars" is the same unit as "$9" and must grade the same. */
   '$':'dollars'
@@ -319,7 +323,41 @@ function parseTypedAnswer(raw, q){
  * Tolerance: exact-after-rounding when q.dp is declared, else 1e-9 for an
  * integer answer and 0.005 for a decimal/money answer.
  * Unit rule: a MISSING unit is accepted, a MISMATCHED unit is rejected. */
+/* COUNT-WORD QUESTIONS (Kev's ruling 2026-10-24, Maths Keys card 4 Commit C).
+ * A question whose declared units are all COUNT words ('boxes', 'goats', 'chairs')
+ * asks for a number of things, and the word she writes after it is not a unit that
+ * can be wrong in the way "45 cm" on a cm² answer is: "30 pupils", "30 kids" and
+ * "30 children" on "How many children" are all 30 children. So on such a question a
+ * trailing word that is NOT a measurement unit is ignored, and only a MEASUREMENT
+ * unit ("30 kg", "30 min", "30 cm") can make a right value wrong. The value always
+ * decides: "29 kids" stays wrong. */
+const MEASURE_UNITS = ['cm3','cm2','m2','km','cm','mm','ml','kg','m','g','l','%','deg',
+  'min','h','s','dollars','cents',
+  /* spelled-out measures the shared list does not strip, so "30 metres" on a count
+     question is still a wrong unit, not an ignored word */
+  'metre','metres','meter','meters','centimetre','centimetres','centimeter','centimeters',
+  'millimetre','millimetres','kilometre','kilometres','gram','grams','kilogram','kilograms',
+  'kilo','kilos','millilitre','millilitres','liter','liters','sq','square','sec','secs','hrs'];
+function isMeasureUnit(u){ return MEASURE_UNITS.indexOf(normUnit(u)) !== -1; }
+function isCountQuestion(q){
+  const want = unitList(q && (q.unit || q.units));
+  return want.length > 0 && want.every(w => !isMeasureUnit(w));
+}
+/* On a count question, "30 kids" / "30 big boxes." -> "30" when no trailing word is a
+   measurement unit; otherwise (or on any other question) the input unchanged. */
+function countTail(raw, q){
+  if (raw === null || raw === undefined || !isCountQuestion(q)) return raw;
+  const m = String(raw).trim().match(/^(.*?\d)\s*((?:[A-Za-z][A-Za-z'’-]*\s*)+)\.?$/);
+  if (!m) return raw;
+  const words = m[2].trim().split(/\s+/);
+  /* any measurement token, alone or as a pair ("sq cm"), keeps the unit rule */
+  for (let i = 0; i < words.length; i++){
+    if (isMeasureUnit(words[i]) || (i + 1 < words.length && isMeasureUnit(words[i] + ' ' + words[i + 1]))) return raw;
+  }
+  return m[1];
+}
 function gradeTyped(raw, q){
+  raw = countTail(raw, q);
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return false;
   const want = unitList(q && (q.unit || q.units));
@@ -329,6 +367,13 @@ function gradeTyped(raw, q){
     const got = normUnit(p.unit);
     let hit = false;
     for (let i=0;i<want.length;i++) if (normUnit(want[i]) === got){ hit = true; break; }
+    /* Maths Keys Refutation A1 (2026-10-24): on a DOLLAR question, "80 cents" or "80¢"
+       is $0.80 - the same amount in the smaller unit. Compare it as value / 100, so the
+       VALUE still decides: "8 cents" on $0.80 stays wrong. A question that declares
+       cents itself never reaches this branch (the unit already matched). */
+    if (!hit && got === 'cents' && want.some(w => normUnit(w) === 'dollars')){
+      p.value = p.value / 100; p.frac = null; hit = true;
+    }
     if (!hit) return false;
   }
   /* a unit typed on a question that declares none is only accepted off the shared list */
@@ -367,6 +412,7 @@ function gradeTyped(raw, q){
  * fraction rules and every tolerance for free, and cannot fall out of step with
  * gradeTyped because it IS gradeTyped. */
 function typedRejectReason(raw, q){
+  raw = countTail(raw, q);
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return String(p.reason || 'unparsed');
   if (gradeTyped(raw, q)) return null;
@@ -6106,6 +6152,27 @@ function gFigurePattern(){
 }
 
 
+  /* GAP FILL 2026-10-24 (Syllabus Gaps audit, fill item 4): numbers from words, TYPED.
+     gWordsToNum asks this as an MCQ; real Booklet B sets it as a 1-mark short answer
+     ("Write eight thousand and eight in numerals"), so here she writes the numeral
+     herself. Same zero-holding numbers as gWordsToNum (zeroNumber: 8008, 4060, 4035,
+     4605, 4650, 4600, the teens), because the zero is the whole difficulty. Coached:
+     list the four places, then add the parts that were said. */
+  const coachN = (q, technique, steps) => (q.technique = technique, q.steps = steps, q);
+  function gWordsToNumTyped(){
+    const n = zeroNumber(false);
+    const d = [Math.floor(n / 1000), Math.floor(n / 100) % 10, Math.floor(n / 10) % 10, n % 10];
+    const r = n % 100;
+    /* the parts that are said out loud: a teen ("and fourteen") is said as one part */
+    const parts = [d[0] * 1000, d[1] * 100].concat(r < 20 ? [r] : [d[2] * 10, d[3]]).filter(x => x > 0);
+    const unsaid = ['hundreds', 'tens', 'ones'].filter((_, i) => d[i + 1] === 0);
+    return band(coachN(finishTyped('Write <b>' + inWords(n) + '</b> in numerals.', n, wordsWhy(n)), 'Make a list', [
+      'Say it in parts and list the four places: thousands, hundreds, tens, ones.',
+      'Thousands ' + d[0] + ', hundreds ' + d[1] + ', tens ' + d[2] + ', ones ' + d[3] + '. ' +
+        'No ' + unsaid.join(' and no ') + ' are said, so ' + (unsaid.length === 1 ? 'that place gets' : 'those places get') + ' a 0.',
+      'Add the parts that were said: ' + parts.join(' + ') + ' = <b>' + n + '</b>. It has 4 digits, like every number in the thousands.']), 2);
+  }
+
   MQI.registerTopic({
     id:'p3numbers', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Numbers up to 10 000: number notation, representations and place values (thousands, hundreds, tens, ones); comparing and ordering numbers; patterns in number sequences. Addition and Subtraction: addition and subtraction algorithms (up to 4 digits); mental calculation involving addition and subtraction of two 2-digit numbers",
@@ -6132,7 +6199,7 @@ function gFigurePattern(){
       2:[[gExpanded,'place'],[gBuildNum,'place'],[gNumToWords,'place'],[gSmallest,'compare'],[gBetween,'compare'],
          [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
          [gMissingAddend,'addsub'],[gMentalMake,'addsub'],[gMentalTakeTens,'addsub'],
-         [gDigitCards,'place']],
+         [gDigitCards,'place'],[gWordsToNumTyped,'place']],
       3:[[gStandsCompare,'place'],[gStandsFix,'place'],[gZeroFix,'place'],
          [gOrder,'compare'],[gBetweenWorded,'compare'],
          [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],
@@ -6388,18 +6455,21 @@ function gDivError(){
     const d = ri(3, 9), q = ri(4, 12), r = ri(1, d - 1), n = d*q + r;
     const who = pick(NAMES), item = pick(SNACKS);
     return finishTyped(who + ' packs ' + n + ' ' + item + ' into ' + d + ' boxes with the same number in each box. How many are left over?',
-      r, n + ' ÷ ' + d + ' = ' + q + ' with ' + r + ' left over, because ' + d + ' × ' + q + ' = ' + (d*q) + ' and ' + n + ' − ' + (d*q) + ' = ' + r + '.');
+      r, n + ' ÷ ' + d + ' = ' + q + ' with ' + r + ' left over, because ' + d + ' × ' + q + ' = ' + (d*q) + ' and ' + n + ' − ' + (d*q) + ' = ' + r + '.',
+      /* MATHS KEYS REFUTATION G2 (2026-10-24): declare the count word, so "3 curry puffs"
+         grades like gPackRest's "92 boxes". r can be 1, so the singular is declared too. */
+      leftUnits(item));
   }
   function gQuotient(){
     const d = ri(3, 9), q = ri(10, 40), r = ri(1, d - 1), n = d*q + r;
     return finishTyped('How many groups of ' + d + ' can be made from ' + n + '?',
-      q, d + ' × ' + q + ' = ' + (d*q) + ', which is the closest you can get without passing ' + n + '. That makes ' + q + ' groups, with ' + r + ' left over.');
+      q, d + ' × ' + q + ' = ' + (d*q) + ', which is the closest you can get without passing ' + n + '. That makes ' + q + ' groups, with ' + r + ' left over.', 'groups');
   }
   function gBoxesNeeded(){
     const d = ri(4, 9), q = ri(6, 20), r = ri(1, d - 1), n = d*q + r;
     const who = pick(NAMES), item = pick(SNACKS);
     return coach(finishTyped(who + ' packs ' + n + ' ' + item + ' into boxes of ' + d + '. How many boxes are needed to hold all of them?',
-      q + 1, n + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + (r === 1 ? ' left over still needs a box,' : ' left over still need a box,') + ' so ' + who + ' needs ' + (q+1) + ' boxes.'),
+      q + 1, n + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + (r === 1 ? ' left over still needs a box,' : ' left over still need a box,') + ' so ' + who + ' needs ' + (q+1) + ' boxes.', 'boxes'),
       'Draw a model', [
         'Draw boxes of ' + d + '. ' + q + ' full boxes hold ' + q + ' × ' + d + ' = ' + (q * d) + '.',
         'That leaves ' + n + ' − ' + (q * d) + ' = ' + r + ' with no box yet.',
@@ -6473,7 +6543,7 @@ function gDivError(){
       ' eggs. ' + drop + ' eggs crack on the MRT ride home. How many good eggs are left?',
       trays*each - drop,
       'First find all the eggs: ' + trays + ' × ' + each + ' = ' + (trays*each) + '. Then take away the cracked ones: ' +
-      (trays*each) + ' − ' + drop + ' = ' + (trays*each - drop) + '.'),
+      (trays*each) + ' − ' + drop + ' = ' + (trays*each - drop) + '.', ['eggs', 'good eggs']),
       'Draw a model', [
         'Draw ' + trays + ' equal boxes for the trays, with ' + each + ' eggs in each.',
         'All the eggs: ' + trays + ' × ' + each + ' = ' + (trays * each) + '.',
@@ -6492,6 +6562,11 @@ function gDivError(){
   const sOrP = (n, one, many) => n + ' ' + (n === 1 ? one : many);
   /* a two-word count noun also accepts its last word: "42 tarts" on "pineapple tarts" */
   const unitOf = noun => noun.indexOf(' ') < 0 ? noun : [noun, noun.split(' ').pop()];
+  /* gLeftOver's remainder can be 1: "1 curry puff" is as right as "2 curry puffs" */
+  const leftUnits = noun => {
+    const many = [].concat(unitOf(noun));
+    return many.concat(many.filter(w => /s$/.test(w)).map(w => w.slice(0, -1)));
+  };
   const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   /* rest = d*q + r with 1 <= r <= d-1, rest in [lo, hi] */
   function drawRem(d, lo, hi, rMin){
@@ -10240,7 +10315,7 @@ function gAddError(){
       if (!legalFrac(c)) continue;                                 /* proper, bottom <= 12 */
       if (c[0] * d2 === (a2 + b) * c[1]) continue;                 /* the "wrong" claim is right */
       if (c[0] * d2 === a2 * c[1] || c[0] * d2 === b * c[1]) continue;  /* it IS an addend */
-      if (!cs.every((o, j) => j === ww || o[0] * c[1] !== c[0] * o[1])) continue;  /* one belief only */
+      if (!cs.every((o, j) => j === ww || Math.abs(o[0]) * c[1] !== c[0] * o[1])) continue;  /* one belief only; a child subtracts small from big, so "minus" also reads as b - a (Maths Keys Refutation G1, 2026-10-24) */
       out.push([a2, d2]);
     }
     return out;
@@ -10949,6 +11024,73 @@ function gTypedLeft(){
     }
   }
 
+  /* ===== GAP FILL 2026-10-24 (Syllabus Gaps audit, fill item 3): dollars and cents ==
+     The P2 prerequisite P3 papers use in passing: "$7.05 = ? ¢", "485¢ = $?", and
+     change asked for in cents. Charlotte scored 0/2 on money in her 10-24 mock, so the
+     stems say the unit twice (the symbol and "in cents" / "in dollars") and give a
+     worked format, and the grader takes every reasonable way she could type it:
+       cents answers  declare 'cents' ('¢' is its alias): 705, 705¢, 705 cents pass;
+       dollar answers declare '$':           4.85, $4.85, 4.85 dollars pass, and so do
+                                             4.5 / $4.50 for $4.50 (numeric compare).
+     The named slips: $7.05 -> 75¢ (the 0 after the point dropped) and 485¢ -> $48.50
+     (two places instead of one hundred). Coached where the key is a whole number of
+     cents; gToDollars's key is a decimal, which tools/coach-steps.mjs cannot check,
+     so it teaches through its explanation alone, like the rest of this file. */
+  const coach = (q, technique, steps) => (q.technique = technique, q.steps = steps, q);
+  /* Release B integrate (2026-10-24): a plain 'cents'. Maths Keys fix B made '¢' a
+     core.js alias of cents, so ['cents','¢'] declared one unit twice (gen-sanity's
+     unit-array rule); 705, 705¢ and 705 cents all still grade. */
+  const CENTS = 'cents';
+  const asCents = (q, c) => (q.answerText = c + '¢', q);
+  /* a dollars-and-cents amount; 2 draws in 5 put a 0 straight after the point ($7.05) */
+  function dcAmount(dLo, dHi){
+    const d = ri(dLo, dHi);
+    const c = Math.random() < 0.4 ? 5 : cents(10, 95);
+    return d * 100 + c;
+  }
+  const centsPart = c => c % 100 < 10 ? '0' + (c % 100) : String(c % 100);
+  function gToCents(){
+    const v = dcAmount(1, 9), d = Math.floor(v / 100), c = v % 100;
+    const zero = c < 10;
+    const q = finishTyped(money(v) + ' = ? ¢. Write the amount in cents.', v,
+      '$1 = 100¢, so $' + d + ' = ' + (d * 100) + '¢. The two digits after the point are the cents: .' + centsPart(v) + ' is ' + c + '¢. ' +
+      'Together: ' + (d * 100) + '¢ + ' + c + '¢ = ' + v + '¢.' +
+      (zero ? ' It is not ' + d + c + '¢: the 0 after the point shows there are no ten-cents, and dropping it loses a whole place.' : ''),
+      CENTS);
+    return band(asCents(coach(q, 'Units check', [
+      'The answer is in cents, and $1 = 100 cents. Change the dollars first, then add the cents.',
+      '$' + d + ' is ' + d + ' × 100 = ' + (d * 100) + ' cents.',
+      zero ? 'The two digits after the point are the cents: .' + centsPart(v) + ' is ' + c + ' cents. The 0 shows there are no ten-cents.'
+           : 'The two digits after the point are the cents: .' + centsPart(v) + ' is ' + c + ' cents.',
+      'Put the dollars and the cents together: ' + (d * 100) + ' + ' + c + ' = <b>' + v + '¢</b>.']), v), 2);
+  }
+  function gToDollars(){
+    const small = Math.random() < 0.15;
+    const v = small ? cents(10, 95) : dcAmount(1, 9), d = Math.floor(v / 100), c = v % 100;
+    const ex = '100¢ = $1. ' + (d ? v + '¢ is ' + (d * 100) + '¢ + ' + c + '¢, which is $' + d + ' and ' + c + '¢. ' : v + '¢ is less than 100¢, so it is no whole dollars and ' + c + '¢. ') +
+      'Write the cents as the two digits after the point: ' + v + '¢ = ' + money(v) + '. ' +
+      'It is not ' + money(v * 10) + ': that would be ' + (v * 10) + '¢.' +
+      (c < 10 ? ' And ' + c + '¢ needs a 0 in front of it after the point, so it is .' + centsPart(v) + ', not .' + c + '0.' : '');
+    return band(asMoney(finishTyped(v + '¢ = $ ? Write the amount in dollars. (Type the dollars and cents, e.g. 12.40.)',
+      dollars(v), ex, '$'), v), 2);
+  }
+  /* change from a note, asked in cents (always under $1, the way papers ask it) */
+  const CHANGE_FROM = [[2, CHEAP], [5, MEALS], [10, BIG]];
+  function gChangeCents(){
+    const who = pick(NAMES), [note, list] = pick(CHANGE_FROM);
+    const chg = cents(5, 95), cost = note * 100 - chg, d = Math.floor(cost / 100), c = cost % 100;
+    const item = pick(list);
+    const q = finishTyped(who + ' buys ' + item + ' for ' + money(cost) + ' at ' + pick(STALLS) + ' and pays with a ' + usd(note) +
+      ' note. How much change does ' + who + ' get? Write your answer in cents.', chg,
+      'Change everything to cents first: ' + usd(note) + ' = ' + (note * 100) + '¢ and ' + money(cost) + ' = ' + cost + '¢. ' +
+      'Change = money paid − cost: ' + (note * 100) + '¢ − ' + cost + '¢ = ' + chg + '¢.', CENTS);
+    return band(asCents(coach(q, 'Units check', [
+      'The answer is in cents, so change both amounts into cents first. $1 = 100 cents.',
+      'The ' + usd(note) + ' note is ' + note + ' × 100 = ' + (note * 100) + ' cents. The ' + item.replace(/^an? /, '') + ' costs ' + money(cost) + ', which is ' +
+        d + ' × 100 + ' + c + ' = ' + cost + ' cents.',
+      'Change is what was paid take away the cost: ' + (note * 100) + ' − ' + cost + ' = <b>' + chg + '¢</b>.']), chg), 2);
+  }
+
   MQI.registerTopic({
     id:'p3money', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Money: adding and subtracting money in decimal notation",
@@ -10958,11 +11100,12 @@ function gTypedLeft(){
       sub:   {label:'Subtracting money', tip:'Cents will not subtract? Change one dollar into 100 cents, the same as borrowing a ten.'},
       change:{label:'Working out change', tip:'Two steps: total the items first, then take that away from the note handed over.'},
       bundle:{label:'Bundles and best buys', tip:'At the shop, ask: is "3 for $4" cheaper than buying one by one? How many bundles fit, and what is left over?'},
-      reverse:{label:'Working backwards with money', tip:'Change and money left were NOT spent: take them away from what was paid first, then take away the prices you know.'}
+      reverse:{label:'Working backwards with money', tip:'Change and money left were NOT spent: take them away from what was paid first, then take away the prices you know.'},
+      cents:  {label:'Dollars and cents', tip:'$1 = 100¢. Read a price out loud as dollars and cents: $7.05 is 7 dollars and 5 cents, so 705¢ (not 75¢).'}
     },
     pools:{
-      1:[[gAddTwo,'add'],[gSubSmall,'sub']],
-      2:[[gAddBig,'add'],[gSubBorrow,'sub'],[gSpendTwoLeft,'sub']],
+      1:[[gAddTwo,'add'],[gSubSmall,'sub'],[gToCents,'cents'],[gToDollars,'cents']],
+      2:[[gAddBig,'add'],[gSubBorrow,'sub'],[gSpendTwoLeft,'sub'],[gChangeCents,'change']],
       3:[[gChange,'change'],[gAddThree,'add'],[gBundleLeast,'bundle'],[gBundlePacks,'bundle'],[gBundleHowMany,'bundle'],
          [gReverseChange,'reverse'],[gMissingItem,'reverse'],[gMoreThanLeft,'sub']]
     }
@@ -11433,6 +11576,49 @@ function gTypedLeft(){
       'The last ' + R[1] + ' is number ' + i2 + ' + ' + (last - i2) + ' = <b>' + last + '</b>, so there are ' + last + ' ' + R[0] + '.']), 3, true);
   }
 
+  /* GAP FILL 2026-10-24 (Syllabus Gaps audit, fill item 2): choosing the unit.
+     "Which unit would you use to measure ...?" Modelled on p3time.gUnitJudge: one
+     everyday thing, four unit options. The options always hold EVERY unit of the
+     key's own kind (km, m and cm for a length), so the choice is the size of the
+     unit, never just "which one is a length unit"; the rest come from the other
+     kinds. MCQ, no figure. Not coached: the key is a unit, not a number, and
+     tools/coach-steps.mjs can only check steps that reach a numeric key. */
+  const UNIT_KIND = { km:'len', m:'len', cm:'len', kg:'mass', g:'mass', 'ℓ':'vol', ml:'vol' };
+  const UNIT_THINGS = [
+    ['the distance from Jurong East to Changi Airport', 'km'], ['the distance from Woodlands to Marina Bay', 'km'],
+    ['the distance from Singapore to Johor Bahru', 'km'], ['the length of the North-South MRT line', 'km'],
+    ['the length of a classroom', 'm'], ['the height of a flagpole', 'm'], ['the length of a swimming pool', 'm'],
+    ['the height of an HDB block', 'm'], ['the length of a school bus', 'm'],
+    ['the length of a pencil', 'cm'], ['the length of an eraser', 'cm'], ['the width of a textbook', 'cm'],
+    ['the length of a spoon', 'cm'], ['the height of a water bottle', 'cm'],
+    ['the mass of a durian', 'kg'], ['the mass of a bag of rice', 'kg'], ['the mass of a P3 pupil', 'kg'],
+    ['the mass of a watermelon', 'kg'], ['the mass of a suitcase', 'kg'],
+    ['the mass of an eraser', 'g'], ['the mass of a paper clip', 'g'], ['the mass of a 20-cent coin', 'g'],
+    ['the mass of a strawberry', 'g'], ['the mass of a pencil', 'g'],
+    ['the volume of water in a full bathtub', 'ℓ'], ['the volume of water in a fish tank', 'ℓ'],
+    ['the volume of water in a full bucket', 'ℓ'], ['the volume of petrol in a car\'s tank', 'ℓ'],
+    ['the volume of water in a cup', 'ml'], ['the volume of medicine in a teaspoon', 'ml'],
+    ['the volume of drink in a can of soya bean milk', 'ml'], ['the volume of water in a glass', 'ml']
+  ];
+  const UNIT_KIND_WHY = {
+    len:  'For a length: km is for long distances you travel, m is for rooms, buildings and pools, and cm is for things you can hold in your hand.',
+    mass: 'For a mass: kg is for heavy things you lift with your arms, and g is for light things you hold in your fingers.',
+    vol:  'For a volume of liquid: ℓ is for big containers like a bucket or a tank, and ml is for small amounts like a cup or a spoon.'
+  };
+  const UNIT_KIND_NAME = { len:'how long something is', mass:'how heavy something is', vol:'how much liquid there is' };
+  function gUnitPick(){
+    const [thing, key] = pick(UNIT_THINGS), kind = UNIT_KIND[key];
+    const same = Object.keys(UNIT_KIND).filter(u => UNIT_KIND[u] === kind && u !== key);
+    const other = shuffle(Object.keys(UNIT_KIND).filter(u => UNIT_KIND[u] !== kind)).slice(0, 3 - same.length);
+    const opts = shuffle([key].concat(same, other));
+    const others = [...new Set(other.map(u => UNIT_KIND[u]))].map(k => UNIT_KIND_NAME[k]);
+    const explain = UNIT_KIND_WHY[kind] + ' So for ' + thing + ', use ' + key + '. ' +
+      other.join(' and ') + (other.length === 1 ? ' measures ' : ' measure ') + others.join(' or ') +
+      ', so ' + (other.length === 1 ? 'it does' : 'they do') + ' not fit here.';
+    return { q: 'Which unit would you use to measure ' + thing + '?', extra: '', choices: opts,
+             correct: opts.indexOf(key), explain, answerText: key, band: 2 };
+  }
+
   MQI.registerTopic({
     id:'p3measure', level:'P3', strand:'Measurement and Geometry',
     moeSubTopic:"Length, Mass and Volume: measuring length/mass/volume (of liquid) in compound units; converting a measurement in compound units to the smaller unit, and vice versa",
@@ -11442,10 +11628,11 @@ function gTypedLeft(){
       tocompound:{label:'Smaller unit to compound', tip:'Read the number backwards: 3250 g splits into 3 kg and the 250 g left over.'},
       word:      {label:'Measurement word problems', tip:'Convert to the smaller unit first, then add or subtract. Mixing units is where marks are lost.'},
       multistep: {label:'Multi-step measurement problems', tip:'Change everything to the smaller unit first, then draw a model before you calculate.'},
-      gaps:      {label:'Posts and gaps', tip:'Count the gaps, not the posts: with a post at each end there is always one more post than gaps.'}
+      gaps:      {label:'Posts and gaps', tip:'Count the gaps, not the posts: with a post at each end there is always one more post than gaps.'},
+      choose:    {label:'Choosing the unit', tip:'Point at things at home and ask: km, m or cm? kg or g? litres or ml? Long trips are km, rooms are m, things in your hand are cm.'}
     },
     pools:{
-      1:[[gToSmallEasy,'tosmall'],[gToCompoundSmall,'tocompound']],
+      1:[[gToSmallEasy,'tosmall'],[gToCompoundSmall,'tocompound'],[gUnitPick,'choose']],
       2:[[gToCompoundBig,'tocompound'],[gWordLeft,'word'],[gEndToEnd,'gaps'],[gPostSpan,'gaps']],
       3:[[gToSmallZero,'tosmall'],[gWordCompare,'word'],[gTimesAsMuch,'multistep'],[gUseThenShare,'multistep'],
          [gPourIn,'multistep'],[gCompareTotal,'multistep'],[gPackedBack,'multistep'],[gLineLength,'gaps'],[gTwoSpans,'gaps'],
@@ -14656,7 +14843,10 @@ function gHeadsLegs(){
   const g=ri(1,5), c=ri(2,7);
   const heads=g+c, legs=4*g+2*c;
   return finishTyped('A farm has chickens and goats. There are <b>'+heads+' heads</b> and <b>'+legs+' legs</b>. How many <b>goats</b>?',
-    g,'Guess and check: if all '+heads+' were chickens there would be '+(2*heads)+' legs. The extra '+(legs-2*heads)+' legs ÷ 2 = '+g+(g===1?' goat.':' goats.'));
+    g,'Guess and check: if all '+heads+' were chickens there would be '+(2*heads)+' legs. The extra '+(legs-2*heads)+' legs ÷ 2 = '+g+(g===1?' goat.':' goats.'),
+    /* Maths Keys Refutation G2 (2026-10-24): declare the count word so "5 goats" passes;
+       g can be 1, so the singular is declared too. */
+    ['goats','goat']);
 }
 function gMakeHundred(){
   const a=ri(11,89);
@@ -22025,4 +22215,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20261023-6dd0d6e */
+/* ENGINE_BUILD_END 20261024-539bd38 */

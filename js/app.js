@@ -1898,6 +1898,9 @@ MQI.boot = function () {
   $('muteBtn').addEventListener('click',()=>{ muted=!muted; DB.muted=muted; saveData(); $('muteBtn').textContent=muted?'🔇':'🔊'; });
   $('typedGo').addEventListener('click',answerTyped);
   $('typedInput').addEventListener('keydown',e=>{ if(e.key==='Enter') answerTyped(); });
+  /* Maths Keys Refutation G5 (2026-10-24): in a mock, record what is in the box as she
+     types, so a paper the clock ends (or a reload) keeps the answer on screen. */
+  $('typedInput').addEventListener('input',()=>{ if(mockActive()){ mockCommitTyped(); mockSave(); } });
   $('tabGlobal').addEventListener('click',()=>{ fameTab='global'; renderFame(); });
   $('tabLocal').addEventListener('click',()=>{ fameTab='local'; renderFame(); });
   $('tabPatch').addEventListener('click',()=>{ fameTab='patchwerk'; renderFame(); });

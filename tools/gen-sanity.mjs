@@ -1926,6 +1926,25 @@ function p3moneyOracle(q) {
     const [H, a, b] = m.slice(1, 4).map(x => toC('$' + x));
     return typedMoney(H - b - a);
   }
+  /* GAP FILL 2026-10-24: dollars <-> cents. Re-derived by moving the digits, never by
+     the generator's arithmetic: "$7.05" -> "705"; "485" -> "4.85". A cents answer must
+     declare ['cents','¢'] so 705, 705¢ and 705 cents all grade; a dollars answer is
+     the house typedMoney ('$', answerText $x.xx). */
+  const centsItem = want => {
+    if (bandBad()) return bandBad();
+    if (!q.typed) return 'p3money cents: expected a typed item';
+    const u = ctx.MQI.unitList(q.unit);
+    if (u[0] !== 'cents' || u.indexOf('¢') < 0) return `p3money cents: must declare ['cents','¢'], got ${JSON.stringify(q.unit)}`;
+    if (key !== want + '¢') return `p3money cents: answerText should be ${want}¢, got ${key}`;
+    return q.answer === want ? null : `p3money cents: expected ${want}, got ${q.answer}`;
+  };
+  if ((m = text.match(/^\$(\d+)\.(\d{2}) = \? ¢\. Write the amount in cents\.$/))) return centsItem(Number(m[1] + m[2]));
+  if ((m = text.match(/^(\d+)¢ = \$ \? Write the amount in dollars\./))) return typedMoney(Number(m[1]));
+  if ((m = text.match(/ for \$(\d+)\.(\d{2}) at .+ and pays with a \$(\d+) note\. How much change does .+ get\? Write your answer in cents\.$/))) {
+    const chg = Number(m[3] + '00') - Number(m[1] + m[2]);
+    if (chg <= 0 || chg >= 100) return `p3money change in cents: change ${chg}¢ is not between 1¢ and 99¢`;
+    return centsItem(chg);
+  }
   if (/change should|in total\?|money is left\?/.test(text)) return undefined;
   return `p3money: unrecognised stem (${text})`;
 }
@@ -2707,6 +2726,27 @@ function p3measureOracle(q) {
   const opts = (q.choices || []).map(strip);
   const key = strip(q.answerText);
   let m;
+  /* GAP FILL 2026-10-24: choosing the unit (gUnitPick). The harness's own table of
+     which unit fits which thing; the options must hold every unit of the key's kind
+     (so the item tests the size of the unit, not only its kind) and four different
+     units in all. */
+  if ((m = text.match(/^Which unit would you use to measure (.+)\?$/))) {
+    const KIND = { km: 'L', m: 'L', cm: 'L', kg: 'M', g: 'M', 'ℓ': 'V', ml: 'V' };
+    const t = m[1];
+    const want = /^the distance from|MRT line$/.test(t) ? 'km'
+      : /^the (length|height) of (a classroom|a flagpole|a swimming pool|an HDB block|a school bus)$/.test(t) ? 'm'
+      : /^the (length|width|height) of /.test(t) ? 'cm'
+      : /^the mass of (a durian|a bag of rice|a P3 pupil|a watermelon|a suitcase)$/.test(t) ? 'kg'
+      : /^the mass of /.test(t) ? 'g'
+      : /^the volume of .*(bathtub|fish tank|bucket|petrol)/.test(t) ? 'ℓ'
+      : /^the volume of /.test(t) ? 'ml' : null;
+    if (!want) return `p3measure unit pick: "${t}" is not in the harness's own table`;
+    if (q.typed || opts.length !== 4 || new Set(opts).size !== 4) return 'p3measure unit pick: expected 4 different options';
+    if (opts.some(o => !(o in KIND))) return `p3measure unit pick: an option is not a unit (${opts.join(' | ')})`;
+    if (Object.keys(KIND).some(u => KIND[u] === KIND[want] && opts.indexOf(u) < 0)) return `p3measure unit pick: not every ${KIND[want]} unit is on the row (${opts.join(' | ')})`;
+    if (ex.indexOf('use ' + want) < 0) return `p3measure unit pick: the teaching card never says "use ${want}"`;
+    return key === want ? null : `p3measure unit pick: expected ${want}, got ${key}`;
+  }
   const ordBad = pmOrdOk(text);
   const numMC = (want, unit, what) => {
     if (q.typed || opts.length !== 4) return `p3measure ${what}: expected a 4-option MCQ`;
@@ -2953,6 +2993,29 @@ function p3HardNumbersOracle(q) {
       return q.answer === f ? null : fail(`pattern pile: expected ${f}, got ${q.answer}`);
     }
     return fail('pattern: no reader for the question: ' + text);
+  }
+
+  /* GAP FILL 2026-10-24: words -> numeral, TYPED (gWordsToNumTyped). A word parser
+     written here, not the generator's inWords; the number must be 4-digit with a
+     zero after its thousands digit (the zero is what the item teaches), carry no
+     unit, and the stem must be the SG/UK spelling the parser reads back exactly. */
+  if ((m = text.match(/^Write ([a-z ,-]+) in numerals\.$/))) {
+    const U = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11,
+      twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
+      twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+    let tot = 0, cur = 0, ok = true;
+    for (const w of m[1].replace(/[,-]/g, ' ').split(/\s+/).filter(Boolean)) {
+      if (w === 'and') continue;
+      if (w === 'hundred') { cur *= 100; continue; }
+      if (w === 'thousand') { tot += cur * 1000; cur = 0; continue; }
+      if (!(w in U)) { ok = false; break; }
+      cur += U[w];
+    }
+    const n = tot + cur;
+    if (!ok || n < 1000 || n > 9999) return fail(`words->numeral typed: "${m[1]}" does not read as a 4-digit number`);
+    if (!String(n).slice(1).includes('0')) return fail(`words->numeral typed: ${n} has no zero after its thousands digit`);
+    if (unit) return fail('words->numeral typed: a numeral carries no unit');
+    return q.answer === n ? null : fail(`words->numeral typed: expected ${n}, got ${q.answer}`);
   }
   return fail('no oracle matched this typed stem - every typed p3numbers generator must ship its oracle: ' + text);
 }

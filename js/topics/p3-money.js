@@ -300,6 +300,70 @@
     }
   }
 
+  /* ===== GAP FILL 2026-10-24 (Syllabus Gaps audit, fill item 3): dollars and cents ==
+     The P2 prerequisite P3 papers use in passing: "$7.05 = ? ¢", "485¢ = $?", and
+     change asked for in cents. Charlotte scored 0/2 on money in her 10-24 mock, so the
+     stems say the unit twice (the symbol and "in cents" / "in dollars") and give a
+     worked format, and the grader takes every reasonable way she could type it:
+       cents answers  declare ['cents','¢']: 705, 705¢ and 705 cents all pass;
+       dollar answers declare '$':           4.85, $4.85, 4.85 dollars pass, and so do
+                                             4.5 / $4.50 for $4.50 (numeric compare).
+     The named slips: $7.05 -> 75¢ (the 0 after the point dropped) and 485¢ -> $48.50
+     (two places instead of one hundred). Coached where the key is a whole number of
+     cents; gToDollars's key is a decimal, which tools/coach-steps.mjs cannot check,
+     so it teaches through its explanation alone, like the rest of this file. */
+  const coach = (q, technique, steps) => (q.technique = technique, q.steps = steps, q);
+  const CENTS = ['cents', '¢'];
+  const asCents = (q, c) => (q.answerText = c + '¢', q);
+  /* a dollars-and-cents amount; 2 draws in 5 put a 0 straight after the point ($7.05) */
+  function dcAmount(dLo, dHi){
+    const d = ri(dLo, dHi);
+    const c = Math.random() < 0.4 ? 5 : cents(10, 95);
+    return d * 100 + c;
+  }
+  const centsPart = c => c % 100 < 10 ? '0' + (c % 100) : String(c % 100);
+  function gToCents(){
+    const v = dcAmount(1, 9), d = Math.floor(v / 100), c = v % 100;
+    const zero = c < 10;
+    const q = finishTyped(money(v) + ' = ? ¢. Write the amount in cents.', v,
+      '$1 = 100¢, so $' + d + ' = ' + (d * 100) + '¢. The two digits after the point are the cents: .' + centsPart(v) + ' is ' + c + '¢. ' +
+      'Together: ' + (d * 100) + '¢ + ' + c + '¢ = ' + v + '¢.' +
+      (zero ? ' It is not ' + d + c + '¢: the 0 after the point shows there are no ten-cents, and dropping it loses a whole place.' : ''),
+      CENTS);
+    return band(asCents(coach(q, 'Units check', [
+      'The answer is in cents, and $1 = 100 cents. Change the dollars first, then add the cents.',
+      '$' + d + ' is ' + d + ' × 100 = ' + (d * 100) + ' cents.',
+      zero ? 'The two digits after the point are the cents: .' + centsPart(v) + ' is ' + c + ' cents. The 0 shows there are no ten-cents.'
+           : 'The two digits after the point are the cents: .' + centsPart(v) + ' is ' + c + ' cents.',
+      'Put the dollars and the cents together: ' + (d * 100) + ' + ' + c + ' = <b>' + v + '¢</b>.']), v), 2);
+  }
+  function gToDollars(){
+    const small = Math.random() < 0.15;
+    const v = small ? cents(10, 95) : dcAmount(1, 9), d = Math.floor(v / 100), c = v % 100;
+    const ex = '100¢ = $1. ' + (d ? v + '¢ is ' + (d * 100) + '¢ + ' + c + '¢, which is $' + d + ' and ' + c + '¢. ' : v + '¢ is less than 100¢, so it is no whole dollars and ' + c + '¢. ') +
+      'Write the cents as the two digits after the point: ' + v + '¢ = ' + money(v) + '. ' +
+      'It is not ' + money(v * 10) + ': that would be ' + (v * 10) + '¢.' +
+      (c < 10 ? ' And ' + c + '¢ needs a 0 in front of it after the point, so it is .' + centsPart(v) + ', not .' + c + '0.' : '');
+    return band(asMoney(finishTyped(v + '¢ = $ ? Write the amount in dollars. (Type the dollars and cents, e.g. 12.40.)',
+      dollars(v), ex, '$'), v), 2);
+  }
+  /* change from a note, asked in cents (always under $1, the way papers ask it) */
+  const CHANGE_FROM = [[2, CHEAP], [5, MEALS], [10, BIG]];
+  function gChangeCents(){
+    const who = pick(NAMES), [note, list] = pick(CHANGE_FROM);
+    const chg = cents(5, 95), cost = note * 100 - chg, d = Math.floor(cost / 100), c = cost % 100;
+    const item = pick(list);
+    const q = finishTyped(who + ' buys ' + item + ' for ' + money(cost) + ' at ' + pick(STALLS) + ' and pays with a ' + usd(note) +
+      ' note. How much change does ' + who + ' get? Write your answer in cents.', chg,
+      'Change everything to cents first: ' + usd(note) + ' = ' + (note * 100) + '¢ and ' + money(cost) + ' = ' + cost + '¢. ' +
+      'Change = money paid − cost: ' + (note * 100) + '¢ − ' + cost + '¢ = ' + chg + '¢.', CENTS);
+    return band(asCents(coach(q, 'Units check', [
+      'The answer is in cents, so change both amounts into cents first. $1 = 100 cents.',
+      'The ' + usd(note) + ' note is ' + note + ' × 100 = ' + (note * 100) + ' cents. The ' + item.replace(/^an? /, '') + ' costs ' + money(cost) + ', which is ' +
+        d + ' × 100 + ' + c + ' = ' + cost + ' cents.',
+      'Change is what was paid take away the cost: ' + (note * 100) + ' − ' + cost + ' = <b>' + chg + '¢</b>.']), chg), 2);
+  }
+
   MQI.registerTopic({
     id:'p3money', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Money: adding and subtracting money in decimal notation",
@@ -309,11 +373,12 @@
       sub:   {label:'Subtracting money', tip:'Cents will not subtract? Change one dollar into 100 cents, the same as borrowing a ten.'},
       change:{label:'Working out change', tip:'Two steps: total the items first, then take that away from the note handed over.'},
       bundle:{label:'Bundles and best buys', tip:'At the shop, ask: is "3 for $4" cheaper than buying one by one? How many bundles fit, and what is left over?'},
-      reverse:{label:'Working backwards with money', tip:'Change and money left were NOT spent: take them away from what was paid first, then take away the prices you know.'}
+      reverse:{label:'Working backwards with money', tip:'Change and money left were NOT spent: take them away from what was paid first, then take away the prices you know.'},
+      cents:  {label:'Dollars and cents', tip:'$1 = 100¢. Read a price out loud as dollars and cents: $7.05 is 7 dollars and 5 cents, so 705¢ (not 75¢).'}
     },
     pools:{
-      1:[[gAddTwo,'add'],[gSubSmall,'sub']],
-      2:[[gAddBig,'add'],[gSubBorrow,'sub'],[gSpendTwoLeft,'sub']],
+      1:[[gAddTwo,'add'],[gSubSmall,'sub'],[gToCents,'cents'],[gToDollars,'cents']],
+      2:[[gAddBig,'add'],[gSubBorrow,'sub'],[gSpendTwoLeft,'sub'],[gChangeCents,'change']],
       3:[[gChange,'change'],[gAddThree,'add'],[gBundleLeast,'bundle'],[gBundlePacks,'bundle'],[gBundleHowMany,'bundle'],
          [gReverseChange,'reverse'],[gMissingItem,'reverse'],[gMoreThanLeft,'sub']]
     }

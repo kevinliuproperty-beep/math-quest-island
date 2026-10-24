@@ -460,6 +460,49 @@
       'The last ' + R[1] + ' is number ' + i2 + ' + ' + (last - i2) + ' = <b>' + last + '</b>, so there are ' + last + ' ' + R[0] + '.']), 3, true);
   }
 
+  /* GAP FILL 2026-10-24 (Syllabus Gaps audit, fill item 2): choosing the unit.
+     "Which unit would you use to measure ...?" Modelled on p3time.gUnitJudge: one
+     everyday thing, four unit options. The options always hold EVERY unit of the
+     key's own kind (km, m and cm for a length), so the choice is the size of the
+     unit, never just "which one is a length unit"; the rest come from the other
+     kinds. MCQ, no figure. Not coached: the key is a unit, not a number, and
+     tools/coach-steps.mjs can only check steps that reach a numeric key. */
+  const UNIT_KIND = { km:'len', m:'len', cm:'len', kg:'mass', g:'mass', 'ℓ':'vol', ml:'vol' };
+  const UNIT_THINGS = [
+    ['the distance from Jurong East to Changi Airport', 'km'], ['the distance from Woodlands to Marina Bay', 'km'],
+    ['the distance from Singapore to Johor Bahru', 'km'], ['the length of the North-South MRT line', 'km'],
+    ['the length of a classroom', 'm'], ['the height of a flagpole', 'm'], ['the length of a swimming pool', 'm'],
+    ['the height of an HDB block', 'm'], ['the length of a school bus', 'm'],
+    ['the length of a pencil', 'cm'], ['the length of an eraser', 'cm'], ['the width of a textbook', 'cm'],
+    ['the length of a spoon', 'cm'], ['the height of a water bottle', 'cm'],
+    ['the mass of a durian', 'kg'], ['the mass of a bag of rice', 'kg'], ['the mass of a P3 pupil', 'kg'],
+    ['the mass of a watermelon', 'kg'], ['the mass of a suitcase', 'kg'],
+    ['the mass of an eraser', 'g'], ['the mass of a paper clip', 'g'], ['the mass of a 20-cent coin', 'g'],
+    ['the mass of a strawberry', 'g'], ['the mass of a pencil', 'g'],
+    ['the volume of water in a full bathtub', 'ℓ'], ['the volume of water in a fish tank', 'ℓ'],
+    ['the volume of water in a full bucket', 'ℓ'], ['the volume of petrol in a car\'s tank', 'ℓ'],
+    ['the volume of water in a cup', 'ml'], ['the volume of medicine in a teaspoon', 'ml'],
+    ['the volume of drink in a can of soya bean milk', 'ml'], ['the volume of water in a glass', 'ml']
+  ];
+  const UNIT_KIND_WHY = {
+    len:  'For a length: km is for long distances you travel, m is for rooms, buildings and pools, and cm is for things you can hold in your hand.',
+    mass: 'For a mass: kg is for heavy things you lift with your arms, and g is for light things you hold in your fingers.',
+    vol:  'For a volume of liquid: ℓ is for big containers like a bucket or a tank, and ml is for small amounts like a cup or a spoon.'
+  };
+  const UNIT_KIND_NAME = { len:'how long something is', mass:'how heavy something is', vol:'how much liquid there is' };
+  function gUnitPick(){
+    const [thing, key] = pick(UNIT_THINGS), kind = UNIT_KIND[key];
+    const same = Object.keys(UNIT_KIND).filter(u => UNIT_KIND[u] === kind && u !== key);
+    const other = shuffle(Object.keys(UNIT_KIND).filter(u => UNIT_KIND[u] !== kind)).slice(0, 3 - same.length);
+    const opts = shuffle([key].concat(same, other));
+    const others = [...new Set(other.map(u => UNIT_KIND[u]))].map(k => UNIT_KIND_NAME[k]);
+    const explain = UNIT_KIND_WHY[kind] + ' So for ' + thing + ', use ' + key + '. ' +
+      other.join(' and ') + (other.length === 1 ? ' measures ' : ' measure ') + others.join(' or ') +
+      ', so ' + (other.length === 1 ? 'it does' : 'they do') + ' not fit here.';
+    return { q: 'Which unit would you use to measure ' + thing + '?', extra: '', choices: opts,
+             correct: opts.indexOf(key), explain, answerText: key, band: 2 };
+  }
+
   MQI.registerTopic({
     id:'p3measure', level:'P3', strand:'Measurement and Geometry',
     moeSubTopic:"Length, Mass and Volume: measuring length/mass/volume (of liquid) in compound units; converting a measurement in compound units to the smaller unit, and vice versa",
@@ -469,10 +512,11 @@
       tocompound:{label:'Smaller unit to compound', tip:'Read the number backwards: 3250 g splits into 3 kg and the 250 g left over.'},
       word:      {label:'Measurement word problems', tip:'Convert to the smaller unit first, then add or subtract. Mixing units is where marks are lost.'},
       multistep: {label:'Multi-step measurement problems', tip:'Change everything to the smaller unit first, then draw a model before you calculate.'},
-      gaps:      {label:'Posts and gaps', tip:'Count the gaps, not the posts: with a post at each end there is always one more post than gaps.'}
+      gaps:      {label:'Posts and gaps', tip:'Count the gaps, not the posts: with a post at each end there is always one more post than gaps.'},
+      choose:    {label:'Choosing the unit', tip:'Point at things at home and ask: km, m or cm? kg or g? litres or ml? Long trips are km, rooms are m, things in your hand are cm.'}
     },
     pools:{
-      1:[[gToSmallEasy,'tosmall'],[gToCompoundSmall,'tocompound']],
+      1:[[gToSmallEasy,'tosmall'],[gToCompoundSmall,'tocompound'],[gUnitPick,'choose']],
       2:[[gToCompoundBig,'tocompound'],[gWordLeft,'word'],[gEndToEnd,'gaps'],[gPostSpan,'gaps']],
       3:[[gToSmallZero,'tosmall'],[gWordCompare,'word'],[gTimesAsMuch,'multistep'],[gUseThenShare,'multistep'],
          [gPourIn,'multistep'],[gCompareTotal,'multistep'],[gPackedBack,'multistep'],[gLineLength,'gaps'],[gTwoSpans,'gaps'],

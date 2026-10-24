@@ -3071,6 +3071,27 @@ function gFigurePattern(){
 }
 
 
+  /* GAP FILL 2026-10-24 (Syllabus Gaps audit, fill item 4): numbers from words, TYPED.
+     gWordsToNum asks this as an MCQ; real Booklet B sets it as a 1-mark short answer
+     ("Write eight thousand and eight in numerals"), so here she writes the numeral
+     herself. Same zero-holding numbers as gWordsToNum (zeroNumber: 8008, 4060, 4035,
+     4605, 4650, 4600, the teens), because the zero is the whole difficulty. Coached:
+     list the four places, then add the parts that were said. */
+  const coachN = (q, technique, steps) => (q.technique = technique, q.steps = steps, q);
+  function gWordsToNumTyped(){
+    const n = zeroNumber(false);
+    const d = [Math.floor(n / 1000), Math.floor(n / 100) % 10, Math.floor(n / 10) % 10, n % 10];
+    const r = n % 100;
+    /* the parts that are said out loud: a teen ("and fourteen") is said as one part */
+    const parts = [d[0] * 1000, d[1] * 100].concat(r < 20 ? [r] : [d[2] * 10, d[3]]).filter(x => x > 0);
+    const unsaid = ['hundreds', 'tens', 'ones'].filter((_, i) => d[i + 1] === 0);
+    return band(coachN(finishTyped('Write <b>' + inWords(n) + '</b> in numerals.', n, wordsWhy(n)), 'Make a list', [
+      'Say it in parts and list the four places: thousands, hundreds, tens, ones.',
+      'Thousands ' + d[0] + ', hundreds ' + d[1] + ', tens ' + d[2] + ', ones ' + d[3] + '. ' +
+        'No ' + unsaid.join(' and no ') + ' are said, so ' + (unsaid.length === 1 ? 'that place gets' : 'those places get') + ' a 0.',
+      'Add the parts that were said: ' + parts.join(' + ') + ' = <b>' + n + '</b>. It has 4 digits, like every number in the thousands.']), 2);
+  }
+
   MQI.registerTopic({
     id:'p3numbers', level:'P3', strand:'Number and Algebra',
     moeSubTopic:"Numbers up to 10 000: number notation, representations and place values (thousands, hundreds, tens, ones); comparing and ordering numbers; patterns in number sequences. Addition and Subtraction: addition and subtraction algorithms (up to 4 digits); mental calculation involving addition and subtraction of two 2-digit numbers",
@@ -3097,7 +3118,7 @@ function gFigurePattern(){
       2:[[gExpanded,'place'],[gBuildNum,'place'],[gNumToWords,'place'],[gSmallest,'compare'],[gBetween,'compare'],
          [gPattern4,'pattern'],[gMoreLess,'pattern'],[gSubRegroup,'addsub'],
          [gMissingAddend,'addsub'],[gMentalMake,'addsub'],[gMentalTakeTens,'addsub'],
-         [gDigitCards,'place']],
+         [gDigitCards,'place'],[gWordsToNumTyped,'place']],
       3:[[gStandsCompare,'place'],[gStandsFix,'place'],[gZeroFix,'place'],
          [gOrder,'compare'],[gBetweenWorded,'compare'],
          [gPatternMissing,'pattern'],[gPatternOdd,'pattern'],

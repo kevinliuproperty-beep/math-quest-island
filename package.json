@@ -10,6 +10,7 @@
     "test:feed": "node tools/feed-sim.mjs",
     "test:mock": "node tools/mock-sim.mjs",
     "test:mock-gate": "node tools/mock-gate.mjs",
+    "test:upload": "node tools/results-upload-test.mjs",
     "serve": "python3 -m http.server 8765",
     "test:answers": "node tools/answer-parse-test.mjs",
     "build:engine": "node tools/build-engine.mjs",

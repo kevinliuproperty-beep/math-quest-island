@@ -173,6 +173,15 @@ function outboxMockReview(rec){
     });
   }catch(e){ return undefined; }
 }
+/* a finished mock's paper-level fields over the session summary (tools/results-upload-test.mjs
+   drives this through the outbox to the server's cleanRecord) */
+function outboxMockExtra(rec){
+  return { correct:rec.marks, total:rec.total,
+    topics:(rec.byTopic||[]).map(x=>({ t:String(x.label), c:x.got, n:x.total })),
+    timeLimitSec: Number.isFinite(rec.durationMs) ? Math.round(rec.durationMs/1000) : null,
+    ended: rec.timedOut ? 'timeout' : 'submit',
+    review:outboxMockReview(rec) };
+}
 const AVATARS=[
   ['🦄','Unicorn'],['🥷','Ninja'],['🦸‍♀️','Super Hero'],['🦸‍♂️','Super Hero'],
   ['🧝‍♀️','Elf Warrior'],['🧝‍♂️','Elf Warrior'],['🧚','Fairy Mage'],['🧜‍♀️','Mermaid'],
@@ -798,11 +807,7 @@ function endMock(rec){
       wrongs:rec.review.filter(r=>r.attempted&&!r.correct).slice(0,10)
         .map(r=>({ q:r.q.q+figHtml(r.q), a:r.q.answerText, ex:r.q.explain, skill:r.q.skill })) });
     if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
-    outboxMaths(DB.sessions[DB.sessions.length-1], { correct:rec.marks, total:rec.total,
-      topics:(rec.byTopic||[]).map(x=>({ t:String(x.label), c:x.got, n:x.total })),
-      timeLimitSec: Number.isFinite(rec.durationMs) ? Math.round(rec.durationMs/1000) : null,
-      ended: rec.timedOut ? 'timeout' : 'submit',
-      review:outboxMockReview(rec) });   /* results outbox: the paper in marks, plus every question for the parent page */
+    outboxMaths(DB.sessions[DB.sessions.length-1], outboxMockExtra(rec));   /* results outbox: the paper in marks, plus every question for the parent page */
     saveData();
   }catch(e){}
   renderMockReport(rec);

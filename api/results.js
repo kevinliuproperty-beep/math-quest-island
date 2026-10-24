@@ -6,6 +6,11 @@
 
    POST { results: [ ... ] }  no auth: strict validation + size/batch caps are the defence.
    GET                        needs the parent key in the X-Parent-Key header.
+   2026-10-24 (miss detail): a mock paper may carry review: [{ n, topic, q, given, answer,
+   correct, skipped }], one entry per question, so the parent page can list the misses.
+   The field is optional. A malformed entry is dropped on its own (the paper's score row is
+   kept); a review that is not an array is dropped; more than MAX_REVIEW entries keep the
+   first MAX_REVIEW; a quest's review is ignored (quests stay summary-only).
    The repo is public, so only the SHA-256 of the parent key lives here. */
 import { createHash, timingSafeEqual } from 'crypto';
 
@@ -16,7 +21,8 @@ const HKEY = 'mqi:res:h';      // hash: id -> record JSON
 const ZKEY = 'mqi:res:z';      // sorted set: id scored by endedAt (ms)
 const KEEP = 5000;             // newest records kept
 const MAX_BATCH = 50;
-const MAX_BODY = 64 * 1024;
+const MAX_BODY = 128 * 1024;   /* a 40-question review is ~20 KB; the client batches by size under 48 KB */
+const MAX_REVIEW = 60;
 const MIN_T = Date.UTC(2026, 0, 1);
 
 async function redis(cmd){
@@ -34,6 +40,28 @@ function clampStr(v, n){
   if(typeof v !== 'string') return null;
   const s = v.replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, n);
   return s;
+}
+/* review text keeps < and > (maths compares numbers); parent.html escapes everything it prints */
+function clampText(v, n){
+  if(typeof v !== 'string') return null;
+  return v.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
+}
+function cleanReview(a){
+  if(!Array.isArray(a)) return null;
+  const out = [];
+  for(const x of a.slice(0, MAX_REVIEW)){
+    if(!x || typeof x !== 'object' || Array.isArray(x)) continue;
+    if(!Number.isInteger(x.n) || x.n < 1 || x.n > 200) continue;
+    if(typeof x.correct !== 'boolean' || typeof x.skipped !== 'boolean') continue;
+    const q = clampText(x.q, 240), topic = clampText(x.topic, 60);
+    if(!q || topic == null) continue;
+    let given = null;
+    if(x.given != null){ given = clampText(x.given, 80); if(given == null) continue; }
+    let answer = null;
+    if(x.answer != null){ answer = clampText(x.answer, 120); if(answer == null) continue; }
+    out.push({ n: x.n, topic, q, given: given || null, answer: answer || null, correct: x.correct, skipped: x.skipped });
+  }
+  return out.length ? out : null;
 }
 function num(v, lo, hi, dp){
   if(typeof v !== 'number' || !Number.isFinite(v) || v < lo || v > hi) return null;
@@ -67,7 +95,8 @@ export function cleanRecord(r, now){
       topics.push({ t: tt, c, n });
     }
   }
-  return {
+  const review = r.kind === 'paper' && r.review != null ? cleanReview(r.review) : null;
+  const out = {
     id: r.id, device: r.device,
     deviceLabel: clampStr(r.deviceLabel, 16) || 'Other',
     app: r.app, kind: r.kind,
@@ -77,6 +106,8 @@ export function cleanRecord(r, now){
     endedAt: new Date(t).toISOString(),
     rx: now || Date.now()
   };
+  if(review) out.review = review;
+  return out;
 }
 
 function keyOk(given){

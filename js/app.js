@@ -55,7 +55,19 @@ let DB=loadData();
    never touches the screen or the game; on any failure the rows stay queued and are
    retried on the next page load and the next finish. Skipped off the live host. */
 var mqiOutbox = (function () {
-  var OB = 'mqi-outbox', DEV = 'mqi-device', CAP = 500, BATCH = 50, busy = false;
+  var OB = 'mqi-outbox', DEV = 'mqi-device', CAP = 500, BATCH = 50, BUDGET = 48 * 1024, busy = false;
+  function size(s) { try { return new TextEncoder().encode(s).length; } catch (e) { return s.length * 2; } }
+  /* question / answer HTML -> plain text, clamped (miss detail for the parent page; inert parse, no DOM) */
+  function txt(v, n) {
+    try {
+      if (v == null) return null;
+      var s = String(v).replace(/<span class="frac"><span class="n">([\s\S]*?)<\/span><span class="d">([\s\S]*?)<\/span><\/span>/g, ' $1/$2 ');
+      try { s = new DOMParser().parseFromString('<body>' + s.replace(/<br\s*\/?>/gi, ' ') + '</body>', 'text/html').body.textContent || ''; }
+      catch (e) { s = s.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'); }
+      s = s.replace(/\s+/g, ' ').trim();
+      return s.length > n ? s.slice(0, n - 1) + '\u2026' : s;
+    } catch (e) { return null; }
+  }
   function rid() {
     try { var a = new Uint8Array(12), s = ''; crypto.getRandomValues(a); for (var i = 0; i < a.length; i++) s += ('0' + a[i].toString(16)).slice(-2); return s; }
     catch (e) { return (Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)).replace(/[^0-9a-z]/g, '').slice(0, 24); }
@@ -88,7 +100,13 @@ var mqiOutbox = (function () {
     try {
       if (busy || !live() || typeof fetch !== 'function') return;
       if (navigator.onLine === false) return;
-      var rows = read().slice(0, BATCH);
+      /* by count AND by size: a mock paper with its review is ~10-25 KB, the endpoint takes 128 KB */
+      var all = read(), rows = [], bytes = 16;
+      for (var i = 0; i < all.length && rows.length < BATCH; i++) {
+        var sz = size(JSON.stringify(all[i])) + 1;
+        if (rows.length && bytes + sz > BUDGET) break;
+        rows.push(all[i]); bytes += sz;
+      }
       if (!rows.length) return;
       busy = true;
       fetch('/api/results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
@@ -109,12 +127,13 @@ var mqiOutbox = (function () {
   function add(rec) {
     try {
       rec.id = rid(); rec.device = device(); rec.deviceLabel = label(); rec.endedAt = new Date().toISOString();
+      if (rec.review && size(JSON.stringify(rec)) > 96 * 1024) delete rec.review;   /* never let detail cost the score row */
       var a = read(); a.push(rec); write(a);
     } catch (e) {}
     try { setTimeout(flush, 1500); } catch (e) {}
   }
   try { setTimeout(flush, 4000); } catch (e) {}
-  return { add: add, flush: flush };
+  return { add: add, flush: flush, txt: txt };
 })();
 /* a maths DB.sessions row (quest, Patchwerk, Power-Up, mock) -> one outbox summary */
 function outboxMaths(row, extra){
@@ -134,6 +153,20 @@ function outboxMaths(row, extra){
       durationSec: Number.isFinite(row.ms) ? Math.min(86400, Math.max(0, Math.round(row.ms/1000))) : null
     }, extra||{}));
   }catch(e){}
+}
+/* a finished maths mock -> one plain-text line per question for the parent page (miss detail).
+   Read-only over rec.review; any failure just leaves the paper without detail. */
+function outboxMockReview(rec){
+  try{
+    const lab={}; (rec.byTopic||[]).forEach(x=>{ lab[x.topic]=String(x.label); });
+    const name=tp=>{ if(lab[tp]) return lab[tp]; try{ const d=TOPICS[tp]; return (d&&(d.short||d.label))||String(tp||''); }catch(e){ return String(tp||''); } };
+    const T=mqiOutbox.txt;
+    return (rec.review||[]).slice(0,60).map(r=>{
+      const q=r.q||{}, g=r.attempted && r.given!=null && r.given!=='' ? T(r.given,60) : null;
+      return { n:r.n, topic:name(r.topic), q:T(q.q,200)||('Question '+r.n), given:g||null,
+        answer:T(q.answerText,80)||null, correct:!!r.correct, skipped:!!r.skipped };
+    });
+  }catch(e){ return undefined; }
 }
 const AVATARS=[
   ['🦄','Unicorn'],['🥷','Ninja'],['🦸‍♀️','Super Hero'],['🦸‍♂️','Super Hero'],
@@ -761,7 +794,8 @@ function endMock(rec){
         .map(r=>({ q:r.q.q+figHtml(r.q), a:r.q.answerText, ex:r.q.explain, skill:r.q.skill })) });
     if(DB.sessions.length>60) DB.sessions=DB.sessions.slice(-60);
     outboxMaths(DB.sessions[DB.sessions.length-1], { correct:rec.marks, total:rec.total,
-      topics:(rec.byTopic||[]).map(x=>({ t:String(x.label), c:x.got, n:x.total })) });   /* results outbox: the paper in marks */
+      topics:(rec.byTopic||[]).map(x=>({ t:String(x.label), c:x.got, n:x.total })),
+      review:outboxMockReview(rec) });   /* results outbox: the paper in marks, plus every question for the parent page */
     saveData();
   }catch(e){}
   renderMockReport(rec);

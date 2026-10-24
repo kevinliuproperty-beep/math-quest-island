@@ -715,13 +715,19 @@ function andList(a) {
 }
 /* weighting: missed items come back first, unseen next, mastered rarely */
 function weight(it) { var r = S.items[it.id]; if (!r) return 3; if (r.last < 1) return 6 + Math.min(r.miss, 4); return 1; }
-function pickWeighted(pool, k, avoid) {
+/* The mock paper draws like an unseen paper (Kev, 2026-10-24 17:38): unseen items first, no extra
+   weight on misses (Power-Up does that drill), and anything she met in the last 24 hours is
+   pushed to the back, so the next paper does not re-serve the one she just marked. */
+var DAY_MS = 86400000;
+function examWeight(it) { var r = S.items[it.id]; if (!r) return 100; return Date.now() - (r.t || 0) < DAY_MS ? 1 : 10; }
+function pickWeighted(pool, k, avoid, wf) {
+  wf = wf || weight;
   pool = pool.filter(function (it) { return !avoid || !avoid[it.id]; });
   var out = [];
   while (out.length < k && pool.length) {
-    var tot = 0; pool.forEach(function (it) { tot += weight(it); });
+    var tot = 0; pool.forEach(function (it) { tot += wf(it); });
     var x = Math.random() * tot, i = 0;
-    for (; i < pool.length - 1; i++) { x -= weight(pool[i]); if (x < 0) break; }
+    for (; i < pool.length - 1; i++) { x -= wf(pool[i]); if (x < 0) break; }
     out.push(pool.splice(i, 1)[0]);
   }
   return out;
@@ -747,13 +753,13 @@ function spreadPick(topics, type, k) {
   ts.map(function (t, j) { return j; }).sort(function (x, y) { return (k * w[y] / tw - quota[y]) - (k * w[x] / tw - quota[x]); })
     .slice(0, rest).forEach(function (j) { quota[j]++; });
   ts.forEach(function (tt, j) {
-    pickWeighted(tt.items.filter(function (i) { return i.type === type; }), quota[j], used).forEach(function (it) { used[it.id] = 1; out.push(it); });
+    pickWeighted(tt.items.filter(function (i) { return i.type === type; }), quota[j], used, examWeight).forEach(function (it) { used[it.id] = 1; out.push(it); });
   });
   while (out.length < k && guard++ < k * 10) {   /* a topic ran short: top up round-robin */
     var got = null;
     for (var j = 0; j < ts.length && !got; j++) {
       var tt = ts[(out.length + j) % ts.length];
-      got = pickWeighted(tt.items.filter(function (i) { return i.type === type; }), 1, used)[0];
+      got = pickWeighted(tt.items.filter(function (i) { return i.type === type; }), 1, used, examWeight)[0];
     }
     if (!got) break;
     used[got.id] = 1; out.push(got);
@@ -953,7 +959,7 @@ function startExam() {
     var rank = function (it) {   /* lower is better; null = not a candidate */
       if (it.marks <= b[lo].marks) return null;
       var r = need4 ? (it.marks >= 4 ? 0 : 10 + it.marks) : it.marks;
-      return r * 2 + (it.topic === b[lo].topic ? 0 : 1);
+      return r * 4 + (it.topic === b[lo].topic ? 0 : 2) + (S.items[it.id] ? 1 : 0);   /* ties: unseen first */
     };
     var best = -1, bestR = null;
     spare.forEach(function (it, k) { var r = rank(it); if (r != null && (bestR == null || r < bestR)) { best = k; bestR = r; } });

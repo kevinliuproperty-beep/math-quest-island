@@ -23,18 +23,21 @@
     const d = ri(3, 9), q = ri(4, 12), r = ri(1, d - 1), n = d*q + r;
     const who = pick(NAMES), item = pick(SNACKS);
     return finishTyped(who + ' packs ' + n + ' ' + item + ' into ' + d + ' boxes with the same number in each box. How many are left over?',
-      r, n + ' ÷ ' + d + ' = ' + q + ' with ' + r + ' left over, because ' + d + ' × ' + q + ' = ' + (d*q) + ' and ' + n + ' − ' + (d*q) + ' = ' + r + '.');
+      r, n + ' ÷ ' + d + ' = ' + q + ' with ' + r + ' left over, because ' + d + ' × ' + q + ' = ' + (d*q) + ' and ' + n + ' − ' + (d*q) + ' = ' + r + '.',
+      /* MATHS KEYS REFUTATION G2 (2026-10-24): declare the count word, so "3 curry puffs"
+         grades like gPackRest's "92 boxes". r can be 1, so the singular is declared too. */
+      leftUnits(item));
   }
   function gQuotient(){
     const d = ri(3, 9), q = ri(10, 40), r = ri(1, d - 1), n = d*q + r;
     return finishTyped('How many groups of ' + d + ' can be made from ' + n + '?',
-      q, d + ' × ' + q + ' = ' + (d*q) + ', which is the closest you can get without passing ' + n + '. That makes ' + q + ' groups, with ' + r + ' left over.');
+      q, d + ' × ' + q + ' = ' + (d*q) + ', which is the closest you can get without passing ' + n + '. That makes ' + q + ' groups, with ' + r + ' left over.', 'groups');
   }
   function gBoxesNeeded(){
     const d = ri(4, 9), q = ri(6, 20), r = ri(1, d - 1), n = d*q + r;
     const who = pick(NAMES), item = pick(SNACKS);
     return coach(finishTyped(who + ' packs ' + n + ' ' + item + ' into boxes of ' + d + '. How many boxes are needed to hold all of them?',
-      q + 1, n + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + (r === 1 ? ' left over still needs a box,' : ' left over still need a box,') + ' so ' + who + ' needs ' + (q+1) + ' boxes.'),
+      q + 1, n + ' ÷ ' + d + ' = ' + q + ' remainder ' + r + '. The ' + r + (r === 1 ? ' left over still needs a box,' : ' left over still need a box,') + ' so ' + who + ' needs ' + (q+1) + ' boxes.', 'boxes'),
       'Draw a model', [
         'Draw boxes of ' + d + '. ' + q + ' full boxes hold ' + q + ' × ' + d + ' = ' + (q * d) + '.',
         'That leaves ' + n + ' − ' + (q * d) + ' = ' + r + ' with no box yet.',
@@ -108,7 +111,7 @@
       ' eggs. ' + drop + ' eggs crack on the MRT ride home. How many good eggs are left?',
       trays*each - drop,
       'First find all the eggs: ' + trays + ' × ' + each + ' = ' + (trays*each) + '. Then take away the cracked ones: ' +
-      (trays*each) + ' − ' + drop + ' = ' + (trays*each - drop) + '.'),
+      (trays*each) + ' − ' + drop + ' = ' + (trays*each - drop) + '.', ['eggs', 'good eggs']),
       'Draw a model', [
         'Draw ' + trays + ' equal boxes for the trays, with ' + each + ' eggs in each.',
         'All the eggs: ' + trays + ' × ' + each + ' = ' + (trays * each) + '.',
@@ -127,6 +130,11 @@
   const sOrP = (n, one, many) => n + ' ' + (n === 1 ? one : many);
   /* a two-word count noun also accepts its last word: "42 tarts" on "pineapple tarts" */
   const unitOf = noun => noun.indexOf(' ') < 0 ? noun : [noun, noun.split(' ').pop()];
+  /* gLeftOver's remainder can be 1: "1 curry puff" is as right as "2 curry puffs" */
+  const leftUnits = noun => {
+    const many = [].concat(unitOf(noun));
+    return many.concat(many.filter(w => /s$/.test(w)).map(w => w.slice(0, -1)));
+  };
   const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   /* rest = d*q + r with 1 <= r <= d-1, rest in [lo, hi] */
   function drawRem(d, lo, hi, rMin){

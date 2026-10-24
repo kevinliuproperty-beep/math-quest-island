@@ -1928,13 +1928,17 @@ function p3moneyOracle(q) {
   }
   /* GAP FILL 2026-10-24: dollars <-> cents. Re-derived by moving the digits, never by
      the generator's arithmetic: "$7.05" -> "705"; "485" -> "4.85". A cents answer must
-     declare ['cents','¢'] so 705, 705¢ and 705 cents all grade; a dollars answer is
-     the house typedMoney ('$', answerText $x.xx). */
+     declare cents first and 705, 705¢ and 705 cents must all grade (release B: '¢' is a
+     core.js alias of cents, so the oracle checks the grading, not a duplicate
+     declaration); a dollars answer is the house typedMoney ('$', answerText $x.xx). */
   const centsItem = want => {
     if (bandBad()) return bandBad();
     if (!q.typed) return 'p3money cents: expected a typed item';
     const u = ctx.MQI.unitList(q.unit);
-    if (u[0] !== 'cents' || u.indexOf('¢') < 0) return `p3money cents: must declare ['cents','¢'], got ${JSON.stringify(q.unit)}`;
+    if (u[0] !== 'cents') return `p3money cents: must declare cents first, got ${JSON.stringify(q.unit)}`;
+    for (const f of [String(want), want + '¢', want + ' cents']) {
+      if (!ctx.MQI.gradeTyped(f, q)) return `p3money cents: "${f}" must grade right`;
+    }
     if (key !== want + '¢') return `p3money cents: answerText should be ${want}¢, got ${key}`;
     return q.answer === want ? null : `p3money cents: expected ${want}, got ${q.answer}`;
   };

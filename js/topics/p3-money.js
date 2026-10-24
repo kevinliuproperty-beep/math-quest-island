@@ -305,7 +305,7 @@
      change asked for in cents. Charlotte scored 0/2 on money in her 10-24 mock, so the
      stems say the unit twice (the symbol and "in cents" / "in dollars") and give a
      worked format, and the grader takes every reasonable way she could type it:
-       cents answers  declare ['cents','¢']: 705, 705¢ and 705 cents all pass;
+       cents answers  declare 'cents' ('¢' is its alias): 705, 705¢, 705 cents pass;
        dollar answers declare '$':           4.85, $4.85, 4.85 dollars pass, and so do
                                              4.5 / $4.50 for $4.50 (numeric compare).
      The named slips: $7.05 -> 75¢ (the 0 after the point dropped) and 485¢ -> $48.50
@@ -313,7 +313,10 @@
      cents; gToDollars's key is a decimal, which tools/coach-steps.mjs cannot check,
      so it teaches through its explanation alone, like the rest of this file. */
   const coach = (q, technique, steps) => (q.technique = technique, q.steps = steps, q);
-  const CENTS = ['cents', '¢'];
+  /* Release B integrate (2026-10-24): a plain 'cents'. Maths Keys fix B made '¢' a
+     core.js alias of cents, so ['cents','¢'] declared one unit twice (gen-sanity's
+     unit-array rule); 705, 705¢ and 705 cents all still grade. */
+  const CENTS = 'cents';
   const asCents = (q, c) => (q.answerText = c + '¢', q);
   /* a dollars-and-cents amount; 2 draws in 5 put a 0 straight after the point ($7.05) */
   function dcAmount(dLo, dHi){

@@ -730,7 +730,7 @@ ${x17Lbl(92, 150, 'A')}${x17Lbl(168, 150, 'B')}
           0: 'Q is the stem and T is a leaf. This option swaps jobs: the leaves make food, and the roots take in water.',
           2: 'R is the flower: it develops into the fruit, and the fruit protects the seeds. And S, the roots, takes in water, while the stem carries it up.',
           3: 'This one runs backwards: a flower develops into a fruit (P), not the other way round.' },
-        explain: 'S is the roots, which hold the plant firmly in the soil, and T is a leaf, which makes food. Option 1 swaps the jobs of the stem and leaf. In option 3, R (flower) does not protect seeds and S (roots) takes in water but the stem carries it up. In option 4, the flower develops into the fruit, not the other way round.' },
+        explain: 'S is the roots, which hold the plant firmly in the soil, and T is a leaf, which makes food. Option 1 gives Q (the stem) the leaves\' job and T (the leaf) the roots\' job. In option 3, R (flower) does not protect seeds and S (roots) takes in water but the stem carries it up. In option 4, the flower develops into the fruit, not the other way round.' },
       { id: 'x17-pp-003', type: 'oeq', level: 1, marks: 2,
         stem: 'Look at the chilli plant. Name part S and state one of its functions.',
         figure: X17_CHILLI,

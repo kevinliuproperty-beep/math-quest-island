@@ -467,6 +467,7 @@ function outboxScience(se) {
   try {
     if (!se || se.kind === 'like' || se.outboxed) return;
     se.outboxed = true;
+    qclock(se); se.qT = 0;   /* the last question's time, then stop the clock */
     var paper = se.kind === 'exam', by = {}, order = [], got = 0, max = 0, hints = 0;
     se.items.forEach(function (it, k) {
       var a = se.ans[k] || {}, w = paper ? it.marks : 1, g = (a.score || 0) * w;
@@ -481,24 +482,58 @@ function outboxScience(se) {
       topics: order.slice(0, 30).map(function (id) { return { t: tname(id), c: r1(by[id].c), n: r1(by[id].n) }; }),
       correct: r1(got), total: r1(max), hintsUsed: paper ? null : hints,
       durationSec: se.t0 ? Math.min(86400, Math.max(0, Math.round((Date.now() - se.t0) / 1000))) : null,
-      review: paper ? sciReview(se, tname) : undefined });
+      review: sciReview(se, tname) });
   } catch (e) {}
 }
-/* a handed-in science paper -> one plain-text line per question for the parent page (miss detail).
-   correct = full marks on that question. MCQ with no choice = left blank. An OEQ with nothing
-   typed is not called blank (she may have written it on paper): given stays null. */
+/* time on each question, for the results outbox only: called on every answer-phase render, it adds
+   the time since the last call to the question that was on screen. One gap counts at most 15 min
+   (a tablet left on the question, or a resumed session). se.qT = 0 stops the clock. */
+function qclock(se) {
+  try {
+    var now = Date.now(), a = se.qi != null ? se.ans[se.qi] : null;
+    if (a && se.qT) a.ms = (a.ms || 0) + Math.min(900000, Math.max(0, now - se.qT));
+    se.qi = se.i; se.qT = now;
+  } catch (e) {}
+}
+/* a finished science session -> one plain-text line per question for the parent page (detail).
+   Paper: every question; correct = full marks on that question. MCQ with no choice = left blank.
+   An OEQ with nothing typed is not called blank (she may have written it on paper): given stays null.
+   Practice / Power-Up (2026-10-25): the questions she reached, each worth 1 (marks: 1); got is what
+   she scored on it (1, a half for the second try or the hint, an OEQ fraction); first is a first-try
+   MCQ pick, changed = 1 when she then picked again; hintsShown counts the hint rungs she saw and
+   hints holds their text (rung 1 the nudge, rung 2 the MCQ "Work it out" line after a second miss). */
 function sciReview(se, tname) {
   try {
-    var T = mqiOutbox.txt;
-    return se.items.slice(0, 60).map(function (it, k) {
+    var T = mqiOutbox.txt, paper = se.kind === 'exam', out = [];
+    var opt = function (it, k) { return '(' + (k + 1) + ') ' + it.options[k]; };
+    se.items.slice(0, 60).forEach(function (it, k) {
       var a = se.ans[k] || {}, mcq = it.type === 'mcq';
-      var given = mcq ? (a.choice != null && it.options[a.choice] != null ? '(' + (a.choice + 1) + ') ' + it.options[a.choice] : null)
+      if (!paper && a.score == null && a.choice == null && a.miss1 == null && !a.shown && !a.hint1) return;   /* never reached */
+      var given = mcq ? (a.choice != null && it.options[a.choice] != null ? opt(it, a.choice) : null)
                       : (a.text && a.text.trim() ? a.text : null);
-      return { n: k + 1, topic: tname(it.topic), q: T(it.stem, 200) || ('Question ' + (k + 1)),
+      var row = { n: k + 1, topic: tname(it.topic), q: T(it.stem, 200) || ('Question ' + (k + 1)),
         given: given == null ? null : T(given, 60) || null,
-        answer: T(mcq ? '(' + (it.answer + 1) + ') ' + it.options[it.answer] : it.model, 80) || null,
+        answer: T(mcq ? opt(it, it.answer) : it.model, 80) || null,
         correct: (a.score || 0) >= 1, skipped: mcq && a.choice == null };
+      if (Number.isFinite(a.ms)) row.secs = Math.min(86400, Math.round(a.ms / 1000));
+      if (mcq && Array.isArray(it.options)) row.options = it.options.slice(0, 6).map(function (o) { return T(o, 40) || ''; });
+      if (paper) { if (Number.isInteger(it.marks)) row.marks = it.marks; }
+      else {
+        row.marks = 1; row.got = Math.round((a.score || 0) * 10) / 10;
+        if (mcq && a.miss1 != null && it.options[a.miss1] != null) {
+          row.first = T(opt(it, a.miss1), 60) || null;
+          row.changed = a.choice != null ? 1 : 0;
+        }
+        var hs = [];
+        if (mcq ? a.miss1 != null : a.hint1) hs.push(nudgeText(it));
+        if (mcq && a.miss1 != null && a.choice != null && a.choice !== it.answer && it.hints && it.hints[1] && (!it.steps || a.ansShown)) hs.push(it.hints[1]);
+        hs = hs.map(function (s) { return T(s, 160); }).filter(Boolean);
+        row.hintsShown = hs.length;
+        if (hs.length) row.hints = hs;
+      }
+      out.push(row);
     });
+    return out.length ? out : undefined;
   } catch (e) { return undefined; }
 }
 /* hinted: she used the nudge (an MCQ first miss, or the OEQ hint button). r.h counts those, r.lh is the latest try. */
@@ -1164,6 +1199,7 @@ function renderQuiz() {
   if (se.phase === 'review') return renderReview();
   var it = se.items[se.i], a = se.ans[se.i], exam = se.kind === 'exam', t = SCI.byId[it.topic];
   var power = se.kind === 'power';
+  qclock(se);   /* per-question time for the results outbox only */
   var label = exam ? (se.i < se.nA ? 'Section A · Q' + (se.i + 1) : 'Section B · Q' + (se.i + 1)) : se.kind === 'like' ? 'One like it' :
     (power && se.i < se.warm ? 'Warm-up · ' : '') + 'Question ' + (se.i + 1) + ' of ' + se.items.length;
   var h = '<div class="spread">' + (se.kind === 'like' ? '<button class="link" data-act="quit">← Back to where I was</button>' : '<button class="link" data-act="quit">✕ Stop</button>') +

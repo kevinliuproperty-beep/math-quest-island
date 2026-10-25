@@ -10,10 +10,13 @@
    correct, skipped }], one entry per question, so the parent page can list the misses.
    The field is optional. A malformed entry is dropped on its own (the paper's score row is
    kept); a review that is not an array is dropped; more than MAX_REVIEW entries keep the
-   first MAX_REVIEW; a quest's review is ignored (quests stay summary-only).
+   first MAX_REVIEW.
    Optional per row: marks (1-10), secs (time on the question), changed (answer changes),
    options (MCQ option text, 2-6, each <= 40 chars). Optional per paper: timeLimitSec,
    ended ('submit' | 'timeout'). A bad optional value drops that field only.
+   2026-10-25: a quest (science practice / Power-Up) may carry the same review, one row per
+   question reached, plus optional got (marks scored, halves allowed, <= marks), first (the
+   first-try MCQ pick), hintsShown (0-5 hint rungs seen) and hints (their text, <= 3 x 200).
    The repo is public, so only the SHA-256 of the parent key lives here. */
 import { createHash, timingSafeEqual } from 'crypto';
 
@@ -71,6 +74,15 @@ function cleanReview(a){
       const opts = x.options.map(o => clampText(o, 40));
       if(opts.every(o => o != null)) row.options = opts;
     }
+    /* practice detail (2026-10-25) */
+    const got = num(x.got, 0, 10, 1);
+    if(got != null && (row.marks == null || got <= row.marks)) row.got = got;
+    if(x.first != null){ const f = clampText(x.first, 80); if(f) row.first = f; }
+    if(Number.isInteger(x.hintsShown) && x.hintsShown >= 0 && x.hintsShown <= 5) row.hintsShown = x.hintsShown;
+    if(Array.isArray(x.hints) && x.hints.length >= 1 && x.hints.length <= 3){
+      const hs = x.hints.map(s => clampText(s, 200));
+      if(hs.every(s => s)) row.hints = hs;
+    }
     out.push(row);
   }
   return out.length ? out : null;
@@ -107,7 +119,7 @@ export function cleanRecord(r, now){
       topics.push({ t: tt, c, n });
     }
   }
-  const review = r.kind === 'paper' && r.review != null ? cleanReview(r.review) : null;
+  const review = r.review != null ? cleanReview(r.review) : null;
   const out = {
     id: r.id, device: r.device,
     deviceLabel: clampStr(r.deviceLabel, 16) || 'Other',

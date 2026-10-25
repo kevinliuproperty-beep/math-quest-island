@@ -51,6 +51,9 @@
   .mq { padding: 8px 0; border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; font-size: 14px; }
   .mq:last-child { border-bottom: 0; }
   .mq .qt { margin: 2px 0 4px; }
+  .mq.wrong { border-left: 3px solid var(--weak); padding-left: 8px; }
+  .mq.hinted { border-left: 3px solid var(--mid); padding-left: 8px; }
+  .mq .hint { margin: 3px 0 0; padding: 4px 8px; border-radius: 6px; background: var(--bg); }
   .blank { display: inline-block; font-size: 12px; padding: 0 7px; border-radius: 10px; background: var(--line); color: var(--ink); }
   .msg { padding: 12px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
 </style>
@@ -194,6 +197,40 @@
         h += '</details></div>';
       });
       h += '<p class="small mute">Science open-ended answers count as missed unless they got full marks; one with nothing typed may have been written on paper.</p></div>';
+    }
+
+    /* practice quests with question detail (2026-10-25): every question she reached, wrong ones in red,
+       hinted ones in amber with the hint text she saw. Older quests carry no detail and are left out. */
+    var quests = rows.filter(function (r) { return r.kind === 'quest' && Array.isArray(r.review) && r.review.length; }).slice(0, 20);
+    if (quests.length) {
+      h += '<div class="card"><h2>Practice detail</h2>';
+      quests.forEach(function (r) {
+        var rv = r.review, p = pct(r.correct, r.total);
+        var hinted = rv.filter(function (x) { return x.hintsShown > 0; }).length;
+        var wrong = rv.filter(function (x) { return !x.correct && !(x.hintsShown > 0); }).length;
+        var bits = [];
+        if (wrong) bits.push(wrong + ' wrong');
+        if (hinted) bits.push(hinted + ' with a hint');
+        h += '<div class="paper"><div class="row"><div><b>' + esc(appName(r)) + '</b> ' + esc(r.topic || kindName(r)) + ' <span class="mute small">' +
+          esc(fmtDay(r.d) + ', ' + fmtTime(r.d)) + '</span></div><div class="' + pctCls(p) + '"><b>' + esc(fmtNum(r.correct)) + '/' + esc(fmtNum(r.total)) +
+          '</b> <span class="small">' + p + '%</span></div></div>';
+        h += '<details class="miss"><summary>' + (bits.length ? bits.join(' · ') : 'All right, no hints') + ' (' + rv.length + ' question' + (rv.length === 1 ? '' : 's') + ')</summary>';
+        rv.slice().sort(function (a, b) { return a.n - b.n; }).forEach(function (x) {
+          var hs = x.hintsShown > 0, cls = hs ? ' hinted' : x.correct ? '' : ' wrong';
+          var yours = x.skipped ? '<span class="blank">left blank</span>' : x.given ? esc(x.given) : '<span class="mute">not typed</span>';
+          var score = typeof x.got === 'number' ? fmtNum(x.got) + '/' + fmtNum(x.marks || 1) : x.correct ? 'right' : 'missed';
+          h += '<div class="mq' + cls + '"><div class="small mute"><b>Q' + esc(x.n) + '</b> · ' + esc(x.topic || '') + ' · <span class="' + (x.correct ? 'good' : hs ? 'mid' : 'weak') + '">' + esc(score) + '</span>' +
+            (typeof x.secs === 'number' ? ' · ' + esc(fmtDur(x.secs)) : '') + '</div>' +
+            '<div class="qt">' + esc(x.q) + '</div>' +
+            (x.first ? '<div class="small">First try: ' + esc(x.first) + '</div>' : '') +
+            '<div class="small">' + (x.first ? 'Then' : 'Her answer') + ': ' + yours + '</div>' +
+            (x.correct ? '' : x.answer ? '<div class="small good">Answer: ' + esc(x.answer) + '</div>' : '') +
+            (Array.isArray(x.hints) ? x.hints.map(function (t, j) { return '<div class="small hint">💡 Hint ' + (j + 1) + ': ' + esc(t) + '</div>'; }).join('')
+              : hs ? '<div class="small hint">💡 ' + esc(x.hintsShown) + ' hint' + (x.hintsShown === 1 ? '' : 's') + ' shown</div>' : '') + '</div>';
+        });
+        h += '</details></div>';
+      });
+      h += '<p class="small mute">Each question scores 1, a half for a second try or with the hint. Hint 1 is the nudge; hint 2 is the worked line shown after a second miss.</p></div>';
     }
 
     /* sessions */

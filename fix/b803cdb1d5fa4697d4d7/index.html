@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Your 4 Fix-Ups</title>
+<style>
+/* Layout: one column of exercise-book cards on graph paper; each card reveals its working one step at a time. */
+:root{
+  --paper:#f3f7fb; --grid:#dde7f1; --card:#ffffff; --ink:#1d2a44; --muted:#5b6b85;
+  --pencil:#ffd84d; --pencil-ink:#4a3a00; --accent:#2d6cdf; --good:#1f8a5b; --soft:#eaf1fd; --line:#c9d6e6;
+  --bar:#7fa8ec; --bar-hi:#2d6cdf;
+  --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#111827; --grid:#1b2536; --card:#18233a; --ink:#eef3fb; --muted:#a7b5cc;
+  --pencil:#ffd84d; --pencil-ink:#3a2e00; --accent:#7ea8ff; --good:#5fd39a; --soft:#1f2d4a; --line:#33445f;
+  --bar:#3d5f9e; --bar-hi:#7ea8ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111827; --grid:#1b2536; --card:#18233a; --ink:#eef3fb; --muted:#a7b5cc;
+  --pencil:#ffd84d; --pencil-ink:#3a2e00; --accent:#7ea8ff; --good:#5fd39a; --soft:#1f2d4a; --line:#33445f;
+  --bar:#3d5f9e; --bar-hi:#7ea8ff; color-scheme:dark}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:20px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 60px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:grid;gap:28px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,6vw,52px);font-weight:800}
+.intro p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:22px clamp(16px,3vw,30px);display:grid;gap:16px;min-width:0}
+.tag{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.q{font-size:22px;font-weight:700}
+.you{background:var(--soft);border-radius:12px;padding:10px 14px}
+.trap{display:flex;gap:10px;align-items:flex-start}
+.trap b{background:var(--pencil);color:var(--pencil-ink);border-radius:8px;padding:0 8px;font-family:var(--display);white-space:nowrap}
+.fig{overflow-x:auto}
+.fig svg{display:block;width:100%;min-width:520px;height:auto}
+.fig svg text{font-family:var(--body);fill:var(--ink)}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:8px;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:12px;align-items:flex-start}
+.steps li::before{content:counter(s);flex:0 0 32px;height:32px;border-radius:50%;background:var(--accent);color:var(--card);
+  font-family:var(--display);font-weight:800;display:grid;place-items:center;margin-top:1px}
+.steps li.final::before{background:var(--good)}
+.hl{background:var(--pencil);color:var(--pencil-ink);border-radius:6px;padding:0 5px;font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+button{font:inherit;font-family:var(--display);font-weight:600;font-size:19px;border-radius:12px;padding:8px 18px;cursor:pointer;
+  border:2px solid var(--accent);background:var(--accent);color:var(--card)}
+button.ghost{background:transparent;color:var(--accent)}
+button:focus-visible{outline:3px solid var(--pencil);outline-offset:2px}
+button[disabled]{opacity:.45;cursor:default}
+.try{border-top:2px dashed var(--line);padding-top:14px;display:grid;gap:10px}
+.try h3{font-size:24px}
+.ans{background:var(--soft);border-radius:12px;padding:12px 16px}
+.ans p{margin:4px 0}
+.g{opacity:0;transition:opacity .35s}
+.g.on{opacity:1}
+.note{font-size:16px;color:var(--muted)}
+.habit{text-align:center;display:grid;gap:8px;padding:24px 16px}
+.habit .big{font-family:var(--display);font-weight:800;font-size:clamp(30px,6vw,46px)}
+.habit .big span{color:var(--accent)}
+@media (prefers-reduced-motion: reduce){.g{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="intro">
+    <h1>Your 4 Fix-Ups</h1>
+    <p>These are the 4 questions from today's paper that tripped you up. Read each one, have a think, then press <b>Next step</b> to see the working one bit at a time. Then try the new one by yourself.</p>
+  </header>
+
+  <!-- 1 TIME -->
+  <section class="card" data-card>
+    <div class="tag">Fix-up 1 · Time</div>
+    <div class="q">A ferry left at 11:40 and arrived at 16:20. How long was the journey?</div>
+    <div class="you">You wrote: <b>4 h 20 min</b>. So close! The right answer is a little more.</div>
+    <div class="trap"><b>Trap</b><span>Don't take away times like normal numbers. An hour has 60 minutes, not 100. <b>Count up</b> to the next whole hour instead.</span></div>
+    <div class="fig"><svg viewBox="0 0 640 190" role="img" aria-label="Timeline from 11:40 to 16:20 with three hops">
+      <line x1="40" y1="130" x2="600" y2="130" stroke="var(--line)" stroke-width="4"/>
+      <g fill="var(--accent)"><circle cx="40" cy="130" r="8"/><circle cx="600" cy="130" r="8"/></g>
+      <text x="40" y="168" text-anchor="middle" font-weight="700" font-size="20">11:40</text>
+      <text x="600" y="168" text-anchor="middle" font-weight="700" font-size="20">16:20</text>
+      <g class="g" data-s="1"><circle cx="150" cy="130" r="8" fill="var(--accent)"/><text x="150" y="168" text-anchor="middle" font-weight="700" font-size="20">12:00</text>
+        <path d="M40 120 Q95 60 150 120" fill="none" stroke="var(--accent)" stroke-width="4"/><text x="95" y="62" text-anchor="middle" font-size="20" font-weight="700">20 min</text></g>
+      <g class="g" data-s="2"><circle cx="490" cy="130" r="8" fill="var(--accent)"/><text x="490" y="168" text-anchor="middle" font-weight="700" font-size="20">16:00</text>
+        <path d="M150 120 Q320 10 490 120" fill="none" stroke="var(--accent)" stroke-width="4"/><text x="320" y="48" text-anchor="middle" font-size="20" font-weight="700">4 h</text></g>
+      <g class="g" data-s="3"><path d="M490 120 Q545 60 600 120" fill="none" stroke="var(--accent)" stroke-width="4"/><text x="545" y="62" text-anchor="middle" font-size="20" font-weight="700">20 min</text></g>
+    </svg></div>
+    <ol class="steps">
+      <li class="g" data-s="1">From 11:40, count up to the next whole hour: 11:40 → 12:00 is <span class="hl">20 min</span>.</li>
+      <li class="g" data-s="2">Jump whole hours: 12:00 → 16:00 is <span class="hl">4 h</span>.</li>
+      <li class="g" data-s="3">The last bit: 16:00 → 16:20 is <span class="hl">20 min</span>.</li>
+      <li class="g final" data-s="4">Add them up: 20 min + 4 h + 20 min = <span class="hl">4 h 40 min</span>.</li>
+    </ol>
+    <div class="row"><button type="button" data-next>Next step</button><button type="button" class="ghost" data-reset>Start again</button></div>
+    <div class="try">
+      <h3>Try one like it</h3>
+      <div class="q">A bus left at 10:35 and arrived at 14:15. How long was the journey?</div>
+      <div class="row"><button type="button" class="ghost" data-show>Show answer</button></div>
+      <div class="ans" hidden>
+        <p>10:35 → 11:00 is 25 min.</p><p>11:00 → 14:00 is 3 h.</p><p>14:00 → 14:15 is 15 min.</p>
+        <p>25 min + 3 h + 15 min = <span class="hl">3 h 40 min</span>.</p>
+        <p class="note">Taking 1035 from 1415 like normal numbers gives 380, which would wrongly look like "3 h 80 min".</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 POSTS -->
+  <section class="card" data-card>
+    <div class="tag">Fix-up 2 · Posts and gaps</div>
+    <div class="q">Posts stand equally far apart along a fence. The 1st post is 10 m from the 3rd post. The 3rd post is 45 m from the last post. How many posts are there altogether?</div>
+    <div class="you">You wrote: <b>9</b>. You found something true, but it was the number of gaps in one part, not the number of posts.</div>
+    <div class="trap"><b>Trap</b><span>Count the <b>gaps</b> first. Metres measure gaps. Then posts = gaps + 1.</span></div>
+    <div class="fig"><svg viewBox="0 0 640 200" role="img" aria-label="Fence with posts and gap brackets">
+      <line x1="30" y1="120" x2="610" y2="120" stroke="var(--line)" stroke-width="4"/>
+      <g fill="var(--ink)">
+        <rect x="26" y="90" width="8" height="40" rx="2"/><rect x="78.7" y="90" width="8" height="40" rx="2"/><rect x="131.4" y="90" width="8" height="40" rx="2"/>
+        <rect x="606" y="90" width="8" height="40" rx="2"/>
+      </g>
+      <text x="30" y="155" text-anchor="middle" font-size="17" font-weight="700">1st</text>
+      <text x="135.4" y="155" text-anchor="middle" font-size="17" font-weight="700">3rd</text>
+      <text x="610" y="155" text-anchor="middle" font-size="17" font-weight="700">last</text>
+      <g class="g" data-s="1"><path d="M30 78 V68 H135.4 V78" fill="none" stroke="var(--accent)" stroke-width="3"/>
+        <text x="82.7" y="58" text-anchor="middle" font-size="18" font-weight="700">10 m = 2 gaps</text></g>
+      <g class="g" data-s="2"><text x="56.3" y="112" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent)">5 m</text>
+        <text x="108.9" y="112" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent)">5 m</text></g>
+      <g class="g" data-s="3"><g fill="var(--ink)">
+        <rect x="184.1" y="90" width="8" height="40" rx="2"/><rect x="236.8" y="90" width="8" height="40" rx="2"/><rect x="289.5" y="90" width="8" height="40" rx="2"/>
+        <rect x="342.2" y="90" width="8" height="40" rx="2"/><rect x="394.9" y="90" width="8" height="40" rx="2"/><rect x="447.6" y="90" width="8" height="40" rx="2"/>
+        <rect x="500.3" y="90" width="8" height="40" rx="2"/><rect x="553" y="90" width="8" height="40" rx="2"/></g>
+        <path d="M135.4 78 V68 H610 V78" fill="none" stroke="var(--accent)" stroke-width="3"/>
+        <text x="372.7" y="58" text-anchor="middle" font-size="18" font-weight="700">45 m = 9 gaps</text></g>
+      <g class="g" data-s="4" font-size="15" font-weight="700">
+        <text x="30" y="185" text-anchor="middle">1</text><text x="82.7" y="185" text-anchor="middle">2</text><text x="135.4" y="185" text-anchor="middle">3</text>
+        <text x="188.1" y="185" text-anchor="middle">4</text><text x="240.8" y="185" text-anchor="middle">5</text><text x="293.5" y="185" text-anchor="middle">6</text>
+        <text x="346.2" y="185" text-anchor="middle">7</text><text x="398.9" y="185" text-anchor="middle">8</text><text x="451.6" y="185" text-anchor="middle">9</text>
+        <text x="504.3" y="185" text-anchor="middle">10</text><text x="557" y="185" text-anchor="middle">11</text><text x="610" y="185" text-anchor="middle">12</text></g>
+    </svg></div>
+    <ol class="steps">
+      <li class="g" data-s="1">From the 1st post to the 3rd post there are <span class="hl">2 gaps</span> (not 3!). They make 10 m.</li>
+      <li class="g" data-s="2">So one gap is 10 ÷ 2 = <span class="hl">5 m</span>.</li>
+      <li class="g" data-s="3">From the 3rd post to the last: 45 ÷ 5 = <span class="hl">9 gaps</span>. (This is where 9 came from.)</li>
+      <li class="g final" data-s="4">All the gaps: 2 + 9 = 11 gaps. Posts = gaps + 1 = <span class="hl">12 posts</span>.</li>
+    </ol>
+    <div class="row"><button type="button" data-next>Next step</button><button type="button" class="ghost" data-reset>Start again</button></div>
+    <div class="try">
+      <h3>Try one like it</h3>
+      <div class="q">Trees are planted equally far apart along a path. The 1st tree is 12 m from the 4th tree. The 4th tree is 36 m from the last tree. How many trees are there altogether?</div>
+      <div class="row"><button type="button" class="ghost" data-show>Show answer</button></div>
+      <div class="ans" hidden>
+        <p>1st → 4th tree is 3 gaps. One gap = 12 ÷ 3 = 4 m.</p>
+        <p>4th → last tree: 36 ÷ 4 = 9 gaps.</p>
+        <p>All the gaps: 3 + 9 = 12 gaps. Trees = 12 + 1 = <span class="hl">13 trees</span>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 BAR GRAPH -->
+  <section class="card" data-card>
+    <div class="tag">Fix-up 3 · Bar graph</div>
+    <div class="q">The bar graph shows the number of cups of sugarcane juice sold at the stall from Monday to Friday. Each cup was sold for $3. How much more money did the stall collect on Friday than on Thursday?</div>
+    <div class="you">You wrote: <b>$30</b>. The answer is much bigger. Let's read the graph slowly.</div>
+    <div class="trap"><b>Trap</b><span>Read the <b>scale</b> first. Find the difference in cups, then <b>× $3</b> to turn cups into money.</span></div>
+    <p class="note">This graph is like the one in your paper. The bars may not be exactly the same, but the steps are.</p>
+    <div class="fig"><svg viewBox="0 0 640 330" role="img" aria-label="Bar graph of cups sold: Monday 80, Tuesday 60, Wednesday 90, Thursday 50, Friday 120">
+      <g stroke="var(--line)" stroke-width="1">
+        <line x1="80" y1="270" x2="620" y2="270"/><line x1="80" y1="255" x2="620" y2="255"/><line x1="80" y1="240" x2="620" y2="240"/>
+        <line x1="80" y1="225" x2="620" y2="225"/><line x1="80" y1="210" x2="620" y2="210"/><line x1="80" y1="195" x2="620" y2="195"/>
+        <line x1="80" y1="180" x2="620" y2="180"/><line x1="80" y1="165" x2="620" y2="165"/><line x1="80" y1="150" x2="620" y2="150"/>
+        <line x1="80" y1="135" x2="620" y2="135"/><line x1="80" y1="120" x2="620" y2="120"/><line x1="80" y1="105" x2="620" y2="105"/>
+        <line x1="80" y1="90" x2="620" y2="90"/><line x1="80" y1="75" x2="620" y2="75"/><line x1="80" y1="60" x2="620" y2="60"/></g>
+      <line x1="80" y1="50" x2="80" y2="270" stroke="var(--ink)" stroke-width="2"/>
+      <line x1="80" y1="270" x2="620" y2="270" stroke="var(--ink)" stroke-width="2"/>
+      <g font-size="15" text-anchor="end"><text x="72" y="275">0</text><text x="72" y="245">20</text><text x="72" y="215">40</text><text x="72" y="185">60</text>
+        <text x="72" y="155">80</text><text x="72" y="125">100</text><text x="72" y="95">120</text><text x="72" y="65">140</text></g>
+      <text x="22" y="160" font-size="15" transform="rotate(-90 22 160)" text-anchor="middle">Number of cups</text>
+      <g fill="var(--bar)"><rect x="110" y="150" width="60" height="120"/><rect x="215" y="180" width="60" height="90"/><rect x="320" y="135" width="60" height="135"/></g>
+      <rect id="thu" x="425" y="195" width="60" height="75" fill="var(--bar)"/>
+      <rect id="fri" x="530" y="90" width="60" height="180" fill="var(--bar)"/>
+      <g font-size="16" text-anchor="middle" font-weight="700"><text x="140" y="295">Mon</text><text x="245" y="295">Tue</text><text x="350" y="295">Wed</text><text x="455" y="295">Thu</text><text x="560" y="295">Fri</text></g>
+      <g class="g" data-s="1"><rect x="76" y="56" width="8" height="218" fill="none" stroke="var(--pencil)" stroke-width="4"/>
+        <text x="350" y="320" text-anchor="middle" font-size="16" font-weight="700">Each line is 10 cups</text></g>
+      <g class="g" data-s="2"><rect x="425" y="195" width="60" height="75" fill="var(--bar-hi)"/><rect x="530" y="90" width="60" height="180" fill="var(--bar-hi)"/>
+        <text x="455" y="187" text-anchor="middle" font-size="17" font-weight="700">50</text><text x="560" y="82" text-anchor="middle" font-size="17" font-weight="700">120</text></g>
+      <g class="g" data-s="3"><line x1="485" y1="195" x2="530" y2="195" stroke="var(--pencil)" stroke-width="3" stroke-dasharray="5 4"/>
+        <line x1="510" y1="195" x2="510" y2="90" stroke="var(--pencil)" stroke-width="4"/>
+        <text x="505" y="150" text-anchor="end" font-size="16" font-weight="700">70</text></g>
+    </svg></div>
+    <ol class="steps">
+      <li class="g" data-s="1">Read the scale: the numbers go up in 20s, so each line is <span class="hl">10 cups</span>. Don't just count lines!</li>
+      <li class="g" data-s="2">Thursday: <span class="hl">50 cups</span>. Friday: <span class="hl">120 cups</span>.</li>
+      <li class="g" data-s="3">How many more cups on Friday? 120 − 50 = <span class="hl">70 cups</span>.</li>
+      <li class="g final" data-s="4">The question asks for <b>money</b>: 70 × $3 = <span class="hl">$210</span>.</li>
+    </ol>
+    <div class="row"><button type="button" data-next>Next step</button><button type="button" class="ghost" data-reset>Start again</button></div>
+    <div class="try">
+      <h3>Try one like it</h3>
+      <div class="q">A stall sold 40 cups of soya milk on Tuesday and 90 cups on Wednesday. Each cup was sold for $4. How much more money did the stall collect on Wednesday than on Tuesday?</div>
+      <div class="row"><button type="button" class="ghost" data-show>Show answer</button></div>
+      <div class="ans" hidden>
+        <p>More cups on Wednesday: 90 − 40 = 50 cups.</p>
+        <p>Money: 50 × $4 = <span class="hl">$200</span>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 MODEL -->
+  <section class="card" data-card>
+    <div class="tag">Fix-up 4 · Bar model</div>
+    <div class="q">Jun Hao had twice as many beads as Aisyah. After Jun Hao gave 382 beads to Aisyah, they had the same number of beads. How many beads did Aisyah have at first?</div>
+    <div class="you">You left this one blank. It was a tricky one, so let's crack it together.</div>
+    <div class="trap"><b>Trap</b><span>Draw the bar model. To make two people <b>equal</b>, the bigger one gives away <b>half the difference</b>.</span></div>
+    <div class="fig"><svg viewBox="0 0 640 230" role="img" aria-label="Bar model: Jun Hao two units, Aisyah one unit">
+      <text x="10" y="62" font-size="18" font-weight="700">Jun Hao</text>
+      <text x="10" y="152" font-size="18" font-weight="700">Aisyah</text>
+      <rect x="120" y="38" width="200" height="38" fill="var(--soft)" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="320" y="38" width="200" height="38" fill="var(--soft)" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="120" y="128" width="200" height="38" fill="var(--soft)" stroke="var(--ink)" stroke-width="2"/>
+      <g class="g" data-s="1"><text x="220" y="63" text-anchor="middle" font-size="17">1 unit</text><text x="420" y="63" text-anchor="middle" font-size="17">1 unit</text>
+        <text x="220" y="153" text-anchor="middle" font-size="17">1 unit</text>
+        <path d="M320 90 V100 H520 V90" fill="none" stroke="var(--accent)" stroke-width="3"/><text x="420" y="120" text-anchor="middle" font-size="16" font-weight="700" fill="var(--accent)">difference = 1 unit</text></g>
+      <g class="g" data-s="2"><rect x="420" y="38" width="100" height="38" fill="var(--pencil)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="470" y="63" text-anchor="middle" font-size="17" font-weight="700" fill="var(--pencil-ink)">382</text>
+        <rect x="320" y="128" width="100" height="38" fill="var(--pencil)" stroke="var(--ink)" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="370" y="153" text-anchor="middle" font-size="17" font-weight="700" fill="var(--pencil-ink)">+382</text>
+        <path d="M470 80 Q445 120 380 126" fill="none" stroke="var(--ink)" stroke-width="2"/></g>
+      <g class="g" data-s="3"><text x="420" y="205" text-anchor="middle" font-size="18" font-weight="700">half a unit = 382, so 1 unit = 382 × 2 = 764</text></g>
+    </svg></div>
+    <ol class="steps">
+      <li class="g" data-s="1">Draw it: Jun Hao has <span class="hl">2 units</span>, Aisyah has <span class="hl">1 unit</span>. The difference is 1 unit.</li>
+      <li class="g" data-s="2">To end up equal, Jun Hao gives away <b>half</b> of that extra unit. So half a unit = <span class="hl">382</span>.</li>
+      <li class="g" data-s="3">One whole unit = 382 × 2 = <span class="hl">764</span>.</li>
+      <li class="g final" data-s="4">Aisyah had 1 unit at first = <span class="hl">764 beads</span>. Check: Jun Hao 1528 − 382 = 1146 and Aisyah 764 + 382 = 1146. Same! ✓</li>
+    </ol>
+    <div class="row"><button type="button" data-next>Next step</button><button type="button" class="ghost" data-reset>Start again</button></div>
+    <div class="try">
+      <h3>Try one like it</h3>
+      <div class="q">Mei had twice as many stickers as Lina. After Mei gave 145 stickers to Lina, they had the same number of stickers. How many stickers did Lina have at first?</div>
+      <div class="row"><button type="button" class="ghost" data-show>Show answer</button></div>
+      <div class="ans" hidden>
+        <p>Mei 2 units, Lina 1 unit. Mei gives half the difference, so half a unit = 145.</p>
+        <p>1 unit = 145 × 2 = 290. Lina had <span class="hl">290 stickers</span> at first.</p>
+        <p>Check: Mei 580 − 145 = 435 and Lina 290 + 145 = 435. Same! ✓</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card habit">
+    <div class="tag">Every question tomorrow</div>
+    <div class="big">Underline <span>·</span> Model <span>·</span> Check</div>
+    <p>Underline what it asks. Draw a model or a timeline. Check your answer matches the question and the unit. You have 90 minutes, so use the spare time to check. You've got this!</p>
+  </section>
+</div>
+
+<script>
+document.querySelectorAll('[data-card]').forEach(function(card){
+  var step = 0, max = 4;
+  var next = card.querySelector('[data-next]'), reset = card.querySelector('[data-reset]');
+  function paint(){
+    card.querySelectorAll('.g').forEach(function(el){ el.classList.toggle('on', Number(el.getAttribute('data-s')) <= step); });
+    next.disabled = step >= max;
+    next.textContent = step >= max ? 'All done!' : 'Next step';
+  }
+  next.addEventListener('click', function(){ if(step < max){ step++; paint(); } });
+  reset.addEventListener('click', function(){ step = 0; paint(); });
+  card.querySelector('[data-show]').addEventListener('click', function(e){
+    var a = card.querySelector('.ans'); a.hidden = !a.hidden;
+    e.currentTarget.textContent = a.hidden ? 'Show answer' : 'Hide answer';
+  });
+  paint();
+});
+</script>
+</body>
+</html>

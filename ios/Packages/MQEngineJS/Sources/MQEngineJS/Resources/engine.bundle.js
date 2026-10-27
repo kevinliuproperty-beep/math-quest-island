@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20261024-539bd38 */
-/* ENGINE_BUILD_META {"stamp":"20261024-539bd38","date":"2026-10-24","sha":"539bd38","dirty":false,"payloadHash":"18705ef9c7b50e30","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20261024-539bd38","date":"2026-10-24","sha":"539bd38","dirty":false,"payloadHash":"18705ef9c7b50e30","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20261027-dd45a08 */
+/* ENGINE_BUILD_META {"stamp":"20261027-dd45a08","date":"2026-10-27","sha":"dd45a08","dirty":false,"payloadHash":"d2630f4accf81d9f","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20261027-dd45a08","date":"2026-10-27","sha":"dd45a08","dirty":false,"payloadHash":"d2630f4accf81d9f","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/registry.js"],"fileCount":34,"topicFileCount":31,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -206,6 +206,14 @@ const TYPED_UNITS = [
   /* Maths Keys Refutation G4 (2026-10-24): a Mac keyboard has no ² key, so the area
      spellings a child CAN type are units too. Each aliases to cm2 / m2 below. */
   'cm^2','m^2','sq cm','sq m','square cm','square m',
+  /* Post-exam grader nits (2026-10-27): the spelled-out metric units. "3 liters" (US
+     spelling) was rejected while "3 litres" passed, and "30 metres" on a count question
+     never parsed, so it was labelled 'not a number' instead of 'wrong unit'. Each
+     aliases to its symbol below, so the unit rule is unchanged. */
+  'metres','metre','meters','meter','centimetres','centimetre','centimeters','centimeter',
+  'millimetres','millimetre','millimeters','millimeter','kilometres','kilometre','kilometers','kilometer',
+  'grams','gram','kilograms','kilogram','kilos','kilo',
+  'millilitres','millilitre','milliliters','milliliter','liters','liter',
   /* angle */
   'degrees','degree','deg','°',
   /* time */
@@ -221,7 +229,13 @@ const TYPED_UNITS = [
   '$','cents','cent','¢','dollars','dollar','cubes','cube'
 ].sort((a,b) => b.length - a.length);
 const UNIT_ALIAS = {
-  'ℓ':'l', 'litre':'l', 'litres':'l',
+  'ℓ':'l', 'litre':'l', 'litres':'l', 'liter':'l', 'liters':'l',
+  'metre':'m', 'metres':'m', 'meter':'m', 'meters':'m',
+  'centimetre':'cm', 'centimetres':'cm', 'centimeter':'cm', 'centimeters':'cm',
+  'millimetre':'mm', 'millimetres':'mm', 'millimeter':'mm', 'millimeters':'mm',
+  'kilometre':'km', 'kilometres':'km', 'kilometer':'km', 'kilometers':'km',
+  'gram':'g', 'grams':'g', 'kilogram':'kg', 'kilograms':'kg', 'kilo':'kg', 'kilos':'kg',
+  'millilitre':'ml', 'millilitres':'ml', 'milliliter':'ml', 'milliliters':'ml',
   'cm³':'cm3', 'cm²':'cm2', 'm²':'m2',
   'cm^2':'cm2', 'sq cm':'cm2', 'square cm':'cm2', 'm^2':'m2', 'sq m':'m2', 'square m':'m2',
   '°':'deg', 'degree':'deg', 'degrees':'deg',
@@ -376,6 +390,13 @@ function gradeTyped(raw, q){
     }
     if (!hit) return false;
   }
+  /* Post-exam grader nit (2026-10-27): a LEADING "$" is a unit too. parseTypedAnswer
+     drops it and reports unit '' (callers read the option "$4.50" as unit-free), so
+     "$705" used to pass on "How many cents is $7.05?". On a question that declares
+     units and none of them is dollars, a leading "$" with no trailing unit is now a
+     wrong unit; typedRejectReason labels it 'wrong-unit' (the bare re-grade passes). */
+  if (want.length && !p.unit && /^\s*\$/.test(String(raw))
+      && !want.some(w => normUnit(w) === 'dollars')) return false;
   /* a unit typed on a question that declares none is only accepted off the shared list */
   if (!want.length && p.unit && TYPED_UNITS.indexOf(normUnit(p.unit)) === -1
       && TYPED_UNITS.indexOf(String(p.unit).toLowerCase()) === -1) return false;
@@ -416,7 +437,7 @@ function typedRejectReason(raw, q){
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return String(p.reason || 'unparsed');
   if (gradeTyped(raw, q)) return null;
-  if (p.unit && q){
+  if ((p.unit || /^\s*\$/.test(String(raw))) && q){
     const bare = {};
     for (const k in q) if (k !== 'unit' && k !== 'units') bare[k] = q[k];
     if (gradeTyped(raw, bare)) return 'wrong-unit';
@@ -10805,7 +10826,7 @@ function gTypedLeft(){
     return asMoney(finishTyped(who + ' has ' + money(have) + '. ' + who + ' buys ' + pick(CHEAP) + ' for ' + money(spend) +
       ' at ' + pick(STALLS) + '. How much money is left? (in dollars, e.g. 2.35)',
       dollars(left),
-      money(have) + ' - ' + money(spend) + ' = ' + money(left) + '. Subtract the cents first, then the dollars.',
+      money(have) + ' − ' + money(spend) + ' = ' + money(left) + '. Subtract the cents first, then the dollars.',
       '$'), left);
   }
   function gSubBorrow(){
@@ -10814,7 +10835,7 @@ function gTypedLeft(){
     return asMoney(finishTyped(who + ' has ' + money(have) + '. ' + who + ' pays ' + money(spend) + ' for ' + pick(BIG) +
       ' at ' + pick(STALLS) + '. How much money is left? (in dollars, e.g. 6.45)',
       dollars(left),
-      'Change one dollar into 100 cents if the cents will not subtract: ' + money(have) + ' - ' + money(spend) + ' = ' + money(left) + '.',
+      'Change one dollar into 100 cents if the cents will not subtract: ' + money(have) + ' − ' + money(spend) + ' = ' + money(left) + '.',
       '$'), left);
   }
   function gChange(){
@@ -10827,7 +10848,7 @@ function gTypedLeft(){
       ' at ' + pick(STALLS) + ', then hands the stallholder ' + money(given) +
       '. How much change should ' + who + ' get? (in dollars, e.g. 3.15)',
       dollars(chg),
-      'First find the cost: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + '. Then ' + money(given) + ' - ' + money(a+b) + ' = ' + money(chg) + '.',
+      'First find the cost: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + '. Then ' + money(given) + ' − ' + money(a+b) + ' = ' + money(chg) + '.',
       '$'), chg), 2);
   }
 
@@ -10931,7 +10952,7 @@ function gTypedLeft(){
           ', and had ' + usd(L) + ' left. How many ' + f + ' did ' + who + ' buy?'
         : 'At the wet market, ' + f + ' are sold at ' + Gs + ' for ' + usd(P) + '. ' + who + ' spent ' + usd(S) + ' on ' + f +
           '. How many ' + f + ' did ' + who + ' buy?';
-      const ex = (hard ? 'First find the money spent: ' + usd(H) + ' - ' + usd(L) + ' = ' + usd(S) + '. ' : '') +
+      const ex = (hard ? 'First find the money spent: ' + usd(H) + ' − ' + usd(L) + ' = ' + usd(S) + '. ' : '') +
         'Every ' + usd(P) + ' buys one group of ' + Gs + '. ' + tail;
       return band(finishTyped(stem, N, ex, f), hard ? 3 : 2);
     }
@@ -10962,11 +10983,11 @@ function gTypedLeft(){
         ' note and received ' + ct + ' change. ' + knowns + ' How much did the ' + unk + ' cost? (in dollars, e.g. 4.75)';
       let ex = 'Change is money given back, so it was not spent. ' +
         (/¢/.test(ct) ? ct + ' is ' + money(c) + ' (not ' + money(c * 10) + '). ' : '') +
-        'Money spent: ' + money(note) + ' - ' + money(c) + ' = ' + money(spent) + '. ';
+        'Money spent: ' + money(note) + ' − ' + money(c) + ' = ' + money(spent) + '. ';
       ex += three
-        ? 'Take away the two known prices: ' + money(spent) + ' - ' + money(known[0]) + ' = ' + money(spent - known[0]) +
-          ', then ' + money(spent - known[0]) + ' - ' + money(known[1]) + ' = ' + money(u) + '.'
-        : 'Take away the known price: ' + money(spent) + ' - ' + money(known[0]) + ' = ' + money(u) + '.';
+        ? 'Take away the two known prices: ' + money(spent) + ' − ' + money(known[0]) + ' = ' + money(spent - known[0]) +
+          ', then ' + money(spent - known[0]) + ' − ' + money(known[1]) + ' = ' + money(u) + '.'
+        : 'Take away the known price: ' + money(spent) + ' − ' + money(known[0]) + ' = ' + money(u) + '.';
       ex += ' Check: the prices add up to ' + money(spent) + ', and ' + money(spent) + ' + ' + money(c) + ' change = ' + money(note) + '.';
       return band(asMoney(finishTyped(stem, dollars(u), ex, '$'), u), three ? 3 : 2);
     }
@@ -10985,8 +11006,8 @@ function gTypedLeft(){
       if (u < 80) continue;
       const slips = [H - a - b, H - a - b + L, H - a - L, H - b - L, a + b + L];
       const ex = 'Bar model: ' + money(H) + ' is split into the ' + x + ', the ' + y + ', the ' + z + ' and the money left. ' +
-        'Money spent: ' + money(H) + ' - ' + money(L) + ' = ' + money(H - L) + '. ' +
-        'Take away the prices you know: ' + money(H - L) + ' - ' + money(a) + ' - ' + money(b) + ' = ' + money(u) + '. ' +
+        'Money spent: ' + money(H) + ' − ' + money(L) + ' = ' + money(H - L) + '. ' +
+        'Take away the prices you know: ' + money(H - L) + ' − ' + money(a) + ' − ' + money(b) + ' = ' + money(u) + '. ' +
         'The money left was not spent, so it must be taken away too.';
       return band(moneyMcq(who + ' had ' + money(H) + '. ' + who + ' bought ' + an(x) + ' for ' + money(a) + ', ' + an(y) + ' for ' +
         money(b) + ' and ' + an(z) + '. ' + who + ' had ' + money(L) + ' left. How much did the ' + z + ' cost?', u, slips, money, ex), 3);
@@ -11003,7 +11024,7 @@ function gTypedLeft(){
       if (L < 100) continue;
       const ex = 'The ' + y + ' cost ' + money(d) + ' MORE than the ' + x + ', so it cost ' + money(a) + ' + ' + money(d) + ' = ' + money(yb) +
         ' (' + money(d) + ' is the difference, not the price). Spent: ' + money(a) + ' + ' + money(yb) + ' = ' + money(a + yb) +
-        '. Left: ' + money(H) + ' - ' + money(a + yb) + ' = ' + money(L) + '.';
+        '. Left: ' + money(H) + ' − ' + money(a + yb) + ' = ' + money(L) + '.';
       return band(asMoney(finishTyped(who + ' had ' + money(H) + '. ' + who + ' spent ' + money(a) + ' on ' + an(x) + ' and ' + money(d) +
         ' more on ' + an(y) + ' than on the ' + x + '. How much money did ' + who + ' have left? (in dollars, e.g. 4.75)',
         dollars(L), ex, '$'), L), 3);
@@ -11017,7 +11038,7 @@ function gTypedLeft(){
       const [x, y] = shuffle(GOODS).slice(0, 2);
       const a = cents(450, 4500), b = cents(250, 3500), L = H - a - b;
       if (L < 50) continue;
-      const ex = 'Add what was spent first: ' + money(a) + ' + ' + money(b) + ' = ' + money(a + b) + '. Then ' + money(H) + ' - ' +
+      const ex = 'Add what was spent first: ' + money(a) + ' + ' + money(b) + ' = ' + money(a + b) + '. Then ' + money(H) + ' − ' +
         money(a + b) + ' = ' + money(L) + '. Change one dollar into 100 cents whenever the cents will not subtract.';
       return band(asMoney(finishTyped(who + ' had ' + money(H) + '. ' + who + ' spent ' + money(a) + ' on ' + an(x) + ' and ' + money(b) +
         ' on ' + an(y) + '. How much money did ' + who + ' have left? (in dollars, e.g. 4.75)', dollars(L), ex, '$'), L), 2);
@@ -12943,11 +12964,12 @@ const FENCE_CTX = [
 function gPeriFence(){
   const c = pick(FENCE_CTX);
   let L=7,B=10,rate=5,g=0;
-  /* WOUND 2 (v3): "long" must print longer than "wide" (was flipped in 27% of draws). */
+  /* WOUND 2 (v3): "long" must print longer than "wide" (was flipped in 27% of draws).
+     Post-exam nit (2026-10-27): strictly longer, so a "rectangular" plot is never 12 m by 12 m. */
   do { L=ri(5,15); B=ri(3,12); rate=ri(2,9); g++; }
-  while (g<200 && !(L>=B && paOk(L,B) &&
+  while (g<200 && !(L>B && paOk(L,B) &&
          optsOk(2*(L+B)*rate,[L*B*rate,(L+B)*rate,2*(L+B)])));
-  if (L<B){ L=12; B=7; rate=5; }
+  if (L<=B){ L=12; B=7; rate=5; }
   const p=2*(L+B), cost=p*rate;
   const q = mcNum(c[0]+' puts '+c[2]+' right around '+c[1]+' that is '+L+' m long and '+B+
     ' m wide. The '+c[2]+' costs $'+rate+' per metre. <b>How much does it cost altogether, in dollars?</b>','',
@@ -22215,4 +22237,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20261024-539bd38 */
+/* ENGINE_BUILD_END 20261027-dd45a08 */

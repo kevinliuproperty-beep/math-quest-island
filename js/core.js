@@ -133,6 +133,14 @@ const TYPED_UNITS = [
   /* Maths Keys Refutation G4 (2026-10-24): a Mac keyboard has no ² key, so the area
      spellings a child CAN type are units too. Each aliases to cm2 / m2 below. */
   'cm^2','m^2','sq cm','sq m','square cm','square m',
+  /* Post-exam grader nits (2026-10-27): the spelled-out metric units. "3 liters" (US
+     spelling) was rejected while "3 litres" passed, and "30 metres" on a count question
+     never parsed, so it was labelled 'not a number' instead of 'wrong unit'. Each
+     aliases to its symbol below, so the unit rule is unchanged. */
+  'metres','metre','meters','meter','centimetres','centimetre','centimeters','centimeter',
+  'millimetres','millimetre','millimeters','millimeter','kilometres','kilometre','kilometers','kilometer',
+  'grams','gram','kilograms','kilogram','kilos','kilo',
+  'millilitres','millilitre','milliliters','milliliter','liters','liter',
   /* angle */
   'degrees','degree','deg','°',
   /* time */
@@ -148,7 +156,13 @@ const TYPED_UNITS = [
   '$','cents','cent','¢','dollars','dollar','cubes','cube'
 ].sort((a,b) => b.length - a.length);
 const UNIT_ALIAS = {
-  'ℓ':'l', 'litre':'l', 'litres':'l',
+  'ℓ':'l', 'litre':'l', 'litres':'l', 'liter':'l', 'liters':'l',
+  'metre':'m', 'metres':'m', 'meter':'m', 'meters':'m',
+  'centimetre':'cm', 'centimetres':'cm', 'centimeter':'cm', 'centimeters':'cm',
+  'millimetre':'mm', 'millimetres':'mm', 'millimeter':'mm', 'millimeters':'mm',
+  'kilometre':'km', 'kilometres':'km', 'kilometer':'km', 'kilometers':'km',
+  'gram':'g', 'grams':'g', 'kilogram':'kg', 'kilograms':'kg', 'kilo':'kg', 'kilos':'kg',
+  'millilitre':'ml', 'millilitres':'ml', 'milliliter':'ml', 'milliliters':'ml',
   'cm³':'cm3', 'cm²':'cm2', 'm²':'m2',
   'cm^2':'cm2', 'sq cm':'cm2', 'square cm':'cm2', 'm^2':'m2', 'sq m':'m2', 'square m':'m2',
   '°':'deg', 'degree':'deg', 'degrees':'deg',
@@ -303,6 +317,13 @@ function gradeTyped(raw, q){
     }
     if (!hit) return false;
   }
+  /* Post-exam grader nit (2026-10-27): a LEADING "$" is a unit too. parseTypedAnswer
+     drops it and reports unit '' (callers read the option "$4.50" as unit-free), so
+     "$705" used to pass on "How many cents is $7.05?". On a question that declares
+     units and none of them is dollars, a leading "$" with no trailing unit is now a
+     wrong unit; typedRejectReason labels it 'wrong-unit' (the bare re-grade passes). */
+  if (want.length && !p.unit && /^\s*\$/.test(String(raw))
+      && !want.some(w => normUnit(w) === 'dollars')) return false;
   /* a unit typed on a question that declares none is only accepted off the shared list */
   if (!want.length && p.unit && TYPED_UNITS.indexOf(normUnit(p.unit)) === -1
       && TYPED_UNITS.indexOf(String(p.unit).toLowerCase()) === -1) return false;
@@ -343,7 +364,7 @@ function typedRejectReason(raw, q){
   const p = parseTypedAnswer(raw, q);
   if (!p.ok) return String(p.reason || 'unparsed');
   if (gradeTyped(raw, q)) return null;
-  if (p.unit && q){
+  if ((p.unit || /^\s*\$/.test(String(raw))) && q){
     const bare = {};
     for (const k in q) if (k !== 'unit' && k !== 'units') bare[k] = q[k];
     if (gradeTyped(raw, bare)) return 'wrong-unit';

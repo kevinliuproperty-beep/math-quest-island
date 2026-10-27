@@ -231,11 +231,12 @@ const FENCE_CTX = [
 function gPeriFence(){
   const c = pick(FENCE_CTX);
   let L=7,B=10,rate=5,g=0;
-  /* WOUND 2 (v3): "long" must print longer than "wide" (was flipped in 27% of draws). */
+  /* WOUND 2 (v3): "long" must print longer than "wide" (was flipped in 27% of draws).
+     Post-exam nit (2026-10-27): strictly longer, so a "rectangular" plot is never 12 m by 12 m. */
   do { L=ri(5,15); B=ri(3,12); rate=ri(2,9); g++; }
-  while (g<200 && !(L>=B && paOk(L,B) &&
+  while (g<200 && !(L>B && paOk(L,B) &&
          optsOk(2*(L+B)*rate,[L*B*rate,(L+B)*rate,2*(L+B)])));
-  if (L<B){ L=12; B=7; rate=5; }
+  if (L<=B){ L=12; B=7; rate=5; }
   const p=2*(L+B), cost=p*rate;
   const q = mcNum(c[0]+' puts '+c[2]+' right around '+c[1]+' that is '+L+' m long and '+B+
     ' m wide. The '+c[2]+' costs $'+rate+' per metre. <b>How much does it cost altogether, in dollars?</b>','',

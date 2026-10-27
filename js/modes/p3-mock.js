@@ -104,6 +104,10 @@
       if (unit === null) unit = p.unit || ""; else if ((p.unit || "") !== unit) return null;
       vals.push(p.value);
     }
+    /* Post-exam grader nit (2026-10-27): a duration whose options all happen to be whole
+       hours ("1 h", "2 h", "3 h") converted to "(Give your answer in h.)", and "120 min"
+       then failed. About 2 in 2,500 gDurationHMin draws; leave those as MCQ. */
+    if (/^(h|hrs?|hours?)$/i.test(unit)) return null;
     var t = {};
     for (var k in q) t[k] = q[k];
     t.typed = true; t.answer = vals[q.correct]; t.choices = []; t.correct = -1;

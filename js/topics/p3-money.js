@@ -81,7 +81,7 @@
     return asMoney(finishTyped(who + ' has ' + money(have) + '. ' + who + ' buys ' + pick(CHEAP) + ' for ' + money(spend) +
       ' at ' + pick(STALLS) + '. How much money is left? (in dollars, e.g. 2.35)',
       dollars(left),
-      money(have) + ' - ' + money(spend) + ' = ' + money(left) + '. Subtract the cents first, then the dollars.',
+      money(have) + ' − ' + money(spend) + ' = ' + money(left) + '. Subtract the cents first, then the dollars.',
       '$'), left);
   }
   function gSubBorrow(){
@@ -90,7 +90,7 @@
     return asMoney(finishTyped(who + ' has ' + money(have) + '. ' + who + ' pays ' + money(spend) + ' for ' + pick(BIG) +
       ' at ' + pick(STALLS) + '. How much money is left? (in dollars, e.g. 6.45)',
       dollars(left),
-      'Change one dollar into 100 cents if the cents will not subtract: ' + money(have) + ' - ' + money(spend) + ' = ' + money(left) + '.',
+      'Change one dollar into 100 cents if the cents will not subtract: ' + money(have) + ' − ' + money(spend) + ' = ' + money(left) + '.',
       '$'), left);
   }
   function gChange(){
@@ -103,7 +103,7 @@
       ' at ' + pick(STALLS) + ', then hands the stallholder ' + money(given) +
       '. How much change should ' + who + ' get? (in dollars, e.g. 3.15)',
       dollars(chg),
-      'First find the cost: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + '. Then ' + money(given) + ' - ' + money(a+b) + ' = ' + money(chg) + '.',
+      'First find the cost: ' + money(a) + ' + ' + money(b) + ' = ' + money(a+b) + '. Then ' + money(given) + ' − ' + money(a+b) + ' = ' + money(chg) + '.',
       '$'), chg), 2);
   }
 
@@ -207,7 +207,7 @@
           ', and had ' + usd(L) + ' left. How many ' + f + ' did ' + who + ' buy?'
         : 'At the wet market, ' + f + ' are sold at ' + Gs + ' for ' + usd(P) + '. ' + who + ' spent ' + usd(S) + ' on ' + f +
           '. How many ' + f + ' did ' + who + ' buy?';
-      const ex = (hard ? 'First find the money spent: ' + usd(H) + ' - ' + usd(L) + ' = ' + usd(S) + '. ' : '') +
+      const ex = (hard ? 'First find the money spent: ' + usd(H) + ' − ' + usd(L) + ' = ' + usd(S) + '. ' : '') +
         'Every ' + usd(P) + ' buys one group of ' + Gs + '. ' + tail;
       return band(finishTyped(stem, N, ex, f), hard ? 3 : 2);
     }
@@ -238,11 +238,11 @@
         ' note and received ' + ct + ' change. ' + knowns + ' How much did the ' + unk + ' cost? (in dollars, e.g. 4.75)';
       let ex = 'Change is money given back, so it was not spent. ' +
         (/¢/.test(ct) ? ct + ' is ' + money(c) + ' (not ' + money(c * 10) + '). ' : '') +
-        'Money spent: ' + money(note) + ' - ' + money(c) + ' = ' + money(spent) + '. ';
+        'Money spent: ' + money(note) + ' − ' + money(c) + ' = ' + money(spent) + '. ';
       ex += three
-        ? 'Take away the two known prices: ' + money(spent) + ' - ' + money(known[0]) + ' = ' + money(spent - known[0]) +
-          ', then ' + money(spent - known[0]) + ' - ' + money(known[1]) + ' = ' + money(u) + '.'
-        : 'Take away the known price: ' + money(spent) + ' - ' + money(known[0]) + ' = ' + money(u) + '.';
+        ? 'Take away the two known prices: ' + money(spent) + ' − ' + money(known[0]) + ' = ' + money(spent - known[0]) +
+          ', then ' + money(spent - known[0]) + ' − ' + money(known[1]) + ' = ' + money(u) + '.'
+        : 'Take away the known price: ' + money(spent) + ' − ' + money(known[0]) + ' = ' + money(u) + '.';
       ex += ' Check: the prices add up to ' + money(spent) + ', and ' + money(spent) + ' + ' + money(c) + ' change = ' + money(note) + '.';
       return band(asMoney(finishTyped(stem, dollars(u), ex, '$'), u), three ? 3 : 2);
     }
@@ -261,8 +261,8 @@
       if (u < 80) continue;
       const slips = [H - a - b, H - a - b + L, H - a - L, H - b - L, a + b + L];
       const ex = 'Bar model: ' + money(H) + ' is split into the ' + x + ', the ' + y + ', the ' + z + ' and the money left. ' +
-        'Money spent: ' + money(H) + ' - ' + money(L) + ' = ' + money(H - L) + '. ' +
-        'Take away the prices you know: ' + money(H - L) + ' - ' + money(a) + ' - ' + money(b) + ' = ' + money(u) + '. ' +
+        'Money spent: ' + money(H) + ' − ' + money(L) + ' = ' + money(H - L) + '. ' +
+        'Take away the prices you know: ' + money(H - L) + ' − ' + money(a) + ' − ' + money(b) + ' = ' + money(u) + '. ' +
         'The money left was not spent, so it must be taken away too.';
       return band(moneyMcq(who + ' had ' + money(H) + '. ' + who + ' bought ' + an(x) + ' for ' + money(a) + ', ' + an(y) + ' for ' +
         money(b) + ' and ' + an(z) + '. ' + who + ' had ' + money(L) + ' left. How much did the ' + z + ' cost?', u, slips, money, ex), 3);
@@ -279,7 +279,7 @@
       if (L < 100) continue;
       const ex = 'The ' + y + ' cost ' + money(d) + ' MORE than the ' + x + ', so it cost ' + money(a) + ' + ' + money(d) + ' = ' + money(yb) +
         ' (' + money(d) + ' is the difference, not the price). Spent: ' + money(a) + ' + ' + money(yb) + ' = ' + money(a + yb) +
-        '. Left: ' + money(H) + ' - ' + money(a + yb) + ' = ' + money(L) + '.';
+        '. Left: ' + money(H) + ' − ' + money(a + yb) + ' = ' + money(L) + '.';
       return band(asMoney(finishTyped(who + ' had ' + money(H) + '. ' + who + ' spent ' + money(a) + ' on ' + an(x) + ' and ' + money(d) +
         ' more on ' + an(y) + ' than on the ' + x + '. How much money did ' + who + ' have left? (in dollars, e.g. 4.75)',
         dollars(L), ex, '$'), L), 3);
@@ -293,7 +293,7 @@
       const [x, y] = shuffle(GOODS).slice(0, 2);
       const a = cents(450, 4500), b = cents(250, 3500), L = H - a - b;
       if (L < 50) continue;
-      const ex = 'Add what was spent first: ' + money(a) + ' + ' + money(b) + ' = ' + money(a + b) + '. Then ' + money(H) + ' - ' +
+      const ex = 'Add what was spent first: ' + money(a) + ' + ' + money(b) + ' = ' + money(a + b) + '. Then ' + money(H) + ' − ' +
         money(a + b) + ' = ' + money(L) + '. Change one dollar into 100 cents whenever the cents will not subtract.';
       return band(asMoney(finishTyped(who + ' had ' + money(H) + '. ' + who + ' spent ' + money(a) + ' on ' + an(x) + ' and ' + money(b) +
         ' on ' + an(y) + '. How much money did ' + who + ' have left? (in dollars, e.g. 4.75)', dollars(L), ex, '$'), L), 2);

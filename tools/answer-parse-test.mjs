@@ -296,7 +296,19 @@ for (const [input, val, unit] of P) {
     ['4.35 dollars', { answer: 4.35, unit: '$' }, null,         'D3 2026-10-16: dollars IS the $ unit, so a right number is correct'],
     ['2025 cubes', { answer: 2025, unit: 'cm' }, 'wrong-unit', 'K2: nor was cubes'],
     ['5700 $',   { answer: 5700, unit: 'cents' }, 'wrong-unit', 'K2: a trailing $ is a unit'],
-    ['8.6 cm',   { answer: 8.5, unit: 'm' },   'wrong-value', 'K2: and a wrong number is still a wrong number']
+    ['8.6 cm',   { answer: 8.5, unit: 'm' },   'wrong-value', 'K2: and a wrong number is still a wrong number'],
+    /* post-exam grader nits (2026-10-27) */
+    ['30 metres', { answer: 30, unit: 'chairs' }, 'wrong-unit', 'nit: a spelled-out measure on a count question is a wrong unit, not "not a number"'],
+    ['30 chairs', { answer: 30, unit: 'chairs' }, null,         'nit: the count word still passes'],
+    ['3 liters', { answer: 3, unit: 'l' },        null,         'nit: US spelling of litres'],
+    ['3 metres', { answer: 3, unit: 'm' },        null,         'nit: metres is the m unit'],
+    ['250 grams', { answer: 250, unit: 'g' },     null,         'nit: grams is the g unit'],
+    ['3 liters', { answer: 3, unit: 'kg' },       'wrong-unit', 'nit: and liters on a kg question is still a wrong unit'],
+    ['$705',     { answer: 705, unit: 'cents' },  'wrong-unit', 'nit: a leading $ is a unit, so "$705" fails a cents item'],
+    ['705',      { answer: 705, unit: 'cents' },  null,         'nit: the bare number still passes a cents item'],
+    ['$7.05',    { answer: 7.05, unit: '$' },     null,         'nit: a leading $ still passes a dollar item'],
+    ['$7.05',    { answer: 7.05 },                null,         'nit: and a unit-free item'],
+    ['$7.50',    { answer: 7.05, unit: '$' },     'wrong-value', 'nit: a wrong amount is still wrong-value']
   ];
   for (const [input, q, want, why] of R) {
     const got = ctx.MQI.typedRejectReason(input, q);

@@ -3024,6 +3024,138 @@ function p3HardNumbersOracle(q) {
   return fail('no oracle matched this typed stem - every typed p3numbers generator must ship its oracle: ' + text);
 }
 
+/* ---------- P6 RATIO ORACLE (P5-P6 mirror, Sprint 1, 2026-10-28) ------------
+   Exhaustive for topic p6ratio: every stem must match one of these shapes or the
+   draw fails. Each key is re-derived from the RENDERED stem by a different route
+   from the generator's: simplest forms by dividing by the gcd computed here, the
+   share and difference problems by a brute-force search over the value of one unit
+   (never by the generator's formula), and the before-after problem by searching the
+   unchanged person's amount. MCQs must have EXACTLY ONE defensible option, every
+   distractor must carry a misconception tag from the topic's dictionary, and every
+   draw must be tagged syl 'P6'. Typed slips must never equal the key. */
+function p6ratioOracle(q) {
+  const text = strip(q.q);
+  const fail = s => 'p6ratio: ' + s + ' :: ' + text;
+  const T = TOPICS.p6ratio, MIS = (T && T.misconceptions) || {};
+  if (q.syl !== 'P6') return fail('every item must carry syl P6');
+  const ratioOf = s => { const m = strip(s).match(/^(\d+) : (\d+)(?: : (\d+))?$/); return m ? m.slice(1).filter(x => x !== undefined).map(Number) : null; };
+  const simp = r => { let g = 0; for (const x of r) g = gcd(g, x); return r.map(x => x / g); };
+  const same = (r, s) => !!r && !!s && r.length === s.length && r.every((x, i) => x === s[i]);
+  const equiv = (r, s) => !!r && !!s && r.length === s.length && same(simp(r), simp(s));
+  if (!q.typed) {
+    const n = (q.choices || []).length;
+    for (let i = 0; i < n; i++) {
+      if (i === q.correct) { if (q.miscon && q.miscon[i] != null) return fail('the key carries a misconception tag'); continue; }
+      const t = q.miscon && q.miscon[i];
+      if (!t || !MIS[t]) return fail(`distractor ${i} has no misconception tag from the dictionary (${t})`);
+      if (!q.optionFeedback || typeof q.optionFeedback[i] !== 'string' || !q.optionFeedback[i].trim()) return fail(`distractor ${i} has no coaching line`);
+    }
+  } else if (q.slips) {
+    for (const [v, t] of Object.entries(q.slips)) {
+      if (Number(v) === q.answer) return fail('a slip equals the key');
+      if (!MIS[t]) return fail(`slip tag ${t} is not in the dictionary`);
+    }
+  }
+  let m;
+  /* two given quantities -> simplest form */
+  if ((m = text.match(/^(?:In a box|On a shelf|In a CCA group|In a basket|In a pond) there are (\d+) ([a-z ]+?) and (\d+) ([a-z ]+?)\. What is the ratio of the number of \2 to the number of \4\? Give it in its simplest form\.$/))) {
+    const want = simp([+m[1], +m[3]]);
+    if (!same(ratioOf(q.answerText), want)) return fail(`expected ${want.join(' : ')}, got ${q.answerText}`);
+    const right = q.choices.filter(c => same(ratioOf(c), want)).length;
+    return right === 1 ? null : fail(`${right} options are the simplest-form answer`);
+  }
+  if ((m = text.match(/^Express (\d+) : (\d+) in its simplest form\.$/))) {
+    const want = simp([+m[1], +m[2]]);
+    if (same(want, [+m[1], +m[2]])) return fail('the given ratio is already in its simplest form');
+    if (!same(ratioOf(q.answerText), want)) return fail(`expected ${want.join(' : ')}, got ${q.answerText}`);
+    const right = q.choices.filter(c => same(ratioOf(c), want)).length;
+    return right === 1 ? null : fail(`${right} options are the simplest form`);
+  }
+  if ((m = text.match(/^Which ratio is equivalent to (\d+) : (\d+)\?$/))) {
+    const base = [+m[1], +m[2]];
+    const eqs = q.choices.map((c, i) => equiv(ratioOf(c), base) ? i : -1).filter(i => i >= 0);
+    if (eqs.length !== 1) return fail(`${eqs.length} options are equivalent to ${base.join(' : ')}`);
+    if (eqs[0] !== q.correct) return fail('the key is not the equivalent option');
+    return same(ratioOf(q.choices[q.correct]), base) ? fail('the key repeats the given ratio') : null;
+  }
+  if ((m = text.match(/^Find the missing number: (\d+) : (\d+) = (\?|\d+) : (\?|\d+)$/))) {
+    const a = +m[1], b = +m[2];
+    if ((m[3] === '?') === (m[4] === '?')) return fail('exactly one term must be missing');
+    let found = null;
+    for (let x = 1; x <= 1000; x++) {                     /* search, never divide */
+      const r = m[3] === '?' ? [x, +m[4]] : [+m[3], x];
+      if (r[0] * b === r[1] * a) { found = x; break; }
+    }
+    if (found === null) return fail('no whole-number missing term exists');
+    if (q.unit) return fail('a missing ratio term carries no unit');
+    return q.answer === found ? null : fail(`expected ${found}, got ${q.answer}`);
+  }
+  if ((m = text.match(/^([A-Z][a-z]+(?: [A-Z][a-z]+)?) has \$(\d+), ([A-Z][a-z]+(?: [A-Z][a-z]+)?) has \$(\d+) and ([A-Z][a-z]+(?: [A-Z][a-z]+)?) has \$(\d+)\. What is the ratio of \1's money to \3's money to \5's money in its simplest form\?$/))) {
+    const want = simp([+m[2], +m[4], +m[6]]);
+    if (!same(ratioOf(q.answerText), want)) return fail(`expected ${want.join(' : ')}, got ${q.answerText}`);
+    const right = q.choices.filter(c => same(ratioOf(c), want)).length;
+    return right === 1 ? null : fail(`${right} options are the simplest-form answer`);
+  }
+  if ((m = text.match(/^\$(\d+) is shared between ([A-Z][a-z]+(?: [A-Z][a-z]+)?) and ([A-Z][a-z]+(?: [A-Z][a-z]+)?) in the ratio (\d+) : (\d+)\. How much money does (.+?) get\? \(in dollars, e\.g\. 45\)$/))) {
+    const tot = +m[1], p = +m[4], r = +m[5];
+    if (m[6] !== m[2] && m[6] !== m[3]) return fail('the question names someone not in the share');
+    let unit = null;
+    for (let u = 1; u <= tot; u++) if (u * (p + r) === tot) { unit = u; break; }
+    if (unit === null) return fail('the total does not split into whole-dollar units');
+    const want = (m[6] === m[2] ? p : r) * unit;
+    if (q.unit !== '$') return fail('a dollar answer must declare $');
+    return q.answer === want ? null : fail(`expected ${want}, got ${q.answer}`);
+  }
+  if ((m = text.match(/^The ratio of the number of ([a-z]+) to the number of ([a-z]+) in (?:a|an) [a-z ]+ is (\d+) : (\d+)\. What fraction of the \1 and \2 altogether are (\1|\2)\?$/))) {
+    const p = +m[3], r = +m[4], part = m[5] === m[1] ? p : r;
+    const key = parseFrac(q.answerText);
+    if (!key) return fail('the key is not a fraction');
+    if (key[0] * (p + r) !== part * key[1]) return fail(`expected ${part}/${p + r}, got ${key[0]}/${key[1]}`);
+    const right = q.choices.filter(c => { const f = parseFrac(c); return f && f[0] * (p + r) === part * f[1]; }).length;
+    return right === 1 ? null : fail(`${right} options equal ${part}/${p + r}`);
+  }
+  if ((m = text.match(/^The (length|mass|volume of water) (?:of|in) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)'s (ribbon|bag of rice|bottle) is .+ of the \1 (?:of|in) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)'s \3\. What is the ratio of the \1 (?:of|in) \2's \3 to the \1 (?:of|in) \4's \3\?$/))) {
+    const fs = allFracs(q.q);
+    if (fs.length !== 1) return fail(`expected one printed fraction, saw ${fs.length}`);
+    const want = simp([fs[0][0], fs[0][1]]);
+    if (!same(ratioOf(q.answerText), want)) return fail(`expected ${want.join(' : ')}, got ${q.answerText}`);
+    const right = q.choices.filter(c => equiv(ratioOf(c), want)).length;
+    return right === 1 ? null : fail(`${right} options are equivalent to ${want.join(' : ')}`);
+  }
+  if ((m = text.match(/^The ratio of the number of ([a-z]+) ([A-Z][a-z]+(?: [A-Z][a-z]+)?) has to the number of \1 ([A-Z][a-z]+(?: [A-Z][a-z]+)?) has is (\d+) : (\d+)\. \3 has (\d+) more \1 than \2\. How many \1 do they have altogether\?$/))) {
+    const p = +m[4], r = +m[5], D = +m[6];
+    let tot = null;
+    for (let a = 1; a <= 5000 && tot === null; a++) {    /* search the first person's count */
+      if ((a * r) % p) continue;
+      const b = a * r / p;
+      if (b - a === D) tot = a + b;
+    }
+    if (tot === null) return fail('no whole-number solution');
+    if (q.band !== 3 || q.exam !== 'problem') return fail('a Paper 2 model problem is band 3 and exam:problem');
+    return q.answer === tot ? null : fail(`expected ${tot}, got ${q.answer}`);
+  }
+  if ((m = text.match(/^At first, the ratio of ([A-Z][a-z]+(?: [A-Z][a-z]+)?)'s money to ([A-Z][a-z]+(?: [A-Z][a-z]+)?)'s money was (\d+) : (\d+)\. After \1 spent \$(\d+), the ratio became (\d+) : (\d+)\. \2's money did not change\. How much money did \1 have at first\? \(in dollars, e\.g\. 120\)$/))) {
+    const p = +m[3], r0 = +m[4], d = +m[5], r = +m[6], s = +m[7];
+    const sols = [];
+    for (let B = 1; B <= 20000; B++) {                    /* search the unchanged amount */
+      if ((B * p) % r0 || (B * r) % s) continue;
+      if (B * p / r0 - B * r / s === d) sols.push(B * p / r0);
+    }
+    if (sols.length !== 1) return fail(`${sols.length} whole-dollar solutions`);
+    if (q.band !== 3 || q.exam !== 'problem') return fail('a Paper 2 before-after problem is band 3 and exam:problem');
+    return q.answer === sols[0] ? null : fail(`expected ${sols[0]}, got ${q.answer}`);
+  }
+  if ((m = text.match(/^Some money was shared among ([A-Z][a-z]+(?: [A-Z][a-z]+)?), ([A-Z][a-z]+(?: [A-Z][a-z]+)?) and ([A-Z][a-z]+(?: [A-Z][a-z]+)?) in the ratio (\d+) : (\d+) : (\d+)\. The total amount of money was \$(\d+)\. How much more money did \3 get than \1\? \(in dollars, e\.g\. 36\)$/))) {
+    const a = +m[4], b = +m[5], c = +m[6], tot = +m[7];
+    let unit = null;
+    for (let u = 1; u <= tot; u++) if (u * (a + b + c) === tot) { unit = u; break; }
+    if (unit === null) return fail('the total does not split into whole-dollar units');
+    if (c <= a) return fail('the second-named person must get more');
+    return q.answer === (c - a) * unit ? null : fail(`expected ${(c - a) * unit}, got ${q.answer}`);
+  }
+  return fail('no oracle matched this stem - every p6ratio stem must ship its oracle');
+}
+
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
 /* Return: null = verified, string = failure, false = no oracle matched.
    `topic` is the registered topic id the generator was drawn from. It is used by
@@ -3034,6 +3166,8 @@ function p3HardNumbersOracle(q) {
 function oracle(q, topic) {
   /* SWEEP 2026-09-15: the decimals bank is dispatched first and exhaustively, so
      no looser branch below can claim one of its stems and no stem can escape. */
+  /* P5-P6 mirror Sprint 1: Ratio Ridge, exhaustive (see p6ratioOracle). */
+  if (topic === 'p6ratio') return p6ratioOracle(q);
   if (topic === 'decimals') return decimalsOracle(q);
   /* lane/p3-time 2026-10-06: exhaustive, like decimals (see p3timeOracle). */
   if (topic === 'p3time') return p3timeOracle(q);

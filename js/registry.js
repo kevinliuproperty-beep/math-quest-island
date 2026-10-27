@@ -44,6 +44,8 @@ const MAP_NODES=[
      vertically opposite, unknown angles) is p.42 = PRIMARY FIVE; the locked stub used
      to advertise it to P4 too, which no topic file backs. grades is ['P5']. */
   {id:'angles',    e:'🏛️', name:'Angle Ruins',        blurb:'Angles on a line, at a point and vertically opposite (P5)', grades:['P5']},
+  /* ---- P6 (P5-P6 mirror, Sprint 1, 2026-10-28) ---- */
+  {id:'p6ratio',   e:'⚖️', name:'Ratio Ridge',         blurb:'Ratios of two and three quantities, sharing, and before-and-after problems (P6)', grades:['P6']},
   /* ---- still locked: no topic file has shipped for these ---- */
   {id:'percent',   e:'⛰️', name:'Percentage Peak',     blurb:'Coming soon (P6)', locked:true, status:'locked', grades:['P6']},
   {id:'algebra',   e:'🌀', name:'Algebra Atoll',       blurb:'Coming soon (P6)', locked:true, status:'locked', grades:['P6']}

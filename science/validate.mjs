@@ -44,6 +44,16 @@ for (const f of pick) {
   const t = got[0] || {};
   if (t.hidden === true) floor = W;   /* hidden P4 topic: floors are warnings (conn ruling 2026-10-17) */
   const items = Array.isArray(t.items) ? t.items : [];
+  /* P5-P6 mirror (Sprint 1, 2026-10-28): a topic with level 'P5' or 'P6' is on the PSLE track. Every
+     item carries syl 'P5'/'P6', a skill from the topic's skills map, and every MCQ distractor names a
+     misconception from the topic's misconceptions dictionary (miscon: { optionIndex: tag }). */
+  const upper = t.level === 'P5' || t.level === 'P6';
+  if (t.level != null && !upper) E(`topic level "${t.level}" must be 'P5' or 'P6' (or absent for the P3-P4 banks)`);
+  const SKILLS = upper && t.skills && typeof t.skills === 'object' ? t.skills : null;
+  const MISC = upper && t.misconceptions && typeof t.misconceptions === 'object' ? t.misconceptions : null;
+  if (upper && (!SKILLS || !Object.keys(SKILLS).length)) E('P5/P6 topic needs a skills map { key: label }');
+  if (upper && (!MISC || !Object.keys(MISC).length)) E('P5/P6 topic needs a misconceptions map { tag: description }');
+  if (MISC) Object.entries(MISC).forEach(([k, v]) => { if (!isStr(v)) E(`misconceptions.${k} needs a description`); });
   if (got.length) {
     if (t.id !== fileId) E(`topic id "${t.id}" does not match file name "${fileId}"`);
     if (!isStr(t.title)) E('missing title');
@@ -68,6 +78,20 @@ for (const f of pick) {
     else if (globalIds.has(it.id)) E(`${tag}: id also used in ${globalIds.get(it.id)}`);
     local.add(it.id); globalIds.set(it.id, fileId);
     if (![1, 2, 3].includes(it.level)) E(`${tag}: level must be 1, 2 or 3`); else lv[it.level]++;
+    if (upper) {
+      if (it.syl !== 'P5' && it.syl !== 'P6') E(`${tag}: P5/P6 topic item needs syl 'P5' or 'P6'`);
+      if (!isStr(it.skill) || !SKILLS || !SKILLS[it.skill]) E(`${tag}: skill "${it.skill}" is not in the topic's skills map`);
+      if (it.type === 'mcq') {
+        const mc = it.miscon && typeof it.miscon === 'object' ? it.miscon : {};
+        [0, 1, 2, 3].filter(j => j !== it.answer).forEach(j => {
+          if (!isStr(mc[j])) E(`${tag}: distractor ${j} has no misconception tag (miscon)`);
+          else if (!MISC || !MISC[mc[j]]) E(`${tag}: misconception tag "${mc[j]}" is not in the topic's dictionary`);
+        });
+        if (mc[it.answer] != null) E(`${tag}: the correct option carries a misconception tag`);
+      } else if (it.watchFor != null) {
+        if (!Array.isArray(it.watchFor) || !it.watchFor.every(x => MISC && MISC[x])) E(`${tag}: watchFor must list tags from the topic's dictionary`);
+      }
+    }
     if (!isStr(it.stem)) E(`${tag}: missing stem`);
     if (it.figure != null) {
       if (!isStr(it.figure)) E(`${tag}: figure must be a string or null`);
@@ -108,7 +132,10 @@ for (const f of pick) {
     } else if (it.type === 'oeq') {
       oeq++;
       if (!isStr(it.model)) E(`${tag}: oeq needs model`);
-      if (!Number.isInteger(it.marks) || it.marks < 1 || it.marks > 4) E(`${tag}: marks must be 1-4`);
+      /* PSLE Booklet B (SEAB 0009, from 2026) carries 2-5 mark structured questions, so a P5/P6 item may
+         go to 5; the P3/P4 banks keep the school-paper cap of 4 (P5-P6 Sprint 1, 2026-10-28). */
+      const maxMarks = upper ? 5 : 4;
+      if (!Number.isInteger(it.marks) || it.marks < 1 || it.marks > maxMarks) E(`${tag}: marks must be 1-${maxMarks}`);
       const k = it.keys;
       if (!Array.isArray(k) || !k.length || !k.every(p => Array.isArray(p) && p.length && p.every(isStr))) E(`${tag}: keys must be a non-empty list of non-empty synonym lists`);
       else {
@@ -116,6 +143,15 @@ for (const f of pick) {
         if (isStr(it.model)) k.forEach((p, j) => {
           if (!p.some(s => it.model.toLowerCase().includes(s.toLowerCase()))) W(`${tag}: key ${j + 1} [${p.join(' / ')}] not found in model answer`);
         });
+        /* chain: true = the marks depend on a cause-and-effect order. The keys are listed in that
+           order, and the model answer must name them in the same order (first match of any synonym). */
+        if (it.chain === true && isStr(it.model)) {
+          const lo = it.model.toLowerCase();
+          const at = k.map(p => Math.min(...p.map(s => { const i = lo.indexOf(s.toLowerCase()); return i < 0 ? Infinity : i; })));
+          if (k.length < 2) E(`${tag}: chain:true needs at least 2 marking points`);
+          else if (at.some(x => x === Infinity)) E(`${tag}: chain:true but a marking point is missing from the model answer`);
+          else if (at.some((x, j) => j > 0 && x <= at[j - 1])) E(`${tag}: chain:true but the model answer names the marking points out of order (${at.join(' > ')})`);
+        } else if (it.chain != null && it.chain !== true) E(`${tag}: chain must be true or absent`);
       }
     } else E(`${tag}: type must be mcq or oeq`);
 

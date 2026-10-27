@@ -258,7 +258,7 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
   <div class="top">
     <button class="brand" data-act="home" aria-label="Science Quest home">
       <span class="logo">🔬</span>
-      <span><small>Primary 3 Science</small><h1>Science Quest</h1></span>
+      <span><small id="lvlTag">Primary 3 Science</small><h1>Science Quest</h1></span>
     </button>
     <button class="sndbtn" id="sndbtn" data-act="sound" aria-pressed="false">🔇 Sound off</button>
   </div>
@@ -309,6 +309,12 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
           if (Array.isArray(it.hints)) { var hs = it.hints.filter(str).map(String).slice(0, 2); if (hs.length) o.hints = hs; }
           if (str(it.hintFigure)) o.hintFigure = it.hintFigure;
           if (str(it.syl)) o.syl = String(it.syl);
+          /* P5-P6 mirror (Sprint 1, 2026-10-28): skill, per-distractor misconception tags, the
+             cause-and-effect flag and the watch-for tags ride along for the parent page and coach */
+          if (str(it.skill)) o.skill = String(it.skill);
+          if (it.miscon && typeof it.miscon === 'object') o.miscon = it.miscon;
+          if (it.chain === true) o.chain = true;
+          if (Array.isArray(it.watchFor)) o.watchFor = it.watchFor.filter(str).map(String);
           /* Coaching (C6, 2026-10-17): technique name, 3-5 think-aloud steps, per-choice coaching.
              Anything malformed is simply left off, so the item falls back to the explain review. */
           if (str(it.technique)) o.technique = String(it.technique).trim();
@@ -336,6 +342,10 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
         var topic = { id: t.id, title: str(t.title) ? t.title : t.id, emoji: str(t.emoji) ? t.emoji : '🔬',
           theme: str(t.theme) ? t.theme : '', extra: t.extra === true || t.id === 'plant-parts',
           hidden: t.hidden === true,   /* off the child's path: no home tile, mock, Power-Up; parent page P4 section only */
+          /* P5/P6 topics sit on the PSLE track only (P5-P6 mirror, Sprint 1): never on the P3-P4 home, mock or Power-Up */
+          level: t.level === 'P5' || t.level === 'P6' ? t.level : '', upper: t.level === 'P5' || t.level === 'P6',
+          skills: t.skills && typeof t.skills === 'object' ? t.skills : {},
+          misconceptions: t.misconceptions && typeof t.misconceptions === 'object' ? t.misconceptions : {},
           moeRef: str(t.moeRef) ? t.moeRef : '',
           notes: (Array.isArray(t.notes) ? t.notes : []).filter(function (n) { return n && (str(n.title) || str(n.body)); }),
           items: clean };
@@ -352,6 +362,7 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
 <script src="topics/magnets.js"></script>
 <script src="topics/plant-parts.js"></script>
 <script src="topics/process-skills.js"></script>
+<script src="topics/forces.js"></script>          <!-- P6 (PSLE track only): P5-P6 mirror, Sprint 1 -->
 <script src="topics/body-systems.js"></script>   <!-- hidden P4 topic: needs topic.hidden support above -->
 <script src="topics/_sample.js"></script>
 
@@ -368,7 +379,7 @@ var view = document.getElementById('view');
    Same key, same v: 1 store; an older save simply gets an empty power map from fresh(). */
 /* crys (fun layer, 2026-10-17): { <topic id>: { e: t, c: t, p: t } } Star Crystals rescued, kept once rescued.
    sound: off unless she turns it on. */
-function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full', power: {}, crys: {}, sound: false }; }
+function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full', power: {}, crys: {}, sound: false, track: 'lower' }; }
 function load() {
   try { var s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && s.items) return Object.assign(fresh(), s); } catch (e) {}
   return fresh();
@@ -572,7 +583,8 @@ function toast(msg) { var t = document.getElementById('toast'); t.textContent = 
    light confetti and optional sound. Not ported: monster HP, lost lives, timers, streaks,
    the Hall of Fame. Every crystal is earned by learning, never by speed or by being right first time. */
 var PLACES = { 'living-things': 'Wild Woods', 'materials': 'Material Mines', 'life-cycles': 'Butterfly Bay',
-  'magnets': 'Magnet Mountain', 'plant-parts': 'Leafy Lagoon', 'process-skills': 'Experiment Cove' };
+  'magnets': 'Magnet Mountain', 'plant-parts': 'Leafy Lagoon', 'process-skills': 'Experiment Cove',
+  'forces': 'Friction Falls' };
 function place(t) { return PLACES[t.id] || t.title; }
 var CRYS = [
   { k: 'e', em: '🧭', name: 'Explorer crystal', how: 'Finish a practice round in this land.' },
@@ -667,7 +679,8 @@ function wonHTML(a) { return (a.won || []).map(function (w) { return '<p class="
 var PRAISE = ['✅ Correct!', '✅ Great thinking!', '✅ Nice one!', '✅ You got it!', '✅ Super!'];
 
 function shownTopics() {
-  var real = SCI.topics.filter(function (t) { return t.id.charAt(0) !== '_' && !t.hidden && t.items.length; });
+  var psle = isPsle();
+  var real = SCI.topics.filter(function (t) { return t.id.charAt(0) !== '_' && !t.hidden && t.items.length && !!t.upper === psle; });
   real.sort(function (a, b) {
     var ia = ORDER.indexOf(a.id), ib = ORDER.indexOf(b.id);
     return ((a.extra ? 1000 : 0) + (ia < 0 ? 99 : ia)) - ((b.extra ? 1000 : 0) + (ib < 0 ? 99 : ib));
@@ -676,6 +689,15 @@ function shownTopics() {
   if (!real.length || wantSample) real = real.concat(SCI.topics.filter(function (t) { return t.id.charAt(0) === '_' && t.items.length; }));
   return real;
 }
+/* Two tracks (P5-P6 mirror, Sprint 1, 2026-10-28). 'lower' is the P3-P4 island she has always had;
+   'psle' shows only the P5/P6 topics, and its mock is the PSLE Science paper (SEAB 0009, from 2026:
+   Booklet A 30 MCQ x 2 marks, Booklet B 10-11 structured questions of 2-5 marks = 40, 1 h 45 min).
+   The P3-P4 track is unchanged unless a parent picks the PSLE track. ?track=psle selects it. */
+function upperTopics() { return SCI.topics.filter(function (t) { return t.upper && !t.hidden && t.items.length; }); }
+function isPsle() { return S.track === 'psle' && upperTopics().length > 0; }
+function secA() { return isPsle() ? 'Booklet A' : 'Section A'; }
+function secB() { return isPsle() ? 'Booklet B' : 'Section B'; }
+(function () { var m = /[?&]track=(psle|lower)\b/.exec(location.search); if (m) { S.track = m[1]; save(); } })();
 /* P4-preview topics (extra: true, e.g. plant-parts) stay out of the mock paper and Power-Up.
    Hidden topics (hidden: true, e.g. body-systems) never reach shownTopics(), so they are also off
    the home grid, the mock, Power-Up and anything else built on these two. */
@@ -889,10 +911,14 @@ function route() {
   if (p[0] === 'learn' && SCI.byId[p[1]]) return renderLearn(SCI.byId[p[1]]);
   if (p[0] === 'quiz' && session) return renderQuiz();
   if (p[0] === 'exam') return renderExamSetup();
+  if (p[0] === 'try' && /[?&]shot=/.test(location.search) && SCI.items[p[1]]) { var ti = SCI.items[p[1]]; startSession('practice', SCI.byId[ti.topic].title, [ti], { topicId: ti.topic });
+    if (p[2] === 'reveal' && session) { session.ans[0].shown = true; renderQuiz(); }   /* the marking view */
+    return; }
   if (p[0] === 'parent') return renderParent();
   renderHome();
 }
-function paint(html) { view.innerHTML = html; fixFigures(view); document.body.classList.toggle('quizfig', !!view.querySelector('.qgrid, .qsolo')); window.scrollTo(0, 0); }
+function paint(html) { var lt = document.getElementById('lvlTag'); if (lt) lt.textContent = isPsle() ? 'Primary 5–6 Science · PSLE' : 'Primary 3 Science';
+  view.innerHTML = html; fixFigures(view); document.body.classList.toggle('quizfig', !!view.querySelector('.qgrid, .qsolo')); window.scrollTo(0, 0); }
 
 /* ---------- home ---------- */
 function renderHome() {
@@ -910,13 +936,17 @@ function renderHome() {
   var me = hero();
   paint(
     (me ? '<p class="hello"><span class="av" aria-hidden="true">' + esc(me.av) + '</span><span>Hi' + (me.name ? ', ' + esc(me.name) : '') + '! Welcome to Science Island.</span></p>' : '') +
+    (upperTopics().length ? '<div class="choice" role="group" aria-label="Level">' +
+      '<button data-act="track" data-v="lower" aria-pressed="' + !isPsle() + '">P3–P4</button>' +
+      '<button data-act="track" data-v="psle" aria-pressed="' + isPsle() + '">P5–P6 (PSLE)</button></div>' : '') +
     '<p class="eyebrow">Revise · practise · ace it</p><h2>Pick a land to explore</h2>' +
     (ts.length ? '<p class="crystot">⭐ ' + (found ? found + ' of ' + ts.length * 3 + ' Star Crystals rescued so far!' : ts.length * 3 + ' Star Crystals are hiding on Science Island. Can you rescue them?') + '</p><div class="grid">' + tiles + '</div>' +
       '<details class="howcrys"><summary>⭐ How do I rescue Star Crystals?</summary><p>Every land hides 3:</p><ul>' +
       CRYS.map(function (x) { return '<li>' + esc(x.em) + ' <b>' + esc(x.name) + '</b>. ' + esc(x.how) + '</li>'; }).join('') +
       '</ul><p>Take your time. A rescued crystal stays yours.</p></details>' : '<p class="empty">No topics have loaded yet.</p>') +
     '<div class="big2">' +
-      '<button class="tile wide" data-act="exam"><span class="em">📝</span><span><span class="display">Mixed exam practice</span><p>Section A (MCQ) then Section B (open-ended), all P3 topics.</p></span></button>' +
+      '<button class="tile wide" data-act="exam"><span class="em">📝</span><span><span class="display">Mixed exam practice</span><p>' +
+        (isPsle() ? 'PSLE format: Booklet A (MCQ) then Booklet B (structured questions), all P5–P6 topics.' : 'Section A (MCQ) then Section B (open-ended), all P3 topics.') + '</p></span></button>' +
       '<button class="tile wide power" data-act="power"><span class="em">⚡</span><span><span class="display">Power-Up</span><p>' +
         (rot.length ? 'Let\'s power up ' + esc(pq(rot[0].k)) + '!' : 'Keep your powers charged with a mixed review round.') + '</p></span></button>' +
     '</div>' +
@@ -999,22 +1029,28 @@ function renderExamSetup() {
   paint(
     '<button class="link" data-act="home">← All topics</button>' +
     '<p class="eyebrow" style="margin-top:8px">Mixed exam practice</p><h2>📝 Mock paper</h2>' +
-    '<p class="lead">Like the end-of-year paper: Section A is multiple choice (2 marks each). Section B is open-ended — write your answer, then mark it with the answer key at the end. Questions come from ' + ts.length + ' P3 topic' + (ts.length === 1 ? '' : 's') + '.</p>' +
+    (isPsle()
+      ? '<p class="lead">Like the PSLE Science paper: Booklet A is 30 multiple-choice questions (2 marks each). Booklet B is structured questions of 2 to 5 marks, 40 marks in all — write your answer, then mark it with the answer key at the end. Questions come from ' + ts.length + ' P5–P6 topic' + (ts.length === 1 ? '' : 's') + '.</p>'
+      : '<p class="lead">Like the end-of-year paper: Section A is multiple choice (2 marks each). Section B is open-ended — write your answer, then mark it with the answer key at the end. Questions come from ' + ts.length + ' P3 topic' + (ts.length === 1 ? '' : 's') + '.</p>') +
     '<p class="eyebrow">Length</p><div class="choice">' +
-      '<button data-act="esize" data-v="full" aria-pressed="' + (S.size !== 'short') + '">Full paper · 21 MCQ + 10 OEQ · ~70 marks</button>' +
-      '<button data-act="esize" data-v="short" aria-pressed="' + (S.size === 'short') + '">Short · 8 MCQ + 3 OEQ</button></div>' +
+      (isPsle()
+        ? '<button data-act="esize" data-v="full" aria-pressed="' + (S.size !== 'short') + '">Full paper · 30 MCQ + 10 structured · ~100 marks</button>' +
+          '<button data-act="esize" data-v="short" aria-pressed="' + (S.size === 'short') + '">Short · 10 MCQ + 4 structured</button></div>'
+        : '<button data-act="esize" data-v="full" aria-pressed="' + (S.size !== 'short') + '">Full paper · 21 MCQ + 10 OEQ · ~70 marks</button>' +
+          '<button data-act="esize" data-v="short" aria-pressed="' + (S.size === 'short') + '">Short · 8 MCQ + 3 OEQ</button></div>') +
     '<p class="eyebrow">Timer</p><div class="choice">' +
-      '<button data-act="etimer" data-v="1" aria-pressed="' + !!S.timer + '">⏱️ On (' + (S.size === 'short' ? 'about 25' : '75') + ' min)</button>' +
+      '<button data-act="etimer" data-v="1" aria-pressed="' + !!S.timer + '">⏱️ On (' + (isPsle() ? (S.size === 'short' ? 'about 35' : '105') : (S.size === 'short' ? 'about 25' : '75')) + ' min)</button>' +
       '<button data-act="etimer" data-v="0" aria-pressed="' + !S.timer + '">Off</button></div>' +
     '<div class="nav"><span></span><button class="btn" data-act="estart"' + (nm ? '' : ' disabled') + '>Start the paper →</button></div>'
   );
 }
 function startExam() {
-  var ts = examTopics(), full = S.size !== 'short';
-  var a = spreadPick(ts, 'mcq', full ? 21 : 8), b = spreadPick(ts, 'oeq', full ? 10 : 3);
+  var ts = examTopics(), full = S.size !== 'short', psle = isPsle();
+  var a = spreadPick(ts, 'mcq', psle ? (full ? 30 : 10) : (full ? 21 : 8)), b = spreadPick(ts, 'oeq', psle ? (full ? 10 : 4) : (full ? 10 : 3));
   /* Section B of the real paper is 2-4 mark questions, ~28 marks in 10. Lift the
      marks total toward that by swapping the cheapest picks for unused bigger ones. */
-  var target = Math.round(b.length * 2.8), used = {};
+  /* PSLE Booklet B: 40 marks in 10-11 structured questions, so about 4 marks each */
+  var target = Math.round(b.length * (psle ? 4 : 2.8)), used = {};
   b.forEach(function (it) { used[it.id] = 1; });
   var spare = [];
   ts.forEach(function (t) { t.items.forEach(function (it) { if (it.type === 'oeq' && !used[it.id]) spare.push(it); }); });
@@ -1022,7 +1058,7 @@ function startExam() {
   /* Swap the cheapest pick for a bigger question, same topic if possible, so the topic balance
      holds and the mark mix lands near the real paper (about 4 x 2, 4 x 3, 2 x 4 marks in 10):
      bring in 4-mark questions until a fifth of Section B is 4 marks, then the smallest bigger. */
-  var want4 = Math.round(b.length * 0.2);
+  var want4 = Math.round(b.length * (psle ? 0.5 : 0.2));
   for (var g = 0; g < 40; g++) {
     var tot = b.reduce(function (n, it) { return n + it.marks; }, 0);
     if (tot >= target || !spare.length) break;
@@ -1040,7 +1076,8 @@ function startExam() {
   }
   b.sort(byLevel);
   var max = a.concat(b).reduce(function (n, it) { return n + it.marks; }, 0);
-  var mins = full ? 75 : Math.max(10, Math.round(75 * max / 70));   /* EOY pace: 70 marks in 75 min */
+  var mins = psle ? (full ? 105 : Math.max(15, Math.round(105 * max / 100)))   /* PSLE pace: 100 marks in 1 h 45 min */
+                  : full ? 75 : Math.max(10, Math.round(75 * max / 70));   /* EOY pace: 70 marks in 75 min */
   startSession('exam', 'Mock paper', a.concat(b), { nA: a.length, timerEnd: S.timer ? Date.now() + mins * 60000 : null, mins: mins, flags: [] });
 }
 
@@ -1162,7 +1199,7 @@ function renderReview() {
   var k = se.revK, it = se.items[k], a = se.ans[k], t = SCI.byId[it.topic];
   var h = '<div class="spread"><button class="link" data-act="toReport">← My report</button>' +
     '<span class="eyebrow" style="margin:0">Let\'s look again · ' + (pos + 1) + ' of ' + list.length + '</span></div>';
-  var q = '<p class="eyebrow" style="margin-top:8px">' + (t ? esc(t.emoji + ' ' + t.title) : '') + (se.kind === 'exam' ? ' · ' + (k < se.nA ? 'Section A' : 'Section B') + ' Q' + (k + 1) : '') + '</p>' +
+  var q = '<p class="eyebrow" style="margin-top:8px">' + (t ? esc(t.emoji + ' ' + t.title) : '') + (se.kind === 'exam' ? ' · ' + (k < se.nA ? secA() : secB()) + ' Q' + (k + 1) : '') + '</p>' +
     '<p class="stem">' + esc(it.stem) + (it.type === 'oeq' ? '<span class="marks">[' + it.marks + ' mark' + (it.marks === 1 ? '' : 's') + ']</span>' : '') + '</p>';
   if (it.type === 'mcq') q += reviewOpts(it, a, !it.steps || !!a.ansShown);
   q += coachHTML(it, a, k);
@@ -1200,13 +1237,13 @@ function renderQuiz() {
   var it = se.items[se.i], a = se.ans[se.i], exam = se.kind === 'exam', t = SCI.byId[it.topic];
   var power = se.kind === 'power';
   qclock(se);   /* per-question time for the results outbox only */
-  var label = exam ? (se.i < se.nA ? 'Section A · Q' + (se.i + 1) : 'Section B · Q' + (se.i + 1)) : se.kind === 'like' ? 'One like it' :
+  var label = exam ? (se.i < se.nA ? secA() + ' · Q' + (se.i + 1) : secB() + ' · Q' + (se.i + 1)) : se.kind === 'like' ? 'One like it' :
     (power && se.i < se.warm ? 'Warm-up · ' : '') + 'Question ' + (se.i + 1) + ' of ' + se.items.length;
   var h = '<div class="spread">' + (se.kind === 'like' ? '<button class="link" data-act="quit">← Back to where I was</button>' : '<button class="link" data-act="quit">✕ Stop</button>') +
     (exam && se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '<span class="eyebrow" style="margin:0">' + esc(se.kind === 'practice' ? se.title : power ? (se.review ? '⚡ Keep your powers charged' : '⚡ Power-Up') + (t ? ' · ' + t.emoji + ' ' + t.title : '') : (t ? t.emoji + ' ' + t.title : '')) + '</span>') + '</div>';
   if (exam && se.confirm) return renderConfirm();
   if (!exam) h += stepsHTML();
-  h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + (it.syl === 'P5' ? ' <span class="badge">P5 stretch</span>' : '') +
+  h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + (it.syl === 'P5' && !isPsle() ? ' <span class="badge">P5 stretch</span>' : '') +
     (power ? ' · <span class="pchip" id="pchip">' + battHTML(pkey(it)) + esc(pname(pkey(it))) + '</span>' : '') + '</p>';
   /* Hint ladder (x17, 2026-10-17): practice and Power-Up only, never the mock. MCQ: the first
      miss shows hints[0] (the nudge) and allows one retry; the second miss locks it and shows
@@ -1246,7 +1283,7 @@ function renderQuiz() {
   if (exam) {
     next = '<button class="btn small ghost' + (se.flags[se.i] ? ' flagon' : '') + '" data-act="flag" aria-pressed="' + !!se.flags[se.i] + '">🚩 Flag</button>' +
       (last ? '<button class="btn teal" data-act="finishExam">Hand in →</button>'
-            : '<button class="btn teal" data-act="next">' + (se.i === se.nA - 1 && se.nA < se.items.length ? 'On to Section B →' : 'Next →') + '</button>');
+            : '<button class="btn teal" data-act="next">' + (se.i === se.nA - 1 && se.nA < se.items.length ? 'On to ' + secB() + ' →' : 'Next →') + '</button>');
   } else if (it.type === 'mcq') {
     next = a.choice != null ? '<button class="btn teal" data-act="next">' + (last ? (se.kind === 'like' ? 'Back to where I was →' : power ? 'Finish my Power-Up →' : 'See results →') : 'Next →') + '</button>' : '';
   } else {
@@ -1274,7 +1311,7 @@ function qnBtn(k) {
 function qnavHTML() {
   var se = session, a = '', b = '';
   se.items.forEach(function (it, k) { if (k < se.nA) a += qnBtn(k); else b += qnBtn(k); });
-  return '<div class="qnav" aria-label="Questions"><div class="grp"><b>Section A</b>' + a + '</div>' + (b ? '<div class="grp"><b>Section B</b>' + b + '</div>' : '') + '</div>';
+  return '<div class="qnav" aria-label="Questions"><div class="grp"><b>' + secA() + '</b>' + a + '</div>' + (b ? '<div class="grp"><b>' + secB() + '</b>' + b + '</div>' : '') + '</div>';
 }
 function renderConfirm() {
   var se = session, un = [], ob = [], fl = [];
@@ -1330,7 +1367,7 @@ function renderMarking() {
   var se = session, idx = se.markIdx, it = se.items[idx], a = se.ans[idx], t = SCI.byId[it.topic];
   a.shown = true;
   var nB = se.items.length - se.nA, pos = idx - se.nA + 1;
-  var h = '<p class="eyebrow">Marking Section B · ' + pos + ' of ' + nB + (t ? ' · ' + esc(t.title) : '') + '</p>';
+  var h = '<p class="eyebrow">Marking ' + secB() + ' · ' + pos + ' of ' + nB + (t ? ' · ' + esc(t.title) : '') + '</p>';
   h += figHTML(it.figure) + '<p class="stem">' + esc(it.stem) + '<span class="marks">[' + it.marks + ']</span></p>';
   if (!a.text || !a.text.trim()) h += '<div class="yours">No typed answer — mark what you wrote on paper.</div>';
   h += markingHTML(it, a);
@@ -1410,7 +1447,7 @@ function renderReport() {
   if (se.kind === 'exam') {
     var aGot = 0, aMax = 0, bGot = 0, bMax = 0;
     se.items.forEach(function (it, k) { if (k < se.nA) { aGot += se.ans[k].score * it.marks; aMax += it.marks; } else { bGot += se.ans[k].score * it.marks; bMax += it.marks; } });
-    h += '<p class="lead">Section A: ' + aGot + ' / ' + aMax + ' · Section B: ' + (Math.round(bGot * 10) / 10) + ' / ' + bMax + '</p>';
+    h += '<p class="lead">' + secA() + ': ' + aGot + ' / ' + aMax + ' · ' + secB() + ': ' + (Math.round(bGot * 10) / 10) + ' / ' + bMax + '</p>';
   }
   if (se.kind !== 'exam') {
     /* practice: wins first (what she powered up, crystals), then the marks, lower and quieter */
@@ -1517,6 +1554,7 @@ var A = {
   exam: function () { go('exam'); },
   parent: function () { go('parent'); },
   esize: function (el) { S.size = el.dataset.v; save(); renderExamSetup(); },
+  track: function (el) { S.track = el.dataset.v === 'psle' ? 'psle' : 'lower'; save(); renderHome(); },
   etimer: function (el) { S.timer = el.dataset.v === '1'; save(); renderExamSetup(); },
   estart: startExam,
   pick: function (el) {

@@ -2,9 +2,9 @@
  * Edit js/core.js, js/topics/*.js or js/registry.js and re-run `npm run build:engine`.
  * Load order is index.html's own script manifest; the app shell and modes are not bundled.
  */
-/* ENGINE_BUILD 20261028-9432513 */
-/* ENGINE_BUILD_META {"stamp":"20261028-9432513","date":"2026-10-28","sha":"9432513","dirty":false,"payloadHash":"77b471bb29aa18d7","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/topics/p6-ratio.js","js/registry.js"],"fileCount":35,"topicFileCount":32,"generator":"tools/build-engine.mjs"} */
-var MQI_ENGINE_META = {"stamp":"20261028-9432513","date":"2026-10-28","sha":"9432513","dirty":false,"payloadHash":"77b471bb29aa18d7","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/topics/p6-ratio.js","js/registry.js"],"fileCount":35,"topicFileCount":32,"generator":"tools/build-engine.mjs"};
+/* ENGINE_BUILD 20261030-c804080 */
+/* ENGINE_BUILD_META {"stamp":"20261030-c804080","date":"2026-10-30","sha":"c804080","dirty":false,"payloadHash":"01f3b48b3843970a","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/topics/p6-ratio.js","js/topics/p6-fractions.js","js/topics/p6-percentage.js","js/topics/p6-algebra.js","js/topics/p6-circles.js","js/topics/p6-volume.js","js/topics/p6-quadrilaterals.js","js/topics/p6-average.js","js/topics/p5-exam-problems.js","js/registry.js"],"fileCount":43,"topicFileCount":40,"generator":"tools/build-engine.mjs"} */
+var MQI_ENGINE_META = {"stamp":"20261030-c804080","date":"2026-10-30","sha":"c804080","dirty":false,"payloadHash":"01f3b48b3843970a","files":["js/core.js","js/figures.js","js/topics/p2-number-beach.js","js/topics/p3-whole-numbers.js","js/topics/p3-times-tables.js","js/topics/p3-division-remainder.js","js/topics/p3-fractions.js","js/topics/p3-money.js","js/topics/p3-measurement.js","js/topics/p3-bar-graphs.js","js/topics/p3-time.js","js/topics/p3-area-perimeter.js","js/topics/p3-angles.js","js/topics/p3-word-problems.js","js/topics/p3-puzzle-caves.js","js/topics/p4-whole-numbers.js","js/topics/p4-factors-multiples.js","js/topics/p4-decimals.js","js/topics/p5-whole-numbers.js","js/topics/p5-percentage.js","js/topics/p5-area-of-triangle.js","js/topics/p5-volume.js","js/topics/p4-multiplication-division.js","js/topics/p4-fractions.js","js/topics/p4-area-perimeter.js","js/topics/p4-tables-line-graphs.js","js/topics/p5-fractions.js","js/topics/p5-decimals.js","js/topics/p5-rate.js","js/topics/p5-angles.js","js/topics/p4-pie-charts.js","js/topics/p4-angles.js","js/topics/p5-shapes.js","js/topics/p6-ratio.js","js/topics/p6-fractions.js","js/topics/p6-percentage.js","js/topics/p6-algebra.js","js/topics/p6-circles.js","js/topics/p6-volume.js","js/topics/p6-quadrilaterals.js","js/topics/p6-average.js","js/topics/p5-exam-problems.js","js/registry.js"],"fileCount":43,"topicFileCount":40,"generator":"tools/build-engine.mjs"};
 
 /* ===== engine bundle: HOST SHIM (prepended by tools/build-engine.mjs) =====
  *
@@ -717,7 +717,7 @@ var buildSetFor = MQI.buildSetFor;
  *
  * ONE renderer for every diagram in the game. Generators emit PURE DATA
  * (`q.figure = { type: 'bar' | 'line' | 'pie' | 'rect' | 'lshape' |
- * 'fractionBar' | 'table' | 'geom' | 'clocks', ...fields }`) and never a byte of
+ * 'fractionBar' | 'table' | 'geom' | 'clocks' | 'circlefig', ...fields }`) and never a byte of
  * markup; this file turns a spec into the SVG/HTML the web app paints. A native renderer (SwiftUI,
  * `MQFigures`) is written against the same spec, from the documentation in
  * js/topics/README.md alone — that is the whole point of the split.
@@ -1372,6 +1372,186 @@ var buildSetFor = MQI.buildSetFor;
       '" style="display:block;margin:0 auto;font-family:inherit;' + FIG_FIT + '">' + body + '</svg></div>';
   }
 
+  /* ---------------- circlefig: circles, semicircles, quarter circles, composites (p6circles) ----------------
+   * { type:'circlefig', shape:'circle'|'semi'|'quarter'|'rect', unit, ... }
+   *   circle   r, mark ('r' prints the radius on a dashed radius, 'd' the diameter on a dashed diameter)
+   *   semi     r, mark (flat side at the bottom; 'd' prints the flat side under it, 'r' a dashed radius
+   *            from the centre straight up, labelled beside it)
+   *   quarter  r (right angle at the bottom-left, marked; BOTH straight sides printed)
+   *   segment  r: the same quarter circle with its chord drawn; the two radii and the chord are a
+   *            right triangle left WHITE, and only the part between chord and arc is shaded
+   *   leaf     r: a square of side r (outline drawn, unshaded; sides printed as W and H) with
+   *            quarter circles of radius r centred on its bottom-left and top-right corners
+   *            (centre dots); only their overlap is shaded
+   *   rect     W, H, r, semis:[[side, mode]], quarters:[[corner, mode]]
+   *            A W x H rectangle. A semi on `side` (top/right/bottom/left) has the WHOLE side as its
+   *            diameter: mode 'out' is added outside (its diameter dashed), 'in' is cut out.
+   *            A quarter at `corner` (tl/tr/br/bl) has radius r and is centred ON that corner:
+   *            'in' is cut out of the rectangle (its two radii dashed, the horizontal one labelled);
+   *            'out' is added outside, one radius along the rectangle's vertical side (dashed)
+   *            and the other extending the horizontal side outward (labelled under / over it).
+   *            W is printed under the bottom side if that side is plain (no semi, no quarter at
+   *            either end), else over the top side if plain, else on a dashed line along the
+   *            bottom side; H left of the left side if plain, else right of the right side if
+   *            plain, else on a dashed line along the left side.
+   * The shaded region IS the figure: its outline is ONE path (class cf-shape) of straight
+   * edges and circular arcs, so its perimeter is the outline and nothing dashed is part of it.
+   * Solid thin lines (class cf-frame) are drawn edges of unshaded pieces, never perimeter.
+   * Strictly to scale, one px-per-unit on both axes: s = min(176 / width, 140 / height),
+   * width and height being the whole figure's extent in units. Labels are 14 px TEXT
+   * (number + space + unit, classes cf-r / cf-d / cf-W / cf-H) in a viewBox svg carrying
+   * data-fit, so the shell may shrink the picture only down to the reading floor. */
+  const CF_MAXW = 176, CF_MAXH = 140, CF_PAD = 6, CF_CH = 8.6;
+
+  function circlefig(f) {
+    const unit = f.unit || 'cm', shape = f.shape;
+    const r1 = v => +v.toFixed(1);
+    const segs = [], dash = [], labs = [], dots = [], frame = [];
+    let start = [0, 0], ext = [0, 0, 1, 1], ra = null;
+    const lab = (cls, v, x, y, dx, dy, anchor) => labs.push([cls, v + ' ' + unit, x, y, dx, dy, anchor]);
+    const r = f.r;
+    if (shape === 'circle') {
+      ext = [0, 0, 2 * r, 2 * r]; start = [0, r];
+      segs.push(['A', 2 * r, r, r, 1], ['A', 0, r, r, 1]);
+      dots.push([r, r]);
+      if (f.mark === 'd') { dash.push([0, r, 2 * r, r]); lab('cf-d', 2 * r, r, r, 0, -7, 'middle'); }
+      else { dash.push([r, r, 2 * r, r]); lab('cf-r', r, 1.5 * r, r, 0, -7, 'middle'); }
+    } else if (shape === 'semi') {
+      ext = [0, 0, 2 * r, r]; start = [0, r];
+      segs.push(['A', 2 * r, r, r, 1], ['L', 0, r]);
+      dots.push([r, r]);
+      if (f.mark === 'd') lab('cf-d', 2 * r, r, r, 0, 18, 'middle');
+      else { dash.push([r, r, r, 0]); lab('cf-r', r, r, r / 2, 6, 5, 'start'); }
+    } else if (shape === 'segment') {
+      /* the quarter circle's two radii and the chord are the right triangle; the
+         shaded part is what lies between the chord and the curved edge */
+      ext = [0, 0, r, r]; start = [0, 0];
+      segs.push(['A', r, r, r, 1], ['L', 0, 0]);
+      frame.push([0, r, 0, 0], [0, r, r, r]);
+      ra = [0, r];
+      lab('cf-r', r, r / 2, r, 0, 18, 'middle');
+      lab('cf-r', r, 0, r / 2, -8, 5, 'end');
+    } else if (shape === 'leaf') {
+      /* a square of side r; two quarter circles of radius r centred on its bottom-left
+         and top-right corners; the shaded part is where they overlap */
+      ext = [0, 0, r, r]; start = [0, 0];
+      segs.push(['A', r, r, r, 1], ['A', 0, 0, r, 1]);
+      frame.push([0, 0, r, 0], [r, 0, r, r], [r, r, 0, r], [0, r, 0, 0]);
+      dots.push([0, r], [r, 0]);
+      lab('cf-W', r, r / 2, r, 0, 18, 'middle');
+      lab('cf-H', r, 0, r / 2, -8, 5, 'end');
+    } else if (shape === 'quarter') {
+      ext = [0, 0, r, r]; start = [0, r];
+      segs.push(['L', 0, 0], ['A', r, r, r, 1], ['L', 0, r]);
+      ra = [0, r];
+      lab('cf-r', r, r / 2, r, 0, 18, 'middle');
+      lab('cf-r', r, 0, r / 2, -8, 5, 'end');
+    } else {
+      const W = f.W, H = f.H, q = f.r || 0;
+      const semis = f.semis || [], quarters = f.quarters || [];
+      const semiOn = s => { for (const p of semis) if (p[0] === s) return p[1]; return ''; };
+      const qAt = c => { for (const p of quarters) if (p[0] === c) return p[1]; return ''; };
+      const C = { tl: [0, 0], tr: [W, 0], br: [W, H], bl: [0, H] };
+      /* clockwise on the screen: corner, the side leaving it, its direction */
+      const ORDER = [['tl', 'top', [1, 0]], ['tr', 'right', [0, 1]], ['br', 'bottom', [-1, 0]], ['bl', 'left', [0, -1]]];
+      const dirIn = k => ORDER[(k + 3) % 4][2];
+      const entry = [], exit = [], chain = [];
+      for (let k = 0; k < 4; k++) {
+        const c = ORDER[k][0], P = C[c], di = dirIn(k), dO = ORDER[k][2], m = qAt(c);
+        const vertIn = di[0] === 0;
+        if (m === 'in') {
+          entry[k] = [P[0] - q * di[0], P[1] - q * di[1]];
+          exit[k] = [P[0] + q * dO[0], P[1] + q * dO[1]];
+          chain[k] = [['A', exit[k][0], exit[k][1], q, 0]];
+        } else if (m === 'out') {
+          if (vertIn) {
+            entry[k] = [P[0] - q * di[0], P[1] - q * di[1]];
+            exit[k] = [P[0] - q * dO[0], P[1] - q * dO[1]];
+          } else {
+            entry[k] = [P[0] + q * di[0], P[1] + q * di[1]];
+            exit[k] = [P[0] + q * dO[0], P[1] + q * dO[1]];
+          }
+          chain[k] = [['A', exit[k][0], exit[k][1], q, 1]];
+        } else { entry[k] = P; exit[k] = P; chain[k] = []; }
+      }
+      start = exit[0];
+      for (let k = 0; k < 4; k++) {
+        const side = ORDER[k][1], to = entry[(k + 1) % 4], sm = semiOn(side);
+        const len = (side === 'top' || side === 'bottom') ? W : H;
+        if (sm) segs.push(['A', to[0], to[1], len / 2, sm === 'out' ? 1 : 0]);
+        else segs.push(['L', to[0], to[1]]);
+        for (const c of chain[(k + 1) % 4]) segs.push(c);
+      }
+      /* extents */
+      let x0 = 0, y0 = 0, x1 = W, y1 = H;
+      if (semiOn('left') === 'out') x0 = -H / 2;
+      if (semiOn('right') === 'out') x1 = W + H / 2;
+      if (semiOn('top') === 'out') y0 = -W / 2;
+      if (semiOn('bottom') === 'out') y1 = H + W / 2;
+      if (qAt('tl') === 'out' || qAt('bl') === 'out') x0 = Math.min(x0, -q);
+      if (qAt('tr') === 'out' || qAt('br') === 'out') x1 = Math.max(x1, W + q);
+      ext = [x0, y0, x1, y1];
+      /* dashed: the diameter of every added semi */
+      const SIDE = { top: [0, 0, W, 0], right: [W, 0, W, H], bottom: [0, H, W, H], left: [0, 0, 0, H] };
+      for (const p of semis) if (p[1] === 'out') dash.push(SIDE[p[0]]);
+      /* quarter pieces: dashed radii, the horizontal one labelled */
+      for (const p of quarters) {
+        const c = p[0], P = C[c], top = c[0] === 't', left = c[1] === 'l';
+        const hx = (p[1] === 'in') === left ? 1 : -1;      /* which way the labelled radius runs */
+        const vy = top ? 1 : -1;
+        if (p[1] === 'in') dash.push([P[0], P[1], P[0] + hx * q, P[1]]);   /* an added quarter's is outline */
+        dash.push([P[0], P[1], P[0], P[1] + vy * q]);
+        lab('cf-r', q, P[0] + hx * q / 2, P[1], 0, top ? -8 : 18, 'middle');
+      }
+      const plain = s => !semiOn(s) && !{ top: qAt('tl') || qAt('tr'), right: qAt('tr') || qAt('br'),
+        bottom: qAt('br') || qAt('bl'), left: qAt('bl') || qAt('tl') }[s];
+      if (plain('bottom')) lab('cf-W', W, W / 2, H, 0, 18, 'middle');
+      else if (plain('top')) lab('cf-W', W, W / 2, 0, 0, -8, 'middle');
+      else { dash.push([0, H, W, H]); lab('cf-W', W, W / 2, H, 0, -7, 'middle'); }
+      if (plain('left')) lab('cf-H', H, 0, H / 2, -8, 5, 'end');
+      else if (plain('right')) lab('cf-H', H, W, H / 2, 8, 5, 'start');
+      else { dash.push([0, 0, 0, H]); lab('cf-H', H, 0, H / 2, 6, 5, 'start'); }
+    }
+
+    const s = Math.min(CF_MAXW / (ext[2] - ext[0]), CF_MAXH / (ext[3] - ext[1]));
+    const X = u => r1((u - ext[0]) * s), Y = u => r1((u - ext[1]) * s);
+    let d = 'M ' + X(start[0]) + ' ' + Y(start[1]);
+    for (const g of segs) {
+      d += g[0] === 'L' ? ' L ' + X(g[1]) + ' ' + Y(g[2])
+        : ' A ' + r1(g[3] * s) + ' ' + r1(g[3] * s) + ' 0 0 ' + g[4] + ' ' + X(g[1]) + ' ' + Y(g[2]);
+    }
+    d += ' Z';
+    let bx0 = 0, by0 = 0, bx1 = (ext[2] - ext[0]) * s, by1 = (ext[3] - ext[1]) * s;
+    let body = '';
+    for (const k of frame) {
+      body += '<line class="cf-frame" x1="' + X(k[0]) + '" y1="' + Y(k[1]) + '" x2="' + X(k[2]) + '" y2="' + Y(k[3]) +
+        '" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round"/>';
+    }
+    body += '<path class="cf-shape" d="' + d + '" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2.5" stroke-linejoin="round"/>';
+    for (const k of dash) {
+      body += '<line class="cf-dash" x1="' + X(k[0]) + '" y1="' + Y(k[1]) + '" x2="' + X(k[2]) + '" y2="' + Y(k[3]) +
+        '" stroke="#334155" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    }
+    for (const k of dots) body += '<circle class="cf-ctr" cx="' + X(k[0]) + '" cy="' + Y(k[1]) + '" r="3" fill="#0f172a"/>';
+    if (ra) {
+      const ax = X(ra[0]), ay = Y(ra[1]);
+      body += '<path d="M ' + ax + ' ' + r1(ay - 10) + ' L ' + r1(ax + 10) + ' ' + r1(ay - 10) + ' L ' + r1(ax + 10) + ' ' + ay +
+        '" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>';
+    }
+    for (const L of labs) {
+      const x = r1(X(L[2]) + L[4]), y = r1(Y(L[3]) + L[5]), w = L[1].length * CF_CH;
+      const lx = L[6] === 'middle' ? x - w / 2 : (L[6] === 'end' ? x - w : x);
+      bx0 = Math.min(bx0, lx); bx1 = Math.max(bx1, lx + w); by0 = Math.min(by0, y - 12); by1 = Math.max(by1, y + 4);
+      body += '<text class="cf-lab ' + L[0] + '" x="' + x + '" y="' + y + '" text-anchor="' + L[6] +
+        '" font-size="14" font-weight="700" fill="#0f172a" stroke="#ffffff" stroke-width="3" paint-order="stroke">' + L[1] + '</text>';
+    }
+    const vx = r1(bx0 - CF_PAD), vy = r1(by0 - CF_PAD), vw = r1(bx1 - bx0 + 2 * CF_PAD), vh = r1(by1 - by0 + 2 * CF_PAD);
+    return '<div class="cffig" style="display:inline-block;background:#fff;color:#0f172a;padding:8px 10px;' +
+      'border-radius:8px;font-size:13px;max-width:100%">' +
+      '<svg class="circlefig" data-fit="1" width="' + vw + '" height="' + vh + '" viewBox="' + vx + ' ' + vy + ' ' + vw + ' ' + vh +
+      '" style="display:block;margin:0 auto;font-family:inherit;' + FIG_FIT + '">' + body + '</svg></div>';
+  }
+
   /* ---------------- the documented stylesheet block (WOUND 8) ----------------
    * Six of the seven renderers are self-contained: every declaration they need is
    * inline in the string they build, so this file IS the reference drawing the
@@ -1399,7 +1579,7 @@ var buildSetFor = MQI.buildSetFor;
 
   /* ---------------- the registry ---------------- */
 
-  const RENDERERS = { bar, rect, fractionBar, lshape, table, line, pie, geom, clocks };
+  const RENDERERS = { bar, rect, fractionBar, lshape, table, line, pie, geom, clocks, circlefig };
 
   function renderFigure(fig) {
     if (!fig) return '';
@@ -22045,6 +22225,3397 @@ function gDecShareMass() {
 })();
 
 
+/* ===== js/topics/p6-fractions.js ===== */
+"use strict";
+/* Math Quest Island topic: p6fractions (P6). Self-contained. Typed + MC.
+ * Authoring rules + registration shape: js/topics/README.md
+ * Scope (MOE 2021 Primary Mathematics Syllabus, updated Oct 2025, PRIMARY SIX,
+ * SUB-STRAND: FRACTIONS, 1. Four Operations):
+ *   1.1 dividing a proper fraction by a whole number without calculator
+ *   1.2 dividing a whole number/proper fraction by a proper fraction without calculator
+ * Every dividend is a whole number or a PROPER fraction, every fraction divisor is a
+ * PROPER fraction, and a whole-number divisor is 2 or more. No mixed number is ever
+ * printed (that is P5 territory). Pool 3 Paper 2 problems may subtract two unlike
+ * proper fractions (P5 4.1) or take a fraction of a whole (P5 4.3) on the way to the
+ * division the item teaches.
+ *
+ * P5-P6 mirror (Sprint 1, 2026-10-30): every item carries q.syl = 'P6'. MCQ distractors
+ * carry q.miscon = { choiceIndex: tag } and a coaching line in q.optionFeedback; typed
+ * items carry q.slips = { '<wrong value as typed>': tag }. A fraction slip is keyed by
+ * its reduced 'n/d' text. Typed fraction answers carry q.fracAnswer = [n, d] (reduced),
+ * so 6/8, 3/4 and 0.75 all grade alike. Pool 3 is PSLE Paper 2 shape: band 3, worded,
+ * q.exam = 'problem', coached with a model or before-after walk-through.
+ */
+(function () {
+  const G = MQI.gen;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, gcd = G.gcd, fr = G.fr,
+        finishTyped = G.finishTyped;
+
+  const NAMES = ['Hui Min', 'Farid', 'Kavitha', 'Jun Hao', 'Siti', 'Ravi', 'Mei Ling', 'Ahmad',
+                 'Bala', 'Xin Yi', 'Daniel', 'Nurul', 'Wei Jie', 'Aisyah'];
+  const P6 = q => (q.syl = 'P6', q);
+
+  /* exact fractions, reduced, denominator positive */
+  const R = (n, d) => { const g = gcd(Math.abs(n), Math.abs(d)) || 1; return [n / g, d / g]; };
+  const same = (x, y) => x[0] * y[1] === y[0] * x[1];
+  const show = r => (r[1] === 1 ? String(r[0]) : fr(r[0], r[1]));     /* rendered */
+  const txt = r => (r[1] === 1 ? String(r[0]) : r[0] + '/' + r[1]);   /* typed / steps */
+  const isProper = (a, b) => a >= 1 && a < b;
+  const properFrac = (bLo, bHi) => {
+    let b = ri(bLo, bHi), a = ri(1, b - 1);
+    while (gcd(a, b) !== 1) { b = ri(bLo, bHi); a = ri(1, b - 1); }
+    return [a, b];
+  };
+  const plainLen = s => String(s).replace(/<[^>]*>/g, '');
+
+  /* MCQ with tagged distractors over fraction VALUES. dist = [[[n,d], tag, coaching], ...];
+     the first three whose value differs from the key and from each other are kept.
+     Returns null if fewer than three survive (or two options would strip to the same
+     text, e.g. 1/12 and 11/2), and the caller redraws. */
+  function mcq(stem, key, dist, explain) {
+    const seen = [key], keep = [];
+    for (const d of dist) {
+      if (keep.length >= 3) break;
+      const v = R(d[0][0], d[0][1]);
+      if (v[0] <= 0 || seen.some(s => same(s, v))) continue;
+      seen.push(v); keep.push([v, d[1], d[2]]);
+    }
+    if (keep.length < 3) return null;
+    const rows = shuffle([[key, null, null]].concat(keep));
+    const flat = rows.map(r => plainLen(show(r[0])));
+    if (new Set(flat).size !== flat.length) return null;
+    const q = { q: stem, extra: '', choices: rows.map(r => show(r[0])), correct: 0, explain, answerText: show(key) };
+    q.correct = rows.findIndex(r => r[1] === null);
+    q.miscon = {}; q.optionFeedback = {};
+    rows.forEach((r, i) => { if (r[1]) { q.miscon[i] = r[1]; q.optionFeedback[i] = r[2]; } });
+    return P6(q);
+  }
+
+  /* typed answer that may be a fraction: the key is reduced, fracAnswer carries it */
+  function typedFrac(stem, key, explain, unit) {
+    const q = finishTyped(stem, key[0] / key[1], explain, unit);
+    if (key[1] !== 1) q.fracAnswer = [key[0], key[1]];
+    else q.answer = key[0];
+    const u = Array.isArray(q.unit) ? q.unit[0] : q.unit;
+    const mixed = key[1] !== 1 && key[0] > key[1] ? ' (= ' + Math.floor(key[0] / key[1]) + ' ' + (key[0] % key[1]) + '/' + key[1] + ')' : '';
+    q.answerText = txt(key) + (u ? ' ' + u : '') + mixed;
+    return q;
+  }
+  /* typed slips: [[ [n,d], tag ], ...], positive values that differ from the key */
+  function slips(q, key, list) {
+    const s = {};
+    for (const [v0, tag] of list) {
+      const v = R(v0[0], v0[1]);
+      if (!(v[0] > 0) || same(v, key)) continue;
+      const k = txt(v);
+      if (!(k in s)) s[k] = tag;
+    }
+    q.slips = s;
+    return P6(q);
+  }
+  const problem = (q, technique, steps) => (q.band = 3, q.exam = 'problem', q.technique = technique, q.steps = steps, q);
+
+  /* ---------- 1.1 proper fraction ÷ whole number ---------- */
+  function divByWholeParts(bHi, nHi) {
+    const [a, b] = properFrac(3, bHi), n = ri(2, nHi);
+    return { a, b, n, key: R(a, b * n) };
+  }
+  function divByWholeExplain(a, b, n, key) {
+    return 'Dividing by ' + n + ' is the same as taking 1/' + n + ' of the amount: ' + fr(a, b) + ' × ' + fr(1, n) +
+      ' = ' + fr(a, b * n) + (key[1] === b * n ? '' : ' = ' + show(key)) + '.';
+  }
+  function gDivByWholeMC() {
+    const { a, b, n, key } = divByWholeParts(10, 5);
+    const out = mcq('Find the value of ' + fr(a, b) + ' ÷ ' + n + '.', key, [
+      [[a * n, b], 'multiplied-instead', 'Sharing ' + fr(a, b) + ' into ' + n + ' equal parts makes each part SMALLER. Multiply by ' + fr(1, n) + ', not by ' + n + '.'],
+      [[b * n, a], 'order-reversed', 'That works out ' + n + ' ÷ ' + fr(a, b) + '. Keep the order of the question: ' + fr(a, b) + ' is shared by ' + n + '.'],
+      [[b, a * n], 'flipped-wrong-number', 'Only the divisor gets turned over. Keep ' + fr(a, b) + ' as it is and multiply it by ' + fr(1, n) + '.'],
+      [[a, b + n], 'added-to-denominator', 'Adding ' + n + ' to the bottom number is not dividing. Multiply the bottom number by ' + n + ' instead.']
+    ], divByWholeExplain(a, b, n, key));
+    return out || gDivByWholeMC();
+  }
+  function gDivByWholeTyped() {
+    const { a, b, n, key } = divByWholeParts(12, 9);
+    const q = typedFrac('Find the value of ' + fr(a, b) + ' ÷ ' + n + '.', key, divByWholeExplain(a, b, n, key));
+    return slips(q, key, [[[a * n, b], 'multiplied-instead'], [[b * n, a], 'order-reversed'], [[b, a * n], 'flipped-wrong-number'], [[a, b + n], 'added-to-denominator']]);
+  }
+
+  /* ---------- 1.2 whole number ÷ proper fraction ---------- */
+  function wholeDivExplain(n, a, b, key) {
+    return 'Dividing by ' + fr(a, b) + ' is the same as multiplying by its reciprocal ' + fr(b, a) + ': ' + n + ' × ' + fr(b, a) +
+      ' = ' + show(R(n * b, a)) + '. Check: ' + show(key) + ' × ' + fr(a, b) + ' = ' + n + '.';
+  }
+  function gWholeDivFracMC() {
+    const [a, b] = properFrac(2, 9), n = a * ri(1, 4);
+    if (n < 2) return gWholeDivFracMC();
+    const key = R(n * b, a);
+    const out = mcq('Find the value of ' + n + ' ÷ ' + fr(a, b) + '.', key, [
+      [[n * a, b], 'multiplied-not-flipped', 'Dividing by a fraction means multiplying by the fraction turned upside down: ' + n + ' × ' + fr(b, a) + '.'],
+      [[a, n * b], 'order-reversed', 'That works out ' + fr(a, b) + ' ÷ ' + n + '. Keep the order: how many ' + fr(a, b) + 's are there in ' + n + '?'],
+      [[n * b, 1], 'numerator-ignored', 'Multiplying by ' + b + ' finds the number of ' + fr(1, b) + 's. Each group is ' + fr(a, b) + ', so divide that by ' + a + ' too.'],
+      [[b, n * a], 'flipped-wrong-number', 'That is the answer turned upside down. Ask: how many ' + fr(a, b) + 's fit into ' + n + '? It is more than ' + n + '.']
+    ], wholeDivExplain(n, a, b, key));
+    return out || gWholeDivFracMC();
+  }
+  function gWholeDivFracTyped() {
+    const [a, b] = properFrac(3, 12), n = ri(2, 9);
+    const key = R(n * b, a);
+    const q = typedFrac('Find the value of ' + n + ' ÷ ' + fr(a, b) + '.', key, wholeDivExplain(n, a, b, key));
+    return slips(q, key, [[[n * a, b], 'multiplied-not-flipped'], [[a, n * b], 'order-reversed'], [[b, n * a], 'flipped-wrong-number'], [[n * b, 1], 'numerator-ignored']]);
+  }
+
+  /* ---------- 1.2 proper fraction ÷ proper fraction ---------- */
+  function fracDivExplain(a, b, c, d, key) {
+    return 'Turn the divisor over and multiply: ' + fr(a, b) + ' × ' + fr(d, c) + ' = ' + fr(a * d, b * c) +
+      (key[1] === b * c ? '' : ' = ' + show(key)) + '. Check: ' + show(key) + ' × ' + fr(c, d) + ' = ' + fr(a, b) + '.';
+  }
+  function fracDivMC(easy) {
+    let a, b, c, d;
+    if (easy) {                                  /* same bottom number, or one bottom number a factor of the other */
+      d = ri(3, 10); b = pick([d, d * 2 <= 12 ? d * 2 : d]);
+      a = ri(1, b - 1); c = ri(1, d - 1);
+      if (gcd(a, b) !== 1) return null;
+    } else {
+      [a, b] = properFrac(3, 10); [c, d] = properFrac(3, 10);
+    }
+    if (gcd(c, d) !== 1 || same([a, b], [c, d])) return null;
+    const key = R(a * d, b * c);
+    if (same(key, [c, d])) return null;
+    return mcq('Find the value of ' + fr(a, b) + ' ÷ ' + fr(c, d) + '.', key, [
+      [[a * c, b * d], 'multiplied-not-flipped', 'Dividing is not multiplying straight across. Turn ' + fr(c, d) + ' upside down first, then multiply.'],
+      [[b * c, a * d], 'order-reversed', 'That turned the first fraction over instead of the second. Only the divisor ' + fr(c, d) + ' is turned over.'],
+      [[b * d, a * c], 'flipped-both', 'Only the divisor is turned over. Keep ' + fr(a, b) + ' the right way up.']
+    ], fracDivExplain(a, b, c, d, key));
+  }
+  function gFracDivFracEasyMC() { return fracDivMC(true) || gFracDivFracEasyMC(); }
+  function gFracDivFracMC() { return fracDivMC(false) || gFracDivFracMC(); }
+  function gFracDivFracTyped() {
+    const [a, b] = properFrac(3, 12), [c, d] = properFrac(3, 12);
+    const key = R(a * d, b * c);
+    if (same([a, b], [c, d]) || same(key, [c, d])) return gFracDivFracTyped();
+    const q = typedFrac('Find the value of ' + fr(a, b) + ' ÷ ' + fr(c, d) + '.', key, fracDivExplain(a, b, c, d, key));
+    return slips(q, key, [[[a * c, b * d], 'multiplied-not-flipped'], [[b * c, a * d], 'order-reversed'], [[b * d, a * c], 'flipped-both']]);
+  }
+
+  /* ---------- word problems, pool 2 ---------- */
+  /* [what, unit word in the stem, declared unit, container noun, verb phrase] */
+  const FILLS = [
+    ['soya milk', 'litres', 'litre', 'bottles', 'pours all of it into bottles that each hold'],
+    ['orange juice', 'litres', 'litre', 'jugs', 'pours all of it into jugs that each hold'],
+    ['rice', 'kg', 'kg', 'bags', 'packs all of it into bags that each hold'],
+    ['flour', 'kg', 'kg', 'packets', 'packs all of it into packets that each hold'],
+    ['ribbon', 'm', 'm', 'pieces', 'cuts all of it into pieces that are each']
+  ];
+  /* 1.2: how many a/b-sized parts in W (exact) */
+  function gHowManyParts() {
+    const f = pick(FILLS), who = pick(NAMES);
+    const [a, b] = properFrac(2, 8), k = ri(2, 6), W = a * k, ans = k * b;
+    if (W < 2) return gHowManyParts();
+    const stem = who + ' has ' + W + ' ' + f[1] + ' of ' + f[0] + '. ' + who + ' ' + f[4] + ' ' + fr(a, b) + ' ' + f[2] +
+      '. How many ' + f[3] + ' are there?';
+    const q = finishTyped(stem, ans,
+      'Find how many ' + fr(a, b) + 's there are in ' + W + ': ' + W + ' ÷ ' + fr(a, b) + ' = ' + W + ' × ' + fr(b, a) + ' = ' + ans +
+      '. Check: ' + ans + ' × ' + fr(a, b) + ' = ' + W + '.', f[3]);
+    return slips(q, [ans, 1], [[[W * a, b], 'multiplied-not-flipped'], [[W * b, 1], 'numerator-ignored'], [[a, W * b], 'order-reversed']]);
+  }
+  /* [what, unit, container, question noun] */
+  const SHARES = [
+    ['flour', 'kg', 'bags', 'What is the mass of flour in each bag, in kg?'],
+    ['paint', 'l', 'cans', 'How many litres of paint are there in each can?'],
+    ['ribbon', 'm', 'pieces', 'How long is each piece of ribbon, in m?'],
+    ['sugar', 'kg', 'jars', 'What is the mass of sugar in each jar, in kg?']
+  ];
+  /* 1.1: a/b shared equally into n */
+  function gShareEqually() {
+    const s = pick(SHARES), who = pick(NAMES);
+    const { a, b, n, key } = divByWholeParts(9, 6);
+    if (b * n > 24) return gShareEqually();
+    const amt = s[1] === 'l' ? ' litre of ' : ' ' + s[1] + ' of ';
+    const verb = s[0] === 'ribbon' ? ' cuts it into ' + n + ' equal pieces. ' : ' divides it equally into ' + n + ' ' + s[2] + '. ';
+    const stem = who + ' has ' + fr(a, b) + amt + s[0] + '. ' + who + verb + s[3];
+    const q = typedFrac(stem, key, divByWholeExplain(a, b, n, key), s[1]);
+    return slips(q, key, [[[a * n, b], 'multiplied-instead'], [[b * n, a], 'order-reversed'], [[a, b + n], 'added-to-denominator']]);
+  }
+
+  /* ---------- Paper 2 problems, pool 3 (band 3) ---------- */
+  /* drink part, share the rest equally (Draw a model) */
+  function gLeftThenShare() {
+    const who = pick(NAMES);
+    for (let t = 0; t < 400; t++) {
+      const [p, q0] = properFrac(3, 12), [r, s] = properFrac(2, 12);
+      if (r * q0 >= p * s || q0 === s) continue;          /* drank less than there was; unlike fractions */
+      const rest = R(p * s - r * q0, q0 * s);
+      if (rest[1] > 24) continue;
+      const n = ri(2, 6), key = R(rest[0], rest[1] * n);
+      if (key[1] > 72 || key[0] * 12 < key[1] || same(key, [r, s])) continue;   /* each cup at least 1/12 l; key never the amount drunk */
+      const stem = who + ' had ' + fr(p, q0) + ' l of juice. ' + who + ' drank ' + fr(r, s) + ' l of the juice and poured the rest equally into ' +
+        n + ' cups. How much juice was there in each cup, in litres?';
+      const q = typedFrac(stem, key,
+        'Juice left: ' + fr(p, q0) + ' − ' + fr(r, s) + ' = ' + show(rest) + ' l. Shared into ' + n + ' cups: ' + show(rest) + ' ÷ ' + n + ' = ' + show(key) + ' l.', 'l');
+      problem(q, 'Draw a model', [
+        'Draw a bar for the ' + p + '/' + q0 + ' l of juice and cut off the ' + r + '/' + s + ' l that ' + who + ' drank.',
+        'The juice left is ' + p + '/' + q0 + ' − ' + r + '/' + s + ' = ' + txt(rest) + ' l.',
+        'Cut the part that is left into ' + n + ' equal cups, so each cup gets ' + txt(rest) + ' ÷ ' + n + '.',
+        'Each cup has ' + txt(rest) + ' ÷ ' + n + ' = <b>' + txt(key) + '</b> l.'
+      ]);
+      return slips(q, key, [[rest, 'forgot-to-share'], [[p, q0 * n], 'ignored-used-part'], [[rest[0] * n, rest[1]], 'multiplied-instead']]);
+    }
+    return gUseThenPack();
+  }
+  /* use a fraction of a whole, pack the rest into a/b-sized bags (Draw a model) */
+  const PACKS = [['rice', 'bags'], ['flour', 'packets'], ['sugar', 'bags'], ['green beans', 'packets']];
+  function gUseThenPack() {
+    const who = pick(NAMES), P = pick(PACKS);
+    for (let t = 0; t < 400; t++) {
+      const [p, q0] = properFrac(3, 6), [a, b] = properFrac(2, 8), tt = ri(1, 4);
+      const W = a * q0 * tt, used = W / q0 * p, rest = W - used, bags = rest * b / a;
+      if (W > 30 || W < 6 || !Number.isInteger(bags) || bags > 60 || bags === W) continue;
+      const stem = who + ' bought ' + W + ' kg of ' + P[0] + '. ' + who + ' used ' + fr(p, q0) + ' of it for a party and packed the rest into ' +
+        P[1] + ' of ' + fr(a, b) + ' kg each. How many ' + P[1] + ' of ' + P[0] + ' did ' + who + ' pack?';
+      const q = finishTyped(stem, bags,
+        fr(p, q0) + ' of ' + W + ' kg is ' + used + ' kg, so ' + W + ' − ' + used + ' = ' + rest + ' kg was left. ' + rest + ' ÷ ' + fr(a, b) + ' = ' + rest + ' × ' + fr(b, a) +
+        ' = ' + bags + ' ' + P[1] + '.', P[1]);
+      problem(q, 'Draw a model', [
+        'Draw a bar for the ' + W + ' kg and cut it into ' + q0 + ' equal units: 1 unit is ' + W + ' ÷ ' + q0 + ' = ' + (W / q0) + ' kg.',
+        who + ' used ' + p + ' units: ' + p + ' × ' + (W / q0) + ' = ' + used + ' kg, so ' + W + ' − ' + used + ' = ' + rest + ' kg was left.',
+        'Each of the ' + P[1] + ' holds ' + a + '/' + b + ' kg, so find how many ' + a + '/' + b + 's there are in ' + rest + '.',
+        rest + ' ÷ ' + a + '/' + b + ' = <b>' + bags + '</b> ' + P[1] + '.'
+      ]);
+      return slips(q, [bags, 1], [[[W * b, a], 'ignored-used-part'], [[used * b, a], 'packed-used-part'], [[rest * a, b], 'multiplied-not-flipped']]);
+    }
+    return gLeftThenShare();
+  }
+  /* fraction of the remainder, work back to the whole (Before and after) */
+  /* [first item, its price cap, second item, its price cap]: the second item never costs more than the first */
+  const BUYS = [['a book', 60, 'a pen', 20], ['a bag', 150, 'a cap', 40], ['a watch', 400, 'a wallet', 80],
+                ['a game', 120, 'some snacks', 40], ['a jacket', 250, 'a pair of socks', 20]];
+  function gRemainderBack() {
+    const who = pick(NAMES), B0 = pick(BUYS), B = [B0[0], B0[2]];
+    for (let t = 0; t < 4000; t++) {
+      const [p, q0] = properFrac(3, 7), [r, s] = properFrac(2, 6), tt = ri(1, 8);
+      const M = q0 * s * tt * pick([1, 2, 5]), after1 = M - M / q0 * p, L = after1 - after1 / s * r;
+      if (M > 1200 || M < 40 || !Number.isInteger(L) || L <= 0) continue;
+      const cost1 = M - after1, cost2 = after1 - L;
+      if (cost2 > cost1 || cost1 > B0[1] || cost2 > B0[3]) continue;
+      const F = R((q0 - p) * (s - r), q0 * s);
+      const stem = who + ' had some money. ' + who + ' spent ' + fr(p, q0) + ' of the money on ' + B[0] + ' and ' + fr(r, s) + ' of the remaining money on ' + B[1] + '. ' + who + ' had $' + L +
+        ' left. How much money did ' + who + ' have at first? (in dollars)';
+      const q = finishTyped(stem, M,
+        'After ' + B[0] + ', ' + fr(q0 - p, q0) + ' of the money was left. After ' + B[1] + ', ' + fr(s - r, s) + ' of THAT was left, which is ' +
+        fr(s - r, s) + ' × ' + fr(q0 - p, q0) + ' = ' + show(F) + ' of the money at first. $' + L + ' ÷ ' + show(F) + ' = $' + M + '.', '$');
+      q.answerText = '$' + M;
+      problem(q, 'Before and after', [
+        'After ' + B[0] + ', 1 − ' + p + '/' + q0 + ' = ' + (q0 - p) + '/' + q0 + ' of the money was left.',
+        'Then ' + r + '/' + s + ' of the remainder went on ' + B[1] + ', so 1 − ' + r + '/' + s + ' = ' + (s - r) + '/' + s + ' of the remainder was left.',
+        'The money left is ' + (s - r) + '/' + s + ' × ' + (q0 - p) + '/' + q0 + ' = ' + txt(F) + ' of the money at first, and that is $' + L + '.',
+        'At first: $' + L + ' ÷ ' + txt(F) + ' = <b>$' + M + '</b>.'
+      ]);
+      const wrong = [];
+      const both = R(q0 * s - p * s - r * q0, q0 * s);     /* took both fractions of the WHOLE */
+      if (both[0] > 0) wrong.push([[L * both[1], both[0]], 'fraction-of-whole-not-remainder']);
+      wrong.push([[L * s, s - r], 'one-step-only']);
+      wrong.push([[L * q0, q0 - p], 'one-step-only']);
+      const q1 = slips(q, [M, 1], wrong);
+      for (const k of Object.keys(q1.slips)) if (k.indexOf('/') >= 0) delete q1.slips[k];   /* dollars: whole slips only */
+      return q1;
+    }
+    return gUseThenPack();
+  }
+
+  MQI.registerTopic({
+    id: 'p6fractions', level: 'P6', strand: 'Number and Algebra',
+    moeSubTopic: 'Fractions: dividing a proper fraction by a whole number without calculator; dividing a whole number/proper fraction by a proper fraction without calculator',
+    label: 'Fraction Falls', short: 'Dividing fractions', e: '🌗',
+    skills: {
+      fracbywhole: { label: 'Fraction ÷ whole number', tip: 'Sharing by 3 is the same as taking 1/3 of it: multiply the bottom number by 3.' },
+      bydivfrac:   { label: 'Dividing by a fraction', tip: 'Ask "how many of these fit in?" then turn the divisor over and multiply.' },
+      wordfrac:    { label: 'Fraction word problems', tip: 'Decide first: is it sharing into equal parts, or counting how many parts of a size fit in?' },
+      model:       { label: 'Model problems', tip: 'Draw the bar, cut off what was used, then work with what is left.' },
+      beforeafter: { label: 'Fraction of the remainder', tip: 'Each new fraction is of what was LEFT, so multiply the fractions left over, then work back.' }
+    },
+    misconceptions: {
+      'multiplied-instead':      'Multiplies by the whole number instead of dividing by it.',
+      'order-reversed':          'Swaps the dividend and the divisor.',
+      'flipped-wrong-number':    'Turns over the dividend (or the answer) instead of the divisor.',
+      'added-to-denominator':    'Adds the whole number to the bottom number instead of multiplying.',
+      'multiplied-not-flipped':  'Multiplies by the fraction without turning it over.',
+      'numerator-ignored':       'Multiplies by the bottom number of the divisor and forgets to divide by its top number.',
+      'flipped-both':            'Turns over both fractions instead of only the divisor.',
+      'forgot-to-share':         'Stops at the amount left and does not share it out.',
+      'ignored-used-part':       'Leaves out the part that was used before sharing or packing.',
+      'packed-used-part':        'Packs the part that was used instead of the part that was left.',
+      'fraction-of-whole-not-remainder': 'Takes the second fraction of the whole amount instead of the remainder.',
+      'one-step-only':           'Uses only one of the two fractions when working back.'
+    },
+    pools: {
+      1: [[gDivByWholeMC, 'fracbywhole'], [gWholeDivFracMC, 'bydivfrac'], [gFracDivFracEasyMC, 'bydivfrac']],
+      2: [[gDivByWholeTyped, 'fracbywhole'], [gWholeDivFracTyped, 'bydivfrac'], [gFracDivFracMC, 'bydivfrac'], [gFracDivFracTyped, 'bydivfrac'],
+          [gHowManyParts, 'wordfrac'], [gShareEqually, 'wordfrac']],
+      3: [[gLeftThenShare, 'model'], [gUseThenPack, 'model'], [gRemainderBack, 'beforeafter']]
+    }
+  });
+})();
+
+
+/* ===== js/topics/p6-percentage.js ===== */
+"use strict";
+/* Math Quest Island topic: percent (P6). Self-contained. Typed + MC.
+ * Authoring rules + registration shape: js/topics/README.md
+ * Scope (MOE 2021 Primary Mathematics Syllabus, updated Oct 2025, p.43, PRIMARY SIX,
+ * SUB-STRAND: PERCENTAGE 1):
+ *   1.1 finding the whole given a part and the percentage
+ *   1.2 finding percentage increase/decrease
+ * NOT here: part of a whole as a percentage, a percentage part of a whole, discount,
+ * GST and annual interest on their own - those are P5 (p5-percentage.js, p.41). Pool 3
+ * Paper 2 problems combine the P6 outcomes with those P5 ideas (the price before a
+ * discount, the price before GST, two changes one after the other).
+ * Every answer is a positive whole number (dollars, a percentage, pages or pupils).
+ * Money answers declare '$' and print "$120"; percentage answers declare '%' and print
+ * "25%", the p5-percentage.js convention.
+ *
+ * P5-P6 mirror (Sprint 1, 2026-10-30): every item carries q.syl = 'P6'. MCQ distractors
+ * carry q.miscon = { choiceIndex: tag } and a coaching line in q.optionFeedback; typed
+ * items carry q.slips = { '<wrong value>': tag }. Tags are defined once, in the topic's
+ * `misconceptions` map. Pool 3 is PSLE Paper 2 shape: band 3, worded, q.exam = 'problem',
+ * coached with q.technique + q.steps.
+ */
+(function () {
+  const G = MQI.gen;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, gcd = G.gcd, finishTyped = G.finishTyped;
+
+  const NAMES = ['Hui Min', 'Farid', 'Kavitha', 'Jun Hao', 'Siti', 'Ravi', 'Mei Ling', 'Ahmad',
+                 'Bala', 'Xin Yi', 'Daniel', 'Nurul', 'Wei Jie', 'Aisyah'];
+  /* [item, lowest, highest] believable price in dollars: every price, or every amount
+     spent on the item, is drawn inside its band (review 2026-10-30: "$4 on a bicycle") */
+  const GOODS = [['school bag', 20, 80], ['study lamp', 20, 80], ['standing fan', 30, 150], ['rice cooker', 40, 300],
+                 ['badminton racket', 30, 250], ['pair of running shoes', 50, 250], ['microwave oven', 80, 500],
+                 ['bicycle', 100, 1200]];
+  const inBand = (g, x) => x >= g[1] && x <= g[2];
+  const P6 = q => (q.syl = 'P6', q);
+  const $ = n => '$' + n;
+  const pc = n => n + '%';
+  /* the smallest whole that has a whole-number pct% part: 100 / gcd(pct, 100) */
+  const stepFor = pct => 100 / gcd(pct, 100);
+  /* a multiple of stepFor(pct) inside [lo, hi] */
+  const wholeFor = (pct, lo, hi) => {
+    const s = stepFor(pct), a = Math.ceil(lo / s), b = Math.floor(hi / s);
+    return b >= a ? s * ri(a, b) : null;
+  };
+  /* Paper 1 (no calculator): a round whole whose pct% part is a whole number */
+  const FRIENDLY = [20, 40, 50, 60, 80, 100, 120, 150, 160, 200, 240, 250, 300, 400, 500, 600, 800];
+  const friendlyIn = (pct, lo, hi) => {
+    const c = FRIENDLY.filter(w => w >= lo && w <= hi && (w * pct) % 100 === 0);
+    return c.length ? pick(c) : null;
+  };
+  /* bigger-ticket goods for the GST problems */
+  const BIG = ['laptop', 'television', 'refrigerator', 'washing machine', 'sofa set', 'dining table'];
+  /* No key may be a number the stem already prints (a given value, a percentage or the
+     "e.g." hint): a child who copies a number off the stem must not score. mcq() and
+     slips() return null on such a draw and the caller redraws. */
+  const stemNums = s => (String(s).replace(/<[^>]*>/g, '').match(/\d+/g) || []).map(Number);
+  const keyInStem = (stem, key) => stemNums(stem).indexOf(key) !== -1;
+  /* redraw until a draw survives its guards */
+  const redraw = draw => { for (let t = 0; t < 5000; t++) { const q = draw(); if (q) return q; } throw new Error('percent: no draw survived'); };
+
+  /* MCQ with tagged distractors. dist = [[value, tag, coaching], ...]; values are numbers,
+     fmt prints them. Keeps the first three positive whole values that differ from the key
+     and each other. Returns null if fewer than three survive or the key is printed in
+     the stem. */
+  function mcq(stem, key, dist, explain, fmt) {
+    if (keyInStem(stem, key)) return null;
+    const seen = [key], keep = [];
+    for (const d of dist) {
+      if (keep.length >= 3) break;
+      if (!Number.isInteger(d[0]) || d[0] <= 0 || seen.indexOf(d[0]) !== -1) continue;
+      seen.push(d[0]); keep.push(d);
+    }
+    if (keep.length < 3) return null;
+    const rows = shuffle([[key, null, null]].concat(keep));
+    const q = { q: stem, extra: '', choices: rows.map(r => fmt(r[0])), correct: 0, explain, answerText: fmt(key) };
+    q.correct = rows.findIndex(r => r[1] === null);
+    q.miscon = {}; q.optionFeedback = {};
+    rows.forEach((r, i) => { if (r[1]) { q.miscon[i] = r[1]; q.optionFeedback[i] = r[2]; } });
+    return P6(q);
+  }
+  /* typed slips: positive values, exact to 2 decimal places, that differ from the key.
+     Returns null when the key is printed in the stem. */
+  function slips(q, list) {
+    if (keyInStem(q.q, q.answer)) return null;
+    const s = {};
+    for (const [v, tag] of list) {
+      if (!Number.isFinite(v) || v <= 0) continue;
+      const r = Math.round(v * 100) / 100;
+      if (Math.abs(r - v) > 1e-9 || r === q.answer || String(r) in s) continue;
+      s[String(r)] = tag;
+    }
+    q.slips = s;
+    return P6(q);
+  }
+  const money = (q, n) => (q.answerText = '$' + n, q);
+  const asPct = (q, n) => (q.answerText = n + '%', q);
+  const band3 = (q, technique, steps) => (q.band = 3, q.exam = 'problem', q.technique = technique, q.steps = steps, q);
+
+  /* 1.1: the whole from a part and its percentage, MCQ (pools 1 and 2) */
+  function gWholeFromPart() {
+    return redraw(() => {
+      const pct = pick([10, 20, 25, 30, 40, 50, 60, 75]);
+      const ctx = Math.random() < 0.5, g = pick(GOODS);
+      const whole = ctx ? friendlyIn(pct, g[1], g[2]) : friendlyIn(pct, 20, 800);
+      if (!whole) return null;
+      const part = whole * pct / 100;
+      const stem = ctx
+        ? pick(NAMES) + ' has saved $' + part + '. This is ' + pct + '% of the money needed to buy a new ' + g[0] +
+          '. How much money is needed to buy it?'
+        : pct + '% of a number is ' + part + '. What is the number?';
+      return mcq(stem, whole, [
+        [part * pct / 100, 'percent-of-part', 'That is ' + pct + '% of ' + part + '. Here ' + part + ' IS the ' + pct + '%, so the whole is bigger than ' + part + '.'],
+        [whole - part, 'remaining-part', 'That is the other ' + (100 - pct) + '%. The question asks for the whole, which is 100%.'],
+        [part / pct, 'one-percent-only', 'That is the value of 1%. The whole is 100%, so multiply by 100.'],
+        [part + pct, 'added-percent', 'Adding ' + pct + ' to ' + part + ' mixes a percentage with an amount. Find 1% first, then 100%.'],
+        [part * 100 / (100 - pct), 'complement-percent', part + ' is ' + pct + '% of the whole, not ' + (100 - pct) + '%. Use the percentage that goes with ' + part + '.'],
+        [part, 'answered-part', part + ' is only ' + pct + '% of the whole. The whole is 100%.']
+      ], pct + '% is ' + part + ', so 1% is ' + part + ' ÷ ' + pct + ' and 100% is ' + part + ' ÷ ' + pct + ' × 100 = ' + whole + '.', ctx ? $ : String);
+    });
+  }
+
+  /* 1.2: percentage increase or decrease with friendly numbers, MCQ (pool 1) */
+  function gPctChange() {
+    return redraw(() => {
+      const up = Math.random() < 0.5;
+      const pct = pick(up ? [10, 20, 25, 40, 50] : [10, 20, 25, 40, 50, 75]);
+      const money1 = Math.random() < 0.5, g = pick(GOODS);
+      const old = money1 ? friendlyIn(pct, g[1], g[2]) : friendlyIn(pct, 20, 800);
+      if (!old) return null;
+      const ch = old * pct / 100, nw = up ? old + ch : old - ch;
+      if (money1 && !inBand(g, nw)) return null;
+      const word = up ? 'increase' : 'decrease';
+      const stem = money1
+        ? 'The price of a ' + g[0] + ' ' + (up ? 'went up' : 'went down') + ' from $' + old + ' to $' + nw + '. What is the percentage ' + word + ' in the price?'
+        : 'The number of visitors to a library ' + (up ? 'rose' : 'fell') + ' from ' + old + ' to ' + nw + '. What is the percentage ' + word + ' in the number of visitors?';
+      return mcq(stem, pct, [
+        [ch * 100 / nw, 'new-as-base', 'Compare the change with the value at FIRST (' + old + '), not the new value.'],
+        [ch, 'change-as-percent', ch + ' is the amount of the change, not a percentage. Divide it by ' + old + ' and multiply by 100.'],
+        [nw * 100 / old, 'new-over-old', 'That is the new value as a percentage of the old one. The ' + word + ' is the difference from 100%.'],
+        [100 - pct, 'complement', 'That is what is left after the change. The question asks for the change itself.']
+      ], 'The ' + word + ' is ' + ch + '. Compared with the first value: ' + ch + ' ÷ ' + old + ' × 100 = ' + pct + '%.', pc);
+    });
+  }
+
+  /* 1.1: the whole from a part, typed pages (pool 1) */
+  function gPagesRead() {
+    return redraw(() => {
+      const pct = pick([10, 20, 25, 40, 50, 60, 75]);
+      const whole = friendlyIn(pct, 60, 800), part = whole * pct / 100;
+      const stem = pick(NAMES) + ' has read ' + part + ' pages of a storybook. That is ' + pct + '% of the book. How many pages are there in the book?';
+      const q1 = finishTyped(stem, whole,
+        pct + '% of the book is ' + part + ' pages, so 1% is ' + part + ' ÷ ' + pct + ' pages and 100% is ' + part + ' ÷ ' + pct + ' × 100 = ' + whole + ' pages.', 'pages');
+      return slips(q1, [[part * pct / 100, 'percent-of-part'], [whole - part, 'remaining-part'], [part / pct, 'one-percent-only'],
+        [part + pct, 'added-percent'], [part, 'answered-part']]);
+    });
+  }
+
+  /* 1.1: the whole from a part, harder percentages, typed $ (pool 2). The amount spent
+     is the item's price, so it sits in the item's band. */
+  function gSavings() {
+    return redraw(() => {
+      const pct = pick([8, 12, 15, 24, 35, 45, 65, 72, 85]), g = pick(GOODS);
+      const whole = wholeFor(pct, Math.max(40, Math.ceil(g[1] * 100 / pct)), Math.min(3000, Math.floor(g[2] * 100 / pct)));
+      if (!whole) return null;
+      const part = whole * pct / 100, name = pick(NAMES);
+      const stem = name + ' spent $' + part + ' on a ' + g[0] + '. This was ' + pct + '% of ' + name +
+        '\'s savings. How much were ' + name + '\'s savings before buying it? (in dollars, e.g. 240)';
+      const q1 = money(finishTyped(stem, whole,
+        pct + '% of the savings is $' + part + ', so 1% is $' + part + ' ÷ ' + pct + ' and 100% is $' + part + ' ÷ ' + pct + ' × 100 = $' + whole + '.', '$'), whole);
+      return slips(q1, [[part * pct / 100, 'percent-of-part'], [whole - part, 'remaining-part'], [part / pct, 'one-percent-only'],
+        [part + pct, 'added-percent'], [part * 100 / (100 - pct), 'complement-percent']]);
+    });
+  }
+
+  /* 1.1: the whole from the part that is LEFT, MCQ $ (pool 2). The amount spent sits in
+     the item's band. */
+  function gWholeFromLeft() {
+    return redraw(() => {
+      const pct = pick([10, 20, 25, 30, 40, 60, 75]), g = pick(GOODS);
+      const whole = wholeFor(pct, Math.max(40, Math.ceil(g[1] * 100 / pct)), Math.min(2000, Math.floor(g[2] * 100 / pct)));
+      if (!whole) return null;
+      const spent = whole * pct / 100, left = whole - spent;
+      const stem = pick(NAMES) + ' spent ' + pct + '% of the money in a savings tin on a ' + g[0] + ' and had $' + left +
+        ' left. How much money was in the tin at first?';
+      return mcq(stem, whole, [
+        [left * 100 / pct, 'complement-percent', 'The $' + left + ' left is ' + (100 - pct) + '% of the money, not ' + pct + '%. ' + pct + '% is what was spent.'],
+        [left + left * pct / 100, 'percent-of-part', 'That adds ' + pct + '% of $' + left + '. The ' + pct + '% was taken from the money at first, not from what was left.'],
+        [left + pct, 'added-percent', 'Adding ' + pct + ' mixes a percentage with dollars. Find what 1% of the money is first.'],
+        [spent, 'answered-change', 'That is the amount spent. The question asks for all the money at first.']
+      ], 'What is left is 100% − ' + pct + '% = ' + (100 - pct) + '% of the money. 1% is $' + left + ' ÷ ' + (100 - pct) +
+        ', so 100% is $' + left + ' ÷ ' + (100 - pct) + ' × 100 = $' + whole + '.', $);
+    });
+  }
+
+  /* 1.2: percentage increase or decrease, harder numbers, typed % (pool 2). The hint
+     "e.g. 7" is a percentage no draw produces. */
+  function gPctChangeTyped() {
+    return redraw(() => {
+      const up = Math.random() < 0.5;
+      const pct = pick(up ? [5, 8, 12, 15, 35, 45, 60, 64] : [5, 8, 12, 15, 35, 45, 60, 64, 85]);
+      const club = Math.random() < 0.5, g = pick(GOODS);
+      const old = club ? wholeFor(pct, 30, 900) : wholeFor(pct, g[1], g[2]);
+      if (!old) return null;
+      const ch = old * pct / 100, nw = up ? old + ch : old - ch;
+      if (!club && !inBand(g, nw)) return null;
+      const word = up ? 'increase' : 'decrease';
+      const stem = club
+        ? 'The number of members of a badminton club ' + (up ? 'rose' : 'fell') + ' from ' + old + ' to ' + nw + '. Find the percentage ' + word + ' in the number of members. (answer in %, e.g. 7)'
+        : 'The price of a ' + g[0] + ' ' + (up ? 'went up' : 'went down') + ' from $' + old + ' to $' + nw + '. Find the percentage ' + word + ' in the price. (answer in %, e.g. 7)';
+      const q1 = asPct(finishTyped(stem, pct,
+        'The ' + word + ' is ' + ch + '. Compared with the first value: ' + ch + ' ÷ ' + old + ' × 100 = ' + pct + '%.', '%'), pct);
+      return slips(q1, [[ch * 100 / nw, 'new-as-base'], [ch, 'change-as-percent'], [nw * 100 / old, 'new-over-old']]);
+    });
+  }
+
+  /* Paper 2: the price before a discount (pool 3, band 3) */
+  function gBeforeDiscount() {
+    return redraw(() => {
+      const pct = pick([10, 15, 20, 25, 30, 35, 40]), g = pick(GOODS);
+      const O = wholeFor(pct, Math.max(40, g[1]), g[2]);
+      if (!O) return null;
+      const off = O * pct / 100, S = O - off, r = 100 - pct;
+      const name = pick(NAMES), item = g[0];
+      const stem = 'During a sale, every item in a shop was sold at a ' + pct + '% discount. ' + name + ' paid $' + S + ' for a ' + item +
+        ' during the sale. What was the price of the ' + item + ' before the discount? (in dollars, e.g. 150)';
+      const q1 = money(finishTyped(stem, O,
+        name + ' paid 100% − ' + pct + '% = ' + r + '% of the usual price. 1% is $' + S + ' ÷ ' + r + ', so the usual price is $' + S + ' ÷ ' + r + ' × 100 = $' + O + '.', '$'), O);
+      band3(q1, 'Work backwards', [
+        'The usual price is 100%. A ' + pct + '% discount means ' + name + ' paid ' + r + '% of the usual price.',
+        'So ' + r + '% of the usual price is $' + S + '.',
+        '1% of the usual price is $' + S + ' ÷ ' + r + '.',
+        'The usual price is 100%: $' + S + ' ÷ ' + r + ' × 100 = <b>$' + O + '</b>.'
+      ]);
+      return slips(q1, [[S * (100 + pct) / 100, 'percent-of-part'], [off, 'answered-change'], [S + pct, 'added-percent'],
+        [S * 100 / pct, 'complement-percent']]);
+    });
+  }
+
+  /* Paper 2: GST-inclusive price back to the price before GST, or the GST (pool 3, band 3) */
+  function gGstBack() {
+    return redraw(() => {
+      const k = ri(3, 25), B = 100 * k, gst = 9 * k, T = B + gst;
+      const name = pick(NAMES), item = pick(BIG), askBase = Math.random() < 0.5;
+      const stem = name + ' paid $' + T + ' for a ' + item + '. This price included 9% GST. ' +
+        (askBase ? 'What was the price of the ' + item + ' before GST? (in dollars, e.g. 200)' : 'How much GST did ' + name + ' pay? (in dollars, e.g. 18)');
+      const ans = askBase ? B : gst;
+      const q1 = money(finishTyped(stem, ans,
+        '$' + T + ' is 100% + 9% = 109% of the price before GST, so 1% is $' + T + ' ÷ 109 = $' + k + '. ' +
+        (askBase ? 'The price before GST is $' + k + ' × 100 = $' + B + '.' : 'The GST is 9%: $' + k + ' × 9 = $' + gst + '.'), '$'), ans);
+      band3(q1, 'Work backwards', [
+        'The price before GST is 100%. GST adds 9%, so the $' + T + ' paid is 109% of the price before GST.',
+        '1% of the price before GST is $' + T + ' ÷ 109 = $' + k + '.',
+        askBase ? 'The price before GST is 100%: $' + k + ' × 100 = <b>$' + B + '</b>.'
+                : 'The GST is 9% of the price before GST: $' + k + ' × 9 = <b>$' + gst + '</b>.'
+      ]);
+      return slips(q1, askBase
+        ? [[T * 91 / 100, 'percent-of-part'], [T - 9, 'percent-as-dollars'], [gst, 'answered-change']]
+        : [[T * 9 / 100, 'percent-of-part'], [B, 'answered-whole'], [9, 'percent-as-dollars']]);
+    });
+  }
+
+  /* Paper 2: an increase then a decrease, the final value (pool 3, band 3). All three
+     prices sit in the item's band; a = 25 with b = 20 (x 1.25 x 0.8 = 1) is never drawn,
+     and no draw ends where it started. */
+  function gTwoChanges() {
+    return redraw(() => {
+      const a = pick([10, 20, 25, 30, 40, 50]), b = pick([10, 20, 25, 30, 40, 50]), g = pick(GOODS);
+      if (a === 25 && b === 20) return null;
+      const P = 10 * ri(Math.ceil(g[1] / 10), Math.floor(g[2] / 10));
+      if ((P * a) % 100) return null;
+      const inc = P * a / 100, M = P + inc;
+      if ((M * b) % 100) return null;
+      const dec = M * b / 100, F = M - dec;
+      if (F === P || !inBand(g, M) || !inBand(g, F)) return null;
+      const item = g[0];
+      const stem = 'In January, the price of a ' + item + ' was $' + P + '. In March, the price was increased by ' + a +
+        '%. In June, the new price was decreased by ' + b + '%. What was the price of the ' + item + ' in June? (in dollars, e.g. 90)';
+      const q1 = money(finishTyped(stem, F,
+        'The increase is ' + a + '% of $' + P + ' = $' + inc + ', so the March price is $' + M + '. The decrease is ' + b + '% of the NEW price $' + M +
+        ' = $' + dec + ', so the June price is $' + M + ' − $' + dec + ' = $' + F + '.', '$'), F);
+      band3(q1, 'Before and after', [
+        'The increase is ' + a + '% of $' + P + ': $' + P + ' ÷ 100 × ' + a + ' = $' + inc + '.',
+        'The price in March is $' + P + ' + $' + inc + ' = $' + M + '.',
+        'The decrease is ' + b + '% of the March price, not the January price: $' + M + ' ÷ 100 × ' + b + ' = $' + dec + '.',
+        'The price in June is $' + M + ' − $' + dec + ' = <b>$' + F + '</b>.'
+      ]);
+      return slips(q1, [[P * (100 + a - b) / 100, 'net-percent'], [M - P * b / 100, 'wrong-base'], [M, 'answered-first-change']]);
+    });
+  }
+
+  /* Paper 2: a change in values, then a percentage change across both years (pool 3, band 3) */
+  function gChainPct() {
+    return redraw(() => {
+      const A = ri(8, 120) * 5, x = pick([10, 20, 25, 30, 40, 50, 60]);
+      if ((A * x) % 100) return null;
+      const B = A + A * x / 100, c = pick([10, 20, 25, 30, 40, 50]);
+      if ((B * c) % 100) return null;
+      const d = B * c / 100, C = B - d;
+      if (C === A) return null;
+      const up = C > A, diff = Math.abs(C - A);
+      if ((diff * 100) % A) return null;
+      const p = diff * 100 / A, word = up ? 'increase' : 'decrease';
+      const stem = 'In 2024, a swimming club had ' + A + ' members. In 2025, it had ' + B + ' members. In 2026, the club had ' + c +
+        '% fewer members than in 2025. What is the percentage ' + word + ' in the number of members from 2024 to 2026? (answer in %, e.g. 15)';
+      const q1 = asPct(finishTyped(stem, p,
+        c + '% of ' + B + ' is ' + d + ', so in 2026 there were ' + B + ' − ' + d + ' = ' + C + ' members. The ' + word + ' from 2024 is ' + diff +
+        ', and ' + diff + ' ÷ ' + A + ' × 100 = ' + p + '%.', '%'), p);
+      band3(q1, 'Before and after', [
+        c + '% of the 2025 members is ' + B + ' ÷ 100 × ' + c + ' = ' + d + '.',
+        'So in 2026 there were ' + B + ' − ' + d + ' = ' + C + ' members.',
+        'The ' + word + ' from 2024 to 2026 is ' + (up ? C + ' − ' + A : A + ' − ' + C) + ' = ' + diff + ' members.',
+        'Compare it with 2024, the first year: ' + diff + ' ÷ ' + A + ' × 100 = <b>' + p + '%</b>.'
+      ]);
+      return slips(q1, [[x, 'answered-first-change'], [Math.abs(x - c), 'net-percent'], [diff, 'change-as-percent'], [diff * 100 / C, 'new-as-base']]);
+    });
+  }
+
+  /* Paper 2: the gap between two percentages gives the whole (pool 3, band 3) */
+  function gDiffModel() {
+    return redraw(() => {
+      const bp = pick([30, 35, 38, 40, 42, 44, 45, 46, 48]), gp = 100 - bp, d = gp - bp;
+      const T = ri(15, 100) * 20;
+      if ((T * bp) % 100 || (T * d) % 100) return null;
+      const diff = T * d / 100, boys = T * bp / 100, girls = T - boys;
+      const stem = 'In a school, ' + bp + '% of the pupils are boys and the rest are girls. There are ' + diff +
+        ' more girls than boys. How many pupils are there in the school altogether?';
+      const q1 = finishTyped(stem, T,
+        'The girls are ' + gp + '% and the boys ' + bp + '%, so the ' + diff + ' extra girls are ' + gp + '% − ' + bp + '% = ' + d +
+        '% of the pupils. 100% is ' + diff + ' ÷ ' + d + ' × 100 = ' + T + ' pupils.', 'pupils');
+      band3(q1, 'Draw a model', [
+        'The girls are the rest: 100% − ' + bp + '% = ' + gp + '% of the pupils.',
+        'The difference between the girls and the boys is ' + gp + '% − ' + bp + '% = ' + d + '% of the pupils, and that ' + d + '% is the ' + diff + ' extra girls.',
+        '1% of the pupils is ' + diff + ' ÷ ' + d + '.',
+        'All the pupils are 100%: ' + diff + ' ÷ ' + d + ' × 100 = <b>' + T + '</b>.'
+      ]);
+      return slips(q1, [[diff * 100 / bp, 'difference-percent'], [diff * 100 / gp, 'difference-percent'], [girls, 'answered-one-part'], [boys, 'answered-one-part']]);
+    });
+  }
+
+
+  MQI.registerTopic({
+    id: 'percent', level: 'P6', strand: 'Number and Algebra',
+    moeSubTopic: 'Percentage: finding the whole given a part and the percentage; finding percentage increase/decrease',
+    label: 'Percentage Peak', short: 'Percentage', e: '⛰️',
+    skills: {
+      whole:    { label: 'Finding the whole', tip: 'Find what 1% is worth first, then multiply by 100 to reach the whole.' },
+      change:   { label: 'Percentage increase and decrease', tip: 'Always divide the change by the value at the START, never the new value.' },
+      backward: { label: 'Working backwards', tip: 'After a discount or GST, the price paid is not 100%. Ask: what percentage did I actually pay?' },
+      twostep:  { label: 'Changes one after another', tip: 'A second percentage change is taken of the NEW value. Work out each step in turn.' },
+      model:    { label: 'Percentage models', tip: 'Draw the two groups as bars and mark the gap as a percentage of the whole.' }
+    },
+    misconceptions: {
+      'percent-of-part':       'Takes the percentage of the given amount instead of finding the whole that amount is part of.',
+      'remaining-part':        'Gives the rest of the whole instead of the whole.',
+      'one-percent-only':      'Stops at the value of 1%.',
+      'added-percent':         'Adds the percentage number to an amount, as if they were the same kind of quantity.',
+      'complement-percent':    'Uses the other percentage (100% minus the one given) for the given amount.',
+      'answered-part':         'Gives the part printed in the question as the whole.',
+      'new-as-base':           'Divides the change by the new value instead of the value at the start.',
+      'change-as-percent':     'Writes the amount of change as the percentage change.',
+      'new-over-old':          'Gives the new value as a percentage of the old one instead of the change.',
+      'complement':            'Gives 100% minus the percentage change.',
+      'answered-change':       'Gives the amount of change (spent, discount or GST) instead of the value asked for.',
+      'percent-as-dollars':    'Treats the GST percentage as a number of dollars.',
+      'answered-whole':        'Gives the price before GST when the question asks for the GST.',
+      'net-percent':           'Combines the two percentages directly, as if both were taken of the same amount.',
+      'wrong-base':            'Takes the second percentage of the original amount instead of the new amount.',
+      'answered-first-change': 'Stops after the first change.',
+      'difference-percent':    'Uses one group\'s percentage for the difference instead of the gap between the two percentages.',
+      'answered-one-part':     'Gives one group\'s number instead of the total.'
+    },
+    pools: {
+      1: [[gWholeFromPart, 'whole'], [gPctChange, 'change'], [gPagesRead, 'whole']],
+      2: [[gSavings, 'whole'], [gWholeFromLeft, 'whole'], [gPctChangeTyped, 'change'], [gWholeFromPart, 'whole']],
+      3: [[gBeforeDiscount, 'backward'], [gGstBack, 'backward'], [gTwoChanges, 'twostep'], [gChainPct, 'change'], [gDiffModel, 'model']]
+    }
+  });
+})();
+
+
+/* ===== js/topics/p6-algebra.js ===== */
+"use strict";
+/* Math Quest Island topic: algebra (P6). Self-contained. Typed + MC.
+ * Authoring rules + registration shape: js/topics/README.md
+ * Scope (MOE 2021 Primary Mathematics Syllabus, updated Oct 2025, p.43, PRIMARY SIX,
+ * SUB-STRAND: ALGEBRA 1):
+ *   1.1 using a letter to represent an unknown number
+ *   1.2 notation, representations and interpretation of simple algebraic expressions
+ *       such as a ± 3, a × 3 or 3a, a ÷ 3 or a/3
+ *   1.3 simplifying simple linear expressions excluding brackets
+ *   1.4 evaluating simple linear expressions by substitution
+ *   1.5 simple linear equations involving whole number coefficient only
+ * Clamps: no item prints a bracket; every coefficient printed in a stem, an option or a
+ * key is a positive whole number (no fractional coefficient, no negative coefficient in
+ * an answer); every typed answer is a positive whole number. The letters m, g, l and h
+ * are never used as unknowns, so an expression can never be read as a unit (5m, 3g).
+ *
+ * P5-P6 mirror (Sprint 1): every item carries q.syl = 'P6'. MCQ distractors carry
+ * q.miscon + q.optionFeedback; typed items carry q.slips. Tags live in `misconceptions`.
+ * Pool 3 is PSLE Paper 2 shape: band 3, worded, q.exam = 'problem', coached.
+ */
+(function () {
+  const G = MQI.gen;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishTyped = G.finishTyped;
+
+  const NAMES = ['Farid', 'Kavitha', 'Jun Hao', 'Siti', 'Ravi', 'Mei Ling', 'Ahmad',
+                 'Bala', 'Xin Yi', 'Priya', 'Daniel', 'Nurul', 'Wei Jie', 'Aisyah'];
+  const LETTERS = ['a', 'b', 'c', 'k', 'n', 'p', 'r', 't', 'w', 'y'];
+  const P3_LETTERS = ['k', 'n', 'p', 't', 'w', 'y'];
+  const two = () => { const a = pick(NAMES); let b = pick(NAMES); while (b === a) b = pick(NAMES); return [a, b]; };
+  const P6 = q => (q.syl = 'P6', q);
+
+  /* "3k", "k" (coefficient 1) */
+  const T = (c, L) => (c === 1 ? L : c + L);
+  /* linear expression c*L + d in house form: "3k + 7", "3k − 7", "3k" */
+  const LIN = (c, d, L) => T(c, L) + (d > 0 ? ' + ' + d : d < 0 ? ' − ' + (-d) : '');
+
+  function mcq(stem, key, dist, explain) {
+    const seen = [key], keep = [];
+    for (const d of dist) {
+      if (keep.length >= 3) break;
+      if (!d || seen.indexOf(d[0]) !== -1) continue;
+      seen.push(d[0]); keep.push(d);
+    }
+    if (keep.length < 3) return null;
+    const rows = shuffle([[key, null, null]].concat(keep));
+    const q = { q: stem, extra: '', choices: rows.map(r => r[0]), correct: 0, explain, answerText: key };
+    q.correct = rows.findIndex(r => r[1] === null);
+    q.miscon = {}; q.optionFeedback = {};
+    rows.forEach((r, i) => { if (r[1]) { q.miscon[i] = r[1]; q.optionFeedback[i] = r[2]; } });
+    return P6(q);
+  }
+  function slips(q, list) {
+    const s = {};
+    for (const [v, tag] of list) if (Number.isInteger(v) && v > 0 && v !== q.answer && !(String(v) in s)) s[String(v)] = tag;
+    q.slips = s;
+    return P6(q);
+  }
+  const money = (q, n) => (q.answerText = '$' + n, q);
+  /* the "(in dollars, e.g. N)" hint never shows the key */
+  const eg = ans => '(in dollars, e.g. ' + [12, 15, 20].filter(x => x !== ans)[0] + ')';
+
+  /* ---------- 1.1 / 1.2: write an expression for a story (pool 1) ---------- */
+  function gWriteExpr() {
+    const N = pick(NAMES), L = pick(LETTERS), b = ri(2, 9), kind = pick(['add', 'sub', 'mul', 'div']);
+    let stem, key, dist;
+    if (kind === 'add') {
+      stem = N + ' has ' + L + ' stickers. ' + N + '\'s friend gives ' + N + ' ' + b + ' more stickers. How many stickers does ' + N + ' have now?';
+      key = L + ' + ' + b;
+      dist = [[L + ' − ' + b, 'wrong-operation', 'Getting more stickers makes the number bigger, so add ' + b + '.'],
+              [b + L, 'times-for-plus', b + L + ' means ' + b + ' × ' + L + '. ' + N + ' gets just ' + b + ' more, so add.'],
+              [b + ' − ' + L, 'order-reversed', 'Start from what ' + N + ' has, ' + L + ', then add the ' + b + ' new stickers.']];
+    } else if (kind === 'sub') {
+      stem = N + ' has ' + L + ' stickers. ' + N + ' gives away ' + b + ' stickers. How many stickers does ' + N + ' have left?';
+      key = L + ' − ' + b;
+      dist = [[b + ' − ' + L, 'order-reversed', 'Start from what ' + N + ' has, ' + L + ', then take away ' + b + '.'],
+              [L + ' + ' + b, 'wrong-operation', 'Giving stickers away leaves fewer, so take away ' + b + '.'],
+              [b + L, 'wrong-operation', b + L + ' means ' + b + ' × ' + L + '. Giving some away is taking away.']];
+    } else if (kind === 'mul') {
+      stem = 'There are ' + L + ' pencils in each box. ' + N + ' buys ' + b + ' boxes. How many pencils does ' + N + ' buy?';
+      key = b + L;
+      dist = [[L + ' + ' + b, 'wrong-operation', b + ' boxes with ' + L + ' pencils in each is ' + b + ' groups of ' + L + ', so multiply.'],
+              [L + ' ÷ ' + b, 'wrong-operation', 'Nothing is being shared here. ' + b + ' equal boxes means ' + b + ' × ' + L + '.'],
+              [L + ' − ' + b, 'wrong-operation', 'Buying more boxes gives more pencils. ' + b + ' groups of ' + L + ' is ' + b + L + '.']];
+    } else {
+      stem = N + ' shares ' + L + ' sweets equally among ' + b + ' friends. How many sweets does each friend get?';
+      key = L + ' ÷ ' + b;
+      dist = [[b + ' ÷ ' + L, 'order-reversed', 'The ' + L + ' sweets are being shared, so ' + L + ' comes first: ' + L + ' ÷ ' + b + '.'],
+              [b + L, 'wrong-operation', 'Sharing equally means dividing, not multiplying.'],
+              [L + ' − ' + b, 'wrong-operation', 'Each friend gets an equal share, so divide ' + L + ' by ' + b + '.']];
+    }
+    return mcq(stem, key, dist, 'The unknown number is ' + L + '. The story gives ' + key + '.') || gWriteExpr();
+  }
+
+  /* ---------- 1.2: interpret notation (pool 1) ---------- */
+  function gMeaning() {
+    const L = pick(LETTERS), k = ri(2, 9), kind = pick(['coef', 'coef', 'div', 'slash', 'less', 'more', 'times']);
+    let stem, key, dist, explain;
+    if (kind === 'coef') {
+      stem = 'Which of these means the same as ' + k + L + '?';
+      key = k <= 4 ? Array(k).fill(L).join(' + ') : k + ' × ' + L;
+      dist = [[k + ' + ' + L, 'juxtapose-add', k + L + ' means ' + k + ' × ' + L + ', not ' + k + ' + ' + L + '.'],
+              [L + ' ÷ ' + k, 'wrong-operation', 'A number written in front of a letter multiplies it.'],
+              [L + ' − ' + k, 'wrong-operation', k + L + ' means ' + k + ' groups of ' + L + '.'],
+              [L + ' + ' + k, 'juxtapose-add', k + L + ' is ' + k + ' lots of ' + L + ', so it is ' + k + ' × ' + L + '.']];
+      explain = k + L + ' means ' + k + ' × ' + L + (k <= 4 ? ', which is ' + key + '.' : '.');
+    } else if (kind === 'div') {
+      stem = 'Which of these means the same as ' + L + ' ÷ ' + k + '?';
+      key = L + '/' + k;
+      dist = [[k + '/' + L, 'order-reversed', L + ' ÷ ' + k + ' puts ' + L + ' on top: ' + L + '/' + k + '.'],
+              [k + L, 'wrong-operation', k + L + ' means ' + k + ' × ' + L + ', not a division.'],
+              [L + ' − ' + k, 'wrong-operation', 'Dividing by ' + k + ' is not the same as taking away ' + k + '.']];
+      explain = L + ' ÷ ' + k + ' can be written as the fraction ' + L + '/' + k + '.';
+    } else if (kind === 'slash') {
+      stem = 'Which of these means the same as ' + L + '/' + k + '?';
+      key = L + ' ÷ ' + k;
+      dist = [[k + ' ÷ ' + L, 'order-reversed', 'The top of the fraction is divided by the bottom: ' + L + ' ÷ ' + k + '.'],
+              [k + ' × ' + L, 'wrong-operation', 'A fraction line means divide.'],
+              [L + ' − ' + k, 'wrong-operation', 'A fraction line means divide, not take away.']];
+      explain = L + '/' + k + ' means ' + L + ' divided by ' + k + '.';
+    } else if (kind === 'less') {
+      stem = 'Which expression means "' + k + ' less than ' + L + '"?';
+      key = L + ' − ' + k;
+      dist = [[k + ' − ' + L, 'order-reversed', '"' + k + ' less than ' + L + '" starts from ' + L + ' and takes ' + k + ' away.'],
+              [L + ' + ' + k, 'wrong-operation', '"Less than" means take away.'],
+              [k + L, 'wrong-operation', k + L + ' means ' + k + ' × ' + L + '. "Less than" means take away.']];
+      explain = 'Start with ' + L + ' and take away ' + k + ': ' + key + '.';
+    } else if (kind === 'more') {
+      stem = 'Which expression means "' + k + ' more than ' + L + '"?';
+      key = L + ' + ' + k;
+      dist = [[L + ' − ' + k, 'wrong-operation', '"More than" means add.'],
+              [k + L, 'times-for-plus', k + L + ' means ' + k + ' × ' + L + '. "' + k + ' more" means add ' + k + '.'],
+              [k + ' − ' + L, 'order-reversed', '"More than" means add ' + k + ' to ' + L + '.']];
+      explain = 'Start with ' + L + ' and add ' + k + ': ' + key + '.';
+    } else {
+      stem = 'Which expression means "' + L + ' multiplied by ' + k + '"?';
+      key = k + L;
+      dist = [[L + ' + ' + k, 'wrong-operation', 'Multiplied by ' + k + ' means ' + k + ' × ' + L + ', written ' + k + L + '.'],
+              [L + ' ÷ ' + k, 'wrong-operation', 'Multiplying is not dividing.'],
+              [L + ' − ' + k, 'wrong-operation', 'Multiplied by ' + k + ' means ' + k + ' groups of ' + L + '.']];
+      explain = L + ' × ' + k + ' is written ' + k + L + ', number first.';
+    }
+    return mcq(stem, key, dist, explain) || gMeaning();
+  }
+
+  /* ---------- 1.3: simplify (pool 1 easy, pool 2 harder) ---------- */
+  /* terms: [[sign, coef, isLetter]], first sign +. Returns key + distractors. */
+  function simplifyItem(terms, L) {
+    const show = terms.map((t, i) => (i === 0 ? '' : t[0] > 0 ? ' + ' : ' − ') + (t[2] ? T(t[1], L) : t[1])).join('');
+    let c = 0, d = 0, cAbs = 0, dAbs = 0, all = 0;
+    for (const [s, v, isL] of terms) { if (isL) { c += s * v; cAbs += v; } else { d += s * v; dAbs += v; } all += s * v; }
+    const key = LIN(c, d, L);
+    const dist = [
+      all > 0 && dAbs > 0 ? [T(all, L), 'unlike-terms', 'Only the ' + L + ' terms can be put together. The number ' + (d > 0 ? 'stays on its own' : 'stays separate') + '.'] : null,
+      cAbs !== c ? [LIN(cAbs, d, L), 'sign-slip', 'Look at the sign in front of each ' + L + ' term: a minus means take that many ' + L + ' away.'] : null,
+      dAbs !== Math.abs(d) || (d < 0 && dAbs > 0) ? [LIN(c, dAbs, L), 'sign-slip', 'Look at the sign in front of each number: a minus means take it away.'] : null,
+      dAbs > 0 && c + d > 0 ? [String(c + d), 'dropped-letter', 'The letter does not disappear. Keep ' + T(c, L) + ' and the number apart.'] : null,
+      dAbs > 0 ? [LIN(c + 1, d, L), 'miscount', 'Count the ' + L + ' terms again, using each sign.'] : null,
+      dAbs === 0 ? [String(c), 'dropped-letter', 'The answer is still a number of ' + L + '\'s, so keep the letter: ' + T(c, L) + '.'] : null,
+      dAbs === 0 ? [L + ' + ' + c, 'times-for-plus', T(c, L) + ' means ' + c + ' × ' + L + ', which is not ' + L + ' + ' + c + '.'] : null,
+      dAbs === 0 && c > 1 ? [T(c + 1, L), 'miscount', 'Count the ' + L + ' terms again, using each sign.'] : null,
+      dAbs === 0 && c > 2 ? [T(c - 1, L), 'miscount', 'Count every ' + L + ', including the first one.'] : null,
+      d !== 0 ? [LIN(c, -d, L), 'sign-slip', 'Check the sign of the number: it keeps the sign written in front of it.'] : null
+    ];
+    return { show, key, dist, c, d };
+  }
+  function gSimplify(level) {
+    const L = pick(LETTERS);
+    let terms;
+    for (let tries = 0; tries < 200; tries++) {
+      const a = ri(2, 9), b = ri(1, 8), c = ri(2, 12), d = ri(1, 9), e = ri(1, 6);
+      const f = level === 1 ? pick(['plus', 'minus', 'same', 'plusc']) : pick(['abcd', 'mixc', 'three', 'minusc', 'cfirst']);
+      if (f === 'plus') terms = [[1, a, 1], [1, b, 1]];
+      else if (f === 'minus') { if (b >= a) continue; terms = [[1, a, 1], [-1, b, 1]]; }
+      else if (f === 'same') { const n = ri(3, 5); terms = Array(n).fill([1, 1, 1]); }
+      else if (f === 'plusc') terms = [[1, a, 1], [1, c, 0], [1, b, 1]];
+      else if (f === 'abcd') { if (c <= d) continue; terms = [[1, a, 1], [1, c, 0], [1, b, 1], [-1, d, 0]]; }
+      else if (f === 'mixc') { if (b >= a) continue; terms = [[1, a, 1], [-1, b, 1], [1, c, 0]]; }
+      else if (f === 'three') { if (a + b <= e) continue; terms = [[1, a, 1], [1, b, 1], [-1, e, 1]]; }
+      else if (f === 'minusc') { if (b >= a) continue; terms = [[1, a, 1], [1, c, 0], [-1, b, 1], [1, d, 0]]; }
+      else { if (b >= a) continue; terms = [[1, c, 0], [1, a, 1], [-1, b, 1]]; }
+      break;
+    }
+    const it = simplifyItem(terms, L);
+    const out = mcq('Simplify ' + it.show + '.', it.key, it.dist,
+      'Put the ' + L + ' terms together' + (it.d !== 0 ? ' and the numbers together' : '') + ': ' + it.show + ' = ' + it.key + '.');
+    return out || gSimplify(level);
+  }
+  const gSimplify1 = () => gSimplify(1);
+  const gSimplify2 = () => gSimplify(2);
+
+  /* ---------- 1.4: evaluate by substitution, typed (pools 1 and 2) ---------- */
+  function gEvaluate(level) {
+    const L = pick(LETTERS);
+    for (;;) {
+      const a = ri(2, 9), b = ri(1, 20), V = ri(2, 12);
+      const f = level === 1 ? pick(['ap', 'am', 'pl']) : pick(['ap', 'am', 'div', 'back', 'two']);
+      let expr, ans, sl = [];
+      if (f === 'ap') { expr = a + L + ' + ' + b; ans = a * V + b; sl = [[a + V + b, 'times-for-plus'], [a * V, 'dropped-term']]; if (V < 10) sl.push([(a * 10 + V) + b, 'juxtapose']); }
+      else if (f === 'am') { if (a * V <= b) continue; expr = a + L + ' − ' + b; ans = a * V - b; sl = [[a * V + b, 'sign-slip'], [a + V - b, 'times-for-plus']]; if (V < 10) sl.push([(a * 10 + V) - b, 'juxtapose']); }
+      else if (f === 'pl') { expr = L + ' + ' + b; ans = V + b; sl = [[V * b, 'wrong-operation'], [V, 'dropped-term']]; }
+      else if (f === 'div') { const W = a * V; expr = L + ' ÷ ' + a + ' + ' + b; ans = V + b; sl = [[W * a + b, 'wrong-operation'], [W - a + b, 'wrong-operation'], [V, 'dropped-term']];
+        const q1 = finishTyped('Find the value of ' + expr + ' when ' + L + ' = ' + W + '.', ans,
+          'Replace ' + L + ' with ' + W + ': ' + W + ' ÷ ' + a + ' + ' + b + ' = ' + V + ' + ' + b + ' = ' + ans + '.');
+        return slips(q1, sl); }
+      else if (f === 'back') { const c = ri(3, 9) * 10; if (a * V >= c) continue; expr = c + ' − ' + a + L; ans = c - a * V; sl = [[c + a * V, 'sign-slip'], [c - a - V, 'times-for-plus'], [a * V, 'dropped-term']]; }
+      else { const e = ri(2, 6); expr = a + L + ' + ' + e + L + ' + ' + b; ans = (a + e) * V + b; sl = [[(a + e) * V, 'dropped-term'], [a * V + e + b, 'miscount'], [a + e + V + b, 'times-for-plus']]; }
+      const q1 = finishTyped('Find the value of ' + expr + ' when ' + L + ' = ' + V + '.', ans,
+        'Replace ' + L + ' with ' + V + ' in ' + expr + '. A number written next to the letter multiplies it. The value is ' + ans + '.');
+      return slips(q1, sl);
+    }
+  }
+  const gEvaluate1 = () => gEvaluate(1);
+  const gEvaluate2 = () => gEvaluate(2);
+
+  /* ---------- 1.5: solve a linear equation, typed (pools 1 and 2) ---------- */
+  function gSolve(level) {
+    const L = pick(LETTERS);
+    for (;;) {
+      const a = ri(2, 9), b = ri(1, 30), V = ri(2, 15);
+      const f = level === 1 ? pick(['plus', 'times', 'minus1']) : pick(['ap', 'am', 'ap', 'two']);
+      if (V === a || V === b) continue;      /* the key never repeats a printed number */
+      let lhs, c, sl = [];
+      if (f === 'plus') { lhs = L + ' + ' + b; c = V + b; sl = [[c + b, 'inverse-sign']]; }
+      else if (f === 'minus1') { const bb = ri(1, 9), VV = ri(2 * bb + 1, 2 * bb + 20); lhs = L + ' − ' + bb; c = VV - bb;
+        const q0 = finishTyped('Solve the equation ' + lhs + ' = ' + c + '. What is the value of ' + L + '?', VV,
+          'Undo the taking away: ' + c + ' + ' + bb + ' = ' + VV + ', so ' + L + ' = ' + VV + '.');
+        return slips(q0, [[c - bb, 'inverse-sign'], [c, 'dropped-term']]); }
+      else if (f === 'times') { lhs = a + L; c = a * V; sl = [[c - a, 'wrong-operation'], [c * a, 'inverse-sign']]; }
+      else if (f === 'ap') { lhs = a + L + ' + ' + b; c = a * V + b; sl = [[c - b, 'stopped-early'], [(c + b) / a, 'inverse-sign'], [c / a, 'undo-order']]; }
+      else if (f === 'am') { lhs = a + L + ' − ' + b; c = a * V - b; if (c < 1) continue; sl = [[c + b, 'stopped-early'], [(c - b) / a, 'inverse-sign'], [c / a, 'undo-order']]; }
+      else { const e = ri(1, 6); if (V === e) continue; lhs = a + L + ' + ' + T(e, L); c = (a + e) * V; sl = [[c / a, 'miscount'], [c - a - e, 'wrong-operation']]; }
+      const q1 = finishTyped('Solve the equation ' + lhs + ' = ' + c + '. What is the value of ' + L + '?', V,
+        'Undo each step in reverse order. ' + lhs + ' = ' + c + ' gives ' + L + ' = ' + V + '. Check: put ' + V + ' back in and you get ' + c + '.');
+      return slips(q1, sl);
+    }
+  }
+  const gSolve1 = () => gSolve(1);
+  const gSolve2 = () => gSolve(2);
+
+  /* ---------- 1.1 / 1.2: two-step story expression, MCQ (pool 2) ---------- */
+  function gStoryExpr() {
+    const N = pick(NAMES), L = pick(LETTERS), a = ri(2, 6), b = ri(2, 9);
+    let stem;
+    if (Math.random() < 0.5) {
+      stem = 'A notebook costs $' + L + '. ' + N + ' buys ' + a + ' notebooks and a pen that costs $' + b + '. How much does ' + N + ' spend altogether, in dollars?';
+    } else {
+      stem = N + ' is ' + L + ' years old. ' + N + '\'s mother is ' + a + ' times as old as ' + N + '. How old will ' + N + '\'s mother be in ' + b + ' years\' time?';
+    }
+    const key = a + L + ' + ' + b;
+    const out = mcq(stem, key, [
+      [(a + b) + L, 'unlike-terms', a + L + ' and ' + b + ' cannot be put together: one has a letter, the other does not.'],
+      [L + ' + ' + (a + b), 'times-for-plus', a + ' times as much is ' + a + ' × ' + L + ', written ' + a + L + '.'],
+      [a + L + ' − ' + b, 'wrong-operation', 'The extra ' + b + ' is added on, not taken away.'],
+      [b + L + ' + ' + a, 'order-reversed', 'The ' + a + ' multiplies ' + L + '; the ' + b + ' is added on.']
+    ], 'First ' + a + ' × ' + L + ' = ' + a + L + ', then add ' + b + ': ' + key + '.');
+    return out || gStoryExpr();
+  }
+
+  /* ---------- Paper 2: ages in terms of n, then substitute (pool 3, band 3) ---------- */
+  function gAgeTotal() {
+    const N = pick(NAMES), L = pick(P3_LETTERS), older = Math.random() < 0.5;
+    let a, b, V;
+    do { a = ri(3, 6); b = ri(2, 9); V = ri(b + 3, 14); } while (a * V < 25 || a * V > 60 || (a - 1) * V < 20);   /* a believable father */
+    const sib = older ? 'brother' : 'sister', s = older ? 1 : -1;
+    const ans = (a + 2) * V + s * b, P = (a + 2) * V;
+    const stem = N + ' is ' + L + ' years old. ' + N + '\'s father is ' + a + ' times as old as ' + N + '. ' + N + '\'s ' + sib + ' is ' + b +
+      ' years ' + (older ? 'older' : 'younger') + ' than ' + N + '. Find the total of their three ages when ' + L + ' = ' + V + '.';
+    const sibE = L + (older ? ' + ' : ' − ') + b;
+    const q1 = finishTyped(stem, ans,
+      'Total = ' + L + ' + ' + a + L + ' + ' + sibE + ' = ' + LIN(a + 2, s * b, L) + '. When ' + L + ' = ' + V + ', that is ' + P + (older ? ' + ' : ' − ') + b + ' = ' + ans + '.', 'years');
+    q1.band = 3; q1.exam = 'problem';
+    q1.technique = 'Draw a model';
+    q1.steps = [
+      'Draw 1 bar for ' + N + ', who is ' + L + ' years old, and ' + a + ' bars of the same size for the father: ' + a + L + ' years.',
+      'The ' + sib + ' is ' + sibE + ' years old.',
+      'Add the three ages: ' + L + ' + ' + a + L + ' + ' + sibE + ' = ' + LIN(a + 2, s * b, L) + '.',
+      'Put in ' + L + ' = ' + V + ': ' + (a + 2) + ' × ' + V + ' = ' + P + '.',
+      'So the total is ' + P + (older ? ' + ' : ' − ') + b + ' = <b>' + ans + '</b> years.'
+    ];
+    return slips(q1, [[(a + 1) * V + s * b, 'missed-term'], [P - s * b, 'sign-slip'], [P, 'dropped-term'], [(a + 2) + V + s * b, 'times-for-plus']]);
+  }
+
+  /* ---------- Paper 2: cost of x items, then change (pool 3, band 3) ---------- */
+  function gCostChange() {
+    const N = pick(NAMES), L = pick(P3_LETTERS);
+    for (;;) {
+      const p = ri(2, 6), r = ri(2, 4), f = ri(2, 5), V = ri(2, 9), note = pick([50, 100]);
+      const K = p + r * f, KV = K * V, ans = note - KV;
+      if (ans < 2) continue;
+      const stem = 'A pen costs $' + L + '. A file costs ' + r + ' times as much as a pen. ' + N + ' buys ' + p + ' pens and ' + f +
+        ' files, and pays with a $' + note + ' note. How much change does ' + N + ' receive when ' + L + ' = ' + V + '? ' + eg(ans);
+      const q1 = money(finishTyped(stem, ans,
+        'Total cost = ' + p + L + ' + ' + (r * f) + L + ' = ' + K + L + ' dollars. When ' + L + ' = ' + V + ', that is $' + KV + ', so the change is $' + note + ' − $' + KV + ' = $' + ans + '.', '$'), ans);
+      q1.band = 3; q1.exam = 'problem';
+      q1.technique = 'Draw a model';
+      q1.steps = [
+        'The pens cost ' + p + L + ' dollars. One file costs ' + r + L + ' dollars, so ' + f + ' files cost ' + (r * f) + L + ' dollars.',
+        'Total cost: ' + p + L + ' + ' + (r * f) + L + ' = ' + K + L + ' dollars.',
+        'Put in ' + L + ' = ' + V + ': ' + K + ' × ' + V + ' = ' + KV + ', so the total is $' + KV + '.',
+        'Change: $' + note + ' − $' + KV + ' = <b>$' + ans + '</b>.'
+      ];
+      return slips(q1, [[KV, 'answered-total'], [note - (p + f) * V, 'missed-term'], [note - (p + r + f) * V, 'times-for-plus']]);
+    }
+  }
+
+  /* ---------- Paper 2: perimeter in terms of y, then evaluate (pool 3, band 3) ---------- */
+  function gPerimeter() {
+    const L = pick(P3_LETTERS);
+    if (Math.random() < 0.5) {
+      for (;;) {
+        const a = ri(2, 5), b = ri(2, 9), V = ri(3, 12);
+        if (a * V - b < 2) continue;
+        const ans = 4 * a * V - 2 * b, X = 4 * a * V;
+        const br = T(a, L) + ' − ' + b;
+        const stem = 'A rectangle is ' + T(a, L) + ' cm long. Its breadth is ' + b + ' cm shorter than its length. Find the perimeter of the rectangle when ' + L + ' = ' + V + '.';
+        const q1 = finishTyped(stem, ans,
+          'Perimeter = ' + T(a, L) + ' + ' + T(a, L) + ' + ' + br + ' + ' + br + ' = ' + LIN(4 * a, -2 * b, L) + ' cm. When ' + L + ' = ' + V + ', that is ' + X + ' − ' + (2 * b) + ' = ' + ans + ' cm.', 'cm');
+        q1.band = 3; q1.exam = 'problem';
+        q1.technique = 'Sketch and label';
+        q1.steps = [
+          'Sketch the rectangle. Label the length ' + T(a, L) + ' cm and the breadth ' + br + ' cm.',
+          'Add all four sides: ' + T(a, L) + ' + ' + T(a, L) + ' + ' + br + ' + ' + br + ' = ' + LIN(4 * a, -2 * b, L) + ' cm.',
+          'Put in ' + L + ' = ' + V + ': ' + (4 * a) + ' × ' + V + ' = ' + X + '.',
+          'The perimeter is ' + X + ' − ' + (2 * b) + ' = <b>' + ans + '</b> cm.'
+        ];
+        return slips(q1, [[2 * a * V - b, 'half-perimeter'], [X + 2 * b, 'sign-slip'], [X, 'dropped-term']]);
+      }
+    }
+    let a, b, V;
+    do { a = ri(2, 5); b = ri(2, 9); V = ri(2, 12); } while (a * V <= b);   /* triangle inequality: aV + aV > aV + b */
+    const ans = 3 * a * V + b, X = 3 * a * V;
+    const stem = 'Each of the two equal sides of an isosceles triangle is ' + T(a, L) + ' cm long. The third side is ' + b +
+      ' cm longer than one of the equal sides. Find the perimeter of the triangle when ' + L + ' = ' + V + '.';
+    const th = T(a, L) + ' + ' + b;
+    const q1 = finishTyped(stem, ans,
+      'Perimeter = ' + T(a, L) + ' + ' + T(a, L) + ' + ' + th + ' = ' + LIN(3 * a, b, L) + ' cm. When ' + L + ' = ' + V + ', that is ' + X + ' + ' + b + ' = ' + ans + ' cm.', 'cm');
+    q1.band = 3; q1.exam = 'problem';
+    q1.technique = 'Sketch and label';
+    q1.steps = [
+      'Sketch the triangle. Label the two equal sides ' + T(a, L) + ' cm and the third side ' + th + ' cm.',
+      'Add the three sides: ' + T(a, L) + ' + ' + T(a, L) + ' + ' + th + ' = ' + LIN(3 * a, b, L) + ' cm.',
+      'Put in ' + L + ' = ' + V + ': ' + (3 * a) + ' × ' + V + ' = ' + X + '.',
+      'The perimeter is ' + X + ' + ' + b + ' = <b>' + ans + '</b> cm.'
+    ];
+    return slips(q1, [[2 * a * V + b, 'missed-term'], [X - b, 'sign-slip'], [X, 'dropped-term']]);
+  }
+
+  /* ---------- Paper 2: an equation from a story (pool 3, band 3) ---------- */
+  function gStoryEquation() {
+    const [N, N2] = two(), L = pick(P3_LETTERS), kind = pick(['think', 'thinkm', 'buy', 'age']);
+    const a = ri(3, 9), b = ri(4, 40), V = ri(4, 25);
+    if (V === a || V === b) return gStoryEquation();
+    if (kind === 'think' || kind === 'thinkm') {
+      const plus = kind === 'think', c = plus ? a * V + b : a * V - b;
+      if (c < 2) return gStoryEquation();
+      const stem = N + ' thinks of a whole number ' + L + '. ' + N + ' multiplies it by ' + a + ' and then ' + (plus ? 'adds ' : 'subtracts ') + b +
+        '. The result is ' + c + '. What is the value of ' + L + '?';
+      const X = a * V;
+      const q1 = finishTyped(stem, V, 'The equation is ' + a + L + (plus ? ' + ' : ' − ') + b + ' = ' + c + '. Work backwards: ' + c + (plus ? ' − ' : ' + ') + b + ' = ' + X + ', and ' + X + ' ÷ ' + a + ' = ' + V + '.');
+      q1.band = 3; q1.exam = 'problem';
+      q1.technique = 'Work backwards';
+      q1.steps = [
+        'Write the story as an equation: ' + a + L + (plus ? ' + ' : ' − ') + b + ' = ' + c + '.',
+        'Undo the last step first: ' + c + (plus ? ' − ' : ' + ') + b + ' = ' + X + ', so ' + a + L + ' is ' + X + '.',
+        'Undo the multiplying: ' + X + ' ÷ ' + a + ' = <b>' + V + '</b>.'
+      ];
+      return slips(q1, [[X, 'stopped-early'], [plus ? (c + b) / a : (c - b) / a, 'inverse-sign'], [c / a, 'undo-order']]);
+    }
+    if (kind === 'buy') {
+      const c = a * V + b;
+      const stem = N + ' buys ' + a + ' identical files at $' + L + ' each and a bag that costs $' + b + '. ' + N + ' spends $' + c +
+        ' altogether. Find the value of ' + L + '. ' + eg(V);
+      const X = a * V;
+      const q1 = money(finishTyped(stem, V, a + L + ' + ' + b + ' = ' + c + ', so ' + a + L + ' = ' + c + ' − ' + b + ' = ' + X + ' and ' + L + ' = ' + X + ' ÷ ' + a + ' = ' + V + '.', '$'), V);
+      q1.band = 3; q1.exam = 'problem';
+      q1.technique = 'Work backwards';
+      q1.steps = [
+        'The files cost ' + a + L + ' dollars, so the equation is ' + a + L + ' + ' + b + ' = ' + c + '.',
+        'Take away the bag: ' + c + ' − ' + b + ' = ' + X + ', so ' + a + L + ' is ' + X + '.',
+        'One file: ' + X + ' ÷ ' + a + ' = <b>$' + V + '</b>.'
+      ];
+      return slips(q1, [[X, 'stopped-early'], [(c + b) / a, 'inverse-sign'], [c / a, 'undo-order']]);
+    }
+    /* a believable second person: another child under 25; a parent when 25..60 and at
+       least 20 years older; a grandparent when 61..75 and at least 45 years older */
+    let k, P2, tries = 0;
+    for (;;) {
+      k = ri(2, 6); const age = k * V, gap = (k - 1) * V;
+      if (++tries > 200) return gStoryEquation();
+      if (age < 25) { P2 = N2; break; }
+      if (age <= 60 && gap >= 20) { P2 = N + '\'s ' + pick(['mother', 'father']); break; }
+      if (age > 60 && age <= 75 && gap >= 45) { P2 = N + '\'s ' + pick(['grandmother', 'grandfather']); break; }
+    }
+    const c = (k + 1) * V;
+    const stem = N + ' is ' + L + ' years old. ' + P2 + ' is ' + k + ' times as old as ' + N + '. The sum of their ages is ' + c +
+      ' years. What is the value of ' + L + '?';
+    const q1 = finishTyped(stem, V, L + ' + ' + k + L + ' = ' + (k + 1) + L + ' = ' + c + ', so ' + L + ' = ' + c + ' ÷ ' + (k + 1) + ' = ' + V + '.', 'years');
+    q1.band = 3; q1.exam = 'problem';
+    q1.technique = 'Work backwards';
+    q1.steps = [
+      P2 + ' is ' + k + L + ' years old.',
+      'The sum of their ages is ' + L + ' + ' + k + L + ' = ' + (k + 1) + L + ', so ' + (k + 1) + L + ' is ' + c + '.',
+      'Divide: ' + c + ' ÷ ' + (k + 1) + ' = <b>' + V + '</b>.'
+    ];
+    return slips(q1, [[c / k, 'miscount'], [k * V, 'answered-other'], [c - k, 'wrong-operation']]);
+  }
+
+  MQI.registerTopic({
+    id: 'algebra', level: 'P6', strand: 'Number and Algebra',
+    moeSubTopic: 'Algebra: using a letter to represent an unknown number; notation, representations and interpretation of simple algebraic expressions; simplifying simple linear expressions excluding brackets; evaluating simple linear expressions by substitution; simple linear equations involving whole number coefficient only',
+    label: 'Algebra Atoll', short: 'Algebra', e: '🌀',
+    skills: {
+      write:     { label: 'Letters for numbers', tip: 'Tell the story with a number first (say 10), then swap the 10 for the letter.' },
+      notation:  { label: 'Reading expressions', tip: 'A number stuck to a letter multiplies it: 3k is 3 × k, never 3 + k.' },
+      simplify:  { label: 'Simplifying', tip: 'Circle the letter terms with their signs, put them together, and leave the numbers on their own.' },
+      evaluate:  { label: 'Substitution', tip: 'Rewrite the expression with the number in place of the letter and a × sign where they touched.' },
+      solve:     { label: 'Solving equations', tip: 'Undo the steps in reverse order, then put the answer back in to check it.' },
+      problems:  { label: 'Algebra word problems', tip: 'Write each quantity in terms of the letter first, add them up, then substitute.' }
+    },
+    misconceptions: {
+      'wrong-operation':  'Picks an operation that does not match the story or the symbol.',
+      'order-reversed':   'Writes the terms of a subtraction or division the wrong way round.',
+      'times-for-plus':   'Treats "3k" and "k + 3" as the same, mixing up multiplying and adding.',
+      'juxtapose-add':    'Reads a number written next to a letter as adding.',
+      'juxtapose':        'Substitutes by writing the digits side by side (4n with n = 6 read as 46).',
+      'unlike-terms':     'Combines a letter term with a plain number.',
+      'sign-slip':        'Ignores or flips the sign in front of a term.',
+      'dropped-letter':   'Drops the letter and gives a plain number.',
+      'dropped-term':     'Leaves out one of the terms.',
+      'miscount':         'Miscounts how many of the letter there are.',
+      'inverse-sign':     'Undoes a step with the same operation instead of its inverse.',
+      'stopped-early':    'Undoes only one step of a two-step equation.',
+      'undo-order':       'Undoes the multiplying before the adding or taking away.',
+      'missed-term':      'Leaves out one person\'s or one item\'s share when writing the total.',
+      'half-perimeter':   'Adds only two of the sides instead of going all the way round.',
+      'answered-total':   'Gives the total cost when the question asks for the change.',
+      'answered-other':   'Gives the other person\'s value instead of the unknown asked for.'
+    },
+    pools: {
+      1: [[gWriteExpr, 'write'], [gMeaning, 'notation'], [gSimplify1, 'simplify'], [gEvaluate1, 'evaluate'], [gSolve1, 'solve']],
+      2: [[gStoryExpr, 'write'], [gSimplify2, 'simplify'], [gEvaluate2, 'evaluate'], [gSolve2, 'solve']],
+      3: [[gAgeTotal, 'problems'], [gCostChange, 'problems'], [gPerimeter, 'problems'], [gStoryEquation, 'solve']]
+    }
+  });
+})();
+
+
+/* ===== js/topics/p6-circles.js ===== */
+"use strict";
+/* Math Quest Island topic: p6circles (P6). Self-contained. Typed + MC, every item drawn.
+ * Authoring rules + registration shape: js/topics/README.md
+ * Scope (MOE 2021 Primary Mathematics Syllabus, updated Oct 2025, p.44, PRIMARY SIX,
+ * MEASUREMENT AND GEOMETRY, SUB-STRAND: AREA AND VOLUME, 1. Area and Circumference of Circle):
+ *   1.1 area and circumference of circle
+ *   1.2 finding the area and perimeter of semicircle, quarter circle
+ *   1.3 finding the area and perimeter of composite figures made up of square, rectangle,
+ *       triangle, semicircle and quarter circle
+ * PSLE convention: every stem says "Take π = 22/7" or "Take π = 3.14". With 22/7 the
+ * lengths are multiples of 7 so the answers are exact; with 3.14 every typed item declares
+ * q.dp = 2 and no answer needs more than 2 decimal places. The perimeter of a semicircle or
+ * quarter circle INCLUDES its straight edges; leaving them out is a tagged slip.
+ * Figures are `circlefig` specs (js/figures.js): the numbers live on the drawing, as on a
+ * PSLE paper, and the oracle (tools/oracles/p6circles.mjs) re-reads them off the render.
+ *
+ * P5-P6 mirror (Sprint 1): every item carries q.syl = 'P6'; MCQ distractors carry q.miscon
+ * + q.optionFeedback, typed items q.slips; tags are defined once in `misconceptions`.
+ * Pool 3 is PSLE Paper 2 shape: band 3, worded composite figures, coached.
+ * Triangles (1.3): the segment item takes a right-angled triangle away from a quarter circle;
+ * the leaf item overlaps two quarter circles inside a square.
+ */
+(function () {
+  const G = MQI.gen;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishTyped = G.finishTyped;
+
+  const P6 = q => (q.syl = 'P6', q);
+  const fig = (q, figure) => (q.figure = figure, q);
+  const r2 = x => Math.round(x * 100) / 100;
+  const fmt = x => String(r2(x));
+  /* π times a length, exact for 22/7 (multiply first, divide by 7 last) */
+  const PI = { '22/7': x => r2(22 * x / 7), '3.14': x => r2(314 * x / 100) };
+  const take = p => 'Take π = ' + p + '.';
+  const SHE = new Set(['Mrs Tan', 'Siti', 'Mei Ling', 'Kavitha', 'Nurul', 'Mdm Wong']);
+  const NAMES = ['Mr Lim', 'Mrs Tan', 'Siti', 'Ravi', 'Mei Ling', 'Ahmad', 'Farid', 'Kavitha', 'Jun Hao', 'Nurul', 'Mdm Wong', 'Mr Rahman'];
+
+  /* MCQ: key and distractor VALUES, all printed with the same unit. dist = [[value, tag, coaching], ...] */
+  function mcq(stem, key, unit, dist, explain) {
+    const K = fmt(key) + ' ' + unit, seen = [K], keep = [];
+    for (const d of dist) {
+      if (keep.length >= 3) break;
+      if (!(d[0] > 0)) continue;
+      const t = fmt(d[0]) + ' ' + unit;
+      if (seen.indexOf(t) !== -1) continue;
+      seen.push(t); keep.push([t, d[1], d[2]]);
+    }
+    if (keep.length < 3) return null;
+    const rows = shuffle([[K, null, null]].concat(keep));
+    const q = { q: stem, extra: '', choices: rows.map(r => r[0]), correct: 0, explain, answerText: K };
+    q.correct = rows.findIndex(r => r[1] === null);
+    q.miscon = {}; q.optionFeedback = {};
+    rows.forEach((r, i) => { if (r[1]) { q.miscon[i] = r[1]; q.optionFeedback[i] = r[2]; } });
+    return P6(q);
+  }
+  /* typed: answer + unit, q.dp = 2 whenever π = 3.14 or the answer is not whole */
+  function typed(stem, ans, unit, explain, p, slipList) {
+    const q = finishTyped(stem, r2(ans), explain, unit);
+    if (p === '3.14' || !Number.isInteger(q.answer)) q.dp = 2;
+    const s = {};
+    for (const [v0, tag] of slipList) {
+      const v = r2(v0);
+      if (Number.isFinite(v) && v > 0 && Math.abs(v - q.answer) > 1e-9 && !(String(v) in s)) s[String(v)] = tag;
+    }
+    q.slips = s;
+    return P6(q);
+  }
+  const cfCircle = (r, mark, unit) => ({ type: 'circlefig', shape: 'circle', unit, r, mark });
+  const cfSemi = (r, mark, unit) => ({ type: 'circlefig', shape: 'semi', unit, r, mark });
+  const cfQuarter = (r, unit) => ({ type: 'circlefig', shape: 'quarter', unit, r });
+  const cfSeg = (r, unit) => ({ type: 'circlefig', shape: 'segment', unit, r });
+  const cfLeaf = (r, unit) => ({ type: 'circlefig', shape: 'leaf', unit, r });
+  const cfRect = (W, H, r, semis, quarters, unit) => ({ type: 'circlefig', shape: 'rect', unit, W, H, r, semis, quarters });
+
+  /* a radius for a plain circle item: Paper 1 friendly in pool 1, wider in pool 2 */
+  function radius(p, big) {
+    if (p === '22/7') return 7 * (big ? ri(1, 5) : ri(1, 2));
+    return big ? pick([3, 4, 5, 6, 7, 8, 9, 11, 12, 15, 20]) : pick([3, 4, 5, 10]);
+  }
+
+  /* ---------- 1.1 circumference, MCQ (pool 1) ---------- */
+  function gCircumference() {
+    const p = pick(['22/7', '3.14']), mark = pick(['r', 'd']), r = radius(p, false), d = 2 * r, M = PI[p];
+    const key = M(d);
+    const dist = mark === 'r' ? [
+      [M(r), 'radius-for-diameter', 'That is π × radius. The circumference is π × diameter, and the diameter is 2 × ' + r + ' = ' + d + ' cm.'],
+      [M(r * r), 'area-for-circumference', 'π × r × r gives the area. The circumference is the distance round the circle: π × diameter.'],
+      [M(2 * d), 'diameter-for-radius', 'The radius was doubled twice. The diameter is 2 × ' + r + ' = ' + d + ' cm, then multiply by π once.'],
+      [M(r) + d, 'semicircle-perimeter', 'That is the perimeter of a semicircle: half the curved edge plus the diameter. A whole circle\'s edge is π × diameter.']
+    ] : [
+      [M(2 * d), 'diameter-for-radius', 'That is 2 × π × ' + d + '. The ' + d + ' cm is already the diameter, so the circumference is π × ' + d + '.'],
+      [M(r * r), 'area-for-circumference', 'π × r × r gives the area. The circumference is the distance round the circle: π × diameter.'],
+      [M(r), 'radius-for-diameter', 'That is π × radius. Use the whole diameter, ' + d + ' cm.'],
+      [M(d * d), 'area-for-circumference', 'π × d × d is not a circle formula. The circumference is π × diameter.']
+    ];
+    const out = mcq('What is the circumference of the circle? ' + take(p), key, 'cm', dist,
+      'Circumference = π × diameter. The diameter is ' + d + ' cm, so the circumference is ' + p + ' × ' + d + ' = ' + fmt(key) + ' cm.');
+    return out ? fig(out, cfCircle(r, mark, 'cm')) : gCircumference();
+  }
+
+  /* ---------- 1.1 area, MCQ (pool 1) ---------- */
+  function gCircleArea() {
+    const p = pick(['22/7', '3.14']), mark = pick(['r', 'd']), M = PI[p];
+    const r = p === '22/7' ? 7 * ri(1, 2) : radius(p, false), d = 2 * r;
+    const key = M(r * r);
+    const dist = [
+      [M(d * d), 'diameter-for-radius', 'That uses the diameter twice. Area = π × radius × radius, and the radius is ' + r + ' cm.'],
+      [M(d), 'circumference-for-area', 'π × diameter is the circumference, the distance round. The area is π × r × r.'],
+      [M(r), 'no-square', 'Multiply by the radius TWICE: π × ' + r + ' × ' + r + '.'],
+      [M(2 * r * r), 'doubled', 'Area = π × r × r. There is no extra × 2 in the area formula.']
+    ];
+    const out = mcq('What is the area of the circle? ' + take(p), key, 'cm²', dist,
+      'The radius is ' + r + ' cm. Area = π × r × r = ' + p + ' × ' + r + ' × ' + r + ' = ' + fmt(key) + ' cm².');
+    return out ? fig(out, cfCircle(r, mark, 'cm')) : gCircleArea();
+  }
+
+  /* ---------- 1.2 semicircle area, typed (pool 1) ---------- */
+  function gSemiArea() {
+    const U = pick(['cm', 'm']);
+    const p = pick(['22/7', '3.14']), M = PI[p];
+    const r = p === '22/7' ? 7 * ri(1, 5) : ri(2, 12);
+    const mark = pick(['r', 'd']), d = 2 * r, ans = M(r * r) / 2;
+    return fig(typed('What is the area of the semicircle, in ' + U + '²? ' + take(p), ans, U + '²',
+      'The radius is ' + r + ' ' + U + '. A semicircle is half a circle: 1/2 × ' + p + ' × ' + r + ' × ' + r + ' = ' + fmt(ans) + ' ' + U + '².', p,
+      [[M(r * r), 'whole-circle'], [M(d * d) / 2, 'diameter-for-radius'], [M(r) / 2, 'no-square'], [M(r), 'circumference-for-area']]),
+      cfSemi(r, mark, U));
+  }
+
+  /* ---------- 1.1 circle, typed (pool 2) ---------- */
+  function gCircleTyped() {
+    const p = pick(['22/7', '3.14']), M = PI[p], r = radius(p, true), d = 2 * r, mark = pick(['r', 'd']);
+    if (Math.random() < 0.5) {
+      const ans = M(d);
+      return fig(typed('What is the circumference of the circle, in cm? ' + take(p), ans, 'cm',
+        'Circumference = π × diameter = ' + p + ' × ' + d + ' = ' + fmt(ans) + ' cm.', p,
+        [[M(r), 'radius-for-diameter'], [M(2 * d), 'diameter-for-radius'], [M(r * r), 'area-for-circumference']]),
+        cfCircle(r, mark, 'cm'));
+    }
+    const ans = M(r * r);
+    return fig(typed('What is the area of the circle, in cm²? ' + take(p), ans, 'cm²',
+      'Area = π × r × r = ' + p + ' × ' + r + ' × ' + r + ' = ' + fmt(ans) + ' cm².', p,
+      [[M(d * d), 'diameter-for-radius'], [M(d), 'circumference-for-area'], [M(r), 'no-square']]),
+      cfCircle(r, mark, 'cm'));
+  }
+
+  /* ---------- 1.2 semicircle perimeter, typed (pool 2) ---------- */
+  function gSemiPerimeter() {
+    const p = pick(['22/7', '3.14']), M = PI[p];
+    const r = p === '22/7' ? 7 * ri(1, 5) : ri(2, 12), d = 2 * r, mark = pick(['r', 'd']);
+    const arc = M(r), ans = arc + d;
+    return fig(typed('What is the perimeter of the semicircle, in cm? ' + take(p), ans, 'cm',
+      'The curved edge is half the circumference: 1/2 × ' + p + ' × ' + d + ' = ' + fmt(arc) + ' cm. The perimeter also includes the straight edge, the diameter ' +
+      d + ' cm: ' + fmt(arc) + ' + ' + d + ' = ' + fmt(ans) + ' cm.', p,
+      [[arc, 'forgot-diameter'], [arc + r, 'radius-for-diameter'], [M(d) + d, 'whole-circumference']]),
+      cfSemi(r, mark, 'cm'));
+  }
+
+  /* ---------- 1.2 quarter circle perimeter, typed (pool 2) ---------- */
+  function gQuarterPerimeter() {
+    const p = pick(['22/7', '3.14']), M = PI[p];
+    const r = p === '22/7' ? 7 * ri(1, 6) : ri(2, 20);
+    const arc = M(2 * r) / 4, ans = arc + 2 * r;
+    return fig(typed('What is the perimeter of the quarter circle, in cm? ' + take(p), ans, 'cm',
+      'The curved edge is a quarter of the circumference: 1/4 × ' + p + ' × ' + (2 * r) + ' = ' + fmt(arc) + ' cm. Add the two straight edges, each ' + r +
+      ' cm: ' + fmt(arc) + ' + ' + r + ' + ' + r + ' = ' + fmt(ans) + ' cm.', p,
+      [[arc, 'forgot-radii'], [arc + r, 'one-radius'], [M(2 * r) + 2 * r, 'whole-circumference'], [M(2 * r) / 2 + 2 * r, 'half-for-quarter']]),
+      cfQuarter(r, 'cm'));
+  }
+
+  /* ---------- 1.2 quarter circle area, typed (pool 2) ---------- */
+  function gQuarterArea() {
+    const U = pick(['cm', 'm']);
+    const p = pick(['22/7', '3.14']), M = PI[p];
+    const r = p === '22/7' ? 14 * ri(1, 3) : 2 * ri(1, 10);
+    const ans = M(r * r) / 4;
+    return fig(typed('What is the area of the quarter circle, in ' + U + '²? ' + take(p), ans, U + '²',
+      'A quarter circle is 1/4 of a circle: 1/4 × ' + p + ' × ' + r + ' × ' + r + ' = ' + fmt(ans) + ' ' + U + '².', p,
+      [[M(r * r), 'whole-circle'], [M(r * r) / 2, 'half-for-quarter'], [M(2 * r) / 4, 'circumference-for-area']]),
+      cfQuarter(r, U));
+  }
+
+  /* ---------- 1.1 working backwards from the circumference, typed, no figure (pool 2) ---------- */
+  function gFromCircumference() {
+    const T = pick([['circular plate', 'cm'], ['round clock face', 'cm'], ['hula hoop', 'cm'], ['circular pond', 'm'], ['round flower bed', 'm']]);
+    const p = pick(['22/7', '3.14']), M = PI[p];
+    const d = p === '22/7' ? 14 * ri(1, 6) : pick([10, 20, 30, 40, 50, 60]);
+    const C = M(d), want = pick(['radius', 'diameter']), ans = want === 'radius' ? d / 2 : d;
+    const q = typed('The circumference of a ' + T[0] + ' is ' + fmt(C) + ' ' + T[1] + '. ' + take(p) + ' What is the ' + want +
+      ' of the ' + T[0] + ', in ' + T[1] + '?', ans, T[1],
+      'Circumference = π × diameter, so the diameter is ' + fmt(C) + ' ÷ ' + p + ' = ' + d + ' ' + T[1] + '.' +
+      (want === 'radius' ? ' The radius is half of it: ' + d + ' ÷ 2 = ' + (d / 2) + ' ' + T[1] + '.' : ''), p,
+      want === 'radius' ? [[d, 'radius-diameter-swap'], [d / 4, 'halved-twice']] : [[d / 2, 'radius-diameter-swap'], [2 * d, 'doubled-diameter']]);
+    return q;
+  }
+
+  /* ================= Paper 2: composite figures (pool 3, band 3) ================= */
+  const P2 = (q, steps) => { q.band = 3; q.exam = 'problem'; q.technique = 'Sketch and label'; q.steps = steps; return q; };
+
+  /* rectangle + a semicircle added on one side */
+  function gGardenSemi() {
+    const side = pick(['right', 'top']), D = 14 * ri(1, 2), other = ri(10, 30);
+    const W = side === 'right' ? other : D, H = side === 'right' ? D : other;
+    if (W === H) return gGardenSemi();
+    const who = pick(NAMES), M = PI['22/7'], arc = M(D) / 2, rr = D / 2;
+    const straight = side === 'right' ? [W, H, W] : [H, W, H], S = straight[0] + straight[1] + straight[2];
+    const f = cfRect(W, H, 0, [[side, 'out']], [], 'm');
+    if (Math.random() < 0.5) {
+      const ans = arc + S;
+      const q = typed('A garden is made up of a rectangle and a semicircle, as shown. ' + who + ' puts a fence along the whole edge of the garden. ' +
+        take('22/7') + ' How long is the fence, in m?', ans, 'm',
+        'Curved edge = 1/2 × 22/7 × ' + D + ' = ' + arc + ' m. Straight edges = ' + straight.join(' + ') + ' = ' + S + ' m. Fence = ' + arc + ' + ' + S + ' = ' + ans + ' m.', '22/7',
+        [[ans + D, 'counted-inside-line'], [M(D) + S, 'whole-circumference'], [S, 'forgot-part']]);
+      return fig(P2(q, [
+        'The curved edge is half the circumference of a circle with diameter ' + D + ' m.',
+        'Curved edge = 1/2 × 22/7 × ' + D + ' = ' + arc + ' m.',
+        'The dashed diameter is inside the garden, so only the other three sides count: ' + straight.join(' + ') + ' = ' + S + ' m.',
+        'Fence = ' + arc + ' + ' + S + ' = <b>' + ans + '</b> m.'
+      ]), f);
+    }
+    const R = W * H, Sm = M(rr * rr) / 2, ans = R + Sm;
+    const q = typed('A flower bed is made up of a rectangle and a semicircle, as shown. ' + who + ' covers the whole flower bed with soil. ' +
+      take('22/7') + ' What is the area of the flower bed, in m²?', ans, 'm²',
+      'Rectangle = ' + W + ' × ' + H + ' = ' + R + ' m². Semicircle = 1/2 × 22/7 × ' + rr + ' × ' + rr + ' = ' + Sm + ' m². Total = ' + ans + ' m².', '22/7',
+      [[R + 2 * Sm, 'whole-circle'], [R, 'forgot-part'], [R + M(D * D) / 2, 'diameter-for-radius']]);
+    return fig(P2(q, [
+      'Area of the rectangle = ' + W + ' × ' + H + ' = ' + R + ' m².',
+      'The semicircle has diameter ' + D + ' m, so its radius is ' + D + ' ÷ 2 = ' + rr + ' m.',
+      'Area of the semicircle = 1/2 × 22/7 × ' + rr + ' × ' + rr + ' = ' + Sm + ' m².',
+      'Total area = ' + R + ' + ' + Sm + ' = <b>' + ans + '</b> m².'
+    ]), f);
+  }
+
+  /* running track: a rectangle with a semicircle added at each end */
+  function gTrack() {
+    const per = Math.random() < 0.5, p = Math.random() < 0.6 ? '22/7' : '3.14', M = PI[p];
+    const H = p === '22/7' ? 14 * ri(3, 5) : (per ? pick([50, 100]) : pick([20, 40, 60]));
+    const W = 10 * ri(8, 12);
+    if (W <= H) return gTrack();
+    const f = cfRect(W, H, 0, [['left', 'out'], ['right', 'out']], [], 'm');
+    const ctx = per ? pick(['A running track', 'A jogging path']) : pick(['A school field', 'A lawn']);
+    if (per) {
+      const C = M(H), ans = C + 2 * W;
+      const q = typed(ctx + ' is made up of a rectangle with a semicircle at each end, as shown. ' + pick(NAMES) + ' runs once round its edge. ' +
+        take(p) + ' How far does ' + 'the runner go, in m?', ans, 'm',
+        'The two semicircles make one circle: ' + p + ' × ' + H + ' = ' + fmt(C) + ' m. Add the two straight sides: ' + fmt(C) + ' + ' + W + ' + ' + W + ' = ' + ans + ' m.', p,
+        [[ans + 2 * H, 'counted-inside-line'], [2 * C + 2 * W, 'whole-circumference'], [2 * W, 'forgot-part']]);
+      return fig(P2(q, [
+        'The two semicircles at the ends together make one whole circle of diameter ' + H + ' m.',
+        'Curved edges = ' + p + ' × ' + H + ' = ' + fmt(C) + ' m.',
+        'The straight edges are the top and bottom: ' + W + ' + ' + W + ' = ' + (2 * W) + ' m.',
+        'Distance = ' + fmt(C) + ' + ' + (2 * W) + ' = <b>' + ans + '</b> m.'
+      ]), f);
+    }
+    const rr = H / 2, R = W * H, Ci = M(rr * rr), ans = R + Ci;
+    const q = typed(ctx + ' is made up of a rectangle with a semicircle at each end, as shown. The whole of it is covered with grass. ' +
+      take(p) + ' What is the area covered with grass, in m²?', ans, 'm²',
+      'Rectangle = ' + W + ' × ' + H + ' = ' + R + ' m². The two semicircles make a circle of radius ' + rr + ' m: ' + p + ' × ' + rr + ' × ' + rr + ' = ' + fmt(Ci) +
+      ' m². Total = ' + ans + ' m².', p,
+      [[R + 2 * Ci, 'whole-circle'], [R, 'forgot-part'], [R + M(H * H), 'diameter-for-radius']]);
+    return fig(P2(q, [
+      'Area of the rectangle = ' + W + ' × ' + H + ' = ' + R + ' m².',
+      'The two semicircles make one circle of radius ' + H + ' ÷ 2 = ' + rr + ' m.',
+      'Area of the circle = ' + (p === '22/7' ? '22/7 × ' + rr + ' × ' + rr : rr + ' × ' + rr + ' × 3.14') + ' = ' + fmt(Ci) + ' m².',
+      'Total area = ' + R + ' + ' + fmt(Ci) + ' = <b>' + ans + '</b> m².'
+    ]), f);
+  }
+
+  /* a quarter circle cut from one corner of a square or rectangle card */
+  function gCornerCut() {
+    const corner = pick(['tl', 'tr', 'br', 'bl']), area = Math.random() < 0.5, square = Math.random() < 0.5;
+    let p = '22/7', W, H, r;
+    if (square) {
+      if (area && Math.random() < 0.4) { p = '3.14'; W = pick([20, 40]); }
+      else W = 14 * ri(1, 2);
+      H = W; r = W;
+    } else {
+      r = area ? 14 : pick([7, 14]);
+      W = r + ri(3, 16); H = r + ri(3, 16);
+      if (W === H) return gCornerCut();
+    }
+    const M = PI[p], f = cfRect(W, H, r, [], [[corner, 'in']], 'cm');
+    const card = square ? 'a square card' : 'a rectangular card', who = pick(NAMES);
+    if (area) {
+      const R = W * H, Q = M(r * r) / 4, ans = R - Q;
+      const q = typed('The figure shows ' + card + ' with a quarter circle cut away from one corner. The quarter circle is centred on that corner. ' +
+        take(p) + ' What is the area of the shaded part, in cm²?', ans, 'cm²',
+        'Card = ' + W + ' × ' + H + ' = ' + R + ' cm². Quarter circle = 1/4 × ' + p + ' × ' + r + ' × ' + r + ' = ' + fmt(Q) + ' cm². Shaded part = ' + R + ' − ' + fmt(Q) + ' = ' + ans + ' cm².', p,
+        [[R + Q, 'added-cut-part'], [Q, 'forgot-part'], [R - M(r * r), 'whole-circle']]);
+      return fig(P2(q, [
+        'Area of the card before the cut = ' + W + ' × ' + H + ' = ' + R + ' cm².',
+        'The piece cut away is a quarter of a circle with radius ' + r + ' cm.',
+        'Area of the quarter circle = ' + (p === '22/7' ? '1/4 × 22/7 × ' + r + ' × ' + r : r + ' × ' + r + ' × 3.14 ÷ 4') + ' = ' + fmt(Q) + ' cm².',
+        'Shaded part = ' + R + ' − ' + fmt(Q) + ' = <b>' + ans + '</b> cm².'
+      ]), f);
+    }
+    const arc = M(2 * r) / 4, a = W - r, b = H - r, ans = arc + W + H + a + b;
+    const q = typed('The figure shows ' + card + ' with a quarter circle cut away from one corner. The quarter circle is centred on that corner. ' + who + ' sticks ribbon along the whole edge of the shaded part. ' +
+      take(p) + ' How much ribbon is needed, in cm?', ans, 'cm',
+      'Curved edge = 1/4 × 2 × 22/7 × ' + r + ' = ' + arc + ' cm. Edge = ' + arc + ' + ' + W + ' + ' + H + (square ? '' : ' + ' + a + ' + ' + b) + ' = ' + ans + ' cm.', p,
+      [[ans - arc, 'forgot-part'], [ans + 2 * r, 'counted-inside-line'], [arc + W + H, 'forgot-part']]);
+    return fig(P2(q, [
+      'The curved edge is a quarter of the circumference of a circle with radius ' + r + ' cm.',
+      'Curved edge = 1/4 × 2 × 22/7 × ' + r + ' = ' + arc + ' cm.',
+      square ? 'The two uncut sides are ' + W + ' cm and ' + H + ' cm; the dashed lines are not edges.'
+        : 'The two cut sides are now ' + W + ' − ' + r + ' = ' + a + ' cm and ' + H + ' − ' + r + ' = ' + b + ' cm.',
+      'Ribbon = ' + arc + ' + ' + W + ' + ' + H + (square ? '' : ' + ' + a + ' + ' + b) + ' = <b>' + ans + '</b> cm.'
+    ]), f);
+  }
+
+  /* a semicircle cut out of one side of a rectangular board */
+  function gSemiCut() {
+    const side = pick(['top', 'right']), area = Math.random() < 0.5;
+    const D = area ? 14 * ri(1, 2) : 14 * ri(1, 3);
+    const other = D / 2 + ri(4, 14);
+    const W = side === 'top' ? D : other, H = side === 'top' ? other : D;
+    if (W === H) return gSemiCut();
+    const M = PI['22/7'], f = cfRect(W, H, 0, [[side, 'in']], [], 'cm'), who = pick(NAMES);
+    if (area) {
+      const R = W * H, rr = D / 2, Sm = M(rr * rr) / 2, ans = R - Sm;
+      const q = typed('A wooden board is a rectangle with a semicircle cut out of one side, as shown. ' + who + ' paints the top of the board. ' +
+        take('22/7') + ' What area does ' + who + ' paint, in cm²?', ans, 'cm²',
+        'Rectangle = ' + W + ' × ' + H + ' = ' + R + ' cm². Semicircle = 1/2 × 22/7 × ' + rr + ' × ' + rr + ' = ' + Sm + ' cm². Painted area = ' + R + ' − ' + Sm + ' = ' + ans + ' cm².', '22/7',
+        [[R + Sm, 'added-cut-part'], [R, 'forgot-part'], [R - 2 * Sm, 'whole-circle']]);
+      return fig(P2(q, [
+        'Area of the rectangle = ' + W + ' × ' + H + ' = ' + R + ' cm².',
+        'The semicircle cut out has diameter ' + D + ' cm, so its radius is ' + D + ' ÷ 2 = ' + rr + ' cm.',
+        'Area of the semicircle = 1/2 × 22/7 × ' + rr + ' × ' + rr + ' = ' + Sm + ' cm².',
+        'Painted area = ' + R + ' − ' + Sm + ' = <b>' + ans + '</b> cm².'
+      ]), f);
+    }
+    const arc = M(D) / 2, oth = side === 'top' ? [W, H, H] : [H, W, W], S = oth[0] + oth[1] + oth[2], ans = arc + S;
+    const q = typed('A wooden board is a rectangle with a semicircle cut out of one side, as shown. ' + who + ' glues a strip of tape along the whole edge of the board. ' +
+      take('22/7') + ' How long is the tape, in cm?', ans, 'cm',
+      'Curved edge = 1/2 × 22/7 × ' + D + ' = ' + arc + ' cm. Straight edges = ' + oth.join(' + ') + ' = ' + S + ' cm. Tape = ' + ans + ' cm.', '22/7',
+      [[ans + D, 'counted-inside-line'], [2 * (W + H), 'used-whole-rectangle'], [S, 'forgot-part']]);
+    return fig(P2(q, [
+      'The curved edge is half the circumference of a circle with diameter ' + D + ' cm.',
+      'Curved edge = 1/2 × 22/7 × ' + D + ' = ' + arc + ' cm.',
+      'The side with the cut has no straight edge left, so the straight edges are ' + oth.join(' + ') + ' = ' + S + ' cm.',
+      'Tape = ' + arc + ' + ' + S + ' = <b>' + ans + '</b> cm.'
+    ]), f);
+  }
+
+  /* a rectangle with a quarter circle added on one side */
+  function gFanShape() {
+    const corner = pick(['br', 'bl']), area = Math.random() < 0.5;
+    const r = area ? 14 * ri(1, 2) : 7 * ri(1, 4), H = r, W = ri(Math.max(8, r - 6), r + 18);
+    if (W === H) return gFanShape();
+    const M = PI['22/7'], f = cfRect(W, H, r, [], [[corner, 'out']], 'm');
+    if (area) {
+      const R = W * H, Q = M(r * r) / 4, ans = R + Q;
+      const q = typed('A piece of land is made up of a rectangle and a quarter circle, as shown. The whole piece of land is covered with tiles. ' +
+        take('22/7') + ' What is the area of the land, in m²?', ans, 'm²',
+        'Rectangle = ' + W + ' × ' + H + ' = ' + R + ' m². Quarter circle = 1/4 × 22/7 × ' + r + ' × ' + r + ' = ' + Q + ' m². Total = ' + ans + ' m².', '22/7',
+        [[R + M(r * r), 'whole-circle'], [R, 'forgot-part'], [R + M(r * r) / 2, 'half-for-quarter']]);
+      return fig(P2(q, [
+        'Area of the rectangle = ' + W + ' × ' + H + ' = ' + R + ' m².',
+        'The quarter circle has radius ' + r + ' m.',
+        'Area of the quarter circle = 1/4 × 22/7 × ' + r + ' × ' + r + ' = ' + Q + ' m².',
+        'Total area = ' + R + ' + ' + Q + ' = <b>' + ans + '</b> m².'
+      ]), f);
+    }
+    const arc = M(2 * r) / 4, B = W + r, ans = H + W + arc + B;
+    const who = pick(NAMES);
+    const q = typed('A piece of land is made up of a rectangle and a quarter circle, as shown. ' + who + ' walks once round the edge of the land. ' +
+      take('22/7') + ' How far does ' + (SHE.has(who) ? 'she' : 'he') + ' walk, in m?', ans, 'm',
+      'Curved edge = 1/4 × 2 × 22/7 × ' + r + ' = ' + arc + ' m. Bottom edge = ' + W + ' + ' + r + ' = ' + B + ' m. Distance = ' + H + ' + ' + W + ' + ' + arc + ' + ' + B + ' = ' + ans + ' m.', '22/7',
+      [[ans + r, 'counted-inside-line'], [ans - r, 'forgot-part'], [H + W + M(2 * r) + B, 'whole-circumference']]);
+    return fig(P2(q, [
+      'The dashed radius is inside the land, so it is not part of the edge.',
+      'Curved edge = 1/4 × 2 × 22/7 × ' + r + ' = ' + arc + ' m.',
+      'The bottom edge runs under the rectangle and the quarter circle: ' + W + ' + ' + r + ' = ' + B + ' m.',
+      'Distance = ' + H + ' + ' + W + ' + ' + arc + ' + ' + B + ' = <b>' + ans + '</b> m.'
+    ]), f);
+  }
+
+  /* the segment: a quarter circle minus the right triangle on its two radii */
+  function gSegment() {
+    const U = pick(['cm', 'm']);
+    const p = Math.random() < 0.7 ? '22/7' : '3.14', M = PI[p];
+    const r = p === '22/7' ? 14 * ri(1, 5) : 20 * ri(1, 3);
+    const Q = M(r * r) / 4, Tr = r * r / 2, ans = Q - Tr;
+    const q = typed('The figure shows a quarter circle. A straight line joins the ends of its curved edge, making a right-angled triangle with the two radii. ' +
+      'The part between the straight line and the curved edge is shaded. ' + take(p) + ' What is the area of the shaded part, in ' + U + '²?', ans, U + '²',
+      'Quarter circle = 1/4 × ' + p + ' × ' + r + ' × ' + r + ' = ' + fmt(Q) + ' ' + U + '². Triangle = 1/2 × ' + r + ' × ' + r + ' = ' + Tr + ' ' + U + '². Shaded part = ' + fmt(Q) + ' − ' + Tr + ' = ' + ans + ' ' + U + '².', p,
+      [[Q, 'forgot-part'], [Tr, 'wrong-region'], [Q + Tr, 'added-cut-part'], [M(r * r) - Tr, 'whole-circle']]);
+    return fig(P2(q, [
+      'The shaded part is the quarter circle with the white right-angled triangle taken away.',
+      'Area of the quarter circle = ' + (p === '22/7' ? '1/4 × 22/7 × ' + r + ' × ' + r : r + ' × ' + r + ' × 3.14 ÷ 4') + ' = ' + fmt(Q) + ' ' + U + '².',
+      'The triangle has base ' + r + ' ' + U + ' and height ' + r + ' ' + U + ': 1/2 × ' + r + ' × ' + r + ' = ' + Tr + ' ' + U + '².',
+      'Shaded part = ' + fmt(Q) + ' − ' + Tr + ' = <b>' + ans + '</b> ' + U + '².'
+    ]), cfSeg(r, U));
+  }
+
+  /* the leaf: two quarter circles in a square, their overlap shaded */
+  function gLeaf() {
+    const U = pick(['cm', 'm']);
+    const area = Math.random() < 0.5;
+    const p = area && Math.random() < 0.4 ? '3.14' : '22/7', M = PI[p];
+    const a = p === '3.14' ? 20 * ri(1, 3) : 14 * ri(1, 5);
+    const stem0 = 'The figure shows a square. Two quarter circles are drawn inside it, each centred on a corner of the square, at opposite corners. ' +
+      'The part where they overlap is shaded. ' + take(p);
+    if (area) {
+      const Q = M(a * a) / 4, S = a * a, ans = 2 * Q - S;
+      const q = typed(stem0 + ' What is the area of the shaded part, in ' + U + '²?', ans, U + '²',
+        'Each quarter circle = ' + fmt(Q) + ' ' + U + '². Together they cover the square once and the shaded part twice, so the shaded part = ' + fmt(Q) + ' + ' + fmt(Q) + ' − ' + S + ' = ' + ans + ' ' + U + '².', p,
+        [[2 * Q, 'overlap-not-removed'], [S - Q, 'wrong-region'], [Q, 'forgot-part'], [2 * (S - Q), 'wrong-region']]);
+      return fig(P2(q, [
+        'Each quarter circle has radius ' + a + ' ' + U + ', the side of the square.',
+        'Area of one quarter circle = ' + (p === '22/7' ? '1/4 × 22/7 × ' + a + ' × ' + a : a + ' × ' + a + ' × 3.14 ÷ 4') + ' = ' + fmt(Q) + ' ' + U + '².',
+        'The two quarter circles cover the square once and the shaded part twice. Square = ' + a + ' × ' + a + ' = ' + S + ' ' + U + '².',
+        'Shaded part = ' + fmt(Q) + ' + ' + fmt(Q) + ' − ' + S + ' = <b>' + ans + '</b> ' + U + '².'
+      ]), cfLeaf(a, U));
+    }
+    const arc = M(2 * a) / 4, ans = 2 * arc;
+    const q = typed(stem0 + ' What is the perimeter of the shaded part, in ' + U + '?', ans, U,
+      'The shaded part has two curved edges, each a quarter of a circle of radius ' + a + ' ' + U + ': 1/4 × 2 × 22/7 × ' + a + ' = ' + arc + ' ' + U + '. Perimeter = ' + arc + ' + ' + arc + ' = ' + ans + ' ' + U + '.', p,
+      [[arc, 'forgot-part'], [ans + 2 * a, 'added-square-sides'], [2 * arc + 4 * a, 'added-square-sides'], [4 * arc, 'whole-circumference']]);
+    return fig(P2(q, [
+      'The shaded part has no straight edges: its edge is two curved edges.',
+      'Each curved edge is a quarter of a circle with radius ' + a + ' ' + U + '.',
+      'One curved edge = 1/4 × 2 × 22/7 × ' + a + ' = ' + arc + ' ' + U + '.',
+      'Perimeter = ' + arc + ' + ' + arc + ' = <b>' + ans + '</b> ' + U + '.'
+    ]), cfLeaf(a, U));
+  }
+
+  MQI.registerTopic({
+    id: 'p6circles', level: 'P6', strand: 'Measurement and Geometry',
+    moeSubTopic: 'Area and Circumference of Circle: area and circumference of circle; finding the area and perimeter of semicircle, quarter circle; finding the area and perimeter of composite figures made up of square, rectangle, triangle, semicircle and quarter circle',
+    label: 'Circle Cove', short: 'Circles', e: '⭕',
+    skills: {
+      circ:      { label: 'Circumference', tip: 'Circumference = π × diameter. Check first: is the number on the picture the radius or the diameter?' },
+      area:      { label: 'Area of a circle', tip: 'Area = π × radius × radius. Halve a diameter before you use it.' },
+      semi:      { label: 'Semicircles', tip: 'Half the circle for the curved edge, then ADD the straight diameter for the perimeter.' },
+      quarter:   { label: 'Quarter circles', tip: 'A quarter circle has one curved edge and two straight radii. Count all three for the perimeter.' },
+      backwards: { label: 'Working backwards', tip: 'Circumference ÷ π gives the diameter; halve it for the radius.' },
+      composite: { label: 'Composite figures', tip: 'Trace the edge with a finger and list each piece; dashed lines inside the figure are not edges.' }
+    },
+    misconceptions: {
+      'radius-for-diameter':    'Uses the radius where the diameter is needed.',
+      'diameter-for-radius':    'Uses the diameter where the radius is needed.',
+      'area-for-circumference': 'Works out an area when the question asks for a length round the edge.',
+      'circumference-for-area': 'Works out the circumference when the question asks for the area.',
+      'no-square':              'Multiplies π by the radius once instead of by radius × radius.',
+      'doubled':                'Puts an extra × 2 into the area formula.',
+      'semicircle-perimeter':   'Gives the perimeter of a semicircle (half the curved edge plus the diameter) for a whole circle.',
+      'halved-twice':           'Halves the diameter twice, giving half the radius.',
+      'doubled-diameter':       'Doubles the diameter, as if it were the radius.',
+      'wrong-region':           'Finds the area of an unshaded piece instead of the shaded part.',
+      'overlap-not-removed':    'Adds the two quarter circles but does not take away the square, so the overlap is counted twice.',
+      'forgot-diameter':        'Gives only the curved edge of a semicircle; its perimeter also includes the straight diameter.',
+      'forgot-radii':           'Gives only the curved edge of a quarter circle; its perimeter also includes the two straight radii.',
+      'one-radius':             'Adds only one of the quarter circle\'s two straight edges.',
+      'whole-circle':           'Uses the whole circle instead of the half or quarter in the figure.',
+      'half-for-quarter':       'Halves the circle when the figure has only a quarter of it.',
+      'whole-circumference':    'Uses the whole circumference for a curved edge that is only part of a circle.',
+      'counted-inside-line':    'Adds a line inside the figure (a dashed diameter or radius) to its perimeter.',
+      'added-square-sides':     'Adds sides of the square, which are not edges of the shaded part.',
+      'forgot-part':            'Leaves out one of the pieces that make up the figure.',
+      'added-cut-part':         'Adds the cut-out piece instead of taking it away.',
+      'used-whole-rectangle':   'Uses the rectangle\'s full sides after part of them was cut away.',
+      'radius-diameter-swap':   'Gives the radius when asked for the diameter, or the other way round.'
+    },
+    pools: {
+      1: [[gCircumference, 'circ'], [gCircleArea, 'area'], [gSemiArea, 'semi']],
+      2: [[gCircleTyped, 'circ'], [gSemiPerimeter, 'semi'], [gQuarterPerimeter, 'quarter'], [gQuarterArea, 'quarter'], [gFromCircumference, 'backwards']],
+      3: [[gGardenSemi, 'composite'], [gTrack, 'circ'], [gCornerCut, 'quarter'], [gSemiCut, 'semi'], [gFanShape, 'composite'], [gSegment, 'quarter'], [gLeaf, 'quarter']]
+    }
+  });
+})();
+
+
+/* ===== js/topics/p6-volume.js ===== */
+"use strict";
+/* Math Quest Island topic: p6volume (P6). Self-contained. Typed + MC.
+ * Authoring rules + registration shape: js/topics/README.md
+ * Scope (MOE 2021 Primary Mathematics Syllabus, updated Oct 2025, p.43, PRIMARY SIX,
+ * MEASUREMENT AND GEOMETRY, SUB-STRAND: AREA AND VOLUME, 2. Volume of Cube and Cuboid):
+ *   2.1 finding one dimension of a cuboid given its volume and the other dimensions
+ *   2.2 finding the length of one edge of a cube given its volume
+ *   2.3 finding the height of a cuboid given its volume and base area
+ *   2.4 finding the area of a face of a cuboid given its volume and one dimension
+ *   2.5 use of √ and ∛ (perfect squares and perfect cubes only)
+ * The P5 facts (volume = l x b x h, liquid in a tank, 1 ℓ = 1000 cm³) live in
+ * js/topics/p5-volume.js and are used here as given tools, never as the item.
+ * NO FIGURE: every solid and tank is described in words; every needed length is printed.
+ * Every answer is a positive whole number. Numbers are written without thousands
+ * separators so that the coaching check re-reads every equation in the steps.
+ *
+ * P5-P6 mirror house pattern (js/topics/p6-ratio.js): q.syl = 'P6' on every draw; MCQ
+ * distractors carry q.miscon + q.optionFeedback; typed items carry q.slips; tags live in
+ * the topic's `misconceptions` map. Pool 3 is PSLE Paper 2 shape: band 3, worded,
+ * q.exam = 'problem', coached (technique + steps).
+ * UNITS: a litre/cm³ answer whose stem prints "1 ml = 1 cm³" would declare the array
+ * pair, as p5-volume.js does; the stems here print "1 ℓ = 1000 cm³", so every answer
+ * has exactly one unit (cm, cm², cm³ or ℓ) and declares it.
+ */
+(function () {
+  const G = MQI.gen;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishTyped = G.finishTyped;
+
+  const NAMES = ['Wei Jie', 'Aisyah', 'Kavitha', 'Jun Hao', 'Siti', 'Priya', 'Daryl', 'Xin Yi',
+                 'Farhan', 'Nurul', 'Ravi', 'Mei Ling'];
+  const P6 = q => (q.syl = 'P6', q);
+  const isWhole = v => Number.isInteger(v) && v > 0;
+
+  /* MCQ with tagged distractors. dist = [[value, tag, coaching], ...]; the first three
+     that are whole, positive, distinct and differ from the key are kept. null = redraw. */
+  function mcq(stem, key, unit, dist, explain) {
+    const u = !unit ? '' : (unit === '°' || unit === '%' ? unit : ' ' + unit);
+    const seen = [key], keep = [];
+    for (const d of dist) {
+      if (keep.length >= 3) break;
+      if (!isWhole(d[0]) || seen.indexOf(d[0]) !== -1) continue;
+      seen.push(d[0]); keep.push(d);
+    }
+    if (keep.length < 3) return null;
+    const rows = shuffle([[key, null, null]].concat(keep));
+    const q = { q: stem, extra: '', choices: rows.map(r => r[0] + u), correct: 0, explain, answerText: key + u };
+    q.correct = rows.findIndex(r => r[1] === null);
+    q.miscon = {}; q.optionFeedback = {};
+    rows.forEach((r, i) => { if (r[1]) { q.miscon[i] = r[1]; q.optionFeedback[i] = r[2]; } });
+    return P6(q);
+  }
+  function slips(q, list) {
+    const s = {};
+    for (const [v, tag] of list) if (isWhole(v) && v !== q.answer && !(String(v) in s)) s[String(v)] = tag;
+    q.slips = s;
+    return P6(q);
+  }
+  const P2 = (q, technique, steps) => (q.band = 3, q.exam = 'problem', q.technique = technique, q.steps = steps, q);
+  const cubeCheck = c => 'Check it: ' + c + ' × ' + c + ' × ' + c + ' = ' + (c * c * c) + '.';
+
+  /* ---------------- pool 1 ---------------- */
+
+  /* 2.2 the edge of a cube from its volume (MCQ, cm) */
+  function gCubeEdge() {
+    const s = ri(2, 12), v = s * s * s;
+    const what = pick(['A cube', 'A cube-shaped box', 'A solid metal cube', 'A cube of wood']);
+    const stem = what + ' has a volume of ' + v + ' cm³. What is the length of one edge of the cube?';
+    const out = mcq(stem, s, 'cm', [
+      [v / 3, 'divide-by-3', 'The edge is not the volume ÷ 3. Look for the number that, multiplied by itself three times, makes ' + v + '.'],
+      [s * s, 'face-area', cubeCheck(s * s) + ' The edge times itself three times must make ' + v + '.'],
+      [s + 1, 'root-not-checked', cubeCheck(s + 1) + ' That is more than ' + v + ', so try a smaller number.'],
+      [s - 1, 'root-not-checked', cubeCheck(s - 1) + ' That is less than ' + v + ', so try a bigger number.'],
+      [s + 2, 'root-not-checked', cubeCheck(s + 2) + ' That is more than ' + v + ', so try a smaller number.']
+    ], 'Volume of a cube = edge × edge × edge. ' + s + ' × ' + s + ' × ' + s + ' = ' + v + ', so the edge is ∛' + v + ' = ' + s + ' cm.');
+    return out || gCubeEdge();
+  }
+
+  /* 2.1 one dimension of a cuboid from its volume and the other two (MCQ, cm) */
+  function gMissingDim() {
+    const l = ri(5, 15), b = ri(2, 9), h = ri(2, 12);
+    if (l === b || b === h || l === h) return gMissingDim();
+    const V = l * b * h;
+    const which = pick(['length', 'breadth', 'height']);
+    const dims = { length: l, breadth: b, height: h };
+    const given = ['length', 'breadth', 'height'].filter(d => d !== which);
+    const k1 = dims[given[0]], k2 = dims[given[1]], key = dims[which];
+    const stem = 'A cuboid has a volume of ' + V + ' cm³. Its ' + given[0] + ' is ' + k1 + ' cm and its ' + given[1] + ' is ' + k2 +
+      ' cm. What is its ' + which + '?';
+    const out = mcq(stem, key, 'cm', [
+      [V / k1, 'divided-once', V + ' ÷ ' + k1 + ' is the area of a face, not an edge. Divide by ' + k2 + ' as well.'],
+      [k1 * k2, 'stopped-at-area', k1 + ' × ' + k2 + ' = ' + (k1 * k2) + ' is the area of a face. Now divide the volume by it.'],
+      [V - k1 * k2, 'subtract-instead', 'Volume is length × breadth × height, so undo the multiplying by dividing, not by taking away.'],
+      [V / (k1 + k2), 'added-dims', 'Multiply the two given edges, then divide the volume by that product.'],
+      [V - k1 - k2, 'subtract-instead', 'Volume is length × breadth × height, so undo the multiplying by dividing, not by taking away.']
+    ], 'Volume = length × breadth × height. ' + k1 + ' × ' + k2 + ' = ' + (k1 * k2) + ', so the ' + which + ' is ' + V + ' ÷ ' + (k1 * k2) + ' = ' + key + ' cm.');
+    return out || gMissingDim();
+  }
+
+  /* 2.5 square root and cube root of a perfect square / cube (MCQ, no unit) */
+  function gRoot() {
+    if (Math.random() < 0.5) {
+      const k = ri(4, 15), n = k * k;
+      const out = mcq('What is the value of √' + n + '?', k, '', [
+        [n / 2, 'halved', '√ does not mean ÷ 2. Look for the number that, multiplied by itself, makes ' + n + '.'],
+        [k + 1, 'root-not-checked', 'Check it: ' + (k + 1) + ' × ' + (k + 1) + ' = ' + ((k + 1) * (k + 1)) + ', which is more than ' + n + '.'],
+        [k - 1, 'root-not-checked', 'Check it: ' + (k - 1) + ' × ' + (k - 1) + ' = ' + ((k - 1) * (k - 1)) + ', which is less than ' + n + '.'],
+        [2 * k, 'doubled', 'Check it: ' + (2 * k) + ' × ' + (2 * k) + ' = ' + (4 * n) + ', not ' + n + '.']
+      ], k + ' × ' + k + ' = ' + n + ', so √' + n + ' = ' + k + '.');
+      return out || gRoot();
+    }
+    const k = ri(2, 10), n = k * k * k, sq = Math.round(Math.sqrt(n));
+    const out = mcq('What is the value of ∛' + n + '?', k, '', [
+      [n / 3, 'divide-by-3', '∛ does not mean ÷ 3. Look for the number that, multiplied by itself three times, makes ' + n + '.'],
+      [sq * sq === n ? sq : 0, 'square-not-cube', 'Check it: ' + sq + ' × ' + sq + ' = ' + n + ', but ∛ needs THREE equal factors.'],
+      [k + 1, 'root-not-checked', cubeCheck(k + 1) + ' That is more than ' + n + '.'],
+      [k - 1, 'root-not-checked', cubeCheck(k - 1) + ' That is less than ' + n + '.'],
+      [k + 2, 'root-not-checked', cubeCheck(k + 2) + ' That is more than ' + n + '.']
+    ], k + ' × ' + k + ' × ' + k + ' = ' + n + ', so ∛' + n + ' = ' + k + '.');
+    return out || gRoot();
+  }
+
+  /* ---------------- pool 2 ---------------- */
+
+  /* 2.3 the height of a cuboid from its volume and base area (typed, cm) */
+  function gHeightFromBase() {
+    const A = ri(3, 40) * 5, h = ri(3, 25), V = A * h;
+    if (A === h) return gHeightFromBase();
+    const stem = Math.random() < 0.5
+      ? 'A cuboid has a volume of ' + V + ' cm³. The area of its base is ' + A + ' cm². What is its height, in cm?'
+      : 'A rectangular container is filled to the brim with ' + V + ' cm³ of sand. The area of its base is ' + A + ' cm². How tall is the container, in cm?';
+    const q = finishTyped(stem, h, 'Volume = base area × height, so height = ' + V + ' ÷ ' + A + ' = ' + h + ' cm.', 'cm');
+    return slips(q, [[V - A, 'subtract-instead'], [A, 'answered-given']]);
+  }
+
+  /* 2.4 the area of a face from the volume and one dimension (typed, cm²) */
+  function gFaceArea() {
+    const l = ri(4, 20), b = ri(3, 12), h = ri(3, 15);
+    if (l === b || b === h || l === h) return gFaceArea();
+    const V = l * b * h, A = l * b;
+    const stem = Math.random() < 0.5
+      ? 'A cuboid has a volume of ' + V + ' cm³ and a height of ' + h + ' cm. What is the area of its base, in cm²?'
+      : 'A block of ice in the shape of a cuboid has a volume of ' + V + ' cm³. It is ' + h + ' cm tall. What is the area of its top face, in cm²?';
+    const q = finishTyped(stem, A, 'Volume = base area × height, so the base area is ' + V + ' ÷ ' + h + ' = ' + A +
+      ' cm². The top face is the same size as the base.', 'cm²');
+    return slips(q, [[V - h, 'subtract-instead'], [V * h, 'multiplied-instead'], [h * h, 'squared-height']]);
+  }
+
+  /* 2.5 + 2.2: from the area of one face of a cube to its volume, and back; and the side of a
+     square base from a cuboid's volume and height (V ÷ h, then √) (typed). Edges 2, 3 and 6
+     are left out of the cube modes: there the ×3, ÷3 and ×6 routes land on the key too. */
+  function gCubeFace() {
+    const mode = pick(['toVolume', 'toFace', 'squareBase']);
+    if (mode === 'squareBase') {
+      const s = ri(3, 12), h = ri(2, 20), A = s * s, V = A * h;
+      if (h === s || A === h) return gCubeFace();
+      const q = finishTyped('A cuboid has a square base. Its volume is ' + V + ' cm³ and its height is ' + h +
+        ' cm. What is the length of one side of its base, in cm?', s,
+        'Base area = ' + V + ' ÷ ' + h + ' = ' + A + ' cm². The base is a square, so its side is √' + A + ' = ' + s + ' cm.', 'cm');
+      return slips(q, [[A, 'stopped-at-square'], [A / 2, 'halved'], [V - h, 'subtract-instead']]);
+    }
+    const s = pick([4, 5, 7, 8, 9, 10, 11, 12]), A = s * s, v = A * s;
+    if (mode === 'toVolume') {
+      const q = finishTyped('The area of one face of a cube is ' + A + ' cm². What is the volume of the cube, in cm³?', v,
+        'Each face is a square, so the edge is √' + A + ' = ' + s + ' cm. Volume = ' + s + ' × ' + s + ' × ' + s + ' = ' + v + ' cm³.', 'cm³');
+      return slips(q, [[6 * A, 'surface-area'], [A * A, 'squared-area'], [3 * A, 'tripled']]);
+    }
+    const q = finishTyped('A cube has a volume of ' + v + ' cm³. What is the area of one of its faces, in cm²?', A,
+      'The edge is ∛' + v + ' = ' + s + ' cm, because ' + s + ' × ' + s + ' × ' + s + ' = ' + v + '. One face is ' + s + ' × ' + s + ' = ' + A + ' cm².', 'cm²');
+    return slips(q, [[v / 6, 'divide-by-6'], [s, 'answered-edge'], [v / 3, 'divide-by-3']]);
+  }
+
+  /* 2.1 with litres: the height of a tank from its capacity (typed, cm) */
+  function gTankHeight() {
+    for (let t = 0; t < 400; t++) {
+      const l = pick([20, 25, 30, 40, 50, 60]), b = pick([10, 20, 25, 30, 40]), H = ri(10, 60);
+      if ((l * b * H) % 1000 || l * b === 1000) continue;   /* base 1000 cm²: the height would equal the litres */
+      const N = l * b * H / 1000;
+      if (N < 2 || N > 120) continue;
+      const stem = 'A rectangular tank with a base of ' + l + ' cm by ' + b + ' cm holds exactly ' + N +
+        ' ℓ of water when it is full. What is the height of the tank, in cm? (1 ℓ = 1000 cm³)';
+      const q = finishTyped(stem, H, N + ' ℓ = ' + (N * 1000) + ' cm³. Base area = ' + l + ' × ' + b + ' = ' + (l * b) +
+        ' cm². Height = ' + (N * 1000) + ' ÷ ' + (l * b) + ' = ' + H + ' cm.', 'cm');
+      return slips(q, [[N * 1000 / l, 'divided-once'], [N * 1000 / b, 'divided-once'], [N * 1000 - l * b, 'subtract-instead']]);
+    }
+    return gHeightFromBase();
+  }
+
+  /* ---------------- pool 3: PSLE Paper 2 tanks ---------------- */
+
+  /* All the water in Tank A is poured into Tank B: the new height (typed, cm) */
+  function gPourAll() {
+    for (let t = 0; t < 400; t++) {
+      const a1 = pick([20, 25, 30, 40, 50]), a2 = pick([10, 15, 20, 30, 40]), d1 = ri(6, 40);
+      const b1 = pick([20, 25, 30, 40, 50, 60]), b2 = pick([10, 15, 20, 25, 30]);
+      if (a1 * a2 === b1 * b2) continue;
+      const V = a1 * a2 * d1, B = b1 * b2;
+      if (V % B) continue;
+      const h = V / B;
+      if (h < 3 || h === d1 || h > 60) continue;
+      const stem = 'Tank A is a rectangular tank with a base of ' + a1 + ' cm by ' + a2 + ' cm. It contains water to a height of ' + d1 +
+        ' cm. All the water in Tank A is poured into an empty rectangular Tank B with a base of ' + b1 + ' cm by ' + b2 +
+        ' cm. No water overflows. What is the height of the water in Tank B, in cm?';
+      const q = finishTyped(stem, h, 'Water in Tank A = ' + a1 + ' × ' + a2 + ' × ' + d1 + ' = ' + V + ' cm³. The same water fills Tank B, whose base is ' +
+        b1 + ' × ' + b2 + ' = ' + B + ' cm². Height = ' + V + ' ÷ ' + B + ' = ' + h + ' cm.', 'cm');
+      P2(q, 'Before and after', [
+        'The amount of water does not change when it is poured from one tank into the other.',
+        'Water in Tank A: ' + a1 + ' × ' + a2 + ' × ' + d1 + ' = ' + V + ' cm³.',
+        'Base area of Tank B: ' + b1 + ' × ' + b2 + ' = ' + B + ' cm².',
+        'Height of the water in Tank B: ' + V + ' ÷ ' + B + ' = <b>' + h + '</b> cm.'
+      ]);
+      return slips(q, [[d1, 'height-unchanged'], [V / b1, 'divided-once'], [V / b2, 'divided-once'], [V, 'answered-volume']]);
+    }
+    return gCubeSinks();
+  }
+
+  /* Water is poured from Tank A into Tank B until B reaches a depth: height left in A */
+  function gPourUntil() {
+    const who = pick(NAMES);
+    for (let t = 0; t < 600; t++) {
+      const a1 = pick([30, 40, 50, 60]), a2 = pick([20, 25, 30, 40]), dA = ri(20, 50);
+      const b1 = pick([20, 25, 30, 40]), b2 = pick([10, 15, 20, 25]), dB = ri(5, 30);
+      const A = a1 * a2, B = b1 * b2, moved = B * dB;
+      if (moved % A) continue;
+      const drop = moved / A, left = dA - drop;
+      if (drop < 2 || left < 4 || left === dB || drop === dB) continue;
+      const stem = 'Tank A is a rectangular tank with a base of ' + a1 + ' cm by ' + a2 + ' cm, and it contains water to a height of ' + dA +
+        ' cm. ' + who + ' pours some of the water into an empty rectangular Tank B with a base of ' + b1 + ' cm by ' + b2 +
+        ' cm until the water in Tank B is ' + dB + ' cm high. What is the height of the water left in Tank A, in cm?';
+      const q = finishTyped(stem, left, 'Water poured = ' + b1 + ' × ' + b2 + ' × ' + dB + ' = ' + moved + ' cm³. In Tank A that is ' + moved + ' ÷ ' + A +
+        ' = ' + drop + ' cm of water, so the height left is ' + dA + ' − ' + drop + ' = ' + left + ' cm.', 'cm');
+      P2(q, 'Before and after', [
+        'The water that leaves Tank A is the water that ends up in Tank B.',
+        'Water in Tank B: ' + b1 + ' × ' + b2 + ' × ' + dB + ' = ' + moved + ' cm³.',
+        'Base area of Tank A: ' + a1 + ' × ' + a2 + ' = ' + A + ' cm², so the water in Tank A falls by ' + moved + ' ÷ ' + A + ' = ' + drop + ' cm.',
+        'Height left in Tank A: ' + dA + ' − ' + drop + ' = <b>' + left + '</b> cm.'
+      ]);
+      return slips(q, [[dA - dB, 'heights-subtracted'], [drop, 'answered-change'], [dB, 'answered-other-tank']]);
+    }
+    return gPourAll();
+  }
+
+  /* 2.3 with litres: N litres more fill the tank to the brim; the height of the water now
+     (typed, cm). The unknown is a dimension (P6), not a volume (P5). A base of 1000 cm² is
+     left out: there the empty height equals the litres. */
+  function gLitresToFill() {
+    for (let t = 0; t < 600; t++) {
+      const l = pick([30, 40, 50, 60, 80]), b = pick([20, 25, 30, 40, 50]), H = pick([30, 40, 45, 50, 60]), d = ri(5, H - 5);
+      const A = l * b, need = A * (H - d);
+      if (need % 1000 || A === 1000) continue;
+      const N = need / 1000, e = H - d;
+      if (N === d || N === e) continue;
+      const stem = 'A rectangular tank measures ' + l + ' cm by ' + b + ' cm by ' + H + ' cm high. It is partly filled with water. ' + N +
+        ' ℓ more water is needed to fill the tank to the brim. What is the height of the water in the tank now, in cm? (1 ℓ = 1000 cm³)';
+      const q = finishTyped(stem, d, N + ' ℓ = ' + need + ' cm³. The empty part is ' + need + ' ÷ (' + l + ' × ' + b + ') = ' + e + ' cm high, so the water is ' +
+        H + ' − ' + e + ' = ' + d + ' cm high.', 'cm');
+      P2(q, 'Work backwards', [
+        '1 ℓ is 1000 cm³, so the water still needed is ' + N + ' × 1000 = ' + need + ' cm³.',
+        'Base area of the tank: ' + l + ' × ' + b + ' = ' + A + ' cm².',
+        'The empty part at the top is ' + need + ' ÷ ' + A + ' = ' + e + ' cm high.',
+        'Height of the water now: ' + H + ' − ' + e + ' = <b>' + d + '</b> cm.'
+      ]);
+      return slips(q, [[e, 'answered-empty-part'], [H - N, 'not-converted'], [N, 'not-converted']]);
+    }
+    return gPourAll();
+  }
+
+  /* A cube sinks in a tank and the water rises: the edge of the cube (typed, cm) */
+  /* every (edge, length, breadth) where a cube of that edge, fully under water, raises the
+     level by a whole number of cm and fits flat in the tank. Grouped by edge so that an
+     edge is picked uniformly first, then a tank (a flat pick made 12 the key half the time).
+     A prime edge (7, 11, 13, 17, 19) has no such tank, so it cannot occur. */
+  const SINKS = {};
+  for (let e = 5; e <= 20; e++) for (let l = 8; l <= 60; l++) for (let b = 8; b <= l; b++) {
+    const v = e * e * e;
+    if (v % (l * b) || e >= b) continue;
+    const r = v / (l * b);
+    if (r >= 1 && r <= 12) (SINKS[e] = SINKS[e] || []).push([l, b, r]);
+  }
+  const SINK_EDGES = Object.keys(SINKS).map(Number);
+
+  /* A cube sinks in a tank and the water rises: the edge of the cube (typed, cm) */
+  function gCubeSinks() {
+    const e = pick(SINK_EDGES), [l, b, r] = pick(SINKS[e]), v = e * e * e;
+    const d1 = ri(Math.max(5, e - r + 2), e + 20), d2 = d1 + r;
+    if (d2 === e || r === e) return gCubeSinks();
+    const stem = 'A rectangular tank with a base of ' + l + ' cm by ' + b + ' cm contains water to a height of ' + d1 +
+      ' cm. A solid metal cube is put into the tank and sinks to the bottom, completely under water. The water level rises to ' +
+      d2 + ' cm. No water overflows. What is the length of one edge of the cube, in cm?';
+    const q = finishTyped(stem, e, 'The water rises ' + d2 + ' − ' + d1 + ' = ' + r + ' cm, so the cube takes up ' + l + ' × ' + b + ' × ' + r + ' = ' + v +
+      ' cm³. ' + e + ' × ' + e + ' × ' + e + ' = ' + v + ', so the edge is ∛' + v + ' = ' + e + ' cm.', 'cm');
+    P2(q, 'Work backwards', [
+      'The water rises by ' + d2 + ' − ' + d1 + ' = ' + r + ' cm.',
+      'The water that rose takes up the same space as the cube: ' + l + ' × ' + b + ' × ' + r + ' = ' + v + ' cm³.',
+      'Find the edge: the number that, multiplied by itself three times, makes ' + v + '. Try ' + e + ': ' + e + ' × ' + e + ' × ' + e + ' = ' + v + '.',
+      'So the edge is ∛' + v + '. Check: ' + v + ' ÷ ' + e + ' ÷ ' + e + ' = <b>' + e + '</b> cm.'
+    ]);
+    return slips(q, [[r, 'answered-change'], [v, 'answered-volume'], [v / 3, 'divide-by-3'], [d2, 'answered-given']]);
+  }
+
+  MQI.registerTopic({
+    id: 'p6volume', level: 'P6', strand: 'Measurement and Geometry',
+    moeSubTopic: 'Volume of Cube and Cuboid: finding one dimension of a cuboid given its volume and the other dimensions; finding the length of one edge of a cube given its volume; finding the height of a cuboid given its volume and base area; finding the area of a face of a cuboid given its volume and one dimension; use of √, ∛',
+    label: 'Cube Root Cove', short: 'Volume (P6)', e: '📦',
+    skills: {
+      dimension: { label: 'Missing edge of a cuboid', tip: 'Volume is length × breadth × height, so divide the volume by the edges you know.' },
+      cube:      { label: 'Edge of a cube', tip: 'Ask: which number times itself three times makes the volume? Check 5 × 5 × 5, 10 × 10 × 10 first.' },
+      face:      { label: 'Area of a face', tip: 'Volume ÷ height is the area of the base: the face the height stands on.' },
+      roots:     { label: 'Square and cube roots', tip: 'Learn the squares up to 15 × 15 and the cubes up to 10 × 10 × 10 by heart.' },
+      tank:      { label: 'Water in tanks', tip: 'When water is poured, its volume stays the same. Find the volume first, then divide by the new base area.' }
+    },
+    misconceptions: {
+      'divide-by-3':          'Divides the volume by 3 to find the edge of a cube (or reads ∛ as ÷ 3).',
+      'face-area':            'Gives the area of one face of the cube instead of its edge.',
+      'root-not-checked':     'Gives a root without multiplying it back to check.',
+      'halved':               'Reads √ as "divide by 2".',
+      'doubled':              'Doubles the root instead of checking it.',
+      'square-not-cube':      'Takes the square root when the cube root is asked.',
+      'divided-once':         'Divides the volume by only one edge, which gives the area of a face.',
+      'stopped-at-area':      'Multiplies the two given edges and stops at the area.',
+      'subtract-instead':     'Takes away instead of dividing to undo the multiplication.',
+      'added-dims':           'Adds the given edges instead of multiplying them.',
+      'answered-given':       'Gives a number printed in the question.',
+      'multiplied-instead':   'Multiplies by the given edge instead of dividing.',
+      'squared-height':       'Squares the height instead of dividing the volume by it.',
+      'surface-area':         'Multiplies the area of one face by 6 (the total area of the faces) instead of finding the volume.',
+      'squared-area':         'Multiplies the face area by itself instead of by the edge.',
+      'tripled':              'Multiplies the face area by 3.',
+      'divide-by-6':          'Divides the volume by 6, mixing up volume with the 6 faces.',
+      'answered-edge':        'Stops at the edge when the area of a face is asked.',
+      'height-unchanged':     'Thinks the water keeps its height when it moves to a tank with a different base.',
+      'answered-volume':      'Gives the volume when a length is asked.',
+      'heights-subtracted':   'Subtracts the heights in two tanks with different bases.',
+      'answered-change':      'Gives the rise or fall in the water level instead of the height asked.',
+      'answered-other-tank':  'Gives the height of the water in the other tank.',
+      'answered-empty-part':  'Gives the height of the empty part of the tank instead of the height of the water.',
+      'not-converted':        'Uses the number of litres as if it were cm³ (or cm), without multiplying by 1000.',
+      'stopped-at-square':    'Stops at the area of the square base instead of finding the length of its side (√).'
+    },
+    pools: {
+      1: [[gCubeEdge, 'cube'], [gMissingDim, 'dimension'], [gRoot, 'roots']],
+      2: [[gHeightFromBase, 'dimension'], [gFaceArea, 'face'], [gCubeFace, 'roots'], [gTankHeight, 'tank']],
+      3: [[gPourAll, 'tank'], [gPourUntil, 'tank'], [gLitresToFill, 'tank'], [gCubeSinks, 'cube']]
+    }
+  });
+})();
+
+
+/* ===== js/topics/p6-quadrilaterals.js ===== */
+"use strict";
+/* Math Quest Island topic: p6quads (P6). Self-contained. Typed + MC, every item drawn.
+ * Authoring rules + registration shape: js/topics/README.md
+ * Scope (MOE 2021 Primary Mathematics Syllabus, updated Oct 2025, p.43, PRIMARY SIX,
+ * MEASUREMENT AND GEOMETRY, SUB-STRAND: GEOMETRY, 1. Special Quadrilaterals):
+ *   1.1 finding unknown angles, without additional construction of lines, in composite
+ *       geometric figures involving square, rectangle, triangle, parallelogram, rhombus,
+ *       trapezium
+ * Facts a child may use (all taught by P5, js/topics/p5-shapes.js + p5-angles.js):
+ * angles on a straight line, at a point, angle sum of a triangle, isosceles and
+ * equilateral triangles, right angles of a rectangle/square, opposite angles of a
+ * parallelogram/rhombus are equal, and the two angles between a pair of parallel sides
+ * add up to 180 deg (parallelogram, rhombus, trapezium). NEVER alternate or corresponding
+ * angles (secondary school), and every line a solution needs is already drawn.
+ *
+ * THE FIGURE is the existing 'geom' type, STRICTLY TO SCALE: every point is built from
+ * the given angles with exact trigonometry, so an angle on the glass IS the angle in the
+ * stem. Every given angle is printed twice (in the stem and as an arc label on the
+ * figure); the unknown is the arc labelled x and is also named in the stem. The oracle
+ * (tools/oracles/p6quads.mjs) re-measures every labelled arc off the RENDERED drawing,
+ * checks each shape claim (parallel sides parallel, equal sides equal, points on lines),
+ * and re-derives the key from the stem's numbers by its own route.
+ *
+ * House pattern (js/topics/p6-ratio.js): q.syl = 'P6'; MCQ distractors carry q.miscon +
+ * q.optionFeedback; typed items carry q.slips and declare '°'; pool 3 is PSLE Paper 2
+ * shape (band 3, q.exam = 'problem', technique + 3-5 steps whose equations are all true).
+ * Equations in steps are written without the degree sign so the coaching check reads them.
+ */
+(function () {
+  const G = MQI.gen;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishTyped = G.finishTyped;
+
+  const DEG = '°';
+  /* five letters per figure: four for the quadrilateral (in order round it) + one extra
+     point. No X (it would sit beside the unknown x). */
+  const LETTERS = [['A', 'B', 'C', 'D', 'E'], ['P', 'Q', 'R', 'S', 'T'], ['K', 'L', 'M', 'N', 'P'],
+                   ['E', 'F', 'G', 'H', 'J'], ['J', 'K', 'L', 'M', 'N'], ['W', 'V', 'U', 'T', 'S']];
+  const P6 = q => (q.syl = 'P6', q);
+  const rad = d => d * Math.PI / 180;
+  const pol = (p, deg, len) => [p[0] + len * Math.cos(rad(deg)), p[1] + len * Math.sin(rad(deg))];
+  const add = (p, v) => [p[0] + v[0], p[1] + v[1]];
+  const sub = (p, v) => [p[0] - v[0], p[1] - v[1]];
+  const dist = (p, v) => Math.hypot(p[0] - v[0], p[1] - v[1]);
+  const evenIn = (lo, hi) => 2 * ri(Math.ceil(lo / 2), Math.floor(hi / 2));
+
+  /* A letter set, an angle namer and a shape namer over ROLE letters A..E. */
+  function namer() {
+    const set = pick(LETTERS), L = { A: set[0], B: set[1], C: set[2], D: set[3], E: set[4] };
+    const nm = s => s.split('').map(c => L[c]).join('');
+    return { L, nm, ang: s => '∠' + nm(s) };
+  }
+
+  /* Points in MATH coordinates (y up) -> a 'geom' spec, scaled into an 11 x 7 box.
+     segs: ['AB', ...]; arcs: [['DAE', label], ...] marks the angle at the MIDDLE letter. */
+  function spec(P, segs, arcs, L) {
+    const roles = Object.keys(P);
+    const xs = roles.map(r => P[r][0]), ys = roles.map(r => P[r][1]);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+    const W = maxX - minX, H = maxY - minY, k = Math.min(11 / W, 7 / H);
+    const ix = r => roles.indexOf(r);
+    return {
+      type: 'geom', cols: +(W * k).toFixed(3), rows: +(H * k).toFixed(3), grid: 0,
+      px: roles.map(r => +((P[r][0] - minX) * k).toFixed(3)),
+      py: roles.map(r => +((maxY - P[r][1]) * k).toFixed(3)),
+      names: roles.map(r => L[r]),
+      segs: segs.map(s => [ix(s[0]), ix(s[1])]),
+      arcs: arcs.map(a => [ix(a[0][1]), ix(a[0][0]), ix(a[0][2])]),
+      arcNames: arcs.map(a => a[1]),
+      panels: [], pp: []
+    };
+  }
+  const fig = (q, f) => (q.figure = f, q.extra = '', q);
+
+  function mcq(stem, key, dist, explain) {
+    const seen = [key], keep = [];
+    for (const d of dist) {
+      if (keep.length >= 3) break;
+      if (!(Number.isInteger(d[0]) && d[0] > 0 && d[0] < 180) || seen.indexOf(d[0]) !== -1) continue;
+      seen.push(d[0]); keep.push(d);
+    }
+    if (keep.length < 3) return null;
+    const rows = shuffle([[key, null, null]].concat(keep));
+    const q = { q: stem, extra: '', choices: rows.map(r => r[0] + DEG), correct: 0, explain, answerText: key + DEG };
+    q.correct = rows.findIndex(r => r[1] === null);
+    q.miscon = {}; q.optionFeedback = {};
+    rows.forEach((r, i) => { if (r[1]) { q.miscon[i] = r[1]; q.optionFeedback[i] = r[2]; } });
+    return P6(q);
+  }
+  function typed(stem, key, explain, list) {
+    const q = finishTyped(stem, key, explain, DEG);
+    q.answerText = key + DEG;
+    const s = {};
+    for (const [v, tag] of list) if (Number.isInteger(v) && v > 0 && v < 360 && v !== key && !(String(v) in s)) s[String(v)] = tag;
+    q.slips = s;
+    return P6(q);
+  }
+  const P2 = (q, steps) => (q.band = 3, q.exam = 'problem', q.technique = 'Sketch and label', q.steps = steps, q);
+
+  /* parallelogram / rhombus: A at the origin, AB along the base, angle a at A */
+  function para(w, len, a) {
+    const A = [0, 0], B = [w, 0], D = pol(A, a, len), C = add(B, D);
+    return { A, B, C, D };
+  }
+
+  /* ---------------- pool 1 ---------------- */
+
+  /* rectangle + triangle: E on DC, AE drawn. p = angle DAE fixes the figure; ONE of the four
+     angles round AE is given (only one of at least 50 deg, so its label sits clear of the
+     arms) and a different one, of a different size, is asked. */
+  function gRectTri() {
+    const p = ri(30, 55);   /* every angle round AE is at least 30, so an x label always fits its wedge */
+    if (p === 45) return gRectTri();
+    const { L, nm, ang } = namer();
+    const H = 6, W = 10;
+    const P = { A: [0, H], B: [W, H], C: [W, 0], D: [0, 0], E: [H * Math.tan(rad(p)), 0] };
+    const V = { DAE: p, BAE: 90 - p, AED: 90 - p, AEC: 90 + p };
+    const given = pick(Object.keys(V).filter(k => V[k] >= 50));
+    const mode = pick(Object.keys(V).filter(k => k !== given && V[k] !== V[given]));
+    const v = V[given], key = V[mode];
+    const stem = 'In the figure, ' + nm('ABCD') + ' is a rectangle and ' + L.E + ' is a point on ' + nm('DC') + '. ' +
+      ang(given) + ' = ' + v + DEG + '. Find ' + ang(mode) + ', marked x.';
+    const toP = {
+      DAE: '',
+      BAE: 'The corner ' + ang('DAB') + ' is a right angle, so ' + ang('DAE') + ' = 90' + DEG + ' − ' + v + DEG + ' = ' + p + DEG + '. ',
+      AED: 'In triangle ' + nm('ADE') + ', ' + ang('ADE') + ' = 90' + DEG + ', so ' + ang('DAE') + ' = 180' + DEG + ' − 90' + DEG + ' − ' + v + DEG + ' = ' + p + DEG + '. ',
+      AEC: nm('DEC') + ' is a straight line, so ' + ang('AED') + ' = 180' + DEG + ' − ' + v + DEG + ' = ' + (90 - p) + DEG + ', and in triangle ' + nm('ADE') + ' ' +
+        ang('DAE') + ' = 180' + DEG + ' − 90' + DEG + ' − ' + (90 - p) + DEG + ' = ' + p + DEG + '. '
+    }[given];
+    const toKey = {
+      DAE: 'x = ' + p + DEG + '.',
+      BAE: 'x = 90' + DEG + ' − ' + p + DEG + ' = ' + key + DEG + ' (the rest of the right angle at ' + L.A + ').',
+      AED: 'In triangle ' + nm('ADE') + ', x = 180' + DEG + ' − 90' + DEG + ' − ' + p + DEG + ' = ' + key + DEG + '.',
+      AEC: ang('AED') + ' = 90' + DEG + ' − ' + p + DEG + ' = ' + (90 - p) + DEG + ', and ' + nm('DEC') + ' is a straight line, so x = 180' + DEG + ' − ' + (90 - p) + DEG + ' = ' + key + DEG + '.'
+    }[mode];
+    const q = mcq(stem, key, [
+      [v, 'copied-given', 'That is the angle given in the question. x is the angle marked at ' + L[mode[1]] + '.'],
+      [180 - key, 'interior-exterior', 'That angle and x would add up to 180' + DEG + '. Check which angle the x is drawn in.'],
+      [key < 90 ? 90 + key : key - 90, 'missed-right-angle', 'Use the right angle at the corner of the rectangle carefully: it is 90' + DEG + ' and it is not x.'],
+      [180 - v, 'interior-exterior', 'That is 180' + DEG + ' take away the given angle. Start from the 90' + DEG + ' corners of the rectangle.']
+    ], toP + toKey);
+    if (!q) return gRectTri();
+    return fig(q, spec(P, ['AB', 'BC', 'CD', 'DA', 'AE'], [[given, v + DEG], [mode, 'x']], L));
+  }
+
+  /* trapezium + diagonal: given the angle at D and the part of the angle at A */
+  function gTrapDiag() {
+    for (let t = 0; t < 300; t++) {
+      const d = ri(12, 23) * 5, p = ri(10, 14) * 5, c3 = 180 - d - p, e = ri(60, 115);   /* given angles >= 50: their labels sit clear of the arms */
+      if (c3 < 30 || c3 === p || c3 === d || d === 90 || Math.abs(e - d) < 6) continue;   /* key never a printed angle; AD not parallel to BC */   /* AD must not be parallel to BC */
+      const c = 10, AD = c * Math.sin(rad(c3)) / Math.sin(rad(p));
+      const D = [0, 0], C = [c, 0], A = pol(D, d, AD), h = A[1];
+      const B = [c + h / Math.tan(rad(e)), h];
+      if (B[0] - A[0] < 3 || h < 2.5) continue;
+      const { L, nm, ang } = namer();
+      const key = 180 - d - p;
+      const stem = 'In the figure, ' + nm('ABCD') + ' is a trapezium with ' + nm('AB') + ' parallel to ' + nm('DC') + ', and ' + nm('AC') +
+        ' is a diagonal. ' + ang('ADC') + ' = ' + d + DEG + ' and ' + ang('DAC') + ' = ' + p + DEG + '. Find ' + ang('CAB') + ', marked x.';
+      const q = mcq(stem, key, [
+        [180 - d, 'stopped-early', 'That is the whole of ' + ang('DAB') + '. Take ' + ang('DAC') + ' away from it.'],
+        [d - p, 'parallel-angles-equal', ang('DAB') + ' is not equal to ' + ang('ADC') + '. Because ' + nm('AB') + ' is parallel to ' + nm('DC') + ', they add up to 180' + DEG + '.'],
+        [180 - p, 'missed-angle', 'Both given angles are needed: ' + ang('ADC') + ' tells you the whole angle at ' + L.A + '.'],
+        [p, 'copied-given', 'That is ' + ang('DAC') + ', the other part of the angle at ' + L.A + '.']
+      ], ang('DAB') + ' + ' + ang('ADC') + ' = 180' + DEG + ' (' + nm('AB') + ' is parallel to ' + nm('DC') + '), so ' + ang('DAB') + ' = ' + (180 - d) + DEG +
+        '. x = ' + (180 - d) + DEG + ' − ' + p + DEG + ' = ' + key + DEG + '.');
+      if (!q) continue;
+      return fig(q, spec({ A, B, C, D }, ['AB', 'BC', 'CD', 'DA', 'AC'], [['ADC', d + DEG], ['DAC', p + DEG], ['CAB', 'x']], L));
+    }
+    return gRectTri();
+  }
+
+  /* ---------------- pool 2 ---------------- */
+
+  /* parallelogram + triangle: E on AB, DE drawn */
+  function gParaPoint() {
+    for (let t = 0; t < 300; t++) {
+      const a = ri(55, 80), dd = ri(50, 65), aed = 180 - a - dd;   /* given angles >= 50: their labels sit clear of the arms */
+      if (aed < 40) continue;
+      const len = 6, w = 11;
+      const P = para(w, len, a), AE = len * Math.sin(rad(dd)) / Math.sin(rad(aed));
+      if (AE < 2 || AE > w - 2.5) continue;
+      P.E = [AE, 0];
+      const { L, nm, ang } = namer();
+      const mode = pick(['DEB', 'EDC']);
+      const key = mode === 'DEB' ? a + dd : 180 - a - dd;
+      if (key === a || key === dd) continue;   /* the key is never a printed angle */
+      const stem = 'In the figure, ' + nm('ABCD') + ' is a parallelogram and ' + L.E + ' is a point on ' + nm('AB') + '. ' + ang('DAB') + ' = ' + a + DEG +
+        ' and ' + ang('ADE') + ' = ' + dd + DEG + '. Find ' + ang(mode) + ', marked x.';
+      const why = mode === 'DEB'
+        ? ang('AED') + ' = 180' + DEG + ' − ' + a + DEG + ' − ' + dd + DEG + ' = ' + aed + DEG + '. ' + nm('AEB') + ' is a straight line, so x = 180' + DEG + ' − ' + aed + DEG + ' = ' + key + DEG + '.'
+        : ang('ADC') + ' = 180' + DEG + ' − ' + a + DEG + ' = ' + (180 - a) + DEG + ' (angles between the parallel sides). x = ' + (180 - a) + DEG + ' − ' + dd + DEG + ' = ' + key + DEG + '.';
+      const q = typed(stem, key, why, mode === 'DEB'
+        ? [[aed, 'interior-exterior'], [180 - dd, 'missed-angle'], [a, 'copied-given']]
+        : [[180 - a, 'stopped-early'], [a - dd, 'parallel-angles-equal'], [dd, 'copied-given']]);
+      return fig(q, spec(P, ['AB', 'BC', 'CD', 'DA', 'DE'], [['DAB', a + DEG], ['ADE', dd + DEG], [mode, 'x']], L));
+    }
+    return gRectTri();
+  }
+
+  /* rhombus + its diagonal: the two triangles are isosceles */
+  function gRhombusDiag() {
+    const { L, nm, ang } = namer();
+    const mode = pick(['B', 'D', 'A']);
+    const g = evenIn(50, 118);   /* key (180 - g) / 2 is at least 31: room for the x label */
+    if (g === 90 || g === 60) return gRhombusDiag();   /* 60/120: the key would equal a printed or halved angle */
+    const a = 180 - g;                                  /* the angle at A that builds the rhombus; the given is never at A or C (the diagonal would strike its label) */
+    const P = para(8, 8, a);
+    let stem, key, why, slipList, arcs;
+    if (mode === 'B') {
+      key = (180 - g) / 2;
+      stem = 'In the figure, ' + nm('ABCD') + ' is a rhombus and ' + nm('AC') + ' is a diagonal. ' + ang('ABC') + ' = ' + g + DEG + '. Find ' + ang('BAC') + ', marked x.';
+      why = nm('BA') + ' = ' + nm('BC') + ', so triangle ' + nm('ABC') + ' is isosceles. x = (180' + DEG + ' − ' + g + DEG + ') ÷ 2 = ' + key + DEG + '.';
+      slipList = [[180 - g, 'not-halved'], [g / 2, 'halved-given'], [g, 'copied-given']];
+      arcs = [['ABC', g + DEG], ['BAC', 'x']];
+    } else if (mode === 'D') {
+      key = (180 - g) / 2;
+      stem = 'In the figure, ' + nm('ABCD') + ' is a rhombus and ' + nm('AC') + ' is a diagonal. ' + ang('ADC') + ' = ' + g + DEG + '. Find ' + ang('DCA') + ', marked x.';
+      why = nm('DA') + ' = ' + nm('DC') + ', so triangle ' + nm('ADC') + ' is isosceles. x = (180' + DEG + ' − ' + g + DEG + ') ÷ 2 = ' + key + DEG + '.';
+      slipList = [[180 - g, 'not-halved'], [g / 2, 'halved-given'], [g, 'copied-given']];
+      arcs = [['ADC', g + DEG], ['DCA', 'x']];
+    } else {
+      key = (180 - g) / 2;
+      stem = 'In the figure, ' + nm('ABCD') + ' is a rhombus and ' + nm('AC') + ' is a diagonal. ' + ang('ADC') + ' = ' + g + DEG + '. Find ' + ang('BAC') + ', marked x.';
+      why = 'Opposite angles of a rhombus are equal, so ' + ang('ABC') + ' = ' + g + DEG + '. ' + nm('BA') + ' = ' + nm('BC') + ', so x = (180' + DEG + ' − ' + g + DEG + ') ÷ 2 = ' + key + DEG + '.';
+      slipList = [[g, 'copied-given'], [180 - g, 'not-halved'], [g / 2, 'halved-given']];
+      arcs = [['ADC', g + DEG], ['BAC', 'x']];
+    }
+    return fig(typed(stem, key, why, slipList), spec(P, ['AB', 'BC', 'CD', 'DA', 'AC'], arcs, L));
+  }
+
+  /* square + a triangle on side BC with BE = BC. Half the draws: the isosceles triangle with
+     a printed apex angle k (the key moves with k); half: the classic equilateral triangle. */
+  function gSquareEquil() {
+    const { L, nm, ang } = namer();
+    if (Math.random() < 0.5) return gSquareIsos(L, nm, ang);
+    const inside = Math.random() < 0.5, s = 6, h = s * Math.sin(rad(60));
+    const P = { A: [0, s], B: [s, s], C: [s, 0], D: [0, 0], E: inside ? [s - h, s / 2] : [s + h, s / 2] };
+    const mode = pick(inside ? ['BAE', 'AEB', 'AED'] : ['ABE', 'DAE', 'AEC']);
+    const KEY = { BAE: 75, AEB: 75, AED: 150, ABE: 150, DAE: 75, AEC: 45 };
+    const key = KEY[mode];
+    const where = inside ? 'inside' : 'outside';
+    const stem = 'In the figure, ' + nm('ABCD') + ' is a square and ' + nm('BCE') + ' is an equilateral triangle. ' + L.E + ' lies ' + where +
+      ' the square. Find ' + ang(mode) + ', marked x.';
+    const eq = 'Every angle of the equilateral triangle is 60' + DEG + '. ';
+    const WHY = {
+      BAE: eq + ang('ABE') + ' = 90' + DEG + ' − 60' + DEG + ' = 30' + DEG + '. ' + nm('BA') + ' = ' + nm('BE') + ', so x = (180' + DEG + ' − 30' + DEG + ') ÷ 2 = 75' + DEG + '.',
+      AEB: eq + ang('ABE') + ' = 90' + DEG + ' − 60' + DEG + ' = 30' + DEG + '. ' + nm('BA') + ' = ' + nm('BE') + ', so x = (180' + DEG + ' − 30' + DEG + ') ÷ 2 = 75' + DEG + '.',
+      AED: eq + 'Triangles ' + nm('ABE') + ' and ' + nm('DCE') + ' are isosceles with 30' + DEG + ' at the top, so ' + ang('AEB') + ' = ' + ang('DEC') + ' = 75' + DEG +
+        '. Angles at a point: x = 360' + DEG + ' − 75' + DEG + ' − 60' + DEG + ' − 75' + DEG + ' = 150' + DEG + '.',
+      ABE: eq + 'x = 90' + DEG + ' + 60' + DEG + ' = 150' + DEG + '.',
+      DAE: eq + ang('ABE') + ' = 150' + DEG + ' and ' + nm('BA') + ' = ' + nm('BE') + ', so ' + ang('BAE') + ' = (180' + DEG + ' − 150' + DEG + ') ÷ 2 = 15' + DEG +
+        '. x = 90' + DEG + ' − 15' + DEG + ' = 75' + DEG + '.',
+      AEC: eq + ang('ABE') + ' = 150' + DEG + ' and ' + nm('BA') + ' = ' + nm('BE') + ', so ' + ang('AEB') + ' = 15' + DEG + '. x = 60' + DEG + ' − 15' + DEG + ' = 45' + DEG + '.'
+    };
+    const tri = ' is a corner of the equilateral triangle only.';
+    const iso = [[30, 'stopped-early', '30' + DEG + ' is the angle between the side of the square and the side of the triangle. Use the isosceles triangle it sits in.'],
+           [60, 'equilateral-everywhere', '60' + DEG + tri + ' x is not one of its corners.'],
+           [150, 'not-halved', 'After taking the top angle from 180' + DEG + ', share what is left equally between the two equal angles.']];
+    const DIST = {
+      BAE: iso, AEB: iso,
+      AED: [[75, 'stopped-early', '75' + DEG + ' is one of the base angles. Use the angles at the point ' + L.E + ': they add up to 360' + DEG + '.'],
+            [60, 'equilateral-everywhere', '60' + DEG + tri],
+            [90, 'square-corner', '90' + DEG + ' is a corner of the square. x is at ' + L.E + '.']],
+      ABE: [[30, 'subtracted-not-added', L.E + ' is outside the square, so the two corners add: 90' + DEG + ' + 60' + DEG + '.'],
+            [60, 'equilateral-everywhere', '60' + DEG + tri],
+            [90, 'square-corner', '90' + DEG + ' is only the corner of the square. Add the corner of the triangle.']],
+      DAE: [[15, 'stopped-early', '15' + DEG + ' is ' + ang('BAE') + '. x is the rest of the 90' + DEG + ' corner at ' + L.A + '.'],
+            [105, 'added-not-subtracted', 'x is part of the 90' + DEG + ' corner at ' + L.A + ', so take 15' + DEG + ' away from 90' + DEG + '.'],
+            [60, 'equilateral-everywhere', '60' + DEG + tri]],
+      AEC: [[15, 'stopped-early', '15' + DEG + ' is ' + ang('AEB') + '. x is the rest of the 60' + DEG + ' corner at ' + L.E + '.'],
+            [60, 'equilateral-everywhere', '60' + DEG + ' is the whole corner at ' + L.E + '; x is only part of it.'],
+            [75, 'wrong-angle', 'That is an angle at ' + L.A + '. x is at ' + L.E + '.']]
+    };
+    const q = mcq(stem, key, DIST[mode], WHY[mode]);
+    /* AE only when the asked angle uses it (it would cross the x label at B otherwise) */
+    const segs = ['AB', 'BC', 'CD', 'DA', 'BE', 'CE'].concat(mode === 'ABE' ? [] : ['AE'], mode === 'AED' ? ['DE'] : []);
+    return fig(q, spec(P, segs, [[mode, 'x']], L));
+  }
+
+  function gSquareIsos(L, nm, ang) {
+    const inside = Math.random() < 0.5, s = 6;
+    const k = inside ? evenIn(50, 66) : evenIn(50, 86);   /* inside above 66 puts E too near the side AD */
+    const B = [s, s], E = pol(B, inside ? -90 - k : -90 + k, s);
+    const P = { A: [0, s], B, C: [s, 0], D: [0, 0], E };
+    const abe = inside ? 90 - k : 90 + k, bae = (180 - abe) / 2;
+    const mode = inside ? pick(['BAE', 'AEB']) : 'DAE';
+    const key = inside ? bae : 90 - bae;
+    const stem = 'In the figure, ' + nm('ABCD') + ' is a square and ' + nm('BCE') + ' is a triangle with ' + nm('BE') + ' = ' + nm('BC') + '. ' + ang('EBC') + ' = ' + k + DEG +
+      '. ' + L.E + ' lies ' + (inside ? 'inside' : 'outside') + ' the square. Find ' + ang(mode) + ', marked x.';
+    const why = (inside ? ang('ABE') + ' = 90' + DEG + ' − ' + k + DEG + ' = ' + abe + DEG : ang('ABE') + ' = 90' + DEG + ' + ' + k + DEG + ' = ' + abe + DEG) +
+      '. ' + nm('BA') + ' = ' + nm('BC') + ' = ' + nm('BE') + ', so triangle ' + nm('ABE') + ' is isosceles and ' + ang('BAE') + ' = ' + ang('AEB') + ' = (180' + DEG + ' − ' + abe + DEG + ') ÷ 2 = ' + bae + DEG + '.' +
+      (inside ? '' : ' x = 90' + DEG + ' − ' + bae + DEG + ' = ' + key + DEG + '.');
+    const q = mcq(stem, key, inside ? [
+      [abe, 'stopped-early', 'That is ' + ang('ABE') + ', the angle at the top of triangle ' + nm('ABE') + '. Now find its two equal angles.'],
+      [180 - abe, 'not-halved', 'After taking ' + ang('ABE') + ' from 180' + DEG + ', share what is left equally between the two equal angles.'],
+      [k, 'copied-given', 'That is the given angle at ' + L.B + '. x is the angle marked x.'],
+      [(90 - k) / 2 + 45, 'wrong-angle', 'Check which angle the x is drawn in.']
+    ] : [
+      [bae, 'stopped-early', 'That is ' + ang('BAE') + '. x is the rest of the 90' + DEG + ' corner at ' + L.A + '.'],
+      [abe, 'subtracted-not-added', 'That is ' + ang('ABE') + ', at ' + L.B + '. x is at ' + L.A + '.'],
+      [k, 'copied-given', 'That is the given angle at ' + L.B + '. x is the angle marked x.'],
+      [90 + bae, 'added-not-subtracted', 'x is part of the 90' + DEG + ' corner at ' + L.A + ', so take ' + ang('BAE') + ' away from 90' + DEG + '.']
+    ], why);
+    return fig(q, spec(P, ['AB', 'BC', 'CD', 'DA', 'BE', 'CE', 'AE'], [['EBC', k + DEG], [mode, 'x']], L));
+  }
+
+  /* ---------------- pool 3: Paper 2 composite figures ---------------- */
+
+  /* parallelogram + isosceles triangle on the extended side: ABE straight, CB = CE */
+  function gParaIsos() {
+    const { L, nm, ang } = namer();
+    const a = ri(50, 75), viaD = Math.random() < 0.5, g = 180 - a;   /* x = 180 - 2a is at least 30 */
+    if (a === 60) return gParaIsos();   /* x = 180 - 2a would equal the printed 60 */
+    const P = para(7, 6, a);
+    P.E = [7 + 2 * 6 * Math.cos(rad(a)), 0];
+    const key = 180 - 2 * a;
+    const given = viaD ? ang('ADC') + ' = ' + g + DEG : ang('DAB') + ' = ' + a + DEG;
+    const stem = 'In the figure, ' + nm('ABCD') + ' is a parallelogram and ' + nm('ABE') + ' is a straight line. ' + nm('CB') + ' = ' + nm('CE') +
+      ' and ' + given + '. Find ' + ang('BCE') + ', marked x.';
+    const first = viaD
+      ? 'Opposite angles of a parallelogram are equal: ' + ang('ABC') + ' = ' + ang('ADC') + ' = ' + g + DEG + '.'
+      : 'Angles between the parallel sides add up to 180' + DEG + ': ' + ang('ABC') + ' = 180 − ' + a + ' = ' + g + DEG + '.';
+    const q = typed(stem, key, 'x = 180' + DEG + ' − ' + a + DEG + ' − ' + a + DEG + ' = ' + key + DEG + '.',
+      [[a, 'answered-base-angle'], [g, 'stopped-early'], [2 * a, 'not-from-180']]);
+    q.explain = first + ' ' + nm('ABE') + ' is a straight line, so ' + ang('CBE') + ' = 180' + DEG + ' − ' + g + DEG + ' = ' + a + DEG + '. ' + nm('CB') + ' = ' + nm('CE') +
+      ', so ' + ang('CEB') + ' = ' + a + DEG + ' too, and x = 180' + DEG + ' − ' + a + DEG + ' − ' + a + DEG + ' = ' + key + DEG + '.';
+    P2(q, [
+      first,
+      nm('ABE') + ' is a straight line: ' + ang('CBE') + ' = 180 − ' + g + ' = ' + a + DEG + '.',
+      nm('CB') + ' = ' + nm('CE') + ', so triangle ' + nm('BCE') + ' is isosceles and ' + ang('CEB') + ' = ' + ang('CBE') + ' = ' + a + DEG + '.',
+      'Angles of triangle ' + nm('BCE') + ': x = 180 − ' + a + ' − ' + a + ' = <b>' + key + DEG + '</b>.'
+    ]);
+    return fig(q, spec(P, ['AE', 'BC', 'CD', 'DA', 'CE'], [[viaD ? 'ADC' : 'DAB', (viaD ? g : a) + DEG], ['BCE', 'x']], L));
+  }
+
+  /* trapezium + diagonal, with an isosceles triangle: DA = DC */
+  function gTrapIsos() {
+    for (let t = 0; t < 400; t++) {
+      const d = evenIn(60, 120), e = ri(55, 115), half = (180 - d) / 2, key = 180 - e - half;
+      if (key < 30 || d === 90 || key === half || key === d || key === e || Math.abs(e - d) < 6) continue;   /* key never a printed angle */   /* AD must not be parallel to BC */
+      const c = 8, D = [0, 0], C = [c, 0], A = pol(D, d, c), h = A[1];
+      const B = [c + h / Math.tan(rad(e)), h];
+      if (B[0] - A[0] < 2.5) continue;
+      const { L, nm, ang } = namer();
+      const stem = 'In the figure, ' + nm('ABCD') + ' is a trapezium with ' + nm('AB') + ' parallel to ' + nm('DC') + ', and ' + nm('AC') + ' is a diagonal. ' +
+        nm('DA') + ' = ' + nm('DC') + ', ' + ang('ADC') + ' = ' + d + DEG + ' and ' + ang('ABC') + ' = ' + e + DEG + '. Find ' + ang('ACB') + ', marked x.';
+      const q = typed(stem, key, 'Triangle ' + nm('ADC') + ' is isosceles, so ' + ang('DAC') + ' = (180' + DEG + ' − ' + d + DEG + ') ÷ 2 = ' + half + DEG + '. ' +
+        ang('DAB') + ' = 180' + DEG + ' − ' + d + DEG + ' = ' + (180 - d) + DEG + ', so ' + ang('CAB') + ' = ' + (180 - d) + DEG + ' − ' + half + DEG + ' = ' + half + DEG +
+        '. In triangle ' + nm('ABC') + ', x = 180' + DEG + ' − ' + half + DEG + ' − ' + e + DEG + ' = ' + key + DEG + '.',
+        [[half, 'answered-step'], [180 - e, 'stopped-early'], [180 - e - (d - half), 'parallel-angles-equal']]);
+      P2(q, [
+        nm('DA') + ' = ' + nm('DC') + ', so triangle ' + nm('ADC') + ' is isosceles: 180 − ' + d + ' = ' + (180 - d) + ', and ' + ang('DAC') + ' = ' + (180 - d) + ' ÷ 2 = ' + half + DEG + '.',
+        nm('AB') + ' is parallel to ' + nm('DC') + ', so ' + ang('DAB') + ' = 180 − ' + d + ' = ' + (180 - d) + DEG + '.',
+        ang('CAB') + ' is the rest of ' + ang('DAB') + ': ' + (180 - d) + ' − ' + half + ' = ' + half + DEG + '.',
+        'Angles of triangle ' + nm('ABC') + ': x = 180 − ' + half + ' − ' + e + ' = <b>' + key + DEG + '</b>.'
+      ]);
+      return fig(q, spec({ A, B, C, D }, ['AB', 'BC', 'CD', 'DA', 'AC'], [['ADC', d + DEG], ['ABC', e + DEG], ['ACB', 'x']], L));
+    }
+    return gParaIsos();
+  }
+
+  /* rhombus + equilateral triangle on one side, outside: DCE equilateral, AE drawn */
+  function gRhombusEquil() {
+    const { L, nm, ang } = namer();
+    const b = evenIn(60, 110), viaC = Math.random() < 0.5, c = 180 - b;   /* b = angle ABC = angle ADC */
+    if (b === 90) return gRhombusEquil();                                 /* a right-angled rhombus is a square */
+    const s = 6, P = para(s, s, 180 - b);
+    P.E = [P.D[0] + s / 2, P.D[1] + s * Math.sin(rad(60))];
+    const t = b + 60, u = 180 - t, y = u / 2, key = 60 - y;
+    const given = viaC ? ang('BCD') + ' = ' + c + DEG : ang('ABC') + ' = ' + b + DEG;
+    const stem = 'In the figure, ' + nm('ABCD') + ' is a rhombus and ' + nm('DCE') + ' is an equilateral triangle. ' + nm('AE') + ' is joined. ' +
+      given + '. Find ' + ang('AEC') + ', marked x.';
+    const first = viaC
+      ? 'Angles between the parallel sides add up to 180' + DEG + ': ' + ang('ADC') + ' = 180 − ' + c + ' = ' + b + DEG + '.'
+      : 'Opposite angles of a rhombus are equal: ' + ang('ADC') + ' = ' + ang('ABC') + ' = ' + b + DEG + '.';
+    const q = typed(stem, key, first + ' ' + ang('ADE') + ' = ' + b + DEG + ' + 60' + DEG + ' = ' + t + DEG + '. ' + nm('DA') + ' = ' + nm('DC') + ' = ' + nm('DE') +
+      ', so triangle ' + nm('ADE') + ' is isosceles and ' + ang('DEA') + ' = (180' + DEG + ' − ' + t + DEG + ') ÷ 2 = ' + y + DEG + '. x = 60' + DEG + ' − ' + y + DEG + ' = ' + key + DEG + '.',
+      [[y, 'answered-step'], [60, 'equilateral-everywhere'], [t, 'answered-step'], [60 - u, 'not-halved'], [(b - 60) / 2, 'missed-equilateral']]);
+    P2(q, [
+      first,
+      'Triangle ' + nm('DCE') + ' is equilateral, so ' + ang('CDE') + ' = 60' + DEG + ' and ' + ang('ADE') + ' = ' + b + ' + 60 = ' + t + DEG + '.',
+      nm('DA') + ' = ' + nm('DC') + ' = ' + nm('DE') + ', so triangle ' + nm('ADE') + ' is isosceles: 180 − ' + t + ' = ' + u + ', and ' + ang('DEA') + ' = ' + u + ' ÷ 2 = ' + y + DEG + '.',
+      ang('DEC') + ' = 60' + DEG + ' and x is the rest of it: 60 − ' + y + ' = <b>' + key + DEG + '</b>.'
+    ]);
+    return fig(q, spec(P, ['AB', 'BC', 'CD', 'DA', 'DE', 'CE', 'AE'], [[viaC ? 'BCD' : 'ABC', (viaC ? c : b) + DEG], ['AEC', 'x']], L));
+  }
+
+  /* parallelogram + isosceles triangle inside: E on DC, BE = BC */
+  function gParaInside() {
+    for (let t = 0; t < 300; t++) {
+      /* mode EBC: given angle ADC (g), find the apex EBC. mode ADC: given the apex EBC (k, at
+         least 50 so its label is clear), find angle ADC: the base angle first, then 180 less it. */
+      const mode = pick(['EBC', 'ADC']);
+      const k = mode === 'ADC' ? evenIn(50, 100) : 0;
+      const g = mode === 'ADC' ? 90 + k / 2 : ri(103, 140), a = 180 - g, len = 5, w = 11;
+      if (2 * len * Math.cos(rad(a)) > w - 2.5) continue;
+      const { L, nm, ang } = namer();
+      const P = para(w, len, a);
+      P.E = [P.C[0] - 2 * len * Math.cos(rad(a)), P.C[1]];
+      const ebc = 2 * g - 180, key = mode === 'EBC' ? ebc : g;
+      if (key < 30) continue;
+      const given = mode === 'EBC' ? ang('ADC') + ' = ' + g + DEG : ang('EBC') + ' = ' + k + DEG;
+      const stem = 'In the figure, ' + nm('ABCD') + ' is a parallelogram and ' + L.E + ' is a point on ' + nm('DC') + '. ' + nm('BE') + ' = ' + nm('BC') +
+        ' and ' + given + '. Find ' + ang(mode) + ', marked x.';
+      const steps = mode === 'EBC' ? [
+        'Angles between the parallel sides add up to 180' + DEG + ': ' + ang('BCD') + ' = 180 − ' + g + ' = ' + a + DEG + '.',
+        nm('BE') + ' = ' + nm('BC') + ', so triangle ' + nm('BCE') + ' is isosceles: ' + ang('BEC') + ' = ' + ang('BCE') + ' = ' + a + DEG + '.',
+        'Angles of triangle ' + nm('BCE') + ': x = 180 − ' + a + ' − ' + a + ' = <b>' + key + DEG + '</b>.'
+      ] : [
+        nm('BE') + ' = ' + nm('BC') + ', so triangle ' + nm('BCE') + ' is isosceles and ' + ang('BEC') + ' = ' + ang('BCE') + '.',
+        'The two equal angles share what is left: 180 − ' + k + ' = ' + (180 - k) + ', and ' + ang('BCE') + ' = ' + (180 - k) + ' ÷ 2 = ' + a + DEG + '.',
+        ang('BCD') + ' and ' + ang('ADC') + ' sit between the parallel sides, so they add up to 180' + DEG + '.',
+        'x = 180 − ' + a + ' = <b>' + key + DEG + '</b>.'
+      ];
+      const q = typed(stem, key, steps.join(' ').replace(/<\/?b>/g, ''), mode === 'EBC'
+        ? [[a, 'answered-base-angle'], [180 - a, 'stopped-early'], [2 * a, 'not-from-180']]
+        : [[a, 'answered-base-angle'], [180 - k, 'not-halved'], [k, 'copied-given'], [180 - a / 2, 'halved-given']]);
+      P2(q, steps);
+      return fig(q, spec(P, ['AB', 'BC', 'CD', 'DA', 'BE'], [mode === 'EBC' ? ['ADC', g + DEG] : ['EBC', k + DEG], [mode, 'x']], L));
+    }
+    return gParaIsos();
+  }
+
+  MQI.registerTopic({
+    id: 'p6quads', level: 'P6', strand: 'Measurement and Geometry',
+    moeSubTopic: 'Special Quadrilaterals: finding unknown angles, without additional construction of lines, in composite geometric figures involving square, rectangle, triangle, parallelogram, rhombus, trapezium',
+    label: 'Rhombus Reef', short: 'Special quadrilaterals', e: '🔷',
+    skills: {
+      split:    { label: 'Shapes split by a line', tip: 'Mark every angle you know on the figure first, then look for a triangle with only one unknown angle.' },
+      parallel: { label: 'Parallel sides', tip: 'Between a pair of parallel sides, the two angles add up to 180°. Point to the pair before you use it.' },
+      isos:     { label: 'Hidden isosceles triangles', tip: 'Look for two sides marked equal, or two sides of a rhombus or square: the angles facing them are equal.' }
+    },
+    misconceptions: {
+      'interior-exterior':      'Gives the angle on the other side of a straight line.',
+      'missed-right-angle':     'Leaves out the right angle at a corner of a rectangle or square.',
+      'copied-given':           'Gives an angle printed in the question.',
+      'stopped-early':          'Stops one step before the marked angle.',
+      'added-not-subtracted':   'Adds an angle that should be taken away.',
+      'parallel-angles-equal':  'Treats the two angles between a pair of parallel sides as equal instead of adding to 180°.',
+      'used-360':               'Uses 360° where the facts give 180°.',
+      'missed-angle':           'Leaves out one of the angles that must be taken away.',
+      'not-halved':             'Forgets to share the remaining angle between the two equal angles of an isosceles triangle.',
+      'halved-given':           'Halves the given angle instead of the angle that is left.',
+      'wrong-angle-halved':     'Halves the wrong angle of the rhombus.',
+      'equilateral-everywhere': 'Uses 60° for an angle that is not a corner of the equilateral triangle.',
+      'square-corner':          'Uses 90° for an angle that is not a corner of the square.',
+      'subtracted-not-added':   'Takes the triangle\'s angle away from the square\'s corner when the triangle is outside.',
+      'wrong-angle':            'Finds a different angle from the one marked x.',
+      'answered-base-angle':    'Gives a base angle of the isosceles triangle instead of the angle asked.',
+      'not-from-180':           'Doubles the base angle but does not take it from 180°.',
+      'answered-step':          'Gives an angle found on the way instead of the marked angle.',
+      'missed-equilateral':     'Leaves out the 60° corner of the equilateral triangle.'
+    },
+    pools: {
+      1: [[gRectTri, 'split'], [gTrapDiag, 'parallel']],
+      2: [[gParaPoint, 'parallel'], [gRhombusDiag, 'isos'], [gSquareEquil, 'isos']],
+      3: [[gParaIsos, 'isos'], [gTrapIsos, 'parallel'], [gRhombusEquil, 'isos'], [gParaInside, 'isos']]
+    }
+  });
+})();
+
+
+/* ===== js/topics/p6-average.js ===== */
+"use strict";
+/* Math Quest Island topic: p6average (P6). Self-contained. Typed + MC.
+ * Authoring rules + registration shape: js/topics/README.md
+ * Scope (MOE 2021 Primary Mathematics Syllabus, updated Oct 2025, PRIMARY SIX,
+ * STATISTICS, SUB-STRAND: DATA ANALYSIS, 1. Average of a Set of Data):
+ *   1.1 average as 'total value ÷ number of data'
+ *   1.2 relationship between average, total value and number of data
+ * Every average, total and count printed or asked is a whole number, so no item
+ * needs a decimal answer. Pool 3 is PSLE Paper 2 shape: band 3, worded,
+ * q.exam = 'problem', coached (someone joins, someone leaves, a new average, a
+ * target average), every step a total = average × number of data.
+ *
+ * P5-P6 mirror (Sprint 1, 2026-10-30): every item carries q.syl = 'P6'. MCQ distractors
+ * carry q.miscon = { choiceIndex: tag } and a coaching line in q.optionFeedback; typed
+ * items carry q.slips = { '<wrong value>': tag }. Tags live in `misconceptions` below.
+ */
+(function () {
+  const G = MQI.gen;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, finishTyped = G.finishTyped;
+
+  const NAMES = ['Hui Min', 'Farid', 'Kavitha', 'Jun Hao', 'Siti', 'Ravi', 'Mei Ling', 'Ahmad',
+                 'Bala', 'Xin Yi', 'Daniel', 'Nurul', 'Wei Jie', 'Aisyah'];
+  const BOYS = ['Farid', 'Jun Hao', 'Ravi', 'Ahmad', 'Bala', 'Daniel', 'Wei Jie'];
+  const WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
+  const ORD = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
+  const P6 = q => (q.syl = 'P6', q);
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const listOf = (xs, f) => { const s = xs.map(f || String); return s.slice(0, -1).join(', ') + ' and ' + s[s.length - 1]; };
+  const isPosInt = v => Number.isInteger(v) && v > 0;
+
+  /* n whole numbers in [lo, hi] whose average is a whole number A (returned with them) */
+  function dataSet(n, lo, hi) {
+    for (let t = 0; t < 500; t++) {
+      const xs = [];
+      for (let i = 0; i < n - 1; i++) xs.push(ri(lo, hi));
+      const s = xs.reduce((a, b) => a + b, 0);
+      const A = Math.round((s + ri(lo, hi)) / n), last = A * n - s;
+      if (last < lo || last > hi) continue;
+      xs.push(last);
+      if (new Set(xs).size < n - 1) continue;
+      return { xs: shuffle(xs), A, total: A * n };
+    }
+    return null;
+  }
+
+  /* MCQ over whole numbers. dist = [[value, tag, coaching], ...]; keeps the first three
+     positive whole values that differ from the key and each other. */
+  function mcq(stem, key, dist, explain, unitPre) {
+    const seen = [key], keep = [];
+    for (const d of dist) {
+      if (keep.length >= 3) break;
+      if (!isPosInt(d[0]) || seen.indexOf(d[0]) !== -1) continue;
+      seen.push(d[0]); keep.push(d);
+    }
+    if (keep.length < 3) return null;
+    const pre = unitPre || '';
+    const rows = shuffle([[key, null, null]].concat(keep));
+    const q = { q: stem, extra: '', choices: rows.map(r => pre + r[0]), correct: 0, explain, answerText: pre + key };
+    q.correct = rows.findIndex(r => r[1] === null);
+    q.miscon = {}; q.optionFeedback = {};
+    rows.forEach((r, i) => { if (r[1]) { q.miscon[i] = r[1]; q.optionFeedback[i] = r[2]; } });
+    return P6(q);
+  }
+  function slips(q, list) {
+    const s = {};
+    for (const [v, tag] of list) if (isPosInt(v) && v !== q.answer && !(String(v) in s)) s[String(v)] = tag;
+    q.slips = s;
+    return P6(q);
+  }
+  const money = (q, n) => (q.answerText = '$' + n, q);
+  const problem = (q, technique, steps) => (q.band = 3, q.exam = 'problem', q.technique = technique, q.steps = steps, q);
+
+  /* ---------- 1.1 average of a set (pool 1, MCQ) ---------- */
+  function gAvgOfSetMC() {
+    const n = ri(3, 5), d = dataSet(n, 4, 40);
+    if (!d) return gAvgOfSetMC();
+    const { xs, A, total } = d, sorted = xs.slice().sort((a, b) => a - b);
+    const ends = (sorted[0] + sorted[n - 1]) / 2;
+    const out = mcq('Find the average of ' + listOf(xs) + '.', A, [
+      [total, 'total-not-divided', 'That is the total. Share it out equally: divide the total by how many numbers there are.'],
+      [total / (n - 1), 'wrong-count', 'Count the numbers again: there are ' + n + ', so divide the total by ' + n + '.'],
+      [total / (n + 1), 'wrong-count', 'Count the numbers again: there are ' + n + ', so divide the total by ' + n + '.'],
+      [ends, 'ends-average', 'The average uses every number, not just the smallest and the largest. Add them all first.'],
+      [n % 2 ? sorted[(n - 1) / 2] : -1, 'middle-value', 'The middle number is not the average. Add all ' + n + ' numbers and divide by ' + n + '.'],
+      [sorted[n - 1], 'largest-value', 'The average sits between the smallest and the largest number. Add them all and share the total equally.']
+    ], 'Total = ' + xs.join(' + ') + ' = ' + total + '. There are ' + n + ' numbers, so the average is ' + total + ' ÷ ' + n + ' = ' + A + '.');
+    return out || gAvgOfSetMC();
+  }
+
+  /* ---------- 1.2 total from the average (pool 1, MCQ) ---------- */
+  function gTotalFromAvgMC() {
+    const n = ri(3, 8), A = ri(6, 50), T = A * n;
+    const out = mcq('The average of ' + WORD[n] + ' numbers is ' + A + '. What is the total of the ' + WORD[n] + ' numbers?', T, [
+      [A + n, 'added-count', 'Average × number of data gives the total. Multiply ' + A + ' by ' + n + ', do not add.'],
+      [A, 'average-as-total', 'The average is what each number would be if they were all equal. The total is ' + n + ' of those.'],
+      [A * (n - 1), 'wrong-count', 'There are ' + n + ' numbers, so the total is ' + n + ' × ' + A + '.'],
+      [A * (n + 1), 'wrong-count', 'There are ' + n + ' numbers, so the total is ' + n + ' × ' + A + '.']
+    ], 'Total = average × number of data = ' + A + ' × ' + n + ' = ' + T + '.');
+    return out || gTotalFromAvgMC();
+  }
+
+  /* ---------- 1.2 the missing value (pools 1 and 2, typed) ---------- */
+  function gMissingValue() {
+    const n = ri(3, 6), d = dataSet(n, 5, 60);
+    if (!d) return gMissingValue();
+    const { xs, A, total } = d, ans = xs[n - 1], others = xs.slice(0, n - 1), so = total - ans;
+    if (ans === A) return gMissingValue();          /* else the average-as-value slip would be the key */
+    const stem = 'The average of ' + WORD[n] + ' numbers is ' + A + '. ' + cap(WORD[n - 1]) + ' of the numbers are ' + listOf(others) +
+      '. What is the ' + ORD[n] + ' number?';
+    const q = finishTyped(stem, ans,
+      'Total of all ' + n + ' numbers = ' + A + ' × ' + n + ' = ' + total + '. The ' + WORD[n - 1] + ' numbers given add up to ' + so +
+      ', so the ' + ORD[n] + ' number is ' + total + ' − ' + so + ' = ' + ans + '.');
+    return slips(q, [[A, 'average-as-value'], [total, 'answered-total'], [A * (n - 1) - so, 'wrong-count'], [so, 'answered-total']]);
+  }
+
+  /* ---------- 1.1 average in context (pool 2, typed) ---------- */
+  function gAvgWord() {
+    const kind = ri(0, 2), n = ri(3, 6);
+    if (kind === 0) {
+      const who = pick(NAMES), d = dataSet(n, 5, 40);
+      if (!d) return gAvgWord();
+      const stem = who + ' saved ' + listOf(d.xs, x => '$' + x) + ' in ' + n + ' weeks. What was the average amount ' + who +
+        ' saved per week? (in dollars)';
+      const q = money(finishTyped(stem, d.A, 'Total = $' + d.total + '. Average = $' + d.total + ' ÷ ' + n + ' = $' + d.A + ' per week.', '$'), d.A);
+      return slips(q, [[d.total, 'total-not-divided'], [d.total / (n - 1), 'wrong-count'], [d.total / (n + 1), 'wrong-count']]);
+    }
+    const C = kind === 1 ? ['masses', 'parcels', 'kg', 'mass', 1, 15] : ['heights', 'plants', 'cm', 'height', 20, 95];
+    const d = dataSet(n, C[4], C[5]);
+    if (!d) return gAvgWord();
+    const stem = 'The ' + C[0] + ' of ' + n + ' ' + C[1] + ' are ' + listOf(d.xs, x => x + ' ' + C[2]) + '. What is the average ' + C[3] +
+      ' of the ' + C[1] + ', in ' + C[2] + '?';
+    const q = finishTyped(stem, d.A, 'Total = ' + d.total + ' ' + C[2] + '. Average = ' + d.total + ' ÷ ' + n + ' = ' + d.A + ' ' + C[2] + '.', C[2]);
+    return slips(q, [[d.total, 'total-not-divided'], [d.total / (n - 1), 'wrong-count'], [d.total / (n + 1), 'wrong-count']]);
+  }
+
+  /* ---------- 1.2 total from the average, in context (pool 2, typed) ---------- */
+  function gTotalTyped() {
+    const n = ri(4, 12);
+    if (Math.random() < 0.5) {
+      const A = ri(28, 55), T = A * n;
+      const q = finishTyped('The average mass of ' + n + ' boys is ' + A + ' kg. What is the total mass of the ' + n + ' boys, in kg?', T,
+        'Total = average × number of data = ' + A + ' × ' + n + ' = ' + T + ' kg.', 'kg');
+      return slips(q, [[A + n, 'added-count'], [A, 'average-as-total'], [A * (n - 1), 'wrong-count']]);
+    }
+    const A = ri(4, 30), T = A * n;
+    const q = money(finishTyped('The average price of ' + n + ' storybooks is $' + A + '. What is the total price of the ' + n +
+      ' storybooks? (in dollars)', T, 'Total = average × number of data = $' + A + ' × ' + n + ' = $' + T + '.', '$'), T);
+    return slips(q, [[A + n, 'added-count'], [A, 'average-as-total'], [A * (n - 1), 'wrong-count']]);
+  }
+
+  /* ---------- 1.2 number of data from total and average (pool 2, typed) ---------- */
+  function gCountTyped() {
+    const n = ri(4, 25), A = ri(6, 40), T = A * n;
+    if (Math.random() < 0.5) {
+      const q = finishTyped('A group of pupils collected ' + T + ' cans altogether. On average, each pupil collected ' + A +
+        ' cans. How many pupils were there in the group?', n,
+        'Number of data = total ÷ average = ' + T + ' ÷ ' + A + ' = ' + n + ' pupils.', 'pupils');
+      return slips(q, [[T * A, 'multiplied-instead'], [T - A, 'subtracted-instead'], [A, 'average-as-count']]);
+    }
+    const q = finishTyped('Some boxes hold ' + T + ' marbles altogether. On average, each box holds ' + A +
+      ' marbles. How many boxes are there?', n,
+      'Number of data = total ÷ average = ' + T + ' ÷ ' + A + ' = ' + n + ' boxes.', 'boxes');
+    return slips(q, [[T * A, 'multiplied-instead'], [T - A, 'subtracted-instead'], [A, 'average-as-count']]);
+  }
+
+  /* ---------- Paper 2 problems (pool 3, band 3) ---------- */
+  /* one joins: find the newcomer's value */
+  function gJoin() {
+    const who = pick(BOYS);
+    for (let t = 0; t < 400; t++) {
+      const n = ri(3, 9), A = ri(32, 48), B = A + pick([-3, -2, -1, 1, 2, 3]);
+      const T1 = n * A, T2 = (n + 1) * B, X = T2 - T1;
+      if (X < 25 || X > 75) continue;
+      const stem = 'The average mass of ' + n + ' boys is ' + A + ' kg. When ' + who + ' joins the group, the average mass of the ' + (n + 1) +
+        ' boys becomes ' + B + ' kg. What is ' + who + '\'s mass, in kg?';
+      const q = finishTyped(stem, X, 'Total before = ' + n + ' × ' + A + ' = ' + T1 + ' kg. Total after = ' + (n + 1) + ' × ' + B + ' = ' + T2 +
+        ' kg. ' + who + '\'s mass is the difference: ' + T2 + ' − ' + T1 + ' = ' + X + ' kg.', 'kg');
+      problem(q, 'Before and after', [
+        'Before: the total mass of the ' + n + ' boys is ' + n + ' × ' + A + ' = ' + T1 + ' kg.',
+        'After: the total mass of the ' + (n + 1) + ' boys is ' + (n + 1) + ' × ' + B + ' = ' + T2 + ' kg.',
+        'Only ' + who + ' joined, so the extra mass in the total is ' + who + '\'s mass.',
+        who + '\'s mass is ' + T2 + ' − ' + T1 + ' = <b>' + X + '</b> kg.'
+      ]);
+      return slips(q, [[B, 'average-as-value'], [T2, 'answered-total'], [Math.abs(B - A), 'difference-of-averages']]);
+    }
+    return gTarget();
+  }
+  /* one leaves: find the leaver's value */
+  function gLeave() {
+    const who = pick(NAMES);
+    for (let t = 0; t < 400; t++) {
+      const n = ri(4, 9), A = ri(20, 60), B = A + pick([-4, -3, -2, 2, 3, 4]);
+      const T1 = n * A, T2 = (n - 1) * B, X = T1 - T2;
+      if (X < 5 || X > 150) continue;
+      const stem = 'The average amount of money saved by ' + n + ' pupils is $' + A + '. After ' + who + ' leaves the group, the average amount saved by the other ' +
+        (n - 1) + ' pupils is $' + B + '. How much money did ' + who + ' save? (in dollars)';
+      const q = money(finishTyped(stem, X, 'Total before = ' + n + ' × $' + A + ' = $' + T1 + '. Total after = ' + (n - 1) + ' × $' + B + ' = $' + T2 +
+        '. ' + who + ' saved the difference: $' + T1 + ' − $' + T2 + ' = $' + X + '.', '$'), X);
+      problem(q, 'Before and after', [
+        'Before: the ' + n + ' pupils saved ' + n + ' × $' + A + ' = $' + T1 + ' altogether.',
+        'After: the other ' + (n - 1) + ' pupils saved ' + (n - 1) + ' × $' + B + ' = $' + T2 + ' altogether.',
+        'The only money that left the total is ' + who + '\'s savings.',
+        who + ' saved $' + T1 + ' − $' + T2 + ' = <b>$' + X + '</b>.'
+      ]);
+      return slips(q, [[A, 'average-as-value'], [B, 'average-as-value'], [T1, 'answered-total'], [Math.abs(A - B), 'difference-of-averages']]);
+    }
+    return gJoin();
+  }
+  /* one joins with a known score: the new average */
+  function gNewAvg() {
+    const who = pick(NAMES);
+    for (let t = 0; t < 400; t++) {
+      const n = ri(4, 9), A = ri(55, 80), B = A + pick([-3, -2, -1, 1, 2, 3]);
+      const T1 = n * A, T2 = (n + 1) * B, X = T2 - T1;
+      if (X < 30 || X > 100 || X === B) continue;
+      const stem = 'The average score of ' + n + ' players in a quiz team is ' + A + ' points. A new player, ' + who + ', who scored ' + X +
+        ' points, joins the team. What is the new average score of the ' + (n + 1) + ' players?';
+      const q = finishTyped(stem, B, 'Total before = ' + n + ' × ' + A + ' = ' + T1 + '. Add ' + who + '\'s ' + X + ': ' + T1 + ' + ' + X + ' = ' + T2 +
+        '. New average = ' + T2 + ' ÷ ' + (n + 1) + ' = ' + B + ' points.', 'points');
+      problem(q, 'Before and after', [
+        'Before: the ' + n + ' players scored ' + n + ' × ' + A + ' = ' + T1 + ' points altogether.',
+        'After ' + who + ' joins: ' + T1 + ' + ' + X + ' = ' + T2 + ' points altogether.',
+        'Now there are ' + n + ' + 1 = ' + (n + 1) + ' players sharing the total.',
+        'New average = ' + T2 + ' ÷ ' + (n + 1) + ' = <b>' + B + '</b> points.'
+      ]);
+      return slips(q, [[(A + X) / 2, 'averaged-the-averages'], [T2 / n, 'wrong-count'], [T2, 'answered-total']]);
+    }
+    return gJoin();
+  }
+  /* reach a target average: how much is needed next */
+  function gTarget() {
+    const who = pick(NAMES);
+    for (let t = 0; t < 400; t++) {
+      const n = ri(3, 6), A = ri(20, 60), B = A + ri(2, 6);
+      const T1 = n * A, T2 = (n + 1) * B, X = T2 - T1;
+      if (X > 120) continue;
+      const stem = 'In the first ' + n + ' months of the year, ' + who + ' saved an average of $' + A + ' a month. How much must ' + who +
+        ' save in the next month to make the average for the ' + (n + 1) + ' months $' + B + '? (in dollars)';
+      const q = money(finishTyped(stem, X, 'Saved so far = ' + n + ' × $' + A + ' = $' + T1 + '. Needed in total = ' + (n + 1) + ' × $' + B + ' = $' + T2 +
+        '. Next month: $' + T2 + ' − $' + T1 + ' = $' + X + '.', '$'), X);
+      problem(q, 'Work backwards', [
+        'Start from the goal: an average of $' + B + ' over ' + (n + 1) + ' months needs ' + (n + 1) + ' × $' + B + ' = $' + T2 + ' altogether.',
+        'Saved so far: ' + n + ' × $' + A + ' = $' + T1 + '.',
+        'The next month must make up what is still missing from the total.',
+        'Next month: $' + T2 + ' − $' + T1 + ' = <b>$' + X + '</b>.'
+      ]);
+      return slips(q, [[B, 'average-as-value'], [B - A, 'difference-of-averages'], [T2, 'answered-total']]);
+    }
+    return gNewAvg();
+  }
+
+  MQI.registerTopic({
+    id: 'p6average', level: 'P6', strand: 'Statistics',
+    moeSubTopic: 'Average of a Set of Data: average as ‘total value ÷ number of data’; relationship between average, total value and number of data',
+    label: 'Average Atoll', short: 'Average', e: '📊',
+    skills: {
+      mean:    { label: 'Finding the average', tip: 'Add everything up, then share the total equally: divide by how many there are.' },
+      total:   { label: 'Total from the average', tip: 'Total = average × number of data. Say it out loud before every average question.' },
+      missing: { label: 'The missing value', tip: 'Find the total the average needs, then take away the values you already know.' },
+      change:  { label: 'Joining and leaving', tip: 'Work out the total before and the total after. The change in the total is the one who joined or left.' }
+    },
+    misconceptions: {
+      'total-not-divided':       'Gives the total instead of dividing it by the number of data.',
+      'wrong-count':             'Divides or multiplies by the wrong number of data.',
+      'ends-average':            'Averages only the smallest and largest values.',
+      'middle-value':            'Takes the middle value as the average.',
+      'largest-value':           'Picks the largest value as the average.',
+      'added-count':             'Adds the number of data to the average instead of multiplying.',
+      'average-as-total':        'Treats the average as the total.',
+      'average-as-value':        'Gives an average when the question asks for one value.',
+      'answered-total':          'Gives a total when the question asks for one value or an average.',
+      'multiplied-instead':      'Multiplies the total by the average instead of dividing.',
+      'subtracted-instead':      'Takes the average away from the total instead of dividing.',
+      'average-as-count':        'Gives the average when the question asks for the number of data.',
+      'difference-of-averages':  'Works with the change in the average instead of the change in the total.',
+      'averaged-the-averages':   'Averages the old average and the new value as if each counted once.'
+    },
+    pools: {
+      1: [[gAvgOfSetMC, 'mean'], [gTotalFromAvgMC, 'total'], [gMissingValue, 'missing']],
+      2: [[gAvgWord, 'mean'], [gTotalTyped, 'total'], [gCountTyped, 'total'], [gMissingValue, 'missing']],
+      3: [[gJoin, 'change'], [gLeave, 'change'], [gNewAvg, 'mean'], [gTarget, 'missing']]
+    }
+  });
+})();
+
+
+/* ===== js/topics/p5-exam-problems.js ===== */
+"use strict";
+/* Math Quest Island topic: p5problems (P5). Self-contained. Typed + MC.
+ * Authoring rules + registration shape: js/topics/README.md
+ *
+ * WHY THIS FILE EXISTS. The PSLE Paper 2 mode (js/modes/psle-mock.js) fills its ten
+ * structured slots only with band-3, worded, typed items (q.exam = 'problem'). No other
+ * P5 topic file carries band 3, so a P5 Paper 2 drew every structured question from a
+ * P3/P4 node. The existing p5-*.js files are not edited (never overwrite content); this
+ * one file holds PSLE Paper 2-style structured problems spanning the P5 syllabus, plus
+ * the one P5 outcome the app was missing: WHOLE NUMBERS 1.1, reading and writing
+ * numbers up to 10 million in numerals and in words.
+ *
+ * SCOPE (MOE 2021 Primary Mathematics Syllabus, updated Oct 2025, pp.41-42, PRIMARY FIVE):
+ *   Whole Numbers 1.1 reading and writing numbers in numerals and in words (to 10 million)
+ *   Whole Numbers 2   the four operations, in context
+ *   Fractions 2.2/2.3 multiplying a fraction and a whole number / two fractions
+ *                     (the remainder-of-a-remainder problems; nothing divides BY a fraction:
+ *                     the backward problem is solved with units, never with a fraction divisor)
+ *   Decimals 1.2      converting kg/g, km/m, m/cm, l/ml in decimal form
+ *   Percentage 1.1-1.4  part of a whole as %, % of a whole, discount, GST (9%), annual interest
+ *   Rate 1.1-1.2      rate as an amount per unit; total, rate or number of units
+ *   Area of Triangle 1.1-1.3  base and height; area; composite of rectangle and triangle
+ *   Volume 2.4-2.6    volume of a cuboid; liquid in a rectangular tank; l (ml) and cm3
+ * NOT here: finding a dimension of a cuboid from its volume, percentage of increase, the
+ * whole from a part, ratio, speed, average (all P6, p.43-44).
+ *
+ * POOLS. 1 = Paper 1 short items, friendly numbers. 2 = Paper 1/2 short answers.
+ * 3 = PSLE Paper 2 structured problems: band 3, q.exam = 'problem', worded, typed,
+ * coached (q.technique + 3-5 q.steps whose every equation is true and whose last step
+ * bolds the key). Every pool-3 key is a whole number (the coaching checker reads it).
+ * Every draw carries q.syl = 'P5'; MCQ distractors carry q.miscon + q.optionFeedback;
+ * typed items carry q.slips. Tags are defined once, in `misconceptions` below.
+ */
+(function () {
+  const G = MQI.gen;
+  const ri = G.ri, pick = G.pick, shuffle = G.shuffle, gcd = G.gcd, fr = G.fr,
+        finishTyped = G.finishTyped;
+
+  const KIDS = ['Hui Min', 'Farid', 'Kavitha', 'Jun Hao', 'Siti', 'Ravi', 'Mei Ling', 'Ahmad',
+                'Bala', 'Xin Yi', 'Daniel', 'Nurul', 'Wei Jie', 'Aisyah'];
+  const ADULTS = ['Mdm Tan', 'Mr Lim', 'Mrs Wong', 'Mr Rahman', 'Mdm Kaur', 'Mr Lee', 'Mrs Goh', 'Mdm Siti'];
+  const P5 = q => (q.syl = 'P5', q);
+  const money = (q, n) => (q.answerText = '$' + n, q);
+  const comma = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const dec = x => String(parseFloat(x.toFixed(4)));
+
+  /* MCQ with tagged distractors; dist = [[text, tag, coaching], ...]. null = redraw. */
+  function mcq(stem, key, dist, explain) {
+    const seen = [key], keep = [];
+    for (const d of dist) {
+      if (keep.length >= 3) break;
+      if (seen.indexOf(d[0]) !== -1) continue;
+      seen.push(d[0]); keep.push(d);
+    }
+    if (keep.length < 3) return null;
+    const rows = shuffle([[key, null, null]].concat(keep));
+    const q = { q: stem, extra: '', choices: rows.map(r => r[0]), correct: 0, explain, answerText: key };
+    q.correct = rows.findIndex(r => r[1] === null);
+    q.miscon = {}; q.optionFeedback = {};
+    rows.forEach((r, i) => { if (r[1]) { q.miscon[i] = r[1]; q.optionFeedback[i] = r[2]; } });
+    return P5(q);
+  }
+  /* typed slips: positive finite values that differ from the key */
+  function slips(q, list) {
+    const s = {};
+    for (const [v, tag] of list) {
+      if (!Number.isFinite(v) || v <= 0 || Math.abs(v - q.answer) < 1e-9) continue;
+      const k = String(v);
+      if (!(k in s)) s[k] = tag;
+    }
+    q.slips = s;
+    return P5(q);
+  }
+  /* Paper 2 structured problem */
+  function band3(q, technique, steps) {
+    q.band = 3; q.exam = 'problem'; q.technique = technique; q.steps = steps;
+    return q;
+  }
+
+  /* ================= WHOLE NUMBERS 1.1: numerals and words ================= */
+  const ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+                'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  function under100(r) { return r < 20 ? ONES[r] : TENS[Math.floor(r / 10)] + (r % 10 ? '-' + ONES[r % 10] : ''); }
+  function under1000(x) {
+    const h = Math.floor(x / 100), r = x % 100;
+    return (h ? ONES[h] + ' hundred' : '') + (h && r ? ' and ' : '') + (r ? under100(r) : '');
+  }
+  function words(n) {
+    const M = Math.floor(n / 1e6), T = Math.floor(n / 1000) % 1000, U = n % 1000;
+    const parts = [];
+    if (M) parts.push(under1000(M) + ' million');
+    if (T) parts.push(under1000(T) + ' thousand');
+    if (U) parts.push((U < 100 && parts.length ? 'and ' : '') + under1000(U));
+    let s = parts[0];
+    for (let i = 1; i < parts.length; i++) s += (parts[i].indexOf('and ') === 0 ? ' ' : ', ') + parts[i];
+    return s;
+  }
+  /* a number up to 10 million with at least one placeholder zero in it */
+  function gapNumber() {
+    for (;;) {
+      const M = ri(1, 9);
+      const T = pick([0, ri(1, 9), ri(10, 99), ri(1, 9) * 100 + ri(0, 9), ri(1, 9) * 100 + ri(1, 9) * 10, ri(100, 999)]);
+      const U = pick([0, ri(1, 9), ri(10, 99), ri(1, 9) * 100 + ri(1, 9), ri(1, 9) * 100 + ri(1, 9) * 10, ri(100, 999)]);
+      const n = M * 1e6 + T * 1000 + U;
+      if (/0/.test(String(n).slice(1)) && !(T === 0 && U === 0)) return { n, M, T, U };
+    }
+  }
+  /* the slips a child makes writing it: dropped placeholders, a group shifted, groups swapped */
+  function numeralSlips(g, typed) {
+    const out = [];
+    const noPh = Number(String(g.M) + (g.T ? String(g.T) : '') + (g.U ? String(g.U) : ''));
+    /* a dropped-zero answer that is still 7 digits long: the short digit string with the
+       zeros pushed to the end (3,040,006 -> "3406" -> 3,406,000), so it cannot be ruled out
+       at a glance by its length. The raw short string is a typed slip only. */
+    const L7 = String(noPh).length < 7 ? noPh * Math.pow(10, 7 - String(noPh).length) : noPh;
+    out.push([L7, 'no-placeholder']);
+    if (typed && noPh < 1e6) out.push([noPh, 'no-placeholder']);
+    if (g.T > 0 && g.T < 100) out.push([g.M * 1e6 + g.T * 10000 + g.U, 'place-shift']);
+    if (g.U > 0 && g.U < 100) out.push([g.M * 1e6 + g.T * 1000 + g.U * 10, 'place-shift']);
+    if (g.U !== g.T) out.push([g.M * 1e6 + g.U * 1000 + g.T, 'group-order']);
+    out.push([g.M * 1e7 + g.T * 1000 + g.U, 'extra-zero']);
+    return out.filter(s => s[0] !== g.n && s[0] > 0);
+  }
+  const NUM_FB = {
+    'no-placeholder': 'Each group after the millions needs three digits. Fill an empty place with 0.',
+    'place-shift': 'One group has moved a place. Write each group in its own three places.',
+    'group-order': 'The thousands and the ones have changed places. Read the words in order: millions, thousands, then ones.',
+    'extra-zero': 'That number is more than ten million. A number in the millions has 7 digits.'
+  };
+
+  /* 1.1 words -> numerals, typed (pools 1 and 2) */
+  function gNumeralsTyped() {
+    const g = gapNumber();
+    const q = finishTyped('Write the number "' + words(g.n) + '" in numerals. (Write it with commas or with no spaces, e.g. 1,234,567.)', g.n,
+      'Write it group by group: ' + g.M + ' million, then the thousands as three digits (' + String(g.T).padStart(3, '0') +
+      '), then the ones as three digits (' + String(g.U).padStart(3, '0') + '). That gives ' + comma(g.n) + '.');
+    q.answerText = comma(g.n);
+    return slips(q, numeralSlips(g, true));
+  }
+  /* 1.1 words -> numerals, MCQ (pool 1) */
+  function gNumeralsMcq() {
+    const g = gapNumber();
+    const dist = numeralSlips(g).map(s => [comma(s[0]), s[1], NUM_FB[s[1]]]);
+    const out = mcq('Which of these is the number "' + words(g.n) + '" written in numerals?', comma(g.n), dist,
+      'Millions: ' + g.M + '. Thousands: ' + String(g.T).padStart(3, '0') + '. Ones: ' + String(g.U).padStart(3, '0') +
+      '. So the number is ' + comma(g.n) + '.');
+    return out || gNumeralsMcq();
+  }
+  /* 1.1 numerals -> words, MCQ (pool 2) */
+  function gWordsMcq() {
+    const g = gapNumber();
+    const dist = numeralSlips(g).filter(s => s[0] < 1e7).map(s => [words(s[0]), s[1],
+      s[1] === 'no-placeholder' ? 'Those words lose the zeros that hold empty places. Read ' + comma(g.n) + ' group by group: millions, thousands, ones.' : NUM_FB[s[1]]]);
+    const out = mcq('How is ' + comma(g.n) + ' written in words?', words(g.n), dist,
+      comma(g.n) + ' is ' + [g.M + ' million', g.T ? g.T + ' thousand' : '', g.U ? String(g.U) : ''].filter(Boolean).join(' and ') + ': "' + words(g.n) + '".');
+    return out || gWordsMcq();
+  }
+
+  /* ================= DECIMALS 1.2: measurements in decimal form ================= */
+  const PAIRS = [ // [big, small, factor, big word]
+    ['kg', 'g', 1000, 'kilograms'], ['km', 'm', 1000, 'kilometres'], ['ℓ', 'ml', 1000, 'litres'], ['m', 'cm', 100, 'metres']];
+  /* compound -> big unit, MCQ (pool 1) */
+  function gConvMcq() {
+    const p = pick(PAIRS), f = p[2];
+    const big = ri(1, 9);
+    const small = f === 1000 ? pick([ri(1, 9), ri(11, 99), ri(101, 999)]) : pick([ri(1, 9), ri(11, 99)]);
+    if (small % 10 === 0) return gConvMcq();
+    const key = big + small / f, digits = String(f).length - 1;
+    const keyS = dec(key) + ' ' + p[0];
+    const unpadded = Number(big + '.' + String(small));
+    const otherF = big + small / (f === 1000 ? 100 : 1000);
+    const dist = [
+      [dec(unpadded) + ' ' + p[0], 'placeholder-zero', small + ' ' + p[1] + ' needs ' + digits + ' decimal places, so fill the gap with 0.'],
+      [dec(otherF) + ' ' + p[0], 'wrong-factor', '1 ' + p[0] + ' = ' + f + ' ' + p[1] + '. Divide the ' + p[1] + ' by ' + f + '.'],
+      [(big + small) + ' ' + p[0], 'added-units', 'Adding the two numbers mixes two different units. Change the ' + p[1] + ' into ' + p[0] + ' first.'],
+      [(big * f + small) + ' ' + p[0], 'wrong-direction', 'That is the amount in ' + p[1] + ', not in ' + p[0] + '.']
+    ];
+    const out = mcq('Write ' + big + ' ' + p[0] + ' ' + small + ' ' + p[1] + ' in ' + p[3] + '.', keyS, dist,
+      small + ' ' + p[1] + ' = ' + small + ' ÷ ' + f + ' = ' + dec(small / f) + ' ' + p[0] + ', so ' + big + ' ' + p[0] + ' ' + small + ' ' + p[1] + ' = ' + keyS + '.');
+    return out || gConvMcq();
+  }
+  /* smaller -> larger and larger -> smaller, typed (pool 2) */
+  function gConvTyped() {
+    const p = pick(PAIRS), f = p[2];
+    const THING = { kg: 'A parcel has a mass of ', km: 'A cycling path is ', 'ℓ': 'A jug holds ', m: 'A ribbon is ' };
+    const TAIL = { kg: '', km: ' long', 'ℓ': ' of water', m: ' long' };
+    if (Math.random() < 0.5) {
+      /* smaller -> larger: decimal answer */
+      let total = ri(1, 9) * f + (f === 1000 ? pick([ri(1, 9), ri(11, 99), ri(101, 999)]) : pick([ri(1, 9), ri(11, 99)]));
+      if (total % 10 === 0) total += 1;
+      const ans = Number(dec(total / f));
+      const q = finishTyped(THING[p[0]] + total + ' ' + p[1] + TAIL[p[0]] + '. Write this in ' + p[3] + '.', ans,
+        '1 ' + p[0] + ' = ' + f + ' ' + p[1] + ', so divide by ' + f + ': ' + total + ' ÷ ' + f + ' = ' + ans + ' ' + p[0] + '.', p[0]);
+      q.dp = 3;
+      const big = Math.floor(total / f), small = total % f;
+      return slips(q, [[Number(big + '.' + small), 'placeholder-zero'], [Number(dec(total / (f === 1000 ? 100 : 1000))), 'wrong-factor'], [total * f, 'wrong-direction']]);
+    }
+    /* larger (decimal) -> smaller: whole answer */
+    let ans = ri(1, 9) * f + (f === 1000 ? pick([ri(1, 9) * 10, ri(11, 99) * 10, ri(1, 9) * 100, ri(101, 999)]) : ri(11, 99));
+    if (ans % f === 0) ans += f === 1000 ? 50 : 5;
+    const given = dec(ans / f);
+    const q = finishTyped(THING[p[0]] + given + ' ' + p[0] + TAIL[p[0]] + '. Write this in ' + (p[1] === 'g' ? 'grams' : p[1] === 'm' ? 'metres' : p[1] === 'ml' ? 'millilitres' : 'centimetres') + '.', ans,
+      '1 ' + p[0] + ' = ' + f + ' ' + p[1] + ', so multiply by ' + f + ': ' + given + ' × ' + f + ' = ' + ans + ' ' + p[1] + '.', p[1]);
+    q.dp = 3;
+    return slips(q, [[Number(dec(ans / 10)), 'wrong-factor'], [ans * 10, 'wrong-factor'], [Number(given), 'not-converted']]);
+  }
+
+  /* ================= short worded items (pools 1 and 2) ================= */
+  /* Fractions 2.2: fraction of a whole number, what is left (pools 1 and 2) */
+  function gShortFraction() {
+    const who = pick(KIDS);
+    let b = pick([3, 4, 5, 6, 8]), a = ri(1, b - 1);
+    while (gcd(a, b) !== 1) a = ri(1, b - 1);
+    const N = b * ri(3, 12), gave = N * a / b, ans = N - gave;
+    const q = finishTyped(who + ' had ' + N + ' stickers. ' + who + ' gave ' + fr(a, b) + ' of them to a friend. How many stickers did ' + who + ' have left?', ans,
+      fr(a, b) + ' of ' + N + ' = ' + gave + '. ' + who + ' had ' + N + ' − ' + gave + ' = ' + ans + ' stickers left.', 'stickers');
+    return slips(q, [[gave, 'answered-used'], [N / b, 'one-unit-only']]);
+  }
+  /* Percentage 1.1: part of a whole as a percentage (pool 2) */
+  function gShortPercent() {
+    const N = pick([20, 25, 40, 50]);
+    let P = ri(2, N - 2);
+    while ((P * 100) % N !== 0) P = ri(2, N - 2);
+    const pct = P * 100 / N;
+    const q = finishTyped('There are ' + N + ' pupils in a class. ' + P + ' of them walk to school. What percentage of the pupils walk to school? (answer in %, e.g. 35)', pct,
+      P + ' out of ' + N + ' is ' + P + '/' + N + ' = ' + pct + '/100 = ' + pct + '%.', '%');
+    q.answerText = pct + '%';
+    return slips(q, [[P, 'part-not-percent'], [100 - pct, 'complement']]);
+  }
+  /* Rate 1.2: total from a rate found first (pool 2) */
+  function gShortRate() {
+    const r = pick([12, 15, 18, 24, 25, 30, 35, 40, 45]), m = ri(3, 8);
+    let n = ri(4, 15);
+    while (n === m) n = ri(4, 15);
+    const A = r * m, ans = r * n;
+    const q = finishTyped('A printer prints ' + A + ' pages in ' + m + ' minutes. At the same rate, how many pages does it print in ' + n + ' minutes?', ans,
+      'Rate: ' + A + ' ÷ ' + m + ' = ' + r + ' pages per minute. In ' + n + ' minutes: ' + r + ' × ' + n + ' = ' + ans + ' pages.', 'pages');
+    return slips(q, [[A * n, 'no-unit-rate'], [r, 'unit-rate-only']]);
+  }
+
+  /* ================= POOL 3: PSLE Paper 2 structured problems ================= */
+
+  /* Whole numbers, four operations: ticket takings less the hall rental */
+  function gConcertTakings() {
+    const A = ri(1200, 4800), p = pick([12, 15, 18, 25, 30]), B = ri(800, 3000), c = pick([40, 45, 50, 60, 75]);
+    const X = A * p, Y = B * c, Z = X + Y, C = ri(5, 20) * 1000, ans = Z - C;
+    const q = money(finishTyped('A concert sold ' + A + ' tickets at $' + p + ' each and ' + B + ' tickets at $' + c +
+      ' each. The organisers paid $' + C + ' to rent the hall. How much money was left after paying for the hall? (in dollars) (You may use a calculator.)', ans,
+      A + ' × $' + p + ' = $' + X + ' and ' + B + ' × $' + c + ' = $' + Y + '. Together $' + Z + '. Less the hall: $' + Z + ' − $' + C + ' = $' + ans + '.', '$'), ans);
+    band3(q, 'Draw a model', [
+      'Money from the cheaper tickets: ' + A + ' × $' + p + ' = $' + X + '.',
+      'Money from the dearer tickets: ' + B + ' × $' + c + ' = $' + Y + '.',
+      'All the takings: $' + X + ' + $' + Y + ' = $' + Z + '.',
+      'Take away the hall rental: $' + Z + ' − $' + C + ' = <b>$' + ans + '</b>.'
+    ]);
+    return slips(q, [[Z, 'missed-step'], [Z + C, 'added-instead'], [(A + B) * c - C, 'one-price-for-all']]);
+  }
+
+  /* Whole numbers, division in two stages then a total */
+  function gPackCartons() {
+    const ITEM = pick([['muffins', 'muffin'], ['erasers', 'eraser'], ['pens', 'pen'], ['curry puffs', 'curry puff']]);
+    const b = pick([6, 8, 12, 15, 20, 24]), k = pick([10, 12, 15, 20, 25]), c = ri(15, 90), s = pick([45, 60, 75, 80, 96, 120]);
+    const boxes = k * c, N = b * boxes, ans = c * s;
+    const q = money(finishTyped('A factory made ' + N + ' ' + ITEM[0] + '. They were packed into boxes of ' + b + ' ' + ITEM[0] +
+      ' each, and every ' + k + ' boxes were packed into a carton. Each carton was sold for $' + s +
+      '. How much money did the factory collect for all the cartons? (in dollars) (You may use a calculator.)', ans,
+      N + ' ÷ ' + b + ' = ' + boxes + ' boxes. ' + boxes + ' ÷ ' + k + ' = ' + c + ' cartons. ' + c + ' × $' + s + ' = $' + ans + '.', '$'), ans);
+    band3(q, 'Draw a model', [
+      'Number of boxes: ' + N + ' ÷ ' + b + ' = ' + boxes + '.',
+      'Number of cartons: ' + boxes + ' ÷ ' + k + ' = ' + c + '.',
+      'Money collected: ' + c + ' × $' + s + ' = <b>$' + ans + '</b>.'
+    ]);
+    return slips(q, [[boxes * s, 'missed-step'], [c, 'stopped-early']]);
+  }
+
+  /* Fractions: a fraction of the remainder, find what is left */
+  function fracPair() {
+    let b = pick([3, 4, 5, 6, 8]), a = ri(1, b - 1);
+    while (gcd(a, b) !== 1) a = ri(1, b - 1);
+    let d = pick([3, 4, 5, 6]), c = ri(1, d - 1);
+    while (gcd(c, d) !== 1) c = ri(1, d - 1);
+    return [a, b, c, d];
+  }
+  function gFracRemainderLeft() {
+    const who = pick(ADULTS), [a, b, c, d] = fracPair();
+    const T = b * d * ri(4, 30) * 5;
+    const S1 = T * a / b, R = T - S1, S2 = R * c / d, L = R - S2;
+    /* prices a parent would believe: household items up to about $400 / $300,
+       big-ticket items (a holiday, a television) only when the amounts are large */
+    let it;
+    if (S1 >= 20 && S1 <= 400 && S2 >= 15 && S2 <= 300) it = ['a rice cooker', 'a fan', 'Rice cooker', 'Fan'];
+    else if (S1 >= 400 && S1 <= 5000 && S2 >= 300 && S2 <= 3000) it = ['a holiday', 'a television', 'Holiday', 'Television'];
+    else return gFracRemainderLeft();
+    const q = money(finishTyped(who + ' had $' + T + '. ' + who + ' spent ' + fr(a, b) + ' of the money on ' + it[0] + ' and ' + fr(c, d) +
+      ' of the remainder on ' + it[1] + '. How much money did ' + who + ' have left? (in dollars)', L,
+      fr(a, b) + ' of $' + T + ' = $' + S1 + ', leaving $' + R + '. ' + fr(c, d) + ' of $' + R + ' = $' + S2 + '. Left: $' + R + ' − $' + S2 + ' = $' + L + '.', '$'), L);
+    band3(q, 'Draw a model', [
+      it[2] + ': ' + fr(a, b) + ' × $' + T + ' = $' + S1 + '.',
+      'The remainder: $' + T + ' − $' + S1 + ' = $' + R + '.',
+      it[3] + ': ' + fr(c, d) + ' of the REMAINDER, ' + fr(c, d) + ' × $' + R + ' = $' + S2 + '.',
+      'Money left: $' + R + ' − $' + S2 + ' = <b>$' + L + '</b>.'
+    ]);
+    const ofWhole = T - S1 - T * c / d;
+    return slips(q, [[Number.isInteger(ofWhole) ? ofWhole : -1, 'fraction-of-whole'], [R, 'missed-step'], [S2, 'answered-used']]);
+  }
+
+  /* Fractions: a fraction of the remainder, find the amount at first (units, no fraction divisor) */
+  function gFracRemainderFirst() {
+    const who = pick(KIDS), [a, b, c, d] = fracPair();
+    /* 1 part of the remainder = u1; a multiple of (b - a), so the remainder splits into (b - a) whole-dollar parts */
+    const u1 = (b - a) * ri(1, 6) * 2;
+    const R = d * u1;
+    const v = R / (b - a), T = b * v, L = (d - c) * u1;
+    const S1 = a * v, S2 = c * u1;
+    const first = S1 <= 30 ? 'a book' : S1 <= 150 ? 'a watch' : S1 <= 600 ? 'a bicycle' : null;
+    const second = S2 <= 40 ? 'a pen' : S2 <= 120 ? 'a bag' : S2 <= 250 ? 'a pair of shoes' : null;
+    if (!first || !second) return gFracRemainderFirst();
+    const k = d - c, j = b - a, sec = second.replace(/^a /, '');
+    const q = money(finishTyped(who + ' had some money. ' + who + ' spent ' + fr(a, b) + ' of it on ' + first + ' and ' + fr(c, d) +
+      ' of the remainder on ' + second + '. ' + who + ' had $' + L + ' left. How much money did ' + who + ' have at first? (in dollars)', T,
+      'The $' + L + ' is ' + (d - c) + ' of the ' + d + ' parts of the remainder, so the remainder is $' + R + '. That is ' + (b - a) +
+      ' of the ' + b + ' parts of the money, so the money at first was $' + T + '.', '$'), T);
+    band3(q, 'Work backwards', [
+      k === 1
+        ? 'After the ' + sec + ', 1 part of the ' + d + ' parts of the remainder is left, so 1 part is $' + u1 + '.'
+        : 'After the ' + sec + ', ' + k + ' of the ' + d + ' parts of the remainder are left. 1 part = $' + L + ' ÷ ' + k + ' = $' + u1 + '.',
+      'The remainder is ' + d + ' parts: ' + d + ' × $' + u1 + ' = $' + R + '.',
+      j === 1
+        ? 'The remainder is 1 part of the ' + b + ' parts of the money at first, so 1 part is $' + v + '.'
+        : 'The remainder is ' + j + ' of the ' + b + ' parts of the money at first. 1 part = $' + R + ' ÷ ' + j + ' = $' + v + '.',
+      'At first: ' + b + ' × $' + v + ' = <b>$' + T + '</b>.'
+    ]);
+    const sl = [[R, 'stopped-early']];
+    const den = b * d - a * d - c * b;            /* 1 - a/b - c/d, over b*d */
+    if (den > 0 && (L * b * d) % den === 0) sl.push([L * b * d / den, 'fraction-of-whole']);
+    return slips(q, sl);
+  }
+
+  /* Decimals: mass or volume in decimal form, total in the smaller unit */
+  function gShoppingTotal() {
+    const who = pick(ADULTS), n = ri(2, 6);
+    const kgKind = Math.random() < 0.5;
+    const per = kgKind ? pick([1250, 2350, 1500, 2075, 1850, 2400, 3125, 1450]) : pick([1250, 1500, 1750, 2250, 1850, 2400]);
+    const extra = kgKind ? pick([350, 450, 650, 750, 825, 900]) : pick([250, 330, 500, 750, 900]);
+    const Y = n * per, ans = Y + extra;
+    const big = dec(per / 1000);
+    const stem = kgKind
+      ? 'A bag of rice has a mass of ' + big + ' kg. ' + who + ' bought ' + n + ' such bags of rice and a packet of beans of mass ' + extra + ' g. What was the total mass of the rice and beans, in grams?'
+      : 'A bottle holds ' + big + ' ℓ of juice. ' + who + ' bought ' + n + ' such bottles of juice and a carton of milk holding ' + extra + ' ml. What was the total volume of the juice and milk, in millilitres?';
+    const u = kgKind ? 'g' : 'ml', U = kgKind ? 'kg' : 'ℓ';
+    const q = finishTyped(stem, ans,
+      big + ' ' + U + ' = ' + per + ' ' + u + '. ' + n + ' × ' + per + ' = ' + Y + ' ' + u + '. ' + Y + ' + ' + extra + ' = ' + ans + ' ' + u + '.', u);
+    band3(q, 'Units check', [
+      'Change to the smaller unit first: ' + big + ' ' + U + ' is ' + per + ' ' + u + '.',
+      n + ' of them: ' + n + ' × ' + per + ' = ' + Y + ' ' + u + '.',
+      'Add the last item: ' + Y + ' + ' + extra + ' = <b>' + ans + '</b> ' + u + '.'
+    ]);
+    return slips(q, [[n * per / 10 + extra, 'wrong-factor'], [Y, 'missed-step'], [per + extra, 'missed-multiply']]);
+  }
+
+  /* Decimals: m to cm, then what is left */
+  function gRibbonLeft() {
+    const who = pick(KIDS);
+    const Y = pick([350, 425, 450, 500, 575, 600, 640, 750, 825, 900]);
+    const c = pick([15, 18, 24, 25, 30, 35, 40, 45]);
+    const n = ri(3, Math.floor((Y - 10) / c));
+    const U = n * c, ans = Y - U;
+    if (ans <= 0) return gRibbonLeft();
+    const X = dec(Y / 100);
+    const q = finishTyped(who + ' had a ribbon ' + X + ' m long. ' + who + ' cut ' + n + ' pieces, each ' + c +
+      ' cm long, from it. How long was the ribbon that was left, in centimetres?', ans,
+      X + ' m = ' + Y + ' cm. The pieces used ' + n + ' × ' + c + ' = ' + U + ' cm. Left: ' + Y + ' − ' + U + ' = ' + ans + ' cm.', 'cm');
+    band3(q, 'Units check', [
+      'Change the ribbon to centimetres: ' + X + ' m is ' + Y + ' cm.',
+      'The pieces cut off: ' + n + ' × ' + c + ' = ' + U + ' cm.',
+      'Ribbon left: ' + Y + ' − ' + U + ' = <b>' + ans + '</b> cm.'
+    ]);
+    return slips(q, [[Y * 10 - U, 'wrong-factor'], [U, 'answered-used']]);
+  }
+
+  /* Percentage: discount, then 9% GST on the sale price */
+  function gDiscountGst() {
+    const ITEMS = ['washing machine', 'refrigerator', 'television', 'laptop', 'sofa', 'air-conditioner'];
+    const item = pick(ITEMS), who = pick(ADULTS);
+    for (let t = 0; t < 200; t++) {
+      const d = pick([10, 15, 20, 25, 30, 40]), P = ri(4, 40) * 100;
+      if ((P * (100 - d)) % 10000 !== 0) continue;
+      const D = P * d / 100, S = P - D, Gs = S * 9 / 100, T = S + Gs;
+      const q = money(finishTyped('A ' + item + ' is priced at $' + P + '. During a sale, it is sold at a ' + d +
+        '% discount. GST of 9% is then charged on the sale price. How much does ' + who + ' pay for the ' + item + '? (in dollars)', T,
+        'Discount: ' + d + '% of $' + P + ' = $' + D + '. Sale price $' + S + '. GST: 9% of $' + S + ' = $' + Gs + '. Pay $' + S + ' + $' + Gs + ' = $' + T + '.', '$'), T);
+      band3(q, 'Before and after', [
+        'Discount: ' + fr(d, 100) + ' × $' + P + ' = $' + D + '.',
+        'Sale price: $' + P + ' − $' + D + ' = $' + S + '.',
+        'GST on the sale price: ' + fr(9, 100) + ' × $' + S + ' = $' + Gs + '.',
+        'Amount paid: $' + S + ' + $' + Gs + ' = <b>$' + T + '</b>.'
+      ]);
+      const sl = [[S, 'forgot-gst'], [S - Gs, 'gst-subtracted']];
+      if ((P * 9) % 100 === 0) sl.push([S + P * 9 / 100, 'gst-on-original']);
+      return slips(q, sl);
+    }
+    return gConcertTakings();
+  }
+
+  /* Percentage: annual interest on two deposits */
+  function gTwoAccounts() {
+    const who = pick(ADULTS);
+    const A = ri(10, 80) * 100, B = ri(10, 80) * 100;
+    let a = pick([1, 2, 3, 4]), b = pick([2, 3, 4, 5]);
+    if (a === b) b = a + 1;
+    const I1 = A * a / 100, I2 = B * b / 100, I = I1 + I2;
+    const totalKind = Math.random() < 0.5;
+    const ask = totalKind
+      ? 'How much money did ' + who + ' have in the two accounts altogether after 1 year? (in dollars)'
+      : 'How much interest did ' + who + ' receive altogether after 1 year? (in dollars)';
+    const ans = totalKind ? A + B + I : I;
+    const q = money(finishTyped(who + ' put $' + A + ' in a bank account that pays ' + a + '% interest per year and $' + B +
+      ' in another account that pays ' + b + '% interest per year. ' + ask, ans,
+      'Interest: ' + a + '% of $' + A + ' = $' + I1 + ' and ' + b + '% of $' + B + ' = $' + I2 + ', so $' + I + ' altogether' +
+      (totalKind ? '. With the deposits: $' + A + ' + $' + B + ' + $' + I + ' = $' + ans + '.' : '.'), '$'), ans);
+    const st = [
+      'Interest from the first account: ' + fr(a, 100) + ' × $' + A + ' = $' + I1 + '.',
+      'Interest from the second account: ' + fr(b, 100) + ' × $' + B + ' = $' + I2 + '.'
+    ];
+    if (totalKind) st.push('All the interest: $' + I1 + ' + $' + I2 + ' = $' + I + '.',
+      'Deposits plus interest: $' + A + ' + $' + B + ' + $' + I + ' = <b>$' + ans + '</b>.');
+    else st.push('All the interest: $' + I1 + ' + $' + I2 + ' = <b>$' + I + '</b>.');
+    band3(q, 'Draw a model', st);
+    const sl = totalKind ? [[I, 'interest-only'], [A + B, 'missed-step']] : [[A + B + I, 'total-not-interest'], [I1, 'missed-step']];
+    if (((A + B) * a) % 100 === 0) sl.push([totalKind ? A + B + (A + B) * a / 100 : (A + B) * a / 100, 'one-rate-for-both']);
+    return slips(q, sl);
+  }
+
+  /* Percentage: a percentage of a percentage part */
+  function gPercentOfPart() {
+    for (let t = 0; t < 400; t++) {
+      const N = ri(8, 60) * 10, p = pick([20, 25, 30, 35, 40, 45, 55, 60, 65]), s = pick([10, 15, 20, 25, 30, 40]);
+      if ((N * p) % 100) continue;
+      const Gn = N * p / 100;
+      if ((Gn * s) % 100) continue;
+      const S = Gn * s / 100, ans = Gn - S;
+      const q = finishTyped('There are ' + N + ' pupils in a school hall. ' + p + '% of them are girls. ' + s +
+        '% of the girls wear spectacles. How many girls do not wear spectacles?', ans,
+        p + '% of ' + N + ' = ' + Gn + ' girls. ' + s + '% of ' + Gn + ' = ' + S + ' wear spectacles. ' + Gn + ' − ' + S + ' = ' + ans + ' do not.',
+        ['girls', 'pupils']);
+      band3(q, 'Draw a model', [
+        'Girls: ' + fr(p, 100) + ' × ' + N + ' = ' + Gn + '.',
+        'Girls who wear spectacles: ' + fr(s, 100) + ' × ' + Gn + ' = ' + S + '.',
+        'Girls who do not: ' + Gn + ' − ' + S + ' = <b>' + ans + '</b>.'
+      ]);
+      const sl = [[S, 'answered-used'], [Gn, 'missed-step']];
+      if ((N * (100 - s)) % 100 === 0) sl.push([N * (100 - s) / 100, 'percent-of-whole']);
+      return slips(q, sl);
+    }
+    return gTwoAccounts();
+  }
+
+  /* Rate: two printers working together */
+  function gTwoPrinters() {
+    const who = pick(ADULTS);
+    for (let t = 0; t < 400; t++) {
+      const a = pick([20, 24, 25, 30, 35, 40, 45]), b = pick([15, 16, 20, 25, 30, 35]);
+      const c = pick([20, 24, 25, 30, 36, 40, 45, 50, 60]), p = pick([8, 10, 12, 16, 20, 24]);
+      const P = c * p, r = a + b;
+      if (a === b || P % r) continue;
+      const ans = P / r;
+      if (ans < 4 || ans > 90) continue;
+      const q = finishTyped('Printer A prints ' + a + ' pages per minute and Printer B prints ' + b + ' pages per minute. ' + who +
+        ' uses both printers together to print ' + c + ' copies of a booklet that has ' + p + ' pages. How many minutes do they take?', ans,
+        c + ' × ' + p + ' = ' + P + ' pages. Together ' + a + ' + ' + b + ' = ' + r + ' pages per minute. ' + P + ' ÷ ' + r + ' = ' + ans + ' minutes.', 'min');
+      band3(q, 'Units check', [
+        'Pages to print: ' + c + ' × ' + p + ' = ' + P + '.',
+        'Pages both printers print in 1 minute: ' + a + ' + ' + b + ' = ' + r + '.',
+        'Time: ' + P + ' ÷ ' + r + ' = <b>' + ans + '</b> minutes.'
+      ]);
+      const sl = [[P, 'missed-step']];
+      if (P % a === 0) sl.push([P / a, 'one-machine-only']);
+      if (P % b === 0) sl.push([P / b, 'one-machine-only']);
+      return slips(q, sl);
+    }
+    return gPetrolCost();
+  }
+
+  /* Rate: distance per litre, then cost per litre */
+  function gPetrolCost() {
+    const who = pick(ADULTS);
+    for (let t = 0; t < 400; t++) {
+      const d = pick([10, 12, 14, 15, 16, 18]), L = ri(8, 45), cents = pick([250, 260, 275, 280, 300, 320]);
+      if ((L * cents) % 100) continue;
+      const D = d * L, tc = L * cents, ans = tc / 100;
+      const price = '$' + (cents / 100).toFixed(2);
+      const q = money(finishTyped(who + '\'s car travels ' + d + ' km on 1 ℓ of petrol. Petrol costs ' + price +
+        ' per litre. How much does the petrol cost for a trip of ' + D + ' km? (in dollars)', ans,
+        D + ' ÷ ' + d + ' = ' + L + ' ℓ of petrol. ' + L + ' × ' + price + ' = $' + ans + '.', '$'), ans);
+      band3(q, 'Units check', [
+        'Petrol used: ' + D + ' ÷ ' + d + ' = ' + L + ' ℓ.',
+        'Each litre costs ' + price + ', which is ' + cents + ' cents.',
+        L + ' litres cost ' + L + ' × ' + cents + ' cents, which is ' + tc + ' cents, and ' + tc + ' ÷ 100 = <b>$' + ans + '</b>.'
+      ]);
+      const sl = [[L, 'stopped-early']];
+      if ((D * cents) % 100 === 0) sl.push([D * cents / 100, 'no-unit-rate']);
+      return slips(q, sl);
+    }
+    return gTwoPrinters();
+  }
+
+  /* Area: rectangle less a triangle */
+  function gGardenGrass() {
+    for (let t = 0; t < 400; t++) {
+      const L = ri(12, 40), B = ri(8, 30), b = ri(4, L - 2), h = ri(3, B - 2);
+      if ((b * h) % 2) continue;
+      const A = L * B, T = b * h / 2, ans = A - T;
+      const q = finishTyped('A rectangular garden is ' + L + ' m long and ' + B + ' m wide. A triangular flower bed with a base of ' + b +
+        ' m and a height of ' + h + ' m is inside the garden. The rest of the garden is covered with grass. What is the area of the grass, in m²?', ans,
+        'Garden: ' + L + ' × ' + B + ' = ' + A + ' m². Flower bed: 1/2 × ' + b + ' × ' + h + ' = ' + T + ' m². Grass: ' + A + ' − ' + T + ' = ' + ans + ' m².', 'm²');
+      band3(q, 'Sketch and label', [
+        'Area of the garden: ' + L + ' × ' + B + ' = ' + A + ' m².',
+        'Area of the flower bed: ' + fr(1, 2) + ' × ' + b + ' × ' + h + ' = ' + T + ' m².',
+        'Area of the grass: ' + A + ' − ' + T + ' = <b>' + ans + '</b> m².'
+      ]);
+      return slips(q, [[A - b * h, 'forgot-half'], [T, 'answered-used'], [A + T, 'added-instead']]);
+    }
+    return gGardenGrass();
+  }
+
+  /* Area: height from a triangle's area, then a rectangle */
+  function gTriangleToRect() {
+    for (let t = 0; t < 400; t++) {
+      const b = ri(4, 24), h = ri(3, 20), L = ri(5, 30);
+      if ((b * h) % 2 || L === b) continue;
+      const A = b * h / 2, D = 2 * A, ans = L * h;
+      const q = finishTyped('A triangle has an area of ' + A + ' cm² and a base of ' + b + ' cm. A rectangle has the same height as the triangle and a length of ' +
+        L + ' cm. What is the area of the rectangle, in cm²?', ans,
+        'Area of triangle = 1/2 × base × height, so base × height = 2 × ' + A + ' = ' + D + '. Height = ' + D + ' ÷ ' + b + ' = ' + h + ' cm. Rectangle: ' + L + ' × ' + h + ' = ' + ans + ' cm².', 'cm²');
+      band3(q, 'Work backwards', [
+        'Area of a triangle is ' + fr(1, 2) + ' × base × height, so base × height = 2 × ' + A + ' = ' + D + '.',
+        'Height of the triangle: ' + D + ' ÷ ' + b + ' = ' + h + ' cm.',
+        'Area of the rectangle: ' + L + ' × ' + h + ' = <b>' + ans + '</b> cm².'
+      ]);
+      const sl = [[h, 'stopped-early']];
+      if (A % b === 0) sl.push([L * A / b, 'forgot-half']);
+      return slips(q, sl);
+    }
+    return gTriangleToRect();
+  }
+
+  /* Volume: water needed to fill a tank to the brim */
+  function gTankTopUp() {
+    for (let t = 0; t < 400; t++) {
+      const L = pick([20, 25, 30, 40, 50, 60]), W = pick([15, 20, 25, 30, 40]), H = pick([20, 25, 30, 35, 40, 45, 50]);
+      const d = ri(4, H - 4), e = H - d, V = L * W * e;
+      if (V % 1000) continue;
+      const ans = V / 1000;
+      const q = finishTyped('A rectangular tank is ' + L + ' cm long, ' + W + ' cm wide and ' + H + ' cm high. It contains water to a depth of ' + d +
+        ' cm. How many more litres of water are needed to fill the tank completely? (1 ℓ = 1000 cm³)', ans,
+        'The empty part is ' + H + ' − ' + d + ' = ' + e + ' cm high. ' + L + ' × ' + W + ' × ' + e + ' = ' + V + ' cm³ = ' + ans + ' ℓ.', 'ℓ');
+      band3(q, 'Sketch and label', [
+        'Height of the empty part: ' + H + ' − ' + d + ' = ' + e + ' cm.',
+        'Volume of the empty part: ' + L + ' × ' + W + ' × ' + e + ' = ' + V + ' cm³.',
+        'In litres: ' + V + ' ÷ 1000 = <b>' + ans + '</b> ℓ.'
+      ]);
+      const sl = [[V, 'not-converted']];
+      if ((L * W * d) % 1000 === 0) sl.push([L * W * d / 1000, 'water-already-in']);
+      if ((L * W * H) % 1000 === 0) sl.push([L * W * H / 1000, 'whole-tank']);
+      return slips(q, sl);
+    }
+    return gTankTopUp();
+  }
+
+  /* Volume: tank water shared into jugs */
+  function gTankToJugs() {
+    for (let t = 0; t < 400; t++) {
+      const L = pick([20, 24, 25, 30, 36, 40]), W = pick([12, 15, 18, 20, 25]), H = pick([20, 25, 30, 40]);
+      const d = ri(5, H - 3), n = pick([3, 4, 5, 6, 8, 9, 10, 12]);
+      const V = L * W * d;
+      if (V % n) continue;
+      const ans = V / n;
+      if (ans > 3000) continue;
+      const who = pick(ADULTS);
+      const q = finishTyped('A rectangular tank is ' + L + ' cm long, ' + W + ' cm wide and ' + H + ' cm high. It is filled with water to a depth of ' + d +
+        ' cm. ' + who + ' pours all the water equally into ' + n + ' jugs. How many millilitres of water are there in each jug? (1 cm³ = 1 ml)', ans,
+        'Water: ' + L + ' × ' + W + ' × ' + d + ' = ' + V + ' cm³ = ' + V + ' ml. Each jug: ' + V + ' ÷ ' + n + ' = ' + ans + ' ml.', ['ml', 'cm³']);
+      band3(q, 'Sketch and label', [
+        'Volume of the water: ' + L + ' × ' + W + ' × ' + d + ' = ' + V + ' cm³.',
+        'Since 1 cm³ is 1 ml, the water is ' + V + ' ml.',
+        'Water in each jug: ' + V + ' ÷ ' + n + ' = <b>' + ans + '</b> ml.'
+      ]);
+      const sl = [[V, 'missed-step']];
+      if ((L * W * H) % n === 0) sl.push([L * W * H / n, 'whole-tank']);
+      return slips(q, sl);
+    }
+    return gTankToJugs();
+  }
+
+  MQI.registerTopic({
+    id: 'p5problems', level: 'P5', strand: 'Number and Algebra; Measurement and Geometry',
+    moeSubTopic: 'Numbers up to 10 million: reading and writing numbers in numerals and in words. ' +
+      'Fractions: multiplying a proper/improper fraction and a whole number without calculator. ' +
+      'Decimals: converting a measurement from a smaller unit to a larger unit in decimal form, and vice versa. ' +
+      'Percentage: expressing a part of a whole as a percentage; finding a percentage part of a whole; finding discount, GST and annual interest. ' +
+      'Rate: finding rate, total amount or number of units given the other two quantities. ' +
+      'Area of Triangle: area of triangle; finding the area of composite figures made up of rectangles, squares and triangles. ' +
+      'Volume of Cube and Cuboid: volume of a cube/cuboid; finding the volume of liquid in a rectangular tank; relationship between ℓ (or ml) with cm3',
+    label: 'Paper Two Point', short: 'P5 Problems', e: '📝',
+    skills: {
+      wholes:     { label: 'Whole numbers', tip: 'Read big numbers in groups of three: millions, thousands, ones, and fill empty places with 0.' },
+      fractions:  { label: 'Fraction problems', tip: 'Ask "a fraction of WHAT?" - of the whole, or of what was left.' },
+      decimals:   { label: 'Measurement in decimals', tip: 'Change everything into the same, smaller unit before adding.' },
+      percentage: { label: 'Percentage problems', tip: 'Write each % as a fraction of 100 and say aloud what it is a percentage of.' },
+      rate:       { label: 'Rate problems', tip: 'Find the amount for ONE unit first, then scale up.' },
+      area:       { label: 'Area problems', tip: 'Sketch the figure, label every length, then add or take away the parts.' },
+      volume:     { label: 'Volume and tanks', tip: 'The water in a tank is a cuboid: length × breadth × depth of the water.' }
+    },
+    misconceptions: {
+      'no-placeholder':     'Leaves out the zeros that hold empty places in a large number.',
+      'place-shift':        'Writes a group of digits one place too far left.',
+      'group-order':        'Writes the thousands and ones groups in the wrong order.',
+      'extra-zero':         'Writes one zero too many, so the number is ten times too big.',
+      'placeholder-zero':   'Leaves out the zero after the decimal point when converting units.',
+      'wrong-factor':       'Uses 10 or 100 instead of 1000 (or the other way round) when converting units.',
+      'added-units':        'Adds the numbers of two different units together.',
+      'wrong-direction':    'Multiplies when converting to a larger unit, or divides when converting to a smaller one.',
+      'not-converted':      'Gives the answer in the given unit without changing it.',
+      'answered-used':      'Gives the part used or taken instead of the part asked for.',
+      'one-unit-only':      'Stops at the value of one part.',
+      'part-not-percent':   'Gives the count instead of the percentage.',
+      'complement':         'Gives the percentage of the other group.',
+      'no-unit-rate':       'Multiplies the given numbers without finding the rate for 1 unit.',
+      'unit-rate-only':     'Stops at the rate for 1 unit.',
+      'missed-step':        'Leaves out one step of a multi-step problem.',
+      'added-instead':      'Adds an amount that should be taken away.',
+      'one-price-for-all':  'Uses one price for every item.',
+      'stopped-early':      'Stops at a middle answer instead of the one the question asks for.',
+      'fraction-of-whole':  'Takes the second fraction of the whole instead of the remainder.',
+      'missed-multiply':    'Counts one item when the question has several.',
+      'forgot-gst':         'Leaves out the GST.',
+      'gst-subtracted':     'Takes the GST away instead of adding it.',
+      'gst-on-original':    'Charges GST on the price before the discount.',
+      'interest-only':      'Gives only the interest when the question asks for the total amount.',
+      'total-not-interest': 'Gives the total amount when the question asks for the interest only.',
+      'one-rate-for-both':  'Uses one interest rate for both accounts.',
+      'percent-of-whole':   'Takes the second percentage of everyone instead of the group named.',
+      'one-machine-only':   'Uses the rate of only one machine.',
+      'forgot-half':        'Forgets the half in the area of a triangle.',
+      'water-already-in':   'Finds the water already in the tank instead of the water still needed.',
+      'whole-tank':         'Uses the full height of the tank instead of the depth of the water.'
+    },
+    pools: {
+      1: [[gNumeralsTyped, 'wholes'], [gNumeralsMcq, 'wholes'], [gConvMcq, 'decimals'], [gShortFraction, 'fractions']],
+      2: [[gNumeralsTyped, 'wholes'], [gWordsMcq, 'wholes'], [gConvTyped, 'decimals'], [gShortFraction, 'fractions'],
+          [gShortPercent, 'percentage'], [gShortRate, 'rate']],
+      3: [[gConcertTakings, 'wholes'], [gPackCartons, 'wholes'], [gFracRemainderLeft, 'fractions'], [gFracRemainderFirst, 'fractions'],
+          [gShoppingTotal, 'decimals'], [gRibbonLeft, 'decimals'], [gDiscountGst, 'percentage'], [gTwoAccounts, 'percentage'],
+          [gPercentOfPart, 'percentage'], [gTwoPrinters, 'rate'], [gPetrolCost, 'rate'], [gGardenGrass, 'area'],
+          [gTriangleToRect, 'area'], [gTankTopUp, 'volume'], [gTankToJugs, 'volume']]
+    }
+  });
+})();
+
+
 /* ===== js/registry.js ===== */
 "use strict";
 /* Math Quest Island island map registry: level -> topic nodes -> skills.
@@ -22094,9 +25665,16 @@ const MAP_NODES=[
   {id:'angles',    e:'🏛️', name:'Angle Ruins',        blurb:'Angles on a line, at a point and vertically opposite (P5)', grades:['P5']},
   /* ---- P6 (P5-P6 mirror, Sprint 1, 2026-10-28) ---- */
   {id:'p6ratio',   e:'⚖️', name:'Ratio Ridge',         blurb:'Ratios of two and three quantities, sharing, and before-and-after problems (P6)', grades:['P6']},
-  /* ---- still locked: no topic file has shipped for these ---- */
-  {id:'percent',   e:'⛰️', name:'Percentage Peak',     blurb:'Coming soon (P6)', locked:true, status:'locked', grades:['P6']},
-  {id:'algebra',   e:'🌀', name:'Algebra Atoll',       blurb:'Coming soon (P6)', locked:true, status:'locked', grades:['P6']}
+  /* ---- P6 fan-out (P5-P6 mirror, 2026-10-30): the locked stubs are live now ---- */
+  {id:'p6fractions',e:'🌗', name:'Fraction Falls',     blurb:'Dividing fractions by whole numbers and by fractions. TYPE your answer! (P6)', grades:['P6']},
+  {id:'percent',   e:'⛰️', name:'Percentage Peak',     blurb:'Finding the whole from a part, and percentage increase and decrease (P6)', grades:['P6']},
+  {id:'algebra',   e:'🌀', name:'Algebra Atoll',       blurb:'Letters for unknowns: simplify, substitute and solve simple equations (P6)', grades:['P6']},
+  {id:'p6circles', e:'⭕', name:'Circle Cove',         blurb:'Area and circumference of circles, semicircles and quarter circles (P6)', grades:['P6']},
+  {id:'p6volume',  e:'📦', name:'Cube Root Cove',      blurb:'Missing edges and heights from a volume, square and cube roots, tanks (P6)', grades:['P6']},
+  {id:'p6quads',   e:'🔷', name:'Rhombus Reef',  blurb:'Unknown angles in composite figures of special quadrilaterals and triangles (P6)', grades:['P6']},
+  {id:'p6average', e:'📊', name:'Average Atoll',       blurb:'Average, total and number of data, and what changes when one joins or leaves (P6)', grades:['P6']},
+  /* ---- P5 Paper 2 structured problems (P5-P6 mirror): band-3 worded problems across the P5 syllabus ---- */
+  {id:'p5problems',e:'📝', name:'Paper Two Point',     blurb:'PSLE Paper 2 style structured problems across the P5 syllabus. TYPE your answer! (P5)', grades:['P5']}
 ];
 
 /* every node without an explicit status is live */
@@ -22579,4 +26157,4 @@ var MQI_API = (function () {
   };
 })();
 
-/* ENGINE_BUILD_END 20261028-9432513 */
+/* ENGINE_BUILD_END 20261030-c804080 */

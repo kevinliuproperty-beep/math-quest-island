@@ -86,5 +86,71 @@ const ex = ctx.outboxMockExtra(trec);
 ok(ex.ended === 'timeout' && cleanRecord(Object.assign({ id: up.id, device: up.device, app: 'maths', kind: 'paper', endedAt: up.endedAt }, ex), Date.now()).ended === 'timeout',
   'a timed-out paper sends and keeps ended=timeout');
 
+/* backward compatible: items with no replay keys (the synthetic paper above, an older
+   saved paper) upload exactly as before, and a bad replay value drops only that field */
+ok(['gen', 'seed', 'level', 'band', 'conv'].every(k => !(k in out.review[0])), 'no replay keys on an item that has none');
+ok(up.variant === 'quick' && out.variant === 'quick', 'paper variant sent and kept (' + out.variant + ')');
+const bad = cleanRecord(Object.assign({}, up, { variant: 'Q<1>', review: [Object.assign({}, up.review[0],
+  { gen: 'no dots here', seed: -1, level: 7, band: 'x', conv: 'yes' })] }), Date.now());
+ok(bad && bad.variant === undefined && bad.review.length === 1 && ['gen', 'seed', 'level', 'band', 'conv'].every(k => !(k in bad.review[0])),
+  'bad replay values drop the field, never the row');
+
+/* ---- replay keys on REAL banks (2026-10-30): every mock question can be redrawn exactly ----
+   The engine (core + figures + every topic + registry) loads in its own vm, with the
+   shell's stampedFeed and mqiSeededDraw taken verbatim from js/app.js. Real P3, PSLE
+   Paper 1 and PSLE Paper 2 papers are sat and uploaded; then each uploaded row's
+   gen + seed (+ conv) is redrawn and must give the same question, key and options. */
+const eng = { console }; eng.globalThis = eng; vm.createContext(eng);
+const eload = f => vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), eng, { filename: f });
+eload('js/core.js'); eload('js/figures.js');
+for (const f of fs.readdirSync(path.join(ROOT, 'js/topics')).filter(f => f.endsWith('.js')).sort()) eload('js/topics/' + f);
+eload('js/registry.js');
+const h0 = app.indexOf('function mqiSeedRng'), s0 = app.indexOf('const stampedFeed=id=>{'), s1 = app.indexOf('const draw=(id,lvl)=>', s0);
+ok(h0 > a0 && h0 < a1 && s0 > 0 && s1 > s0, 'found mqiSeededDraw and stampedFeed in js/app.js');
+vm.runInContext(app.slice(h0, a1) + '\nthis.mqiSeededDraw=mqiSeededDraw;\nthis.stampedFeed=(function(){' + app.slice(s0, s1) + 'return stampedFeed; })();', eng, { filename: 'js/app.js (replay helpers)' });
+const E = eng.MQI, psle = require(path.join(ROOT, 'js/modes/psle-mock.js'));
+const nodesFor = lv => { const ids = []; lv.forEach(g => (E.levelNodes[g] || []).forEach(id => { if (ids.indexOf(id) < 0) ids.push(id); }));
+  return ids.filter(id => E.mapNodes.some(n => n.id === id && n.status === 'live') && E.topics[id])
+    .map(id => ({ id, label: E.topics[id].short || E.topics[id].label || id, skills: {} })); };
+const genFn = gen => { const [tp, name] = gen.split('.'); const t = E.topics[tp]; if (!t) return null;
+  for (const l of [1, 2, 3]) for (const pr of t.pools[l]) if (pr[0].name === name) return pr[0]; return null; };
+const sig = q => JSON.stringify([q.q, q.extra || '', q.typed ? String(q.answer) : q.choices, q.correct, q.answerText, q.figure || null, q.unit || null]);
+const T = ctx.mqiOutbox.txt;
+for (const [modeObj, variant, lv] of [[mode, 'quick', ['P3']], [mode, 'full', ['P3']], [psle, 'paper1', ['P4', 'P5', 'P6']], [psle, 'paper2', ['P4', 'P5', 'P6']]]) {
+  const feeds = {}, nodes = nodesFor(lv);
+  const draw = (id, lvl) => { if (!feeds[id]) feeds[id] = eng.stampedFeed(id); return feeds[id].next(lvl); };
+  const pm = Object.create(modeObj), pc = { elapsedMs: 0 };
+  pm.start({ options: { variant, nodes, draw, parse: E.parseTypedAnswer, grade: E.gradeTyped, shapeOf: E.shapeKey } });
+  pm.items = pm._paper.items;
+  pm.items.forEach((it, i) => { pm.goto(pc, i); pc.elapsedMs += 1000; pm.record(i, { correct: i % 2 === 0, given: 'x' + i }); });
+  pm.submit();
+  const prec = pm.end(pc);
+  /* the row exactly as queued for the POST (the stubbed fetch above never settles, so the
+     outbox stays busy; the queue in localStorage is the body flush would send) */
+  ctx.outboxMaths({ mode: 'mock', topic: null, correct: 0, total: 0, ms: prec.usedMs, tally: {} }, ctx.outboxMockExtra(prec));
+  const pb = JSON.parse(store.get('mqi-outbox')).pop();
+  const bodyLen = JSON.stringify({ results: [pb] }).length;
+  const so = cleanRecord(Object.assign({}, pb), Date.now());
+  const tag = modeObj.id + ' ' + variant;
+  ok(so && so.variant === variant && so.review.length === pm.items.length, tag + ': ' + so.review.length + ' rows uploaded, variant kept');
+  ok(so.review.every(r => typeof r.gen === 'string' && Number.isInteger(r.seed) && r.level >= 1 && r.level <= 3),
+    tag + ': every row carries gen, seed and level');
+  let same = 0, miss = [];
+  so.review.forEach((r, i) => {
+    const it = pm.items[i], fn = genFn(r.gen);
+    let q2 = fn ? eng.mqiSeededDraw(fn, r.seed) : null;
+    if (q2 && r.conv) q2 = mode.toTyped(q2, E.parseTypedAnswer, E.gradeTyped);
+    const okRow = q2 && sig(q2) === sig(it.q) && T(q2.q, 200) === r.q && (T(q2.answerText, 80) || null) === r.answer &&
+      !!r.conv === !!it.q.converted && (r.band || null) === (it.q.band || null);
+    if (okRow) same++; else miss.push(r.n + ':' + r.gen);
+  });
+  const nConv = so.review.filter(r => r.conv).length;
+  ok(same === so.review.length, tag + ': every row redraws exactly from gen + seed (' + same + '/' + so.review.length + ', ' + nConv + ' typed-converted' + (miss.length ? '; ' + miss.slice(0, 5).join(', ') : '') + ')');
+  /* negative control: the seed is what pins the draw (a neighbouring seed gives a different item on most rows) */
+  const moved = so.review.filter((r, i) => { const fn = genFn(r.gen); return fn && sig(eng.mqiSeededDraw(fn, (r.seed + 1) >>> 0)) !== sig(eng.mqiSeededDraw(fn, r.seed)); }).length;
+  ok(moved >= so.review.length * 0.5, tag + ': control, seed+1 redraws a different item on ' + moved + '/' + so.review.length + ' rows');
+  ok(Array.isArray(pb.review) && bodyLen < 96 * 1024, tag + ': review kept, body ' + bodyLen + ' bytes (outbox drops detail over 96 KB)');
+}
+
 console.log(fails === 0 ? 'UPLOAD TEST OK - ' + checks + ' checks passed' : 'UPLOAD TEST FAILED - ' + fails + '/' + checks);
 process.exit(fails === 0 ? 0 : 1);

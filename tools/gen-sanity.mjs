@@ -90,6 +90,30 @@ function rnd() {
    requires two verbatim runs to be byte-identical. Both are kept: one stream,
    consumed through SeededMath inside the vm and through Math outside it. */
 Math.random = rnd;
+/* ---------- PER-BANK SEEDING (P5-P6 fan-out gate ruling, LOTTE 2026-10-30) -------
+   One stream for the whole run meant every ruler's sample depended on how many
+   generators ran BEFORE it: adding 115 P5/P6 generators re-rolled the samples of every
+   P3 bank downstream, and a P3 bank whose code had not changed (fractions.gOrderRelated,
+   46.7% on a 45% line, at a 5.0% shape share) flipped from pass to FAIL. A verdict on a
+   bank must be a property of that bank. So every loop over generators (and over topics)
+   reseeds the stream from SEED + the bank's own name before the bank is sampled, and
+   reseeds to a fixed per-loop value when the loop ends, so the sections that follow a
+   loop start from the same state however many banks the loop visited. Same SEED, same
+   bank -> same sample, whatever else ships. `SEED=<n>` still re-rolls everything. */
+function __hashSeed(key) {
+  let h = (SEED ^ 0x9E3779B9) >>> 0;
+  const k = String(key);
+  for (let i = 0; i < k.length; i++) { h = Math.imul(h ^ k.charCodeAt(i), 0x01000193) >>> 0; }
+  h = Math.imul(h ^ (h >>> 16), 0x85EBCA6B) >>> 0; h = Math.imul(h ^ (h >>> 13), 0xC2B2AE35) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const __bankKey = g => (typeof g === 'string' ? 'topic:' + g : (g.topic || '') + '.' + (g.name || ''));
+let __loopN = 0;
+function* __perBank(list) {
+  const n = ++__loopN;
+  for (const g of list) { _s = __hashSeed(__bankKey(g) + '#' + n); yield g; }
+  _s = __hashSeed('after-loop#' + n);
+}
 /* ---------- load the pure layer in a DOM-less vm ---------- */
 const SeededMath = Object.create(Math);
 SeededMath.random = rnd;
@@ -8015,7 +8039,7 @@ const rows = [];
    either line is worth seeing before it arrives (THIRD PASS 2026-09-16). */
 const proseRows = [];
 
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   let err = null, badQ = null, matched = 0;
   /* RULE 6 tallies: no single draw can show a length tell, only the whole run can.
      RULE 8's per-generator half rides in the same tally (THIRD PASS 2026-09-16). */
@@ -8379,7 +8403,7 @@ function flatExemptVerdict(row) {
     return `flat-rank exempt, but its two live ranks run ${(100 * f[1]).toFixed(1)}% / ${(100 * f[2]).toFixed(1)}% - the key's rank is all but fixed, which is the third pass's KILL ("pick the third smallest", 100.00%) and not the two-way guess the exemption declares`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = rankBank(g.fn);
   if (!row.seen) continue;                       /* not a numeric four-option bank */
@@ -8512,7 +8536,7 @@ function lenVerdict(row) {
   if (row.uLong / row.n >= LEN_CAP) return `the key is the uniquely LONGEST option on ${(100 * row.uLong / row.n).toFixed(1)}% of draws`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = lenBank(g.fn);
   if (!row.n) continue;
@@ -8708,7 +8732,7 @@ function widthVerdict(row) {
   }
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = widthBank(g.fn);
   if (!row.n) continue;                          /* not a numeric four-option bank */
@@ -8948,7 +8972,7 @@ function shapeVerdictUniq(row) {
   }
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const ex = SHAPE_EXEMPT[g.name];
   const row = shapeBank(g.fn, ex);
@@ -9096,7 +9120,7 @@ function colVerdict(row) {
     return `the MIRROR - "take the answer that stands alone in a column" - answers it on ${(100 * f('loner')).toFixed(1)}% of draws`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = colBank(g.fn);
   if (!row.n) continue;                          /* not a numeric four-option bank */
@@ -9351,7 +9375,7 @@ function tokVerdict(row) {
     return `"${w[0]}" is in ALL THREE distractors and not in the key on ${w[1]} of ${row.n} draws (${(100 * w[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child crosses three options out by that phrase alone${opts}`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = tokBank(g.fn);
   if (!row.n) continue;
@@ -9509,7 +9533,7 @@ function frRankBank(draw, n) {
   return { rate: r.map(x => x / (ranked || 1)), ranked, den: denDraws ? denScore / denDraws : 0, denDraws };
 }
 const frRankRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!RANK_TOPICS.has(g.topic)) continue;
   const key = g.topic + '.' + g.name;
   const r = [0, 0, 0, 0];
@@ -9631,7 +9655,7 @@ function frTokVerdict(row) {
   return null;
 }
 const frTokRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = frTokBank(g.fn, FR_TOK_N);
   if (row.n < FR_TOK_N / 2) continue;               /* not a prose bank */
@@ -9923,7 +9947,7 @@ function geoVerdict(row) {
   }
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const ex = GEO_EXEMPT[g.name];
   const row = geoBank(g.fn, ex);
@@ -10168,7 +10192,7 @@ function stemVerdict(row, only) {
   }
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const ex = STEM_EXEMPT[g.name];
   const row = stemBank(g.fn, ex);
@@ -10330,7 +10354,7 @@ function boardVerdict(row) {
     return `a FINITE board of ${row.rows} rows worth ${(100 * row.recall).toFixed(1)}% to full-table recall, served ${served.toFixed(2)} per session - the whole board goes past in ${toOwn.toFixed(0)} sessions`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = boardBank(g.fn);
   if (!row.n) continue;
@@ -10426,7 +10450,7 @@ function stemBoardBank(draw) {
   return { n, rows: tab.size, half: rowsHalf.size, recall: n ? worth / n : 0,
            finite: rowsHalf.size ? tab.size / rowsHalf.size <= BOARD_GROWTH : false };
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = stemBoardBank(g.fn);
   if (!row.n) continue;
@@ -10574,7 +10598,7 @@ function picVerdict(row) {
     : null;
 }
 const picRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = picBank(g.fn, PIC_N);
   if (!row.n || row.n < PIC_N / 2) continue;    /* not a figure bank with a fraction row */
@@ -10788,7 +10812,7 @@ function rowVerdict(row, name) {
   return null;
 }
 const rowRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = rowBank(g.fn, ROW_N);
   if (!row.n) continue;
@@ -10908,7 +10932,7 @@ function frStemVerdict(row) {
   return null;
 }
 const frStemRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = frStemBank(g.fn, FR_STEM_N);
   if (!row.n) continue;
@@ -11011,7 +11035,7 @@ function glyphVerdict(row) {
     : null;
 }
 const glyRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = glyphBank(g.fn, GLY_N);
   if (!row.n || row.n < GLY_N / 2) continue;
@@ -11049,7 +11073,7 @@ const AGREE_BAD = [
   [/(?<![\d\/]\s?)\b1 (?:pieces|parts|slices)\b/i, '"1 parts"']
 ];
 const agreeRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   let bad = 0, n = 0, sample = null;
   for (let i = 0; i < AGREE_N; i++) {
@@ -11078,7 +11102,7 @@ for (const g of GENS) {
 const BARE1_N = 500;
 const BARE1 = /(?<![\d\/.]\s?)\b1 (?:more )?(?:halves|thirds|quarters|fifths|sixths|sevenths|eighths|ninths|tenths|elevenths|twelfths|books|pupils|drinks|pizzas|cakes|mooncakes|watermelons|sets|pages|parts|pieces|slices|boxes|stickers|beads|marbles)\b/i;
 let bare1Bad = 0;
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   let bad = 0, sample = null;
   for (let i = 0; i < BARE1_N; i++) {
     let q; try { q = g.fn(); } catch (e) { break; }
@@ -11166,7 +11190,7 @@ function signScan(q) {
   return null;
 }
 const signRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   let bad = 0, n = 0, sample = null;
   for (let i = 0; i < SIGN_N; i++) {
     let q; try { q = g.fn(); } catch (e) { break; }
@@ -11298,7 +11322,7 @@ function cardScan(q) {
   return null;
 }
 const cardRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   let bad = 0, n = 0, sample = null;
   for (let i = 0; i < CARD_N; i++) {
@@ -11404,7 +11428,7 @@ for (const g of GENS) {
 const SERVE_SESSIONS = 200, SERVE_LEN = 30;
 const serveTally = new Map();
 (function measureService() {
-  for (const tid of Object.keys(TOPICS)) {
+  for (const tid of __perBank(Object.keys(TOPICS))) {
     if (!TOK_TOPICS.has(tid)) continue;
     const def = TOPICS[tid], saved = { 1: def.pools[1], 2: def.pools[2], 3: def.pools[3] };
     for (const lvl of [1, 2, 3])
@@ -11719,7 +11743,7 @@ function halfVerdict(row, name) {
   return null;
 }
 const halfRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = halfBank(g.fn, HALF_N);
   if (!row.n) continue;
@@ -12567,7 +12591,7 @@ control('card-row clause - the v8 gEqMissingDen card ("would give 16", a bare-nu
 
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
 const setRows = [];
-for (const tid of Object.keys(TOPICS)) {
+for (const tid of __perBank(Object.keys(TOPICS))) {
   let ok = true, note = '';
   for (const lvl of [1, 2, 3]) {
     const set = MQI.buildSetFor(tid, 30);
@@ -12594,7 +12618,7 @@ for (const tid of Object.keys(TOPICS)) {
    harness. Rule: any topic declaring >= 2 skills must expose >= 2 DISTINCT skill tags
    in every one of its three pools. --- */
 const poolSkillRows = [];
-for (const tid of Object.keys(TOPICS)) {
+for (const tid of __perBank(Object.keys(TOPICS))) {
   const t = TOPICS[tid];
   const nSkills = Object.keys(t.skills || {}).length;
   if (nSkills < 2) { poolSkillRows.push({ tid, ok: true, note: `only ${nSkills} skill declared - exempt` }); continue; }
@@ -12670,7 +12694,7 @@ function decRankOf(q) {
 }
 function decRankScan(gens, draws) {
   const out = [], bank = [0, 0, 0, 0], gatedTally = [0, 0, 0, 0];
-  for (const g of gens) {
+  for (const g of __perBank(gens)) {
     const hist = [0, 0, 0, 0];
     let n = 0, exempt = false, first = true;
     for (let i = 0; i < draws; i++) {
@@ -12781,7 +12805,7 @@ const decIsSentence = o => (o.match(/[A-Za-z]{2,}/g) || []).length >= 3;
 /* one generator, sampled. Returns every arm's tally so the report can print it. */
 function decProseScan(gens, draws) {
   const out = [];
-  for (const g of gens) {
+  for (const g of __perBank(gens)) {
     const hit = DEC_FEATURES.map(() => 0), sample = DEC_FEATURES.map(() => null);
     const shipped = new Map(), keyFrames = new Map(), keyVals = new Map();
     const lenRank = [0, 0, 0, 0];
@@ -13340,7 +13364,7 @@ const cplRule = r => r.feat !== undefined
 function decCouplingScan(gens, draws) {
   const P = CPL_PREDS.length, S = 2 * P, F = CPL_FEATS.length;
   const out = [];
-  for (const g of gens) {
+  for (const g of __perBank(gens)) {
     const mk = () => ({ n: 0, fires: new Int32Array(S * S), right: new Int32Array(S * S), feat: new Int32Array(F),
                         casc: new Int32Array(S * 4), cascRight: new Int32Array(S * 4) });
     const bank = mk(), groups = new Map();
@@ -13809,7 +13833,7 @@ const couplingRows = [];
 const contractRows = [];
 {
   const STAMPS = ['decAuthored', 'authored', 'optionSet', 'fracAuthored'];
-  for (const g of GENS.filter(x => x.topic === 'decimals')) {
+  for (const g of __perBank(GENS.filter(x => x.topic === 'decimals'))) {
     let stamped = 0, typed = 0, n = 0;
     for (let i = 0; i < 400; i++) {
       let q;
@@ -14737,7 +14761,9 @@ if (uncovered.length) console.log(`\nWARN no independent oracle matched (shape +
    equation re-computed, the final step's working reaching the key. Last in the file, so
    the draws it takes never shift the seeded stream any ruler above reads. */
 {
-  const coach = checkCoaching(GENS, Number(process.env.COACH_DRAWS) || COACH_DRAWS_MIN);
+  /* coaching draws are per-bank seeded too: each generator reseeds on its first draw */
+  const __coachGens = GENS.map(g => { let first = true; return Object.assign({}, g, { fn: () => { if (first) { first = false; _s = __hashSeed(__bankKey(g) + '#coach'); } return g.fn(); } }); });
+  const coach = checkCoaching(__coachGens, Number(process.env.COACH_DRAWS) || COACH_DRAWS_MIN);
   printCoaching(coach);
   failures += coach.failures;
 }

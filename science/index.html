@@ -122,7 +122,10 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .cfm p{margin:6px 0}
 .cfm .chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
 .fig{border:2px solid var(--line);border-radius:16px;background:#fff;color:#2B2540;padding:8px;margin:0 0 14px;overflow-x:auto;max-width:100%}
-.fig svg{display:block;width:100%;max-width:640px;max-height:min(60vh,520px);height:auto;margin:0 auto}
+/* Figure-sizing rule (screen polish 2026-10-31): fixFigures sets --needw/--needh, the size at which the
+   smallest label reaches 14px (phone) or 16px (tablet/laptop). A figure grows past its usual cap to reach
+   that, but never past the column width or 75% of the screen height, so tall diagrams still fit. */
+.fig svg{display:block;width:100%;max-width:max(640px,var(--needw,0px));max-height:max(min(60vh,520px),min(var(--needh,0px),75vh));height:auto;margin:0 auto}
 .fig table{border-collapse:collapse;margin:0 auto;min-width:min(100%,360px);font-size:1rem;background:#fff;color:#2B2540}
 .fig th,.fig td{border:1.5px solid #9C94B0;padding:6px 10px;text-align:center;vertical-align:middle}
 .fig th{background:#F3EEFF;font-weight:700}
@@ -149,7 +152,8 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
   body.quizfig .wrap{max-width:1180px}
   .qgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
   .qfig{position:sticky;top:12px}
-  .qfig .fig svg{max-height:calc(100vh - 290px)}
+  .qfig .fig svg{max-height:max(calc(100vh - 290px),min(var(--needh,0px),75vh))}
+  body.quizfig .figback{display:none}   /* the sticky side figure is already in view */
   .qsolo{max-width:720px;margin:0 auto}   /* same wide stage for every question, so the navigator does not jump */
 }
 /* Coaching walk-through (C6, 2026-10-17): kind framing, technique badge, steps one at a time, answer last */
@@ -178,7 +182,18 @@ ol.csteps li::marker{font-weight:800;color:var(--teal)}
 .hfig{margin-top:10px}
 .hfig .figlab{margin:0 0 6px}
 .hfig .fig{margin:0}
-.hfig .fig svg{max-height:min(48vh,420px)}
+.hfig .fig svg{max-height:max(min(48vh,420px),min(var(--needh,0px),75vh))}
+/* Figure kept in view (screen polish 2026-10-31): on stacked layouts the coaching and marking carry a
+   fold-out copy of the question's figure; figBack() decides open or shut */
+.figback{margin:14px 0 0}
+.figback summary{cursor:pointer;font-weight:800;min-height:44px;display:flex;align-items:center;color:var(--ink);border:2px dashed var(--line);border-radius:12px;padding:0 12px;margin-bottom:8px}
+.figback .fig{margin:0}
+/* Tables scale with the body text on tablet and laptop (topic files set 14-15px inline) */
+@media (min-width:600px){
+  .fig table{font-size:1.05rem!important;min-width:min(100%,520px)}
+  .fig th,.fig td{font-size:inherit!important;padding:8px 12px!important}
+  .fig caption{font-size:1.05rem!important}
+}
 ul.rev .tech{font-size:.75rem;padding:0 8px;margin-left:6px;vertical-align:middle}
 ul.rev .row{margin-top:8px}
 .well{font-size:1.1rem;margin:4px 0 6px}
@@ -192,6 +207,16 @@ label.key{display:flex;gap:12px;align-items:center;border:2px solid var(--line);
 label.key input{width:26px;height:26px;flex:none;accent-color:var(--teal)}
 label.key.on{border-color:var(--teal)}
 .nav{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:18px;flex-wrap:wrap}
+/* Pinned action bar (screen polish 2026-10-31): Check / Next / Save mark stays on screen while the
+   question scrolls; --kb lifts it above the iOS keyboard (visualViewport watcher below) */
+html{scroll-padding-bottom:var(--pinh,0px)}
+.nav.pin{position:sticky;bottom:var(--kb,0px);z-index:20;background:var(--paper);margin-inline:-24px;padding:10px 24px 12px;border-top:2px solid var(--line);box-shadow:0 -10px 14px -12px rgba(43,37,64,.25)}
+@media (max-width:480px){
+  .nav.pin{margin-inline:-14px;padding:8px 14px 10px;flex-wrap:nowrap;gap:8px}   /* one row on a phone, so the bar stays short */
+  .nav.pin .row{flex-wrap:nowrap;gap:8px;margin-left:auto}
+  .nav.pin .btn{padding:10px 14px;font-size:1rem;white-space:nowrap}
+  .nav.pin .btn.small{padding:8px 10px;font-size:.92rem}
+}
 .timer{font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-weight:600;font-size:1.3rem;font-variant-numeric:tabular-nums}
 .timer.warn{color:var(--accent)}
 .score{font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;font-size:3rem;font-weight:700;line-height:1;margin:8px 0}
@@ -894,10 +919,40 @@ function fixFigures(root) {
     svg.removeAttribute('width'); svg.removeAttribute('height');
     /* ...except an explicit data-maxw cap (one-panel set-ups: By-Eye F1, 2026-10-16) */
     var mw = parseFloat(svg.getAttribute('data-maxw'));
-    if (mw > 0) svg.style.maxWidth = mw + 'px';
     if (!svg.getAttribute('preserveAspectRatio')) svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    /* Figure-sizing rule (screen polish 2026-10-31): the size at which the smallest label reaches the
+       floor. A data-maxw cap or the 640 px cap is lifted to that width; the column still bounds it. */
+    var need = labelNeed(svg);
+    if (need) { svg.style.setProperty('--needw', need.w + 'px'); svg.style.setProperty('--needh', need.h + 'px'); }
+    if (mw > 0) svg.style.maxWidth = Math.max(mw, need ? need.w : 0) + 'px';
+  });
+  /* HTML figures (tables, boxes): no figure text under the floor */
+  var floor = labelFloor();
+  root.querySelectorAll('.fig').forEach(function (f) {
+    if (f.querySelector('svg')) return;
+    f.querySelectorAll('*').forEach(function (el) {
+      if (parseFloat(getComputedStyle(el).fontSize) < floor - 0.1) el.style.setProperty('font-size', floor + 'px', 'important');
+    });
   });
 }
+function labelFloor() { return window.innerWidth < 600 ? 14 : 16; }
+function labelNeed(svg) {
+  var vb = svg.viewBox && svg.viewBox.baseVal; if (!vb || !vb.width || !vb.height) return null;
+  var minF = Infinity;
+  svg.querySelectorAll('text').forEach(function (t) { var fz = parseFloat(getComputedStyle(t).fontSize); if (fz > 0) minF = Math.min(minF, fz); });
+  if (!isFinite(minF)) return null;
+  var k = labelFloor() / minF;
+  return { w: Math.ceil(vb.width * k), h: Math.ceil(vb.height * k) };
+}
+/* Figure kept in view (screen polish 2026-10-31): a fold-out copy of the question's figure for the
+   coaching and the marking; on a wide screen the sticky side figure does the job and this hides.
+   Open by default; shut only where the original sits just above it (exam marking: figure, stem, then this). */
+function figBack(it, shut) {
+  return it.figure ? '<details class="figback"' + (shut ? '' : ' open') + '><summary>🔍 Look at the figure again</summary>' + figHTML(it.figure) + '</details>' : '';
+}
+/* the pinned action bar's height, so scroll-into-view lands above it */
+function pinH() { var p = view.querySelector('.nav.pin'); return p ? p.offsetHeight : 0; }
+function foldY() { return window.innerHeight - pinH(); }
 
 /* ---------- marking-point highlight ---------- */
 /* whole-word match (plural s/es allowed): "air" must not fire inside "fair test" */
@@ -941,7 +996,29 @@ function route() {
   renderHome();
 }
 function paint(html) { var lt = document.getElementById('lvlTag'); if (lt) lt.textContent = isPsle() ? 'Primary 5–6 Science · PSLE' : 'Primary 3 Science';
-  view.innerHTML = html; fixFigures(view); document.body.classList.toggle('quizfig', !!view.querySelector('.qgrid, .qsolo')); window.scrollTo(0, 0); }
+  view.innerHTML = html; fixFigures(view); document.body.classList.toggle('quizfig', !!view.querySelector('.qgrid, .qsolo')); window.scrollTo(0, 0);
+  document.documentElement.style.setProperty('--pinh', (pinH() ? pinH() + 12 : 0) + 'px');
+}
+/* iOS keeps the layout viewport full height under the on-screen keyboard: lift the pinned bar by the
+   part of the layout viewport the keyboard covers. Ignored while pinch-zoomed. */
+(function () {
+  var vv = window.visualViewport; if (!vv) return;
+  function upd() {
+    var kb = Math.round(document.documentElement.clientHeight - vv.height - vv.offsetTop);
+    if (vv.scale > 1.05 || kb < 80) kb = 0;
+    document.documentElement.style.setProperty('--kb', kb + 'px');
+  }
+  vv.addEventListener('resize', upd); vv.addEventListener('scroll', upd); upd();
+})();
+/* once the keyboard is up, keep the answer box clear of the lifted bar */
+document.addEventListener('focusin', function (e) {
+  var ta = e.target; if (!ta || ta.id !== 'oeqText') return;
+  setTimeout(function () {
+    var vv = window.visualViewport, bottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+    var over = ta.getBoundingClientRect().bottom + pinH() + 8 - bottom;
+    if (over > 0 && ta.getBoundingClientRect().top - over > 0) window.scrollBy(0, over);
+  }, 350);
+});
 
 /* ---------- home ---------- */
 function renderHome() {
@@ -1167,7 +1244,8 @@ function coachHTML(it, a, k, opt) {
   opt = opt || {};
   var steps = it.steps || null, n = steps ? Math.max(1, Math.min(a.stepN || 1, steps.length)) : 0;
   var open = !steps || !!a.ansShown;
-  var h = '<div class="fb coach" id="fb" data-coach="' + k + '"' + (opt.noAnswer ? ' data-noans' : '') + '>';
+  /* the fold-out figure sits just above the walk-through, full column width (a 5-column table needs it on a phone) */
+  var h = (opt.noChoice ? '' : figBack(it)) + '<div class="fb coach" id="fb" data-coach="' + k + '"' + (opt.noAnswer ? ' data-noans' : '') + '>';
   if (!opt.noChoice) h += '<b class="h">🌱 Let\'s work this one out together</b>' + choiceLine(it, a);
   else h += '<b class="h">🧭 How to tackle one like this</b>';
   h += techHTML(it);
@@ -1227,7 +1305,7 @@ function renderReview() {
   if (it.type === 'mcq') q += reviewOpts(it, a, !it.steps || !!a.ansShown);
   q += coachHTML(it, a, k);
   var nextK = list[pos + 1];
-  q += '<div class="nav">' + (pos > 0 ? '<button class="btn ghost small" data-act="revGo" data-k="' + list[pos - 1] + '">← Back</button>' : '<span></span>') +
+  q += '<div class="nav pin">' + (pos > 0 ? '<button class="btn ghost small" data-act="revGo" data-k="' + list[pos - 1] + '">← Back</button>' : '<span></span>') +
     (nextK != null ? '<button class="btn teal" data-act="revGo" data-k="' + nextK + '">Next one →</button>' : '<button class="btn teal" data-act="toReport">Back to my report →</button>') + '</div>';
   paint(h + layout(sideFigs(it), q));
 }
@@ -1334,13 +1412,13 @@ function renderQuiz() {
     next = a.shown ? '<button class="btn teal" data-act="saveMark">' + (last ? (se.kind === 'like' ? 'Save mark &amp; go back →' : power ? 'Save mark &amp; finish →' : 'Save mark &amp; see results →') : 'Save mark &amp; next →') + '</button>'
                    : (ladder && !a.hint1 ? '<button class="btn ghost small" data-act="hint">💡 Hint</button>' : '') + '<button class="btn" data-act="reveal">Show answer</button>';
   }
-  q += '<div class="nav">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + (exam ? next : '<span class="row">' + next + '</span>') + '</div>';
+  q += '<div class="nav' + (next ? ' pin' : '') + '">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + (exam ? next : '<span class="row">' + next + '</span>') + '</div>';
   /* F13 (2026-10-17): on a wide screen a figure sits beside the question, so the options and
      buttons stay above the fold at 1440x900 and on an iPad in landscape. Narrow screens stack. */
   h += layout(sideFigs(it), q);   /* the hintFigure is never beside the question: it sits in the answer reveal */
   if (exam) h += qnavHTML() + '<button class="btn handin" data-act="finishExam">✋ Hand in paper</button>';
   paint(h);
-  if (!exam && se.scrollFb) { se.scrollFb = false; var fb = document.getElementById('fb'); if (fb && fb.getBoundingClientRect().bottom > window.innerHeight) fb.scrollIntoView({ block: 'nearest' }); }
+  if (!exam && se.scrollFb) { se.scrollFb = false; var fb = document.getElementById('fb'); if (fb && fb.getBoundingClientRect().bottom > foldY()) fb.scrollIntoView({ block: 'nearest' }); }
   if (exam) examSave();
   clearInterval(timerId); timerId = null;
   if (exam && se.timerEnd) timerId = setInterval(tickTimer, 1000);
@@ -1397,7 +1475,7 @@ function examResume() {
 }
 function markingHTML(it, a) {
   if (!a.ticks) a.ticks = blankTicks(it);
-  var h = '<div class="model"><b>Model answer</b><p>' + highlight(it.model, it.noKeys ? [] : it.keys) + '</p></div>';
+  var h = figBack(it, session.phase === 'markB') + '<div class="model"><b>Model answer</b><p>' + highlight(it.model, it.noKeys ? [] : it.keys) + '</p></div>';
   if (a.text && a.text.trim() && session.kind === 'exam') h += '<div class="yours"><b>Your answer:</b> ' + esc(a.text) + '</div>';
   h += '<p class="eyebrow" style="margin-top:14px">Compare with the model answer. Tick each point your answer has</p>';
   h += '<div class="keys">' + it.keys.map(function (k, j) {
@@ -1412,11 +1490,12 @@ function renderMarking() {
   a.shown = true;
   var nB = se.items.length - se.nA, pos = idx - se.nA + 1;
   var h = '<p class="eyebrow">Marking ' + secB() + ' · ' + pos + ' of ' + nB + (t ? ' · ' + esc(t.title) : '') + '</p>';
-  h += figHTML(it.figure) + '<p class="stem">' + esc(it.stem) + '<span class="marks">[' + it.marks + ']</span></p>';
-  if (!a.text || !a.text.trim()) h += '<div class="yours">No typed answer — mark what you wrote on paper.</div>';
-  h += markingHTML(it, a);
-  h += '<div class="nav"><span></span><button class="btn teal" data-act="markNext">' + (idx === se.items.length - 1 ? 'See my report →' : 'Next →') + '</button></div>';
-  paint(h);
+  /* screen polish 2026-10-31: the same F13 layout as the question, so on a wide screen the figure stays beside the marking */
+  var q = '<p class="stem">' + esc(it.stem) + '<span class="marks">[' + it.marks + ']</span></p>';
+  if (!a.text || !a.text.trim()) q += '<div class="yours">No typed answer — mark what you wrote on paper.</div>';
+  q += markingHTML(it, a);
+  q += '<div class="nav pin"><span></span><button class="btn teal" data-act="markNext">' + (idx === se.items.length - 1 ? 'See my report →' : 'Next →') + '</button></div>';
+  paint(h + layout(sideFigs(it), q));
 }
 function finishSession() {
   var se = session;
@@ -1651,7 +1730,7 @@ var A = {
       }
       el.remove();
     }
-    if (show && show.getBoundingClientRect().bottom > window.innerHeight) show.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (show && show.getBoundingClientRect().bottom > foldY()) show.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   },
   tryLike: function (el) {
     var it = SCI.items[el.dataset.id]; if (!it || !session) return;

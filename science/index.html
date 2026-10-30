@@ -907,7 +907,8 @@ function wordRe(syn) {
 function highlight(text, keys) {
   var lo = text.toLowerCase(), ranges = [];
   keys.forEach(function (k) { k.forEach(function (syn) {
-    var s = syn.toLowerCase(); if (!s) return;
+    /* a key may lead with its part label, "(b) ovaries" (two-part key sweep 2026-10-30): mark the point itself */
+    var s = syn.replace(/^\([a-e]\)\s*/i, '').toLowerCase(); if (!s) return;
     var re = wordRe(s), m;
     while ((m = re.exec(lo))) { var st = m.index + m[1].length; ranges.push([st, st + m[2].length]); if (!m[0].length) re.lastIndex++; }
   }); });

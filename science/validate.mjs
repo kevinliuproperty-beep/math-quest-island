@@ -19,6 +19,9 @@ const pick = only.length ? files.filter(f => only.includes(f.replace(/\.js$/, ''
 if (!pick.length) { console.log('No topic files found' + (only.length ? ' for ' + only.join(', ') : '') + ' in ' + DIR); process.exit(only.length ? 1 : 0); }
 
 const isStr = x => typeof x === 'string' && x.trim().length > 0;
+/* a key synonym may lead with its part label, "(b) ovaries"; the marking point is the rest */
+const PART = /^\(([a-e])\)\s*/i;
+const bare = s => String(s).replace(PART, '');
 /* Coaching fields (Science Coaching Card 2026-10-17). The shell (science/index.html, TECH) carries
    the same names with a child-facing line each: add a new technique in BOTH places. */
 const TECHNIQUES = ['Pick-a-pole', 'Change one thing', 'Start minus left', 'Follow the arrows', 'Can we be sure?',
@@ -144,13 +147,32 @@ for (const f of pick) {
       else {
         if (Number.isInteger(it.marks) && k.length < it.marks) E(`${tag}: ${k.length} marking point(s) for ${it.marks} marks`);
         if (isStr(it.model)) k.forEach((p, j) => {
-          if (!p.some(s => it.model.toLowerCase().includes(s.toLowerCase()))) W(`${tag}: key ${j + 1} [${p.join(' / ')}] not found in model answer`);
+          if (!p.some(s => it.model.toLowerCase().includes(bare(s).toLowerCase()))) W(`${tag}: key ${j + 1} [${p.join(' / ')}] not found in model answer`);
         });
+        /* Part labels (two-part key sweep, 2026-10-30): self-tick shows each key on its own, so on a
+           multi-part item a key names its part, "(b) ovaries", and a swapped answer cannot tick both.
+           The label is matched without it; it must be one label per key, a part the stem asks, and
+           the marking point must sit in THAT part of the model answer. */
+        const labOf = p => { const ls = [...new Set(p.map(s => (s.match(PART) || [])[1]).map(x => x ? x.toLowerCase() : ''))]; return ls.length === 1 ? ls[0] : null; };
+        const labs = k.map(labOf);
+        if (labs.some(l => l)) {
+          const asked = [...new Set((String(it.stem).match(/\(([a-e])\)/g) || []).map(x => x[1]))];
+          const lo = isStr(it.model) ? it.model.toLowerCase() : '';
+          const first = {}; asked.forEach(l => { const i = lo.indexOf('(' + l + ')'); if (i >= 0) first[l] = i; });
+          const seg = l => { if (!(l in first)) return ''; const ends = Object.values(first).filter(i => i > first[l]); return lo.slice(first[l], ends.length ? Math.min(...ends) : undefined); };
+          k.forEach((p, j) => {
+            const l = labs[j];
+            if (l === null) E(`${tag}: key ${j + 1} mixes part labels across its synonyms`);
+            else if (!l) return;   /* a self-describing key ("A is the anther") may stand unlabelled */
+            else if (asked.indexOf(l) < 0) E(`${tag}: key ${j + 1} is labelled (${l}) but the stem asks no part (${l})`);
+            else if (lo && !p.some(s => seg(l).includes(bare(s).toLowerCase()))) W(`${tag}: key ${j + 1} [${p.join(' / ')}] not found in part (${l}) of the model answer`);
+          });
+        }
         /* chain: true = the marks depend on a cause-and-effect order. The keys are listed in that
            order, and the model answer must name them in the same order (first match of any synonym). */
         if (it.chain === true && isStr(it.model)) {
           const lo = it.model.toLowerCase();
-          const at = k.map(p => Math.min(...p.map(s => { const i = lo.indexOf(s.toLowerCase()); return i < 0 ? Infinity : i; })));
+          const at = k.map(p => Math.min(...p.map(s => { const i = lo.indexOf(bare(s).toLowerCase()); return i < 0 ? Infinity : i; })));
           if (k.length < 2) E(`${tag}: chain:true needs at least 2 marking points`);
           else if (at.some(x => x === Infinity)) E(`${tag}: chain:true but a marking point is missing from the model answer`);
           else if (at.some((x, j) => j > 0 && x <= at[j - 1])) E(`${tag}: chain:true but the model answer names the marking points out of order (${at.join(' > ')})`);

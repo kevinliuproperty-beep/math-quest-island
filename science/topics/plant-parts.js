@@ -870,7 +870,7 @@ ${x17Lbl(92, 150, 'A')}${x17Lbl(168, 150, 'B')}
         stem: 'Look at arrows A and B.\n(a) Name the part of the plant that A and B travel through. (1 mark)\n(b) Where was the food in arrow B made? (1 mark)',
         figure: X17_FLOW,
         model: '(a) The stem. (b) In the leaves.',
-        keys: [['stem'], ['leaves', 'leaf']],
+        keys: [['(a) stem'], ['(b) leaves', '(b) leaf']],
         hints: ['Which part joins the roots to the leaves? Which part makes food?', '(a) The stem carries water and food. (b) The leaves make the food.'],
         explain: 'The stem carries water up from the roots and food from the leaves to other parts of the plant. Food is made in the leaves.' },
       { id: 'x17-pp-014', type: 'mcq', level: 3,

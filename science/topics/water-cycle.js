@@ -290,7 +290,7 @@
           3: "The flat part at 100 °C is boiling, not melting." },
         explain: "The temperature stays at 0 °C from 2 to 6 minutes while the ice melts." },
       { id: 'wat-007', type: 'mcq', level: 3, syl: 'P5', skill: 'changes',
-        stem: "Look at the graph again. What happened to the temperature from 10 to 14 minutes while the water was boiling, and why?",
+        stem: "The graph shows the temperature of some water as it was heated. What happened to the temperature from 10 to 14 minutes while the water was boiling, and why?",
         figure: GRAPH_HEAT,
         options: ["It kept rising, because the water was still gaining heat.", "It dropped, because water vapour was escaping.", "It stayed at 0 °C, because the water was changing state.", "It stayed at 100 °C, as heat was changing water to vapour."],
         answer: 3,

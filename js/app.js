@@ -2006,6 +2006,31 @@ MQI.boot = function () {
   autoplayHook();
 };
 
+/* A read-only print of a built mock paper (?autoplay=mock&...&sheet=1[&key=1]). */
+function paperSheet(paper, withKey){
+  const box='background:#fff;color:#1f2937;border-radius:14px;padding:14px 18px;margin:0 0 12px;font:16px/1.5 system-ui,-apple-system,sans-serif;text-align:left';
+  let sec=null, h='<div style="max-width:980px;margin:0 auto;padding:16px">'+
+    '<h1 style="color:#ffe66d;font:900 26px system-ui;margin:4px 0">'+esc(paper.label)+'</h1>'+
+    '<p style="color:#d5cdff;font:600 15px system-ui;margin:0 0 14px">'+paper.items.length+' questions · '+paper.totalMarks+' marks · '+paper.minutes+' min · '+
+      (paper.calculator?'🧮 calculator allowed':'🚫 no calculator')+'</p>';
+  const sp=new URLSearchParams(location.search), lo=parseInt(sp.get('from'),10)||1, hi=parseInt(sp.get('to'),10)||paper.items.length;
+  paper.items.forEach(it=>{
+    const q=it.q;
+    if(it.n<lo || it.n>hi) return;   /* &from=&to=: part of the paper (a screenshot is capped at 16k px) */
+    if(it.sectionName!==sec){ sec=it.sectionName; h+='<h2 style="color:#ffe66d;font:900 19px system-ui;margin:18px 0 8px">'+esc(sec)+'</h2>'; }
+    h+='<div style="'+box+'"><b>Q'+it.n+'</b> <small style="color:#6b7280">['+it.marks+' mark'+(it.marks===1?'':'s')+'] · '+esc(it.topic)+'</small><br>'+q.q+
+      '<div style="margin:8px 0">'+figHtml(q)+'</div>'+
+      (q.typed ? '<div style="color:#6b7280">Answer: ______________'+(q.unit?' '+esc(Array.isArray(q.unit)?q.unit[0]:q.unit):'')+'</div>'
+               : '<ol style="margin:4px 0 0 20px;padding:0">'+q.choices.map(c=>'<li>'+c+'</li>').join('')+'</ol>')+
+      (withKey?'<div style="color:#047857;margin-top:6px"><b>Key:</b> '+q.answerText+'</div>':'')+'</div>';
+  });
+  h+='</div>';
+  const host=document.createElement('div'); host.id='paperSheet'; host.innerHTML=h;
+  document.getElementById('app').style.display='none';
+  document.documentElement.style.height='auto'; document.body.style.height='auto'; document.body.style.overflow='auto';
+  document.body.appendChild(host);
+}
+
 /* ---------------- debug: ?autoplay=patchwerk&bot=1 ----------------
    Drives a real Patchwerk run with simulated answers so a headless browser can
    screenshot the mode picker, a mid-run HUD and the results screen without a
@@ -2018,6 +2043,10 @@ MQI.boot = function () {
      delay=<ms>           bot think time per answer
    Inert without the query string; no production path reads it. */
 function autoplayHook(){
+  /* seed=<n> (with shot= or autoplay= only) makes the draw repeatable, so a sample paper
+     printed in parts (&from=&to=) is one paper across page loads. Inert in production. */
+  (function(){ var m=/[?&]seed=(\d+)/.exec(location.search); if(!m || !/[?&](shot|autoplay)=/.test(location.search)) return;
+  var a=+m[1]>>>0; Math.random=function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; })();
   let p;
   try{ p=new URLSearchParams(location.search); }catch(e){ return; }
   /* shot=<screen> drives a headless browser straight to one screen so the
@@ -2117,6 +2146,10 @@ function autoplayHook(){
       newMockGame(p.get('variant')||(psle?'paper1':'quick'), null, psle?'psle-mock':'p3-mock');
       /* goto=<n> opens question n (1-based) of the fresh paper, for a screenshot gate.
          &mode=psle&grade=P5|P6&variant=paper1|paper2 drives the PSLE Maths Paper. */
+      /* sheet=1 prints the WHOLE fresh paper on one scrolling page (number, part, marks,
+         stem, figure, options or answer line), the way the booklet reads, so a gate can
+         screenshot a full sample paper. Shot-only, inert without the query. */
+      if(p.get('sheet')==='1') setTimeout(()=>{ const a=mockActive(); if(!a) return; paperSheet(a.mode._paper, p.get('key')==='1'); },300);
       const gt=parseInt(p.get('goto'),10), gtt=p.get('gotoTopic');
       if(gt>0) setTimeout(()=>mockGo(gt-1),300);
       else if(gtt) setTimeout(()=>{ const a=mockActive(); if(!a) return;   /* first question from that node, structured first */

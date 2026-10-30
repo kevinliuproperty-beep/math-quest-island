@@ -382,6 +382,9 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
 "use strict";
 (function () {
 var SCI = window.SCI;
+/* seed=<n> with shot= only: a repeatable draw, so a paper printed in parts is one paper */
+(function(){ var m=/[?&]seed=(\d+)/.exec(location.search); if(!m || !/[?&](shot|autoplay)=/.test(location.search)) return;
+  var a=+m[1]>>>0; Math.random=function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; })();
 var KEY = 'sq1';
 var ORDER = ['living-things', 'materials', 'life-cycles', 'magnets', 'plant-parts', 'process-skills',
   /* PSLE track (P5-P6 mirror): P4 content first, then P5, then P6 */
@@ -1253,9 +1256,13 @@ function renderSheet() {
   var se = session, key = /[?&]key=1/.test(location.search), tot = 0;
   se.items.forEach(function (it) { tot += it.marks; });
   var h = '<p class="eyebrow">' + (isPsle() ? 'PSLE Science' : 'Science') + ' mock paper · ' + se.items.length + ' questions · ' + tot + ' marks · ' + se.mins + ' min</p>';
+  /* &from=&to= (1-based, inclusive) prints part of the paper: a screenshot is capped at 16k px */
+  var fm = /[?&]from=(\d+)/.exec(location.search), tm = /[?&]to=(\d+)/.exec(location.search);
+  var lo = fm ? +fm[1] - 1 : 0, hi = tm ? +tm[1] - 1 : se.items.length - 1;
   se.items.forEach(function (it, k) {
-    if (k === 0) h += '<h2>' + esc(secA()) + '</h2>';
-    if (k === se.nA) h += '<h2>' + esc(secB()) + '</h2>';
+    if (k < lo || k > hi) return;
+    if (k === lo && k < se.nA) h += '<h2>' + esc(secA()) + '</h2>';
+    if (k === se.nA || (k === lo && k >= se.nA)) h += '<h2>' + esc(secB()) + '</h2>';
     h += '<div class="card" style="margin:0 0 14px"><p class="eyebrow">Q' + (k + 1) + ' · ' + it.marks + ' marks · ' + esc((SCI.byId[it.topic] || {}).title || '') + '</p>' +
       figHTML(it.figure) + '<p class="stem">' + esc(it.stem) + '</p>' +
       (it.type === 'mcq' ? '<ol>' + it.options.map(function (o, j) { return '<li' + (key && j === it.answer ? ' style="font-weight:800"' : '') + '>' + esc(o) + '</li>'; }).join('') + '</ol>'

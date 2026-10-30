@@ -122,6 +122,29 @@ const allFracs = html => [...String(html).matchAll(/<span class="n">(-?\d+)<\/sp
   .map(m => [Number(m[1]), Number(m[2])]);
 const gcd = (a, b) => { while (b) { [a, b] = [b, a % b]; } return a; };
 
+/* ---------- ORACLE PLUG-INS (P5-P6 mirror, 2026-10-30) ----------
+   One file per topic in tools/oracles/<anything>.mjs, so parallel content lanes never
+   edit this file:
+       export const topic = 'p6algebra';                 // the registered topic id
+       export function oracle(q, kit) { ... }            // null = verified, string = failure
+   A plug-in is EXHAUSTIVE for its topic: it is dispatched first and its answer is final
+   (returning false - "no oracle matched" - is reported as a failure, never a pass). kit
+   carries the shared helpers below plus TOPICS, MQI and renderFigure (the app's own
+   renderer, so a figure oracle reads the labels a child reads). */
+const ORACLE_KIT = { strip, near, parseFrac, allFracs, gcd, TOPICS, MQI, renderFigure: spec => MQI.renderFigure(spec) };
+const ORACLE_PLUGINS = {};
+{
+  const dir = path.join(ROOT, 'tools/oracles');
+  const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.mjs')).sort() : [];
+  for (const f of files) {
+    const m = await import(path.join(dir, f));
+    if (!m.topic || typeof m.oracle !== 'function') throw new Error('tools/oracles/' + f + ': needs `export const topic` and `export function oracle(q, kit)`');
+    if (!TOPICS[m.topic]) throw new Error('tools/oracles/' + f + ': topic ' + m.topic + ' is not registered');
+    if (ORACLE_PLUGINS[m.topic]) throw new Error('tools/oracles/' + f + ': a second plug-in for ' + m.topic);
+    ORACLE_PLUGINS[m.topic] = m.oracle;
+  }
+}
+
 /* Independent re-evaluator for the P5 order-of-operations / brackets stems.
    Space-separated tokens only: numbers, + - x /, and ( ). Deliberately NOT eval:
    it re-applies the precedence rule the question is testing. Returns null if the
@@ -3166,6 +3189,11 @@ function p6ratioOracle(q) {
 function oracle(q, topic) {
   /* SWEEP 2026-09-15: the decimals bank is dispatched first and exhaustively, so
      no looser branch below can claim one of its stems and no stem can escape. */
+  /* P5-P6 mirror fan-out: a topic with a plug-in in tools/oracles/ is dispatched there, exhaustively. */
+  if (ORACLE_PLUGINS[topic]) {
+    const r = ORACLE_PLUGINS[topic](q, ORACLE_KIT);
+    return r === false || r === undefined ? topic + ': the plug-in oracle matched no stem (every stem must be covered): ' + strip(q.q) : r;
+  }
   /* P5-P6 mirror Sprint 1: Ratio Ridge, exhaustive (see p6ratioOracle). */
   if (topic === 'p6ratio') return p6ratioOracle(q);
   if (topic === 'decimals') return decimalsOracle(q);

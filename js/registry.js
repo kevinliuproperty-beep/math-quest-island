@@ -46,9 +46,16 @@ const MAP_NODES=[
   {id:'angles',    e:'🏛️', name:'Angle Ruins',        blurb:'Angles on a line, at a point and vertically opposite (P5)', grades:['P5']},
   /* ---- P6 (P5-P6 mirror, Sprint 1, 2026-10-28) ---- */
   {id:'p6ratio',   e:'⚖️', name:'Ratio Ridge',         blurb:'Ratios of two and three quantities, sharing, and before-and-after problems (P6)', grades:['P6']},
-  /* ---- still locked: no topic file has shipped for these ---- */
-  {id:'percent',   e:'⛰️', name:'Percentage Peak',     blurb:'Coming soon (P6)', locked:true, status:'locked', grades:['P6']},
-  {id:'algebra',   e:'🌀', name:'Algebra Atoll',       blurb:'Coming soon (P6)', locked:true, status:'locked', grades:['P6']}
+  /* ---- P6 fan-out (P5-P6 mirror, 2026-10-30): the locked stubs are live now ---- */
+  {id:'p6fractions',e:'🌗', name:'Fraction Falls',     blurb:'Dividing fractions by whole numbers and by fractions. TYPE your answer! (P6)', grades:['P6']},
+  {id:'percent',   e:'⛰️', name:'Percentage Peak',     blurb:'Finding the whole from a part, and percentage increase and decrease (P6)', grades:['P6']},
+  {id:'algebra',   e:'🌀', name:'Algebra Atoll',       blurb:'Letters for unknowns: simplify, substitute and solve simple equations (P6)', grades:['P6']},
+  {id:'p6circles', e:'⭕', name:'Circle Cove',         blurb:'Area and circumference of circles, semicircles and quarter circles (P6)', grades:['P6']},
+  {id:'p6volume',  e:'📦', name:'Cube Root Cove',      blurb:'Missing edges and heights from a volume, square and cube roots, tanks (P6)', grades:['P6']},
+  {id:'p6quads',   e:'🔷', name:'Rhombus Reef',  blurb:'Unknown angles in composite figures of special quadrilaterals and triangles (P6)', grades:['P6']},
+  {id:'p6average', e:'📊', name:'Average Atoll',       blurb:'Average, total and number of data, and what changes when one joins or leaves (P6)', grades:['P6']},
+  /* ---- P5 Paper 2 structured problems (P5-P6 mirror): band-3 worded problems across the P5 syllabus ---- */
+  {id:'p5problems',e:'📝', name:'Paper Two Point',     blurb:'PSLE Paper 2 style structured problems across the P5 syllabus. TYPE your answer! (P5)', grades:['P5']}
 ];
 
 /* every node without an explicit status is live */

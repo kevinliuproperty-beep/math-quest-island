@@ -48,20 +48,24 @@
       ] },
       paper2: { id: "paper2", label: "PSLE Paper 2", minutes: 80, calculator: true, sections: [
         { id: "S1", name: "Short answer", kind: "short",   count: 5, marks: 2, mix: { 2: 0.5, 3: 0.5 } },
-        { id: "L3", name: "Structured",   kind: "problem", count: 3, marks: 3, minExam: 1 },
-        { id: "L4", name: "Structured",   kind: "problem", count: 4, marks: 4, minExam: 2 },
-        { id: "L5", name: "Structured",   kind: "problem", count: 3, marks: 5, minExam: 2 }
+        { id: "L3", name: "Structured",   kind: "problem", count: 3, marks: 3, minExam: 3 },
+        { id: "L4", name: "Structured",   kind: "problem", count: 4, marks: 4, minExam: 4 },
+        { id: "L5", name: "Structured",   kind: "problem", count: 3, marks: 5, minExam: 3 }
       ] }
     },
     DEFAULT_VARIANT: "paper1",
     /* Node weights: the paper's own level carries most; earlier levels are assumed
        knowledge (PSLE examines the whole primary syllabus). The shell passes only the
        nodes for the child's level and below, so a P5 paper never sees P6 content. */
-    WEIGHTS: { p6ratio: 3, percent: 3, algebra: 3,
+    WEIGHTS: { p6ratio: 2, percent: 2, algebra: 2, p6fractions: 2, p6circles: 2, p6volume: 1.5, p6quads: 1.5, p6average: 1.5,
+               p5problems: 2,
                p5numbers: 1.5, p5percent: 2, p5triangle: 1.5, p5volume: 1.5, p5fractions: 2,
                p5decimals: 1.5, p5rate: 1.5, p5shapes: 1.5, angles: 1.5, heuristics: 0.5 },
     DEFAULT_WEIGHT: 0.75,       /* a P4 node, or a new node nobody weighted yet */
     TRIES_PER_TOPIC: 6,
+    /* Every structured slot asks for a q.exam === 'problem' item first (minExam = count): each
+       P5/P6 bank now ships PSLE Paper 2 problems, so a P3/P4 node's band-3 item only fills a
+       slot when no exam problem turns up (fan-out sim: P5 Paper 2 had 34% P3/P4 geometry). */
     PROBLEM_MIN_WORDS: 12,
     MAX_STRETCH: 1,
     NEVER_PROBLEM: [],

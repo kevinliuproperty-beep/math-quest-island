@@ -340,7 +340,7 @@
   MQI.registerTopic({
     id: 'percent', level: 'P6', strand: 'Number and Algebra',
     moeSubTopic: 'Percentage: finding the whole given a part and the percentage; finding percentage increase/decrease',
-    label: 'Percentage Peak', short: 'Percentage', e: '⛰️',
+    label: 'Percentage Peak', short: 'Percentage (P6)', e: '⛰️',
     skills: {
       whole:    { label: 'Finding the whole', tip: 'Find what 1% is worth first, then multiply by 100 to reach the whole.' },
       change:   { label: 'Percentage increase and decrease', tip: 'Always divide the change by the value at the START, never the new value.' },

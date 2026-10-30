@@ -169,6 +169,13 @@ function outboxMockReview(rec){
       if(Number.isFinite(r.ms)) row.secs=Math.min(86400, Math.max(0, Math.round(r.ms/1000)));
       if(Number.isInteger(r.changed)) row.changed=Math.min(99, Math.max(0, r.changed));
       if(!q.typed && Array.isArray(q.choices)) row.options=q.choices.slice(0,6).map(c=>T(c,40)||'');
+      /* replay keys (2026-10-30): generator, pool level, band, draw seed and the typed
+         conversion flag, so the item can be redrawn exactly (see mqiSeededDraw) */
+      if(typeof q.gen==='string' && q.gen) row.gen=q.gen.slice(0,100);
+      if(Number.isInteger(q.seed) && q.seed>=0) row.seed=q.seed;
+      if(Number.isInteger(q.level)) row.level=q.level;
+      if(Number.isInteger(q.band)) row.band=q.band;
+      if(q.converted) row.conv=true;
       return row;
     });
   }catch(e){ return undefined; }
@@ -180,7 +187,24 @@ function outboxMockExtra(rec){
     topics:(rec.byTopic||[]).map(x=>({ t:String(x.label), c:x.got, n:x.total })),
     timeLimitSec: Number.isFinite(rec.durationMs) ? Math.round(rec.durationMs/1000) : null,
     ended: rec.timedOut ? 'timeout' : 'submit',
+    variant: typeof rec.variant==='string' ? rec.variant : undefined,
     review:outboxMockReview(rec) };
+}
+/* Replayable mock draws (2026-10-30, sg-coach replay finding). Every mock draw runs its
+   generator under its own seeded Math.random (mulberry32, as the seed= hook and
+   tools/gen-sanity.mjs use), and the item carries q.seed next to q.gen. The generators
+   are pure given Math.random (figure specs included: js/figures.js draws no randomness),
+   so mqiSeededDraw(<that generator>, q.seed) returns the same item again, and the mock's
+   typed conversion (q.converted) is a pure function of it. The ambient stream is put
+   back after each draw, so nothing else changes. */
+function mqiSeedRng(seed){
+  let a=seed>>>0;
+  return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+}
+function mqiNewSeed(){ return Math.floor(Math.random()*4294967296)>>>0; }
+function mqiSeededDraw(fn, seed){
+  const keep=Math.random; Math.random=mqiSeedRng(seed);
+  try{ return fn(); } finally{ Math.random=keep; }
 }
 const AVATARS=[
   ['🦄','Unicorn'],['🥷','Ninja'],['🦸‍♀️','Super Hero'],['🦸‍♂️','Super Hero'],
@@ -667,11 +691,14 @@ function newMockGame(variant, resume, modeId){
   /* Each mock feed is built over a stamped copy of the node's pools, so every item
      carries q.gen = "<node>.<generator>" and the mode can keep the banks the
      calibration card bars from the long problems (CONFIG.NEVER_PROBLEM) out of them.
+     Each draw also runs under its own seed (q.seed, see mqiSeededDraw) so the parent
+     upload can name an exact replay key for every question.
      The registry's own pools are put back at once; normal play never sees the stamp. */
   const stampedFeed=id=>{
     const def=MQI.topics[id], keep=def.pools, pools={};
     for(const l of [1,2,3]) pools[l]=keep[l].map(pr=>{ const fn=pr[0];
-      const w=function(){ const q=fn(); if(q && !q.gen) q.gen=id+'.'+(fn.name||'anon'); return q; };
+      const w=function(){ const seed=mqiNewSeed(), q=mqiSeededDraw(fn,seed);
+        if(q){ if(!q.gen) q.gen=id+'.'+(fn.name||'anon'); q.seed=seed; } return q; };
       return [w, pr[1]]; });
     def.pools=pools;
     try{ return MQI.createFeed(id,{alternateL3:false}); } finally{ def.pools=keep; }

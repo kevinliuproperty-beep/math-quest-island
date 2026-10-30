@@ -17,6 +17,10 @@
    2026-10-25: a quest (science practice / Power-Up) may carry the same review, one row per
    question reached, plus optional got (marks scored, halves allowed, <= marks), first (the
    first-try MCQ pick), hintsShown (0-5 hint rungs seen) and hints (their text, <= 3 x 200).
+   2026-10-30 (replay keys): a mock paper may carry variant ('quick' | 'full' | 'long' |
+   'paper1' | 'paper2'), and each review row gen ("<node>.<generator>"), seed (uint32 draw
+   seed), level (pool 1-3), band (1-5) and conv (true = MCQ asked as typed), so an item can be
+   redrawn exactly (js/app.js mqiSeededDraw). All optional; a bad value drops only that field.
    The repo is public, so only the SHA-256 of the parent key lives here. */
 import { createHash, timingSafeEqual } from 'crypto';
 
@@ -42,6 +46,7 @@ async function redis(cmd){
 }
 
 const ID_RE = /^[0-9a-z]{8,32}$/;
+const GEN_RE = /^[A-Za-z0-9_$-]{1,40}\.[A-Za-z0-9_$-]{1,60}$/;
 function clampStr(v, n){
   if(typeof v !== 'string') return null;
   const s = v.replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, n);
@@ -83,6 +88,12 @@ function cleanReview(a){
       const hs = x.hints.map(s => clampText(s, 200));
       if(hs.every(s => s)) row.hints = hs;
     }
+    /* replay keys (2026-10-30) */
+    if(typeof x.gen === 'string' && GEN_RE.test(x.gen)) row.gen = x.gen;
+    if(Number.isInteger(x.seed) && x.seed >= 0 && x.seed <= 4294967295) row.seed = x.seed;
+    if(Number.isInteger(x.level) && x.level >= 1 && x.level <= 3) row.level = x.level;
+    if(Number.isInteger(x.band) && x.band >= 1 && x.band <= 5) row.band = x.band;
+    if(x.conv === true) row.conv = true;
     out.push(row);
   }
   return out.length ? out : null;
@@ -134,6 +145,7 @@ export function cleanRecord(r, now){
   if(r.kind === 'paper'){
     if(Number.isInteger(r.timeLimitSec) && r.timeLimitSec > 0 && r.timeLimitSec <= 86400) out.timeLimitSec = r.timeLimitSec;
     if(r.ended === 'timeout' || r.ended === 'submit') out.ended = r.ended;
+    if(typeof r.variant === 'string' && /^[a-z0-9-]{1,16}$/.test(r.variant)) out.variant = r.variant;
   }
   return out;
 }

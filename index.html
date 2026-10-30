@@ -424,6 +424,10 @@
   .mk-marks { color:#ffe66d; white-space:nowrap; }
   .mk-clock { font-size:19px; color:#9ef0ff; }
   .mk-clock.mk-low { color:#ff8f8f; }
+  /* PSLE Maths Paper (js/modes/psle-mock.js): the calculator rule sits in the HUD all paper long */
+  .mk-calc { font-size:14px; color:#ffd1cf; background:rgba(255,111,97,.16); border-radius:8px; padding:2px 8px; white-space:nowrap; }
+  .mk-calc.on { color:#c9ffe0; background:rgba(46,204,113,.18); }
+  .mkNote { font-size:13px; font-weight:600; color:#d5cdff; margin:2px 0 0; }
   /* The exam navigator (Exam Navigator lane, 2026-10-07): numbered buttons grouped by
      booklet - current (yellow ring), answered (filled), not answered (outline), flagged
      (red corner) - then Back / Flag / Next / Hand in. The strip scrolls sideways INSIDE
@@ -823,7 +827,7 @@
      document.write keeps the tags synchronous, so load order is byte-identical to
      the hand-written tags it replaces. -->
 <script>
-  window.MQI_BUILD = "20261027postexam";
+  window.MQI_BUILD = "20261030p5p6fan";
   (function () {
     var v = "?v=" + window.MQI_BUILD;
     var files = [
@@ -862,11 +866,22 @@
       "js/topics/p4-pie-charts.js",
       "js/topics/p4-angles.js",
       "js/topics/p5-shapes.js",
+      "js/topics/p6-ratio.js",
+      "js/topics/p6-fractions.js",
+      "js/topics/p6-percentage.js",
+      "js/topics/p6-algebra.js",
+      "js/topics/p6-circles.js",
+      "js/topics/p6-volume.js",
+      "js/topics/p6-quadrilaterals.js",
+      "js/topics/p6-average.js",
+      "js/topics/p5-exam-problems.js",
       "js/registry.js",
       /* modes register after core, before the shell boots (js/modes/README.md).
          Order is not load-bearing - core.js drains MQI.pendingModes. */
       "js/modes/patchwerk.js",
       "js/modes/p3-mock.js",
+      /* after p3-mock.js: the PSLE paper reuses its engine (P5-P6 mirror, Sprint 1) */
+      "js/modes/psle-mock.js",
       "js/app.js",
       "js/boot.js"
     ];

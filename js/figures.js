@@ -3,7 +3,7 @@
  *
  * ONE renderer for every diagram in the game. Generators emit PURE DATA
  * (`q.figure = { type: 'bar' | 'line' | 'pie' | 'rect' | 'lshape' |
- * 'fractionBar' | 'table' | 'geom' | 'clocks', ...fields }`) and never a byte of
+ * 'fractionBar' | 'table' | 'geom' | 'clocks' | 'circlefig', ...fields }`) and never a byte of
  * markup; this file turns a spec into the SVG/HTML the web app paints. A native renderer (SwiftUI,
  * `MQFigures`) is written against the same spec, from the documentation in
  * js/topics/README.md alone — that is the whole point of the split.
@@ -658,6 +658,186 @@
       '" style="display:block;margin:0 auto;font-family:inherit;' + FIG_FIT + '">' + body + '</svg></div>';
   }
 
+  /* ---------------- circlefig: circles, semicircles, quarter circles, composites (p6circles) ----------------
+   * { type:'circlefig', shape:'circle'|'semi'|'quarter'|'rect', unit, ... }
+   *   circle   r, mark ('r' prints the radius on a dashed radius, 'd' the diameter on a dashed diameter)
+   *   semi     r, mark (flat side at the bottom; 'd' prints the flat side under it, 'r' a dashed radius
+   *            from the centre straight up, labelled beside it)
+   *   quarter  r (right angle at the bottom-left, marked; BOTH straight sides printed)
+   *   segment  r: the same quarter circle with its chord drawn; the two radii and the chord are a
+   *            right triangle left WHITE, and only the part between chord and arc is shaded
+   *   leaf     r: a square of side r (outline drawn, unshaded; sides printed as W and H) with
+   *            quarter circles of radius r centred on its bottom-left and top-right corners
+   *            (centre dots); only their overlap is shaded
+   *   rect     W, H, r, semis:[[side, mode]], quarters:[[corner, mode]]
+   *            A W x H rectangle. A semi on `side` (top/right/bottom/left) has the WHOLE side as its
+   *            diameter: mode 'out' is added outside (its diameter dashed), 'in' is cut out.
+   *            A quarter at `corner` (tl/tr/br/bl) has radius r and is centred ON that corner:
+   *            'in' is cut out of the rectangle (its two radii dashed, the horizontal one labelled);
+   *            'out' is added outside, one radius along the rectangle's vertical side (dashed)
+   *            and the other extending the horizontal side outward (labelled under / over it).
+   *            W is printed under the bottom side if that side is plain (no semi, no quarter at
+   *            either end), else over the top side if plain, else on a dashed line along the
+   *            bottom side; H left of the left side if plain, else right of the right side if
+   *            plain, else on a dashed line along the left side.
+   * The shaded region IS the figure: its outline is ONE path (class cf-shape) of straight
+   * edges and circular arcs, so its perimeter is the outline and nothing dashed is part of it.
+   * Solid thin lines (class cf-frame) are drawn edges of unshaded pieces, never perimeter.
+   * Strictly to scale, one px-per-unit on both axes: s = min(176 / width, 140 / height),
+   * width and height being the whole figure's extent in units. Labels are 14 px TEXT
+   * (number + space + unit, classes cf-r / cf-d / cf-W / cf-H) in a viewBox svg carrying
+   * data-fit, so the shell may shrink the picture only down to the reading floor. */
+  const CF_MAXW = 176, CF_MAXH = 140, CF_PAD = 6, CF_CH = 8.6;
+
+  function circlefig(f) {
+    const unit = f.unit || 'cm', shape = f.shape;
+    const r1 = v => +v.toFixed(1);
+    const segs = [], dash = [], labs = [], dots = [], frame = [];
+    let start = [0, 0], ext = [0, 0, 1, 1], ra = null;
+    const lab = (cls, v, x, y, dx, dy, anchor) => labs.push([cls, v + ' ' + unit, x, y, dx, dy, anchor]);
+    const r = f.r;
+    if (shape === 'circle') {
+      ext = [0, 0, 2 * r, 2 * r]; start = [0, r];
+      segs.push(['A', 2 * r, r, r, 1], ['A', 0, r, r, 1]);
+      dots.push([r, r]);
+      if (f.mark === 'd') { dash.push([0, r, 2 * r, r]); lab('cf-d', 2 * r, r, r, 0, -7, 'middle'); }
+      else { dash.push([r, r, 2 * r, r]); lab('cf-r', r, 1.5 * r, r, 0, -7, 'middle'); }
+    } else if (shape === 'semi') {
+      ext = [0, 0, 2 * r, r]; start = [0, r];
+      segs.push(['A', 2 * r, r, r, 1], ['L', 0, r]);
+      dots.push([r, r]);
+      if (f.mark === 'd') lab('cf-d', 2 * r, r, r, 0, 18, 'middle');
+      else { dash.push([r, r, r, 0]); lab('cf-r', r, r, r / 2, 6, 5, 'start'); }
+    } else if (shape === 'segment') {
+      /* the quarter circle's two radii and the chord are the right triangle; the
+         shaded part is what lies between the chord and the curved edge */
+      ext = [0, 0, r, r]; start = [0, 0];
+      segs.push(['A', r, r, r, 1], ['L', 0, 0]);
+      frame.push([0, r, 0, 0], [0, r, r, r]);
+      ra = [0, r];
+      lab('cf-r', r, r / 2, r, 0, 18, 'middle');
+      lab('cf-r', r, 0, r / 2, -8, 5, 'end');
+    } else if (shape === 'leaf') {
+      /* a square of side r; two quarter circles of radius r centred on its bottom-left
+         and top-right corners; the shaded part is where they overlap */
+      ext = [0, 0, r, r]; start = [0, 0];
+      segs.push(['A', r, r, r, 1], ['A', 0, 0, r, 1]);
+      frame.push([0, 0, r, 0], [r, 0, r, r], [r, r, 0, r], [0, r, 0, 0]);
+      dots.push([0, r], [r, 0]);
+      lab('cf-W', r, r / 2, r, 0, 18, 'middle');
+      lab('cf-H', r, 0, r / 2, -8, 5, 'end');
+    } else if (shape === 'quarter') {
+      ext = [0, 0, r, r]; start = [0, r];
+      segs.push(['L', 0, 0], ['A', r, r, r, 1], ['L', 0, r]);
+      ra = [0, r];
+      lab('cf-r', r, r / 2, r, 0, 18, 'middle');
+      lab('cf-r', r, 0, r / 2, -8, 5, 'end');
+    } else {
+      const W = f.W, H = f.H, q = f.r || 0;
+      const semis = f.semis || [], quarters = f.quarters || [];
+      const semiOn = s => { for (const p of semis) if (p[0] === s) return p[1]; return ''; };
+      const qAt = c => { for (const p of quarters) if (p[0] === c) return p[1]; return ''; };
+      const C = { tl: [0, 0], tr: [W, 0], br: [W, H], bl: [0, H] };
+      /* clockwise on the screen: corner, the side leaving it, its direction */
+      const ORDER = [['tl', 'top', [1, 0]], ['tr', 'right', [0, 1]], ['br', 'bottom', [-1, 0]], ['bl', 'left', [0, -1]]];
+      const dirIn = k => ORDER[(k + 3) % 4][2];
+      const entry = [], exit = [], chain = [];
+      for (let k = 0; k < 4; k++) {
+        const c = ORDER[k][0], P = C[c], di = dirIn(k), dO = ORDER[k][2], m = qAt(c);
+        const vertIn = di[0] === 0;
+        if (m === 'in') {
+          entry[k] = [P[0] - q * di[0], P[1] - q * di[1]];
+          exit[k] = [P[0] + q * dO[0], P[1] + q * dO[1]];
+          chain[k] = [['A', exit[k][0], exit[k][1], q, 0]];
+        } else if (m === 'out') {
+          if (vertIn) {
+            entry[k] = [P[0] - q * di[0], P[1] - q * di[1]];
+            exit[k] = [P[0] - q * dO[0], P[1] - q * dO[1]];
+          } else {
+            entry[k] = [P[0] + q * di[0], P[1] + q * di[1]];
+            exit[k] = [P[0] + q * dO[0], P[1] + q * dO[1]];
+          }
+          chain[k] = [['A', exit[k][0], exit[k][1], q, 1]];
+        } else { entry[k] = P; exit[k] = P; chain[k] = []; }
+      }
+      start = exit[0];
+      for (let k = 0; k < 4; k++) {
+        const side = ORDER[k][1], to = entry[(k + 1) % 4], sm = semiOn(side);
+        const len = (side === 'top' || side === 'bottom') ? W : H;
+        if (sm) segs.push(['A', to[0], to[1], len / 2, sm === 'out' ? 1 : 0]);
+        else segs.push(['L', to[0], to[1]]);
+        for (const c of chain[(k + 1) % 4]) segs.push(c);
+      }
+      /* extents */
+      let x0 = 0, y0 = 0, x1 = W, y1 = H;
+      if (semiOn('left') === 'out') x0 = -H / 2;
+      if (semiOn('right') === 'out') x1 = W + H / 2;
+      if (semiOn('top') === 'out') y0 = -W / 2;
+      if (semiOn('bottom') === 'out') y1 = H + W / 2;
+      if (qAt('tl') === 'out' || qAt('bl') === 'out') x0 = Math.min(x0, -q);
+      if (qAt('tr') === 'out' || qAt('br') === 'out') x1 = Math.max(x1, W + q);
+      ext = [x0, y0, x1, y1];
+      /* dashed: the diameter of every added semi */
+      const SIDE = { top: [0, 0, W, 0], right: [W, 0, W, H], bottom: [0, H, W, H], left: [0, 0, 0, H] };
+      for (const p of semis) if (p[1] === 'out') dash.push(SIDE[p[0]]);
+      /* quarter pieces: dashed radii, the horizontal one labelled */
+      for (const p of quarters) {
+        const c = p[0], P = C[c], top = c[0] === 't', left = c[1] === 'l';
+        const hx = (p[1] === 'in') === left ? 1 : -1;      /* which way the labelled radius runs */
+        const vy = top ? 1 : -1;
+        if (p[1] === 'in') dash.push([P[0], P[1], P[0] + hx * q, P[1]]);   /* an added quarter's is outline */
+        dash.push([P[0], P[1], P[0], P[1] + vy * q]);
+        lab('cf-r', q, P[0] + hx * q / 2, P[1], 0, top ? -8 : 18, 'middle');
+      }
+      const plain = s => !semiOn(s) && !{ top: qAt('tl') || qAt('tr'), right: qAt('tr') || qAt('br'),
+        bottom: qAt('br') || qAt('bl'), left: qAt('bl') || qAt('tl') }[s];
+      if (plain('bottom')) lab('cf-W', W, W / 2, H, 0, 18, 'middle');
+      else if (plain('top')) lab('cf-W', W, W / 2, 0, 0, -8, 'middle');
+      else { dash.push([0, H, W, H]); lab('cf-W', W, W / 2, H, 0, -7, 'middle'); }
+      if (plain('left')) lab('cf-H', H, 0, H / 2, -8, 5, 'end');
+      else if (plain('right')) lab('cf-H', H, W, H / 2, 8, 5, 'start');
+      else { dash.push([0, 0, 0, H]); lab('cf-H', H, 0, H / 2, 6, 5, 'start'); }
+    }
+
+    const s = Math.min(CF_MAXW / (ext[2] - ext[0]), CF_MAXH / (ext[3] - ext[1]));
+    const X = u => r1((u - ext[0]) * s), Y = u => r1((u - ext[1]) * s);
+    let d = 'M ' + X(start[0]) + ' ' + Y(start[1]);
+    for (const g of segs) {
+      d += g[0] === 'L' ? ' L ' + X(g[1]) + ' ' + Y(g[2])
+        : ' A ' + r1(g[3] * s) + ' ' + r1(g[3] * s) + ' 0 0 ' + g[4] + ' ' + X(g[1]) + ' ' + Y(g[2]);
+    }
+    d += ' Z';
+    let bx0 = 0, by0 = 0, bx1 = (ext[2] - ext[0]) * s, by1 = (ext[3] - ext[1]) * s;
+    let body = '';
+    for (const k of frame) {
+      body += '<line class="cf-frame" x1="' + X(k[0]) + '" y1="' + Y(k[1]) + '" x2="' + X(k[2]) + '" y2="' + Y(k[3]) +
+        '" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round"/>';
+    }
+    body += '<path class="cf-shape" d="' + d + '" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2.5" stroke-linejoin="round"/>';
+    for (const k of dash) {
+      body += '<line class="cf-dash" x1="' + X(k[0]) + '" y1="' + Y(k[1]) + '" x2="' + X(k[2]) + '" y2="' + Y(k[3]) +
+        '" stroke="#334155" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    }
+    for (const k of dots) body += '<circle class="cf-ctr" cx="' + X(k[0]) + '" cy="' + Y(k[1]) + '" r="3" fill="#0f172a"/>';
+    if (ra) {
+      const ax = X(ra[0]), ay = Y(ra[1]);
+      body += '<path d="M ' + ax + ' ' + r1(ay - 10) + ' L ' + r1(ax + 10) + ' ' + r1(ay - 10) + ' L ' + r1(ax + 10) + ' ' + ay +
+        '" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>';
+    }
+    for (const L of labs) {
+      const x = r1(X(L[2]) + L[4]), y = r1(Y(L[3]) + L[5]), w = L[1].length * CF_CH;
+      const lx = L[6] === 'middle' ? x - w / 2 : (L[6] === 'end' ? x - w : x);
+      bx0 = Math.min(bx0, lx); bx1 = Math.max(bx1, lx + w); by0 = Math.min(by0, y - 12); by1 = Math.max(by1, y + 4);
+      body += '<text class="cf-lab ' + L[0] + '" x="' + x + '" y="' + y + '" text-anchor="' + L[6] +
+        '" font-size="14" font-weight="700" fill="#0f172a" stroke="#ffffff" stroke-width="3" paint-order="stroke">' + L[1] + '</text>';
+    }
+    const vx = r1(bx0 - CF_PAD), vy = r1(by0 - CF_PAD), vw = r1(bx1 - bx0 + 2 * CF_PAD), vh = r1(by1 - by0 + 2 * CF_PAD);
+    return '<div class="cffig" style="display:inline-block;background:#fff;color:#0f172a;padding:8px 10px;' +
+      'border-radius:8px;font-size:13px;max-width:100%">' +
+      '<svg class="circlefig" data-fit="1" width="' + vw + '" height="' + vh + '" viewBox="' + vx + ' ' + vy + ' ' + vw + ' ' + vh +
+      '" style="display:block;margin:0 auto;font-family:inherit;' + FIG_FIT + '">' + body + '</svg></div>';
+  }
+
   /* ---------------- the documented stylesheet block (WOUND 8) ----------------
    * Six of the seven renderers are self-contained: every declaration they need is
    * inline in the string they build, so this file IS the reference drawing the
@@ -685,7 +865,7 @@
 
   /* ---------------- the registry ---------------- */
 
-  const RENDERERS = { bar, rect, fractionBar, lshape, table, line, pie, geom, clocks };
+  const RENDERERS = { bar, rect, fractionBar, lshape, table, line, pie, geom, clocks, circlefig };
 
   function renderFigure(fig) {
     if (!fig) return '';

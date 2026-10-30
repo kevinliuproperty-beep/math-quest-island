@@ -189,13 +189,19 @@ const FIGURE_TOPICS = [
       names: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
       segs: [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4]], arcs: [], arcNames: [], panels: [] } },
   { type: 'clocks', topic: 'p3angles', grade: 'P3', find: 'four clocks',
-    wide: { type: 'clocks', hours: [11, 4, 9, 2], names: ['A', 'B', 'C', 'D'] } }
+    wide: { type: 'clocks', hours: [11, 4, 9, 2], names: ['A', 'B', 'C', 'D'] } },
+  /* m-circles lane (P6, 2026-10-30): circlefig. The wide spec is the widest drawing over
+     3,000 draws of every p6circles generator (a 239 x 191 px viewBox: a rectangle with a
+     quarter circle cut from its top-right corner, labels on three sides); the find sweep
+     lands on the Paper 2 composites that say "as shown" (the others open "The figure shows"). */
+  { type: 'circlefig', topic: 'p6circles', grade: 'P6', find: 'as shown',
+    wide: { type: 'circlefig', shape: 'rect', unit: 'cm', W: 27, H: 21, r: 14, semis: [], quarters: [['tr', 'in']] } }
 ];
 /* the figure root each renderer emits, so a shot can be attributed to a type */
 const FIG_SEL = {
   bar: '.bargraph', line: '.linegraph', table: '.dtable', pie: '.piechart',
   lshape: '.lfig', rect: '.rectBox', fractionBar: '.barModel',
-  geom: '.gmfig', clocks: '.ckfig'
+  geom: '.gmfig', clocks: '.ckfig', circlefig: '.cffig'
 };
 
 /* ---------------- tiny CDP client (no dependency) ---------------- */

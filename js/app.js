@@ -407,6 +407,22 @@ function renderMap(){
     c.querySelector('.mkHist').addEventListener('click',()=>renderMockHistory('mapScreen'));
     mp.appendChild(c);
   }
+  /* PSLE Maths Paper (P5-P6 mirror, Sprint 1): the same exam navigator on the PSLE format.
+     Paper 1 without a calculator, Paper 2 with one (js/modes/psle-mock.js). */
+  if((DB.grade==='P5'||DB.grade==='P6') && MQI.modes['psle-mock']){
+    const c=document.createElement('div');
+    c.className='mockCard';
+    const F=MQI.modes['psle-mock'].config.FORMATS, mkB=v=>{ let m=0; F[v].sections.forEach(s=>m+=s.count*s.marks);
+      return '<button class="mkGo'+(v==='paper1'?' mkMain':'')+'" data-v="'+v+'">'+(v==='paper1'?'Paper 1':'Paper 2')+
+        '<small>'+F[v].minutes+' min · '+m+' marks · '+(F[v].calculator?'🧮 calculator':'🚫 no calculator')+'</small></button>'; };
+    c.innerHTML='<div class="mkTitle">📝 PSLE Maths Paper <small>'+DB.grade+' exam practice in the PSLE format, marks at the end</small></div>'+
+      '<div class="mkBtns">'+mkB('paper1')+mkB('paper2')+'</div>'+
+      '<p class="mkNote">Paper 2 allows a calculator: use your own, as in the exam.</p>'+
+      '<button class="mkHist">📜 Paper history'+(DB.mockPapers.length?' ('+DB.mockPapers.length+')':'')+'</button>';
+    c.querySelectorAll('.mkGo').forEach(b=>b.addEventListener('click',()=>newMockGame(b.dataset.v,null,'psle-mock')));
+    c.querySelector('.mkHist').addEventListener('click',()=>renderMockHistory('mapScreen'));
+    mp.appendChild(c);
+  }
   /* Power-Up sits under the mock: the P3 exam pool, so it shows on the P3 map only */
   if(DB.grade==='P3' && powerGroups().length){
     const rot=powerRotation(), pk=powerKeys().slice(0,9);
@@ -628,18 +644,25 @@ function endPatchwerk(record){
    Exam conditions: no sounds, no right/wrong colours, no explanations until the
    report. The mode builds and marks the paper; the shell draws it. Items come from
    EVERY live node registered for P3, so a new P3 node joins the paper on merge. */
-function mockNodes(){
-  return (MQI.levelNodes.P3||[])
+const MOCK_MODES=['p3-mock','psle-mock'];
+/* The P3 mock draws the P3 nodes. The PSLE paper draws every live node from P4 up to the
+   child's level (PSLE examines the whole syllabus; a P5 paper never sees P6 content). */
+function mockNodes(modeId){
+  const lv = modeId==='psle-mock' ? (DB.grade==='P6' ? ['P4','P5','P6'] : ['P4','P5']) : ['P3'];
+  const ids=[]; lv.forEach(g=>(MQI.levelNodes[g]||[]).forEach(id=>{ if(ids.indexOf(id)<0) ids.push(id); }));
+  return ids
     .filter(id => MQI.mapNodes.some(n=>n.id===id && n.status==='live') && MQI.topics[id])
     .map(id => { const t=MQI.topics[id], sk={};
       for(const k in t.skills) sk[k]=(t.skills[k]&&t.skills[k].label)||k;
       return { id, label:t.short||t.label||id, skills:sk }; });
 }
-function newMockGame(variant, resume){
-  const mode=MQI.modes['p3-mock'];
+function newMockGame(variant, resume, modeId){
+  const mid=(resume && resume.modeId) || modeId || 'p3-mock';
+  const mode=MQI.modes[mid];
   if(!mode) return;
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
-  const fmt=mode.config.FORMATS[resume?resume.paper.variant:variant]||mode.config.FORMATS.quick;
+  const F=mode.config.FORMATS;
+  const fmt=F[resume?resume.paper.variant:variant]||F[mode.config.DEFAULT_VARIANT]||F.quick;
   const feeds={};
   /* Each mock feed is built over a stamped copy of the node's pools, so every item
      carries q.gen = "<node>.<generator>" and the mode can keep the banks the
@@ -671,7 +694,7 @@ function newMockGame(variant, resume){
   $('feedback').innerHTML=''; $('monsterDots').innerHTML='';
   show('battleScreen');
   mockConfirm(false);
-  MQI.startMode('p3-mock',{ variant:fmt.id, durationMs:MOCK_MS||fmt.minutes*60000, nodes:mockNodes(), draw,
+  MQI.startMode(mid,{ variant:fmt.id, durationMs:MOCK_MS||fmt.minutes*60000, nodes:mockNodes(mid), draw,
     parse:MQI.parseTypedAnswer, grade:MQI.gradeTyped, shapeOf:MQI.shapeKey, onEnd:endMock, resume:resume||null });
   mockSave();
 }
@@ -681,10 +704,11 @@ function newMockGame(variant, resume){
    pattern is WineQuiz's exam screen (wset-l2-quiz app/exam/ExamQuiz.tsx): Prev/Next
    plus a numbered grid, current / answered / not-answered. */
 const MOCK_LIVE='mqi_mock_live';
-function mockActive(){ const a=MQI.activeMode; return (a && a.mode.id==='p3-mock' && S && S.mock) ? a : null; }
+function mockActive(){ const a=MQI.activeMode; return (a && MOCK_MODES.indexOf(a.mode.id)>=0 && S && S.mock) ? a : null; }
 function mockSave(){
   const a=mockActive(); if(!a) return;
-  try{ const snap=a.mode.snapshot(a.ctx); if(snap){ snap.t=Date.now(); localStorage.setItem(MOCK_LIVE,JSON.stringify(snap)); } }catch(e){}
+  try{ const snap=a.mode.snapshot(a.ctx); if(snap){ snap.t=Date.now(); snap.modeId=a.mode.id; snap.grade=DB.grade;
+    localStorage.setItem(MOCK_LIVE,JSON.stringify(snap)); } }catch(e){}
 }
 function mockClearSaved(){ try{ localStorage.removeItem(MOCK_LIVE); }catch(e){} }
 /* A reload mid-paper puts her straight back on it; the clock kept running meanwhile.
@@ -692,9 +716,10 @@ function mockClearSaved(){ try{ localStorage.removeItem(MOCK_LIVE); }catch(e){} 
 function mockResume(){
   let snap=null;
   try{ snap=JSON.parse(localStorage.getItem(MOCK_LIVE)||'null'); }catch(e){ snap=null; }
-  if(!snap || !snap.paper || !Array.isArray(snap.paper.items) || !snap.paper.items.length || !MQI.modes['p3-mock']) return false;
+  const mid=(snap && snap.modeId) || 'p3-mock';
+  if(!snap || !snap.paper || !Array.isArray(snap.paper.items) || !snap.paper.items.length || !MQI.modes[mid]) return false;
   snap.elapsedMs=(snap.elapsedMs||0)+Math.max(0,Date.now()-(snap.t||Date.now()));
-  try{ DB.grade='P3'; newMockGame(null, snap); return true; }
+  try{ DB.grade = mid==='psle-mock' ? (snap.grade==='P5'?'P5':'P6') : 'P3'; newMockGame(null, snap); return true; }
   catch(e){ mockClearSaved(); return false; }
 }
 /* typed answers live in the box until she leaves the question; keep what is there */
@@ -736,7 +761,8 @@ function mockPaint(){
   }
   let html='', sec=null;
   st.forEach((x,k)=>{
-    const s=x.section.charAt(0);
+    /* one label per booklet: "Booklet A" shows as A; the PSLE Paper 2 parts keep their names */
+    const s=/^Booklet /.test(x.sectionName) ? x.sectionName.slice(8) : (x.sectionName||x.section.charAt(0));
     if(s!==sec){ sec=s; html+='<span class="mkGrp">'+s+'</span>'; }
     html+='<button class="mkNum'+(x.current?' cur':'')+(x.answered?' done':'')+(x.flagged?' flag':'')+'" data-k="'+k+'" aria-label="Question '+x.n+
       (x.answered?', answered':', not answered')+(x.flagged?', flagged':'')+'">'+x.n+'</button>';
@@ -823,7 +849,8 @@ function renderMockReport(rec){
   $('mkScore').textContent=rec.marks+' / '+rec.total;
   $('mkPct').textContent=rec.pct+'%';
   $('mkMeta').textContent=rec.label+' · '+fmtDate(rec.t)+' · time used '+fmtMs(rec.usedMs)+
-    (rec.timedOut?' (time ran out)':'')+' · '+rec.attempted+' of '+rec.items+' answered';
+    (rec.timedOut?' (time ran out)':'')+' · '+rec.attempted+' of '+rec.items+' answered'+
+    (rec.mode==='psle-mock'?' · marked by the final answer only (the PSLE also gives method marks for working)':'');
   $('mkSections').innerHTML=rec.sections.map(s=>'<div class="statBox"><div class="v">'+s.got+'/'+s.total+'</div><div class="k">'+s.name+'</div></div>').join('');
   $('mkTopics').innerHTML=rec.byTopic.map(x=>mkBarRow(x.label,(x.total?Math.round(x.got/x.total*100):0)+'%',x.got,x.total)).join('');
   $('mkSkills').innerHTML=rec.bySkill.map(x=>mkBarRow(x.label,x.topicLabel,x.got,x.total)).join('');
@@ -855,7 +882,7 @@ function renderMockHistory(backTo){
   const ps=DB.mockPapers.slice().reverse();
   $('mkHistTable').innerHTML = ps.length
     ? '<tr><th>Date</th><th>Paper</th><th>Score</th><th>Topics to power up</th></tr>'+
-      ps.map(p=>'<tr><td>'+fmtDate(p.t)+'</td><td>'+esc(({full:'Full',long:'Long',quick:'Quick'})[p.variant]||'Quick')+'</td><td>'+
+      ps.map(p=>'<tr><td>'+fmtDate(p.t)+'</td><td>'+esc(({full:'Full',long:'Long',quick:'Quick',paper1:'PSLE Paper 1',paper2:'PSLE Paper 2'})[p.variant]||'Quick')+'</td><td>'+
         p.marks+'/'+p.total+' <small>('+p.pct+'%)</small></td><td>'+
         (p.weakTopics&&p.weakTopics.length?p.weakTopics.map(esc).join(', '):'none')+'</td></tr>').join('')
     : '<tr><td style="text-align:center;padding:10px">No papers yet. Try a Quick paper from the P3 map.</td></tr>';
@@ -1979,6 +2006,31 @@ MQI.boot = function () {
   autoplayHook();
 };
 
+/* A read-only print of a built mock paper (?autoplay=mock&...&sheet=1[&key=1]). */
+function paperSheet(paper, withKey){
+  const box='background:#fff;color:#1f2937;border-radius:14px;padding:14px 18px;margin:0 0 12px;font:16px/1.5 system-ui,-apple-system,sans-serif;text-align:left';
+  let sec=null, h='<div style="max-width:980px;margin:0 auto;padding:16px">'+
+    '<h1 style="color:#ffe66d;font:900 26px system-ui;margin:4px 0">'+esc(paper.label)+'</h1>'+
+    '<p style="color:#d5cdff;font:600 15px system-ui;margin:0 0 14px">'+paper.items.length+' questions · '+paper.totalMarks+' marks · '+paper.minutes+' min · '+
+      (paper.calculator?'🧮 calculator allowed':'🚫 no calculator')+'</p>';
+  const sp=new URLSearchParams(location.search), lo=parseInt(sp.get('from'),10)||1, hi=parseInt(sp.get('to'),10)||paper.items.length;
+  paper.items.forEach(it=>{
+    const q=it.q;
+    if(it.n<lo || it.n>hi) return;   /* &from=&to=: part of the paper (a screenshot is capped at 16k px) */
+    if(it.sectionName!==sec){ sec=it.sectionName; h+='<h2 style="color:#ffe66d;font:900 19px system-ui;margin:18px 0 8px">'+esc(sec)+'</h2>'; }
+    h+='<div style="'+box+'"><b>Q'+it.n+'</b> <small style="color:#6b7280">['+it.marks+' mark'+(it.marks===1?'':'s')+'] · '+esc(it.topic)+'</small><br>'+q.q+
+      '<div style="margin:8px 0">'+figHtml(q)+'</div>'+
+      (q.typed ? '<div style="color:#6b7280">Answer: ______________'+(q.unit?' '+esc(Array.isArray(q.unit)?q.unit[0]:q.unit):'')+'</div>'
+               : '<ol style="margin:4px 0 0 20px;padding:0">'+q.choices.map(c=>'<li>'+c+'</li>').join('')+'</ol>')+
+      (withKey?'<div style="color:#047857;margin-top:6px"><b>Key:</b> '+q.answerText+'</div>':'')+'</div>';
+  });
+  h+='</div>';
+  const host=document.createElement('div'); host.id='paperSheet'; host.innerHTML=h;
+  document.getElementById('app').style.display='none';
+  document.documentElement.style.height='auto'; document.body.style.height='auto'; document.body.style.overflow='auto';
+  document.body.appendChild(host);
+}
+
 /* ---------------- debug: ?autoplay=patchwerk&bot=1 ----------------
    Drives a real Patchwerk run with simulated answers so a headless browser can
    screenshot the mode picker, a mid-run HUD and the results screen without a
@@ -1991,6 +2043,10 @@ MQI.boot = function () {
      delay=<ms>           bot think time per answer
    Inert without the query string; no production path reads it. */
 function autoplayHook(){
+  /* seed=<n> (with shot= or autoplay= only) makes the draw repeatable, so a sample paper
+     printed in parts (&from=&to=) is one paper across page loads. Inert in production. */
+  (function(){ var m=/[?&]seed=(\d+)/.exec(location.search); if(!m || !/[?&](shot|autoplay)=/.test(location.search)) return;
+  var a=+m[1]>>>0; Math.random=function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; })();
   let p;
   try{ p=new URLSearchParams(location.search); }catch(e){ return; }
   /* shot=<screen> drives a headless browser straight to one screen so the
@@ -2081,12 +2137,24 @@ function autoplayHook(){
   /* ?autoplay=mock&variant=quick|full|long&bot=1&acc=70&delay=300&ms=<paper length>
      drives a real P3 Mock Paper for the headless gate. Inert without the query. */
   if(p.get('autoplay')==='mock'){
-    DB.grade='P3';
+    const psle=p.get('mode')==='psle';
+    DB.grade = psle ? (p.get('grade')==='P5'?'P5':'P6') : 'P3';
     const ms=parseInt(p.get('ms'),10); if(ms>0) MOCK_MS=ms;
     renderStart();
     const acc=(parseInt(p.get('acc'),10)||70)/100, delay=parseInt(p.get('delay'),10)||300;
     setTimeout(()=>{
-      newMockGame(p.get('variant')||'quick');
+      newMockGame(p.get('variant')||(psle?'paper1':'quick'), null, psle?'psle-mock':'p3-mock');
+      /* goto=<n> opens question n (1-based) of the fresh paper, for a screenshot gate.
+         &mode=psle&grade=P5|P6&variant=paper1|paper2 drives the PSLE Maths Paper. */
+      /* sheet=1 prints the WHOLE fresh paper on one scrolling page (number, part, marks,
+         stem, figure, options or answer line), the way the booklet reads, so a gate can
+         screenshot a full sample paper. Shot-only, inert without the query. */
+      if(p.get('sheet')==='1') setTimeout(()=>{ const a=mockActive(); if(!a) return; paperSheet(a.mode._paper, p.get('key')==='1'); },300);
+      const gt=parseInt(p.get('goto'),10), gtt=p.get('gotoTopic');
+      if(gt>0) setTimeout(()=>mockGo(gt-1),300);
+      else if(gtt) setTimeout(()=>{ const a=mockActive(); if(!a) return;   /* first question from that node, structured first */
+        const its=a.mode._paper.items, k=its.findIndex(it=>it.topic===gtt && it.kind==='problem'), j=k>=0?k:its.findIndex(it=>it.topic===gtt);
+        if(j>=0) mockGo(j); },300);
       if(p.get('bot')!=='1') return;
       const bot=setInterval(()=>{
         if(!S || !S.mock || !Q || S.busy || !MQI.activeMode){ if(S && !S.mock) clearInterval(bot); return; }

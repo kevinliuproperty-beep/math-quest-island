@@ -90,6 +90,30 @@ function rnd() {
    requires two verbatim runs to be byte-identical. Both are kept: one stream,
    consumed through SeededMath inside the vm and through Math outside it. */
 Math.random = rnd;
+/* ---------- PER-BANK SEEDING (P5-P6 fan-out gate ruling, LOTTE 2026-10-30) -------
+   One stream for the whole run meant every ruler's sample depended on how many
+   generators ran BEFORE it: adding 115 P5/P6 generators re-rolled the samples of every
+   P3 bank downstream, and a P3 bank whose code had not changed (fractions.gOrderRelated,
+   46.7% on a 45% line, at a 5.0% shape share) flipped from pass to FAIL. A verdict on a
+   bank must be a property of that bank. So every loop over generators (and over topics)
+   reseeds the stream from SEED + the bank's own name before the bank is sampled, and
+   reseeds to a fixed per-loop value when the loop ends, so the sections that follow a
+   loop start from the same state however many banks the loop visited. Same SEED, same
+   bank -> same sample, whatever else ships. `SEED=<n>` still re-rolls everything. */
+function __hashSeed(key) {
+  let h = (SEED ^ 0x9E3779B9) >>> 0;
+  const k = String(key);
+  for (let i = 0; i < k.length; i++) { h = Math.imul(h ^ k.charCodeAt(i), 0x01000193) >>> 0; }
+  h = Math.imul(h ^ (h >>> 16), 0x85EBCA6B) >>> 0; h = Math.imul(h ^ (h >>> 13), 0xC2B2AE35) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const __bankKey = g => (typeof g === 'string' ? 'topic:' + g : (g.topic || '') + '.' + (g.name || ''));
+let __loopN = 0;
+function* __perBank(list) {
+  const n = ++__loopN;
+  for (const g of list) { _s = __hashSeed(__bankKey(g) + '#' + n); yield g; }
+  _s = __hashSeed('after-loop#' + n);
+}
 /* ---------- load the pure layer in a DOM-less vm ---------- */
 const SeededMath = Object.create(Math);
 SeededMath.random = rnd;
@@ -121,6 +145,29 @@ const parseFrac = html => {
 const allFracs = html => [...String(html).matchAll(/<span class="n">(-?\d+)<\/span><span class="d">(-?\d+)<\/span>/g)]
   .map(m => [Number(m[1]), Number(m[2])]);
 const gcd = (a, b) => { while (b) { [a, b] = [b, a % b]; } return a; };
+
+/* ---------- ORACLE PLUG-INS (P5-P6 mirror, 2026-10-30) ----------
+   One file per topic in tools/oracles/<anything>.mjs, so parallel content lanes never
+   edit this file:
+       export const topic = 'p6algebra';                 // the registered topic id
+       export function oracle(q, kit) { ... }            // null = verified, string = failure
+   A plug-in is EXHAUSTIVE for its topic: it is dispatched first and its answer is final
+   (returning false - "no oracle matched" - is reported as a failure, never a pass). kit
+   carries the shared helpers below plus TOPICS, MQI and renderFigure (the app's own
+   renderer, so a figure oracle reads the labels a child reads). */
+const ORACLE_KIT = { strip, near, parseFrac, allFracs, gcd, TOPICS, MQI, renderFigure: spec => MQI.renderFigure(spec) };
+const ORACLE_PLUGINS = {};
+{
+  const dir = path.join(ROOT, 'tools/oracles');
+  const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.mjs')).sort() : [];
+  for (const f of files) {
+    const m = await import(path.join(dir, f));
+    if (!m.topic || typeof m.oracle !== 'function') throw new Error('tools/oracles/' + f + ': needs `export const topic` and `export function oracle(q, kit)`');
+    if (!TOPICS[m.topic]) throw new Error('tools/oracles/' + f + ': topic ' + m.topic + ' is not registered');
+    if (ORACLE_PLUGINS[m.topic]) throw new Error('tools/oracles/' + f + ': a second plug-in for ' + m.topic);
+    ORACLE_PLUGINS[m.topic] = m.oracle;
+  }
+}
 
 /* Independent re-evaluator for the P5 order-of-operations / brackets stems.
    Space-separated tokens only: numbers, + - x /, and ( ). Deliberately NOT eval:
@@ -3024,6 +3071,138 @@ function p3HardNumbersOracle(q) {
   return fail('no oracle matched this typed stem - every typed p3numbers generator must ship its oracle: ' + text);
 }
 
+/* ---------- P6 RATIO ORACLE (P5-P6 mirror, Sprint 1, 2026-10-28) ------------
+   Exhaustive for topic p6ratio: every stem must match one of these shapes or the
+   draw fails. Each key is re-derived from the RENDERED stem by a different route
+   from the generator's: simplest forms by dividing by the gcd computed here, the
+   share and difference problems by a brute-force search over the value of one unit
+   (never by the generator's formula), and the before-after problem by searching the
+   unchanged person's amount. MCQs must have EXACTLY ONE defensible option, every
+   distractor must carry a misconception tag from the topic's dictionary, and every
+   draw must be tagged syl 'P6'. Typed slips must never equal the key. */
+function p6ratioOracle(q) {
+  const text = strip(q.q);
+  const fail = s => 'p6ratio: ' + s + ' :: ' + text;
+  const T = TOPICS.p6ratio, MIS = (T && T.misconceptions) || {};
+  if (q.syl !== 'P6') return fail('every item must carry syl P6');
+  const ratioOf = s => { const m = strip(s).match(/^(\d+) : (\d+)(?: : (\d+))?$/); return m ? m.slice(1).filter(x => x !== undefined).map(Number) : null; };
+  const simp = r => { let g = 0; for (const x of r) g = gcd(g, x); return r.map(x => x / g); };
+  const same = (r, s) => !!r && !!s && r.length === s.length && r.every((x, i) => x === s[i]);
+  const equiv = (r, s) => !!r && !!s && r.length === s.length && same(simp(r), simp(s));
+  if (!q.typed) {
+    const n = (q.choices || []).length;
+    for (let i = 0; i < n; i++) {
+      if (i === q.correct) { if (q.miscon && q.miscon[i] != null) return fail('the key carries a misconception tag'); continue; }
+      const t = q.miscon && q.miscon[i];
+      if (!t || !MIS[t]) return fail(`distractor ${i} has no misconception tag from the dictionary (${t})`);
+      if (!q.optionFeedback || typeof q.optionFeedback[i] !== 'string' || !q.optionFeedback[i].trim()) return fail(`distractor ${i} has no coaching line`);
+    }
+  } else if (q.slips) {
+    for (const [v, t] of Object.entries(q.slips)) {
+      if (Number(v) === q.answer) return fail('a slip equals the key');
+      if (!MIS[t]) return fail(`slip tag ${t} is not in the dictionary`);
+    }
+  }
+  let m;
+  /* two given quantities -> simplest form */
+  if ((m = text.match(/^(?:In a box|On a shelf|In a CCA group|In a basket|In a pond) there are (\d+) ([a-z ]+?) and (\d+) ([a-z ]+?)\. What is the ratio of the number of \2 to the number of \4\? Give it in its simplest form\.$/))) {
+    const want = simp([+m[1], +m[3]]);
+    if (!same(ratioOf(q.answerText), want)) return fail(`expected ${want.join(' : ')}, got ${q.answerText}`);
+    const right = q.choices.filter(c => same(ratioOf(c), want)).length;
+    return right === 1 ? null : fail(`${right} options are the simplest-form answer`);
+  }
+  if ((m = text.match(/^Express (\d+) : (\d+) in its simplest form\.$/))) {
+    const want = simp([+m[1], +m[2]]);
+    if (same(want, [+m[1], +m[2]])) return fail('the given ratio is already in its simplest form');
+    if (!same(ratioOf(q.answerText), want)) return fail(`expected ${want.join(' : ')}, got ${q.answerText}`);
+    const right = q.choices.filter(c => same(ratioOf(c), want)).length;
+    return right === 1 ? null : fail(`${right} options are the simplest form`);
+  }
+  if ((m = text.match(/^Which ratio is equivalent to (\d+) : (\d+)\?$/))) {
+    const base = [+m[1], +m[2]];
+    const eqs = q.choices.map((c, i) => equiv(ratioOf(c), base) ? i : -1).filter(i => i >= 0);
+    if (eqs.length !== 1) return fail(`${eqs.length} options are equivalent to ${base.join(' : ')}`);
+    if (eqs[0] !== q.correct) return fail('the key is not the equivalent option');
+    return same(ratioOf(q.choices[q.correct]), base) ? fail('the key repeats the given ratio') : null;
+  }
+  if ((m = text.match(/^Find the missing number: (\d+) : (\d+) = (\?|\d+) : (\?|\d+)$/))) {
+    const a = +m[1], b = +m[2];
+    if ((m[3] === '?') === (m[4] === '?')) return fail('exactly one term must be missing');
+    let found = null;
+    for (let x = 1; x <= 1000; x++) {                     /* search, never divide */
+      const r = m[3] === '?' ? [x, +m[4]] : [+m[3], x];
+      if (r[0] * b === r[1] * a) { found = x; break; }
+    }
+    if (found === null) return fail('no whole-number missing term exists');
+    if (q.unit) return fail('a missing ratio term carries no unit');
+    return q.answer === found ? null : fail(`expected ${found}, got ${q.answer}`);
+  }
+  if ((m = text.match(/^([A-Z][a-z]+(?: [A-Z][a-z]+)?) has \$(\d+), ([A-Z][a-z]+(?: [A-Z][a-z]+)?) has \$(\d+) and ([A-Z][a-z]+(?: [A-Z][a-z]+)?) has \$(\d+)\. What is the ratio of \1's money to \3's money to \5's money in its simplest form\?$/))) {
+    const want = simp([+m[2], +m[4], +m[6]]);
+    if (!same(ratioOf(q.answerText), want)) return fail(`expected ${want.join(' : ')}, got ${q.answerText}`);
+    const right = q.choices.filter(c => same(ratioOf(c), want)).length;
+    return right === 1 ? null : fail(`${right} options are the simplest-form answer`);
+  }
+  if ((m = text.match(/^\$(\d+) is shared between ([A-Z][a-z]+(?: [A-Z][a-z]+)?) and ([A-Z][a-z]+(?: [A-Z][a-z]+)?) in the ratio (\d+) : (\d+)\. How much money does (.+?) get\? \(in dollars, e\.g\. 45\)$/))) {
+    const tot = +m[1], p = +m[4], r = +m[5];
+    if (m[6] !== m[2] && m[6] !== m[3]) return fail('the question names someone not in the share');
+    let unit = null;
+    for (let u = 1; u <= tot; u++) if (u * (p + r) === tot) { unit = u; break; }
+    if (unit === null) return fail('the total does not split into whole-dollar units');
+    const want = (m[6] === m[2] ? p : r) * unit;
+    if (q.unit !== '$') return fail('a dollar answer must declare $');
+    return q.answer === want ? null : fail(`expected ${want}, got ${q.answer}`);
+  }
+  if ((m = text.match(/^The ratio of the number of ([a-z]+) to the number of ([a-z]+) in (?:a|an) [a-z ]+ is (\d+) : (\d+)\. What fraction of the \1 and \2 altogether are (\1|\2)\?$/))) {
+    const p = +m[3], r = +m[4], part = m[5] === m[1] ? p : r;
+    const key = parseFrac(q.answerText);
+    if (!key) return fail('the key is not a fraction');
+    if (key[0] * (p + r) !== part * key[1]) return fail(`expected ${part}/${p + r}, got ${key[0]}/${key[1]}`);
+    const right = q.choices.filter(c => { const f = parseFrac(c); return f && f[0] * (p + r) === part * f[1]; }).length;
+    return right === 1 ? null : fail(`${right} options equal ${part}/${p + r}`);
+  }
+  if ((m = text.match(/^The (length|mass|volume of water) (?:of|in) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)'s (ribbon|bag of rice|bottle) is .+ of the \1 (?:of|in) ([A-Z][a-z]+(?: [A-Z][a-z]+)?)'s \3\. What is the ratio of the \1 (?:of|in) \2's \3 to the \1 (?:of|in) \4's \3\?$/))) {
+    const fs = allFracs(q.q);
+    if (fs.length !== 1) return fail(`expected one printed fraction, saw ${fs.length}`);
+    const want = simp([fs[0][0], fs[0][1]]);
+    if (!same(ratioOf(q.answerText), want)) return fail(`expected ${want.join(' : ')}, got ${q.answerText}`);
+    const right = q.choices.filter(c => equiv(ratioOf(c), want)).length;
+    return right === 1 ? null : fail(`${right} options are equivalent to ${want.join(' : ')}`);
+  }
+  if ((m = text.match(/^The ratio of the number of ([a-z]+) ([A-Z][a-z]+(?: [A-Z][a-z]+)?) has to the number of \1 ([A-Z][a-z]+(?: [A-Z][a-z]+)?) has is (\d+) : (\d+)\. \3 has (\d+) more \1 than \2\. How many \1 do they have altogether\?$/))) {
+    const p = +m[4], r = +m[5], D = +m[6];
+    let tot = null;
+    for (let a = 1; a <= 5000 && tot === null; a++) {    /* search the first person's count */
+      if ((a * r) % p) continue;
+      const b = a * r / p;
+      if (b - a === D) tot = a + b;
+    }
+    if (tot === null) return fail('no whole-number solution');
+    if (q.band !== 3 || q.exam !== 'problem') return fail('a Paper 2 model problem is band 3 and exam:problem');
+    return q.answer === tot ? null : fail(`expected ${tot}, got ${q.answer}`);
+  }
+  if ((m = text.match(/^At first, the ratio of ([A-Z][a-z]+(?: [A-Z][a-z]+)?)'s money to ([A-Z][a-z]+(?: [A-Z][a-z]+)?)'s money was (\d+) : (\d+)\. After \1 spent \$(\d+), the ratio became (\d+) : (\d+)\. \2's money did not change\. How much money did \1 have at first\? \(in dollars, e\.g\. 120\)$/))) {
+    const p = +m[3], r0 = +m[4], d = +m[5], r = +m[6], s = +m[7];
+    const sols = [];
+    for (let B = 1; B <= 20000; B++) {                    /* search the unchanged amount */
+      if ((B * p) % r0 || (B * r) % s) continue;
+      if (B * p / r0 - B * r / s === d) sols.push(B * p / r0);
+    }
+    if (sols.length !== 1) return fail(`${sols.length} whole-dollar solutions`);
+    if (q.band !== 3 || q.exam !== 'problem') return fail('a Paper 2 before-after problem is band 3 and exam:problem');
+    return q.answer === sols[0] ? null : fail(`expected ${sols[0]}, got ${q.answer}`);
+  }
+  if ((m = text.match(/^Some money was shared among ([A-Z][a-z]+(?: [A-Z][a-z]+)?), ([A-Z][a-z]+(?: [A-Z][a-z]+)?) and ([A-Z][a-z]+(?: [A-Z][a-z]+)?) in the ratio (\d+) : (\d+) : (\d+)\. The total amount of money was \$(\d+)\. How much more money did \3 get than \1\? \(in dollars, e\.g\. 36\)$/))) {
+    const a = +m[4], b = +m[5], c = +m[6], tot = +m[7];
+    let unit = null;
+    for (let u = 1; u <= tot; u++) if (u * (a + b + c) === tot) { unit = u; break; }
+    if (unit === null) return fail('the total does not split into whole-dollar units');
+    if (c <= a) return fail('the second-named person must get more');
+    return q.answer === (c - a) * unit ? null : fail(`expected ${(c - a) * unit}, got ${q.answer}`);
+  }
+  return fail('no oracle matched this stem - every p6ratio stem must ship its oracle');
+}
+
 /* ---------- independent oracles, dispatched on the rendered question ---------- */
 /* Return: null = verified, string = failure, false = no oracle matched.
    `topic` is the registered topic id the generator was drawn from. It is used by
@@ -3034,6 +3213,13 @@ function p3HardNumbersOracle(q) {
 function oracle(q, topic) {
   /* SWEEP 2026-09-15: the decimals bank is dispatched first and exhaustively, so
      no looser branch below can claim one of its stems and no stem can escape. */
+  /* P5-P6 mirror fan-out: a topic with a plug-in in tools/oracles/ is dispatched there, exhaustively. */
+  if (ORACLE_PLUGINS[topic]) {
+    const r = ORACLE_PLUGINS[topic](q, ORACLE_KIT);
+    return r === false || r === undefined ? topic + ': the plug-in oracle matched no stem (every stem must be covered): ' + strip(q.q) : r;
+  }
+  /* P5-P6 mirror Sprint 1: Ratio Ridge, exhaustive (see p6ratioOracle). */
+  if (topic === 'p6ratio') return p6ratioOracle(q);
   if (topic === 'decimals') return decimalsOracle(q);
   /* lane/p3-time 2026-10-06: exhaustive, like decimals (see p3timeOracle). */
   if (topic === 'p3time') return p3timeOracle(q);
@@ -7853,7 +8039,7 @@ const rows = [];
    either line is worth seeing before it arrives (THIRD PASS 2026-09-16). */
 const proseRows = [];
 
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   let err = null, badQ = null, matched = 0;
   /* RULE 6 tallies: no single draw can show a length tell, only the whole run can.
      RULE 8's per-generator half rides in the same tally (THIRD PASS 2026-09-16). */
@@ -8217,7 +8403,7 @@ function flatExemptVerdict(row) {
     return `flat-rank exempt, but its two live ranks run ${(100 * f[1]).toFixed(1)}% / ${(100 * f[2]).toFixed(1)}% - the key's rank is all but fixed, which is the third pass's KILL ("pick the third smallest", 100.00%) and not the two-way guess the exemption declares`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = rankBank(g.fn);
   if (!row.seen) continue;                       /* not a numeric four-option bank */
@@ -8350,7 +8536,7 @@ function lenVerdict(row) {
   if (row.uLong / row.n >= LEN_CAP) return `the key is the uniquely LONGEST option on ${(100 * row.uLong / row.n).toFixed(1)}% of draws`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = lenBank(g.fn);
   if (!row.n) continue;
@@ -8546,7 +8732,7 @@ function widthVerdict(row) {
   }
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = widthBank(g.fn);
   if (!row.n) continue;                          /* not a numeric four-option bank */
@@ -8786,7 +8972,7 @@ function shapeVerdictUniq(row) {
   }
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const ex = SHAPE_EXEMPT[g.name];
   const row = shapeBank(g.fn, ex);
@@ -8934,7 +9120,7 @@ function colVerdict(row) {
     return `the MIRROR - "take the answer that stands alone in a column" - answers it on ${(100 * f('loner')).toFixed(1)}% of draws`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = colBank(g.fn);
   if (!row.n) continue;                          /* not a numeric four-option bank */
@@ -9189,7 +9375,7 @@ function tokVerdict(row) {
     return `"${w[0]}" is in ALL THREE distractors and not in the key on ${w[1]} of ${row.n} draws (${(100 * w[1] / row.n).toFixed(1)}%), at or over the ${Math.round(100 * TOK_CAP)}% ceiling - a child crosses three options out by that phrase alone${opts}`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = tokBank(g.fn);
   if (!row.n) continue;
@@ -9347,7 +9533,7 @@ function frRankBank(draw, n) {
   return { rate: r.map(x => x / (ranked || 1)), ranked, den: denDraws ? denScore / denDraws : 0, denDraws };
 }
 const frRankRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!RANK_TOPICS.has(g.topic)) continue;
   const key = g.topic + '.' + g.name;
   const r = [0, 0, 0, 0];
@@ -9469,7 +9655,7 @@ function frTokVerdict(row) {
   return null;
 }
 const frTokRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = frTokBank(g.fn, FR_TOK_N);
   if (row.n < FR_TOK_N / 2) continue;               /* not a prose bank */
@@ -9761,7 +9947,7 @@ function geoVerdict(row) {
   }
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const ex = GEO_EXEMPT[g.name];
   const row = geoBank(g.fn, ex);
@@ -10006,7 +10192,7 @@ function stemVerdict(row, only) {
   }
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const ex = STEM_EXEMPT[g.name];
   const row = stemBank(g.fn, ex);
@@ -10168,7 +10354,7 @@ function boardVerdict(row) {
     return `a FINITE board of ${row.rows} rows worth ${(100 * row.recall).toFixed(1)}% to full-table recall, served ${served.toFixed(2)} per session - the whole board goes past in ${toOwn.toFixed(0)} sessions`;
   return null;
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = boardBank(g.fn);
   if (!row.n) continue;
@@ -10264,7 +10450,7 @@ function stemBoardBank(draw) {
   return { n, rows: tab.size, half: rowsHalf.size, recall: n ? worth / n : 0,
            finite: rowsHalf.size ? tab.size / rowsHalf.size <= BOARD_GROWTH : false };
 }
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (g.topic !== 'p3numbers') continue;
   const row = stemBoardBank(g.fn);
   if (!row.n) continue;
@@ -10412,7 +10598,7 @@ function picVerdict(row) {
     : null;
 }
 const picRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = picBank(g.fn, PIC_N);
   if (!row.n || row.n < PIC_N / 2) continue;    /* not a figure bank with a fraction row */
@@ -10626,7 +10812,7 @@ function rowVerdict(row, name) {
   return null;
 }
 const rowRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = rowBank(g.fn, ROW_N);
   if (!row.n) continue;
@@ -10746,7 +10932,7 @@ function frStemVerdict(row) {
   return null;
 }
 const frStemRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = frStemBank(g.fn, FR_STEM_N);
   if (!row.n) continue;
@@ -10849,7 +11035,7 @@ function glyphVerdict(row) {
     : null;
 }
 const glyRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = glyphBank(g.fn, GLY_N);
   if (!row.n || row.n < GLY_N / 2) continue;
@@ -10887,7 +11073,7 @@ const AGREE_BAD = [
   [/(?<![\d\/]\s?)\b1 (?:pieces|parts|slices)\b/i, '"1 parts"']
 ];
 const agreeRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   let bad = 0, n = 0, sample = null;
   for (let i = 0; i < AGREE_N; i++) {
@@ -10916,7 +11102,7 @@ for (const g of GENS) {
 const BARE1_N = 500;
 const BARE1 = /(?<![\d\/.]\s?)\b1 (?:more )?(?:halves|thirds|quarters|fifths|sixths|sevenths|eighths|ninths|tenths|elevenths|twelfths|books|pupils|drinks|pizzas|cakes|mooncakes|watermelons|sets|pages|parts|pieces|slices|boxes|stickers|beads|marbles)\b/i;
 let bare1Bad = 0;
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   let bad = 0, sample = null;
   for (let i = 0; i < BARE1_N; i++) {
     let q; try { q = g.fn(); } catch (e) { break; }
@@ -11004,7 +11190,7 @@ function signScan(q) {
   return null;
 }
 const signRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   let bad = 0, n = 0, sample = null;
   for (let i = 0; i < SIGN_N; i++) {
     let q; try { q = g.fn(); } catch (e) { break; }
@@ -11136,7 +11322,7 @@ function cardScan(q) {
   return null;
 }
 const cardRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   let bad = 0, n = 0, sample = null;
   for (let i = 0; i < CARD_N; i++) {
@@ -11242,7 +11428,7 @@ for (const g of GENS) {
 const SERVE_SESSIONS = 200, SERVE_LEN = 30;
 const serveTally = new Map();
 (function measureService() {
-  for (const tid of Object.keys(TOPICS)) {
+  for (const tid of __perBank(Object.keys(TOPICS))) {
     if (!TOK_TOPICS.has(tid)) continue;
     const def = TOPICS[tid], saved = { 1: def.pools[1], 2: def.pools[2], 3: def.pools[3] };
     for (const lvl of [1, 2, 3])
@@ -11557,7 +11743,7 @@ function halfVerdict(row, name) {
   return null;
 }
 const halfRows = [];
-for (const g of GENS) {
+for (const g of __perBank(GENS)) {
   if (!TOK_TOPICS.has(g.topic)) continue;
   const row = halfBank(g.fn, HALF_N);
   if (!row.n) continue;
@@ -12405,7 +12591,7 @@ control('card-row clause - the v8 gEqMissingDen card ("would give 16", a bare-nu
 
 /* ---------- wiring smoke: buildSetFor for every registered topic ---------- */
 const setRows = [];
-for (const tid of Object.keys(TOPICS)) {
+for (const tid of __perBank(Object.keys(TOPICS))) {
   let ok = true, note = '';
   for (const lvl of [1, 2, 3]) {
     const set = MQI.buildSetFor(tid, 30);
@@ -12432,7 +12618,7 @@ for (const tid of Object.keys(TOPICS)) {
    harness. Rule: any topic declaring >= 2 skills must expose >= 2 DISTINCT skill tags
    in every one of its three pools. --- */
 const poolSkillRows = [];
-for (const tid of Object.keys(TOPICS)) {
+for (const tid of __perBank(Object.keys(TOPICS))) {
   const t = TOPICS[tid];
   const nSkills = Object.keys(t.skills || {}).length;
   if (nSkills < 2) { poolSkillRows.push({ tid, ok: true, note: `only ${nSkills} skill declared - exempt` }); continue; }
@@ -12508,7 +12694,7 @@ function decRankOf(q) {
 }
 function decRankScan(gens, draws) {
   const out = [], bank = [0, 0, 0, 0], gatedTally = [0, 0, 0, 0];
-  for (const g of gens) {
+  for (const g of __perBank(gens)) {
     const hist = [0, 0, 0, 0];
     let n = 0, exempt = false, first = true;
     for (let i = 0; i < draws; i++) {
@@ -12619,7 +12805,7 @@ const decIsSentence = o => (o.match(/[A-Za-z]{2,}/g) || []).length >= 3;
 /* one generator, sampled. Returns every arm's tally so the report can print it. */
 function decProseScan(gens, draws) {
   const out = [];
-  for (const g of gens) {
+  for (const g of __perBank(gens)) {
     const hit = DEC_FEATURES.map(() => 0), sample = DEC_FEATURES.map(() => null);
     const shipped = new Map(), keyFrames = new Map(), keyVals = new Map();
     const lenRank = [0, 0, 0, 0];
@@ -13178,7 +13364,7 @@ const cplRule = r => r.feat !== undefined
 function decCouplingScan(gens, draws) {
   const P = CPL_PREDS.length, S = 2 * P, F = CPL_FEATS.length;
   const out = [];
-  for (const g of gens) {
+  for (const g of __perBank(gens)) {
     const mk = () => ({ n: 0, fires: new Int32Array(S * S), right: new Int32Array(S * S), feat: new Int32Array(F),
                         casc: new Int32Array(S * 4), cascRight: new Int32Array(S * 4) });
     const bank = mk(), groups = new Map();
@@ -13647,7 +13833,7 @@ const couplingRows = [];
 const contractRows = [];
 {
   const STAMPS = ['decAuthored', 'authored', 'optionSet', 'fracAuthored'];
-  for (const g of GENS.filter(x => x.topic === 'decimals')) {
+  for (const g of __perBank(GENS.filter(x => x.topic === 'decimals'))) {
     let stamped = 0, typed = 0, n = 0;
     for (let i = 0; i < 400; i++) {
       let q;
@@ -14575,7 +14761,9 @@ if (uncovered.length) console.log(`\nWARN no independent oracle matched (shape +
    equation re-computed, the final step's working reaching the key. Last in the file, so
    the draws it takes never shift the seeded stream any ruler above reads. */
 {
-  const coach = checkCoaching(GENS, Number(process.env.COACH_DRAWS) || COACH_DRAWS_MIN);
+  /* coaching draws are per-bank seeded too: each generator reseeds on its first draw */
+  const __coachGens = GENS.map(g => { let first = true; return Object.assign({}, g, { fn: () => { if (first) { first = false; _s = __hashSeed(__bankKey(g) + '#coach'); } return g.fn(); } }); });
+  const coach = checkCoaching(__coachGens, Number(process.env.COACH_DRAWS) || COACH_DRAWS_MIN);
   printCoaching(coach);
   failures += coach.failures;
 }

@@ -47,8 +47,11 @@ for (const f of pick) {
   /* P5-P6 mirror (Sprint 1, 2026-10-28): a topic with level 'P5' or 'P6' is on the PSLE track. Every
      item carries syl 'P5'/'P6', a skill from the topic's skills map, and every MCQ distractor names a
      misconception from the topic's misconceptions dictionary (miscon: { optionIndex: tag }). */
-  const upper = t.level === 'P5' || t.level === 'P6';
-  if (t.level != null && !upper) E(`topic level "${t.level}" must be 'P5' or 'P6' (or absent for the P3-P4 banks)`);
+  /* P4 content the PSLE examines (matter, light, heat) rides the PSLE track only, so the P3-P4
+     island stays exactly as it is: level 'P4' is legal only with track: 'psle'. */
+  const upper = t.level === 'P5' || t.level === 'P6' || (t.level === 'P4' && t.track === 'psle');
+  if (t.level != null && !upper) E(`topic level "${t.level}" must be 'P5' or 'P6', or 'P4' with track: 'psle' (or absent for the P3-P4 banks)`);
+  if (t.track != null && t.track !== 'psle') E(`topic track "${t.track}" must be 'psle' or absent`);
   const SKILLS = upper && t.skills && typeof t.skills === 'object' ? t.skills : null;
   const MISC = upper && t.misconceptions && typeof t.misconceptions === 'object' ? t.misconceptions : null;
   if (upper && (!SKILLS || !Object.keys(SKILLS).length)) E('P5/P6 topic needs a skills map { key: label }');
@@ -79,7 +82,7 @@ for (const f of pick) {
     local.add(it.id); globalIds.set(it.id, fileId);
     if (![1, 2, 3].includes(it.level)) E(`${tag}: level must be 1, 2 or 3`); else lv[it.level]++;
     if (upper) {
-      if (it.syl !== 'P5' && it.syl !== 'P6') E(`${tag}: P5/P6 topic item needs syl 'P5' or 'P6'`);
+      if (!['P4', 'P5', 'P6'].includes(it.syl)) E(`${tag}: PSLE-track item needs syl 'P4', 'P5' or 'P6'`);
       if (!isStr(it.skill) || !SKILLS || !SKILLS[it.skill]) E(`${tag}: skill "${it.skill}" is not in the topic's skills map`);
       if (it.type === 'mcq') {
         const mc = it.miscon && typeof it.miscon === 'object' ? it.miscon : {};

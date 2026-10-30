@@ -343,7 +343,8 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
           theme: str(t.theme) ? t.theme : '', extra: t.extra === true || t.id === 'plant-parts',
           hidden: t.hidden === true,   /* off the child's path: no home tile, mock, Power-Up; parent page P4 section only */
           /* P5/P6 topics sit on the PSLE track only (P5-P6 mirror, Sprint 1): never on the P3-P4 home, mock or Power-Up */
-          level: t.level === 'P5' || t.level === 'P6' ? t.level : '', upper: t.level === 'P5' || t.level === 'P6',
+          level: t.level === 'P5' || t.level === 'P6' || (t.level === 'P4' && t.track === 'psle') ? t.level : '',
+          upper: t.level === 'P5' || t.level === 'P6' || (t.level === 'P4' && t.track === 'psle'),
           skills: t.skills && typeof t.skills === 'object' ? t.skills : {},
           misconceptions: t.misconceptions && typeof t.misconceptions === 'object' ? t.misconceptions : {},
           moeRef: str(t.moeRef) ? t.moeRef : '',
@@ -362,7 +363,18 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
 <script src="topics/magnets.js"></script>
 <script src="topics/plant-parts.js"></script>
 <script src="topics/process-skills.js"></script>
-<script src="topics/forces.js"></script>          <!-- P6 (PSLE track only): P5-P6 mirror, Sprint 1 -->
+<!-- PSLE track only (P5-P6 mirror): P4 content the PSLE examines, then P5, then P6 -->
+<script src="topics/matter.js"></script>
+<script src="topics/light.js"></script>
+<script src="topics/heat.js"></script>
+<script src="topics/reproduction.js"></script>
+<script src="topics/water-cycle.js"></script>
+<script src="topics/plant-transport.js"></script>
+<script src="topics/human-transport.js"></script>
+<script src="topics/electrical.js"></script>
+<script src="topics/energy.js"></script>
+<script src="topics/forces.js"></script>
+<script src="topics/environment.js"></script>
 <script src="topics/body-systems.js"></script>   <!-- hidden P4 topic: needs topic.hidden support above -->
 <script src="topics/_sample.js"></script>
 
@@ -371,7 +383,10 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
 (function () {
 var SCI = window.SCI;
 var KEY = 'sq1';
-var ORDER = ['living-things', 'materials', 'life-cycles', 'magnets', 'plant-parts', 'process-skills'];
+var ORDER = ['living-things', 'materials', 'life-cycles', 'magnets', 'plant-parts', 'process-skills',
+  /* PSLE track (P5-P6 mirror): P4 content first, then P5, then P6 */
+  'matter', 'light', 'heat', 'reproduction', 'water-cycle', 'plant-transport', 'human-transport', 'electrical',
+  'energy', 'forces', 'environment'];
 var view = document.getElementById('view');
 
 /* ---------- storage (per-viewer, try/catch-wrapped) ---------- */
@@ -584,7 +599,10 @@ function toast(msg) { var t = document.getElementById('toast'); t.textContent = 
    the Hall of Fame. Every crystal is earned by learning, never by speed or by being right first time. */
 var PLACES = { 'living-things': 'Wild Woods', 'materials': 'Material Mines', 'life-cycles': 'Butterfly Bay',
   'magnets': 'Magnet Mountain', 'plant-parts': 'Leafy Lagoon', 'process-skills': 'Experiment Cove',
-  'forces': 'Friction Falls' };
+  'forces': 'Friction Falls', 'matter': 'Bubble Bay', 'light': 'Shadow Cove', 'heat': 'Thermal Springs',
+  'energy': 'Sunpower Springs', 'environment': 'Food Web Wetlands', 'electrical': 'Circuit Cove',
+  'plant-transport': 'Sap Stream Grove', 'human-transport': 'Heartbeat Harbour',
+  'reproduction': 'Pollen Meadow', 'water-cycle': 'Raincloud Reservoir' };
 function place(t) { return PLACES[t.id] || t.title; }
 var CRYS = [
   { k: 'e', em: '🧭', name: 'Explorer crystal', how: 'Finish a practice round in this land.' },
@@ -911,6 +929,7 @@ function route() {
   if (p[0] === 'learn' && SCI.byId[p[1]]) return renderLearn(SCI.byId[p[1]]);
   if (p[0] === 'quiz' && session) return renderQuiz();
   if (p[0] === 'exam') return renderExamSetup();
+  if (p[0] === 'sheet' && /[?&]shot=/.test(location.search)) { window.__sheet = true; S.size = /[?&]short=1/.test(location.search) ? 'short' : 'full'; S.timer = false; startExam(); return; }
   if (p[0] === 'try' && /[?&]shot=/.test(location.search) && SCI.items[p[1]]) { var ti = SCI.items[p[1]]; startSession('practice', SCI.byId[ti.topic].title, [ti], { topicId: ti.topic });
     if (p[2] === 'reveal' && session) { session.ans[0].shown = true; renderQuiz(); }   /* the marking view */
     return; }
@@ -1229,8 +1248,25 @@ function tickTimer() {
   var el = document.getElementById('timer'); if (!el || !session || !session.timerEnd) return;
   el.textContent = timerText(); el.classList.toggle('warn', session.timerEnd - Date.now() < 120000);
 }
+/* Shot-only: the whole mock paper on one page, as the booklets read (#sheet with ?shot=1; &key=1 adds the answers). */
+function renderSheet() {
+  var se = session, key = /[?&]key=1/.test(location.search), tot = 0;
+  se.items.forEach(function (it) { tot += it.marks; });
+  var h = '<p class="eyebrow">' + (isPsle() ? 'PSLE Science' : 'Science') + ' mock paper · ' + se.items.length + ' questions · ' + tot + ' marks · ' + se.mins + ' min</p>';
+  se.items.forEach(function (it, k) {
+    if (k === 0) h += '<h2>' + esc(secA()) + '</h2>';
+    if (k === se.nA) h += '<h2>' + esc(secB()) + '</h2>';
+    h += '<div class="card" style="margin:0 0 14px"><p class="eyebrow">Q' + (k + 1) + ' · ' + it.marks + ' marks · ' + esc((SCI.byId[it.topic] || {}).title || '') + '</p>' +
+      figHTML(it.figure) + '<p class="stem">' + esc(it.stem) + '</p>' +
+      (it.type === 'mcq' ? '<ol>' + it.options.map(function (o, j) { return '<li' + (key && j === it.answer ? ' style="font-weight:800"' : '') + '>' + esc(o) + '</li>'; }).join('') + '</ol>'
+                         : '<div style="border:1px dashed var(--line);border-radius:10px;height:70px"></div>') +
+      (key && it.type === 'oeq' ? '<p><b>Model answer:</b> ' + esc(it.model) + '</p>' : '') + '</div>';
+  });
+  paint(h);
+}
 function renderQuiz() {
   var se = session;
+  if (window.__sheet && se && se.kind === 'exam') return renderSheet();
   if (se.phase === 'report') return renderReport();
   if (se.phase === 'markB') return renderMarking();
   if (se.phase === 'review') return renderReview();

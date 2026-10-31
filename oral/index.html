@@ -112,18 +112,59 @@ details.parent ul{margin:8px 0 0;padding-left:20px;color:var(--ink-soft);font-si
 .pop{animation:pop .35s ease}
 @keyframes pop{0%{transform:scale(.9);opacity:.4}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ---------- Study view (modes, 2026-10-31): the clean default, shared with Science and Maths ---------- */
+body.look-study .q-only,body:not(.look-study) .s-only{display:none!important}
+body.look-study{
+  --ground:#F4F6F8; --paper:#FFFFFF; --ink:#172031; --ink-soft:#5A6475; --line:#DCE1E8;
+  --accent:#2551C4; --accent-ink:#FFFFFF; --teal:#1C7A58; --teal-soft:#E4F2EB;
+  --gold:#A86C12; --gold-soft:#FBF1DD; --plum-soft:#EEF1F5; --rose:#A86C12; --blue-soft:#E7EDFB;
+  --shadow:0 1px 2px rgba(16,24,40,.05);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) body.look-study{
+    --ground:#11151B; --paper:#1A1F28; --ink:#E8ECF2; --ink-soft:#A2ACBB; --line:#2B3240;
+    --accent:#7FA2FF; --accent-ink:#0D1320; --teal:#55C192; --teal-soft:#15302A;
+    --gold:#E0B05A; --gold-soft:#372D19; --plum-soft:#232A36; --rose:#E0B05A; --blue-soft:#1C2946; --shadow:none;
+  }
+}
+body.look-study h1,body.look-study h2,body.look-study h3,body.look-study .display,body.look-study .btn,body.look-study .tab,
+body.look-study .timer,body.look-study .qcard .qtext,body.look-study .passage .title,body.look-study .toast{font-family:inherit}
+body.look-study h1,body.look-study h2,body.look-study h3,body.look-study .display{font-weight:650;letter-spacing:-.01em}
+body.look-study .starbank{display:none}
+body.look-study .stage{border:1px solid var(--line);border-radius:14px;padding:28px}
+body.look-study .sitelinks a{border-width:1px;border-radius:8px;font-weight:600;font-size:.9rem;letter-spacing:0}
+body.look-study .tab{border-width:1px;border-radius:10px;box-shadow:none;font-weight:600}
+body.look-study .tab:active,body.look-study .btn:active{transform:none;opacity:.85}
+body.look-study .btn{border-radius:10px;box-shadow:none;font-weight:600}
+body.look-study .btn.ghost{background:var(--paper);box-shadow:inset 0 0 0 1.5px var(--line)}
+body.look-study .btn.teal{background:var(--accent);color:var(--accent-ink)}
+body.look-study .quest{background:var(--paper);border-width:1px;border-radius:12px}
+body.look-study .quest .prog{color:var(--ink-soft);letter-spacing:.04em}
+body.look-study .passage,body.look-study .stim{border-width:1px;border-radius:12px;background:var(--paper)}
+body.look-study .qcard{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px}
+body.look-study .chip{border-width:1px;border-radius:8px;background:var(--ground);border-color:var(--line)}
+body.look-study .steps i.on{background:var(--accent)}
+body.look-study details.parent{border-width:1px;border-radius:10px;background:var(--paper)}
+body.look-study .tips{border-top:1px solid var(--line)}
+.mono{width:40px;height:40px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:1.25rem;flex:none}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:12px;padding:3px;background:var(--ground)}
+.seg button{border:0;background:none;border-radius:9px;padding:6px 16px;font-weight:700;color:var(--ink-soft);min-width:72px}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(16,24,40,.18)}
+.lookrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:18px;color:var(--ink-soft);font-size:.92rem}
 @media (max-width:480px){.stage{padding:18px 16px}.passage{font-size:1.3rem;padding:14px 16px}.brand h1{font-size:1.3rem}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav class="sitelinks" aria-label="Other apps">
-    <a href="/">← Math Quest Island</a>
-    <a href="/cube">🧩 Cube Quest</a>
+    <a href="/">← <span class="q-only">Math Quest Island</span><span class="s-only">Maths</span></a>
+    <a href="/science"><span class="q-only">🔬 Science Quest</span><span class="s-only">Science</span></a>
+    <a href="/cube" class="q-only">🧩 Cube Quest</a>
   </nav>
   <div class="top">
     <div class="brand">
-      <div><small>Primary 3 English Oral</small><h1>Oral Quest</h1></div>
+      <span class="mono s-only" aria-hidden="true">O</span><div><small>Primary 3 English Oral</small><h1><span class="q-only">Oral Quest</span><span class="s-only">Oral Practice</span></h1></div>
     </div>
     <div class="starbank" id="starbank" title="Stars collected"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.6 7 .8-5.2 4.8 1.4 7L12 17.7 5.8 21.2l1.4-7L2 9.4l7-.8z" fill="#FFC53D" stroke="#B8860B" stroke-width="1"/></svg><span id="starcount">0</span> stars</div>
   </div>
@@ -258,6 +299,26 @@ function scenePlayground(){return `<svg viewBox="0 0 640 400" role="img" aria-la
 function posterWater(){return `<svg viewBox="0 0 640 400" role="img" aria-label="Save water poster: turn off the tap"><rect width="640" height="400" fill="#DFF1FF"/><text x="320" y="64" text-anchor="middle" font-family='ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif' font-size="44" font-weight="600" fill="#1565C0">EVERY DROP COUNTS</text><text x="320" y="100" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="21" font-weight="700" fill="#2B2540">Turn off the tap while you brush your teeth</text><g transform="translate(200,130)"><rect x="60" y="0" width="30" height="60" rx="8" fill="#90A4AE"/><rect x="20" y="40" width="140" height="30" rx="15" fill="#B0BEC5"/><rect x="0" y="30" width="30" height="50" rx="8" fill="#90A4AE"/><path d="M160 55 h30 v40 h-30z" rx="4" fill="#B0BEC5"/><circle cx="75" cy="-5" r="18" fill="#78909C"/><rect x="60" y="-8" width="30" height="6" fill="#455A64"/><path d="M175 95 q-30 60 0 90 q30 -30 0 -90z" fill="#2196F3"/><path d="M175 120 q-12 30 0 50 q12 -20 0 -50z" fill="#64B5F6"/><path d="M215 105 q-12 24 0 36 q12 -12 0 -36z" fill="#2196F3" opacity=".7"/><path d="M135 110 q-8 16 0 24 q8 -8 0 -24z" fill="#2196F3" opacity=".7"/></g><g transform="translate(60,170)"><rect x="0" y="0" width="120" height="150" rx="14" fill="#fff" stroke="#1565C0" stroke-width="3"/><text x="60" y="40" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="15" font-weight="800" fill="#1565C0">A DRIPPING TAP</text><text x="60" y="80" text-anchor="middle" font-family='ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif' font-size="40" font-weight="600" fill="#F4622E">30</text><text x="60" y="105" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="14" font-weight="700" fill="#2B2540">litres a day</text><text x="60" y="130" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="13" fill="#6B6480">wasted!</text></g><g transform="translate(460,170)"><rect x="0" y="0" width="120" height="150" rx="14" fill="#fff" stroke="#1565C0" stroke-width="3"/><text x="60" y="40" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="15" font-weight="800" fill="#1565C0">SHOWER</text><text x="60" y="80" text-anchor="middle" font-family='ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif' font-size="40" font-weight="600" fill="#1FA9A0">5</text><text x="60" y="105" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="14" font-weight="700" fill="#2B2540">minutes</text><text x="60" y="130" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="13" fill="#6B6480">is enough</text></g><rect x="40" y="345" width="560" height="40" rx="20" fill="#1565C0"/><text x="320" y="372" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="19" font-weight="800" fill="#fff">Be a Water Hero at home and in school</text></svg>`}
 function posterFruit(){return `<svg viewBox="0 0 640 400" role="img" aria-label="Healthy eating poster: eat fruit and vegetables every day"><rect width="640" height="400" fill="#F1F8E9"/><rect x="0" y="0" width="640" height="88" fill="#F4622E"/><text x="320" y="56" text-anchor="middle" font-family='ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif' font-size="40" font-weight="600" fill="#fff">EAT THE RAINBOW</text><text x="320" y="125" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="22" font-weight="700" fill="#2B2540">2 fruits + 2 vegetables every day</text><g transform="translate(70,160)"><circle cx="50" cy="60" r="42" fill="#E53935"/><rect x="47" y="10" width="6" height="16" fill="#5D4037"/><path d="M53 20 q20 -14 24 4 q-16 6 -24 -4z" fill="#43A047"/><text x="50" y="135" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="16" font-weight="800" fill="#2B2540">apple</text></g><g transform="translate(200,160)"><path d="M10 40 q40 -70 90 30 q-40 40 -90 -30z" fill="#FFC53D"/><path d="M10 40 q40 -70 90 30" fill="none" stroke="#F9A825" stroke-width="6"/><text x="55" y="135" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="16" font-weight="800" fill="#2B2540">banana</text></g><g transform="translate(330,160)"><ellipse cx="50" cy="70" rx="14" ry="45" fill="#FB8C00"/><path d="M42 26 l-6 -20 M50 26 l0 -22 M58 26 l6 -20" stroke="#43A047" stroke-width="4" stroke-linecap="round"/><text x="50" y="135" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="16" font-weight="800" fill="#2B2540">carrot</text></g><g transform="translate(460,160)"><circle cx="30" cy="50" r="22" fill="#66BB6A"/><circle cx="60" cy="40" r="22" fill="#43A047"/><circle cx="50" cy="70" r="22" fill="#2E7D32"/><rect x="47" y="85" width="8" height="25" fill="#A5D6A7"/><text x="50" y="135" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="16" font-weight="800" fill="#2B2540">broccoli</text></g><g transform="translate(120,300)"><rect x="0" y="0" width="400" height="60" rx="30" fill="#fff" stroke="#43A047" stroke-width="3"/><text x="200" y="27" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="16" font-weight="800" fill="#2E7D32">SWAP THIS → FOR THAT</text><text x="200" y="49" text-anchor="middle" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="15" fill="#2B2540">sweet drink → water · chips → fruit · fried → grilled</text></g></svg>`}
 
+/* ---------- shared view (modes, 2026-10-31): Study / Quest for Science, Maths and Oral ----------
+   One setting per device in localStorage 'mqi-look' (same block in js/app.js and science/index.html).
+   No setting yet means 'study', the clean default, existing saves included (Kev, Q257). ?look=study|quest sets it. */
+var MQI_LOOK = (function () {
+  var K = 'mqi-look', cur = 'study';
+  try {
+    cur = localStorage.getItem(K);
+    if (cur !== 'study' && cur !== 'quest') {
+      cur = 'study';   /* Kev, Q257 (2026-10-31 14:08): every device without a setting starts on Study, existing saves included */
+      localStorage.setItem(K, cur);
+    }
+  } catch (e) { cur = 'study'; }
+  try { var m = /[?&]look=(study|quest)\b/.exec(location.search); if (m) { cur = m[1]; localStorage.setItem(K, cur); } } catch (e) {}
+  return { get: function () { return cur; },
+    set: function (v) { cur = v === 'quest' ? 'quest' : 'study'; try { localStorage.setItem(K, cur); } catch (e) {} } };
+})();
+function study(){ return MQI_LOOK.get() !== 'quest'; }
+function LQ(q, st){ return study() ? st : q; }
+function applyLook(){ document.body.classList.toggle('look-study', study()); document.title = study() ? 'Oral Practice' : 'Oral Quest'; }
+
 /* ---------- STATE ---------- */
 const KEY="oralquest-v1";
 let S = {stars:0, readDone:{}, talkDone:{}, mode:"home", readIdx:0, talkIdx:0, qi:0, phase:"prep", prepRunning:false};
@@ -270,7 +331,7 @@ let tInt=null, tStart=0, tLeft=60;
 
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
 function toast(msg){toastEl.textContent=msg;toastEl.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>toastEl.classList.remove("show"),1800)}
-function addStars(n){ if(!n)return; S.stars+=n; persist(); document.getElementById("starcount").textContent=S.stars; const b=document.getElementById("starbank"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); toast(n===1?"⭐ 1 star!":`⭐ ${n} stars!`); }
+function addStars(n){ if(!n)return; S.stars+=n; persist(); document.getElementById("starcount").textContent=S.stars; const b=document.getElementById("starbank"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); toast(study()?"Saved":n===1?"⭐ 1 star!":`⭐ ${n} stars!`); }
 function stopTimer(){clearInterval(tInt);tInt=null}
 function fmt(sec){const m=Math.floor(sec/60),s=sec%60;return `${m}:${String(s).padStart(2,"0")}`}
 
@@ -289,8 +350,8 @@ function renderHome(){
   const rd=Object.keys(S.readDone).length, td=Object.keys(S.talkDone).length;
   stage.innerHTML=`
    <p class="eyebrow">Monday's exam · two parts</p>
-   <h2>Ready, hero?</h2>
-   <p class="lead">Pick a quest. A grown-up is your examiner and taps the star. Do a little every day, not everything at once.</p>
+   <h2>${LQ("Ready, hero?","Oral practice")}</h2>
+   <p class="lead">${LQ("Pick a quest. A grown-up is your examiner and taps the star.","Pick a part. A grown-up plays the examiner and marks each one done.")} Do a little every day, not everything at once.</p>
    <div class="home-grid">
      <button class="quest" data-go="read"><span class="display">Reading Aloud</span><p>Read a story clearly with pauses and expression, just like the exam.</p><span class="prog">${rd} of ${PASSAGES.length} stories done</span></button>
      <button class="quest" data-go="talk"><span class="display">Picture Talk</span><p>Look at a poster, answer the examiner's three questions in full sentences.</p><span class="prog">${td} of ${STIMULI.length} pictures done</span></button>
@@ -303,7 +364,9 @@ function renderHome(){
        <li>If you don't understand, say: <i>"Could you repeat the question, please?"</i> That is allowed.</li>
        <li>Sit up, look at the teacher, smile. Slow is better than fast.</li>
      </ul>
-   </div>`;
+   </div>
+   <div class="lookrow"><span>View</span><div class="seg" role="group" aria-label="View"><button data-look="study" aria-pressed="${study()}">Study</button><button data-look="quest" aria-pressed="${!study()}">Quest</button></div><span>One setting for Maths, Science and Oral on this device.</span></div>`;
+  stage.querySelectorAll("[data-look]").forEach(b=>b.addEventListener("click",()=>{ MQI_LOOK.set(b.dataset.look); applyLook(); renderHome(); }));
   stage.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.go)));
 }
 
@@ -330,7 +393,7 @@ function renderRead(){
   stage.innerHTML=`
    <p class="eyebrow">Reading Aloud · story ${S.readIdx%PASSAGES.length+1} of ${PASSAGES.length} ${S.readDone[S.readIdx%PASSAGES.length]?"· ✓ done":""}</p>
    <h2>${esc(p.title)}</h2>
-   <p class="lead" id="readLead">${S.phase==="prep"?"Get ready: read it silently. Find the full stops, the questions and who is talking. Then press Start.":S.phase==="go"?"Read aloud now. Slow, clear, with feeling.":"Nice reading. Tap the star button to save it and go to the next story."}</p>
+   <p class="lead" id="readLead">${S.phase==="prep"?"Get ready: read it silently. Find the full stops, the questions and who is talking. Then press Start.":S.phase==="go"?"Read aloud now. Slow, clear, with feeling.":LQ("Nice reading. Tap the star button to save it and go to the next story.","Well read. Mark it done to save it and go to the next story.")}</p>
    <div class="ring">
      <div class="timer" id="timer">${S.phase==="prep"?fmt(60):S.phase==="go"?"0:00":fmt(S.elapsed||0)}</div>
      <div>
@@ -347,7 +410,7 @@ function renderRead(){
      <button class="btn ghost small" id="hintBtn">${hints?"Hide reading hints":"Show reading hints"}</button>
      <div class="legend" ${hints?"":"hidden"}><span><i class="pause" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--teal)"></i> tiny pause</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--accent)"></i> stop &amp; breathe</span><span><i style="display:inline-block;width:14px;height:12px;border-radius:3px;background:var(--plum-soft)"></i> someone talking</span></div>
    </div>
-   ${S.phase==="rate"?`<div class="row" id="doneRow" style="margin-top:14px"><button class="btn" id="doneRead">Done! Next ⭐</button><span class="label">One story, one star</span></div>`:""}
+   ${S.phase==="rate"?`<div class="row" id="doneRow" style="margin-top:14px"><button class="btn" id="doneRead">${LQ("Done! Next ⭐","Done, next story →")}</button><span class="label">${LQ("One story, one star","Marks this story done")}</span></div>`:""}
    <div class="row" style="margin-top:12px">
      <button class="btn ghost" id="prevP">◀ Story</button>
      <button class="btn ghost" id="nextP">Story ▶</button>
@@ -384,10 +447,10 @@ function renderTalk(){
   stage.innerHTML=`
    <p class="eyebrow">Picture Talk · picture ${S.talkIdx%STIMULI.length+1} of ${STIMULI.length} ${S.talkDone[S.talkIdx%STIMULI.length]?"· ✓ done":""}</p>
    <h2>${esc(st.title)}</h2>
-   <p class="lead">${rating?"Great talking. Tap the star button to save it and go to the next picture.":"Look carefully for 30 seconds. The examiner reads each question aloud. Answer in full sentences."}</p>
+   <p class="lead">${rating?LQ("Great talking. Tap the star button to save it and go to the next picture.","Well answered. Mark it done to save it and go to the next picture."):"Look carefully for 30 seconds. The examiner reads each question aloud. Answer in full sentences."}</p>
    <div class="stim">${st.svg()}</div>
    <div class="steps">${st.qs.map((_,i)=>`<i class="${i<qn?"done":i===qn?"on":""}"></i>`).join("")}</div>
-   ${rating?`<div class="row" id="doneRow" style="margin-top:14px"><button class="btn" id="doneTalk">Done! Next ⭐</button><span class="label">One picture, one star</span></div>`:`
+   ${rating?`<div class="row" id="doneRow" style="margin-top:14px"><button class="btn" id="doneTalk">${LQ("Done! Next ⭐","Done, next picture →")}</button><span class="label">${LQ("One picture, one star","Marks this picture done")}</span></div>`:`
    <div class="qcard"><div class="who">Examiner asks · question ${qn+1} of ${st.qs.length}</div><div class="qtext">${esc(q.q)}</div></div>
    <span class="label">Sentence helpers</span>
    <div class="helpers">${q.h.map(h=>`<span class="chip">${esc(h)}</span>`).join("")}</div>
@@ -412,6 +475,7 @@ function renderTalk(){
 
 /* ---------- BOOT ---------- */
 function start(hot){
+  applyLook();
   if(hot && hot.stars!==undefined){ S=Object.assign(S,hot); }
   else if(saved){ S=Object.assign(S,saved); }
   document.getElementById("starcount").textContent=S.stars;

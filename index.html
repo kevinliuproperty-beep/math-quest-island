@@ -585,6 +585,180 @@
     #answers { gap:8px; }
     .ansBtn { min-height:58px; font-size:clamp(19px,4.4vw,25px); border-radius:14px; }
   }
+
+  /* ---------- STUDY VIEW (modes, 2026-10-31) ----------
+     The clean default: the same screens, questions, scoring and results as the island,
+     drawn as a calm study tool. js/app.js sets body.look-study (applyLook) from the shared
+     'mqi-look' setting; the parents corner is always drawn this way. Quest is untouched.
+     .q-only / .s-only pick static copy. Nothing here changes the battle column's order,
+     the banner band or the figure budget, so the layout gate's contract still holds. */
+  body.look-study .q-only, body:not(.look-study) .s-only { display:none !important; }
+  .seg { display:inline-flex; border-radius:12px; padding:3px; gap:2px; }
+  .seg button { font-family:inherit; font-size:16px; font-weight:700; min-height:44px; min-width:84px; padding:6px 16px; border:0; border-radius:9px; cursor:pointer; }
+  body:not(.look-study) .seg { background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.2); }
+  body:not(.look-study) .seg button { background:none; color:#d5cdff; }
+  body:not(.look-study) .seg button[aria-pressed="true"] { background:rgba(255,230,109,.22); color:#fff; }
+  body.look-study {
+    --s-bg:#F4F6F8; --s-paper:#FFFFFF; --s-ink:#172031; --s-soft:#5A6475; --s-line:#DCE1E8;
+    --s-accent:#2551C4; --s-blue:#E7EDFB; --s-ok:#1C7A58; --s-oksoft:#E4F2EB; --s-amber:#A86C12; --s-ambersoft:#FBF1DD;
+    background:var(--s-bg); color:var(--s-ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  body.look-study #app { max-width:860px; }
+  body.look-study .seg { background:var(--s-bg); border:1.5px solid var(--s-line); }
+  body.look-study .seg button { background:none; color:var(--s-soft); }
+  body.look-study .seg button[aria-pressed="true"] { background:var(--s-paper); color:var(--s-ink); box-shadow:0 1px 3px rgba(16,24,40,.18); }
+  body.look-study .bigEmoji, body.look-study #heroClass, body.look-study #pwPanel, body.look-study .confetti,
+  body.look-study #mapHello, body.look-study #mapCrys, body.look-study .howcrys, body.look-study .pathDots,
+  body.look-study .crys, body.look-study .mapNode .ne, body.look-study .puEm, body.look-study .sprite,
+  body.look-study .floatDmg, body.look-study #monsterDots, body.look-study #muteBtn, body.look-study #endEmoji,
+  body.look-study #crysEnd, body.look-study #puCrys { display:none !important; }
+  /* type and surfaces */
+  body.look-study .title { background:none; -webkit-text-fill-color:currentColor; color:var(--s-ink); text-shadow:none;
+    font-size:clamp(28px,5vw,36px); font-weight:700; letter-spacing:-.02em; }
+  body.look-study .subtitle { color:var(--s-soft); font-size:17px; }
+  body.look-study #startScreen, body.look-study #mapScreen { gap:14px; }
+  body.look-study .panel { background:var(--s-paper); border:1px solid var(--s-line); border-radius:12px; text-align:left; }
+  body.look-study .panel h4 { color:var(--s-soft); font-size:13px; letter-spacing:.08em; font-weight:700; }
+  body.look-study .modeBtn, body.look-study .gradeBtn, body.look-study .tierBtn, body.look-study .fameTab, body.look-study .pwFilt {
+    background:var(--s-paper); color:var(--s-ink); border:1.5px solid var(--s-line); border-radius:10px; font-weight:600; min-height:44px; }
+  body.look-study .modeBtn small { color:var(--s-soft); font-size:13px; }
+  body.look-study .modeBtn.sel, body.look-study .gradeBtn.sel { border-color:var(--s-accent); background:var(--s-blue); color:var(--s-ink); }
+  body.look-study .btnBig, body.look-study #mkPowerBtn { background:var(--s-accent); color:#fff; box-shadow:none; border-radius:10px;
+    font-size:18px; font-weight:600; padding:13px 34px; }
+  body.look-study .btnBig:active { transform:none; opacity:.85; box-shadow:none; }
+  body.look-study #mkPowerBtn small { color:#DCE6FF; }
+  body.look-study .btnGhost, body.look-study .mkHist { background:var(--s-paper); color:var(--s-ink); border:1.5px solid var(--s-line);
+    border-radius:10px; font-weight:600; text-decoration:none; min-height:44px; display:inline-flex; align-items:center; }
+  /* topic list */
+  body.look-study #mapPath { width:min(620px,96%); gap:8px; }
+  body.look-study .mapNode { background:var(--s-paper); border:1px solid var(--s-line); color:var(--s-ink); border-radius:12px;
+    padding:14px 18px; margin:0 !important; }
+  body.look-study .mapNode.done { border-color:var(--s-line); background:var(--s-paper); }
+  body.look-study .mapNode .nt b { font-size:18px; font-weight:650; }
+  body.look-study .mapNode .nt small { color:var(--s-soft); font-size:15px; }
+  body.look-study .mapNode .go { color:var(--s-accent); font-size:26px; font-weight:600; }
+  body.look-study .mapNode.locked { opacity:.55; } body.look-study .mapNode.locked .go { font-size:13px; color:var(--s-soft); }
+  body.look-study .mockCard, body.look-study .puCard { background:var(--s-paper); border:1px solid var(--s-line); border-radius:12px; text-align:left; }
+  body.look-study .mockCard { box-shadow:inset 4px 0 0 var(--s-accent); }
+  body.look-study .mkTitle { color:var(--s-ink); font-weight:700; }
+  body.look-study .mkTitle small, body.look-study .mkNote, body.look-study #mkMeta { color:var(--s-soft); }
+  body.look-study .mkGo { background:var(--s-paper); color:var(--s-ink); border:1.5px solid var(--s-line); font-weight:650; }
+  body.look-study .mkGo small { color:var(--s-soft); }
+  body.look-study .mkGo.mkMain { background:var(--s-accent); color:#fff; border-color:var(--s-accent); box-shadow:none; }
+  body.look-study .mkGo.mkMain small { color:#DCE6FF; }
+  body.look-study .puGo { color:var(--s-ink); }
+  body.look-study .puGo b { color:var(--s-ink); font-weight:700; }
+  body.look-study .puGo small { color:var(--s-soft); }
+  body.look-study .puMine h4 { color:var(--s-soft); }
+  /* practice (the battle screen, re-dressed: the run's two bars stay, as plain progress) */
+  body.look-study #hud { color:var(--s-soft); }
+  body.look-study #runClock, body.look-study #streakBox { color:var(--s-soft); font-weight:600; }
+  body.look-study #streakBox { min-width:0; white-space:nowrap; }
+  body.look-study #arena { min-height:0; padding:6px 4px 4px; align-items:stretch; gap:16px; }
+  body.look-study .fighter { align-items:flex-start; gap:4px; width:50%; }
+  body.look-study .fname { color:var(--s-soft); font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+  body.look-study .hpbar { max-width:none; height:8px; background:#EEF1F5; border:0; }
+  body.look-study #heroHp .hpfill { background:var(--s-ok); }
+  body.look-study #monHp .hpfill { background:var(--s-accent); }
+  body.look-study .hptext { color:var(--s-soft); font-variant-numeric:tabular-nums; }
+  body.look-study #banner .inner { background:var(--s-paper); color:var(--s-ink); border:1.5px solid var(--s-line); border-radius:999px;
+    font-weight:650; font-size:16px; animation:none; box-shadow:0 2px 8px rgba(16,24,40,.12); }
+  body.look-study #qcard { background:var(--s-paper); border:1px solid var(--s-line); border-radius:14px; color:var(--s-ink); }
+  body.look-study #qtext { font-weight:600; }
+  body.look-study #qmore { background:rgba(23,32,49,.85); color:#fff; }
+  body.look-study .barModel .seg { border-color:#475569; background:#fff; }
+  body.look-study .barModel .seg.fill { background:#93B4F2; }
+  body.look-study .rectBox { border-color:#1F6F8B !important; background:rgba(31,111,139,.08) !important; color:#174E61 !important; }
+  body.look-study .rectLabelL { color:#174E61 !important; }
+  body.look-study #timerBar { background:#EEF1F5; border:0; }
+  body.look-study #timerFill { background:var(--s-accent); } body.look-study #timerFill.warn { background:var(--s-amber); }
+  body.look-study #timerNum { color:var(--s-soft); }
+  body.look-study .ansBtn { background:var(--s-paper); color:var(--s-ink); border:1.5px solid var(--s-line); border-radius:12px; font-weight:650; }
+  body.look-study .ansBtn:active { transform:none; background:var(--s-blue); }
+  body.look-study .ansBtn.good { background:var(--s-oksoft); border-color:var(--s-ok); animation:none; }
+  body.look-study .ansBtn.bad { background:var(--s-ambersoft); border-color:var(--s-amber); }
+  body.look-study .ansBtn.pick { background:var(--s-blue); border-color:var(--s-accent); box-shadow:0 0 0 2px var(--s-accent) inset; }
+  body.look-study #typedInput { color:var(--s-ink); border:1.5px solid var(--s-line); border-radius:12px; }
+  body.look-study #typedGo { background:var(--s-accent); color:#fff; box-shadow:none; border-radius:12px; font-size:20px; font-weight:650; padding:0 22px; }
+  body.look-study #feedback { font-weight:650; }
+  body.look-study #feedback .ok { color:var(--s-ok); } body.look-study #feedback .no { color:var(--s-ink); font-weight:500; }
+  body.look-study #feedback .coach { color:var(--s-ink); }
+  body.look-study #puNext { background:var(--s-accent); color:#fff; box-shadow:none; border-radius:10px; font-weight:650; }
+  body.look-study .mcoach { background:var(--s-paper); border:1px solid var(--s-line); border-left:4px solid var(--s-accent); color:var(--s-ink); border-radius:10px; }
+  body.look-study .mcoach .mc-h, body.look-study .mcoach .mc-line { color:var(--s-ink); }
+  body.look-study .mc-badge, body.look-study .mc-chip { border:1px solid var(--s-line); background:var(--s-bg); color:var(--s-ink); border-radius:6px; font-weight:600; }
+  body.look-study .mcoach .mc-tech small, body.look-study .mcoach .mc-more summary, body.look-study .mcoach .mc-more .how { color:var(--s-soft); }
+  body.look-study .mcoach ol.mc-steps li { background:var(--s-paper); border:1px solid var(--s-line); border-radius:8px; }
+  body.look-study .mcoach ol.mc-steps li::marker { color:var(--s-accent); }
+  body.look-study .mcoach .mc-next { background:var(--s-accent); color:#fff; box-shadow:none; border-radius:10px; }
+  body.look-study .mcoach .mc-ans { background:var(--s-oksoft); border:1px solid var(--s-ok); }
+  body.look-study .mcoach .mc-is, body.look-study .mcoach .mc-close { color:var(--s-ok); }
+  /* mock paper navigator */
+  body.look-study .mk-sec, body.look-study .mk-marks { color:var(--s-ink); }
+  body.look-study .mk-q { color:var(--s-soft); } body.look-study .mk-clock { color:var(--s-ink); } body.look-study .mk-clock.mk-low { color:var(--s-amber); }
+  body.look-study .mk-calc { color:var(--s-amber); background:var(--s-ambersoft); } body.look-study .mk-calc.on { color:var(--s-ok); background:var(--s-oksoft); }
+  body.look-study .mkGrp { color:var(--s-soft); }
+  body.look-study .mkNum { background:var(--s-paper); border:1.5px solid var(--s-line); color:var(--s-soft); border-radius:8px; }
+  body.look-study .mkNum.done { background:var(--s-blue); border-color:var(--s-accent); color:var(--s-ink); }
+  body.look-study .mkNum.cur { border-color:var(--s-ink); box-shadow:0 0 0 2px var(--s-ink); color:var(--s-ink); }
+  body.look-study #mkBar button { background:var(--s-paper); border:1.5px solid var(--s-line); color:var(--s-ink); border-radius:10px; font-weight:600; }
+  body.look-study #mkFlag.on { background:var(--s-ambersoft); border-color:var(--s-amber); color:var(--s-ink); }
+  body.look-study #mkHandIn { background:var(--s-accent) !important; color:#fff !important; }
+  body.look-study #mkConfirm { background:rgba(23,32,49,.45); }
+  body.look-study .mkCfCard { background:var(--s-paper); border:1px solid var(--s-line); color:var(--s-ink); border-radius:14px; }
+  body.look-study .mkCfCard h3 { color:var(--s-ink); } body.look-study .mkCfLine { color:var(--s-ink); }
+  body.look-study #mkCfBack { background:var(--s-paper); color:var(--s-ink); border:1.5px solid var(--s-line); }
+  body.look-study #mkCfGo { background:var(--s-accent); color:#fff; }
+  /* results, reports, parents corner */
+  body.look-study #endScreen, body.look-study #parentScreen, body.look-study #mockScreen, body.look-study #mockHistScreen,
+  body.look-study #powerScreen, body.look-study #fameScreen { text-align:left; align-items:stretch; padding:20px 12px; }
+  body.look-study #endTitle, body.look-study #puTitle, body.look-study #parentScreen h2, body.look-study #mockScreen h2,
+  body.look-study #mockHistScreen h2, body.look-study #fameScreen h2 { color:var(--s-ink); font-size:28px; font-weight:700; letter-spacing:-.01em; }
+  body.look-study #endMsg, body.look-study #puSaid { color:var(--s-ink); max-width:none; font-weight:500; }
+  body.look-study #endWell, body.look-study #puWell, body.look-study #puNextLine { color:var(--s-ink); max-width:none; font-weight:600; }
+  body.look-study #endQuiet { color:var(--s-soft); max-width:none; font-size:15px; }
+  body.look-study #puEyebrow { color:var(--s-soft); letter-spacing:.08em; font-weight:700; }
+  body.look-study .statRow { justify-content:flex-start; }
+  body.look-study .statBox { background:var(--s-paper); border:1px solid var(--s-line); border-radius:12px; min-width:130px; }
+  body.look-study .statBox .v { color:var(--s-ink); font-weight:650; font-variant-numeric:tabular-nums; }
+  body.look-study .statBox .k { color:var(--s-soft); }
+  body.look-study #mkScore { color:var(--s-ink); font-weight:650; letter-spacing:-.02em; }
+  body.look-study #mkPct { color:var(--s-soft); font-weight:600; }
+  body.look-study .listBox { background:var(--s-paper); border:1px solid var(--s-line); border-radius:12px; max-width:none; width:auto; }
+  body.look-study .listBox h3 { color:var(--s-ink); text-align:left; font-weight:650; font-size:18px; }
+  body.look-study .revItem { border-bottom:1px solid var(--s-line); color:var(--s-ink); }
+  body.look-study .revItem .ansIs { color:var(--s-ok); } body.look-study .revItem .how { color:var(--s-soft); }
+  body.look-study .mkTag, body.look-study #mkHistTable td small, body.look-study .skillName small { color:var(--s-soft); }
+  body.look-study .mkYours { color:var(--s-amber); }
+  body.look-study .skillRow { border-bottom:1px solid var(--s-line); }
+  body.look-study .accBar { background:#EEF1F5; height:8px; }
+  body.look-study .focus { background:var(--s-ambersoft); border-left:4px solid var(--s-amber); color:var(--s-ink); }
+  body.look-study .focus b { color:var(--s-ink); }
+  body.look-study table.hist { font-size:15px; }
+  body.look-study table.hist th { color:var(--s-soft); border-bottom:1px solid var(--s-line); font-size:12px; letter-spacing:.06em; text-transform:uppercase; }
+  body.look-study table.hist td { color:var(--s-ink); border-bottom:1px solid var(--s-line); }
+  body.look-study .trendUp { color:var(--s-ok); } body.look-study .trendDown { color:var(--s-amber); } body.look-study .trendFlat { color:var(--s-soft); }
+  body.look-study .subtitle#parentIntro { text-align:left; max-width:none; }
+  body.look-study .allright { color:var(--s-ok) !important; font-size:15px; text-align:left !important; }
+  body.look-study .batt { border-color:var(--s-soft); border-width:1.5px; border-radius:5px; }
+  body.look-study .batt::after { background:var(--s-soft); }
+  body.look-study .batt i { background:#E3E8EF; border-radius:2px; } body.look-study .batt i.on { background:var(--s-accent); }
+  body.look-study .batt.full, body.look-study .batt.full::after { border-color:var(--s-ok); }
+  body.look-study .batt.full::after, body.look-study .batt.full i { background:var(--s-ok); }
+  body.look-study .powers li { background:var(--s-paper); border:1px solid var(--s-line); color:var(--s-ink); border-radius:8px; font-weight:600; }
+  body.look-study .powers li.full { border-color:var(--s-ok); background:var(--s-oksoft); }
+  body.look-study .powers li small { color:var(--s-ok); }
+  body.look-study .btnRow { justify-content:flex-start !important; }
+  body.look-study [style*="color:#a99fd8"] { color:var(--s-soft) !important; }
+  body.look-study [style*="color:#7dffb0"] { color:var(--s-ok) !important; }
+  body.look-study .lookpanel { text-align:left; }
+  body.look-study .lookpanel p { color:var(--s-soft); font-size:15px; margin:0 0 8px; line-height:1.45; }
+  .lookpanel p { font-size:14px; color:#c9c0f2; margin:0 0 8px; line-height:1.45; }
+  @media (max-width:480px) {
+    body.look-study .seg button { min-width:72px; padding:6px 12px; }
+    body.look-study .fname { font-size:12px; }
+  }
 </style>
 </head>
 <body>
@@ -594,22 +768,22 @@
   <div id="startScreen" class="screen active">
     <div class="bigEmoji" id="startAvatar">🦄</div>
     <div id="heroClass">Unicorn</div>
-    <div class="title">Math Quest Island</div>
-    <div class="subtitle">The dragon <b>Fractor</b> hid Star Crystals all over the island! Pick a land, beat its monsters, save the crystals! ⭐</div>
-    <div class="panel">
+    <div class="title"><span class="q-only">Math Quest Island</span><span class="s-only">Maths Practice</span></div>
+    <div class="subtitle"><span class="q-only">The dragon <b>Fractor</b> hid Star Crystals all over the island! Pick a land, beat its monsters, save the crystals! ⭐</span><span class="s-only">Singapore primary maths, P2 to P6. Practise by topic, sit a mock paper, and review every question you miss.</span></div>
+    <div class="panel q-only">
       <h4>YOUR HERO NAME</h4>
       <input id="nameInput" maxlength="14" placeholder="Type your name" autocomplete="off">
     </div>
-    <div class="panel">
+    <div class="panel q-only">
       <h4>PICK YOUR HERO</h4>
       <div id="avatarGrid"></div>
     </div>
     <div class="panel">
-      <h4>GAME MODE</h4>
+      <h4><span class="q-only">GAME MODE</span><span class="s-only">TIMING</span></h4>
       <div id="modeRow">
-        <button class="modeBtn" id="modeRelax">🌙 Relaxed<small>take your time</small></button>
-        <button class="modeBtn" id="modeTimed">⏱️ Arcade<small>You have 20s per question. Too slow and the monster attacks!</small></button>
-        <button class="modeBtn" id="modePatch">💀 Patchwerk<small>Hit the boss as hard as you can before it enrages!</small></button>
+        <button class="modeBtn" id="modeRelax"><span class="q-only">🌙 Relaxed<small>take your time</small></span><span class="s-only">Untimed<small>work at your own pace</small></span></button>
+        <button class="modeBtn" id="modeTimed"><span class="q-only">⏱️ Arcade<small>You have 20s per question. Too slow and the monster attacks!</small></span><span class="s-only">Timed<small>20 seconds per question</small></span></button>
+        <button class="modeBtn q-only" id="modePatch">💀 Patchwerk<small>Hit the boss as hard as you can before it enrages!</small></button>
       </div>
     </div>
     <div class="panel" id="pwPanel">
@@ -620,22 +794,23 @@
         <b>enrage</b>: everything hits for 1.5x, so never stop early.</div>
     </div>
     <div class="panel">
-      <h4>CLASS LEVEL</h4>
+      <h4><span class="q-only">CLASS LEVEL</span><span class="s-only">LEVEL</span></h4>
       <div id="gradeRow"></div>
     </div>
     <button class="btnBig" id="toMapBtn">CHOOSE YOUR QUEST 🗺️</button>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-      <button class="btnGhost" id="fameBtn">🏆 Hall of Fame</button>
-      <button class="btnGhost" id="parentBtn">📊 Parents corner</button>
-      <a class="btnGhost" href="/cube" style="text-decoration:none;display:inline-block">🧩 Cube Quest Studio</a>
-      <a class="btnGhost" href="/oral" style="text-decoration:none;display:inline-block">🎤 Oral Quest</a>
-      <a class="btnGhost" href="/science" style="text-decoration:none;display:inline-block">🔬 Science Quest</a>
+      <button class="btnGhost q-only" id="fameBtn">🏆 Hall of Fame</button>
+      <button class="btnGhost" id="parentBtn"><span class="q-only">📊 Parents corner</span><span class="s-only">Progress report</span></button>
+      <a class="btnGhost" href="/science" style="text-decoration:none;display:inline-block"><span class="q-only">🔬 Science Quest</span><span class="s-only">Science</span></a>
+      <a class="btnGhost" href="/oral" style="text-decoration:none;display:inline-block"><span class="q-only">🎤 Oral Quest</span><span class="s-only">Oral practice</span></a>
+      <a class="btnGhost" href="/cube" style="text-decoration:none;display:inline-block"><span class="q-only">🧩 Cube Quest Studio</span><span class="s-only">Cube studio</span></a>
     </div>
+    <div class="panel lookpanel"><h4>VIEW</h4><div class="seg" role="group" aria-label="View"><button data-look="study" aria-pressed="false">Study</button><button data-look="quest" aria-pressed="false">Quest</button></div></div>
   </div>
 
   <!-- ============ MAP ============ -->
   <div id="mapScreen" class="screen">
-    <div class="title" style="font-size:clamp(26px,5.5vw,40px)">🗺️ Quest Island</div>
+    <div class="title" style="font-size:clamp(26px,5.5vw,40px)"><span class="q-only">🗺️ Quest Island</span><span class="s-only">Choose a topic</span></div>
     <div id="mapHello"></div>
     <div class="subtitle" id="mapSub">Where will you adventure today?</div>
     <div class="crystot" id="mapCrys" style="display:none"></div>
@@ -676,15 +851,15 @@
     </div>
     <div id="feedback"></div>
     <div id="answers"></div>
-    <div id="typedWrap"><input id="typedInput" type="text" inputmode="decimal" autocomplete="off" maxlength="24" placeholder="Type your answer"><button id="typedGo">⚔️</button></div>
+    <div id="typedWrap"><input id="typedInput" type="text" inputmode="decimal" autocomplete="off" maxlength="24" placeholder="Type your answer"><button id="typedGo"><span class="q-only">⚔️</span><span class="s-only">Check</span></button></div>
     <div id="puBar"><button id="puNext">Next ▶</button></div>
     <div id="mkNav">
       <div id="mkGrid" aria-label="Questions"></div>
       <div id="mkBar">
         <button id="mkPrev">◀ Back</button>
-        <button id="mkFlag" aria-pressed="false">🚩 Flag</button>
+        <button id="mkFlag" aria-pressed="false"><span class="q-only">🚩 </span><span class="s-only"></span>Flag</button>
         <button id="mkNext">Next ▶</button>
-        <button id="mkHandIn">Hand in ✋</button>
+        <button id="mkHandIn">Hand in<span class="q-only"> ✋</span><span class="s-only"></span></button>
       </div>
     </div>
   </div>
@@ -692,7 +867,7 @@
     <div class="mkCfCard">
       <h3 id="mkCfTitle">Hand in your paper?</h3>
       <div id="mkCfBody"></div>
-      <div class="mkCfBtns"><button id="mkCfBack">← Go back</button><button id="mkCfGo">Hand in ✋</button></div>
+      <div class="mkCfBtns"><button id="mkCfBack">← Go back</button><button id="mkCfGo">Hand in<span class="q-only"> ✋</span><span class="s-only"></span></button></div>
     </div>
   </div>
 
@@ -714,18 +889,18 @@
       </div>
     </div>
     <div class="statRow" id="normalStats">
-      <div class="statBox"><div class="v" id="stStreak">0</div><div class="k">best streak</div></div>
+      <div class="statBox"><div class="v" id="stStreak">0</div><div class="k"><span class="q-only">best streak</span><span class="s-only">best run in a row</span></div></div>
       <div class="statBox"><div class="v" id="stTime">-</div><div class="k">time</div></div>
     </div>
     <div id="reviewBox" class="listBox" style="display:none">
-      <h3>📖 Let's learn from these!</h3>
+      <h3><span class="q-only">📖 Let's learn from these!</span><span class="s-only">Questions to review</span></h3>
       <div id="reviewList"></div>
     </div>
     <div id="endQuiet">This quest: <span id="stCorrect">0</span> correct (<span id="stAcc">0%</span>). Every question you look at again makes you stronger.</div>
-    <button class="btnBig" id="againBtn">PLAY AGAIN 🔁</button>
+    <button class="btnBig" id="againBtn"><span class="q-only">PLAY AGAIN 🔁</span><span class="s-only">Practise again</span></button>
     <div style="display:flex;gap:10px">
-      <button class="btnGhost" id="endMapBtn">🗺️ Island map</button>
-      <button class="btnGhost" id="homeBtn">🏠 Home</button>
+      <button class="btnGhost" id="endMapBtn"><span class="q-only">🗺️ Island map</span><span class="s-only">Topics</span></button>
+      <button class="btnGhost" id="homeBtn"><span class="q-only">🏠 </span><span class="s-only"></span>Home</button>
     </div>
   </div>
 
@@ -736,12 +911,12 @@
     <div id="puSaid"></div>
     <div id="puWell" style="display:none"></div>
     <div id="puCrys" class="listBox crysBox" style="display:none"></div>
-    <div class="listBox"><h3>⚡ My powers</h3><div id="puPowers"></div></div>
+    <div class="listBox"><h3><span class="q-only">⚡ My powers</span><span class="s-only">Skills</span></h3><div id="puPowers"></div></div>
     <div id="puNextLine"></div>
-    <button class="btnBig" id="puAgainBtn">⚡ Another Power-Up</button>
+    <button class="btnBig" id="puAgainBtn"><span class="q-only">⚡ Another Power-Up</span><span class="s-only">Another review round</span></button>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-      <button class="btnGhost" id="puMapBtn">🗺️ Island map</button>
-      <button class="btnGhost" id="puHomeBtn">🏠 Home</button>
+      <button class="btnGhost" id="puMapBtn"><span class="q-only">🗺️ Island map</span><span class="s-only">Topics</span></button>
+      <button class="btnGhost" id="puHomeBtn"><span class="q-only">🏠 </span><span class="s-only"></span>Home</button>
     </div>
   </div>
 
@@ -757,63 +932,64 @@
 
   <!-- ============ PARENT ============ -->
   <div id="parentScreen" class="screen">
-    <h2>📊 Parents corner</h2>
+    <h2>Progress report · Maths</h2>
     <div class="subtitle" id="parentIntro"></div>
     <div class="listBox" id="focusBox">
-      <h3>🎯 Suggested focus areas</h3>
+      <h3>Suggested focus areas</h3>
       <div id="focusList"></div>
     </div>
     <div class="listBox">
-      <h3>🧠 Skill accuracy (all sessions)</h3>
+      <h3>Skill accuracy, all sessions</h3>
       <div id="skillList"></div>
     </div>
     <div class="listBox">
-      <h3>📜 Story so far: session history</h3>
+      <h3>Recent sessions</h3>
       <div style="overflow-x:auto"><table class="hist" id="histTable"></table></div>
       <div id="trendLine" style="margin-top:8px;font-size:15px;text-align:center"></div>
     </div>
     <div class="listBox" id="recentWrongBox" style="display:none">
-      <h3>❓ Recent tricky questions</h3>
+      <h3>Recently missed questions</h3>
       <div id="recentWrongList"></div>
     </div>
-    <div style="display:flex;gap:10px">
+    <div class="listBox lookpanel"><h3>Child's view</h3><p>Study is a clean, exam-style layout. Quest adds the island game: heroes, monsters, Star Crystals and confetti. The questions, marking and this report are the same in both. This setting covers Maths, Science and Oral on this device.</p><div class="seg" role="group" aria-label="View"><button data-look="study" aria-pressed="false">Study</button><button data-look="quest" aria-pressed="false">Quest</button></div></div>
+    <div class="btnRow" style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btnGhost" id="backBtn">← Back</button>
-      <button class="btnGhost" id="parentMockBtn">📝 Mock papers</button>
-      <button class="btnGhost" id="resetBtn">🗑️ Reset history</button>
+      <button class="btnGhost" id="parentMockBtn">Mock papers</button>
+      <button class="btnGhost" id="resetBtn">Reset history</button>
     </div>
   </div>
 
   <!-- ============ P3 MOCK PAPER: REPORT ============ -->
   <div id="mockScreen" class="screen">
-    <h2>📝 Paper marked!</h2>
+    <h2><span class="q-only">📝 Paper marked!</span><span class="s-only">Paper marked</span></h2>
     <div id="mkScore">0 / 0</div>
     <div id="mkPct">0%</div>
     <div id="mkMeta"></div>
     <div class="statRow" id="mkSections"></div>
     <button class="btnBig" id="mkPowerBtn">⚡ Power-Up</button>
     <div class="listBox">
-      <h3>📚 Marks by topic</h3>
+      <h3><span class="q-only">📚 </span><span class="s-only"></span>Marks by topic</h3>
       <div id="mkTopics"></div>
     </div>
     <div class="listBox">
-      <h3>🧠 Marks by skill</h3>
+      <h3><span class="q-only">🧠 </span><span class="s-only"></span>Marks by skill</h3>
       <div id="mkSkills"></div>
     </div>
     <div class="listBox">
-      <h3>📖 Questions to learn from</h3>
+      <h3><span class="q-only">📖 Questions to learn from</span><span class="s-only">Questions to review</span></h3>
       <div id="mkReview"></div>
     </div>
     <div class="mkNote">Each question gets all of its marks or none: a 3-mark problem scores 3 or 0. A real paper also gives method marks for working in Booklet B, so show your working there.</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-      <button class="btnGhost" id="mkHistBtn">📜 Paper history</button>
-      <button class="btnGhost" id="mkMapBtn">🗺️ P3 map</button>
-      <button class="btnGhost" id="mkHomeBtn">🏠 Home</button>
+      <button class="btnGhost" id="mkHistBtn"><span class="q-only">📜 </span><span class="s-only"></span>Paper history</button>
+      <button class="btnGhost" id="mkMapBtn"><span class="q-only">🗺️ P3 map</span><span class="s-only">P3 topics</span></button>
+      <button class="btnGhost" id="mkHomeBtn"><span class="q-only">🏠 </span><span class="s-only"></span>Home</button>
     </div>
   </div>
 
   <!-- ============ P3 MOCK PAPER: HISTORY ============ -->
   <div id="mockHistScreen" class="screen">
-    <h2>📜 Mock paper history</h2>
+    <h2>Mock paper history</h2>
     <div class="subtitle">Every P3 Mock Paper on this device, newest first.</div>
     <div class="listBox"><div style="overflow-x:auto"><table class="hist" id="mkHistTable"></table></div></div>
     <button class="btnGhost" id="mkHistBackBtn">← Back</button>
@@ -827,7 +1003,7 @@
      document.write keeps the tags synchronous, so load order is byte-identical to
      the hand-written tags it replaces. -->
 <script>
-  window.MQI_BUILD = "20261030followups";
+  window.MQI_BUILD = "20261031modes";
   (function () {
     var v = "?v=" + window.MQI_BUILD;
     var files = [

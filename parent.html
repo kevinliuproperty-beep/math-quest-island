@@ -5,50 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>Results</title>
+<title>Progress report</title>
 <style>
   :root {
-    --bg: #f6f5f1; --card: #ffffff; --ink: #1d1d1f; --mute: #6b6b70; --line: #e3e1da;
-    --good: #1f8a4c; --mid: #b7791f; --weak: #c0392b; --accent: #2d5be3;
+    /* Study palette (modes, 2026-10-31): the same tokens as the Study view of the apps */
+    --bg: #F4F6F8; --card: #ffffff; --ink: #172031; --mute: #5A6475; --line: #DCE1E8;
+    --good: #1C7A58; --mid: #A86C12; --weak: #B4501E; --accent: #2551C4; --soft: #EEF1F5;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #141416; --card: #1e1e22; --ink: #ececf0; --mute: #9a9aa3; --line: #2e2e34;
-      --good: #4cc27f; --mid: #e0a84a; --weak: #ef6b5d; --accent: #7c9cff; }
+    :root { --bg: #11151B; --card: #1A1F28; --ink: #E8ECF2; --mute: #A2ACBB; --line: #2B3240;
+      --good: #55C192; --mid: #E0B05A; --weak: #EE8A5B; --accent: #7FA2FF; --soft: #232A36; }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--ink); }
-  body { font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow-x: hidden; }
+  body { font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; overflow-x: hidden; }
   main { max-width: 860px; margin: 0 auto; padding: 16px; }
-  h1 { font-size: 22px; margin: 4px 0 2px; }
-  h2 { font-size: 17px; margin: 0 0 10px; }
-  .sub { color: var(--mute); font-size: 14px; margin: 0 0 14px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 0 0 14px; }
-  .big { font-size: 20px; font-weight: 600; }
+  h1 { font-size: 24px; margin: 0; letter-spacing: -.01em; }
+  h2 { font-size: 18px; margin: 0 0 10px; font-weight: 650; }
+  .sub { color: var(--mute); font-size: 15px; margin: 2px 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 0 0 14px; }
+  .big { font-size: 22px; font-weight: 650; }
+  .links { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 14px; }
+  .links a { display: inline-flex; align-items: center; min-height: 44px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--mute); text-decoration: none; font-weight: 600; font-size: 15px; }
+  .head { display: flex; align-items: center; gap: 12px; }
+  .mono { width: 40px; height: 40px; border-radius: 10px; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 20px; flex: none; }
+  .head small { display: block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 0 0 14px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .kpi b { display: block; font-size: 24px; font-weight: 650; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .kpi span { display: block; color: var(--mute); font-size: 14px; }
+  .seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 12px; padding: 3px; background: var(--bg); }
+  .seg button { min-height: 44px; min-width: 84px; border: 0; background: none; color: var(--mute); font-weight: 700; border-radius: 9px; }
+  .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(16,24,40,.18); }
   .mute { color: var(--mute); }
-  .small { font-size: 13px; }
+  .small { font-size: 14px; }
   .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -14px; padding: 0 14px; }
-  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums; }
   th, td { text-align: left; padding: 7px 8px 7px 0; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: top; }
   td.wrap { white-space: normal; min-width: 120px; }
   th { color: var(--mute); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
   .num { text-align: right; padding-right: 0; padding-left: 8px; }
   .good { color: var(--good); } .mid { color: var(--mid); } .weak { color: var(--weak); }
-  .bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .bar { height: 8px; background: var(--soft); border-radius: 4px; overflow: hidden; margin-top: 6px; }
   .bar > div { height: 100%; }
   .topic { padding: 8px 0; border-bottom: 1px solid var(--line); }
   .topic:last-child { border-bottom: 0; }
   .row { display: flex; justify-content: space-between; gap: 10px; }
   .row > :first-child { min-width: 0; overflow-wrap: anywhere; }
-  .tag { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--line); color: var(--mute); }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 6px; background: var(--soft); color: var(--mute); }
   input[type=password], input[type=text] { width: 100%; font: inherit; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
-  button { font: inherit; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
-  button.ghost { background: transparent; color: var(--accent); }
+  button { font: inherit; font-weight: 600; min-height: 44px; padding: 9px 16px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  button.ghost { background: var(--card); color: var(--ink); border-color: var(--line); }
   .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   details.miss { border-top: 1px solid var(--line); padding: 8px 0 2px; }
-  details.miss > summary { cursor: pointer; color: var(--accent); font-size: 14px; min-height: 32px; padding: 4px 0; }
+  details.miss > summary { cursor: pointer; color: var(--accent); font-size: 15px; font-weight: 600; min-height: 44px; display: flex; align-items: center; padding: 4px 0; }
   .paper { padding: 10px 0; border-bottom: 1px solid var(--line); }
   .paper:last-child { border-bottom: 0; }
-  .mq { padding: 8px 0; border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; font-size: 14px; }
+  .mq { padding: 10px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; font-size: 15px; }
   .mq:last-child { border-bottom: 0; }
   .mq .qt { margin: 2px 0 4px; }
   .mq.wrong { border-left: 3px solid var(--weak); padding-left: 8px; }
@@ -60,8 +73,9 @@
 </head>
 <body>
 <main>
-  <h1>Quest results</h1>
-  <p class="sub" id="sub">Maths and science, from every device she uses.</p>
+  <nav class="links" aria-label="Apps"><a href="/">← Maths</a><a href="/science">Science</a></nav>
+  <div class="head"><span class="mono" aria-hidden="true">R</span><div><small>For parents</small><h1>Progress report</h1></div></div>
+  <p class="sub" id="sub">Maths and Science results, from every device she uses.</p>
   <div id="out"><p class="mute">Loading…</p></div>
 </main>
 <script>
@@ -85,7 +99,7 @@
     out.innerHTML = '<div class="card"><h2>Parent key</h2>' + (note ? '<p class="weak">' + esc(note) + '</p>' : '') +
       '<p class="small mute">Paste the key once. It is kept on this device only.</p>' +
       '<input type="password" id="k" autocomplete="off" spellcheck="false" placeholder="Parent key">' +
-      '<div class="btns"><button id="save">Show results</button></div></div>';
+      '<div class="btns"><button id="save">Show results</button></div></div>' + lookCard();
     document.getElementById('save').onclick = function () {
       var v = (document.getElementById('k').value || '').trim();
       if (!v) return; setKey(v); load();
@@ -107,8 +121,8 @@
   function appName(r) { return r.app === 'science' ? 'Science' : 'Maths'; }
   function kindName(r) {
     if (r.kind === 'paper') return 'Mock paper';
-    var m = { relax: 'Quest', timed: 'Timed quest', patchwerk: 'Patchwerk', power: 'Power-Up', practice: 'Practice' }[r.mode];
-    return m || 'Quest';
+    var m = { relax: 'Practice', timed: 'Timed practice', patchwerk: 'Patchwerk (game)', power: 'Focused review', practice: 'Practice' }[r.mode];
+    return m || 'Practice';
   }
 
   var SHOW = 60;
@@ -125,6 +139,14 @@
     h += '<div class="card"><div class="mute small">Last activity</div><div class="big">' + esc(ago(last.d)) + '</div>' +
       '<div class="small mute">' + esc(fmtDay(last.d) + ', ' + fmtTime(last.d)) + ' · ' + esc(appName(last)) + ' · ' + esc(last.topic || kindName(last)) +
       ' · ' + esc(fmtNum(last.correct)) + '/' + esc(fmtNum(last.total)) + ' on ' + esc(last.deviceLabel || 'device') + '</div></div>';
+
+    /* the week at a glance (modes, 2026-10-31) */
+    var wk = rows.filter(function (r) { return r.d.getTime() >= Date.now() - 7 * 86400000; }), wc = 0, wt = 0, ws = 0;
+    wk.forEach(function (r) { if (r.kind !== 'paper') { wc += r.correct || 0; wt += r.total || 0; } ws += r.durationSec || 0; });
+    var lp = rows.filter(function (r) { return r.kind === 'paper'; })[0];
+    var kpi = function (v, l) { return '<div class="kpi"><b>' + v + '</b><span>' + esc(l) + '</span></div>'; };
+    h += '<div class="kpis">' + kpi(String(wk.length), 'sessions, last 7 days') + kpi(wt ? pct(wc, wt) + '%' : '–', 'practice accuracy, 7 days') +
+      kpi(esc(fmtDur(ws)), 'time, last 7 days') + kpi(lp ? esc(fmtNum(lp.correct)) + '/' + esc(fmtNum(lp.total)) : '–', lp ? 'latest mock paper (' + esc(appName(lp)) + ')' : 'no mock paper yet') + '</div>';
 
     /* topic roll-up, last 7 days, weakest first */
     var since = Date.now() - 7 * 86400000, tp = {};
@@ -253,7 +275,19 @@
     if (more) more.onclick = function () { SHOW += 200; render(rows); };
     wireFooter();
   }
-  function footer() { return '<div class="btns"><button class="ghost" id="reload">Refresh</button><button class="ghost" id="forget">Forget key on this device</button></div>'; }
+  function footer() { return '<div class="btns"><button class="ghost" id="reload">Refresh</button><button class="ghost" id="forget">Forget key on this device</button></div>' + lookCard(); }
+  /* the child's view on THIS device (modes, 2026-10-31): the same shared 'mqi-look' setting the apps read */
+  function lookNow() { try { var v = localStorage.getItem('mqi-look'); return v === 'quest' ? 'quest' : v === 'study' ? 'study' : ''; } catch (e) { return ''; } }
+  function lookCard() {
+    var v = lookNow();
+    return '<div class="card" style="margin-top:14px"><h2>Child\'s view on this device</h2><p class="small mute">Study is a clean, exam-style layout. Quest adds the island game. Questions, marking and results are the same in both. It applies to Maths, Science and Oral opened on this device.</p>' +
+      '<div class="seg" role="group" aria-label="View"><button data-look="study" aria-pressed="' + (v !== 'quest') + '">Study</button><button data-look="quest" aria-pressed="' + (v === 'quest') + '">Quest</button></div></div>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-look]'); if (!b) return;
+    try { localStorage.setItem('mqi-look', b.dataset.look === 'quest' ? 'quest' : 'study'); } catch (err) {}
+    document.querySelectorAll('[data-look]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.look === b.dataset.look)); });
+  });
   function wireFooter() {
     var r = document.getElementById('reload'); if (r) r.onclick = load;
     var f = document.getElementById('forget'); if (f) f.onclick = function () { setKey(''); keyForm(''); };

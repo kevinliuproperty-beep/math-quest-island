@@ -272,18 +272,155 @@ ul.rev small{display:block;color:var(--ink-soft);margin-top:4px;white-space:pre-
   .fig th,.fig td{padding:4px 3px;overflow-wrap:break-word;hyphens:auto}
   .fig caption{font-size:.85rem}
 }
+/* ---------- Two looks (modes, 2026-10-31) ----------
+   Kev: "the default game mode becomes one of the modes, esp if we are courting parents".
+   Study = the clean default (calm study tool); Quest = the island game she has always had.
+   Same questions, engine, progress and results; only presentation and copy differ.
+   body.look-study switches the tokens; .q-only / .s-only pick header pieces. */
+body.look-study .q-only,body:not(.look-study) .s-only{display:none!important}
+body.look-study{
+  --ground:#F4F6F8; --paper:#FFFFFF; --ink:#172031; --ink-soft:#5A6475; --line:#DCE1E8;
+  --accent:#2551C4; --accent-ink:#FFFFFF; --teal:#1C7A58; --teal-soft:#E4F2EB;
+  --gold:#A86C12; --gold-soft:#FBF1DD; --plum-soft:#EEF1F5; --rose:#5A6475; --rose-soft:#F4F6F8;
+  --leaf:#1C7A58; --blue-soft:#E7EDFB; --shadow:0 1px 2px rgba(16,24,40,.05);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) body.look-study{
+    --ground:#11151B; --paper:#1A1F28; --ink:#E8ECF2; --ink-soft:#A2ACBB; --line:#2B3240;
+    --accent:#7FA2FF; --accent-ink:#0D1320; --teal:#55C192; --teal-soft:#15302A;
+    --gold:#E0B05A; --gold-soft:#372D19; --plum-soft:#232A36; --rose:#A2ACBB; --rose-soft:#1A1F28;
+    --leaf:#55C192; --blue-soft:#1C2946; --shadow:none;
+  }
+}
+:root[data-theme="dark"] body.look-study{
+  --ground:#11151B; --paper:#1A1F28; --ink:#E8ECF2; --ink-soft:#A2ACBB; --line:#2B3240;
+  --accent:#7FA2FF; --accent-ink:#0D1320; --teal:#55C192; --teal-soft:#15302A;
+  --gold:#E0B05A; --gold-soft:#372D19; --plum-soft:#232A36; --rose:#A2ACBB; --rose-soft:#1A1F28;
+  --leaf:#55C192; --blue-soft:#1C2946; --shadow:none;
+}
+body.look-study h1,body.look-study h2,body.look-study h3,body.look-study .display,body.look-study .btn,
+body.look-study .fb b.h,body.look-study .cans .h,body.look-study .timer,body.look-study .score,body.look-study .cele{font-family:inherit}
+body.look-study h1,body.look-study h2,body.look-study h3,body.look-study .display{font-weight:650;letter-spacing:-.01em}
+body.look-study .stage h2{font-size:1.55rem}
+body.look-study .stage{border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:28px}
+body.look-study .sitelinks a{border-width:1px;border-radius:8px;font-weight:600;font-size:.9rem;letter-spacing:0}
+body.look-study .brand h1{font-size:1.3rem}
+body.look-study .brand small{letter-spacing:.08em}
+.mono{width:40px;height:40px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:1.25rem;flex:none}
+body.look-study .eyebrow{letter-spacing:.08em;font-weight:700}
+body.look-study .link{text-transform:none;letter-spacing:0;font-weight:600;font-size:.98rem;color:var(--accent)}
+body.look-study .btn{border-radius:10px;font-weight:600;font-size:1.05rem;box-shadow:none;transition:background .1s,opacity .1s}
+body.look-study .btn:active{transform:none;opacity:.85}
+body.look-study .btn.ghost{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+body.look-study .btn.teal{background:var(--accent);color:var(--accent-ink)}
+body.look-study .btn.flagon{background:var(--gold-soft);box-shadow:inset 0 0 0 1.5px var(--gold)}
+body.look-study .tile{background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:none;padding:16px;gap:6px}
+body.look-study .tile:active{transform:none;background:var(--ground)}
+body.look-study .tile.done{border-color:var(--line)}
+body.look-study .tile .em,body.look-study .tile .place,body.look-study .crys,body.look-study .crystot,body.look-study .howcrys,
+body.look-study .crysbox,body.look-study .hello,body.look-study .won,body.look-study .sndbtn,body.look-study .cele,body.look-study .confetti{display:none!important}
+body.look-study .tile small{letter-spacing:.04em}
+body.look-study .tile.wide,body.look-study .tile.wide.alt,body.look-study .tile.wide.power{background:var(--paper);border-color:var(--line);align-items:flex-start}
+body.look-study .tile.wide.primary{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.ico{display:none}
+body.look-study .ico{display:grid;place-items:center;width:44px;height:44px;border-radius:10px;background:var(--blue-soft);color:var(--accent);flex:none}
+body.look-study .ico svg{width:24px;height:24px}
+body.look-study .bar{height:8px;background:var(--plum-soft)}
+body.look-study .bar i{background:var(--accent)}
+body.look-study .pct{color:var(--ink-soft);font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums}
+body.look-study .badge{border-radius:6px;font-size:.8rem;font-weight:600}
+body.look-study .card{background:var(--paper);border:1px solid var(--line);border-radius:12px}
+body.look-study .dots i.on{background:var(--accent)}
+body.look-study .steps i{height:6px}
+body.look-study .steps i.on{background:var(--accent)}
+body.look-study .steps i.part{background:var(--gold)}
+body.look-study .opt{background:var(--paper);border:1.5px solid var(--line);border-radius:10px}
+body.look-study .opt:active{transform:none}
+body.look-study .opt.picked{border-color:var(--accent);background:var(--blue-soft)}
+body.look-study .opt.mine{border-color:var(--gold);background:var(--gold-soft)}
+body.look-study .opt.tried{border-style:dashed;border-color:var(--ink-soft)}
+body.look-study .opt.right{border-color:var(--teal);background:var(--teal-soft)}
+body.look-study .tile.wide .display,.tile .k{display:block}
+body.look-study .opt .tag{letter-spacing:.04em}
+body.look-study .fb{border-width:1px;border-radius:10px}
+body.look-study .fb.ok{border-left:4px solid var(--teal)}
+body.look-study .fb.hint{border-left:4px solid var(--gold)}
+body.look-study .fb.coach{background:var(--paper);border-left:4px solid var(--accent)}
+body.look-study .fb b.h{font-size:1.08rem;font-weight:650}
+body.look-study .tech{border-width:1px;border-color:var(--line);background:var(--ground);border-radius:6px;font-weight:600;letter-spacing:0}
+body.look-study ol.csteps li{border-width:1px;border-radius:8px}
+body.look-study ol.csteps li::marker{color:var(--accent)}
+body.look-study .cans{border-width:1px;border-radius:10px}
+body.look-study .model{border-width:1px;border-radius:10px}
+body.look-study .model mark{background:#FCE7B2;color:#172031}
+body.look-study textarea{background:var(--paper);border:1.5px solid var(--line);border-radius:10px}
+body.look-study label.key{border-width:1.5px;border-radius:10px}
+body.look-study label.key input{accent-color:var(--accent)}
+body.look-study label.key.on{border-color:var(--accent);background:var(--blue-soft)}
+body.look-study .figback summary{border:1px solid var(--line);border-radius:8px;font-weight:600;color:var(--accent)}
+body.look-study .qn{border-width:1.5px;border-radius:8px;font-weight:600}
+body.look-study .qn.done{background:var(--blue-soft);border-color:var(--accent)}
+body.look-study .qnav{border-top:1px solid var(--line)}
+body.look-study .cfm{border-width:1px;border-radius:12px;background:var(--paper);border-color:var(--line)}
+body.look-study .nav.pin{border-top:1px solid var(--line);box-shadow:0 -8px 16px -14px rgba(16,24,40,.35)}
+body.look-study .choice button{border-width:1.5px;border-radius:10px;font-weight:600}
+body.look-study .score{font-weight:650;font-size:2.8rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+body.look-study table.tbl{font-size:1rem}
+body.look-study table.tbl th,body.look-study table.tbl td{border-bottom-width:1px}
+body.look-study ul.rev li{background:var(--paper);border-width:1px;border-radius:10px}
+body.look-study .batt{border-width:1.5px;border-radius:5px}
+body.look-study .batt i{border-radius:2px}
+body.look-study .batt.full,body.look-study .batt.full::after{border-color:var(--teal)}
+body.look-study .batt.full::after,body.look-study .batt.full i{background:var(--teal)}
+body.look-study .batt i.on{background:var(--accent)}
+body.look-study .powers li{border-width:1px;border-radius:8px;font-weight:600}
+body.look-study .powers li.full{border-color:var(--teal);background:var(--teal-soft)}
+body.look-study .pzap{color:var(--ink-soft);margin:4px 0 0}
+/* home: level + look switches, the progress strip */
+.hometop{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin:0 0 14px}
+.hometop .choice{margin:0}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:12px;padding:3px;background:var(--ground);margin-left:auto}
+.seg button{border:0;background:none;border-radius:9px;padding:6px 16px;font-weight:700;color:var(--ink-soft);min-width:72px}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(16,24,40,.18)}
+.seg .lab{align-self:center;padding:0 8px 0 6px;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0 4px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--paper)}
+.kpi b{display:block;font-size:1.8rem;font-weight:650;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi span{display:block;color:var(--ink-soft);font-size:.92rem;margin-top:2px}
+.tile .k{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+/* grown-ups report */
+.rtag{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.04em;border-radius:6px;padding:1px 8px;margin-right:8px;vertical-align:2px;background:var(--plum-soft);color:var(--ink-soft)}
+.rtag.ok{background:var(--teal-soft);color:var(--teal)}
+.rtag.no{background:var(--gold-soft);color:var(--gold)}
+.mbar{display:inline-block;width:64px;height:6px;border-radius:99px;background:var(--plum-soft);vertical-align:middle;margin-right:8px;overflow:hidden}
+.mbar i{display:block;height:100%;background:var(--accent)}
+ul.focus{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+ul.focus li{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--paper)}
+ul.focus li b{display:block}
+ul.focus li small{color:var(--ink-soft);font-size:.92rem}
+.note{color:var(--ink-soft);font-size:.92rem;margin:6px 0 0}
+@media (max-width:480px){
+  body.look-study .stage{padding:18px 14px}
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .kpi{padding:10px}
+  .kpi b{font-size:1.3rem}
+  .kpi span{font-size:.8rem}
+  .seg button{padding:6px 12px;min-width:64px}
+  body.look-study .tile .display{font-size:1rem}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav class="sitelinks" aria-label="Other apps">
-    <a href="/">← Math Quest Island</a>
-    <a href="/oral">🎤 Oral Quest</a>
+    <a href="/">← <span class="q-only">Math Quest Island</span><span class="s-only">Maths</span></a>
+    <a href="/oral"><span class="q-only">🎤 Oral Quest</span><span class="s-only">Oral practice</span></a>
   </nav>
   <div class="top">
-    <button class="brand" data-act="home" aria-label="Science Quest home">
-      <span class="logo">🔬</span>
-      <span><small id="lvlTag">Primary 3 Science</small><h1>Science Quest</h1></span>
+    <button class="brand" data-act="home" aria-label="Science home">
+      <span class="logo q-only">🔬</span><span class="mono s-only" aria-hidden="true">S</span>
+      <span><small id="lvlTag">Primary 3 Science</small><h1><span class="q-only">Science Quest</span><span class="s-only">Science Practice</span></h1></span>
     </button>
     <button class="sndbtn" id="sndbtn" data-act="sound" aria-pressed="false">🔇 Sound off</button>
   </div>
@@ -422,9 +559,13 @@ var view = document.getElementById('view');
    Same key, same v: 1 store; an older save simply gets an empty power map from fresh(). */
 /* crys (fun layer, 2026-10-17): { <topic id>: { e: t, c: t, p: t } } Star Crystals rescued, kept once rescued.
    sound: off unless she turns it on. */
-function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full', power: {}, crys: {}, sound: false, track: 'lower' }; }
+/* look (modes, 2026-10-31): 'study' (clean, the default for a new profile) or 'quest' (the island game).
+   A save from before modes has no look: it keeps 'quest', the look she has always had, so an existing
+   profile never changes under her. A grown-up switches it on the home screen or the progress report. */
+function fresh() { return { v: 1, items: {}, notes: {}, exams: [], timer: true, size: 'full', power: {}, crys: {}, sound: false, track: 'lower', look: 'study' }; }
 function load() {
-  try { var s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && s.items) return Object.assign(fresh(), s); } catch (e) {}
+  try { var s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (s && s.v === 1 && s.items) { if (s.look !== 'study' && s.look !== 'quest') s.look = 'quest'; return Object.assign(fresh(), s); } } catch (e) {}
   return fresh();
 }
 var S = load();
@@ -619,6 +760,23 @@ function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { va
 function pct(x) { return Math.round(x * 100) + '%'; }
 var toastT;
 function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 1800); }
+/* ---------- look (modes, 2026-10-31): Q(quest copy, study copy); tem(t) is the topic emoji, Quest only ---------- */
+function study() { return S.look !== 'quest'; }
+function Q(quest, stud) { return study() ? stud : quest; }
+function tem(t) { return t && t.emoji && !study() ? t.emoji + ' ' : ''; }
+(function () { var m = /[?&]look=(study|quest)\b/.exec(location.search); if (m) { S.look = m[1]; save(); } })();
+var ICO = {
+  paper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h6"/></svg>',
+  target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></svg>',
+  book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z"/><path d="M12 6v14"/></svg>',
+  pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/></svg>'
+};
+function ico(k) { return '<span class="ico">' + ICO[k] + '</span>'; }
+function lookSwitch() {
+  return '<div class="seg" role="group" aria-label="App look"><span class="lab">View</span>' +
+    '<button data-act="look" data-v="study" aria-pressed="' + study() + '">Study</button>' +
+    '<button data-act="look" data-v="quest" aria-pressed="' + !study() + '">Quest</button></div>';
+}
 
 /* ---------- fun layer (Science Fun Layer Card, 2026-10-17) ----------
    Ported from the maths island so the two feel like one game: an island map with named lands (the
@@ -665,6 +823,7 @@ function reducedMotion() { try { return window.matchMedia('(prefers-reduced-moti
 var celeT;
 /* a short banner: shows for 2 s, tap to close, never covers the question for long */
 function celebrate(msg, snd, burst) {
+  if (study()) return;   /* Study look: no banner, confetti or chime */
   var el = document.getElementById('cele'); el.textContent = msg; el.hidden = false;
   clearTimeout(celeT); celeT = setTimeout(function () { el.hidden = true; }, 2000);
   if (snd) sfx(snd);
@@ -697,7 +856,7 @@ function tone(f, t0, dur, vol) {
   } catch (e) {}
 }
 function sfx(kind) {
-  if (!S.sound) return;
+  if (!S.sound || study()) return;
   if (kind === 'ok') { tone(523, 0, 0.1); tone(784, 0.09, 0.16); }
   else if (kind === 'crystal') { tone(659, 0, 0.1); tone(880, 0.09, 0.1); tone(1175, 0.18, 0.22); }
   else if (kind === 'finish') [523, 659, 784, 1047].forEach(function (f, i) { tone(f, i * 0.12, 0.18); });
@@ -840,7 +999,7 @@ function battHTML(k) {
 }
 function powersHTML(keys) {
   return '<ul class="powers">' + keys.map(function (k) { var p = pstate(k);
-    return '<li class="' + (p.full ? 'full' : '') + '">' + battHTML(k) + esc(pname(k)) + (p.full ? '<small>⚡ fully charged</small>' : '') + '</li>'; }).join('') + '</ul>';
+    return '<li class="' + (p.full ? 'full' : '') + '">' + battHTML(k) + esc(pname(k)) + (p.full ? '<small>' + Q('⚡ fully charged', 'secure') + '</small>' : '') + '</li>'; }).join('') + '</ul>';
 }
 /* every group she has started charging or has in rotation, for the home screen */
 function powerKeys() {
@@ -948,7 +1107,7 @@ function labelNeed(svg) {
    coaching and the marking; on a wide screen the sticky side figure does the job and this hides.
    Open by default; shut only where the original sits just above it (exam marking: figure, stem, then this). */
 function figBack(it, shut) {
-  return it.figure ? '<details class="figback"' + (shut ? '' : ' open') + '><summary>🔍 Look at the figure again</summary>' + figHTML(it.figure) + '</details>' : '';
+  return it.figure ? '<details class="figback"' + (shut ? '' : ' open') + '><summary>' + Q('🔍 Look at the figure again', 'Show the figure again') + '</summary>' + figHTML(it.figure) + '</details>' : '';
 }
 /* the pinned action bar's height, so scroll-into-view lands above it */
 function pinH() { var p = view.querySelector('.nav.pin'); return p ? p.offsetHeight : 0; }
@@ -995,7 +1154,12 @@ function route() {
   if (p[0] === 'parent') return renderParent();
   renderHome();
 }
+/* paintStudy: the grown-ups report is always drawn in the Study look, whatever the child's view */
+var paintStudy = false;
 function paint(html) { var lt = document.getElementById('lvlTag'); if (lt) lt.textContent = isPsle() ? 'Primary 5–6 Science · PSLE' : 'Primary 3 Science';
+  var cleanLook = study() || paintStudy; paintStudy = false;
+  document.body.classList.toggle('look-study', cleanLook);
+  document.title = cleanLook ? 'Science Practice' : 'Science Quest';
   view.innerHTML = html; fixFigures(view); document.body.classList.toggle('quizfig', !!view.querySelector('.qgrid, .qsolo')); window.scrollTo(0, 0);
   document.documentElement.style.setProperty('--pinh', (pinH() ? pinH() + 12 : 0) + 'px');
 }
@@ -1021,7 +1185,13 @@ document.addEventListener('focusin', function (e) {
 });
 
 /* ---------- home ---------- */
+function levelSwitch() {
+  return upperTopics().length ? '<div class="choice" role="group" aria-label="Level">' +
+    '<button data-act="track" data-v="lower" aria-pressed="' + !isPsle() + '">P3–P4</button>' +
+    '<button data-act="track" data-v="psle" aria-pressed="' + isPsle() + '">P5–P6 (PSLE)</button></div>' : '';
+}
 function renderHome() {
+  if (study()) return renderHomeStudy();
   var ts = shownTopics(), rot = powerRotation(), pk = powerKeys().slice(0, 9);
   var found = 0;
   var tiles = ts.map(function (t) {
@@ -1035,10 +1205,8 @@ function renderHome() {
   }).join('');
   var me = hero();
   paint(
+    '<div class="hometop">' + levelSwitch() + lookSwitch() + '</div>' +
     (me ? '<p class="hello"><span class="av" aria-hidden="true">' + esc(me.av) + '</span><span>Hi' + (me.name ? ', ' + esc(me.name) : '') + '! Welcome to Science Island.</span></p>' : '') +
-    (upperTopics().length ? '<div class="choice" role="group" aria-label="Level">' +
-      '<button data-act="track" data-v="lower" aria-pressed="' + !isPsle() + '">P3–P4</button>' +
-      '<button data-act="track" data-v="psle" aria-pressed="' + isPsle() + '">P5–P6 (PSLE)</button></div>' : '') +
     '<p class="eyebrow">Revise · practise · ace it</p><h2>Pick a land to explore</h2>' +
     (ts.length ? '<p class="crystot">⭐ ' + (found ? found + ' of ' + ts.length * 3 + ' Star Crystals rescued so far!' : ts.length * 3 + ' Star Crystals are hiding on Science Island. Can you rescue them?') + '</p><div class="grid">' + tiles + '</div>' +
       '<details class="howcrys"><summary>⭐ How do I rescue Star Crystals?</summary><p>Every land hides 3:</p><ul>' +
@@ -1054,6 +1222,34 @@ function renderHome() {
     '<div class="spread section"><button class="link" data-act="parent">👪 Grown-ups: progress report</button></div>'
   );
 }
+function kpi(v, l) { return '<div class="kpi"><b>' + v + '</b><span>' + esc(l) + '</span></div>'; }
+/* Study look home: a progress strip, the two main actions, then the topics. Same data as the island map. */
+function renderHomeStudy() {
+  var ts = shownTopics(), rot = powerRotation(), pk = powerKeys().slice(0, 9);
+  var tot = 0, mast = 0, seen = 0;
+  var tiles = ts.map(function (t) {
+    var s = topicStats(t); tot += s.n; mast += s.mastered; seen += s.seen;
+    return '<button class="tile" data-act="topic" data-id="' + esc(t.id) + '"><span class="display">' + esc(t.title) + '</span>' +
+      '<small>' + (t.extra ? '<span class="badge">P4 preview</span>' : esc(t.theme || 'Topic')) + '</small>' +
+      '<span class="pct">' + s.mastered + ' of ' + s.n + ' mastered</span><span class="bar"><i style="width:' + s.pct + '%"></i></span></button>';
+  }).join('');
+  var ex = S.exams[0];
+  paint(
+    '<div class="hometop">' + levelSwitch() + lookSwitch() + '</div>' +
+    '<p class="eyebrow">Overview</p><h2>Your progress</h2>' +
+    '<div class="kpis">' + kpi(tot ? Math.round(mast / tot * 100) + '%' : '—', 'of questions mastered') + kpi(String(seen), 'questions practised') +
+      kpi(ex ? esc(ex.got + ' / ' + ex.max) : '—', ex ? 'latest mock paper' : 'no mock paper yet') + '</div>' +
+    '<div class="big2">' +
+      '<button class="tile wide primary" data-act="exam">' + ico('paper') + '<span><small class="k">Exam practice</small><span class="display">Mock paper</span><p>' +
+        (isPsle() ? 'PSLE format: Booklet A (MCQ), then Booklet B (structured), across all P5–P6 topics.' : 'Section A (MCQ), then Section B (open-ended), across all P3 topics.') + '</p></span></button>' +
+      '<button class="tile wide power" data-act="power">' + ico('target') + '<span><small class="k">Targeted</small><span class="display">Focused review</span><p>' +
+        (rot.length ? 'Next up: ' + esc(pq(rot[0].k)) + '.' : 'A mixed round to keep every skill secure.') + '</p></span></button>' +
+    '</div>' +
+    '<div class="section"><h3>Topics</h3>' + (ts.length ? '<div class="grid">' + tiles + '</div>' : '<p class="empty">No topics have loaded yet.</p>') + '</div>' +
+    (pk.length ? '<div class="section" id="mypowers"><h3>Skills</h3>' + powersHTML(pk) + '<p class="note">Two clean answers in a row make a skill secure. A miss puts it back into Focused review.</p></div>' : '') +
+    '<div class="spread section"><button class="link" data-act="parent">Progress report for parents →</button></div>'
+  );
+}
 
 /* ---------- topic ---------- */
 function renderTopic(t) {
@@ -1061,15 +1257,15 @@ function renderTopic(t) {
   paint(
     (t.hidden ? '<button class="link" data-act="parent">← Progress report</button>' : '<button class="link" data-act="home">← All topics</button>') +
     '<p class="eyebrow" style="margin-top:8px">' + esc(t.theme) + '</p>' +
-    '<h2>' + esc(t.emoji) + ' ' + esc(t.title) + '</h2>' +
+    '<h2>' + esc(tem(t)) + esc(t.title) + '</h2>' +
     '<p class="lead">' + t.items.length + ' questions (' + m + ' MCQ, ' + (t.items.length - m) + ' open-ended) · ' +
       s.pct + '% mastered' + (s.acc != null ? ' · accuracy ' + pct(s.acc) : '') + '</p>' +
     '<div class="bar" style="margin-bottom:18px"><i style="width:' + s.pct + '%"></i></div>' +
     '<div class="big2" style="margin-top:0">' +
-      (t.notes.length ? '<button class="tile wide" data-act="learn" data-id="' + esc(t.id) + '"><span class="em">📖</span><span><span class="display">Learn</span><p>' + t.notes.length + ' revision cards</p></span></button>' : '') +
-      '<button class="tile wide alt" data-act="practice" data-id="' + esc(t.id) + '"><span class="em">✏️</span><span><span class="display">Practice</span><p>About 10 questions, mixed levels</p></span></button>' +
+      (t.notes.length ? '<button class="tile wide" data-act="learn" data-id="' + esc(t.id) + '"><span class="em">📖</span>' + ico('book') + '<span><span class="display">Learn</span><p>' + t.notes.length + ' revision cards</p></span></button>' : '') +
+      '<button class="tile wide alt primary" data-act="practice" data-id="' + esc(t.id) + '"><span class="em">✏️</span>' + ico('pencil') + '<span><span class="display">Practice</span><p>About 10 questions, mixed levels</p></span></button>' +
     '</div>' +
-    (t.hidden ? '' : topicCrys(t))
+    (t.hidden || study() ? '' : topicCrys(t))
   );
 }
 
@@ -1094,7 +1290,7 @@ function renderLearn(t) {
     '<div class="dots">' + dots + '</div>' +
     '<div class="nav"><button class="btn ghost" data-act="lprev"' + (i === 0 ? ' disabled' : '') + '>← Back</button>' +
     (i < n - 1 ? '<button class="btn teal" data-act="lnext">Next →</button>'
-               : '<button class="btn" data-act="practice" data-id="' + esc(t.id) + '">Start practice ✏️</button>') + '</div>'
+               : '<button class="btn" data-act="practice" data-id="' + esc(t.id) + '">' + Q('Start practice ✏️', 'Start practice →') + '</button>') + '</div>'
   );
   var card = document.getElementById('learnCard'), x0 = null;
   card.addEventListener('pointerdown', function (e) { x0 = e.clientX; });
@@ -1128,7 +1324,7 @@ function renderExamSetup() {
   var nm = ts.reduce(function (a, t) { return a + t.items.filter(function (i) { return i.type === 'mcq'; }).length; }, 0);
   paint(
     '<button class="link" data-act="home">← All topics</button>' +
-    '<p class="eyebrow" style="margin-top:8px">Mixed exam practice</p><h2>📝 Mock paper</h2>' +
+    '<p class="eyebrow" style="margin-top:8px">Mixed exam practice</p><h2>' + Q('📝 ', '') + 'Mock paper</h2>' +
     (isPsle()
       ? '<p class="lead">Like the PSLE Science paper: Booklet A is 30 multiple-choice questions (2 marks each). Booklet B is structured questions of 2 to 5 marks, 40 marks in all — write your answer, then mark it with the answer key at the end. Questions come from ' + ts.length + ' P5–P6 topic' + (ts.length === 1 ? '' : 's') + '.</p>'
       : '<p class="lead">Like the end-of-year paper: Section A is multiple choice (2 marks each). Section B is open-ended — write your answer, then mark it with the answer key at the end. Questions come from ' + ts.length + ' P3 topic' + (ts.length === 1 ? '' : 's') + '.</p>') +
@@ -1139,7 +1335,7 @@ function renderExamSetup() {
         : '<button data-act="esize" data-v="full" aria-pressed="' + (S.size !== 'short') + '">Full paper · 21 MCQ + 10 OEQ · ~70 marks</button>' +
           '<button data-act="esize" data-v="short" aria-pressed="' + (S.size === 'short') + '">Short · 8 MCQ + 3 OEQ</button></div>') +
     '<p class="eyebrow">Timer</p><div class="choice">' +
-      '<button data-act="etimer" data-v="1" aria-pressed="' + !!S.timer + '">⏱️ On (' + (isPsle() ? (S.size === 'short' ? 'about 35' : '105') : (S.size === 'short' ? 'about 25' : '75')) + ' min)</button>' +
+      '<button data-act="etimer" data-v="1" aria-pressed="' + !!S.timer + '">' + Q('⏱️ ', '') + 'On (' + (isPsle() ? (S.size === 'short' ? 'about 35' : '105') : (S.size === 'short' ? 'about 25' : '75')) + ' min)</button>' +
       '<button data-act="etimer" data-v="0" aria-pressed="' + !S.timer + '">Off</button></div>' +
     '<div class="nav"><span></span><button class="btn" data-act="estart"' + (nm ? '' : ' disabled') + '>Start the paper →</button></div>'
   );
@@ -1204,7 +1400,7 @@ var NEXT_STEP = 'Show me the next step →', SHOW_ANS = 'Show me the answer →'
 function techHTML(it) {
   if (!it.technique) return '';
   var d = TECH[it.technique];
-  return '<p class="techrow"><span class="tech">🧭 ' + esc(it.technique) + '</span>' + (d ? '<small>' + esc(d) + '</small>' : '') + '</p>';
+  return '<p class="techrow"><span class="tech">' + Q('🧭 ', 'Technique: ') + esc(it.technique) + '</span>' + (d ? '<small>' + esc(d) + '</small>' : '') + '</p>';
 }
 /* another item that uses the same technique, for "Try one like it" */
 function likePool(it) {
@@ -1216,7 +1412,7 @@ function likePool(it) {
   return out;
 }
 function likeBtn(it) {
-  return likePool(it).length ? '<div class="row"><button class="btn ghost small" data-act="tryLike" data-id="' + esc(it.id) + '">🔁 Try one like it</button></div>' : '';
+  return likePool(it).length ? '<div class="row"><button class="btn ghost small" data-act="tryLike" data-id="' + esc(it.id) + '">' + Q('🔁 Try one like it', 'Try a similar question') + '</button></div>' : '';
 }
 function choiceLine(it, a) {
   if (it.type === 'mcq') {
@@ -1246,8 +1442,8 @@ function coachHTML(it, a, k, opt) {
   var open = !steps || !!a.ansShown;
   /* the fold-out figure sits just above the walk-through, full column width (a 5-column table needs it on a phone) */
   var h = (opt.noChoice ? '' : figBack(it)) + '<div class="fb coach" id="fb" data-coach="' + k + '"' + (opt.noAnswer ? ' data-noans' : '') + '>';
-  if (!opt.noChoice) h += '<b class="h">🌱 Let\'s work this one out together</b>' + choiceLine(it, a);
-  else h += '<b class="h">🧭 How to tackle one like this</b>';
+  if (!opt.noChoice) h += '<b class="h">' + Q('🌱 Let\'s work this one out together', 'Let\'s work through it') + '</b>' + choiceLine(it, a);
+  else h += '<b class="h">' + Q('🧭 ', '') + 'How to tackle one like this</b>';
   h += techHTML(it);
   if (steps) {
     h += '<ol class="csteps">' + steps.map(function (s, j) { return '<li' + (j >= n ? ' hidden' : '') + '>' + esc(s) + '</li>'; }).join('') + '</ol>';
@@ -1256,7 +1452,7 @@ function coachHTML(it, a, k, opt) {
   var ans = '';
   if (!opt.noAnswer) {
     if (it.type === 'mcq') {
-      ans += '<span class="h">✅ The answer is (' + (it.answer + 1) + ') ' + esc(it.options[it.answer]) + '</span>';
+      ans += '<span class="h">' + Q('✅ The answer is', 'Answer:') + ' (' + (it.answer + 1) + ') ' + esc(it.options[it.answer]) + '</span>';
       if (it.hints && it.hints[1]) ans += '<p class="reveal"><b>Work it out:</b> ' + esc(it.hints[1]) + '</p>';
     } else ans += '<div class="model"><b>Model answer</b><p>' + highlight(it.model, it.noKeys ? [] : it.keys) + '</p></div>';
     /* with steps + a worked line already on screen, the long explanation folds away */
@@ -1299,8 +1495,8 @@ function renderReview() {
   if (pos < 0) { se.phase = 'report'; return renderReport(); }
   var k = se.revK, it = se.items[k], a = se.ans[k], t = SCI.byId[it.topic];
   var h = '<div class="spread"><button class="link" data-act="toReport">← My report</button>' +
-    '<span class="eyebrow" style="margin:0">Let\'s look again · ' + (pos + 1) + ' of ' + list.length + '</span></div>';
-  var q = '<p class="eyebrow" style="margin-top:8px">' + (t ? esc(t.emoji + ' ' + t.title) : '') + (se.kind === 'exam' ? ' · ' + (k < se.nA ? secA() : secB()) + ' Q' + (k + 1) : '') + '</p>' +
+    '<span class="eyebrow" style="margin:0">' + Q('Let\'s look again', 'Review') + ' · ' + (pos + 1) + ' of ' + list.length + '</span></div>';
+  var q = '<p class="eyebrow" style="margin-top:8px">' + (t ? esc(tem(t) + t.title) : '') + (se.kind === 'exam' ? ' · ' + (k < se.nA ? secA() : secB()) + ' Q' + (k + 1) : '') + '</p>' +
     '<p class="stem">' + esc(it.stem) + (it.type === 'oeq' ? '<span class="marks">[' + it.marks + ' mark' + (it.marks === 1 ? '' : 's') + ']</span>' : '') + '</p>';
   if (it.type === 'mcq') q += reviewOpts(it, a, !it.steps || !!a.ansShown);
   q += coachHTML(it, a, k);
@@ -1324,7 +1520,7 @@ function stepsHTML() {
 }
 function timerText() {
   var left = Math.max(0, session.timerEnd - Date.now()), m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
-  return left ? '⏱️ ' + m + ':' + (s < 10 ? '0' : '') + s : '⏱️ Time up — finish off!';
+  return left ? Q('⏱️ ', 'Time left ') + m + ':' + (s < 10 ? '0' : '') + s : Q('⏱️ Time up — finish off!', 'Time is up. Finish off.');
 }
 function tickTimer() {
   var el = document.getElementById('timer'); if (!el || !session || !session.timerEnd) return;
@@ -1362,7 +1558,7 @@ function renderQuiz() {
   var label = exam ? (se.i < se.nA ? secA() + ' · Q' + (se.i + 1) : secB() + ' · Q' + (se.i + 1)) : se.kind === 'like' ? 'One like it' :
     (power && se.i < se.warm ? 'Warm-up · ' : '') + 'Question ' + (se.i + 1) + ' of ' + se.items.length;
   var h = '<div class="spread">' + (se.kind === 'like' ? '<button class="link" data-act="quit">← Back to where I was</button>' : '<button class="link" data-act="quit">✕ Stop</button>') +
-    (exam && se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '<span class="eyebrow" style="margin:0">' + esc(se.kind === 'practice' ? se.title : power ? (se.review ? '⚡ Keep your powers charged' : '⚡ Power-Up') + (t ? ' · ' + t.emoji + ' ' + t.title : '') : (t ? t.emoji + ' ' + t.title : '')) + '</span>') + '</div>';
+    (exam && se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '<span class="eyebrow" style="margin:0">' + esc(se.kind === 'practice' ? se.title : power ? (se.review ? Q('⚡ Keep your powers charged', 'Focused review · mixed') : Q('⚡ Power-Up', 'Focused review')) + (t ? ' · ' + tem(t) + t.title : '') : (t ? tem(t) + t.title : '')) + '</span>') + '</div>';
   if (exam && se.confirm) return renderConfirm();
   if (!exam) h += stepsHTML();
   h += '<p class="eyebrow">' + esc(label) + (exam && t ? ' · ' + esc(t.title) : '') + (it.syl === 'P5' && !isPsle() ? ' <span class="badge">P5 stretch</span>' : '') +
@@ -1388,35 +1584,36 @@ function renderQuiz() {
       return '<button class="' + cls + '" data-act="pick" data-k="' + k + '"' + (off ? ' disabled' : '') + ' aria-pressed="' + (a.choice === k) + '"><span class="n">(' + (k + 1) + ')</span><span>' + esc(o) + '</span>' +
         (tag ? '<span class="tag">' + tag + '</span>' : '') + '</button>';
     }).join('') + '</div>';
-    if (retry) q += '<div class="fb hint" id="fb"><b class="h">🤔 Not yet. Have another go!</b><p>' + esc(nudgeText(it)) + '</p></div>';
+    if (retry) q += '<div class="fb hint" id="fb"><b class="h">' + Q('🤔 Not yet. Have another go!', 'Not quite. Try again.') + '</b><p>' + esc(nudgeText(it)) + '</p></div>';
     if (locked) {
       var second = ladder && a.miss1 != null;
-      var zap = power && !second ? '<p class="pzap"><b>⚡ ' + esc(pq(pkey(it))) + (pstate(pkey(it)).full ? ' is fully charged!' : ' is charging up!') + '</b></p>' : '';
-      if (ok) q += '<div class="fb ok" id="fb"><b class="h">' + esc(a.praise || (second ? '✅ You got it on your second try!' : '✅ Correct!')) + '</b>' + zap + wonHTML(a) + (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') + '</div>';
+      var zap = power && !second ? (study() ? '<p class="pzap">Skill: ' + esc(pname(pkey(it))) + ' · ' + (pstate(pkey(it)).full ? 'secure' : 'building') + '</p>'
+        : '<p class="pzap"><b>⚡ ' + esc(pq(pkey(it))) + (pstate(pkey(it)).full ? ' is fully charged!' : ' is charging up!') + '</b></p>') : '';
+      if (ok) q += '<div class="fb ok" id="fb"><b class="h">' + esc(study() ? (second ? 'Correct on the second try' : 'Correct') : a.praise || (second ? '✅ You got it on your second try!' : '✅ Correct!')) + '</b>' + zap + wonHTML(a) + (it.explain ? '<p>' + esc(it.explain) + '</p>' : '') + '</div>';
       else q += coachHTML(it, a, se.i);   /* the final miss: the coaching walk-through */
     }
   } else {
     q += '<textarea id="oeqText" placeholder="Type your answer here, or write it on paper (optional)"' + (a.shown && !exam ? ' readonly' : '') + '>' + esc(a.text) + '</textarea>';
-    if (ladder && !a.shown && a.hint1) q += '<div class="fb hint" id="fb"><b class="h">💡 Hint</b><p>' + esc(nudgeText(it)) + '</p></div>';
+    if (ladder && !a.shown && a.hint1) q += '<div class="fb hint" id="fb"><b class="h">' + Q('💡 Hint', 'Hint') + '</b><p>' + esc(nudgeText(it)) + '</p></div>';
     if (!exam && a.shown) q += markingHTML(it, a) + hintFigHTML(it) + (it.steps || it.technique ? coachHTML(it, a, se.i, { noChoice: true, noAnswer: true }) : '');
   }
   var last = se.i === se.items.length - 1;
   var next = '';
   if (exam) {
-    next = '<button class="btn small ghost' + (se.flags[se.i] ? ' flagon' : '') + '" data-act="flag" aria-pressed="' + !!se.flags[se.i] + '">🚩 Flag</button>' +
+    next = '<button class="btn small ghost' + (se.flags[se.i] ? ' flagon' : '') + '" data-act="flag" aria-pressed="' + !!se.flags[se.i] + '">' + Q('🚩 Flag', 'Flag') + '</button>' +
       (last ? '<button class="btn teal" data-act="finishExam">Hand in →</button>'
             : '<button class="btn teal" data-act="next">' + (se.i === se.nA - 1 && se.nA < se.items.length ? 'On to ' + secB() + ' →' : 'Next →') + '</button>');
   } else if (it.type === 'mcq') {
     next = a.choice != null ? '<button class="btn teal" data-act="next">' + (last ? (se.kind === 'like' ? 'Back to where I was →' : power ? 'Finish my Power-Up →' : 'See results →') : 'Next →') + '</button>' : '';
   } else {
     next = a.shown ? '<button class="btn teal" data-act="saveMark">' + (last ? (se.kind === 'like' ? 'Save mark &amp; go back →' : power ? 'Save mark &amp; finish →' : 'Save mark &amp; see results →') : 'Save mark &amp; next →') + '</button>'
-                   : (ladder && !a.hint1 ? '<button class="btn ghost small" data-act="hint">💡 Hint</button>' : '') + '<button class="btn" data-act="reveal">Show answer</button>';
+                   : (ladder && !a.hint1 ? '<button class="btn ghost small" data-act="hint">' + Q('💡 Hint', 'Hint') + '</button>' : '') + '<button class="btn" data-act="reveal">Show answer</button>';
   }
   q += '<div class="nav' + (next ? ' pin' : '') + '">' + (se.i > 0 && (exam || a.score == null) ? '<button class="btn ghost small" data-act="prev">← Back</button>' : '<span></span>') + (exam ? next : '<span class="row">' + next + '</span>') + '</div>';
   /* F13 (2026-10-17): on a wide screen a figure sits beside the question, so the options and
      buttons stay above the fold at 1440x900 and on an iPad in landscape. Narrow screens stack. */
   h += layout(sideFigs(it), q);   /* the hintFigure is never beside the question: it sits in the answer reveal */
-  if (exam) h += qnavHTML() + '<button class="btn handin" data-act="finishExam">✋ Hand in paper</button>';
+  if (exam) h += qnavHTML() + '<button class="btn handin" data-act="finishExam">' + Q('✋ ', '') + 'Hand in paper</button>';
   paint(h);
   if (!exam && se.scrollFb) { se.scrollFb = false; var fb = document.getElementById('fb'); if (fb && fb.getBoundingClientRect().bottom > foldY()) fb.scrollIntoView({ block: 'nearest' }); }
   if (exam) examSave();
@@ -1443,12 +1640,12 @@ function renderConfirm() {
   });
   var chips = function (l) { return '<div class="chips">' + l.map(qnBtn).join('') + '</div>'; };
   var h = '<div class="spread"><span class="eyebrow" style="margin:0">Mock paper</span>' + (se.timerEnd ? '<span class="timer" id="timer">' + timerText() + '</span>' : '') + '</div>' +
-    '<h2>✋ Hand in your paper?</h2><div class="cfm">' +
-    '<p>✅ <b>' + (se.items.length - un.length - ob.length) + '</b> of ' + se.items.length + ' answered</p>' +
-    (un.length ? '<p>⬜ <b>' + un.length + '</b> multiple-choice not answered</p>' + chips(un) : '') +
-    (ob.length ? '<p>✏️ <b>' + ob.length + '</b> open-ended with nothing typed (fine if you wrote it on paper)</p>' + chips(ob) : '') +
-    (fl.length ? '<p>🚩 <b>' + fl.length + '</b> flagged to check</p>' + chips(fl) : '') +
-    (!un.length && !ob.length && !fl.length ? '<p>Every question has an answer. 🎉</p>' : '') +
+    '<h2>' + Q('✋ ', '') + 'Hand in your paper?</h2><div class="cfm">' +
+    '<p>' + Q('✅ ', '') + '<b>' + (se.items.length - un.length - ob.length) + '</b> of ' + se.items.length + ' answered</p>' +
+    (un.length ? '<p>' + Q('⬜ ', '') + '<b>' + un.length + '</b> multiple-choice not answered</p>' + chips(un) : '') +
+    (ob.length ? '<p>' + Q('✏️ ', '') + '<b>' + ob.length + '</b> open-ended with nothing typed (fine if you wrote it on paper)</p>' + chips(ob) : '') +
+    (fl.length ? '<p>' + Q('🚩 ', '') + '<b>' + fl.length + '</b> flagged to check</p>' + chips(fl) : '') +
+    (!un.length && !ob.length && !fl.length ? '<p>Every question has an answer.' + Q(' 🎉', '') + '</p>' : '') +
     '</div><div class="nav"><button class="btn ghost" data-act="cfBack">← Go back</button><button class="btn" data-act="handIn">Hand in &amp; mark →</button></div>';
   paint(h);
   clearInterval(timerId); timerId = null;
@@ -1482,7 +1679,7 @@ function markingHTML(it, a) {
     return '<label class="key' + (a.ticks[j] ? ' on' : '') + '"><input type="checkbox" data-act="tick" data-j="' + j + '"' + (a.ticks[j] ? ' checked' : '') + '><span>' + esc(k.join(' / ')) + '</span></label>';
   }).join('') + '</div>';
   h += '<p class="lead" style="margin-top:8px" id="markNow">Marks: ' + Math.min(a.ticks.filter(Boolean).length, it.marks) + ' / ' + it.marks + '</p>';
-  if (it.explain) h += '<div class="fb"><b class="h">💡 Why</b><p>' + esc(it.explain) + '</p></div>';
+  if (it.explain) h += '<div class="fb"><b class="h">' + Q('💡 Why', 'Why') + '</b><p>' + esc(it.explain) + '</p></div>';
   return h;
 }
 function renderMarking() {
@@ -1535,14 +1732,18 @@ function renderPowerClose() {
   var said = up.length ? (se.review && !firstEver ? 'You kept ' + andList(up.map(pq)) + ' charged today.' : 'You powered up ' + andList(up.map(pq)) + ' today.')
                        : 'You worked on ' + andList(lead.map(pq)) + ' today. Every go builds your power.';
   var nextLine = nk ? 'Next time: ' + pq(nk) + '.' : 'Next time: a mixed round to keep your powers charged.';
-  var h = '<p class="eyebrow">' + (se.review ? '⚡ Power-Up · Keep your powers charged' : '⚡ Power-Up') + '</p>' +
-    '<h2>' + (full.length ? '🌟 Powered up!' : '🌱 Nice work!') + '</h2>' +
-    '<p class="pclose">✨ ' + esc(said) + '</p>' +
-    (full.length ? '<p class="well">⚡ ' + esc(andList(full.map(pq))) + (full.length === 1 ? ' is' : ' are') + ' fully charged.</p>' : '') +
-    '<div class="section"><h3>My powers</h3>' + powersHTML(keys) + '</div>' +
+  if (study()) {   /* Study look: same facts, plain words (powered up = secure) */
+    said = said.replace(/powered up/g, 'made secure').replace(/kept (.*) charged/, 'kept $1 secure').replace('Every go builds your power.', 'Every round builds the skill.');
+    nextLine = nk ? 'Next: ' + pq(nk) + '.' : 'Next: a mixed round to keep every skill secure.';
+  }
+  var h = '<p class="eyebrow">' + (se.review ? Q('⚡ Power-Up · Keep your powers charged', 'Focused review · mixed') : Q('⚡ Power-Up', 'Focused review')) + '</p>' +
+    '<h2>' + (study() ? 'Review complete' : full.length ? '🌟 Powered up!' : '🌱 Nice work!') + '</h2>' +
+    '<p class="pclose">' + Q('✨ ', '') + esc(said) + '</p>' +
+    (full.length ? '<p class="well">' + Q('⚡ ', '') + esc(andList(full.map(pq))) + (full.length === 1 ? ' is' : ' are') + Q(' fully charged.', ' now secure.') + '</p>' : '') +
+    '<div class="section"><h3>' + Q('My powers', 'Skills') + '</h3>' + powersHTML(keys) + '</div>' +
     crysBox(se) +
-    '<p class="pnext section"><b>➡️ ' + esc(nextLine) + '</b></p>' +
-    '<div class="nav"><button class="btn ghost" data-act="home">Home</button><button class="btn" data-act="power">⚡ Another Power-Up</button></div>';
+    '<p class="pnext section"><b>' + Q('➡️ ', '') + esc(nextLine) + '</b></p>' +
+    '<div class="nav"><button class="btn ghost" data-act="home">Home</button><button class="btn" data-act="power">' + Q('⚡ Another Power-Up', 'Another review round') + '</button></div>';
   paint(h);
   if (!se.cheered) { se.cheered = true; celebrate(full.length ? '🌟 Powered up!' : '🎉 Power-Up finished! Well done.', 'finish', true); }
 }
@@ -1565,8 +1766,11 @@ function renderReport() {
   var ids = Object.keys(by), best = null;
   ids.forEach(function (id) { var b = by[id]; if (b.max && b.got > 0 && (!best || b.got / b.max > by[best].got / by[best].max)) best = id; });
   if (ids.length > 1 && best && by[best].got / by[best].max >= 0.5) { var bt = SCI.byId[best]; well += ' Your strongest topic was <b>' + esc(bt ? bt.title : best) + '</b> (' + pct(by[best].got / by[best].max) + ').'; }
+  if (study()) cheer = se.kind === 'exam' ? 'Mock paper result' : 'Session complete';
   var h = '<p class="eyebrow">' + esc(se.kind === 'exam' ? 'Mock paper report' : 'Practice · ' + se.title) + '</p>' +
-    '<h2>' + cheer + '</h2><p class="well">✨ ' + well + '</p>' + (se.kind === 'exam' ? '<div class="score">' + got + ' / ' + max + '</div>' : '');
+    '<h2>' + cheer + '</h2>' +
+    (study() ? '<div class="score">' + got + ' / ' + max + '</div><p class="lead" style="margin:0 0 10px">marks · ' + pct(ratio) + '</p><p class="well">' + well + '</p>'
+             : '<p class="well">✨ ' + well + '</p>' + (se.kind === 'exam' ? '<div class="score">' + got + ' / ' + max + '</div>' : ''));
   if (se.kind === 'exam') {
     var aGot = 0, aMax = 0, bGot = 0, bMax = 0;
     se.items.forEach(function (it, k) { if (k < se.nA) { aGot += se.ans[k].score * it.marks; aMax += it.marks; } else { bGot += se.ans[k].score * it.marks; bMax += it.marks; } });
@@ -1577,21 +1781,21 @@ function renderReport() {
     var pu = [], ps = {};
     if (se.p0) se.items.forEach(function (it) { var k = pkey(it), b = se.p0[k] || { s: 0, full: false };
       if (!ps[k] && pstate(k).full && !b.full) { ps[k] = 1; pu.push(k); } });
-    if (pu.length) h += '<p class="well">⚡ You powered up ' + esc(andList(pu.map(pq))) + ' today!</p>';
+    if (pu.length) h += '<p class="well">' + Q('⚡ You powered up ' + esc(andList(pu.map(pq))) + ' today!', 'Now secure: ' + esc(andList(pu.map(pq))) + '.') + '</p>';
     h += crysBox(se);
-    h += '<p class="lead section">This round: ' + got + ' of ' + max + ' marks. Every question you look at again makes you stronger.</p>';
+    if (!study()) h += '<p class="lead section">This round: ' + got + ' of ' + max + ' marks. Every question you look at again makes you stronger.</p>';
   }
   h += '<div class="section"><h3>By topic</h3><table class="tbl"><tr><th>Topic</th><th class="num">Marks</th><th class="num">%</th></tr>' +
     ids.map(function (id) { var t = SCI.byId[id], b = by[id];
-      return '<tr><td>' + esc(t ? t.emoji + ' ' + t.title : id) + '</td><td class="num">' + (Math.round(b.got * 10) / 10) + ' / ' + b.max + '</td><td class="num">' + pct(b.max ? b.got / b.max : 0) + '</td></tr>'; }).join('') +
+      return '<tr><td>' + esc(t ? tem(t) + t.title : id) + '</td><td class="num">' + (Math.round(b.got * 10) / 10) + ' / ' + b.max + '</td><td class="num">' + pct(b.max ? b.got / b.max : 0) + '</td></tr>'; }).join('') +
     '</table></div>';
   if (missed.length) {
-    h += '<div class="section"><div class="spread"><h3>🔍 Let\'s look again together</h3><button class="btn small teal" data-act="revGo" data-k="' + missed[0] + '">Start the walk-through →</button></div>' +
+    h += '<div class="section"><div class="spread"><h3>' + Q('🔍 Let\'s look again together', 'Questions to review') + '</h3><button class="btn small teal" data-act="revGo" data-k="' + missed[0] + '">Start the walk-through →</button></div>' +
       '<p class="lead" style="margin:4px 0 10px">These are the ones to learn from. Each one comes with a walk-through.</p><ul class="rev">' + missed.map(function (k) {
       var it = se.items[k], a = se.ans[k];
       var gotK = Math.round((a.score || 0) * it.marks * 10) / 10;
       var mine = it.type === 'mcq' ? (a.choice != null ? 'You chose (' + (a.choice + 1) + ')' : 'Left blank') : gotK > 0 ? gotK + ' of ' + it.marks + ' marks' : 'Let\'s build this one';
-      return '<li><span class="r">' + (a.score > 0 ? '½' : '🔍') + '</span>' + esc(it.stem) + (it.technique ? '<span class="tech">🧭 ' + esc(it.technique) + '</span>' : '') +
+      return '<li><span class="r">' + (a.score > 0 ? '½' : Q('🔍', '✗')) + '</span>' + esc(it.stem) + (it.technique ? '<span class="tech">' + Q('🧭 ', '') + esc(it.technique) + '</span>' : '') +
         '<small>' + esc(mine) + '</small><div class="row"><button class="btn ghost small" data-act="revGo" data-k="' + k + '">Walk me through it →</button></div></li>';
     }).join('') + '</ul></div>';
   }
@@ -1602,6 +1806,7 @@ function renderReport() {
 }
 /* the Star Crystals panel on a practice report and the Power-Up close: what she found, then the next one to find */
 function crysBox(se) {
+  if (study()) return '';
   var won = se.won || [], t = se.topicId ? SCI.byId[se.topicId] : null;
   var land = t && !t.hidden && shownTopics().indexOf(t) >= 0 ? t : null;
   if (!land && !won.length) return '';
@@ -1626,25 +1831,42 @@ function finishCheer(se) {
 }
 
 /* ---------- parent ---------- */
+/* The grown-ups report is always drawn in the Study look (modes, 2026-10-31): a summary strip, the skills
+   to work on (the Power-Up groups, most-missed first), topics with a mastery bar, the most-missed questions,
+   mock papers, and the child's view setting. Same data as before, read only. */
 function renderParent() {
-  var ts = shownTopics();
+  var ts = shownTopics(), tot = 0, mast = 0, seen = 0, att = 0, sc = 0;
   var rows = ts.map(function (t) { var s = topicStats(t);
-    return '<tr><td>' + esc(t.emoji + ' ' + t.title) + (t.extra ? ' <span class="badge">P4</span>' : '') + '</td><td class="num">' + s.seen + ' / ' + s.n + '</td><td class="num">' + (s.acc == null ? '—' : pct(s.acc)) + '</td><td class="num">' + s.pct + '%</td></tr>'; }).join('');
+    tot += s.n; mast += s.mastered; seen += s.seen;
+    t.items.forEach(function (it) { var r = S.items[it.id]; if (r) { att += r.a; sc += r.c; } });
+    return '<tr><td>' + esc(t.title) + (t.extra ? ' <span class="badge">P4</span>' : '') + '</td><td class="num">' + s.seen + ' / ' + s.n + '</td><td class="num">' + (s.acc == null ? '—' : pct(s.acc)) + '</td><td class="num"><span class="mbar" aria-hidden="true"><i style="width:' + s.pct + '%"></i></span>' + s.pct + '%</td></tr>'; }).join('');
   var most = Object.keys(S.items).filter(function (id) { return SCI.items[id] && S.items[id].miss > 0; })
     .sort(function (a, b) { return (S.items[b].miss - S.items[a].miss) || (S.items[a].c / S.items[a].a - S.items[b].c / S.items[b].a); }).slice(0, 12);
   var ex = S.exams.slice(0, 6).map(function (e) { var d = new Date(e.t);
-    return '<tr><td>' + d.getDate() + '/' + (d.getMonth() + 1) + ' ' + (e.size === 'short' ? 'short' : 'full') + '</td><td class="num">' + e.got + ' / ' + e.max + '</td><td class="num">' + pct(e.max ? e.got / e.max : 0) + '</td></tr>'; }).join('');
+    return '<tr><td>' + d.getDate() + '/' + (d.getMonth() + 1) + ' · ' + (e.size === 'short' ? 'short' : 'full') + ' paper</td><td class="num">' + e.got + ' / ' + e.max + '</td><td class="num">' + pct(e.max ? e.got / e.max : 0) + '</td></tr>'; }).join('');
+  var e0 = S.exams[0];
+  var focus = powerRotation().slice(0, 5).map(function (g) {
+    var tn = Object.keys(g.topics).map(function (id) { var t = SCI.byId[id]; return t ? t.title : id; });
+    return '<li><b>' + esc(pname(g.k)) + '</b><small>' + g.now + ' question' + (g.now === 1 ? '' : 's') + ' still to get right' + (tn.length ? ' · ' + esc(andList(tn)) : '') + (TECH[g.k] ? ' · ' + esc(TECH[g.k]) : '') + '</small></li>';
+  }).join('');
+  paintStudy = true;
   paint(
-    '<button class="link" data-act="home">← All topics</button>' +
-    '<p class="eyebrow" style="margin-top:8px">For grown-ups</p><h2>👪 Progress report</h2>' +
-    '<p class="lead">Accuracy counts every attempt (open-ended answers by the marks ticked). Mastered = right on the latest try. Stored on this device only.</p>' +
-    '<div class="section"><h3>By topic</h3><table class="tbl"><tr><th>Topic</th><th class="num">Tried</th><th class="num">Accuracy</th><th class="num">Mastered</th></tr>' + rows + '</table></div>' +
+    '<button class="link" data-act="home">← Back to the app</button>' +
+    '<p class="eyebrow" style="margin-top:8px">For parents</p><h2>Progress report</h2>' +
+    '<p class="lead">' + (isPsle() ? 'Primary 5–6 Science (PSLE track)' : 'Primary 3 Science') + ' · stored on this device only.</p>' +
+    '<div class="kpis">' + kpi(String(seen) + ' / ' + tot, 'questions tried') + kpi(att ? pct(sc / att) : '—', 'accuracy, every attempt') +
+      kpi(tot ? Math.round(mast / tot * 100) + '%' : '—', 'mastered') + kpi(e0 ? esc(e0.got + ' / ' + e0.max) : '—', e0 ? 'latest mock paper' : 'no mock paper yet') + '</div>' +
+    '<div class="section"><h3>Skills to work on</h3>' + (focus ? '<ul class="focus">' + focus + '</ul><p class="note">Grouped by exam technique, most-missed first. Focused review serves these next.</p>'
+      : '<p class="empty">Nothing flagged yet. Skills appear here after a miss or a hint.</p>') + '</div>' +
+    '<div class="section"><h3>By topic</h3><table class="tbl"><tr><th>Topic</th><th class="num">Tried</th><th class="num">Accuracy</th><th class="num">Mastered</th></tr>' + rows + '</table>' +
+      '<p class="note">Accuracy counts every attempt (open-ended answers by the marks ticked). Mastered means right on the latest try.</p></div>' +
     p4Section() +
     '<div class="section"><h3>Most-missed questions</h3>' + (most.length ? '<ul class="rev">' + most.map(function (id) {
       var it = SCI.items[id], r = S.items[id], t = SCI.byId[it.topic];
-      return '<li><span class="r">' + (r.last >= 1 ? '✓ now' : '↺') + '</span>' + esc(it.stem) + '<small>' + esc((t ? t.title : '') + ' · missed ' + r.miss + ' of ' + r.a + ' tries · ' + it.id) + '</small></li>';
+      return '<li><span class="rtag ' + (r.last >= 1 ? 'ok">Now right' : 'no">Still missed') + '</span>' + esc(it.stem) + '<small>' + esc((t ? t.title : '') + ' · missed ' + r.miss + ' of ' + r.a + ' tries · ' + it.id) + '</small></li>';
     }).join('') + '</ul>' : '<p class="empty">Nothing missed yet.</p>') + '</div>' +
     '<div class="section"><h3>Mock papers</h3>' + (ex ? '<table class="tbl"><tr><th>Date</th><th class="num">Score</th><th class="num">%</th></tr>' + ex + '</table>' : '<p class="empty">No mock paper done yet.</p>') + '</div>' +
+    '<div class="section" id="lookset"><h3>Child\'s view</h3><p class="note" style="margin:0 0 10px">Study is a clean, exam-style layout. Quest adds the island game: lands, Star Crystals, a hero and light confetti. Questions, marking and this report are the same in both.</p>' + lookSwitch() + '</div>' +
     '<div class="nav"><button class="btn ghost small" data-act="reset">Reset all progress</button></div>'
   );
 }
@@ -1657,9 +1879,9 @@ function p4Section() {
     '<p class="lead" style="margin:0 0 8px">Not in the mock paper or Power-Up. Open a topic to practise it together.</p>' +
     '<table class="tbl"><tr><th>Topic</th><th class="num">Tried</th><th class="num">Accuracy</th><th class="num">Mastered</th></tr>' +
     hs.map(function (t) { var s = topicStats(t);
-      return '<tr><td>' + esc(t.emoji + ' ' + t.title) + ' <span class="badge">P4</span></td><td class="num">' + s.seen + ' / ' + s.n + '</td><td class="num">' + (s.acc == null ? '—' : pct(s.acc)) + '</td><td class="num">' + s.pct + '%</td></tr>'; }).join('') +
+      return '<tr><td>' + esc(t.title) + ' <span class="badge">P4</span></td><td class="num">' + s.seen + ' / ' + s.n + '</td><td class="num">' + (s.acc == null ? '—' : pct(s.acc)) + '</td><td class="num">' + s.pct + '%</td></tr>'; }).join('') +
     '</table><div class="row" style="margin-top:10px">' +
-    hs.map(function (t) { return '<button class="btn small teal" data-act="topic" data-id="' + esc(t.id) + '">' + esc(t.emoji + ' ' + t.title) + ' →</button>'; }).join('') +
+    hs.map(function (t) { return '<button class="btn small teal" data-act="topic" data-id="' + esc(t.id) + '">' + esc(t.title) + ' →</button>'; }).join('') +
     '</div></div>';
 }
 
@@ -1678,6 +1900,8 @@ var A = {
   parent: function () { go('parent'); },
   esize: function (el) { S.size = el.dataset.v; save(); renderExamSetup(); },
   track: function (el) { S.track = el.dataset.v === 'psle' ? 'psle' : 'lower'; save(); renderHome(); },
+  /* the look (modes, 2026-10-31): stored in this profile's save; re-draws the page it was changed on */
+  look: function (el) { S.look = el.dataset.v === 'quest' ? 'quest' : 'study'; save(); sndBtn(); route(); toast(study() ? 'Study view on' : 'Quest view on'); },
   etimer: function (el) { S.timer = el.dataset.v === '1'; save(); renderExamSetup(); },
   estart: startExam,
   pick: function (el) {
@@ -1705,7 +1929,8 @@ var A = {
     funAfter(it, a, a.score, prevLast, wasFull);
     /* refuter R9 (build day 2026-10-23): saveMark moves straight on, so a clean open-ended answer in
        Power-Up gets its ⚡ line as a toast, which outlives the re-render (the MCQ shows it in the feedback) */
-    if (se.kind === 'power' && a.score >= 1 && !a.hint1) toast('⚡ ' + pq(pkey(it)) + (pstate(pkey(it)).full ? ' is fully charged!' : ' is charging up!'));
+    if (se.kind === 'power' && a.score >= 1 && !a.hint1) toast(study() ? pname(pkey(it)) + ': ' + (pstate(pkey(it)).full ? 'secure' : 'building')
+      : '⚡ ' + pq(pkey(it)) + (pstate(pkey(it)).full ? ' is fully charged!' : ' is charging up!'));
     A.next();
   },
   next: function () {
@@ -1767,7 +1992,7 @@ var A = {
     if (session && session.kind === 'exam') examClear();
     session = null; go(back);
   },
-  reset: function () { if (confirm('Erase all Science Quest progress on this device?')) { S = fresh(); save(); sndBtn(); renderParent(); toast('Progress cleared'); } }
+  reset: function () { if (confirm('Erase all Science Quest progress on this device?')) { var lk = S.look; S = fresh(); S.look = lk; save(); sndBtn(); renderParent(); toast('Progress cleared'); } }
 };
 function saveText() { var ta = document.getElementById('oeqText'); if (ta && session) { session.ans[session.i].text = ta.value; examSave(); } }
 document.addEventListener('click', function (e) {

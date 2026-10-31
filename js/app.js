@@ -45,6 +45,31 @@ function makeQuestionRaw(level){
 
 
 
+/* ---------------- Shared view: Study / Quest (modes, 2026-10-31) ----------------
+   One setting for Science, Maths and Oral on this device, in localStorage 'mqi-look' next
+   to the saves (the same block sits in science/index.html and oral/index.html). With no setting
+   yet the device starts on Study, the clean default, even beside an existing save (Kev, Q257:
+   only the view preference is written; progress and results are never touched). ?look=study|quest sets it.
+   Study is presentation only: the same questions, engine, scoring and results. */
+var MQI_LOOK = (function () {
+  var K = 'mqi-look', cur = 'study';
+  try {
+    cur = localStorage.getItem(K);
+    if (cur !== 'study' && cur !== 'quest') {
+      cur = 'study';   /* Kev, Q257 (2026-10-31 14:08): every device without a setting starts on Study, existing saves included */
+      localStorage.setItem(K, cur);
+    }
+  } catch (e) { cur = 'study'; }
+  try { var m = /[?&]look=(study|quest)\b/.exec(location.search); if (m) { cur = m[1]; localStorage.setItem(K, cur); } } catch (e) {}
+  return { get: function () { return cur; },
+    set: function (v) { cur = v === 'quest' ? 'quest' : 'study'; try { localStorage.setItem(K, cur); } catch (e) {} } };
+})();
+function study(){ return MQI_LOOK.get() !== 'quest'; }
+/* LQ(quest copy, study copy). Not Q: Q is the question on screen. */
+function LQ(quest, stud){ return study() ? stud : quest; }
+/* the plain topic name ("Time"), not the island's place name ("Clocktower Quay") */
+function topicLabel(id){ return TOPICS[id] ? (TOPICS[id].short || TOPICS[id].label) : String(id||''); }
+
 /* ---------------- Storage ---------------- */
 function loadData(){ try{ return JSON.parse(localStorage.getItem('fq1'))||{}; }catch(e){ return {}; } }
 function saveData(){ try{ localStorage.setItem('fq1',JSON.stringify(DB)); }catch(e){} }
@@ -252,7 +277,7 @@ if(!DB.crys || typeof DB.crys!=='object' || Array.isArray(DB.crys)) DB.crys={};
 let AC=null, muted=!!DB.muted;
 function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return AC; }
 function tone(f,t0,dur,type,vol){
-  if(muted) return; const c=ac(); if(!c) return;
+  if(muted || study()) return;   /* Study: no sounds */ const c=ac(); if(!c) return;
   const o=c.createOscillator(), g=c.createGain();
   o.type=type||'square'; o.frequency.value=f;
   g.gain.setValueAtTime(vol||.15, c.currentTime+t0);
@@ -319,7 +344,7 @@ function reducedMotion(){ try{ return window.matchMedia('(prefers-reduced-motion
    with the land's name, is on the end screen. Returns true when it cheered. */
 function crysCheer(){
   const won=(S && S.fresh) || [];
-  if(!won.length) return false;
+  if(!won.length || study()) return false;   /* Study: kept in the data, never cheered */
   const w=won[won.length-1];
   banner(w.all ? '⭐ All 3 crystals in '+esc(w.land)+'! 🏝️' : '⭐ '+w.em+' '+w.name+' rescued!', 1800);
   sfx.crystal();
@@ -352,7 +377,14 @@ const HERO_MAX=100, TIME_LIMIT=20;
 let S=null, Q=null, qTimer=null, clockTimer=null;
 
 const $=id=>document.getElementById(id);
-function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); applyLook(id); }
+/* the body class drives every Study rule in index.html; the parents corner is always drawn clean */
+function applyLook(id){
+  const scr=id || ((document.querySelector('.screen.active')||{}).id);
+  document.body.classList.toggle('look-study', study() || scr==='parentScreen' || scr==='mockHistScreen');
+  document.title = study() ? 'Maths Practice' : 'Math Quest Island ⭐';
+  document.querySelectorAll('[data-look]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.look===MQI_LOOK.get())));
+}
 function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 function avClass(){ const a=AVATARS.find(x=>x[0]===DB.avatar); return a?a[1]:'Hero'; }
 function fmtMs(ms){ const s=Math.round(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
@@ -397,7 +429,10 @@ function renderStart(){
     gr.appendChild(b);
   });
   $('muteBtn').textContent=muted?'🔇':'🔊';
-  $('toMapBtn').textContent = DB.gameMode==='patchwerk' ? 'FIGHT PATCHWERK 💀' : 'CHOOSE YOUR QUEST 🗺️';
+  $('toMapBtn').textContent = study() ? 'Choose a topic →' : DB.gameMode==='patchwerk' ? 'FIGHT PATCHWERK 💀' : 'CHOOSE YOUR QUEST 🗺️';
+  /* Study has no Patchwerk: a profile left on it shows (and plays) Untimed, and the saved choice is untouched */
+  if(study() && DB.gameMode==='patchwerk'){ $('modeRelax').classList.add('sel'); $('modePatch').classList.remove('sel'); $('pwPanel').classList.remove('on'); }
+  applyLook();
 }
 $('nameInput').addEventListener('input',e=>{ DB.name=e.target.value.trim()||'Hero'; saveData(); });
 $('modeRelax').addEventListener('click',()=>{ DB.gameMode='relax'; DB.timed=false; saveData(); renderStart(); });
@@ -407,7 +442,7 @@ $('modePatch').addEventListener('click',()=>{ DB.gameMode='patchwerk'; DB.timed=
 /* ----- map ----- */
 function renderMap(){
   const mp=$('mapPath'); mp.innerHTML='';
-  $('mapSub').textContent='Quests for '+DB.grade+'. Where will you adventure today?';
+  $('mapSub').textContent=LQ('Quests for '+DB.grade+'. Where will you adventure today?', DB.grade+' topics. Each round is about 20 questions that get harder as you go.');
   /* fun layer: the hero greeting and the Star Crystal count for this level's lands */
   const lands=MAP_NODES.filter(n=>n.grades.includes(DB.grade) && !n.locked);
   const found=lands.reduce((a,n)=>a+crysCount(n.id),0), all=lands.length*3;
@@ -423,10 +458,10 @@ function renderMap(){
     /* Full (50 marks, 90 min) is the real P3 EOY shape; Long is the 80-mark school variant */
     const F=MQI.modes['p3-mock'].config.FORMATS, mkB=v=>{ let m=0; F[v].sections.forEach(s=>m+=s.count*s.marks);
       return '<button class="mkGo'+(v==='full'?' mkMain':'')+'" data-v="'+v+'">'+F[v].label+'<small>'+F[v].minutes+' min · '+m+' marks</small></button>'; };
-    c.innerHTML='<div class="mkTitle">📝 P3 Mock Paper <small>exam practice, marks at the end</small></div>'+
+    c.innerHTML='<div class="mkTitle">'+LQ('📝 ','')+'P3 Mock Paper <small>exam practice, marks at the end</small></div>'+
       '<div class="mkBtns">'+mkB('full')+mkB('quick')+mkB('long')+'</div>'+
-      '<button class="mkHist">📜 Paper history'+(DB.mockPapers.length?' ('+DB.mockPapers.length+')':'')+'</button>'+
-      '<a class="mkHist" id="mkSciLink" href="/science">🔬 Science Quest</a>';
+      '<button class="mkHist">'+LQ('📜 ','')+'Paper history'+(DB.mockPapers.length?' ('+DB.mockPapers.length+')':'')+'</button>'+
+      '<a class="mkHist" id="mkSciLink" href="/science">'+LQ('🔬 Science Quest','Science')+'</a>';
     c.querySelectorAll('.mkGo').forEach(b=>b.addEventListener('click',()=>newMockGame(b.dataset.v)));
     c.querySelector('.mkHist').addEventListener('click',()=>renderMockHistory('mapScreen'));
     mp.appendChild(c);
@@ -438,11 +473,11 @@ function renderMap(){
     c.className='mockCard';
     const F=MQI.modes['psle-mock'].config.FORMATS, mkB=v=>{ let m=0; F[v].sections.forEach(s=>m+=s.count*s.marks);
       return '<button class="mkGo'+(v==='paper1'?' mkMain':'')+'" data-v="'+v+'">'+(v==='paper1'?'Paper 1':'Paper 2')+
-        '<small>'+F[v].minutes+' min · '+m+' marks · '+(F[v].calculator?'🧮 calculator':'🚫 no calculator')+'</small></button>'; };
-    c.innerHTML='<div class="mkTitle">📝 PSLE Maths Paper <small>'+DB.grade+' exam practice in the PSLE format, marks at the end</small></div>'+
+        '<small>'+F[v].minutes+' min · '+m+' marks · '+(F[v].calculator?LQ('🧮 ','')+'calculator':LQ('🚫 ','')+'no calculator')+'</small></button>'; };
+    c.innerHTML='<div class="mkTitle">'+LQ('📝 ','')+'PSLE Maths Paper <small>'+DB.grade+' exam practice in the PSLE format, marks at the end</small></div>'+
       '<div class="mkBtns">'+mkB('paper1')+mkB('paper2')+'</div>'+
       '<p class="mkNote">Paper 2 allows a calculator: use your own, as in the exam.</p>'+
-      '<button class="mkHist">📜 Paper history'+(DB.mockPapers.length?' ('+DB.mockPapers.length+')':'')+'</button>';
+      '<button class="mkHist">'+LQ('📜 ','')+'Paper history'+(DB.mockPapers.length?' ('+DB.mockPapers.length+')':'')+'</button>';
     c.querySelectorAll('.mkGo').forEach(b=>b.addEventListener('click',()=>newMockGame(b.dataset.v,null,'psle-mock')));
     c.querySelector('.mkHist').addEventListener('click',()=>renderMockHistory('mapScreen'));
     mp.appendChild(c);
@@ -452,9 +487,10 @@ function renderMap(){
     const rot=powerRotation(), pk=powerKeys().slice(0,9);
     const c=document.createElement('div');
     c.className='puCard';
-    c.innerHTML='<button class="puGo" id="puGo"><span class="puEm">⚡</span><span><b>Power-Up</b><small>'+
-      (rot.length ? 'Let\'s power up '+esc(pq(rot[0].k))+'!' : 'Keep your powers charged with a mixed review round.')+'</small></span></button>'+
-      (pk.length ? '<div class="puMine"><h4>⚡ My powers</h4>'+powersHTML(pk)+'</div>' : '');
+    c.innerHTML='<button class="puGo" id="puGo"><span class="puEm">⚡</span><span><b>'+LQ('Power-Up','Focused review')+'</b><small>'+
+      (study() ? (rot.length ? 'Next up: '+esc(pq(rot[0].k))+'.' : 'A mixed round to keep every skill secure.')
+               : rot.length ? 'Let\'s power up '+esc(pq(rot[0].k))+'!' : 'Keep your powers charged with a mixed review round.')+'</small></span></button>'+
+      (pk.length ? '<div class="puMine"><h4>'+LQ('⚡ My powers','Skills')+'</h4>'+powersHTML(pk)+'</div>' : '');
     c.querySelector('.puGo').addEventListener('click',startPower);
     mp.appendChild(c);
   }
@@ -462,9 +498,9 @@ function renderMap(){
     if(i>0){ const d=document.createElement('div'); d.className='pathDots'; d.textContent='• • •'; mp.appendChild(d); }
     const b=document.createElement('button');
     b.className='mapNode '+(i%2?'even':'odd')+(n.locked?' locked':'')+(!n.locked && crysCount(n.id)===3?' done':'');
-    b.innerHTML='<span class="ne">'+n.e+'</span><span class="nt"><b>'+n.name+'</b><small>'+n.blurb+'</small>'+
+    b.innerHTML='<span class="ne">'+n.e+'</span><span class="nt"><b>'+(study() && TOPICS[n.id] ? esc(topicLabel(n.id)) : n.name)+'</b><small>'+n.blurb+'</small>'+
                 (n.locked?'':crysHTML(n.id))+'</span>'+
-                '<span class="go">'+(n.locked?'🔒':'▶️')+'</span>';
+                '<span class="go">'+(n.locked?LQ('🔒','Soon'):LQ('▶️','›'))+'</span>';
     if(!n.locked) b.addEventListener('click',()=>{ TOPIC=n.id; newGame(); });
     mp.appendChild(b);
   });
@@ -481,7 +517,7 @@ function renderMap(){
 
 /* ----- battle ----- */
 function newGame(){
-  if(DB.gameMode==='patchwerk'){ newPatchwerkGame(); return; }
+  if(DB.gameMode==='patchwerk' && !study()){ newPatchwerkGame(); return; }
   DB.name=($('nameInput').value.trim()||DB.name||'Hero'); saveData();
   MODE_FEED=null;
   QSET=null;
@@ -490,7 +526,7 @@ function newGame(){
       rightRow:0, wrongRow:0, correct:0, total:0, best:0, maxLevel:1,
       wrongs:[], skills:{}, busy:false, t0:Date.now(), timed:DB.timed };
   $('heroSprite').textContent=DB.avatar;
-  $('heroName').textContent=DB.name+' the '+avClass();
+  $('heroName').textContent=LQ(DB.name+' the '+avClass(), 'Tries left');
   $('modeHud').innerHTML='';   /* a finished mode's HUD must not linger into a quest */
   $('timerWrap').classList.toggle('on',S.timed);
   $('runClock').textContent='';
@@ -514,7 +550,7 @@ function newGame(){
      do that without covering a word of it. */
   /* fun layer: the land's place name (Fraction Forest), as on the map tile she just tapped */
   const land=crysLand(TOPIC);
-  banner(land ? land.e+' '+esc(land.name)+'! ⭐' : TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
+  banner(study() ? esc(topicLabel(TOPIC)) : land ? land.e+' '+esc(land.name)+'! ⭐' : TOPICS[TOPIC].e+' '+TOPICS[TOPIC].label+'! ⭐',900);
   setTimeout(nextQuestion,950);
 }
 /* ---------------- Patchwerk (js/modes/patchwerk.js) ---------------- */
@@ -818,10 +854,10 @@ function mockConfirm(open){
   const un=st.filter(x=>!x.answered), fl=st.filter(x=>x.flagged);
   const chips=list=>list.map(x=>'<button class="mkNum'+(x.answered?' done':'')+(x.flagged?' flag':'')+'" data-k="'+(x.n-1)+'">'+x.n+'</button>').join('');
   $('mkCfBody').innerHTML=
-    '<div class="mkCfLine">✅ <b>'+(st.length-un.length)+'</b> of '+st.length+' answered</div>'+
+    '<div class="mkCfLine">'+LQ('✅ ','')+'<b>'+(st.length-un.length)+'</b> of '+st.length+' answered</div>'+
     (un.length?'<div class="mkCfLine">⬜ <b>'+un.length+'</b> not answered yet</div><div class="mkCfChips">'+chips(un)+'</div>'
-              :'<div class="mkCfLine">Every question has an answer. 🎉</div>')+
-    (fl.length?'<div class="mkCfLine">🚩 <b>'+fl.length+'</b> flagged to check</div><div class="mkCfChips">'+chips(fl)+'</div>':'');
+              :'<div class="mkCfLine">Every question has an answer.'+LQ(' 🎉','')+'</div>')+
+    (fl.length?'<div class="mkCfLine">'+LQ('🚩 ','')+'<b>'+fl.length+'</b> flagged to check</div><div class="mkCfChips">'+chips(fl)+'</div>':'');
   box.classList.add('on');
 }
 function mockHandIn(){
@@ -884,7 +920,8 @@ function renderMockReport(rec){
   /* Power-Up, not a separate drill: the paper's misses were charged into the meters at
      hand-in (endMock -> recSkill), so the rotation already leads with what this paper showed */
   const wb=$('mkPowerBtn'), rot=powerRotation();
-  wb.innerHTML='⚡ Power-Up<small>'+(rot.length ? 'Let\'s power up '+esc(pq(rot[0].k))+'!' : 'Keep your powers charged with a mixed review round.')+'</small>';
+  wb.innerHTML=study() ? 'Focused review<small>'+(rot.length ? 'Next up: '+esc(pq(rot[0].k))+'.' : 'A mixed round to keep every skill secure.')+'</small>'
+    : '⚡ Power-Up<small>'+(rot.length ? 'Let\'s power up '+esc(pq(rot[0].k))+'!' : 'Keep your powers charged with a mixed review round.')+'</small>';
   wb.onclick=startPower;
   const miss=rec.review.filter(r=>!r.correct);
   $('mkReview').innerHTML = miss.length ? miss.map(r=>{
@@ -900,7 +937,7 @@ function renderMockReport(rec){
     return '<div class="revItem"><b>Q'+r.n+'</b> <small class="mkTag">'+r.section+' · '+(r.marks===1?'1 mark':r.marks+' marks')+'</small><br>'+
       q.q+figHtml(q)+'<br><span class="mkYours">Your answer: '+yours+'</span><br>'+
       '<span class="ansIs">Answer: '+q.answerText+'</span><br><span class="how">'+(q.explain||'')+'</span></div>';
-  }).join('') : '<div style="text-align:center;color:#7dffb0">Full marks! Nothing to review. 🎉</div>';
+  }).join('') : '<div class="allright" style="text-align:center;color:#7dffb0">Full marks! Nothing to review.'+LQ(' 🎉','')+'</div>';
   show('mockScreen');
   $('mockScreen').scrollTop=0;
 }
@@ -1049,7 +1086,7 @@ function battHTML(k){
 }
 function powersHTML(keys){
   return '<ul class="powers">'+keys.map(k=>{ const p=pstate(k);
-    return '<li class="'+(p.full?'full':'')+'">'+battHTML(k)+esc(pname(k))+(p.full?'<small>⚡ fully charged</small>':'')+'</li>'; }).join('')+'</ul>';
+    return '<li class="'+(p.full?'full':'')+'">'+battHTML(k)+esc(pname(k))+(p.full?'<small>'+LQ('⚡ fully charged','secure')+'</small>':'')+'</li>'; }).join('')+'</ul>';
 }
 /* every group in rotation or charging or charged, for the map's "My powers" row */
 function powerKeys(){
@@ -1089,12 +1126,12 @@ function startPower(){
   $('puBar').classList.remove('on');
   $('modeHud').innerHTML='';
   show('battleScreen');
-  banner(r.review?'⚡ Keep your powers charged! ⭐':'⚡ Power-Up! ⭐',900);
+  banner(study() ? (r.review?'Focused review · mixed':'Focused review') : r.review?'⚡ Keep your powers charged! ⭐':'⚡ Power-Up! ⭐',900);
   setTimeout(nextQuestion,950);
 }
 function powerHud(){
   const u=S.pu, it=u.items[u.i]; if(!it) return;
-  $('modeHud').innerHTML='<div class="pu-hud"><span class="pu-t">'+(u.review?'⚡ Keep your powers charged':'⚡ Power-Up')+'</span>'+
+  $('modeHud').innerHTML='<div class="pu-hud"><span class="pu-t">'+(study() ? (u.review?'Focused review · mixed':'Focused review') : u.review?'⚡ Keep your powers charged':'⚡ Power-Up')+'</span>'+
     '<span class="pu-q">'+(u.i<u.warm?'Warm-up · ':'')+'Question '+(u.i+1)+' of '+u.items.length+'</span>'+
     '<span class="pchip">'+battHTML(it.k)+esc(pname(it.k))+'</span></div>';
 }
@@ -1115,7 +1152,7 @@ function powerAnswer(right, btn){
   u.wait=true;
   if(right){
     if(!crysCheer()) sfx.correct();   /* fun layer: a Comeback or Power crystal */
-    $('feedback').innerHTML='<span class="ok">⚡ '+esc(pq(it.k))+(pstate(it.k).full?' is fully charged!':' is charging up!')+'</span>';
+    $('feedback').innerHTML='<span class="ok">'+(study() ? 'Correct · '+esc(pname(it.k))+': '+(pstate(it.k).full?'secure':'building') : '⚡ '+esc(pq(it.k))+(pstate(it.k).full?' is fully charged!':' is charging up!'))+'</span>';
     setTimeout(powerNext,1500);
   } else {
     const raw=Q.typed ? $('typedInput').value.trim() : '';
@@ -1129,7 +1166,7 @@ function powerAnswer(right, btn){
       if(!Q.typed) document.querySelectorAll('.ansBtn.good').forEach(x=>{ x.classList.remove('good'); x.classList.add('dim','mc-hold'); });
     } else
     /* refuter R3 (science's words) and R4 (the answer last, for a multiple choice too) */
-    $('feedback').innerHTML='<span class="no coach">'+(lead||'🌱 Good try. Let\'s look at it together. ')+(Q.explain||'')+
+    $('feedback').innerHTML='<span class="no coach">'+(lead||LQ('🌱 Good try. Let\'s look at it together. ','Not quite. Let\'s look at it together. '))+(Q.explain||'')+
       ' The answer is <b>'+Q.answerText+'</b>.</span>';
     $('puNext').textContent = u.i>=u.items.length-1 ? 'Finish my Power-Up ▶' : 'Next ▶';
     $('puBar').classList.add('on');
@@ -1174,17 +1211,17 @@ function renderPowerClose(){
   const said = up.length ? (u.review && !firstEver ? 'You kept '+andList(up.map(pq))+' charged today.' : 'You powered up '+andList(up.map(pq))+' today.')
                          : 'You worked on '+andList(lead.map(pq))+' today. Every go builds your power.';
   const nextLine = nk ? 'Next time: '+pq(nk)+'.' : 'Next time: a mixed round to keep your powers charged.';
-  $('puEyebrow').textContent = u.review ? '⚡ Power-Up · Keep your powers charged' : '⚡ Power-Up';
-  $('puTitle').textContent = full.length ? '🌟 Powered up!' : '🌱 Nice work!';
-  $('puSaid').textContent = '✨ '+said;
+  $('puEyebrow').textContent = study() ? (u.review ? 'Focused review · mixed' : 'Focused review') : u.review ? '⚡ Power-Up · Keep your powers charged' : '⚡ Power-Up';
+  $('puTitle').textContent = study() ? 'Review complete' : full.length ? '🌟 Powered up!' : '🌱 Nice work!';
+  $('puSaid').textContent = LQ('✨ '+said, said.replace(/powered up/g,'made secure').replace(/charged/g,'secure'));
   const w=$('puWell');
-  w.textContent = full.length ? '⚡ '+andList(full.map(pq))+(full.length===1?' is':' are')+' fully charged.' : '';
+  w.textContent = full.length ? LQ('⚡ ','')+andList(full.map(pq))+(full.length===1?' is':' are')+LQ(' fully charged.',' now secure.') : '';
   w.style.display = full.length ? '' : 'none';
   $('puPowers').innerHTML = powersHTML(keys);
-  $('puNextLine').textContent = '➡️ '+nextLine;
+  $('puNextLine').textContent = LQ('➡️ ','')+nextLine;
   /* fun layer: any Star Crystals this round rescued */
   const won=S.won||[];
-  $('puCrys').innerHTML = won.length ? '<h3>⭐ Star Crystals rescued today</h3>'+crysPanel(null, won) : '';
+  $('puCrys').innerHTML = won.length && !study() ? '<h3>⭐ Star Crystals rescued today</h3>'+crysPanel(null, won) : '';
   $('puCrys').style.display = won.length ? '' : 'none';
   show('powerScreen');
   $('powerScreen').scrollTop=0;
@@ -1199,7 +1236,7 @@ function renderMonster(){
   const sp=$('monsterSprite');
   sp.classList.remove('dying');
   sp.textContent=m.e;
-  $('monsterName').textContent=m.name;
+  $('monsterName').textContent=LQ(m.name, 'Set '+(S.mi+1)+' of '+MONSTERS.length);
   renderHp();
 }
 function renderHp(){
@@ -1209,7 +1246,7 @@ function renderHp(){
   $('monHp').firstElementChild.style.width=Math.max(0,S.mHp/m.hp*100)+'%';
   $('monHpText').textContent=Math.max(0,S.mHp)+' / '+m.hp;
 }
-function updateStreak(){ $('streakBox').textContent = S.streak>=2 ? '🔥×'+S.streak : ''; }
+function updateStreak(){ $('streakBox').textContent = S.streak>=2 ? LQ('🔥×'+S.streak, S.streak+' in a row') : ''; }
 function floatDmg(txt,color,side){
   const el=document.createElement('div');
   el.className='floatDmg'; el.textContent=txt; el.style.color=color;
@@ -1515,11 +1552,11 @@ function coachYou(w){
 function coachHTML(w){
   const d=TECH[w.t]||'';
   return '<div class="mcoach" data-mcoach>'+
-    '<b class="mc-h">🌱 Let\'s work this one out together</b>'+coachYou(w)+
-    '<p class="mc-tech"><span class="mc-badge">🧭 '+esc(w.t)+'</span>'+(d?'<small>'+esc(d)+'</small>':'')+'</p>'+
+    '<b class="mc-h">'+LQ('🌱 Let\'s work this one out together','Let\'s work through it')+'</b>'+coachYou(w)+
+    '<p class="mc-tech"><span class="mc-badge">'+LQ('🧭 ','Technique: ')+esc(w.t)+'</span>'+(d?'<small>'+esc(d)+'</small>':'')+'</p>'+
     '<ol class="mc-steps">'+w.st.map((s,j)=>'<li'+(j?' hidden':'')+'>'+s+'</li>').join('')+'</ol>'+
     '<button type="button" class="mc-next" data-mq="step">'+(w.st.length>1?NEXT_STEP:SHOW_ANS)+'</button>'+
-    '<div class="mc-ans" hidden><span class="mc-is">✅ The answer is <b>'+w.a+'</b>.</span>'+
+    '<div class="mc-ans" hidden><span class="mc-is">'+LQ('✅ The answer is','The answer is')+' <b>'+w.a+'</b>.</span>'+
       (w.ex?'<details class="mc-more"><summary>See the whole working</summary><div class="how">'+w.ex+'</div></details>':'')+
       '<p class="mc-close">Next time, try this first: <b>'+esc(w.t)+'</b>.</p></div>'+
   '</div>';
@@ -1559,7 +1596,7 @@ function markWrong(feedbackHtml, rec){
    the end-of-quest review), but the card leads with credit and the technique, and the
    answer comes last. */
 function questCoachCard(lead){
-  return '<span class="no coach">'+(lead||'🌱 Good try. ')+'<span class="mc-chip">🧭 '+esc(Q.technique)+'</span> '+(Q.explain||'')+
+  return '<span class="no coach">'+(lead||LQ('🌱 Good try. ','Not quite. '))+'<span class="mc-chip">'+LQ('🧭 ','')+esc(Q.technique)+'</span> '+(Q.explain||'')+
     ' The answer is <b>'+Q.answerText+'</b>.</span>';
 }
 function timeUp(){
@@ -1567,8 +1604,8 @@ function timeUp(){
   S.total++;
   recSkill(Q.skill,false);
   lockButtons();
-  if(Q.steps) markWrong(questCoachCard('⏰ Time\'s up. That is fine. '), wrongRec(Q, null, null, '', true));
-  else markWrong('<span class="no">⏰ Time\'s up! '+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
+  if(Q.steps) markWrong(questCoachCard(LQ('⏰ ','')+'Time\'s up. That is fine. '), wrongRec(Q, null, null, '', true));
+  else markWrong('<span class="no">'+LQ('⏰ Time\'s up! ','Time\'s up. ')+(Q.typed?('The answer is <b>'+Q.answerText+'</b>. '):'')+Q.explain+'</span>');
   setTimeout(monsterCounterattack,1000);
 }
 function resolve(right){
@@ -1580,8 +1617,8 @@ function resolve(right){
     const crit=S.streak>=3;
     const dmg=(18+S.level*6+ri(0,4))*(crit?2:1);
     /* fun layer: a rescued Star Crystal takes the banner band (and the chime) */
-    if(!crysCheer()){ if(crit){ sfx.crit(); banner('💥 CRITICAL HIT!'); } else sfx.correct(); }
-    $('feedback').innerHTML='<span class="ok">'+pick(['Great job! ⚔️','Correct! 💪','Awesome! ✨','Nice one! 🌟'])+'</span>';
+    if(!crysCheer()){ if(crit){ sfx.crit(); banner(LQ('💥 CRITICAL HIT!', S.streak+' in a row')); } else sfx.correct(); }
+    $('feedback').innerHTML='<span class="ok">'+(study() ? 'Correct' : pick(['Great job! ⚔️','Correct! 💪','Awesome! ✨','Nice one! 🌟']))+'</span>';
     updateStreak();
     setTimeout(()=>{
       $('heroSprite').classList.add('lunge');
@@ -1648,21 +1685,21 @@ function answerTyped(){
 function monsterDown(){
   sfx.monsterDown();
   $('monsterSprite').classList.add('dying');
-  banner('💥 Monster beaten! 💥',1000);   /* Kev 2026-10-23: no clash with the land Star Crystals */
+  banner(LQ('💥 Monster beaten! 💥','Set '+(S.mi+1)+' complete'),1000);   /* Kev 2026-10-23: no clash with the land Star Crystals */
   S.heroHp=Math.min(HERO_MAX,S.heroHp+12);
   setTimeout(()=>{
     S.mi++;
     if(S.mi>=MONSTERS.length){ endGame(true); return; }
     S.mHp=MONSTERS[S.mi].hp;
     renderDots(); renderMonster(); renderHp();
-    if(S.mi===MONSTERS.length-1) banner('👑 BOSS BATTLE! 👑',1200);
+    if(S.mi===MONSTERS.length-1) banner(LQ('👑 BOSS BATTLE! 👑','Final set'),1200);
     setTimeout(nextQuestion,350);
   },1000);
 }
 /* fun layer: science's light burst - 16 pieces, about 1.5 s, one burst at a time, and
    none at all under prefers-reduced-motion (was 40 pieces for up to 5.5 s) */
 function confetti(){
-  if(reducedMotion() || document.querySelector('.confetti')) return;
+  if(study() || reducedMotion() || document.querySelector('.confetti')) return;
   for(let i=0;i<16;i++){
     const el=document.createElement('div');
     el.className='confetti'; el.setAttribute('aria-hidden','true');
@@ -1716,26 +1753,28 @@ function endGame(win){
   $('normalStats').style.display='flex';
   $('endQuiet').style.display='';
   $('endEmoji').textContent=win?'🏆':'💪';
-  $('endTitle').textContent=win?'VICTORY!':'So close, '+esc(DB.name)+'!';
+  $('endTitle').textContent=study() ? (win?'Round complete':'Round ended') : win?'VICTORY!':'So close, '+esc(DB.name)+'!';
   let msg = win
     ? esc(DB.name)+' the '+avClass()+' beat all 6 monsters of '+(crysLand(TOPIC)?crysLand(TOPIC).name:TOPICS[TOPIC].label)+'!'
     /* fun layer: the battle's count is "monsters", so it never reads against the land's
        Star Crystals panel below ("You rescued 0 crystals" over "Explorer crystal rescued") */
     : (S.mi ? 'You beat '+S.mi+' monster'+(S.mi===1?'':'s')+' this time. ' : '')+'Every battle makes your magic stronger. Try again!';
-  if(win && fameRank===0) msg+=' 🥇 NEW RECORD, fastest run ever!';
+  if(study()) msg = win ? 'You cleared all '+MONSTERS.length+' sets in '+topicLabel(TOPIC)+'.'
+    : 'You cleared '+S.mi+' of '+MONSTERS.length+' sets in '+topicLabel(TOPIC)+' before the tries ran out. Have another go: the review below is the useful part.';
+  else if(win && fameRank===0) msg+=' 🥇 NEW RECORD, fastest run ever!';
   else if(win && fameRank>0) msg+=' You made the Hall of Fame at #'+(fameRank+1)+'!';
   $('endMsg').textContent=msg;
   /* Kev 2026-10-23: lead with wins (what went well, what she powered up); the correct /
      accuracy count moves lower to a quiet line under the review (mirrors science b595384) */
   const well=[];
-  if(S.mi) well.push('you beat '+S.mi+' monster'+(S.mi===1?'':'s'));
-  if(S.best>=2) well.push('your best streak was 🔥'+S.best);
-  if(S.maxLevel>1) well.push('you powered up to level '+S.maxLevel);
-  $('endWell').textContent=well.length ? '✨ What went well: '+well.join(', ')+'!' : '';
+  if(S.mi) well.push(LQ('you beat '+S.mi+' monster'+(S.mi===1?'':'s'), 'you cleared '+S.mi+' set'+(S.mi===1?'':'s')));
+  if(S.best>=2) well.push(LQ('your best streak was 🔥'+S.best, 'your best run was '+S.best+' in a row'));
+  if(S.maxLevel>1) well.push(LQ('you powered up to level '+S.maxLevel, 'you reached level '+S.maxLevel));
+  $('endWell').textContent=well.length ? LQ('✨ What went well: '+well.join(', ')+'!', 'What went well: '+well.join(', ')+'.') : '';
   $('endWell').style.display=well.length ? '' : 'none';
   $('stCorrect').textContent=S.correct+' / '+S.total;
   $('stAcc').textContent=(S.total?Math.round(S.correct/S.total*100):0)+'%';
-  $('stStreak').textContent='🔥'+S.best;
+  $('stStreak').textContent=LQ('🔥','')+S.best;
   $('stTime').textContent=fmtMs(ms);
   const rb=$('reviewBox'), rl=$('reviewList');
   if(S.wrongs.length){
@@ -1825,7 +1864,7 @@ function renderFame(){
 function renderParent(){
   const ss=DB.sessions;
   $('parentIntro').textContent = ss.length
-    ? esc(DB.name)+' has played '+ss.length+' session'+(ss.length===1?'':'s')+'. Data below covers all of them.'
+    ? esc(DB.name)+' has done '+ss.length+' session'+(ss.length===1?'':'s')+' on this device. Data below covers all of them.'
     : 'No sessions played yet. Data will appear here after the first game.';
 
   /* aggregate per topic+skill */
@@ -1852,11 +1891,11 @@ function renderParent(){
     const [tp,k]=key.split('|');
     const a=agg[key], n=a.r+a.w, pct=n?Math.round(a.r/n*100):0;
     const meta=(TOPICS[tp]&&TOPICS[tp].skills[k])||{};
-    return {n, pct, label:meta.label||k, tip:meta.tip||'', tlabel:TOPICS[tp]?TOPICS[tp].e+' '+TOPICS[tp].short:tp};
+    return {n, pct, label:meta.label||k, tip:meta.tip||'', tlabel:TOPICS[tp]?TOPICS[tp].short:tp};
   }).sort((x,y)=>x.pct-y.pct);
 
   $('skillList').innerHTML = rows.length ? rows.map(r=>{
-    const col = r.pct>=80?'#2ecc71':r.pct>=60?'#ffd166':'#ff6f61';
+    const col = r.pct>=80?'#1C7A58':r.pct>=60?'#A86C12':'#B4501E';   /* parents corner is always drawn clean (modes 2026-10-31) */
     return '<div class="skillRow"><div class="skillName">'+r.label+'<br><small>'+r.tlabel+' · '+r.n+' question'+(r.n===1?'':'s')+'</small></div>'+
       '<div class="accBar"><div style="width:'+r.pct+'%;background:'+col+'"></div></div>'+
       '<div class="accPct" style="color:'+col+'">'+r.pct+'%</div></div>';
@@ -1865,13 +1904,13 @@ function renderParent(){
   const focus=rows.filter(r=>r.n>=4 && r.pct<75).slice(0,3);
   $('focusList').innerHTML = focus.length
     ? focus.map(r=>'<div class="focus"><b>'+r.label+'</b> ('+r.tlabel+'): '+r.pct+'% over '+r.n+' questions.<br>'+r.tip+'</div>').join('')
-    : (rows.length? '<div style="color:#7dffb0;font-size:15px;text-align:center">Nothing needs extra focus right now: accuracy is solid across skills. 🎉</div>'
+    : (rows.length? '<div class="allright">Nothing needs extra focus right now: accuracy is solid across skills.</div>'
                    : '<div style="color:#a99fd8;font-size:14px">Play a few sessions first.</div>');
 
   const recent=ss.slice(-10).reverse();
-  $('histTable').innerHTML='<tr><th>Date</th><th>Land</th><th>Mode</th><th>Result</th><th>Score</th><th>Acc</th><th>Time</th></tr>'+
-    recent.map(s=>'<tr><td>'+fmtDate(s.t)+'</td><td>'+(TOPICS[s.topic]?TOPICS[s.topic].e:'🗺️')+'</td><td>'+({patchwerk:'💀',mock:'📝',power:'⚡',weakspots:'⚡'}[s.mode]||(s.timed?'⏱️':'🌙'))+'</td><td>'+
-      (s.won?'🏆':'💪')+'</td><td>'+s.correct+'/'+s.total+'</td><td>'+
+  $('histTable').innerHTML='<tr><th>Date</th><th>Topic</th><th>Mode</th><th>Result</th><th>Score</th><th>Acc</th><th>Time</th></tr>'+
+    recent.map(s=>'<tr><td>'+fmtDate(s.t)+'</td><td>'+esc(TOPICS[s.topic]?TOPICS[s.topic].short:(s.mode==='mock'?'Mock paper':s.mode==='power'||s.mode==='weakspots'?'Mixed':'–'))+'</td><td>'+({patchwerk:'Patchwerk',mock:'Paper',power:'Review',weakspots:'Review'}[s.mode]||(s.timed?'Timed':'Untimed'))+'</td><td>'+
+      (s.won?'Cleared':'Part')+'</td><td>'+s.correct+'/'+s.total+'</td><td>'+
       (s.total?Math.round(s.correct/s.total*100):0)+'%</td><td>'+(s.ms?fmtMs(s.ms):'-')+'</td></tr>').join('');
 
   function accOf(list){ let r=0,t=0; list.forEach(s=>{r+=s.correct;t+=s.total;}); return t?r/t*100:null; }
@@ -1981,7 +2020,7 @@ MQI.boot = function () {
   if (MQI.drainPendingModes) MQI.drainPendingModes();
   /* Patchwerk draws across every unlocked topic for the class level, so it skips
      the island map entirely and goes straight to the dummy. */
-  $('toMapBtn').addEventListener('click',()=>{ ac(); if(DB.gameMode==='patchwerk') newPatchwerkGame(); else renderMap(); });
+  $('toMapBtn').addEventListener('click',()=>{ ac(); if(DB.gameMode==='patchwerk' && !study()) newPatchwerkGame(); else renderMap(); });
   $('mapBackBtn').addEventListener('click',()=>{ renderStart(); show('startScreen'); });
   $('againBtn').addEventListener('click',newGame);
   $('endMapBtn').addEventListener('click',renderMap);
@@ -1995,6 +2034,9 @@ MQI.boot = function () {
       DB.sessions=[]; DB.fame=[]; saveData(); renderParent();
     }
   });
+  document.addEventListener('click',e=>{ const b=e.target.closest && e.target.closest('[data-look]'); if(!b) return;
+    MQI_LOOK.set(b.dataset.look); const on=(document.querySelector('.screen.active')||{}).id;
+    if(on==='parentScreen') renderParent(); else if(on==='mapScreen') renderMap(); else { renderStart(); applyLook(on); } });
   $('muteBtn').addEventListener('click',()=>{ muted=!muted; DB.muted=muted; saveData(); $('muteBtn').textContent=muted?'🔇':'🔊'; });
   $('typedGo').addEventListener('click',answerTyped);
   $('typedInput').addEventListener('keydown',e=>{ if(e.key==='Enter') answerTyped(); });
